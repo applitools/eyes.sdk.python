@@ -1,0 +1,255 @@
+from __future__ import absolute_import
+
+import math
+import time
+import typing as tp
+
+from selenium.webdriver.common.by import By
+
+from applitools.core.geometry import Region
+from applitools.core import logger
+from applitools.core.utils import general_utils
+
+if tp.TYPE_CHECKING:
+    from selenium.webdriver.remote.webelement import WebElement
+    from applitools.core.geometry import Point
+    from applitools.core.utils.custom_types import AnyWebDriver
+    from .webdriver import EyesWebDriver
+    from .eyes import Eyes
+
+
+class EyesWebElement(object):
+    """
+    A wrapper for selenium web element. This enables eyes to be notified about actions/events for
+    this element.
+    """
+    _METHODS_TO_REPLACE = ['find_element', 'find_elements']
+
+    # Properties require special handling since even testing if they're callable "activates"
+    # them, which makes copying them automatically a problem.
+    _READONLY_PROPERTIES = ['tag_name', 'text', 'location_once_scrolled_into_view',
+                            'parent', 'rect', 'screenshot_as_base64', 'screenshot_as_png',
+                            'location_in_view', 'anonymous_children']
+    _JS_GET_COMPUTED_STYLE_FORMATTED_STR = """
+            var elem = arguments[0];
+            var styleProp = '%s';
+            if (window.getComputedStyle) {
+                return window.getComputedStyle(elem, null)
+                .getPropertyValue(styleProp);
+            } else if (elem.currentStyle) {
+                return elem.currentStyle[styleProp];
+            } else {
+                return null;
+            }
+    """
+    _JS_GET_SCROLL_LEFT = "return arguments[0].scrollLeft;"
+    _JS_GET_SCROLL_TOP = "return arguments[0].scrollTop;"
+    _JS_GET_SCROLL_WIDTH = "return arguments[0].scrollWidth;"
+    _JS_GET_SCROLL_HEIGHT = "return arguments[0].scrollHeight;"
+    _JS_GET_OVERFLOW = "return arguments[0].style.overflow;"
+    _JS_SET_OVERFLOW_FORMATTED_STR = "arguments[0].style.overflow = '%s'"
+    _JS_GET_CLIENT_WIDTH = "return arguments[0].clientWidth;"
+    _JS_GET_CLIENT_HEIGHT = "return arguments[0].clientHeight;"
+    _JS_SCROLL_TO_FORMATTED_STR = """
+            arguments[0].scrollLeft = {:d};
+            arguments[0].scrollTop = {:d};
+    """
+
+    def __init__(self, element, eyes, driver):
+        # type: (WebElement, Eyes, EyesWebDriver) -> None
+        """
+        Ctor.
+
+        :param element: The element in the frame.
+        :param eyes: The eyes sdk instance.
+        :param driver: EyesWebDriver instance.
+        """
+        self.element = element
+        self._eyes = eyes
+        self._driver = driver  # type: AnyWebDriver
+        # Replacing implementation of the underlying driver with ours. We'll put the original
+        # methods back before destruction.
+        self._original_methods = {}  # type: tp.Dict[tp.Text, tp.Callable]
+        for method_name in self._METHODS_TO_REPLACE:
+            self._original_methods[method_name] = getattr(element, method_name)
+            setattr(element, method_name, getattr(self, method_name))
+
+        # Copies the web element's interface
+        general_utils.create_proxy_interface(self, element, self._READONLY_PROPERTIES)
+        # Setting properties
+        for attr in self._READONLY_PROPERTIES:
+            setattr(self.__class__, attr, general_utils.create_proxy_property(attr, 'element'))
+
+    @property
+    def bounds(self):
+        # type: () -> Region
+        # noinspection PyUnresolvedReferences
+        location = self.location
+        left, top = location['x'], location['y']
+        width = height = 0  # Default
+
+        # noinspection PyBroadException
+        try:
+            size = self.element.size
+            width, height = size['width'], size['height']
+        except Exception:
+            # Not implemented on all platforms.
+            pass
+        if left < 0:
+            left, width = 0, max(0, width + left)
+        if top < 0:
+            top, height = 0, max(0, height + top)
+        return Region(left, top, width, height)
+
+    @property
+    def location(self):
+        return self.element.location
+
+    @property
+    def size(self):
+        return self.element.size
+
+    @property
+    def id(self):
+        return self.element.id
+
+    def value_of_css_property(self, property_name):
+        return self.element.value_of_css_property(property_name)
+
+    def find_element(self, by=By.ID, value=None):
+        """
+        Returns a WebElement denoted by "By".
+
+        :param by: By which option to search for (default is by ID).
+        :param value: The value to search for.
+        :return: WebElement denoted by "By".
+        """
+        # Get result from the original implementation of the underlying driver.
+        result = self._original_methods['find_element'](by, value)
+        # Wrap the element.
+        if result:
+            result = EyesWebElement(result, self._eyes, self._driver)
+        return result
+
+    def find_elements(self, by=By.ID, value=None):
+        """
+        Returns a list of web elements denoted by "By".
+
+        :param by: By which option to search for (default is by ID).
+        :param value: The value to search for.
+        :return: List of web elements denoted by "By".
+        """
+        # Get result from the original implementation of the underlying driver.
+        results = self._original_methods['find_elements'](by, value)
+        # Wrap all returned elements.
+        if results:
+            updated_results = []
+            for element in results:
+                updated_results.append(EyesWebElement(element, self._eyes, self._driver))
+            results = updated_results
+        return results
+
+    def click(self):
+        """
+        Clicks and element.
+        """
+        self._eyes.add_mouse_trigger_by_element('click', self)
+        self.element.click()
+
+    def send_keys(self, *value):
+        """
+        Sends keys to a certain element.
+
+        :param value: The value to type into the element.
+        """
+        text = u''
+        for val in value:
+            if isinstance(val, int):
+                val = val.__str__()
+            text += val.encode('utf-8').decode('utf-8')
+        self._eyes.add_text_trigger_by_element(self, text)
+        self.element.send_keys(*value)
+
+    def set_overflow(self, overflow, stabilization_time=None):
+        """
+        Sets the overflow of the current element.
+
+        :param overflow: The overflow value to set. If the given value is None, then overflow will be set to
+                         undefined.
+        :param stabilization_time: The time to wait for the page to stabilize after overflow is set. If the value is
+                                    None, then no waiting will take place. (Milliseconds)
+        :return: The previous overflow value.
+        """
+        logger.debug("Setting overflow: %s" % overflow)
+        if overflow is None:
+            script = "var elem = arguments[0]; var origOverflow = elem.style.overflow; " \
+                     "elem.style.overflow = undefined; " \
+                     "return origOverflow;"
+        else:
+            script = "var elem = arguments[0]; var origOverflow = elem.style.overflow; " \
+                     "elem.style.overflow = \"{0}\"; " \
+                     "return origOverflow;".format(overflow)
+        # noinspection PyUnresolvedReferences
+        original_overflow = self._driver.execute_script(script, self.element)
+        logger.debug("Original overflow: %s" % original_overflow)
+        if stabilization_time is not None:
+            time.sleep(stabilization_time / 1000)
+        return original_overflow
+
+    def hide_scrollbars(self):
+        # type: () -> tp.Text
+        """
+        Hides the scrollbars of the current element.
+
+        :return: The previous value of the overflow property (could be None).
+        """
+        logger.debug('EyesWebElement.HideScrollbars()')
+        return self.set_overflow('hidden')
+
+    def get_computed_style(self, prop_style):
+        script = self._JS_GET_COMPUTED_STYLE_FORMATTED_STR % prop_style
+        return self._driver.execute_script(script, self.element)
+
+    def get_computed_style_int(self, prop_style):
+
+        value = self.get_computed_style(prop_style)
+        return int(round(float(value.replace('px', '').strip())))
+
+    def get_scroll_left(self):
+        return int(math.ceil(self._driver.execute_script(self._JS_GET_SCROLL_LEFT, self.element)))
+
+    def get_scroll_top(self):
+        return math.ceil(self._driver.execute_script(self._JS_GET_SCROLL_TOP, self.element))
+
+    def get_scroll_width(self):
+        return int(math.ceil(self._driver.execute_script(self._JS_GET_SCROLL_WIDTH, self.element)))
+
+    def get_scroll_height(self):
+        return int(math.ceil(self._driver.execute_script(self._JS_GET_SCROLL_HEIGHT, self.element)))
+
+    def get_border_left_width(self):
+        return self.get_computed_style_int('border-left-width')
+
+    def get_border_right_width(self):
+        return self.get_computed_style_int('border-right-width')
+
+    def get_border_top_width(self):
+        return self.get_computed_style_int('border-right-width')
+
+    def get_border_bottom_width(self):
+        return self.get_computed_style_int('border-right-width')
+
+    def get_overflow(self):
+        return self._driver.execute_script(self._JS_GET_OVERFLOW, self.element)
+
+    def get_client_width(self):
+        return int(math.ceil(float(self._driver.execute_script(self._JS_GET_CLIENT_WIDTH, self.element))))
+
+    def get_client_height(self):
+        return int(math.ceil(float(self._driver.execute_script(self._JS_GET_CLIENT_HEIGHT, self.element))))
+
+    def scroll_to(self, location):
+        # type: (Point) -> None
+        """Scrolls to the specified location inside the element."""
+        self._driver.execute_script(
+            self._JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y), self.element)
