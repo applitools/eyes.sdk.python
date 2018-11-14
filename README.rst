@@ -35,5 +35,6 @@ For smother development experience install Invoke for task run first
 :: 
 
     pip install invoke
-
-
+    inv install-requirements  # install libs required for development
+    inv install-packages  # for installing all packages
+    inv install-packages  -core # install only core package, could be core|selenium]images

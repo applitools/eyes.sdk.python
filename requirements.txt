@@ -1,6 +1,0 @@
-bumpversion
-flake8
-flake8-import-order
-flake8-bugbear
-pytest
-mypy
