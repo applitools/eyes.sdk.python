@@ -4,10 +4,12 @@ General purpose utilities.
 from __future__ import absolute_import
 
 import json
+import time
 import types
 import typing as tp
 from datetime import timedelta, tzinfo
 
+from applitools.eyes_core import logger
 from .compat import urlparse
 
 if tp.TYPE_CHECKING:
@@ -15,8 +17,8 @@ if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
     from selenium.webdriver.remote.switch_to import SwitchTo
 
-    from applitools.selenium.webdriver import EyesWebDriver, _EyesSwitchTo
-    from applitools.selenium.webelement import EyesWebElement
+    from applitools.eyes_selenium.webdriver import EyesWebDriver, _EyesSwitchTo
+    from applitools.eyes_selenium.webelement import EyesWebElement
 
 
 class _UtcTz(tzinfo):
@@ -101,12 +103,12 @@ def create_proxy_interface(from_,  # type: tp.Union[EyesWebDriver, EyesWebElemen
     # type: (...) -> None
     """
     Copies the public interface of the destination object, excluding names in the ignore_list,
-    and creates an identical interface in 'core', which forwards calls to dst.
+    and creates an identical interface in 'eyes_core', which forwards calls to dst.
 
     :param from_: Source.
     :param to: Destination.
     :param ignore_list: List of names to ignore while copying.
-    :param override_existing: If False, attributes already existing in 'core' will not be overridden.
+    :param override_existing: If False, attributes already existing in 'eyes_core' will not be overridden.
     """
     if not ignore_list:
         ignore_list = []
@@ -143,3 +145,49 @@ def is_absolute_url(url):
 
 def is_url_with_scheme(url):
     return bool(urlparse(url).scheme)
+
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts) * 1000)
+        else:
+            logger.debug('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
+        return result
+
+    return timed
+
+
+def retry(delays=(0, 1, 5),
+          exception=Exception,
+          report=lambda *args: None):
+    """
+    This is a Python decorator which helps implementing an aspect oriented
+    implementation of a retrying of certain steps which might fail sometimes.
+    https://code.activestate.com/recipes/580745-retry-decorator-in-python/
+    """
+
+    def wrapper(function):
+        def wrapped(*args, **kwargs):
+            problems = []
+            for delay in itertools.chain(delays, [None]):
+                try:
+                    return function(*args, **kwargs)
+                except exception as problem:
+                    problems.append(problem)
+                    if delay is None:
+                        report("retryable failed definitely:", problems)
+                        raise
+                    else:
+                        report("retryable failed:", problem,
+                               "-- delaying for %ds" % delay)
+                        time.sleep(delay)
+
+        return wrapped
+
+    return wrapper

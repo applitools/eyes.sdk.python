@@ -7,6 +7,7 @@ import sys
 import logging
 import functools
 import typing as tp
+import warnings
 
 _DEFAULT_EYES_LOGGER_NAME = 'eyes'
 _DEFAULT_EYES_FORMATTER = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
@@ -226,4 +227,4 @@ def warning(msg):
 
 
 def deprecation(msg):
-    warning('DEPRECATION: {}'.format(msg))
+    warnings.warn('DEPRECATION: {}'.format(msg))

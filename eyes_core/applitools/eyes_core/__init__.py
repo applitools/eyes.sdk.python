@@ -7,6 +7,7 @@ from .capture import *  # noqa
 from .scaling import *  # noqa
 from .eyes_base import *  # noqa
 from .geometry import *  # noqa
+from .agent_connector import AgentConnector  # noqa
 
 __all__ = (triggers.__all__ +  # noqa
            test_results.__all__ +  # noqa
@@ -17,4 +18,4 @@ __all__ = (triggers.__all__ +  # noqa
            capture.__all__ +  # noqa
            eyes_base.__all__ +  # noqa
            geometry.__all__ +  # noqa
-           ('logger',))
+           ('logger', 'AgentConnector'))

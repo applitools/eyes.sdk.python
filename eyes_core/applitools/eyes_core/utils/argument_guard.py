@@ -1,6 +1,6 @@
 import typing as tp
 
-from applitools.core.errors import EyesIllegalArgument
+from applitools.eyes_core.errors import EyesIllegalArgument
 from .compat import iteritems
 
 

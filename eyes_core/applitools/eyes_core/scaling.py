@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from applitools.core.utils import ABC
+from .utils import ABC
 from . import logger
 
 __all__ = ('FixedScaleProvider', 'NullScaleProvider', 'ContextBasedScaleProvider')

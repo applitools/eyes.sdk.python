@@ -5,15 +5,14 @@ import typing as tp
 
 import requests
 from requests.packages import urllib3
-
-from applitools.core.utils import general_utils
-from applitools.core.utils.compat import urljoin
+from applitools.eyes_core.utils import general_utils
+from applitools.eyes_core.utils.compat import urljoin, gzip_compress
 from . import logger
 from .test_results import TestResults
 
 if tp.TYPE_CHECKING:
     from requests.models import Response
-    from applitools.core.utils.custom_types import RunningSession, SessionStartInfo, Num
+    from .utils.custom_types import RunningSession, SessionStartInfo, Num
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -147,10 +146,13 @@ class AgentConnector(object):
         Upload the DOM of the tested page.
         Return an URL of uploaded resource which should be posted to AppOutput.
         """
+        headers = AgentConnector._DEFAULT_HEADERS.copy()
+        headers['Content-Type'] = 'application/octet-stream'
+        dom_bytes = gzip_compress(dom_json.encode('utf-8'))
         response = requests.post(url=urljoin(self._endpoint_uri, 'running/data'),
-                                 data=dom_json,
+                                 data=dom_bytes,
                                  params=dict(apiKey=self.api_key),
-                                 headers=AgentConnector._DEFAULT_HEADERS,
+                                 headers=headers,
                                  timeout=AgentConnector._TIMEOUT)
         dom_url = None
         if response.ok:

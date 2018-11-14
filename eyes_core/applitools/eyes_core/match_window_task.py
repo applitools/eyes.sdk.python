@@ -1,20 +1,22 @@
 from __future__ import absolute_import
 
+import warnings
 import functools
 import time
 import typing as tp
 from struct import pack
 
 # noinspection PyProtectedMember
-from applitools.core.utils import general_utils
 from . import logger
+from .utils import general_utils
 from .errors import OutOfBoundsError
 from .geometry import Region
 
 if tp.TYPE_CHECKING:
-    from applitools.selenium import Eyes, Target
-    from applitools.core.utils.custom_types import (Num, RunningSession, AppOutput,
-                                                         UserInputs, MatchResult)
+    from applitools.eyes_selenium.eyes import Eyes
+    from applitools.eyes_selenium.target import Target
+    from .utils.custom_types import (Num, RunningSession, AppOutput,
+                                     UserInputs, MatchResult)
     from .agent_connector import AgentConnector
     from .eyes_base import ImageMatchSettings
     from .capture import EyesScreenshot
@@ -65,7 +67,7 @@ class MatchWindowTask(object):
         if floating is None:
             floating = []
         if target is None:
-            from applitools.selenium.target import Target  # noqa
+            from applitools.eyes_selenium.target import Target  # noqa
             target = Target()
 
         match_data = {
@@ -120,7 +122,6 @@ class MatchWindowTask(object):
                                        user_inputs,  # type: UserInputs
                                        default_match_settings,  # type: ImageMatchSettings
                                        target,  # type: Target
-                                       dom_json,
                                        ignore_mismatch=False):
         # type: (...) -> bytes
         title = self._eyes.get_title()
@@ -128,12 +129,16 @@ class MatchWindowTask(object):
             self._screenshot = self._eyes.get_screenshot(hide_scrollbars_called=True)
             dynamic_regions = MatchWindowTask._get_dynamic_regions(target, self._screenshot)
         app_output = {'title': title, 'screenshot64': None}  # type: AppOutput
-        if dom_json:
-            dom_url = self._eyes.try_post_dom_snapshot(dom_json)
-            if dom_url is None:
-                logger.warning('Failed to upload DOM. Skipping...')
-            else:
-                app_output['DomUrl'] = dom_url
+
+        if self._eyes.send_dom:
+            dom_json = self._eyes.try_capture_dom()
+            if dom_json:
+                dom_url = self._eyes.try_post_dom_snapshot(dom_json)
+                if dom_url is None:
+                    warnings.warn('Failed to upload DOM. Skipping...')
+                else:
+                    app_output['DomUrl'] = dom_url
+
         logger.debug('AppOutput: {}'.format(app_output))
         return self._create_match_data_bytes(app_output, user_inputs, tag, ignore_mismatch,
                                              self._screenshot, default_match_settings, target,
@@ -201,8 +206,7 @@ class MatchWindowTask(object):
                      user_inputs,  # UserInputs
                      default_match_settings,  # type: ImageMatchSettings
                      target,  # type: tp.Optional[Target]
-                     run_once_after_wait=False,
-                     dom_json=None):
+                     run_once_after_wait=False):
         # type: (...) -> MatchResult
         """
         Performs a match for the window.
@@ -216,5 +220,5 @@ class MatchWindowTask(object):
         :return: The result of the run.
         """
         prepare_action = functools.partial(self._prepare_match_data_for_window, tag,
-                                           user_inputs, default_match_settings, target, dom_json)
+                                           user_inputs, default_match_settings, target)
         return self._run(prepare_action, run_once_after_wait, retry_timeout)

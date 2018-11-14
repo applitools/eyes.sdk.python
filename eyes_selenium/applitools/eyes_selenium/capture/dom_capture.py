@@ -7,13 +7,13 @@ import requests
 import tinycss2
 from tinycss2.ast import URLToken
 
-from applitools.core import logger, Point
-from applitools.core.utils import general_utils
-from applitools.core.utils.compat import urljoin
-from applitools.selenium.positioning import PositionProvider
+from applitools.eyes_core import logger, Point
+from applitools.eyes_core.utils import general_utils
+from applitools.eyes_core.utils.compat import urljoin
+from applitools.eyes_selenium.positioning import PositionProvider
 
 if tp.TYPE_CHECKING:
-    from applitools.selenium.webdriver import EyesWebDriver
+    from applitools.eyes_selenium.webdriver import EyesWebDriver
 
 _CAPTURE_CSSOM_SCRIPT = """
 function extractCssResources() {

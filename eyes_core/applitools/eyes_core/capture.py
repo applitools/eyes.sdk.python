@@ -5,14 +5,13 @@ import typing as tp
 
 from PIL import Image
 
-from applitools.core.utils import ABC, argument_guard
-from applitools.core.utils import image_utils
+from .utils import ABC, image_utils, argument_guard
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import AnyWebElement, Num
-    from ..selenium.webdriver import EyesFrame
-    from ..selenium.webelement import EyesWebElement
+    from .utils.custom_types import AnyWebElement, Num
     from .geometry import Point, Region
+    from applitools.eyes_selenium.webdriver import EyesFrame
+    from applitools.eyes_selenium.webelement import EyesWebElement
 
     T = tp.TypeVar('T', bound='EyesScreenshot')
 

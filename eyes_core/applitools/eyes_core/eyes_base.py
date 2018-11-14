@@ -3,11 +3,12 @@ from __future__ import absolute_import
 import abc
 import os
 import uuid
+import warnings
 import typing as tp
 from datetime import datetime
 
-from applitools.core.utils import general_utils, ABC, cached_property
-
+from .__version__ import __version__
+from .utils import general_utils, ABC
 from . import logger
 from .agent_connector import AgentConnector
 from .errors import EyesError, NewTestError, DiffsFoundError, TestFailedError
@@ -15,8 +16,8 @@ from .match_window_task import MatchWindowTask
 from .test_results import TestResults, TestResultsStatus
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import (ViewPort, UserInputs, AppEnvironment, MatchResult,
-                                                         RunningSession, SessionStartInfo, RegionOrElement)
+    from .utils.custom_types import (ViewPort, UserInputs, AppEnvironment, MatchResult,
+                                     RunningSession, SessionStartInfo, RegionOrElement)
     from .capture import EyesScreenshot
 
 __all__ = ('FailureReports', 'MatchLevel', 'ExactMatchSettings', 'ImageMatchSettings', 'EyesBase')
@@ -134,6 +135,7 @@ class BatchInfo(object):
 class EyesBase(ABC):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
+    BASE_AGENT_ID = "eyes.selenium.python/%s" % __version__
     DEFAULT_EYES_SERVER = 'https://eyessdk.applitools.com'
 
     def __init__(self, server_url=DEFAULT_EYES_SERVER):
@@ -331,25 +333,17 @@ class EyesBase(ABC):
         else:
             self._agent_connector.server_url = server_url
 
-    @cached_property
-    @abc.abstractmethod
-    def base_agent_id(self) -> str:
-        """
-        Must return version of SDK. (e.g. Selenium, Images) in next format:
-            "eyes.{package}.python/{lib_version}"
-        """
-
     @property
-    def full_agent_id(self):
+    def _full_agent_id(self):
+        # type: () -> tp.Text
         """
         Gets the agent id, which identifies the current library using the SDK.
 
         :return: The agent id.
         """
         if self.agent_id is None:
-            return self.base_agent_id
-        return "{0} [{1}]".format(self.agent_id, self.base_agent_id)
-
+            return self.BASE_AGENT_ID
+        return "%s [%s]" % (self.agent_id, self.BASE_AGENT_ID)
 
     def add_property(self, name, value):
         # type: (tp.Text, tp.Text) -> None
@@ -498,7 +492,7 @@ class EyesBase(ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._get_environment()
-        self._start_info = {'agentId': self.full_agent_id, 'appIdOrName': self._app_name,
+        self._start_info = {'agentId': self._full_agent_id, 'appIdOrName': self._app_name,
                             'scenarioIdOrName': self._test_name, 'batchInfo': self.batch,
                             'envName': self.baseline_name, 'environment': app_env,
                             'defaultMatchSettings': self.default_match_settings, 'verId': None,
@@ -551,18 +545,13 @@ class EyesBase(ABC):
 
         self.before_match_window()
 
-        dom_json = None
-        if self.send_dom:
-            dom_json = self.try_capture_dom()
-
         # TODO: implement MatchWIndow_ analog
         result = self._match_window_task.match_window(retry_timeout=match_timeout,
                                                       tag=tag,
                                                       user_inputs=self._user_inputs,
                                                       default_match_settings=self.default_match_settings,
                                                       target=target,
-                                                      run_once_after_wait=self._should_match_once_on_timeout,
-                                                      dom_json=dom_json)
+                                                      run_once_after_wait=self._should_match_once_on_timeout)
         self.after_match_window()
         self._handle_match_result(result, tag)
 
@@ -604,5 +593,8 @@ class EyesBase(ABC):
         """
         if dom_json is None:
             return None
-
-        return self._agent_connector.post_dom_snapshot(dom_json)
+        try:
+            return self._agent_connector.post_dom_snapshot(dom_json)
+        except Exception as e:
+            warnings.warn("Couldn't send DOM Json. Passing...\n Got next error: {}".format(e))
+            return None

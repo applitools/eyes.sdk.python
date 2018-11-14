@@ -8,14 +8,14 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 # noinspection PyProtectedMember
-from applitools.core import logger
-from applitools.core.eyes_base import EyesBase
-from applitools.core.match_window_task import MatchWindowTask
-from applitools.core.triggers import MouseTrigger, TextTrigger
-from applitools.core.errors import EyesError, TestFailedError
-from applitools.core.geometry import Region
-from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
-from applitools.core.utils import image_utils
+from applitools.eyes_core import logger
+from applitools.eyes_core.eyes_base import EyesBase
+from applitools.eyes_core.match_window_task import MatchWindowTask
+from applitools.eyes_core.triggers import MouseTrigger, TextTrigger
+from applitools.eyes_core.errors import EyesError, TestFailedError
+from applitools.eyes_core.geometry import Region
+from applitools.eyes_core.scaling import ContextBasedScaleProvider, FixedScaleProvider
+from applitools.eyes_core.utils import image_utils
 from . import eyes_selenium_utils
 from .webdriver import EyesFrame, EyesWebDriver
 from .capture import EyesWebDriverScreenshot, dom_capture
@@ -23,8 +23,8 @@ from .target import Target
 from .positioning import build_position_provider_for, StitchMode
 from .__version__ import __version__
 if tp.TYPE_CHECKING:
-    from applitools.core.scaling import ScaleProvider
-    from applitools.core.utils.custom_types import (ViewPort, AnyWebDriver, FrameReference, AnyWebElement)
+    from applitools.eyes_core.scaling import ScaleProvider
+    from applitools.eyes_core.utils.custom_types import (ViewPort, AnyWebDriver, FrameReference, AnyWebElement)
 
 
 class ScreenshotType(object):

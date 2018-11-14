@@ -1,4 +1,4 @@
-Eyes Selenium Python SDK
+Eyes Core Python SDK
 =============
 
 Applitools Eyes Core SDK For Python
@@ -7,7 +7,7 @@ Applitools Eyes Core SDK For Python
 Installation
 ------------
 
-Install the eyes-selenium SDK.
+Install the eyes-core SDK.
 
 ::
 

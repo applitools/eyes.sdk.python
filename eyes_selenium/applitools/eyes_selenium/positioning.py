@@ -6,11 +6,11 @@ import typing as tp
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.core import logger, EyesError, Point
-from applitools.core.utils import ABC
+from applitools.eyes_core import logger, EyesError, Point
+from applitools.eyes_core.utils import ABC
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
+    from applitools.eyes_core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
 
 
 class StitchMode(object):
