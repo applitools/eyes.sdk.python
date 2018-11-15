@@ -1,0 +1,2 @@
+class Target(object):
+    pass
