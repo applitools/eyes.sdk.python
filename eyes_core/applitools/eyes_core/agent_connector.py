@@ -5,8 +5,9 @@ import typing as tp
 
 import requests
 from requests.packages import urllib3
-from applitools.eyes_core.utils import general_utils
-from applitools.eyes_core.utils.compat import urljoin, gzip_compress
+
+from .utils import general_utils
+from .utils.compat import urljoin, gzip_compress  # type: ignore
 from . import logger
 from .test_results import TestResults
 

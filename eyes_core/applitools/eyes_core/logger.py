@@ -3,24 +3,31 @@ Logs handling.
 """
 from __future__ import absolute_import
 
+import os
 import sys
 import logging
+import warnings
 import functools
 import typing as tp
-import warnings
+
+from applitools.eyes_core.utils.compat import ABC
+
 
 _DEFAULT_EYES_LOGGER_NAME = 'eyes'
 _DEFAULT_EYES_FORMATTER = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+_DEFAULT_LOGGER_LEVEL = int(os.environ.get('LOGGER_LEVEL', logging.INFO))
+_DEBUG_SCREENSHOT_PREFIX = os.environ.get('DEBUG_SCREENSHOT_PREFIX', 'screenshot_')
+_DEBUG_SCREENSHOT_PATH = os.environ.get('DEBUG_SCREENSHOT_PATH', '.')
 
 __all__ = ('StdoutLogger', 'FileLogger', 'NullLogger')
 
 
-class _Logger(object):
+class _Logger(ABC):
     """
     Simple logger. Supports only info and debug.
     """
 
-    def __init__(self, name=__name__, level=logging.DEBUG, handler_factory=lambda: None,
+    def __init__(self, name=__name__, level=_DEFAULT_LOGGER_LEVEL, handler_factory=lambda: None,
                  formatter=None):
         # type: (tp.Text, int, tp.Callable, logging.Formatter) -> None
         """
@@ -90,23 +97,13 @@ class _Logger(object):
         if self._logger:
             self._logger.debug(msg)
 
-    def warning(self, msg):
-        # type: (tp.Text) -> None
-        """
-        Writes warning level msg to the logger.
-
-        :param msg: The message that will be written to the logger.
-        """
-        if self._logger:
-            self._logger.warning(msg)
-
 
 class StdoutLogger(_Logger):
     """
     A simple logger class for printing to STDOUT.
     """
 
-    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=logging.DEBUG):
+    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
         # type: (tp.Text, int) -> None
         """
         Ctor.
@@ -124,7 +121,7 @@ class FileLogger(_Logger):
     """
 
     def __init__(self, filename="eyes.log", mode='a', encoding=None, delay=0,
-                 name=_DEFAULT_EYES_LOGGER_NAME, level=logging.DEBUG):
+                 name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
         """
         Ctor.
 
@@ -144,7 +141,7 @@ class NullLogger(_Logger):
     A simple logger class which does nothing (log messages are ignored).
     """
 
-    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=logging.DEBUG):
+    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
         """
         Ctor.
 
@@ -155,9 +152,9 @@ class NullLogger(_Logger):
 
 
 # This will be set by the user.
-_logger_to_use = None
+_logger_to_use = None  # type: tp.Optional[_Logger]
 # Holds the actual logger after open is called.
-_logger = None
+_logger = None  # type: tp.Optional[_Logger]
 
 
 def set_logger(logger=None):
@@ -222,8 +219,7 @@ def warning(msg):
 
     :param msg: The message that will be written to the log.
     """
-    if _logger is not None:
-        _logger.warning(msg)
+    warnings.warn(msg)
 
 
 def deprecation(msg):

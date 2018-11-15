@@ -54,7 +54,8 @@ setup(
     keywords='applitools eyes eyes_selenium',
     install_requires=[
         'eyes_core=={}'.format(get_version()),
-        'tinycss2>=0.6.1'
+        'tinycss2>=0.6.1',
+        'Pillow>=5.0.0',
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={

@@ -2,14 +2,13 @@ from __future__ import absolute_import
 
 import abc
 import os
-import uuid
-import warnings
 import typing as tp
-from datetime import datetime
 
-from .__version__ import __version__
-from .utils import general_utils, ABC
 from . import logger
+from .__version__ import __version__
+from .utils import ABC
+from .match import ImageMatchSettings
+from .metadata import BatchInfo
 from .agent_connector import AgentConnector
 from .errors import EyesError, NewTestError, DiffsFoundError, TestFailedError
 from .match_window_task import MatchWindowTask
@@ -20,7 +19,7 @@ if tp.TYPE_CHECKING:
                                      RunningSession, SessionStartInfo, RegionOrElement)
     from .capture import EyesScreenshot
 
-__all__ = ('FailureReports', 'MatchLevel', 'ExactMatchSettings', 'ImageMatchSettings', 'EyesBase')
+__all__ = ('FailureReports', 'EyesBase')
 
 
 class FailureReports(object):
@@ -29,107 +28,6 @@ class FailureReports(object):
     """
     IMMEDIATE = "Immediate"
     ON_CLOSE = "OnClose"
-
-
-class MatchLevel(object):
-    """
-    The extent in which two images match (or are expected to match).
-    """
-    NONE = "None"
-    LEGACY_LAYOUT = "Layout1"
-    LAYOUT = "Layout2"
-    LAYOUT2 = "Layout2"
-    CONTENT = "Content"
-    STRICT = "Strict"
-    EXACT = "Exact"
-
-
-class ExactMatchSettings(object):
-    """
-    Encapsulates settings for the "Exact" match level.
-    """
-
-    def __init__(self, min_diff_intensity=0, min_diff_width=0, min_diff_height=0, match_threshold=0.0):
-        # type: (int, int, int, float) -> None
-        """
-        Ctor.
-
-        :param min_diff_intensity: Minimal non-ignorable pixel intensity difference.
-        :param min_diff_width: Minimal non-ignorable diff region width.
-        :param min_diff_height: Minimal non-ignorable diff region height.
-        :param match_threshold: The ratio of differing pixels above which images are considered mismatching.
-        """
-        self.min_diff_intensity = min_diff_intensity
-        self.min_diff_width = min_diff_width
-        self.min_diff_height = min_diff_height
-        self.match_threshold = match_threshold
-
-    def __getstate__(self):
-        return dict(minDiffIntensity=self.min_diff_intensity,
-                    minDiffWidth=self.min_diff_width,
-                    minDiffHeight=self.min_diff_height,
-                    matchThreshold=self.match_threshold)
-
-    # This is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create ExactMatchSettings instance from dict!')
-
-    def __str__(self):
-        return "[min diff intensity: %d, min diff width: %d, min diff height: %d, match threshold: %f]" % (
-            self.min_diff_intensity, self.min_diff_width, self.min_diff_height, self.match_threshold)
-
-
-class ImageMatchSettings(object):
-    """
-    Encapsulates match settings for the a session.
-    """
-
-    def __init__(self, match_level=MatchLevel.STRICT, exact_settings=None):
-        # type: (tp.Text, tp.Optional[ExactMatchSettings]) -> None
-        """
-        :param match_level: The "strictness" level of the match.
-        :param exact_settings: Parameter for fine tuning the match when "Exact" match level is used.
-        """
-        self.match_level = match_level
-        self.exact_settings = exact_settings
-
-    def __getstate__(self):
-        return dict(matchLevel=self.match_level, exact=self.exact_settings)
-
-    # This is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create ImageMatchSettings instance from dict!')
-
-    def __str__(self):
-        return "[Match level: %s, Exact match settings: %s]" % (self.match_level, self.exact_settings)
-
-
-class BatchInfo(object):
-    """
-    A batch of tests.
-    """
-
-    def __init__(self, name=None, started_at=None):
-        # type: (tp.Optional[tp.Text], tp.Optional[datetime]) -> None
-        if started_at is None:
-            started_at = datetime.now(general_utils.UTC)
-
-        self.name = name if name else os.environ.get('APPLITOOLS_BATCH_NAME', None)
-        self.started_at = started_at
-        self.id_ = os.environ.get('APPLITOOLS_BATCH_ID', str(uuid.uuid4()))
-
-    def __getstate__(self):
-        return dict(name=self.name, startedAt=self.started_at.isoformat(), id=self.id_)
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create BatchInfo instance from dict!')
-
-    def __str__(self):
-        return "%s - %s - %s" % (self.name, self.started_at, self.id_)
 
 
 class EyesBase(ABC):
@@ -157,6 +55,7 @@ class EyesBase(ABC):
         self._test_name = None  # type: tp.Optional[tp.Text]
         self._user_inputs = []  # type: UserInputs
         self._region_to_check = None  # type: tp.Optional[RegionOrElement]
+        self._viewport_size = None  # type: ViewPort
 
         # key-value pairs to be associated with the test. Can be used for filtering later.
         self._properties = []  # type: tp.List
@@ -454,6 +353,12 @@ class EyesBase(ABC):
         finally:
             logger.close()
 
+    def before_open(self):
+        pass
+
+    def after_open(self):
+        pass
+
     def open_base(self, app_name, test_name, viewport_size=None):
         # type: (tp.Text, tp.Text, tp.Optional[ViewPort]) -> None
         """
@@ -484,10 +389,19 @@ class EyesBase(ABC):
         if self.is_open():
             self.abort_if_not_closed()
             raise EyesError('a test is already running')
+
+        self.before_open()
+
         self._app_name = app_name
         self._test_name = test_name
         self._viewport_size = viewport_size
+
+        if viewport_size is not None:
+            self._ensure_running_session()
+
         self._is_open = True
+
+        self.after_open()
 
     def _create_start_info(self):
         # type: () -> None
@@ -525,14 +439,23 @@ class EyesBase(ABC):
         self._user_inputs = []  # type: UserInputs
 
     def _ensure_running_session(self):
-        if not self.is_open():
-            raise EyesError('Eyes not open!')
+        if self._running_session:
+            logger.debug('Session already running.')
+            return
+        self._start_session()
+        self._match_window_task = MatchWindowTask(self, self._agent_connector,
+                                                  self._running_session,
+                                                  self.match_timeout)
 
-        if not self._running_session:
-            self._start_session()
-            self._match_window_task = MatchWindowTask(self, self._agent_connector,
-                                                      self._running_session,
-                                                      self.match_timeout)
+    def before_match_window(self):
+        """
+        Allow to add custom behavior after receiving response from the server
+        """
+
+    def after_match_window(self):
+        """
+        Allow to add custom behavior before sending data to the server
+        """
 
     def _check_window_base(self, tag=None, match_timeout=-1, target=None):
         if self.is_disabled:
@@ -576,16 +499,6 @@ class EyesBase(ABC):
         Returns the string with DOM of the current page in the prepared format or empty string
         """
 
-    def after_match_window(self):
-        """
-        Allow to add custom behavior before sending data to the server
-        """
-
-    def before_match_window(self):
-        """
-        Allow to add custom behavior after receiving response from the server
-        """
-
     def try_post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
         """
@@ -596,5 +509,5 @@ class EyesBase(ABC):
         try:
             return self._agent_connector.post_dom_snapshot(dom_json)
         except Exception as e:
-            warnings.warn("Couldn't send DOM Json. Passing...\n Got next error: {}".format(e))
+            logger.warning("Couldn't send DOM Json. Passing...\n Got next error: {}".format(e))
             return None

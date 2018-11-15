@@ -16,6 +16,7 @@ class Point(object):
     """
     A point with the coordinates (x,y).
     """
+    __slots__ = ('x', 'y')
 
     def __init__(self, x=0, y=0):
         # type: (float, float) -> None
@@ -23,7 +24,8 @@ class Point(object):
         self.y = int(round(y))
 
     def __getstate__(self):
-        return {"x": self.x, "y": self.y}
+        return OrderedDict([("x", self.x),
+                            ("y", self.y)])
 
     # Required is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
@@ -112,6 +114,11 @@ class Point(object):
         self.y = self.y + dy
         return self
 
+    def offset_by_location(self, location):
+        # type: (Point) -> Point
+        self.offset(location.x, location.y)
+        return self
+
     def offset_negative(self, dx, dy):
         # type: (int, int) -> Point
         self.x -= dx
@@ -164,6 +171,7 @@ class Region(object):
     """
     A rectangle identified by left,top, width, height.
     """
+    __slots__ = ('left', 'top', 'width', 'height')
 
     def __init__(self, left=0, top=0, width=0, height=0):
         # type: (float, float, float, float) -> None
@@ -301,7 +309,7 @@ class Region(object):
         :return: True if the point is inside the rectangle. Otherwise False.
         """
         x, y = pt.as_tuple()
-        return (self.left <= x <= self.right and
+        return (self.left <= x <= self.right and  # noqa
                 self.top <= y <= self.bottom)
 
     def overlaps(self, other):

@@ -1,16 +1,15 @@
 from __future__ import absolute_import
 
-import abc
 import re
 import typing as tp
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.eyes_core import logger, EyesError, Point
-from applitools.eyes_core.utils import ABC
+from applitools.eyes_core import logger, EyesError, Point, PositionProvider
 
 if tp.TYPE_CHECKING:
     from applitools.eyes_core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
+    from . import EyesWebDriver
 
 
 class StitchMode(object):
@@ -21,7 +20,7 @@ class StitchMode(object):
     CSS = "CSS"
 
 
-class PositionProvider(ABC):
+class SeleniumPositionProvider(PositionProvider):
     """ Encapsulates page/element positioning """
     _JS_GET_CONTENT_ENTIRE_SIZE = """
         var scrollWidth = document.documentElement.scrollWidth;
@@ -38,30 +37,13 @@ class PositionProvider(ABC):
     """
 
     def __init__(self, driver):
-        # type: (AnyWebDriver) -> None
+        # type: (EyesWebDriver) -> None
+        super(SeleniumPositionProvider, self).__init__()
         self._driver = driver
-        self._states = []  # type: tp.List[Point]
 
     def _execute_script(self, script):
         # type: (tp.Text) -> tp.List[int]
         return self._driver.execute_script(script)
-
-    @abc.abstractmethod
-    def get_current_position(self):
-        # type: () -> tp.Optional[Point]
-        """
-        :return: The current position, or `None` if position is not available.
-        """
-
-    @abc.abstractmethod
-    def set_position(self, location):
-        # type: (Point) -> None
-        """
-        Go to the specified location.
-
-        :param location: The position to set
-        :return:
-        """
 
     def get_entire_size(self):
         # type: () -> ViewPort
@@ -74,20 +56,8 @@ class PositionProvider(ABC):
             raise EyesError('Failed to extract entire size!')
         return dict(width=width, height=height)
 
-    def push_state(self):
-        """
-        Adds the current position to the states list.
-        """
-        self._states.append(self.get_current_position())
 
-    def pop_state(self):
-        """
-        Sets the position to be the last position added to the states list.
-        """
-        self.set_position(self._states.pop())
-
-
-class ScrollPositionProvider(PositionProvider):
+class ScrollPositionProvider(SeleniumPositionProvider):
     _JS_GET_CURRENT_SCROLL_POSITION = """
         var doc = document.documentElement;
         var x = window.scrollX || ((window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0));
@@ -109,7 +79,7 @@ class ScrollPositionProvider(PositionProvider):
         return Point(x, y)
 
 
-class CSSTranslatePositionProvider(PositionProvider):
+class CSSTranslatePositionProvider(SeleniumPositionProvider):
     _JS_TRANSFORM_KEYS = ["transform", "-webkit-transform"]
 
     def __init__(self, driver):
@@ -169,7 +139,7 @@ class CSSTranslatePositionProvider(PositionProvider):
         self._states.append(self._current_position)
 
 
-class ElementPositionProvider(PositionProvider):
+class ElementPositionProvider(SeleniumPositionProvider):
 
     def __init__(self, driver, element):
         # type: (AnyWebDriver, tp.Optional[AnyWebElement]) -> None
