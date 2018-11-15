@@ -65,7 +65,7 @@ class Eyes(EyesBase):
 
     @property
     def base_agent_id(self):
-        return "eyes.selenium.python/{version}".format(version=__version__)
+        return "eyes_selenium.python/{version}".format(version=__version__)
 
     @property
     def stitch_mode(self):

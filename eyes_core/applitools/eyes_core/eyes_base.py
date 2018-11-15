@@ -33,7 +33,6 @@ class FailureReports(object):
 class EyesBase(ABC):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
-    BASE_AGENT_ID = "eyes.selenium.python/%s" % __version__
     DEFAULT_EYES_SERVER = 'https://eyessdk.applitools.com'
 
     def __init__(self, server_url=DEFAULT_EYES_SERVER):
@@ -232,17 +231,24 @@ class EyesBase(ABC):
         else:
             self._agent_connector.server_url = server_url
 
+    @cached_property
+    @abc.abstractmethod
+    def base_agent_id(self) -> str:
+        """
+        Must return version of SDK. (e.g. Selenium, Images) in next format:
+            "eyes.{package}.python/{lib_version}"
+        """
+
     @property
-    def _full_agent_id(self):
-        # type: () -> tp.Text
+    def full_agent_id(self):
         """
         Gets the agent id, which identifies the current library using the SDK.
 
         :return: The agent id.
         """
         if self.agent_id is None:
-            return self.BASE_AGENT_ID
-        return "%s [%s]" % (self.agent_id, self.BASE_AGENT_ID)
+            return self.base_agent_id
+        return "{0} [{1}]".format(self.agent_id, self.base_agent_id)
 
     def add_property(self, name, value):
         # type: (tp.Text, tp.Text) -> None
