@@ -6,5 +6,4 @@ from . import __version__
 class Eyes(EyesBase):
     @property
     def base_agent_id(self):
-        return "eyes_images.python/{version}".format(version=__version__)
-
+        return "eyes.images.python/{version}".format(version=__version__)

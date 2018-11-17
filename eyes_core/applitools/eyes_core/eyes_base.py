@@ -5,7 +5,6 @@ import os
 import typing as tp
 
 from . import logger
-from .__version__ import __version__
 from .utils import ABC
 from .match import ImageMatchSettings
 from .metadata import BatchInfo
@@ -105,8 +104,9 @@ class EyesBase(ABC):
         # If true, we will send full DOM to the server for analyzing
         self.send_dom = False
 
+    @property
     @abc.abstractmethod
-    def get_title(self):
+    def title(self):
         # type: () -> tp.Text
         """
         Returns the title of the window of the AUT, or empty string if the title is not available.
@@ -122,7 +122,7 @@ class EyesBase(ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def set_viewport_size(driver, viewport_size):
+    def set_viewport_size(viewport_size):
         pass
 
     @abc.abstractmethod
@@ -231,7 +231,7 @@ class EyesBase(ABC):
         else:
             self._agent_connector.server_url = server_url
 
-    @cached_property
+    @property
     @abc.abstractmethod
     def base_agent_id(self) -> str:
         """
@@ -412,12 +412,12 @@ class EyesBase(ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._get_environment()
-        self._start_info = {'agentId': self._full_agent_id, 'appIdOrName': self._app_name,
-                            'scenarioIdOrName': self._test_name, 'batchInfo': self.batch,
-                            'envName': self.baseline_name, 'environment': app_env,
+        self._start_info = {'agentId':              self._full_agent_id, 'appIdOrName': self._app_name,
+                            'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
+                            'envName':              self.baseline_name, 'environment': app_env,
                             'defaultMatchSettings': self.default_match_settings, 'verId': None,
-                            'branchName': self.branch_name, 'parentBranchName': self.parent_branch_name,
-                            'properties': self._properties}
+                            'branchName':           self.branch_name, 'parentBranchName': self.parent_branch_name,
+                            'properties':           self._properties}
 
     def _start_session(self):
         # type: () -> None

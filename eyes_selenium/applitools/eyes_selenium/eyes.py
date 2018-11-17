@@ -65,7 +65,7 @@ class Eyes(EyesBase):
 
     @property
     def base_agent_id(self):
-        return "eyes_selenium.python/{version}".format(version=__version__)
+        return "eyes.selenium.python/{version}".format(version=__version__)
 
     @property
     def stitch_mode(self):
@@ -175,7 +175,8 @@ class Eyes(EyesBase):
             # Going back to the frame we started at
             self._driver.switch_to.frames(original_frame_chain)
 
-    def get_title(self):
+    @property
+    def title(self):
         if self._should_get_title:
             # noinspection PyBroadException
             try:
