@@ -25,8 +25,8 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=''):
 @task(pre=[clean])
 def dist(c, core=None,
          selenium=None, images=None, prod=False):
-    packages = list(_package_resolver(core, selenium, images,
-                                      full_path=True, path_as_str=True))
+    packages = list(_packages_resolver(core, selenium, images,
+                                       full_path=True, path_as_str=True))
     dest = 'pypi' if prod else 'test'
     for pack_path in packages:
         with c.cd(pack_path):
@@ -56,8 +56,8 @@ def install_requirements(c):
     c.run("pip install {}".format(' '.join(requires)))
 
 
-def _package_resolver(core=None, selenium=None, images=None,
-                      full_path=False, path_as_str=False):
+def _packages_resolver(core=None, selenium=None, images=None,
+                       full_path=False, path_as_str=False):
     packages = []
     core_pkg, selenium_pkg, images_pkg = 'eyes_core', 'eyes_selenium', 'eyes_images'
 
@@ -83,13 +83,14 @@ def _package_resolver(core=None, selenium=None, images=None,
 @task
 def install_packages(c, core=None,
                      selenium=None, images=None):
-    packages = _package_resolver(core, selenium, images,
-                                 full_path=True, path_as_str=True)
-    c.run("pip install -U {}".format(' '.join(packages)))
+    packages = _packages_resolver(core, selenium, images,
+                                  full_path=True, path_as_str=True)
+    for pack in packages:
+        c.run("pip install -U -e {}".format(pack))
 
 
 @task
 def uninstall_packages(c, core=None,
                        selenium=None, images=None):
-    packages = _package_resolver(core, selenium, images)
+    packages = _packages_resolver(core, selenium, images)
     c.run("pip uninstall {}".format(' '.join(packages)))

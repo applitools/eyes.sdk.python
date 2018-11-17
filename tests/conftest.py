@@ -12,12 +12,17 @@ Example of usage:
 """
 import os
 import sys
+import typing as tp
+from collections import namedtuple
+from itertools import chain
 
 import pytest
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
+from selenium.webdriver import FirefoxOptions
+from selenium.webdriver import ChromeOptions
 
 from applitools.eyes_core.__version__ import __version__
 from applitools.eyes_core import logger, StdoutLogger
@@ -25,18 +30,13 @@ from applitools.eyes_core.utils import iteritems
 from applitools.eyes_selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 
 logger.set_logger(StdoutLogger())
-from collections import namedtuple
-from itertools import chain
-
-from selenium.webdriver import FirefoxOptions
-from selenium.webdriver import ChromeOptions
 
 
 class Platform(namedtuple('Platform', 'name version browsers extra')):
     def platform_capabilities(self):
+        # type: () -> tp.Optional[tp.Iterable[dict]]
         """
         Get capabilities for mobile platform
-        :rtype: collections.Iterable[dict]
         """
         if not self.is_appium_based:
             return
@@ -47,6 +47,7 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         return caps
 
     def browsers_capabilities(self, headless=False):
+        # type: (bool) -> tp.Generator[dict]
         """
         Get all browsers capabilities for the platform
         :rtype: collections.Iterable[dict]
@@ -55,15 +56,13 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
             yield self.get_browser_capabilities(browser_name, headless)
 
     def get_browser_capabilities(self, browser_name, headless=False):
+        # type: (tp.Text, bool) -> tp.Optional[dict]
         """
         Get browser capabilities for specific browser with included options inside
 
         :param browser_name: browser name in lowercase
-        :type browser_name: str
         :param headless: run browser without gui
-        :type headless: bool
         :return: capabilities for specific browser
-        :rtype: dict
         """
         if self.is_appium_based:
             return
@@ -81,8 +80,8 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         browser_caps = options.to_capabilities() if options else {}
         browser_name, browser_version = [b for b in self.browsers if browser_name.lower() == b[0].lower()][0]
         browser_caps.update({'browserName': browser_name,
-                             'version': browser_version,
-                             'platform': self.full_name})
+                             'version':     browser_version,
+                             'platform':    self.full_name})
         if isinstance(self.extra, dict):
             browser_caps.update(self.extra)
         return browser_caps
@@ -108,16 +107,16 @@ SUPPORTED_PLATFORMS = [
     Platform(name='macOS', version='10.13', browsers=COMMON_BROWSERS + [('safari', 'latest')], extra=None),
 
     Platform(name='iPhone', version='10.0', browsers=[], extra={
-        "appiumVersion": "1.7.2",
-        "deviceName": "Iphone Emulator",
+        "appiumVersion":     "1.7.2",
+        "deviceName":        "Iphone Emulator",
         "deviceOrientation": "portrait",
-        "browserName": "Safari",
+        "browserName":       "Safari",
     }),
     Platform(name='Android', version='6.0', browsers=[], extra={
-        "appiumVersion": "1.7.2",
-        "deviceName": "Android Emulator",
+        "appiumVersion":     "1.7.2",
+        "deviceName":        "Android Emulator",
         "deviceOrientation": "portrait",
-        "browserName": "Browser",
+        "browserName":       "Browser",
     })
 ]
 SUPPORTED_PLATFORMS_DICT = {platform.full_name: platform for platform in SUPPORTED_PLATFORMS}
@@ -232,9 +231,9 @@ def pytest_addoption(parser):
 def _get_capabilities(platform_name=None, browser_name=None, headless=False):
     if platform_name is None:
         sys2platform_name = {
-            'linux': 'Linux',
+            'linux':  'Linux',
             'darwin': 'macOS 10.13',
-            'win32': 'Windows 10'
+            'win32':  'Windows 10'
         }
         platform_name = sys2platform_name[sys.platform]
     platform = SUPPORTED_PLATFORMS_DICT[platform_name]
