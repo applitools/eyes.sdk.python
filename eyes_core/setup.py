@@ -52,15 +52,16 @@ setup(
     ],
     keywords='applitools eyes eyes_core',
     install_requires=[
+        'attrs>=18',
         'requests>=2.1.0',
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={
-        '': ['README.rst', 'LICENSE'],
+        '':          ['README.rst', 'LICENSE'],
         'eyes_core': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source': 'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_core/applitools/eyes_core',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_core/applitools/eyes_core',
     },
 )
