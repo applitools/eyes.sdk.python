@@ -38,3 +38,5 @@ For smother development experience install Invoke for task run first
     inv install-requirements  # install libs required for development
     inv install-packages  # for installing all packages
     inv install-packages  -core # install only core package, could be core|selenium]images
+    inv dist -core  # publish eyes_core to test.pypi.org
+    inv dist -core  -prod # publish eyes_core to pypi.org
