@@ -18,9 +18,6 @@ from itertools import chain
 
 import pytest
 
-from selenium.webdriver import FirefoxOptions
-from selenium.webdriver import ChromeOptions
-
 from applitools.eyes_core.__version__ import __version__
 from applitools.eyes_core import logger, StdoutLogger
 from applitools.eyes_core.utils import iteritems
@@ -62,6 +59,9 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         """
         if self.is_appium_based:
             return
+
+        from selenium.webdriver import FirefoxOptions
+        from selenium.webdriver import ChromeOptions
 
         options = None
         if 'firefox' == browser_name:

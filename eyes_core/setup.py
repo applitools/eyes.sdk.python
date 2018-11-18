@@ -52,6 +52,7 @@ setup(
     keywords='applitools eyes eyes_core',
     install_requires=[
         'attrs>=18',
+        'Pillow>=5.0.0',
         'requests>=2.1.0',
         'typing>=3.5.2; python_version<="3.4"',
     ],
