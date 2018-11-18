@@ -6,17 +6,16 @@ from applitools.eyes_core.errors import CoordinatesTypeConversionError
 from applitools.eyes_core.metadata import CoordinatesType
 
 
-@attr.s
 class EyesImagesScreenshot(EyesScreenshot):
     """
     Encapsulates a screenshot taken by the images SDK.
     """
-    _bounds = attr.ib(init=False)  # type: Region
-    location = attr.ib(default=Point.create_top_left())  # type: Point
 
-    def __attrs_post_init__(self):
-        self._bounds = Region.from_location_size(self.location, dict(width=self._image.width,
-                                                                     height=self._image.height))
+    def __init__(self, image, location=Point.create_top_left()):
+        super(EyesImagesScreenshot, self).__init__(image)
+        self._location = location
+        self._bounds = Region.from_location_size(location, dict(width=self._image.width,
+                                                                height=self._image.height))
 
     def sub_screenshot(self, region, throw_if_clipped=False):
         # type: (Region, bool) -> Region
@@ -24,8 +23,8 @@ class EyesImagesScreenshot(EyesScreenshot):
 
         sub_screenshot_region = self.intersected_region(region, CoordinatesType.SCREENSHOT_AS_IS)
 
-        if (sub_screenshot_region.is_size_empty and (
-                throw_if_clipped or not sub_screenshot_region.size == region.size)):
+        if (sub_screenshot_region.is_size_empty
+            and (throw_if_clipped or not sub_screenshot_region.size == region.size)):
             raise OutOfBoundsError("Region [{}] is out of screenshot bounds [{}]".format(region, self._bounds))
 
         sub_screenshot_image = image_utils.get_image_part(self._image, sub_screenshot_region)

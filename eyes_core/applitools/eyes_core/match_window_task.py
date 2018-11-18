@@ -94,7 +94,6 @@ class MatchWindowTask(object):
 
     @staticmethod
     def _get_dynamic_regions(target, eyes_screenshot):
-        # type: (tp.Optional[Target], EyesScreenshot) -> tp.Dict[str, tp.List[Region]]
         ignore = []  # type: tp.List[Region]
         floating = []  # type: tp.List[Region]
         if target is not None:
@@ -122,7 +121,7 @@ class MatchWindowTask(object):
         title = self._eyes.title
         # TODO: Refactor this
         if hasattr(self._eyes, 'hide_scrollbars_if_needed'):
-            with self._eyes.hide_scrollbars_if_needed():
+            with self._eyes.hide_scrollbars_if_needed():  # type: ignore
                 self._screenshot = self._eyes.get_screenshot(hide_scrollbars_called=True)
         else:
             self._screenshot = self._eyes.get_screenshot()

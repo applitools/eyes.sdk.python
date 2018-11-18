@@ -1,10 +1,9 @@
 import os
 import re
 import codecs
-
 from os import path
-from setuptools import setup
 
+from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:

@@ -2,6 +2,7 @@ import abc
 import typing as tp
 
 import attr
+
 from applitools.eyes_core import Point
 from applitools.eyes_core.utils.compat import ABC
 

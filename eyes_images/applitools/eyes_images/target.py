@@ -139,7 +139,7 @@ class Target(object):
 
     def region(self, image_or_path, rect):
         # type: (tp.Union[Image.Image, tp.Text], Region) -> Target
-        target = Target.image(image_or_path)
+        target = self.image(image_or_path)
         target._target_region = rect
         return target
 
@@ -149,12 +149,12 @@ def image_dispatch(image):
     raise TypeError('Not supported type.')
 
 
-@image_dispatch.register(Image.Image)
+@image_dispatch.register(Image.Image)  # type: ignore
 def _image_dispatch(image):
     return image
 
 
-@image_dispatch.register(tp.Text)
+@image_dispatch.register(tp.Text)  # type: ignore
 @image_dispatch.register(str)
 def _image_dispatch(image_path):
     image = image_utils.image_from_file(image_path)

@@ -1,7 +1,8 @@
 import typing as tp
 
-from applitools.eyes_core import EyesBase, logger, EyesError
+from PIL import Image
 
+from applitools.eyes_core import EyesBase, logger, EyesError
 from .__version__ import __version__
 from .target import Target
 from .capture import EyesImagesScreenshot
@@ -31,9 +32,6 @@ class Eyes(EyesBase):
 
     def _get_inferred_environment(self):
         return self._inferred
-
-    def _get_environment(self):
-        return {}
 
     def get_viewport_size(self):
         return self._viewport_size
@@ -86,7 +84,7 @@ class Eyes(EyesBase):
             self.abort_if_not_closed()
             raise EyesError('you must call open() before checking')
 
-        image = target._image
+        image = target._image  # type: Image.Image
         self._screenshot = EyesImagesScreenshot(image)
         if not self._viewport_size:
             self.set_viewport_size(dict(width=image.width, height=image.height))

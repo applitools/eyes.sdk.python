@@ -1,8 +1,7 @@
 import uuid
-from datetime import datetime
-
 import os
 import typing as tp
+from datetime import datetime
 
 from .errors import EyesError
 from .utils import general_utils

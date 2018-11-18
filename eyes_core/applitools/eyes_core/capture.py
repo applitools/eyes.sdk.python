@@ -57,7 +57,7 @@ class EyesScreenshot(ABC):
     @property
     def image_region(self):
         # type: () -> Region
-        return Region(0, 0, self.image.width, self.image.height, CoordinatesType.SCREENSHOT_AS_IS)
+        return Region(0, 0, self._image.width, self._image.height, CoordinatesType.SCREENSHOT_AS_IS)
 
     @staticmethod
     def from_region(region):

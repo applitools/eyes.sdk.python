@@ -175,12 +175,12 @@ class Region(object):
     __slots__ = ('left', 'top', 'width', 'height', 'coordinates_type')
 
     def __init__(self, left=0, top=0, width=0, height=0, coordinates_type=CoordinatesType.SCREENSHOT_AS_IS):
-        # type: (float, float, float, float, CoordinatesType) -> None
+        # type: (float, float, float, float, tp.Text) -> None
         self.left = int(round(left))
         self.top = int(round(top))
         self.width = int(round(width))
         self.height = int(round(height))
-        self.coordinates_type = coordinates_type  # type: CoordinatesType
+        self.coordinates_type = coordinates_type
 
     def __getstate__(self):
         return OrderedDict([("top", self.top), ("left", self.left), ("width", self.width),
