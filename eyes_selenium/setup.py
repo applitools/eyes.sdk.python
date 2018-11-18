@@ -55,15 +55,16 @@ setup(
     install_requires=[
         'eyes_core=={}'.format(get_version()),
         'tinycss2>=0.6.1',
+        'selenium>=2.53.0',
         'Pillow>=5.0.0',
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={
-        '': ['README.rst', 'LICENSE'],
+        '':              ['README.rst', 'LICENSE'],
         'eyes_selenium': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source': 'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_selenium/applitools/eyes_core',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_selenium/applitools/eyes_core',
     },
 )
