@@ -9,7 +9,7 @@ here = path.abspath(path.dirname(__file__))
 
 
 def test_check_image(eyes):
-    eyes.open('eyes_images', 'TestCheckImage')
+    eyes.open('eyes_images', 'TestCheckImage', dimension=dict(width=100, height=400))
     eyes.check_image(path.join(here, 'resources/minions-800x500.jpg'))
     eyes.close()
 

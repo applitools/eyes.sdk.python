@@ -18,8 +18,8 @@ class Eyes(EyesBase):
     @property
     def _full_agent_id(self):
         if self.agent_id is None:
-            return self.BASE_AGENT_ID
-        return "%s [%s]" % (self.agent_id, self.BASE_AGENT_ID)
+            return self.base_agent_id
+        return "%s [%s]" % (self.agent_id, self.base_agent_id)
 
     @property
     def base_agent_id(self):
