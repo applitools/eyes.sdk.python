@@ -113,7 +113,7 @@ class EyesBase(ABC):
         """
 
     @abc.abstractmethod
-    def get_screenshot(self):
+    def get_screenshot(self, **kwargs):
         pass
 
     @abc.abstractmethod
@@ -412,7 +412,7 @@ class EyesBase(ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._get_environment()
-        self._start_info = {'agentId':              self._full_agent_id, 'appIdOrName': self._app_name,
+        self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._app_name,
                             'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
                             'envName':              self.baseline_name, 'environment': app_env,
                             'defaultMatchSettings': self.default_match_settings, 'verId': None,
@@ -483,6 +483,7 @@ class EyesBase(ABC):
                                                       run_once_after_wait=self._should_match_once_on_timeout)
         self.after_match_window()
         self._handle_match_result(result, tag)
+        return result
 
     def _handle_match_result(self, result, tag):
         # type: (MatchResult, tp.Text) -> None

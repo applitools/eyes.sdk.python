@@ -3,6 +3,7 @@ General purpose utilities.
 """
 from __future__ import absolute_import
 
+import itertools
 import json
 import time
 import types
@@ -13,7 +14,7 @@ from applitools.eyes_core import logger
 from .compat import urlparse
 
 if tp.TYPE_CHECKING:
-    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdrivetr.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
     from selenium.webdriver.remote.switch_to import SwitchTo
 

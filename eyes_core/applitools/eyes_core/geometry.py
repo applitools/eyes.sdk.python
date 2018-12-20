@@ -4,6 +4,7 @@ import math
 import typing as tp
 from collections import OrderedDict
 
+from .metadata import CoordinatesType
 from .errors import EyesError
 
 if tp.TYPE_CHECKING:
@@ -171,18 +172,19 @@ class Region(object):
     """
     A rectangle identified by left,top, width, height.
     """
-    __slots__ = ('left', 'top', 'width', 'height')
+    __slots__ = ('left', 'top', 'width', 'height', 'coordinates_type')
 
-    def __init__(self, left=0, top=0, width=0, height=0):
-        # type: (float, float, float, float) -> None
+    def __init__(self, left=0, top=0, width=0, height=0, coordinates_type=CoordinatesType.SCREENSHOT_AS_IS):
+        # type: (float, float, float, float, tp.Text) -> None
         self.left = int(round(left))
         self.top = int(round(top))
         self.width = int(round(width))
         self.height = int(round(height))
+        self.coordinates_type = coordinates_type
 
     def __getstate__(self):
         return OrderedDict([("top", self.top), ("left", self.left), ("width", self.width),
-                            ("height", self.height)])
+                            ("height", self.height), ("coordinatesType", self.coordinates_type)])
 
     # Required is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
@@ -194,8 +196,12 @@ class Region(object):
         return cls(0, 0, 0, 0)
 
     @classmethod
+    def from_region(cls, region):
+        return cls(region.left, region.top, region.width, region.height, region.coordinates_type)
+
+    @classmethod
     def from_location_size(cls, location, size):
-        return cls(location.x, location.y, size.width, size.height)
+        return cls(location.x, location.y, size['width'], size['height'])
 
     @property
     def x(self):

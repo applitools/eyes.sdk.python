@@ -1,10 +1,9 @@
 import os
 import re
 import codecs
-
 from os import path
-from setuptools import setup
 
+from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
@@ -53,14 +52,15 @@ setup(
     keywords='applitools eyes eyes_images',
     install_requires=[
         'Pillow>=5.0.0',
+        'multimethod>=0.7.1',
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={
-        '': ['README.rst', 'LICENSE'],
+        '':          ['README.rst', 'LICENSE'],
         'eyes_core': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source': 'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_images/applitools/eyes_core',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_images/applitools/eyes_core',
     },
 )

@@ -1,5 +1,5 @@
 __all__ = ('EyesError', 'EyesIllegalArgument', 'OutOfBoundsError', 'TestFailedError', 'NewTestError',
-           'DiffsFoundError')
+           'DiffsFoundError', 'CoordinatesTypeConversionError')
 
 
 class EyesError(Exception):
@@ -26,7 +26,7 @@ class TestFailedError(Exception):
     Indicates that a test did not pass (i.e., test either failed or is a new test).
     """
 
-    def __init__(self, message, test_results=None, ):
+    def __init__(self, message, test_results=None):
         self.message = message
         self.test_results = test_results
 
@@ -50,3 +50,9 @@ class DiffsFoundError(TestFailedError):
 
     def __init__(self, message, test_results=None):
         super(DiffsFoundError, self).__init__(message, test_results)
+
+
+class CoordinatesTypeConversionError(EyesError):
+    def __init__(self, from_, to, test_results=None):
+        message = 'Cannot convert from {} to {}'.format(from_, to)
+        super(CoordinatesTypeConversionError, self).__init__(message, test_results)

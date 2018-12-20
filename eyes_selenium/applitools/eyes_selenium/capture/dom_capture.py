@@ -10,10 +10,10 @@ from tinycss2.ast import URLToken
 from applitools.eyes_core import logger, Point
 from applitools.eyes_core.utils import general_utils
 from applitools.eyes_core.utils.compat import urljoin
-from applitools.eyes_selenium.positioning import PositionProvider
 
 if tp.TYPE_CHECKING:
     from applitools.eyes_selenium.webdriver import EyesWebDriver
+    from applitools.eyes_selenium.positioning import PositionProvider
 
 _CAPTURE_CSSOM_SCRIPT = """
 function extractCssResources() {

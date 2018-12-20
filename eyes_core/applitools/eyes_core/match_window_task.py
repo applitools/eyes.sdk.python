@@ -12,8 +12,7 @@ from .errors import OutOfBoundsError
 from .geometry import Region
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_selenium.eyes import Eyes
-    from applitools.eyes_selenium.target import Target
+    from .eyes_base import EyesBase
     from .utils.custom_types import (Num, RunningSession, AppOutput,
                                      UserInputs, MatchResult)
     from .agent_connector import AgentConnector
@@ -34,7 +33,7 @@ class MatchWindowTask(object):
     MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
     def __init__(self, eyes, agent_connector, running_session, default_retry_timeout):
-        # type: (Eyes, AgentConnector, RunningSession, Num) -> None
+        # type: (EyesBase, AgentConnector, RunningSession, Num) -> None
         """
         Ctor.
 
@@ -56,7 +55,7 @@ class MatchWindowTask(object):
                                  ignore_mismatch,  # type: bool
                                  screenshot,  # type: EyesScreenshot
                                  default_match_settings,  # type: ImageMatchSettings
-                                 target,  # type: Target
+                                 target,
                                  ignore=None,  # type: tp.Optional[tp.List]
                                  floating=None,  # type: tp.Optional[tp.List]
                                  ):
@@ -65,30 +64,27 @@ class MatchWindowTask(object):
             ignore = []
         if floating is None:
             floating = []
-        if target is None:
-            from applitools.eyes_selenium.target import Target  # noqa
-            target = Target()
 
         match_data = {
             "IgnoreMismatch": ignore_mismatch,
-            "Options": {
-                "Name": tag,
-                "UserInputs": user_inputs,
+            "Options":        {
+                "Name":               tag,
+                "UserInputs":         user_inputs,
                 "ImageMatchSettings": {
-                    "MatchLevel": default_match_settings.match_level,
+                    "MatchLevel":  default_match_settings.match_level,
                     "IgnoreCaret": target.get_ignore_caret(),
-                    "Exact": default_match_settings.exact_settings,
-                    "Ignore": ignore,
-                    "Floating": floating
+                    "Exact":       default_match_settings.exact_settings,
+                    "Ignore":      ignore,
+                    "Floating":    floating
                 },
-                "IgnoreMismatch": ignore_mismatch,
-                "Trim": {
+                "IgnoreMismatch":     ignore_mismatch,
+                "Trim":               {
                     "Enabled": False
                 }
             },
-            "UserInputs": user_inputs,
-            "AppOutput": app_output,
-            "tag": tag
+            "UserInputs":     user_inputs,
+            "AppOutput":      app_output,
+            "tag":            tag
         }
         match_data_json_bytes = general_utils.to_json(match_data).encode('utf-8')
         match_data_size_bytes = pack(">L", len(match_data_json_bytes))
@@ -98,7 +94,6 @@ class MatchWindowTask(object):
 
     @staticmethod
     def _get_dynamic_regions(target, eyes_screenshot):
-        # type: (tp.Optional[Target], EyesScreenshot) -> tp.Dict[str, tp.List[Region]]
         ignore = []  # type: tp.List[Region]
         floating = []  # type: tp.List[Region]
         if target is not None:
@@ -120,14 +115,18 @@ class MatchWindowTask(object):
     def _prepare_match_data_for_window(self, tag,  # type: tp.Text
                                        user_inputs,  # type: UserInputs
                                        default_match_settings,  # type: ImageMatchSettings
-                                       target,  # type: Target
+                                       target,
                                        ignore_mismatch=False):
         # type: (...) -> bytes
-        title = self._eyes.get_title()
+        title = self._eyes.title
+        # TODO: Refactor this
+        if hasattr(self._eyes, 'hide_scrollbars_if_needed'):
+            with self._eyes.hide_scrollbars_if_needed():  # type: ignore
+                self._screenshot = self._eyes.get_screenshot(hide_scrollbars_called=True)
+        else:
+            self._screenshot = self._eyes.get_screenshot()
 
-        with self._eyes.hide_scrollbars_if_needed():
-            self._screenshot = self._eyes.get_screenshot(hide_scrollbars_called=True)
-            dynamic_regions = MatchWindowTask._get_dynamic_regions(target, self._screenshot)
+        dynamic_regions = MatchWindowTask._get_dynamic_regions(target, self._screenshot)
         app_output = {'title': title, 'screenshot64': None}  # type: AppOutput
 
         if self._eyes.send_dom:
@@ -205,7 +204,7 @@ class MatchWindowTask(object):
                      tag,  # type: str
                      user_inputs,  # UserInputs
                      default_match_settings,  # type: ImageMatchSettings
-                     target,  # type: tp.Optional[Target]
+                     target,
                      run_once_after_wait=False):
         # type: (...) -> MatchResult
         """

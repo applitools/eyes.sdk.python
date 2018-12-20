@@ -1,3 +1,5 @@
+import typing as tp
+
 from .errors import EyesError
 
 
