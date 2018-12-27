@@ -233,7 +233,8 @@ class EyesBase(ABC):
 
     @property
     @abc.abstractmethod
-    def base_agent_id(self) -> str:
+    def base_agent_id(self):
+        # type: () -> tp.Text
         """
         Must return version of SDK. (e.g. Selenium, Images) in next format:
             "eyes.{package}.python/{lib_version}"
