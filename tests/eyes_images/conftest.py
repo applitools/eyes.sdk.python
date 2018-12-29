@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.eyes_images import Eyes
+from applitools.images import Eyes
 
 
 @pytest.fixture
