@@ -8,7 +8,7 @@ from .metadata import CoordinatesType
 from .errors import EyesError
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_core.utils.custom_types import ViewPort
+    from applitools.core.utils.custom_types import ViewPort
 
 __all__ = ('Point', 'Region',)
 

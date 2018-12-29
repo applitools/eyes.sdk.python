@@ -1,7 +1,7 @@
-from applitools.eyes_core.utils import image_utils
-from applitools.eyes_core import EyesScreenshot, Region, Point, OutOfBoundsError
-from applitools.eyes_core.errors import CoordinatesTypeConversionError
-from applitools.eyes_core.metadata import CoordinatesType
+from applitools.core.utils import image_utils
+from applitools.core import EyesScreenshot, Region, Point, OutOfBoundsError
+from applitools.core.errors import CoordinatesTypeConversionError
+from applitools.core.metadata import CoordinatesType
 
 
 class EyesImagesScreenshot(EyesScreenshot):

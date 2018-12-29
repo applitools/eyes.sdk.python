@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.eyes_core import Region
+from applitools.core import Region
 from applitools.eyes_selenium import StitchMode, Target, IgnoreRegionBySelector, FloatingRegion, FloatingBounds
 
 

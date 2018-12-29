@@ -18,9 +18,9 @@ from itertools import chain
 
 import pytest
 
-from applitools.eyes_core.__version__ import __version__
-from applitools.eyes_core import logger, StdoutLogger
-from applitools.eyes_core.utils import iteritems
+from applitools.core.__version__ import __version__
+from applitools.core import logger, StdoutLogger
+from applitools.core.utils import iteritems
 
 logger.set_logger(StdoutLogger())
 

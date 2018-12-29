@@ -1,7 +1,7 @@
-# from applitools.eyes_core import Region, UnscaledFixedCutProvider
+# from applitools.core import Region, UnscaledFixedCutProvider
 from os import path
 
-from applitools.eyes_core import Region
+from applitools.core import Region
 
 from applitools.eyes_images import Target
 

@@ -18,7 +18,7 @@ def read(filename):
 
 # preventing ModuleNotFoundError caused by importing lib before installing deps
 def get_version():
-    with open(os.path.join(os.path.abspath('.'), 'applitools/eyes_core/__version__.py'), 'r') as f:
+    with open(os.path.join(os.path.abspath('.'), 'applitools/core/__version__.py'), 'r') as f:
         try:
             version = re.findall(r"^__version__ = '([^']+)'\r?$",
                                  f.read(), re.M)[0]
@@ -58,10 +58,10 @@ setup(
     ],
     package_data={
         '':          ['README.rst', 'LICENSE'],
-        'eyes_core': ['py.typed'],
+        'core': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_core/applitools/eyes_core',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_core/applitools/core',
     },
 )

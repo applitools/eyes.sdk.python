@@ -57,10 +57,10 @@ setup(
     ],
     package_data={
         '':          ['README.rst', 'LICENSE'],
-        'eyes_core': ['py.typed'],
+        'core': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_images/applitools/eyes_core',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_images/applitools/eyes_images',
     },
 )

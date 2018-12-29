@@ -10,7 +10,7 @@ import warnings
 import functools
 import typing as tp
 
-from applitools.eyes_core.utils.compat import ABC
+from applitools.core.utils.compat import ABC
 
 
 _DEFAULT_EYES_LOGGER_NAME = 'eyes'

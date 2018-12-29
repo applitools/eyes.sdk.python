@@ -6,10 +6,10 @@ import attr
 from PIL import Image
 from multimethod import multidispatch
 
-from applitools.eyes_core import RegionProvider
-from applitools.eyes_core.utils import image_utils
-from applitools.eyes_core.errors import EyesError
-from applitools.eyes_core.geometry import Region
+from applitools.core import RegionProvider
+from applitools.core.utils import image_utils
+from applitools.core.errors import EyesError
+from applitools.core.geometry import Region
 
 __all__ = ('FloatingBounds', 'FloatingRegion', 'Target')
 

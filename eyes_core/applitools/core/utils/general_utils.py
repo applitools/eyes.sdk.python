@@ -10,7 +10,7 @@ import types
 import typing as tp
 from datetime import timedelta, tzinfo
 
-from applitools.eyes_core import logger
+from applitools.core import logger
 from .compat import urlparse
 
 if tp.TYPE_CHECKING:

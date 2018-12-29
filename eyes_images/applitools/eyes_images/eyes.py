@@ -2,7 +2,7 @@ import typing as tp
 
 from PIL import Image
 
-from applitools.eyes_core import EyesBase, logger, EyesError
+from applitools.core import EyesBase, logger, EyesError
 from .__version__ import __version__
 from .target import Target
 from .capture import EyesImagesScreenshot

@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 
-from applitools.eyes_core import logger
+from applitools.core import logger
 from applitools.eyes_selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 
 

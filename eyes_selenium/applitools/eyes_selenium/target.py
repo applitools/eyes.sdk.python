@@ -2,11 +2,11 @@ from __future__ import absolute_import
 
 import typing as tp
 
-from applitools.eyes_core.errors import EyesError
-from applitools.eyes_core.geometry import Region
+from applitools.core.errors import EyesError
+from applitools.core.geometry import Region
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_core.utils.custom_types import AnyWebElement
+    from applitools.core.utils.custom_types import AnyWebElement
     from .capture import EyesWebDriverScreenshot
 
 __all__ = ('IgnoreRegionByElement', 'IgnoreRegionBySelector', 'FloatingBounds', 'FloatingRegion',

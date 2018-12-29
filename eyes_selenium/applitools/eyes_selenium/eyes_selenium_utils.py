@@ -7,10 +7,10 @@ from contextlib import contextmanager
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from applitools.eyes_core import logger, EyesError
+from applitools.core import logger, EyesError
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_core.utils.custom_types import AnyWebDriver, ViewPort
+    from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
 
 __all__ = ('get_current_frame_content_entire_size', 'get_device_pixel_ratio', 'get_viewport_size',
            'get_window_size', 'set_window_size', 'set_browser_size', 'set_browser_size_by_viewport_size',

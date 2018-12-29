@@ -5,10 +5,10 @@ import typing as tp
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.eyes_core import logger, EyesError, Point, PositionProvider
+from applitools.core import logger, EyesError, Point, PositionProvider
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
+    from applitools.core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
     from . import EyesWebDriver
 
 
