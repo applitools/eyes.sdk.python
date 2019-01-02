@@ -71,7 +71,7 @@ class Target(object):
         self._timeout = None
 
     def ignore(self, *regions):
-        # type: (*tp.Union['Region']) -> Target
+        # type: (*tp.Union[Region]) -> Target
         """
         Add ignore regions to this target.
         :param regions: Ignore regions to add. Can be of several types:
@@ -90,7 +90,7 @@ class Target(object):
         return self
 
     def floating(self, *regions):
-        # type: (*tp.Union['FloatingRegion']) -> Target
+        # type: (*tp.Union[FloatingRegion]) -> Target
         """
         Add floating regions to this target.
         :param regions: Floating regions to add. Can be of several types:
@@ -116,25 +116,13 @@ class Target(object):
     def get_ignore_caret(self):
         return self._ignore_caret
 
-    @property
-    def ignore_regions(self):
-        # type: () -> tp.List
-        """The ignore regions defined on the current target."""
-        return self._ignore_regions
-
-    @property
-    def floating_regions(self):
-        # type: () -> tp.List
-        """The floating regions defined on the current target."""
-        return self._floating_regions
-
     def timeout(self, timeout):
         self._timeout = timeout
         return self
 
     def image(self, image_or_path):
         # type: (tp.Union[Image.Image, tp.Text]) -> Target
-        self._image = image_dispatch(image_or_path)
+        self._image = _image_dispatch(image_or_path)
         return self
 
     def region(self, image_or_path, rect):
@@ -145,17 +133,17 @@ class Target(object):
 
 
 @multidispatch
-def image_dispatch(image):
+def _image_dispatch(image):
     raise TypeError('Not supported type.')
 
 
-@image_dispatch.register(Image.Image)  # type: ignore
-def _image_dispatch(image):
+@_image_dispatch.register(Image.Image)  # type: ignore
+def __image_dispatch(image):
     return image
 
 
-@image_dispatch.register(tp.Text)  # type: ignore
-@image_dispatch.register(str)
-def _image_dispatch(image_path):
+@_image_dispatch.register(tp.Text)  # type: ignore
+@_image_dispatch.register(str)
+def __image_dispatch(image_path):
     image = image_utils.image_from_file(image_path)
     return image
