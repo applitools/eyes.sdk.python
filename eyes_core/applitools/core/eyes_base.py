@@ -468,7 +468,7 @@ class EyesBase(ABC):
         Allow to add custom behavior before sending data to the server
         """
 
-    def _check_window_base(self, tag=None, match_timeout=-1, target=None):
+    def _check_window_base(self, tag=None, match_timeout=-1, target=None, ignore_mismatch=False):
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             # TODO: create propper MatchResult class
@@ -485,6 +485,7 @@ class EyesBase(ABC):
                                                       user_inputs=self._user_inputs,
                                                       default_match_settings=self.default_match_settings,
                                                       target=target,
+                                                      ignore_mismatch=ignore_mismatch,
                                                       run_once_after_wait=self._should_match_once_on_timeout)
         self._after_match_window()
         self._handle_match_result(result, tag)

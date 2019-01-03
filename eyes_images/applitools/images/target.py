@@ -11,6 +11,9 @@ from applitools.core.utils import image_utils
 from applitools.core.errors import EyesError
 from applitools.core.geometry import Region
 
+if tp.TYPE_CHECKING:
+    from applitools.images.capture import EyesImagesScreenshot
+
 __all__ = ('FloatingBounds', 'FloatingRegion', 'Target')
 
 
@@ -61,14 +64,13 @@ class Target(object):
     Target for an eyes.check_window/region.
     """
 
-    def __init__(self):
-        # type: () -> None
-        self._ignore_caret = True
-        self._ignore_regions = []  # type: tp.List
-        self._floating_regions = []  # type: tp.List
-        self._image = None
-        self._target_region = None
-        self._timeout = None
+    __ignore_regions = None  # type: tp.Optional[tp.List]
+    __floating_regions = None  # type: tp.Optional[tp.List]
+    _image = None  # type: tp.Optional[EyesImagesScreenshot]
+    _target_region = None  # type: tp.Optional[Region]
+    _timeout = -1
+
+    ignore_caret = None
 
     def ignore(self, *regions):
         # type: (*tp.Union[Region]) -> Target
@@ -105,16 +107,17 @@ class Target(object):
             self._floating_regions.append(region)
         return self
 
-    def ignore_caret(self, ignore=True):
-        # type: (bool) -> Target
-        """
-        Whether we should ignore caret when matching screenshots.
-        """
-        self._ignore_caret = ignore
-        return self
+    @property
+    def _floating_regions(self):
+        if self.__floating_regions is None:
+            self.__floating_regions = []
+        return self.__floating_regions
 
-    def get_ignore_caret(self):
-        return self._ignore_caret
+    @property
+    def _ignore_regions(self):
+        if self.__ignore_regions is None:
+            self.__ignore_regions = []
+        return self.__ignore_regions
 
     def timeout(self, timeout):
         self._timeout = timeout
