@@ -17,12 +17,12 @@ class BatchInfo(object):
         if started_at is None:
             started_at = datetime.now(general_utils.UTC)
 
-        self.name = name if name else os.environ.get('APPLITOOLS_BATCH_NAME', None)
-        self.started_at = started_at
-        self.id_ = os.environ.get('APPLITOOLS_BATCH_ID', str(uuid.uuid4()))
+        self.name = name if name else os.environ.get('APPLITOOLS_BATCH_NAME', None)  # type: tp.Optional[tp.Text]
+        self.started_at = started_at  # type: datetime
+        self.id = os.environ.get('APPLITOOLS_BATCH_ID', str(uuid.uuid4()))  # type: tp.Text
 
     def __getstate__(self):
-        return dict(name=self.name, startedAt=self.started_at.isoformat(), id=self.id_)
+        return dict(name=self.name, startedAt=self.started_at.isoformat(), id=self.id)
 
     # Required is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
@@ -30,7 +30,7 @@ class BatchInfo(object):
         raise EyesError('Cannot create BatchInfo instance from dict!')
 
     def __str__(self):
-        return "%s - %s - %s" % (self.name, self.started_at, self.id_)
+        return "%s - %s - %s" % (self.name, self.started_at, self.id)
 
 
 class CoordinatesType(object):
