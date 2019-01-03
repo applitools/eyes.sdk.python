@@ -21,6 +21,15 @@ class BatchInfo(object):
         self.started_at = started_at  # type: datetime
         self.id = os.environ.get('APPLITOOLS_BATCH_ID', str(uuid.uuid4()))  # type: tp.Text
 
+    @property
+    def id_(self):
+        # TODO: Remove in this way of initialization in future
+        return self.id
+
+    @id_.setter
+    def id_(self, value):
+        self.id = value
+
     def __getstate__(self):
         return dict(name=self.name, startedAt=self.started_at.isoformat(), id=self.id)
 
