@@ -105,7 +105,7 @@ class Eyes(EyesBase):
         if not self._viewport_size:
             self._set_viewport_size(dict(width=image.width, height=image.height))
 
-        match_result = self._check_window_base(name, target._timeout, target, ignore_mismatch)
+        match_result = self._check_window_base(name, -1, target, ignore_mismatch)
         self._screenshot = None
         self._raw_title = None
         return match_result['as_expected']
