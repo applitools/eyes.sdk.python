@@ -2,6 +2,8 @@ import typing as tp
 
 from .errors import EyesError
 
+__all__ = ('MatchLevel', 'ExactMatchSettings', 'ImageMatchSettings')
+
 
 class MatchLevel(object):
     """
