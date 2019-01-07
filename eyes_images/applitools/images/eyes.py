@@ -42,11 +42,11 @@ class Eyes(EyesBase):
             return self._inferred
         return ""
 
-    def _get_viewport_size(self):
+    def get_viewport_size(self):
         # type: () -> ViewPort
         return self._viewport_size
 
-    def _set_viewport_size(self, size):
+    def set_viewport_size(self, size):
         # type: (ViewPort) -> None
         self._viewport_size = size
 
@@ -103,7 +103,7 @@ class Eyes(EyesBase):
         image = target._image  # type: Image.Image
         self._screenshot = EyesImagesScreenshot(image)
         if not self._viewport_size:
-            self._set_viewport_size(dict(width=image.width, height=image.height))
+            self.set_viewport_size(dict(width=image.width, height=image.height))
 
         match_result = self._check_window_base(name, -1, target, ignore_mismatch)
         self._screenshot = None

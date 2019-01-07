@@ -117,14 +117,14 @@ class EyesBase(ABC):
         pass
 
     @abc.abstractmethod
-    def _get_viewport_size(self):
+    def get_viewport_size(self):
         # type: () -> ViewPort
         """
         :return: The viewport size of the AUT.
         """
 
     @abc.abstractmethod
-    def _set_viewport_size(self, size):
+    def set_viewport_size(self, size):
         # type: (ViewPort) -> None
         """
         :param size: The required viewport size.

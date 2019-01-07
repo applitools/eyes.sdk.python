@@ -43,12 +43,12 @@ class Eyes(EyesBase):
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
 
     @staticmethod
-    def set_viewport_size(driver, viewportsize):
+    def set_viewport_size_static(driver, viewportsize):
         # type: (AnyWebDriver, ViewPort) -> None
         eyes_selenium_utils.set_viewport_size(driver, viewportsize)
 
     @staticmethod
-    def get_viewport_size(driver):
+    def get_viewport_size_static(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
@@ -154,16 +154,16 @@ class Eyes(EyesBase):
         """
         return self._driver
 
-    def _get_viewport_size(self):
+    def get_viewport_size(self):
         # type: () -> ViewPort
         """
         Returns the size of the viewport of the application under test (e.g, the browser).
         """
         return self._driver.get_viewport_size()
 
-    def _set_viewport_size(self, size):
+    def set_viewport_size(self, size):
         # type: (AnyWebDriver, ViewPort) -> None
-        self.set_viewport_size(self.driver, size)
+        self.set_viewport_size_static(self.driver, size)
 
     def _assign_viewport_size(self):
         # type: () -> None
@@ -175,10 +175,10 @@ class Eyes(EyesBase):
         try:
             if self._viewport_size:
                 logger.debug("Assigning viewport size {0}".format(self._viewport_size))
-                self._set_viewport_size(self._viewport_size)
+                self.set_viewport_size(self._viewport_size)
             else:
                 logger.debug("No viewport size given. Extracting the viewport size from the driver...")
-                self._viewport_size = self._get_viewport_size()
+                self._viewport_size = self.get_viewport_size()
                 logger.debug("Viewport size {0}".format(self._viewport_size))
         except EyesError:
             raise TestFailedError('Failed to assign viewport size!')
