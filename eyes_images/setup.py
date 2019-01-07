@@ -35,7 +35,7 @@ setup(
     license='Apache License, Version 2.0',
     author='Applitools Team',
     author_email='team@applitools.com',
-    description='Applitools Python SDK. Core package',
+    description='Applitools Python SDK. Images package',
     long_description=read('README.rst'),
     long_description_content_type='text/x-rst',
     classifiers=[
@@ -51,6 +51,8 @@ setup(
     ],
     keywords='applitools eyes eyes_images',
     install_requires=[
+        'eyes-core=={}'.format(get_version()),
+        'attrs>=18',
         'Pillow>=5.0.0',
         'multimethod>=0.7.1',
         'typing>=3.5.2; python_version<="3.4"',
