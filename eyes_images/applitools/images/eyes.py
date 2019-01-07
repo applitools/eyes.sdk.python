@@ -72,7 +72,7 @@ class Eyes(EyesBase):
         return self._check_image(name, False, target)
 
     def check_image(self, image, tag=None, ignore_mismatch=False, retry_timeout=-1):
-        # type: (Image.Image, tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
+        # type: (tp.Union[Image.Image, tp.Text], tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
         if self.is_disabled:
             return
         logger.info(

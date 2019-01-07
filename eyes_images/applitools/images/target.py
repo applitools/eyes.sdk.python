@@ -76,10 +76,7 @@ class Target(object):
         # type: (*tp.Union[Region]) -> Target
         """
         Add ignore regions to this target.
-        :param regions: Ignore regions to add. Can be of several types:
-            (Region) Region specified by coordinates
-            (IgnoreRegionBySelector) Region specified by a selector of an element
-            (IgnoreRegionByElement) Region specified by a WebElement instance.
+        :param regions: Region specified by coordinates
         :return: (Target) self.
         """
         for region in regions:
@@ -97,8 +94,7 @@ class Target(object):
         Add floating regions to this target.
         :param regions: Floating regions to add. Can be of several types:
             (Region) Region specified by coordinates
-            (FloatingRegionByElement) Region specified by a WebElement instance.
-            (FloatingRegionBySelector) Region specified by a selector of an element
+            (FloatingRegion) Region specified by Region and FloatingBounds instance.
         :return: (Target) self.
         """
         for region in regions:
