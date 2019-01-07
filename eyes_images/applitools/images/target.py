@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import typing as tp
 
-import attr
 from PIL import Image
 from multimethod import multidispatch
 
@@ -34,10 +33,15 @@ class FloatingBounds(object):
         self.max_down_offset = max_down_offset
 
 
-@attr.s
 class FloatingRegion(RegionProvider):
-    _region = attr.ib()  # The inner region (the floating part).
-    _bounds = attr.ib()  # The outer rectangle bounding the inner region.
+    def __init__(self, region, bounds):
+        # type: (Region, FloatingBounds) -> None
+        """
+        :param region: The inner region (the floating part).
+        :param bounds: The outer rectangle bounding the inner region.
+        """
+        self.region = region  # type: Region
+        self.bounds = bounds  # type: FloatingBounds
 
     def __getstate__(self):
         return dict(top=self.region.top,

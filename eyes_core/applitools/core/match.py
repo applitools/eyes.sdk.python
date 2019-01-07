@@ -33,10 +33,10 @@ class ExactMatchSettings(object):
         :param min_diff_height: Minimal non-ignorable diff region height.
         :param match_threshold: The ratio of differing pixels above which images are considered mismatching.
         """
-        self.min_diff_intensity = min_diff_intensity
-        self.min_diff_width = min_diff_width
-        self.min_diff_height = min_diff_height
-        self.match_threshold = match_threshold
+        self.min_diff_intensity = min_diff_intensity  # type: int
+        self.min_diff_width = min_diff_width  # type: int
+        self.min_diff_height = min_diff_height  # type: int
+        self.match_threshold = match_threshold  # type: float
 
     def __getstate__(self):
         return dict(minDiffIntensity=self.min_diff_intensity,
@@ -65,8 +65,8 @@ class ImageMatchSettings(object):
         :param match_level: The "strictness" level of the match.
         :param exact_settings: Parameter for fine tuning the match when "Exact" match level is used.
         """
-        self.match_level = match_level
-        self.exact_settings = exact_settings
+        self.match_level = match_level  # type: tp.Text
+        self.exact_settings = exact_settings  # type: tp.Optional[ExactMatchSettings]
 
     def __getstate__(self):
         return dict(matchLevel=self.match_level, exact=self.exact_settings)
