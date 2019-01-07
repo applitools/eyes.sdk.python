@@ -52,7 +52,6 @@ setup(
     keywords='applitools eyes eyes_images',
     install_requires=[
         'eyes-core=={}'.format(get_version()),
-        'attrs>=18',
         'Pillow>=5.0.0',
         'multimethod>=0.7.1',
         'typing>=3.5.2; python_version<="3.4"',

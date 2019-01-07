@@ -1,10 +1,12 @@
-import uuid
 import os
+import uuid
 import typing as tp
 from datetime import datetime
 
 from .errors import EyesError
 from .utils import general_utils
+
+__all__ = ('BatchInfo', 'CoordinatesType')
 
 
 class BatchInfo(object):
