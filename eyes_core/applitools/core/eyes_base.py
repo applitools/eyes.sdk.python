@@ -102,7 +102,7 @@ class EyesBase(ABC):
         self.wait_before_screenshots = EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS  # type: int
 
         # If true, we will send full DOM to the server for analyzing
-        self.send_dom = False
+        self.send_dom = False  # type: bool
 
     @property
     @abc.abstractmethod
@@ -247,6 +247,7 @@ class EyesBase(ABC):
 
     @property
     def full_agent_id(self):
+        # type: () -> tp.Text
         """
         Gets the agent id, which identifies the current library using the SDK.
 

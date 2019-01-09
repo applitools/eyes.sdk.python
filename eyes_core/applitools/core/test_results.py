@@ -67,10 +67,12 @@ class TestResults(object):
 
     @status.setter
     def status(self, value):
+        # type: (tp.Text) -> None
         self._status = value
 
     @property
     def is_passed(self):
+        # type: () -> bool
         return (self.status is not None) and self.status.lower() == TestResultsStatus.Passed.lower()
 
     def _to_dict(self):

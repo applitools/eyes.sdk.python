@@ -120,6 +120,7 @@ class Target(object):
         return self.__ignore_regions
 
     def timeout(self, timeout):
+        # type: (int) -> Target
         self._timeout = timeout
         return self
 
