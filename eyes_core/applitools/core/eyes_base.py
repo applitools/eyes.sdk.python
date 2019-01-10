@@ -81,7 +81,7 @@ class EyesBase(ABC):
 
         # A string that, if specified, determines the baseline to compare with and disables automatic baseline
         # inference.
-        self.baseline_name = None  # type: tp.Optional[tp.Text]
+        self.baseline_branch_name = None  # type: tp.Optional[tp.Text]
 
         # A boolean denoting whether new tests should be automatically accepted.
         self.save_new_tests = True  # type: bool
@@ -102,11 +102,11 @@ class EyesBase(ABC):
         self.wait_before_screenshots = EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS  # type: int
 
         # If true, we will send full DOM to the server for analyzing
-        self.send_dom = False
+        self.send_dom = False  # type: bool
 
     @property
     @abc.abstractmethod
-    def title(self):
+    def _title(self):
         # type: () -> tp.Text
         """
         Returns the title of the window of the AUT, or empty string if the title is not available.
@@ -118,12 +118,17 @@ class EyesBase(ABC):
 
     @abc.abstractmethod
     def get_viewport_size(self):
-        pass
+        # type: () -> ViewPort
+        """
+        :return: The viewport size of the AUT.
+        """
 
-    @staticmethod
     @abc.abstractmethod
-    def set_viewport_size(viewport_size):
-        pass
+    def set_viewport_size(self, size):
+        # type: (ViewPort) -> None
+        """
+        :param size: The required viewport size.
+        """
 
     @abc.abstractmethod
     def _assign_viewport_size(self):
@@ -142,11 +147,11 @@ class EyesBase(ABC):
         """
 
     @abc.abstractmethod
-    def _get_inferred_environment(self):
+    def _inferred_environment(self):
         pass
 
     @property
-    def seconds_to_wait_screenshot(self):
+    def _seconds_to_wait_screenshot(self):
         return self.wait_before_screenshots / 1000.0
 
     @property
@@ -242,6 +247,7 @@ class EyesBase(ABC):
 
     @property
     def full_agent_id(self):
+        # type: () -> tp.Text
         """
         Gets the agent id, which identifies the current library using the SDK.
 
@@ -360,10 +366,10 @@ class EyesBase(ABC):
         finally:
             logger.close()
 
-    def before_open(self):
+    def _before_open(self):
         pass
 
-    def after_open(self):
+    def _after_open(self):
         pass
 
     def open_base(self, app_name, test_name, viewport_size=None):
@@ -371,7 +377,6 @@ class EyesBase(ABC):
         """
         Starts a test.
 
-        :param driver: The webdriver to use.
         :param app_name: The name of the application under test.
         :param test_name: The test name.
         :param viewport_size: The client's viewport size (i.e., the visible part of the document's body) or None to
@@ -397,7 +402,7 @@ class EyesBase(ABC):
             self.abort_if_not_closed()
             raise EyesError('a test is already running')
 
-        self.before_open()
+        self._before_open()
 
         self._app_name = app_name
         self._test_name = test_name
@@ -408,14 +413,14 @@ class EyesBase(ABC):
 
         self._is_open = True
 
-        self.after_open()
+        self._after_open()
 
     def _create_start_info(self):
         # type: () -> None
         app_env = self._get_environment()
         self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._app_name,
                             'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
-                            'envName':              self.baseline_name, 'environment': app_env,
+                            'envName':              self.baseline_branch_name, 'environment': app_env,
                             'defaultMatchSettings': self.default_match_settings, 'verId': None,
                             'branchName':           self.branch_name, 'parentBranchName': self.parent_branch_name,
                             'properties':           self._properties}
@@ -428,8 +433,8 @@ class EyesBase(ABC):
         # initialization of Eyes parameters if empty from ENV variables
         if not self.branch_name:
             self.branch_name = os.environ.get('APPLITOOLS_BRANCH', None)
-        if not self.baseline_name:
-            self.baseline_name = os.environ.get('APPLITOOLS_BASELINE_BRANCH', None)
+        if not self.baseline_branch_name:
+            self.baseline_branch_name = os.environ.get('APPLITOOLS_BASELINE_BRANCH', None)
         if not self.parent_branch_name:
             self.parent_branch_name = os.environ.get('APPLITOOLS_PARENT_BRANCH', None)
         if not self.batch:
@@ -454,17 +459,17 @@ class EyesBase(ABC):
                                                   self._running_session,
                                                   self.match_timeout)
 
-    def before_match_window(self):
+    def _before_match_window(self):
         """
         Allow to add custom behavior after receiving response from the server
         """
 
-    def after_match_window(self):
+    def _after_match_window(self):
         """
         Allow to add custom behavior before sending data to the server
         """
 
-    def _check_window_base(self, tag=None, match_timeout=-1, target=None):
+    def _check_window_base(self, tag=None, match_timeout=-1, target=None, ignore_mismatch=False):
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             # TODO: create propper MatchResult class
@@ -473,7 +478,7 @@ class EyesBase(ABC):
 
         self._ensure_running_session()
 
-        self.before_match_window()
+        self._before_match_window()
 
         # TODO: implement MatchWIndow_ analog
         result = self._match_window_task.match_window(retry_timeout=match_timeout,
@@ -481,8 +486,9 @@ class EyesBase(ABC):
                                                       user_inputs=self._user_inputs,
                                                       default_match_settings=self.default_match_settings,
                                                       target=target,
+                                                      ignore_mismatch=ignore_mismatch,
                                                       run_once_after_wait=self._should_match_once_on_timeout)
-        self.after_match_window()
+        self._after_match_window()
         self._handle_match_result(result, tag)
         return result
 
@@ -501,13 +507,13 @@ class EyesBase(ABC):
                                            self._start_info['appIdOrName']))
 
     @abc.abstractmethod
-    def try_capture_dom(self):
+    def _try_capture_dom(self):
         # type: () -> tp.Text
         """
         Returns the string with DOM of the current page in the prepared format or empty string
         """
 
-    def try_post_dom_snapshot(self, dom_json):
+    def _try_post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
         """
         In case DOM data is valid uploads it to the server and return URL where it stored.

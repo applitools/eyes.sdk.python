@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import typing as tp
 
-import attr
 from PIL import Image
 from multimethod import multidispatch
 
@@ -10,6 +9,9 @@ from applitools.core import RegionProvider
 from applitools.core.utils import image_utils
 from applitools.core.errors import EyesError
 from applitools.core.geometry import Region
+
+if tp.TYPE_CHECKING:
+    from applitools.images.capture import EyesImagesScreenshot
 
 __all__ = ('FloatingBounds', 'FloatingRegion', 'Target')
 
@@ -31,10 +33,15 @@ class FloatingBounds(object):
         self.max_down_offset = max_down_offset
 
 
-@attr.s
 class FloatingRegion(RegionProvider):
-    _region = attr.ib()  # The inner region (the floating part).
-    _bounds = attr.ib()  # The outer rectangle bounding the inner region.
+    def __init__(self, region, bounds):
+        # type: (Region, FloatingBounds) -> None
+        """
+        :param region: The inner region (the floating part).
+        :param bounds: The outer rectangle bounding the inner region.
+        """
+        self.region = region  # type: Region
+        self.bounds = bounds  # type: FloatingBounds
 
     def __getstate__(self):
         return dict(top=self.region.top,
@@ -61,23 +68,19 @@ class Target(object):
     Target for an eyes.check_window/region.
     """
 
-    def __init__(self):
-        # type: () -> None
-        self._ignore_caret = True
-        self._ignore_regions = []  # type: tp.List
-        self._floating_regions = []  # type: tp.List
-        self._image = None
-        self._target_region = None
-        self._timeout = None
+    __ignore_regions = None  # type: tp.Optional[tp.List]
+    __floating_regions = None  # type: tp.Optional[tp.List]
+    _image = None  # type: tp.Optional[EyesImagesScreenshot]
+    _target_region = None  # type: tp.Optional[Region]
+    _timeout = -1
+
+    ignore_caret = None
 
     def ignore(self, *regions):
-        # type: (*tp.Union['Region']) -> Target
+        # type: (*tp.Union[Region]) -> Target
         """
         Add ignore regions to this target.
-        :param regions: Ignore regions to add. Can be of several types:
-            (Region) Region specified by coordinates
-            (IgnoreRegionBySelector) Region specified by a selector of an element
-            (IgnoreRegionByElement) Region specified by a WebElement instance.
+        :param regions: Region specified by coordinates
         :return: (Target) self.
         """
         for region in regions:
@@ -90,13 +93,12 @@ class Target(object):
         return self
 
     def floating(self, *regions):
-        # type: (*tp.Union['FloatingRegion']) -> Target
+        # type: (*tp.Union[FloatingRegion]) -> Target
         """
         Add floating regions to this target.
         :param regions: Floating regions to add. Can be of several types:
             (Region) Region specified by coordinates
-            (FloatingRegionByElement) Region specified by a WebElement instance.
-            (FloatingRegionBySelector) Region specified by a selector of an element
+            (FloatingRegion) Region specified by Region and FloatingBounds instance.
         :return: (Target) self.
         """
         for region in regions:
@@ -105,36 +107,26 @@ class Target(object):
             self._floating_regions.append(region)
         return self
 
-    def ignore_caret(self, ignore=True):
-        # type: (bool) -> Target
-        """
-        Whether we should ignore caret when matching screenshots.
-        """
-        self._ignore_caret = ignore
-        return self
-
-    def get_ignore_caret(self):
-        return self._ignore_caret
+    @property
+    def _floating_regions(self):
+        if self.__floating_regions is None:
+            self.__floating_regions = []
+        return self.__floating_regions
 
     @property
-    def ignore_regions(self):
-        # type: () -> tp.List
-        """The ignore regions defined on the current target."""
-        return self._ignore_regions
-
-    @property
-    def floating_regions(self):
-        # type: () -> tp.List
-        """The floating regions defined on the current target."""
-        return self._floating_regions
+    def _ignore_regions(self):
+        if self.__ignore_regions is None:
+            self.__ignore_regions = []
+        return self.__ignore_regions
 
     def timeout(self, timeout):
+        # type: (int) -> Target
         self._timeout = timeout
         return self
 
     def image(self, image_or_path):
         # type: (tp.Union[Image.Image, tp.Text]) -> Target
-        self._image = image_dispatch(image_or_path)
+        self._image = _image_dispatch(image_or_path)
         return self
 
     def region(self, image_or_path, rect):
@@ -145,17 +137,17 @@ class Target(object):
 
 
 @multidispatch
-def image_dispatch(image):
+def _image_dispatch(image):
     raise TypeError('Not supported type.')
 
 
-@image_dispatch.register(Image.Image)  # type: ignore
-def _image_dispatch(image):
+@_image_dispatch.register(Image.Image)  # type: ignore
+def __image_dispatch(image):
     return image
 
 
-@image_dispatch.register(tp.Text)  # type: ignore
-@image_dispatch.register(str)
-def _image_dispatch(image_path):
+@_image_dispatch.register(tp.Text)  # type: ignore
+@_image_dispatch.register(str)
+def __image_dispatch(image_path):
     image = image_utils.image_from_file(image_path)
     return image

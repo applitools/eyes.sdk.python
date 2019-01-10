@@ -72,7 +72,7 @@ class MatchWindowTask(object):
                 "UserInputs":         user_inputs,
                 "ImageMatchSettings": {
                     "MatchLevel":  default_match_settings.match_level,
-                    "IgnoreCaret": target.get_ignore_caret(),
+                    "IgnoreCaret": target.ignore_caret,
                     "Exact":       default_match_settings.exact_settings,
                     "Ignore":      ignore,
                     "Floating":    floating
@@ -86,8 +86,8 @@ class MatchWindowTask(object):
             "AppOutput":      app_output,
             "tag":            tag
         }
-        match_data_json_bytes = general_utils.to_json(match_data).encode('utf-8')
-        match_data_size_bytes = pack(">L", len(match_data_json_bytes))
+        match_data_json_bytes = general_utils.to_json(match_data).encode('utf-8')  # type: bytes
+        match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
         screenshot_bytes = screenshot.get_bytes()
         body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
         return body
@@ -97,13 +97,13 @@ class MatchWindowTask(object):
         ignore = []  # type: tp.List[Region]
         floating = []  # type: tp.List[Region]
         if target is not None:
-            for region_wrapper in target.ignore_regions:
+            for region_wrapper in target._ignore_regions:
                 try:
                     current_region = region_wrapper.get_region(eyes_screenshot)
                     ignore.append(current_region)
                 except OutOfBoundsError as err:
                     logger.info("WARNING: Region specified by {} is out of bounds! {}".format(region_wrapper, err))
-            for floating_wrapper in target.floating_regions:
+            for floating_wrapper in target._floating_regions:
                 try:
                     current_floating = floating_wrapper.get_region(eyes_screenshot)
                     floating.append(current_floating)
@@ -118,21 +118,21 @@ class MatchWindowTask(object):
                                        target,
                                        ignore_mismatch=False):
         # type: (...) -> bytes
-        title = self._eyes.title
+        title = self._eyes._title
         # TODO: Refactor this
-        if hasattr(self._eyes, 'hide_scrollbars_if_needed'):
-            with self._eyes.hide_scrollbars_if_needed():  # type: ignore
+        if hasattr(self._eyes, '_hide_scrollbars_if_needed'):
+            with self._eyes._hide_scrollbars_if_needed():  # type: ignore
                 self._screenshot = self._eyes.get_screenshot(hide_scrollbars_called=True)
         else:
             self._screenshot = self._eyes.get_screenshot()
 
         dynamic_regions = MatchWindowTask._get_dynamic_regions(target, self._screenshot)
-        app_output = {'title': title, 'screenshot64': None}  # type: AppOutput
+        app_output = {'_title': title, 'screenshot64': None}  # type: AppOutput
 
         if self._eyes.send_dom:
-            dom_json = self._eyes.try_capture_dom()
+            dom_json = self._eyes._try_capture_dom()
             if dom_json:
-                dom_url = self._eyes.try_post_dom_snapshot(dom_json)
+                dom_url = self._eyes._try_post_dom_snapshot(dom_json)
                 if dom_url is None:
                     logger.warning('Failed to upload DOM. Skipping...')
                 else:
@@ -151,7 +151,7 @@ class MatchWindowTask(object):
         logger.debug('Matching with intervals...')
         # We intentionally take the first screenshot before starting the timer, to allow the page
         # just a tad more time to stabilize.
-        data = prepare_action(ignore_mismatch=True)
+        data = prepare_action()
         # Start the timer.
         start = time.time()
         logger.debug('First match attempt...')
@@ -164,7 +164,7 @@ class MatchWindowTask(object):
         while retry < retry_timeout:
             logger.debug('Matching...')
             time.sleep(self._MATCH_INTERVAL)
-            data = prepare_action(ignore_mismatch=True)
+            data = prepare_action()
             as_expected = self._agent_connector.match_window(self._running_session, data)
             if as_expected:
                 return {"as_expected": True, "screenshot": self._screenshot}
@@ -205,6 +205,7 @@ class MatchWindowTask(object):
                      user_inputs,  # UserInputs
                      default_match_settings,  # type: ImageMatchSettings
                      target,
+                     ignore_mismatch,
                      run_once_after_wait=False):
         # type: (...) -> MatchResult
         """
@@ -215,9 +216,10 @@ class MatchWindowTask(object):
         :param user_inputs: The user input.
         :param default_match_settings: The default match settings for the session.
         :param target: The target of the check_window call.
+        :param ignore_mismatch: True if the server should ignore a negative result for the visual validation.
         :param run_once_after_wait: Whether or not to run again after waiting.
         :return: The result of the run.
         """
         prepare_action = functools.partial(self._prepare_match_data_for_window, tag,
-                                           user_inputs, default_match_settings, target)
+                                           user_inputs, default_match_settings, target, ignore_mismatch)
         return self._run(prepare_action, run_once_after_wait, retry_timeout)

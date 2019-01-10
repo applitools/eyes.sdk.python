@@ -112,4 +112,4 @@ def mypy_check(c, core=None,
 def test_run(c, core=None,
              selenium=None, images=None):
     for pack in _packages_resolver(core, selenium, images):
-        c.run('pytest tests/{}'.format(pack), echo=True)
+        c.run('pytest -s tests/{}'.format(pack), echo=True)

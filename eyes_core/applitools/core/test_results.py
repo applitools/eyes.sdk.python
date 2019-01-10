@@ -44,7 +44,7 @@ class TestResults(object):
                  content_matches=0,  # type: int
                  layout_matches=0,  # type: int
                  none_matches=0,  # type: int
-                 status=None,  # type: tp.Optional[tp.Text]
+                 status=None  # type: tp.Optional[tp.Text]
                  ):
         # type: (...) -> None
         self.steps = steps
@@ -57,8 +57,8 @@ class TestResults(object):
         self.layout_matches = layout_matches
         self.none_matches = none_matches
         self._status = status
-        self.is_new = None
-        self.url = None
+        self.is_new = None  # type: tp.Optional[bool]
+        self.url = None  # type: tp.Optional[tp.Text]
 
     @property
     def status(self):
@@ -66,14 +66,16 @@ class TestResults(object):
         return TestResultsStatus.get_status(self._status)
 
     @status.setter
-    def status(self, status_):
-        self._status = status_
+    def status(self, value):
+        # type: (tp.Text) -> None
+        self._status = value
 
     @property
     def is_passed(self):
+        # type: () -> bool
         return (self.status is not None) and self.status.lower() == TestResultsStatus.Passed.lower()
 
-    def to_dict(self):
+    def _to_dict(self):
         return dict(steps=self.steps, matches=self.matches, mismatches=self.mismatches,
                     missing=self.missing, exact_matches=self.exact_matches,
                     strict_matches=self.strict_matches, content_matches=self.content_matches,

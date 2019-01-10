@@ -144,7 +144,7 @@ class EyesFrame(object):
                 return False
         return True
 
-    def __init__(self, reference, location, size, id_, parent_scroll_position):
+    def __init__(self, reference, location, size, id, parent_scroll_position):
         # type: (FrameReference, tp.Dict, tp.Dict, int, Point) -> None
         """
         Ctor.
@@ -152,13 +152,13 @@ class EyesFrame(object):
         :param reference: The reference to the frame.
         :param location: The location of the frame.
         :param size: The size of the frame.
-        :param id_: The id of the frame.
+        :param id: The id of the frame.
         :param parent_scroll_position: The parents' scroll position.
         """
         self.reference = reference
         self.location = location
         self.size = size
-        self.id_ = id_
+        self.id = id
         self.parent_scroll_position = parent_scroll_position
 
     def clone(self):
@@ -168,7 +168,7 @@ class EyesFrame(object):
 
         :return: A cloned EyesFrame object.
         """
-        return EyesFrame(self.reference, self.location.copy(), self.size.copy(), self.id_,
+        return EyesFrame(self.reference, self.location.copy(), self.size.copy(), self.id,
                          self.parent_scroll_position.clone())
 
     def __str__(self):
