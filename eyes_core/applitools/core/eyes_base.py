@@ -137,6 +137,7 @@ class EyesBase(ABC):
         Assign the viewport size we need to be in the default content frame.
         """
 
+    @property
     @abc.abstractmethod
     def _environment(self):
         # type: () -> AppEnvironment
@@ -146,6 +147,7 @@ class EyesBase(ABC):
         :return: The current application environment.
         """
 
+    @property
     @abc.abstractmethod
     def _inferred_environment(self):
         pass

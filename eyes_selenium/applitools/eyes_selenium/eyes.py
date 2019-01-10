@@ -119,6 +119,7 @@ class Eyes(EyesBase):
 
         return ScreenshotType.VIEWPORT_SCREENSHOT
 
+    @property
     def _environment(self):
         os = self.host_os
         # If no host OS was set, check for mobile OS.
