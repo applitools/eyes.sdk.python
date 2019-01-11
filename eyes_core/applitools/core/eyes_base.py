@@ -266,6 +266,7 @@ class EyesBase(ABC):
         """
         self._properties.append({'name': name, 'value': value})
 
+    @property
     def is_open(self):
         # type: () -> bool
         """
@@ -372,7 +373,7 @@ class EyesBase(ABC):
     def _after_open(self):
         pass
 
-    def open_base(self, app_name, test_name, viewport_size=None):
+    def _open_base(self, app_name, test_name, viewport_size=None):
         # type: (tp.Text, tp.Text, tp.Optional[ViewPort]) -> None
         """
         Starts a test.
@@ -386,8 +387,9 @@ class EyesBase(ABC):
         """
         logger.open_()
         if self.is_disabled:
-            logger.debug('open_base(): ignored (disabled)')
+            logger.debug('_open_base(): ignored (disabled)')
             return
+        logger.info('\nEyes version: {}\n'.format(self.full_agent_id))
 
         if self.api_key is None:
             try:
@@ -398,7 +400,7 @@ class EyesBase(ABC):
 
         logger.info("open(%s, %s, %s, %s)" % (app_name, test_name, viewport_size, self.failure_reports))
 
-        if self.is_open():
+        if self.is_open:
             self.abort_if_not_closed()
             raise EyesError('a test is already running')
 

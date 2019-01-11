@@ -323,7 +323,7 @@ class Eyes(EyesBase):
                 logger.info("WARNING: driver is not a RemoteWebDriver (class: {0})".format(driver.__class__))
             self._driver = EyesWebDriver(driver, self, self._stitch_mode)
 
-        self.open_base(app_name, test_name, viewport_size)
+        self._open_base(app_name, test_name, viewport_size)
 
         return self._driver
 

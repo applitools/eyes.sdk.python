@@ -63,7 +63,7 @@ class Eyes(EyesBase):
 
     def open(self, app_name, test_name, dimension=None):
         # type: (tp.Text, tp.Text, tp.Optional[ViewPort]) -> None
-        self.open_base(app_name, test_name, dimension)
+        self._open_base(app_name, test_name, dimension)
 
     def check(self, name, target):
         # type: (tp.Text, Target) -> bool
@@ -96,7 +96,7 @@ class Eyes(EyesBase):
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ''
 
-        if not self.is_open():
+        if not self.is_open:
             self.abort_if_not_closed()
             raise EyesError('you must call open() before checking')
 
