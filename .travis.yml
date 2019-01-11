@@ -7,7 +7,7 @@ sudo: false
 env:
   - DISPLAY=:0.0
 install:
-  - pip install tox-travis
+  - pip install -U tox-travis
 script:
   - export APPLITOOLS_BATCH_ID=`uuidgen -t`
   - echo $APPLITOOLS_BATCH_ID

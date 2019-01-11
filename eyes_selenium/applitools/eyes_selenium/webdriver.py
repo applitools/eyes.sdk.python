@@ -276,7 +276,7 @@ class EyesWebDriver(object):
             user_agent = self.driver.execute_script("return navigator.userAgent")
             logger.info("user agent: {}".format(user_agent))
         except Exception as e:
-            logger.info("Failed to obtain user-agent string")
+            logger.info("Failed to obtain user-agent string\n\t {}".format(str(e)))
             user_agent = None
         return user_agent
 

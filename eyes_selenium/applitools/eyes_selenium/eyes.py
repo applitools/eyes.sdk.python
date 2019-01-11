@@ -103,8 +103,8 @@ class Eyes(EyesBase):
                 return ScreenshotType.REGION_OR_ELEMENT_SCREENSHOT
 
             if not inside_a_frame:
-                if ((force_fullpage and not stitch_content) or
-                        (stitch_content and not is_element)):
+                if ((force_fullpage and not stitch_content)
+                        or (stitch_content and not is_element)):
                     return ScreenshotType.FULLPAGE_SCREENSHOT
 
             if inside_a_frame or stitch_content:

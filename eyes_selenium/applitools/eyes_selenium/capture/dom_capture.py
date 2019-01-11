@@ -134,7 +134,7 @@ def get_full_window_dom(driver, position_provider=None):
 
 def _get_window_dom(driver):
     args_obj = {
-        'styleProps': [
+        'styleProps':      [
             "background-color",
             "background-image",
             "background-size",
@@ -145,13 +145,13 @@ def _get_window_dom(driver):
             "padding",
             "margin"
         ],
-        'attributeProps': {
-            'all': ['id', 'class'],
-            'IMG': ['core'],
+        'attributeProps':  {
+            'all':    ['id', 'class'],
+            'IMG':    ['core'],
             'IFRAME': ['core'],
-            'A': ['href']
+            'A':      ['href']
         },
-        'rectProps': [
+        'rectProps':       [
             "width",
             "height",
             "top",
@@ -274,8 +274,8 @@ def _serialize_css(base_url, stylesheet):
 def _download_css(base_url, value):
     # type: (tp.Text, tp.Text) -> tp.Text
     logger.info("Given URL to download: {}".format(value))
-    if (general_utils.is_absolute_url(value) and
-            not general_utils.is_url_with_scheme(value)):
+    if (general_utils.is_absolute_url(value)
+            and not general_utils.is_url_with_scheme(value)):
         url = urljoin('http://', value)
     else:
         url = urljoin(base_url, value)
