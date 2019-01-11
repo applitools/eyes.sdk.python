@@ -31,7 +31,7 @@ def get_version(package_name):
 
 setup(
     name='eyes_selenium',
-    version=get_version(),
+    version=get_version('selenium'),
     packages=find_namespace_packages(include=['applitools.*'], exclude=('tests',)),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
@@ -53,7 +53,7 @@ setup(
     ],
     keywords='applitools eyes eyes_selenium',
     install_requires=[
-        'core=={}'.format(get_version('selenium')),
+        'eyes-core=={}'.format(get_version('selenium')),
         'tinycss2>=0.6.1',
         'selenium>=2.53.0',
         'Pillow>=5.0.0',

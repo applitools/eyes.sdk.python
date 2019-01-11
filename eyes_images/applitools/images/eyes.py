@@ -20,7 +20,7 @@ class Eyes(EyesBase):
         self._inferred = None  # type: tp.Optional[tp.Text]
 
     @property
-    def _full_agent_id(self):
+    def full_agent_id(self):
         # type: () -> tp.Text
         if self.agent_id is None:
             return self.base_agent_id
@@ -110,7 +110,8 @@ class Eyes(EyesBase):
         self._raw_title = None
         return match_result['as_expected']
 
-    def _get_environment(self):
+    @property
+    def _environment(self):
         # type: () -> AppEnvironment
         app_env = {'os':          self.host_os, 'hostingApp': self.host_app,
                    'displaySize': self._viewport_size,

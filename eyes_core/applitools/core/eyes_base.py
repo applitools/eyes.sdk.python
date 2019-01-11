@@ -138,7 +138,7 @@ class EyesBase(ABC):
         """
 
     @abc.abstractmethod
-    def _get_environment(self):
+    def _environment(self):
         # type: () -> AppEnvironment
         """
         Application environment is the environment (e.g., the host OS) which runs the application under test.
@@ -419,7 +419,7 @@ class EyesBase(ABC):
 
     def _create_start_info(self):
         # type: () -> None
-        app_env = self._get_environment()
+        app_env = self._environment
         self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._app_name,
                             'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
                             'envName':              self.baseline_branch_name, 'environment': app_env,
