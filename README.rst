@@ -40,3 +40,14 @@ For smother development experience install Invoke for task run first
     inv install-packages  -core # install only core package, could be core|selenium]images
     inv dist -core  # publish eyes_core to test.pypi.org
     inv dist -core  -prod # publish eyes_core to pypi.org
+
+
+Testing
+-------
+
+For local testing, for example, images sdk
+
+::
+    
+    inv install-packages -core -images
+    inv test-run -images
