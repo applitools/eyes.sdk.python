@@ -4,6 +4,7 @@ import codecs
 from os import path
 
 from setuptools import setup
+
 try:
     from setuptools import find_namespace_packages
 except ImportError:
@@ -17,19 +18,20 @@ def read(filename):
 
 
 # preventing ModuleNotFoundError caused by importing lib before installing deps
-def get_version():
-    with open(os.path.join(os.path.abspath('.'), 'applitools/core/__version__.py'), 'r') as f:
-        try:
-            version = re.findall(r"^__version__ = '([^']+)'\r?$",
-                                 f.read(), re.M)[0]
-        except IndexError:
-            raise RuntimeError('Unable to determine version.')
+def get_version(package_name):
+    version_file = read('applitools/{}/__version__.py'.format(package_name))
+    try:
+        version = re.findall(r"^__version__ = '([^']+)'\r?$",
+                             version_file, re.M)[0]
+    except IndexError:
+        raise RuntimeError('Unable to determine version.')
+
     return version
 
 
 setup(
     name='eyes_core',
-    version=get_version(),
+    version=get_version('core'),
     packages=find_namespace_packages(include=['applitools.*'], exclude=('tests',)),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
@@ -57,7 +59,7 @@ setup(
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={
-        '':          ['README.rst', 'LICENSE'],
+        '':     ['README.rst', 'LICENSE'],
         'core': ['py.typed'],
     },
     project_urls={

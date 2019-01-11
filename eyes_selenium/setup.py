@@ -4,6 +4,7 @@ import codecs
 from os import path
 
 from setuptools import setup
+
 try:
     from setuptools import find_namespace_packages
 except ImportError:
@@ -17,13 +18,14 @@ def read(filename):
 
 
 # preventing ModuleNotFoundError caused by importing lib before installing deps
-def get_version():
-    with open(os.path.join(os.path.abspath('.'), 'applitools/eyes_selenium/__version__.py'), 'r') as f:
-        try:
-            version = re.findall(r"^__version__ = '([^']+)'\r?$",
-                                 f.read(), re.M)[0]
-        except IndexError:
-            raise RuntimeError('Unable to determine version.')
+def get_version(package_name):
+    version_file = read('applitools/{}/__version__.py'.format(package_name))
+    try:
+        version = re.findall(r"^__version__ = '([^']+)'\r?$",
+                             version_file, re.M)[0]
+    except IndexError:
+        raise RuntimeError('Unable to determine version.')
+
     return version
 
 
@@ -51,7 +53,7 @@ setup(
     ],
     keywords='applitools eyes eyes_selenium',
     install_requires=[
-        'core=={}'.format(get_version()),
+        'core=={}'.format(get_version('selenium')),
         'tinycss2>=0.6.1',
         'selenium>=2.53.0',
         'Pillow>=5.0.0',
@@ -63,6 +65,7 @@ setup(
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_selenium/applitools/eyes_selenium',
+        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master'
+                       '/eyes_selenium/applitools/eyes_selenium',
     },
 )
