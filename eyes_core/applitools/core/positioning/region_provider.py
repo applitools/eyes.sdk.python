@@ -2,11 +2,11 @@ import typing as tp
 
 import attr
 
-from applitools.core import Region
+from applitools.core.geometry import Region
 from applitools.core.utils import ABC
 
 if tp.TYPE_CHECKING:
-    from applitools.core import EyesScreenshot
+    from applitools.core.capture import EyesScreenshot
 
 __all__ = ('RegionProvider', 'NullRegionProvider', 'NULL_REGION_INSTANCE')
 

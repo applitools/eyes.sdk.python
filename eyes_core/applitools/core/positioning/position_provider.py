@@ -3,7 +3,7 @@ import typing as tp
 
 import attr
 
-from applitools.core import Point
+from applitools.core.geometry import Point
 from applitools.core.utils.compat import ABC
 
 if tp.TYPE_CHECKING:
@@ -63,7 +63,8 @@ class InvalidPositionProvider(PositionProvider):
     def get_current_position(self):
         raise NotImplementedError("This class does not implement methods!")
 
-    def set_position(self, location: Point):
+    def set_position(self, location):
+        # type: (Point) -> None
         raise NotImplementedError("This class does not implement methods!")
 
     def get_entire_size(self):

@@ -10,8 +10,6 @@ import warnings
 import functools
 import typing as tp
 
-from applitools.core.utils.compat import ABC
-
 
 _DEFAULT_EYES_LOGGER_NAME = 'eyes'
 _DEFAULT_EYES_FORMATTER = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
@@ -22,7 +20,7 @@ _DEBUG_SCREENSHOT_PATH = os.environ.get('DEBUG_SCREENSHOT_PATH', '.')
 __all__ = ('StdoutLogger', 'FileLogger', 'NullLogger')
 
 
-class _Logger(ABC):
+class _Logger(object):
     """
     Simple logger. Supports only info and debug.
     """

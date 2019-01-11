@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import typing as tp
 
 from PIL import Image
-from multimethod import multidispatch
 
 from applitools.core import RegionProvider
 from applitools.core.utils import image_utils
@@ -126,7 +125,10 @@ class Target(object):
 
     def image(self, image_or_path):
         # type: (tp.Union[Image.Image, tp.Text]) -> Target
-        self._image = _image_dispatch(image_or_path)
+        if isinstance(image_or_path, Image.Image):
+            self._image = image_or_path
+        elif isinstance(image_or_path, str) or isinstance(image_or_path, tp.Text):
+            self._image = image_utils.image_from_file(image_or_path)
         return self
 
     def region(self, image_or_path, rect):
@@ -134,20 +136,3 @@ class Target(object):
         target = self.image(image_or_path)
         target._target_region = rect
         return target
-
-
-@multidispatch
-def _image_dispatch(image):
-    raise TypeError('Not supported type.')
-
-
-@_image_dispatch.register(Image.Image)  # type: ignore
-def __image_dispatch(image):
-    return image
-
-
-@_image_dispatch.register(tp.Text)  # type: ignore
-@_image_dispatch.register(str)
-def __image_dispatch(image_path):
-    image = image_utils.image_from_file(image_path)
-    return image

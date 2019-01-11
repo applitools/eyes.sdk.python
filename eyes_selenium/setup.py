@@ -1,14 +1,8 @@
-import os
 import re
 import codecs
 from os import path
 
-from setuptools import setup
-
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    raise ImportError("You're using the old version of setuptools. Please update it: pip install -U setuptools")
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
@@ -32,7 +26,7 @@ def get_version(package_name):
 setup(
     name='eyes_selenium',
     version=get_version('selenium'),
-    packages=find_namespace_packages(include=['applitools.*'], exclude=('tests',)),
+    packages=find_packages(include=['applitools.*'], exclude=('tests',)),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
     author='Applitools Team',

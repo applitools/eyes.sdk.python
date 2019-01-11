@@ -1,14 +1,8 @@
-import os
 import re
 import codecs
 from os import path
 
-from setuptools import setup
-
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    raise ImportError("Please update your version of setuptools: pip install -U setuptools")
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
@@ -32,7 +26,7 @@ def get_version(package_name):
 setup(
     name='eyes_images',
     version=get_version('images'),
-    packages=find_namespace_packages(include=['applitools.*'], exclude=('tests',)),
+    packages=find_packages(include=['applitools.*'], exclude=('tests',)),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
     author='Applitools Team',
@@ -55,7 +49,6 @@ setup(
     install_requires=[
         'eyes-core=={}'.format(get_version('images')),
         'Pillow>=5.0.0',
-        'multimethod>=0.7.1',
         'typing>=3.5.2; python_version<="3.4"',
     ],
     package_data={

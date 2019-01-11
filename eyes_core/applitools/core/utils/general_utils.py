@@ -1,8 +1,6 @@
 """
 General purpose utilities.
 """
-from __future__ import absolute_import
-
 import itertools
 import json
 import time
@@ -10,7 +8,7 @@ import types
 import typing as tp
 from datetime import timedelta, tzinfo
 
-from applitools.core import logger
+from .. import logger
 from .compat import urlparse
 
 if tp.TYPE_CHECKING:
