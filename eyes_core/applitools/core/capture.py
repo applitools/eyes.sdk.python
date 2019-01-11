@@ -37,8 +37,8 @@ class EyesScreenshot(ABC):
         pass
 
     @abc.abstractmethod
-    def intersected_region(self, region, original_coordinate_types, result_coordinate_types):
-        # type: (Region, CoordinatesType, CoordinatesType) -> Region
+    def intersected_region(self, region, result_coordinate_types):
+        # type: (Region, CoordinatesType) -> Region
         pass
 
     def convert_region_location(self, region, from_, to):

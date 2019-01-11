@@ -72,8 +72,8 @@ class EyesImagesScreenshot(EyesScreenshot):
                                      CoordinatesType.CONTEXT_RELATIVE,
                                      CoordinatesType.SCREENSHOT_AS_IS)
 
-    def intersected_region(self, region, original_coordinate_types, result_coordinate_types):
-        # type: (Region, CoordinatesType, CoordinatesType) -> Region
+    def intersected_region(self, region, result_coordinate_types):
+        # type: (Region, CoordinatesType) -> Region
         assert region is not None
         if region.is_size_empty:
             return Region.from_region(region)
