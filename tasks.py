@@ -105,11 +105,11 @@ def pep_check(c, core=None,
 def mypy_check(c, core=None,
                selenium=None, images=None):
     for pack in _packages_resolver(core, selenium, images, full_path=True):
-        c.run('mypy --ignore-missing-imports {}/applitools'.format(pack), echo=True)
+        c.run('mypy --no-incremental --ignore-missing-imports {}/applitools'.format(pack), echo=True)
 
 
 @task
 def test_run(c, core=None,
              selenium=None, images=None):
     for pack in _packages_resolver(core, selenium, images):
-        c.run('pytest -s tests/{}'.format(pack), echo=True)
+        c.run('pytest tests/{}'.format(pack), echo=True)

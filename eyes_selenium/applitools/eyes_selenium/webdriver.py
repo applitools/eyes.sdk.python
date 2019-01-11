@@ -140,7 +140,7 @@ class EyesFrame(object):
         if cl1 != cl2:
             return False
         for i in range(cl1):
-            if frame_chain1[i].id_ != frame_chain2[i].id_:
+            if frame_chain1[i].id != frame_chain2[i].id:
                 return False
         return True
 

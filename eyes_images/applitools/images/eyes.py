@@ -74,7 +74,7 @@ class Eyes(EyesBase):
     def check_image(self, image, tag=None, ignore_mismatch=False, retry_timeout=-1):
         # type: (tp.Union[Image.Image, tp.Text], tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
         if self.is_disabled:
-            return
+            return None
         logger.info(
             'check_image(Image {}, tag {}, ignore_mismatch {}, retry_timeout {}'.format(image, tag, ignore_mismatch,
                                                                                         retry_timeout))
@@ -83,7 +83,7 @@ class Eyes(EyesBase):
     def check_region(self, image, region, tag=None, ignore_mismatch=False, retry_timeout=-1):
         # type: (Image.Image, Region, tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
         if self.is_disabled:
-            return
+            return None
         logger.info(
             'check_region(Image {}, region {}, tag {}, '
             'ignore_mismatch {}, retry_timeout {}'.format(image, region, tag,
