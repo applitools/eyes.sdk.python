@@ -1,5 +1,6 @@
 import re
 import codecs
+import sys
 from os import path
 
 from setuptools import setup, find_packages
@@ -22,6 +23,18 @@ def get_version(package_name):
 
     return version
 
+
+install_requires = [
+    'eyes-core=={}'.format(get_version('selenium')),
+    'tinycss2>=0.6.1',
+    'selenium>=2.53.0',
+    'Pillow>=5.0.0',
+]
+# using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
+# for run on old version of setuptools without issues
+if sys.version_info < (3, 5):
+    # typing module was added as builtin in Python 3.5
+    install_requires.append('typing >= 3.5.2')
 
 setup(
     name='eyes_selenium',
@@ -46,13 +59,7 @@ setup(
         "Topic :: Software Development :: Testing"
     ],
     keywords='applitools eyes eyes_selenium',
-    install_requires=[
-        'eyes-core=={}'.format(get_version('selenium')),
-        'tinycss2>=0.6.1',
-        'selenium>=2.53.0',
-        'Pillow>=5.0.0',
-        'typing>=3.5.2; python_version<="3.4"',
-    ],
+    install_requires=install_requires,
     package_data={
         '':              ['README.rst', 'LICENSE'],
         'eyes_selenium': ['py.typed'],

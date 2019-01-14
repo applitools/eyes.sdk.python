@@ -1,5 +1,6 @@
 import re
 import codecs
+import sys
 from os import path
 
 from setuptools import setup, find_packages
@@ -22,6 +23,19 @@ def get_version(package_name):
 
     return version
 
+
+install_requires = [
+    'attrs>=18',
+    'Pillow>=5.0.0',
+    'requests>=2.1.0',
+    # uses for check if the mobile platform is used in the test
+    'Appium-Python-Client>=0.31'
+]
+# using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
+# for run on old version of setuptools without issues
+if sys.version_info < (3, 5):
+    # typing module was added as builtin in Python 3.5
+    install_requires.append('typing >= 3.5.2')
 
 setup(
     name='eyes_core',
@@ -46,12 +60,7 @@ setup(
         "Topic :: Software Development :: Testing"
     ],
     keywords='applitools eyes eyes_core',
-    install_requires=[
-        'attrs>=18',
-        'Pillow>=5.0.0',
-        'requests>=2.1.0',
-        'typing>=3.5.2; python_version<="3.4"',
-    ],
+    install_requires=install_requires,
     package_data={
         '':     ['README.rst', 'LICENSE'],
         'core': ['py.typed'],
