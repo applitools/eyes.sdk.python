@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.eyes_selenium import Target
+from applitools.selenium import Target
 
 
 @pytest.mark.skip("Depending on Fluent API. Not implemented yet")

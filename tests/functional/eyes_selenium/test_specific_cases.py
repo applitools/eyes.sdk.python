@@ -2,7 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from applitools.core import Region
-from applitools.eyes_selenium import StitchMode, Target, IgnoreRegionBySelector, FloatingRegion, FloatingBounds
+from applitools.selenium import StitchMode, Target, IgnoreRegionBySelector, FloatingRegion, FloatingBounds
 
 
 @pytest.mark.platform('Linux')

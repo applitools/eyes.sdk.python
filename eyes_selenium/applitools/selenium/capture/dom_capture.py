@@ -12,8 +12,8 @@ from applitools.core.utils import general_utils
 from applitools.core.utils.compat import urljoin
 
 if tp.TYPE_CHECKING:
-    from applitools.eyes_selenium.webdriver import EyesWebDriver
-    from applitools.eyes_selenium.positioning import PositionProvider
+    from applitools.selenium.webdriver import EyesWebDriver
+    from applitools.selenium.positioning import PositionProvider
 
 _CAPTURE_CSSOM_SCRIPT = """
 function extractCssResources() {

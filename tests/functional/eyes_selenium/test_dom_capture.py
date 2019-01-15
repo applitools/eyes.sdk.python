@@ -7,7 +7,7 @@ from collections import OrderedDict
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.eyes_selenium import dom_capture
+from applitools.selenium import dom_capture
 
 
 @pytest.mark.usefixtures('driver_session')

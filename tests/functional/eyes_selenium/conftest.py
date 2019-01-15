@@ -6,7 +6,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 
 from applitools.core import logger
-from applitools.eyes_selenium import Eyes, EyesWebDriver, eyes_selenium_utils
+from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 
 
 @pytest.fixture

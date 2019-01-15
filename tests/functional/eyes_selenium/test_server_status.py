@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from applitools.eyes_selenium import Eyes, Target
+from applitools.selenium import Eyes, Target
 
 
 @pytest.mark.browser('chrome')

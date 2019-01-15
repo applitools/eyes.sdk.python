@@ -86,7 +86,7 @@ def is_mobile_device(driver):
 
 def get_underlying_driver(driver):
     # type: (AnyWebDriver) -> WebDriver
-    from applitools.eyes_selenium.webdriver import EyesWebDriver
+    from applitools.selenium.webdriver import EyesWebDriver
     if isinstance(driver, EyesWebDriver):
         driver = driver.driver
     return driver

@@ -2,7 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from applitools.core import Region
-from applitools.eyes_selenium import Target
+from applitools.selenium import Target
 
 
 @pytest.mark.platform('Linux', 'Windows', 'macOS')

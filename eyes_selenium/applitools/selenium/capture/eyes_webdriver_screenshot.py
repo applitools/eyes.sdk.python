@@ -12,7 +12,7 @@ if tp.TYPE_CHECKING:
     from PIL import Image
 
     from applitools.core.utils.custom_types import ViewPort
-    from applitools.eyes_selenium import EyesWebDriver, eyes_selenium_utils
+    from applitools.selenium import EyesWebDriver, eyes_selenium_utils
 
 
 class EyesWebDriverScreenshot(EyesScreenshot):
