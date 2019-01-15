@@ -291,6 +291,7 @@ class Region(object):
         self.left = max(self.left, 0)
         self.top = max(self.top, 0)
 
+    @property
     def is_size_empty(self):
         # type: () -> bool
         """
@@ -298,6 +299,7 @@ class Region(object):
         """
         return self.width <= 0 or self.height <= 0
 
+    @property
     def is_empty(self):
         # type: () -> bool
         """

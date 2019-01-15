@@ -360,7 +360,7 @@ class Eyes(EyesBase):
         :return: None
         """
         logger.info("check_region([%s], '%s')" % (region, tag))
-        if region.is_empty():
+        if region.is_empty:
             raise EyesError("region cannot be empty!")
         self._screenshot_type = self._obtain_screenshot_type(is_element=False,
                                                              inside_a_frame=bool(self._driver.frame_chain),
@@ -487,7 +487,7 @@ class Eyes(EyesBase):
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
         # Making sure the trigger is within the last screenshot bounds
-        if control.is_empty():
+        if control.is_empty:
             logger.debug("add_mouse_trigger: Ignoring %s (out of bounds)" % action)
             return
         cursor = control.middle_offset
@@ -515,7 +515,7 @@ class Eyes(EyesBase):
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
         # Making sure the trigger is within the last screenshot bounds
-        if control.is_empty():
+        if control.is_empty:
             logger.debug("add_text_trigger: Ignoring %s (out of bounds)" % text)
             return
         trigger = TextTrigger(control, text)

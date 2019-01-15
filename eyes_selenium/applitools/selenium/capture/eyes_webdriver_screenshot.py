@@ -142,7 +142,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     def get_sub_screenshot_by_region(self, region):
         sub_screenshot_region = self.get_intersected_region(region)
-        if sub_screenshot_region.is_empty():
+        if sub_screenshot_region.is_empty:
             raise OutOfBoundsError("Region {0} is out of bounds!".format(region))
         # If we take a screenshot of a region inside a frame, then the frame's (0,0) is in the
         # negative offset of the region..
