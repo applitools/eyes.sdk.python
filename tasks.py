@@ -44,7 +44,7 @@ def install_requirements(c, dev=None, testing=None, lint=None):
         'twine',
     ]
     testing_requires = [
-        'pytest==3.8.2',
+        'pytest==3.9.3',
         'pytest-cov',
         'pytest-xdist',
         'virtualenv',

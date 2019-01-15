@@ -1,35 +1,35 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import json
 import typing as tp
+import multiprocessing as mp
+from collections import OrderedDict
 
 import requests
 import tinycss2
-from tinycss2.ast import URLToken
 
-from applitools.core import logger, Point
+from applitools.core import logger
 from applitools.core.utils import general_utils
 from applitools.core.utils.compat import urljoin
 
 if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
-    from applitools.selenium.positioning import PositionProvider
 
+__all__ = ('get_full_window_dom',)
 _CAPTURE_CSSOM_SCRIPT = """
 function extractCssResources() {
-    return Array.from(document.querySelectorAll('link[rel="stylesheet"],style')).map(el => {
+    cssAndText = Array.from(document.querySelectorAll('link[rel="stylesheet"],style')).map(el => {
         if (el.tagName.toUpperCase() === 'LINK') {
-            return "href:" + el.getAttribute('href');
+            return [null, el.getAttribute('href')];
         } else {
-            return "text:" + el.textContent;
+            return [el.textContent, null];
         }
     });
+    return cssAndText
 }
-
 return extractCssResources();
 """
-_CAPTURE_FRAME_SCRIPT = """
-function captureFrame({styleProps, attributeProps, rectProps, ignoredTagNames}) {
+_CAPTURE_FRAME_SCRIPT = """function captureFrame({ styleProps, attributeProps, rectProps, ignoredTagNames }) {
   const NODE_TYPES = {
     ELEMENT: 1,
     TEXT: 3,
@@ -68,18 +68,28 @@ function captureFrame({styleProps, attributeProps, rectProps, ignoredTagNames}) 
     for (const p of rectProps) rect[p] = boundingClientRect[p];
 
     const attributes = {};
-    if (attributeProps.all) {
-      for (const p of attributeProps.all) {
-        if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
+
+    if (!attributeProps) {
+      if (el.hasAttributes()) {
+        var attrs = el.attributes;
+        for (const p of attrs) {
+          attributes[p.name] = p.value;
+        }
       }
     }
+    else {
+      if (attributeProps.all) {
+        for (const p of attributeProps.all) {
+          if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
+        }
+      }
 
-    if (attributeProps[tagName]) {
-      for (const p of attributeProps[tagName]) {
-        if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
+      if (attributeProps[tagName]) {
+        for (const p of attributeProps[tagName]) {
+          if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
+        }
       }
     }
-
     return {
       tagName,
       style: notEmptyObj(style),
@@ -114,170 +124,218 @@ function captureFrame({styleProps, attributeProps, rectProps, ignoredTagNames}) 
   return captureNode(document.documentElement);
 }
 
-return captureFrame(arguments[0]);
+return JSON.stringify(captureFrame(arguments[0]));
 """
+_ARGS_OBJ = {
+    'styleProps': [
+        "background-color",
+        "background-image",
+        "background-size",
+        "color",
+        "border-width",
+        "border-color",
+        "border-style",
+        "padding",
+        "margin"
+    ],
+    'attributeProps': None,
+    'rectProps': [
+        "width",
+        "height",
+        "top",
+        "left",
+    ],
+    'ignoredTagNames': [
+        "HEAD",
+        "SCRIPT"
+    ]
+}
+CSS_DOWNLOAD_TIMEOUT = 3  # Secs
 
 
-def get_full_window_dom(driver, position_provider=None):
-    # type: (EyesWebDriver, PositionProvider) -> str
-    if position_provider:
-        position_provider.push_state()
-        position_provider.set_position(Point.create_top_left())
+@general_utils.timeit
+def get_full_window_dom(driver, return_as_dict=False):
+    # type: (EyesWebDriver, bool) -> tp.Union[str, dict]
 
-    dom = _get_window_dom(driver)
-    dom_json = json.dumps(dom)
+    dom_tree = json.loads(driver.execute_script(_CAPTURE_FRAME_SCRIPT, _ARGS_OBJ), object_pairs_hook=OrderedDict)
 
-    if position_provider:
-        position_provider.pop_state()
-    return dom_json
-
-
-def _get_window_dom(driver):
-    args_obj = {
-        'styleProps':      [
-            "background-color",
-            "background-image",
-            "background-size",
-            "color",
-            "border-width",
-            "border-color",
-            "border-style",
-            "padding",
-            "margin"
-        ],
-        'attributeProps':  {
-            'all':    ['id', 'class'],
-            'IMG':    ['core'],
-            'IFRAME': ['core'],
-            'A':      ['href']
-        },
-        'rectProps':       [
-            "width",
-            "height",
-            "top",
-            "left",
-            "bottom",
-            "right"
-        ],
-        'ignoredTagNames': [
-            "HEAD",
-            "SCRIPT"
-        ]
-    }
-    result = _get_frame_dom(driver, args_obj)
-    return result
-
-
-def _get_frame_dom(driver, args_obj):
-    # type: (EyesWebDriver, tp.Dict) -> tp.Dict
-    dom_tree = driver.execute_script(_CAPTURE_FRAME_SCRIPT, args_obj)
-    base_url = driver.current_url  # type: ignore
     logger.debug('Traverse DOM Tree')
-    _traverse_dom_tree(driver, args_obj, dom_tree, -1, base_url)
-    return dom_tree
+    _traverse_dom_tree(driver, {'childNodes': [dom_tree], 'tagName': 'OUTER_HTML'})
+
+    if return_as_dict:
+        return dom_tree
+
+    return json.dumps(dom_tree)
 
 
-def _traverse_dom_tree(driver, args_obj, dom_tree, frame_index, base_url):
-    # type: (EyesWebDriver, dict, dict, int, tp.Text) -> None
-    logger.debug('Traverse DOM Tree: index_tree {}'.format(frame_index))
+class DomNode(object):
+    __slots__ = ('tag_name', 'child_nodes', 'is_html', 'is_iframe')
 
-    tag_name = dom_tree.get('tagName', None)  # type: str
-    if not tag_name:
+    def __init__(self, tag_name, child_nodes):
+        # type: (tp.Text, tp.List) -> None
+        self.tag_name = tag_name
+        self.child_nodes = child_nodes
+        self.is_html = bool(self.tag_name == u'HTML')
+        self.is_iframe = bool(self.tag_name == u'IFRAME')
+
+    @classmethod
+    def create_from_dom_tree(cls, node):
+        # type: (tp.Dict) -> DomNode
+        tag_name = node.get('tagName', '').upper()
+        child_nodes = node.get('childNodes', [])
+        return cls(tag_name, child_nodes)
+
+
+def _traverse_dom_tree(driver, dom_tree):
+    # type: (EyesWebDriver, tp.Dict) -> None
+    """
+    Walk through all IFRAMEs and add CSS to them
+    """
+    node = DomNode.create_from_dom_tree(dom_tree)
+    if not node.tag_name:
         return None
-
-    if frame_index > -1:
-        driver.switch_to.frame(frame_index)
-        dom = driver.execute_script(_CAPTURE_FRAME_SCRIPT, args_obj)
-        dom_tree['childNodes'] = dom
-
-        src_url = None
-        attrs_node = dom_tree.get('attributes', None)
-        if attrs_node:
-            src_url = attrs_node.get('core', None)
-
-        if src_url is None:
-            logger.warning('IFRAME WITH NO SRC')
-
-        _traverse_dom_tree(driver, args_obj, dom, -1, src_url)
-        driver.switch_to.parent_frame()
-
-    is_html = tag_name.upper() == 'HTML'
-    if is_html:
-        logger.debug('Traverse DOM Tree: Inside HTML')
-        css = _get_frame_bundled_css(driver, base_url)
-        dom_tree['css'] = css
-
-    _loop(driver, args_obj, dom_tree, base_url)
+    for index, sub_dom_tree in enumerate(_loop(driver, dom_tree)):
+        # Reduce recursion optimization. Save from extra _loop calls
+        if not sub_dom_tree['childNodes']:
+            continue
+        with driver.switch_to.frame_and_back(index):
+            _traverse_dom_tree(driver, sub_dom_tree)
 
 
-def _loop(driver, args_obj, dom_tree, base_url):
-    # type: (EyesWebDriver, dict, dict, tp.Text) -> None
-    child_nodes = dom_tree.get('childNode', None)  # type: str
-    if not child_nodes:
-        return None
+def _loop(driver, dom_tree):
+    # type: (EyesWebDriver, tp.Dict) -> tp.Iterable
+    node = DomNode.create_from_dom_tree(dom_tree)
+    if not node.child_nodes:
+        return []
 
-    index = 0
-    for dom_sub_tree in child_nodes:
-        if isinstance(dom_sub_tree, dict):
-            tag_name = dom_sub_tree.get('tagName', None)
-            is_iframe = tag_name.upper() == "IFRAME"
-            if is_iframe:
-                _traverse_dom_tree(driver, args_obj, dom_sub_tree, index, base_url)
-                index += 1
+    def iterate_child_nodes(child_nodes):
+        for sub_dom_tree in child_nodes:
+            sub_node = DomNode.create_from_dom_tree(sub_dom_tree)
+            if sub_node.is_iframe:
+                yield sub_dom_tree
+                continue
+
+            if sub_node.is_html:
+                sub_dom_tree['css'] = _get_frame_bundled_css(driver)
+            if sub_node.child_nodes:
+                # yield from iterate_child_nodes() in python 3
+                for sub in iterate_child_nodes(sub_node.child_nodes):
+                    yield sub
+
+    return iterate_child_nodes(node.child_nodes)
 
 
-def _get_frame_bundled_css(driver, base_url):
-    # type: (EyesWebDriver, tp.Text) -> tp.Text
+@general_utils.timeit
+def _get_frame_bundled_css(driver):
+    # type: (EyesWebDriver) -> tp.Text
+    base_url = driver.current_url  # type: ignore
     if not general_utils.is_absolute_url(base_url):
-        logger.warning('Base URL is not an absolute URL!')
-    result = driver.execute_script(_CAPTURE_CSSOM_SCRIPT)
-    css_string = ''
-    for item in result:
-        kind = item[0:5]
-        value = item[5:]
-        css = ''
-        if kind == 'text:':
-            css = value
-        else:
-            css = _download_css(base_url, value)
+        logger.info('Base URL is not an absolute URL!')
 
-        stylesheet = tinycss2.parse_stylesheet(css, skip_comments=True,
-                                               skip_whitespace=True)
-        css = _serialize_css(base_url, stylesheet)
-        css_string += css
+    cssom_results = driver.execute_script(_CAPTURE_CSSOM_SCRIPT)
+    raw_css_nodes = [CssNode.create(base_url, css_href, css_text)
+                     for css_text, css_href in cssom_results]
 
-    return css_string
+    if len(raw_css_nodes) > 5:
+        pool = mp.Pool(processes=mp.cpu_count() * 2)
+        results = pool.map(_process_raw_css_node, raw_css_nodes)
+    else:
+        results = [_process_raw_css_node(node) for node in raw_css_nodes]
+    return ''.join(results)
 
 
-def _serialize_css(base_url, stylesheet):
-    # type: (tp.Text, tp.List) -> tp.Text
-    css_string = ''
-    for node in stylesheet:
-        add_as_is = True
-        if node.type == 'at-rule' and node.lower_at_keyword == 'import':
-            logger.info("encountered @import rule")
-            href = None
-            for tag in node.prelude:
-                if isinstance(tag, URLToken):
-                    href = tag.value
-            css = _download_css(base_url, href)
-            css = css.strip()
-            logger.info('imported CSS (whitespaces trimmed) length: {}'.format(len(css)))
-            add_as_is = len(css) == 0
-            if not add_as_is:
-                css_string += css
-        if add_as_is:
-            css_string += node.serialize()
-    return css_string
+def _process_raw_css_node(node, minimize_css=True):
+    # type: (CssNode, bool) -> tp.Text
+
+    @general_utils.retry()
+    def get_css(url):
+        if url.startswith('blob:'):
+            logger.warning('Passing blob URL: {}'.format(url))
+            return ''
+        return requests.get(url, timeout=CSS_DOWNLOAD_TIMEOUT).text.strip()
+
+    def iterate_css_sub_nodes(node, text=None):
+        if text is None:
+            text = node.text
+            if node.text is None:
+                text = get_css(node.url)
+
+        for sub_node in _parse_and_serialize_css(node, text, minimize_css):
+            if sub_node.url:
+                text = get_css(sub_node.url)
+                # yield from
+                for res in iterate_css_sub_nodes(sub_node, text):
+                    yield res
+                continue
+            yield sub_node.text
+
+    return ''.join(iterate_css_sub_nodes(node))
 
 
-def _download_css(base_url, value):
+def _parse_and_serialize_css(node, text, minimize=False):
+    # type: (CssNode, tp.Text, bool) -> tp.Generator
+    is_import_node = lambda n: n.type == 'at-rule' and n.lower_at_keyword == 'import'
+    stylesheet = tinycss2.parse_stylesheet(text, skip_comments=True,
+                                           skip_whitespace=True)
+    for style_node in stylesheet:
+        if is_import_node(style_node):
+            for tag in style_node.prelude:
+                if tag.type == 'url':
+                    logger.debug('The node has import')
+                    yield CssNode.create_sub_node(
+                        parent_node=node,
+                        href=tag.value)
+            continue
+
+        try:
+            if minimize:
+                try:
+                    # remove whitespaces inside blocks
+                    style_node.content = [tok for tok in style_node.content if tok.type != 'whitespace']
+                except AttributeError as e:
+                    logger.warning("Cannot serialize item: {}, cause error: {}".format(style_node, str(e)))
+            serialized = style_node.serialize()
+            if minimize:
+                serialized = serialized.replace('\n', '').replace('/**/', ' ').replace(' {', '{')
+
+        except TypeError as e:
+            logger.warning(str(e))
+            continue
+        yield CssNode.create_serialized_node(text=serialized)
+
+
+def _make_url(base_url, value):
     # type: (tp.Text, tp.Text) -> tp.Text
-    logger.info("Given URL to download: {}".format(value))
-    if (general_utils.is_absolute_url(value)
-            and not general_utils.is_url_with_scheme(value)):
+    if (general_utils.is_absolute_url(value) and  # noqa
+            not general_utils.is_url_with_scheme(value)):
         url = urljoin('http://', value)
     else:
         url = urljoin(base_url, value)
-    logger.info("Download CSS from {}".format(url))
-    return requests.get(url).text
+    return url
+
+
+class CssNode(object):
+    __slots__ = ('base_url', 'url', 'text')
+
+    def __init__(self, base_url, url, text):
+        # type: (tp.Optional[tp.Text], tp.Optional[tp.Text], tp.Optional[tp.Text]) -> None
+        self.base_url = base_url
+        self.url = url
+        self.text = text
+
+    @classmethod
+    def create(cls, base_url, href=None, text=None):
+        # type: (tp.Text, tp.Optional[tp.Text], tp.Optional[tp.Text]) -> 'CssNode'
+        url = _make_url(base_url, href) if href else None
+        return cls(base_url, url, text)
+
+    @classmethod
+    def create_sub_node(cls, parent_node, href, text=None):
+        # type: ('CssNode', tp.Text, tp.Optional[tp.Text]) -> 'CssNode'
+        url = _make_url(parent_node.base_url, href)
+        return cls(parent_node.base_url, url, text)
+
+    @classmethod
+    def create_serialized_node(cls, text):
+        # type: (tp.Text) -> 'CssNode'
+        return cls(base_url=None, url=None, text=text)

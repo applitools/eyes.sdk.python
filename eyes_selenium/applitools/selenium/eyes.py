@@ -17,10 +17,10 @@ from applitools.core.geometry import Region
 from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
 from applitools.core.utils import image_utils
 from . import eyes_selenium_utils
-from .webdriver import EyesFrame, EyesWebDriver
+from .webdriver import EyesWebDriver
 from .capture import EyesWebDriverScreenshot, dom_capture
 from .target import Target
-from .positioning import build_position_provider_for, StitchMode
+from .positioning import StitchMode, ElementPositionProvider
 from .__version__ import __version__
 
 if tp.TYPE_CHECKING:
@@ -43,14 +43,20 @@ class Eyes(EyesBase):
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
 
     @staticmethod
-    def set_viewport_size_static(driver, viewportsize):
+    def set_viewport_size_static(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
-        eyes_selenium_utils.set_viewport_size(driver, viewportsize)
+        eyes_selenium_utils.set_viewport_size(driver, size)
 
     @staticmethod
     def get_viewport_size_static(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
+
+    def get_viewport_size(self):
+        return self.get_viewport_size_static(self._driver)
+
+    def set_viewport_size(self, size):
+        self.set_viewport_size_static(self._driver, size)
 
     def __init__(self, server_url=EyesBase.DEFAULT_EYES_SERVER):
         super(Eyes, self).__init__(server_url)
@@ -61,6 +67,7 @@ class Eyes(EyesBase):
         self._screenshot_type = None  # type: tp.Optional[str]  # ScreenshotType
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_mode = StitchMode.Scroll  # type: tp.Text
+        self._element_position_provider = None  # type: tp.Optional[ElementPositionProvider]
 
         # If true, Eyes will create a full page screenshot (by using stitching) for browsers which only
         # returns the viewport screenshot.
@@ -96,6 +103,14 @@ class Eyes(EyesBase):
             self.hide_scrollbars = True
             self.send_dom = True
 
+    @property
+    def driver(self):
+        # type: () -> EyesWebDriver
+        """
+        Returns the current web driver.
+        """
+        return self._driver
+
     def _obtain_screenshot_type(self, is_element, inside_a_frame, stitch_content, force_fullpage, is_region=False):
         # type:(bool, bool, bool, bool, bool) -> str
         if stitch_content or force_fullpage:
@@ -119,6 +134,7 @@ class Eyes(EyesBase):
 
         return ScreenshotType.VIEWPORT_SCREENSHOT
 
+    @property
     def _environment(self):
         os = self.host_os
         # If no host OS was set, check for mobile OS.
@@ -145,46 +161,6 @@ class Eyes(EyesBase):
                    'displaySize': self._viewport_size,
                    'inferred':    self._inferred_environment}
         return app_env
-
-    @property
-    def driver(self):
-        # type: () -> EyesWebDriver
-        """
-        Returns the current web driver.
-        """
-        return self._driver
-
-    def get_viewport_size(self):
-        # type: () -> ViewPort
-        """
-        Returns the size of the viewport of the application under test (e.g, the browser).
-        """
-        return self._driver.get_viewport_size()
-
-    def set_viewport_size(self, size):
-        # type: (AnyWebDriver, ViewPort) -> None
-        self.set_viewport_size_static(self.driver, size)
-
-    def _assign_viewport_size(self):
-        # type: () -> None
-        """
-        Assign the viewport size we need to be in the default content frame.
-        """
-        original_frame_chain = self._driver.get_frame_chain()
-        self._driver.switch_to.default_content()
-        try:
-            if self._viewport_size:
-                logger.debug("Assigning viewport size {0}".format(self._viewport_size))
-                self.set_viewport_size(self._viewport_size)
-            else:
-                logger.debug("No viewport size given. Extracting the viewport size from the driver...")
-                self._viewport_size = self.get_viewport_size()
-                logger.debug("Viewport size {0}".format(self._viewport_size))
-        except EyesError:
-            raise TestFailedError('Failed to assign viewport size!')
-        finally:
-            # Going back to the frame we started at
-            self._driver.switch_to.frames(original_frame_chain)
 
     @property
     def _title(self):
@@ -226,9 +202,10 @@ class Eyes(EyesBase):
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self._driver.get_viewport_size(),
+                viewport_size=self.get_viewport_size(),
                 device_pixel_ratio=device_pixel_ratio,
-                is_mobile_device=eyes_selenium_utils.is_mobile_device(self._driver))  # type: ScaleProvider
+                # always False as in Java version
+                is_mobile_device=False)  # type: ScaleProvider
         except Exception:
             # This can happen in Appium for example.
             logger.info("Failed to set ContextBasedScaleProvider.")
@@ -244,6 +221,15 @@ class Eyes(EyesBase):
         yield
         if self.hide_scrollbars:
             self._driver.set_overflow(original_overflow)
+
+    def _try_capture_dom(self):
+        try:
+            dom_json = dom_capture.get_full_window_dom(self._driver)
+            return dom_json
+        except Exception as e:
+            logger.warning(
+                'Exception raising during capturing DOM Json. Passing...\n Got next error: {}'.format(str(e)))
+            return None
 
     def _get_screenshot(self):
         scale_provider = self._update_scaling_params()
@@ -283,10 +269,8 @@ class Eyes(EyesBase):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info('Not entire element screenshot requested')
         screenshot = self._viewport_screenshot(scale_provider)
-        if isinstance(self._region_to_check, Region):
-            screenshot = screenshot.get_sub_screenshot_by_region(self._region_to_check)
-        else:
-            screenshot = screenshot.get_sub_screenshot_by_element(self._region_to_check)
+        region = screenshot.get_element_region_in_frame_viewport(self._region_to_check)
+        screenshot = screenshot.get_sub_screenshot_by_region(region)
         return screenshot
 
     def _full_page_screenshot(self, scale_provider):
@@ -299,14 +283,25 @@ class Eyes(EyesBase):
     def _viewport_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info('Viewport screenshot requested')
-        screenshot64 = self._driver.get_screesnhot_as_base64_from_main_frame(
-            self._seconds_to_wait_screenshot)
-        screenshot = image_utils.image_from_bytes(base64.b64decode(screenshot64))
-        scale_provider.update_scale_ratio(screenshot.width)
+
+        self._driver._wait_before_screenshot(self._seconds_to_wait_screenshot)
+        if not self._driver.is_mobile_device():
+            image64 = self._driver.get_screesnhot_as_base64_from_main_frame()
+        else:
+            image64 = self._driver.get_screenshot_as_base64()
+
+        image = image_utils.image_from_bytes(base64.b64decode(image64))
+        scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
-            screenshot = image_utils.scale_image(screenshot, 1.0 / pixel_ratio)
-        return EyesWebDriverScreenshot.create_from_image(screenshot, self._driver).get_viewport_screenshot()
+            image = image_utils.scale_image(image, 1.0 / pixel_ratio)
+        return EyesWebDriverScreenshot.create_from_image(image, self._driver).get_viewport_screenshot()
+
+    def _ensure_viewport_size(self):
+        if self._viewport_size is None:
+            self._viewport_size = self._driver.get_default_content_viewport_size()
+            if not eyes_selenium_utils.is_mobile_device(self._driver):
+                eyes_selenium_utils.set_viewport_size(self._driver, self._viewport_size)
 
     def open(self, driver, app_name, test_name, viewport_size=None):
         # type: (AnyWebDriver, tp.Text, tp.Text, tp.Optional[ViewPort]) -> EyesWebDriver
@@ -323,6 +318,11 @@ class Eyes(EyesBase):
                 logger.info("WARNING: driver is not a RemoteWebDriver (class: {0})".format(driver.__class__))
             self._driver = EyesWebDriver(driver, self, self._stitch_mode)
 
+        if viewport_size is not None:
+            self._viewport_size = viewport_size
+            eyes_selenium_utils.set_viewport_size(self._driver, viewport_size)
+
+        self._ensure_viewport_size()
         self._open_base(app_name, test_name, viewport_size)
 
         return self._driver
@@ -340,7 +340,7 @@ class Eyes(EyesBase):
         """
         logger.info("check_window('%s')" % tag)
         self._screenshot_type = self._obtain_screenshot_type(is_element=False,
-                                                             inside_a_frame=bool(self._driver.get_frame_chain()),
+                                                             inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=False,
                                                              force_fullpage=self.force_full_page_screenshot)
         self._check_window_base(tag, match_timeout, target)
@@ -363,7 +363,7 @@ class Eyes(EyesBase):
         if region.is_empty():
             raise EyesError("region cannot be empty!")
         self._screenshot_type = self._obtain_screenshot_type(is_element=False,
-                                                             inside_a_frame=bool(self._driver.get_frame_chain()),
+                                                             inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=stitch_content,
                                                              force_fullpage=self.force_full_page_screenshot,
                                                              is_region=True)
@@ -384,11 +384,38 @@ class Eyes(EyesBase):
         """
         logger.info("check_region_by_element('%s')" % tag)
         self._screenshot_type = self._obtain_screenshot_type(is_element=True,
-                                                             inside_a_frame=bool(self._driver.get_frame_chain()),
+                                                             inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=stitch_content,
                                                              force_fullpage=self.force_full_page_screenshot)
-        self._region_to_check = element
+
+        self._element_position_provider = ElementPositionProvider(self._driver, element)
+
+        origin_overflow = element.get_overflow()
+        element.set_overflow('hidden')
+
+        element_region = self._get_element_region(element)
+        self._region_to_check = element_region
         self._check_window_base(tag, match_timeout, target)
+        self._element_position_provider = None
+
+        if origin_overflow:
+            element.set_overflow(origin_overflow)
+
+    def _get_element_region(self, element):
+        #  We use a smaller size than the actual screenshot size in order to eliminate duplication
+        #  of bottom scroll bars, as well as footer-like elements with fixed position.
+        pl = element.location
+        # TODO: add correct values for Safari
+        # in the safari browser the returned size has absolute value but not relative as
+        # in other browsers
+        element_width = element.get_client_width()
+        element_height = element.get_client_height()
+        border_left_width = element.get_computed_style_int('border-left-width')
+        border_top_width = element.get_computed_style_int('border-top-width')
+        element_region = Region(pl['x'] + border_left_width,
+                                pl['y'] + border_top_width,
+                                element_width, element_height)
+        return element_region
 
     def check_region_by_selector(self, by, value, tag=None, match_timeout=-1, target=None, stitch_content=False):
         # type: (tp.Text, tp.Text, tp.Optional[tp.Text], int, tp.Optional[Target], bool) -> None
@@ -403,7 +430,9 @@ class Eyes(EyesBase):
         :param target: (Target) The target for the check_window call
         :return: None
         """
-        logger.debug("calling 'check_region_by_element'...")
+        logger.debug("calling 'check_region_by_selector'...")
+        # hack: prevent stale element exception by saving viewport value before catching element
+        self._driver.get_default_content_viewport_size()
         self.check_region_by_element(self._driver.find_element(by, value), tag,
                                      match_timeout, target, stitch_content)
 
@@ -434,11 +463,9 @@ class Eyes(EyesBase):
         logger.info("check_region_in_frame_by_selector('%s')" % tag)
 
         # Switching to the relevant frame
-        self._driver.switch_to.frame(frame_reference)
-        logger.debug("calling 'check_region_by_selector'...")
-        self.check_region_by_selector(by, value, tag, match_timeout, target, stitch_content)
-        # Switching back to our original frame
-        self._driver.switch_to.parent_frame()
+        with self._driver.switch_to.frame_and_back(frame_reference):
+            logger.debug("calling 'check_region_by_selector'...")
+            self.check_region_by_selector(by, value, tag, match_timeout, target, stitch_content)
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (tp.Text, AnyWebElement) -> None
@@ -455,8 +482,7 @@ class Eyes(EyesBase):
         if self._last_screenshot is None:
             logger.debug("add_mouse_trigger: Ignoring %s (no screenshot)" % action)
             return
-        if not EyesFrame.is_same_frame_chain(self._driver.get_frame_chain(),
-                                             self._last_screenshot.get_frame_chain()):
+        if not self._driver.frame_chain == self._last_screenshot.frame_chain:
             logger.debug("add_mouse_trigger: Ignoring %s (different frame)" % action)
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
@@ -484,8 +510,7 @@ class Eyes(EyesBase):
         if self._last_screenshot is None:
             logger.debug("add_text_trigger: Ignoring '%s' (no screenshot)" % text)
             return
-        if not EyesFrame.is_same_frame_chain(self._driver.get_frame_chain(),
-                                             self._last_screenshot.get_frame_chain()):
+        if not self._driver.frame_chain == self._last_screenshot.frame_chain:
             logger.debug("add_text_trigger: Ignoring %s (different frame)" % text)
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
@@ -496,8 +521,3 @@ class Eyes(EyesBase):
         trigger = TextTrigger(control, text)
         self._user_inputs.append(trigger)
         logger.info("add_text_trigger: Added %s" % trigger)
-
-    def _try_capture_dom(self):
-        position_provider = build_position_provider_for(StitchMode.Scroll, self._driver)
-        dom_json = dom_capture.get_full_window_dom(self._driver, position_provider)
-        return dom_json

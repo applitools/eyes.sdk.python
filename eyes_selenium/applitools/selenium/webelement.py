@@ -54,9 +54,33 @@ class EyesWebElement(object):
             arguments[0].scrollLeft = {:d};
             arguments[0].scrollTop = {:d};
     """
+    _JS_GET_BORDER_WIDTHS_ARR = """
+            var retVal = retVal || [];
+            if (window.getComputedStyle) {
+            var computedStyle = window.getComputedStyle(elem, null);
+            retVal.push(computedStyle.getPropertyValue('border-left-width'));
+            retVal.push(computedStyle.getPropertyValue('border-top-width'));
+            retVal.push(computedStyle.getPropertyValue('border-right-width'));
+            retVal.push(computedStyle.getPropertyValue('border-bottom-width'));
+            } else if (elem.currentStyle) {
+            retVal.push(elem.currentStyle['border-left-width']);
+            retVal.push(elem.currentStyle['border-top-width']);
+            retVal.push(elem.currentStyle['border-right-width']);
+            retVal.push(elem.currentStyle['border-bottom-width']);
+            } else {
+            retVal.push(0,0,0,0);
+            }
+    """
+    _JS_GET_BORDER_WIDTHS = _JS_GET_BORDER_WIDTHS_ARR + "return retVal;"
+    _JS_GET_SIZE_AND_BORDER_WIDTHS = """
+            var elem = arguments[0];
+            var retVal = [arguments[0].clientWidth, arguments[0].clientHeight];
+            {}
+            return retVal
+    """.format(_JS_GET_BORDER_WIDTHS_ARR)
 
-    def __init__(self, element, eyes, driver):
-        # type: (WebElement, Eyes, EyesWebDriver) -> None
+    def __init__(self, element, driver):
+        # type: (WebElement, EyesWebDriver) -> None
         """
         Ctor.
 
@@ -65,7 +89,6 @@ class EyesWebElement(object):
         :param driver: EyesWebDriver instance.
         """
         self.element = element
-        self._eyes = eyes
         self._driver = driver  # type: AnyWebDriver
         # Replacing implementation of the underlying driver with ours. We'll put the original
         # methods back before destruction.
@@ -128,7 +151,7 @@ class EyesWebElement(object):
         result = self._original_methods['find_element'](by, value)
         # Wrap the element.
         if result:
-            result = EyesWebElement(result, self._eyes, self._driver)
+            result = EyesWebElement(result, self._driver)
         return result
 
     def find_elements(self, by=By.ID, value=None):
@@ -145,7 +168,7 @@ class EyesWebElement(object):
         if results:
             updated_results = []
             for element in results:
-                updated_results.append(EyesWebElement(element, self._eyes, self._driver))
+                updated_results.append(EyesWebElement(element, self._driver))
             results = updated_results
         return results
 
@@ -153,7 +176,7 @@ class EyesWebElement(object):
         """
         Clicks and element.
         """
-        self._eyes.add_mouse_trigger_by_element('click', self)
+        self._driver._eyes.add_mouse_trigger_by_element('click', self)
         self.element.click()
 
     def send_keys(self, *value):
@@ -167,7 +190,7 @@ class EyesWebElement(object):
             if isinstance(val, int):
                 val = val.__str__()
             text += val.encode('utf-8').decode('utf-8')
-        self._eyes.add_text_trigger_by_element(self, text)
+        self._driver._eyes.add_text_trigger_by_element(self, text)
         self.element.send_keys(*value)
 
     def set_overflow(self, overflow, stabilization_time=None):
@@ -253,3 +276,26 @@ class EyesWebElement(object):
         """Scrolls to the specified location inside the element."""
         self._driver.execute_script(
             self._JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y), self.element)
+
+    @property
+    def size_and_borders(self):
+        ret_val = self._driver.execute_script(self._JS_GET_SIZE_AND_BORDER_WIDTHS, self.element)
+        return SizeAndBorders(
+            width=int(ret_val[0]),
+            height=int(ret_val[1]),
+            left=int(ret_val[2].rstrip('px')),
+            top=int(ret_val[3].rstrip('px')),
+            right=int(ret_val[4].rstrip('px')),
+            bottom=int(ret_val[5].rstrip('px'))
+        )
+
+    def __str__(self):
+        return "EyesWebElement: id {}, tag_name {}".format(self.element.id, self.element.tag_name, )
+
+
+class SizeAndBorders(object):
+    __slots__ = ('size', 'borders')
+
+    def __init__(self, width, height, left, top, right, bottom):
+        self.size = dict(width=width, height=height)
+        self.borders = dict(left=left, top=top, right=right, bottom=bottom)

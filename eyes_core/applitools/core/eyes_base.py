@@ -131,7 +131,7 @@ class EyesBase(ABC):
         """
 
     @abc.abstractmethod
-    def _assign_viewport_size(self):
+    def _ensure_viewport_size(self):
         # type: () -> None
         """
         Assign the viewport size we need to be in the default content frame.
@@ -430,7 +430,7 @@ class EyesBase(ABC):
     def _start_session(self):
         # type: () -> None
         logger.debug("_start_session()")
-        self._assign_viewport_size()
+        self._ensure_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
         if not self.branch_name:

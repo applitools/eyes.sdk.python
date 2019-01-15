@@ -7,12 +7,13 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.core import EyesScreenshot, EyesError, Point, Region, OutOfBoundsError
 from applitools.core.utils import image_utils
+from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.frames import FrameChain
 
 if tp.TYPE_CHECKING:
     from PIL import Image
-
     from applitools.core.utils.custom_types import ViewPort
-    from applitools.selenium import EyesWebDriver, eyes_selenium_utils
+    from applitools.selenium import EyesWebDriver
 
 
 class EyesWebDriverScreenshot(EyesScreenshot):
@@ -67,12 +68,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         super(EyesWebDriverScreenshot, self).__init__(image=screenshot)
 
         self._driver = driver
-        self._viewport_size = driver.get_default_content_viewport_size()  # type: ViewPort
+        self._viewport_size = driver.get_default_content_viewport_size(force_query=False)  # type: ViewPort
 
-        self._frame_chain = driver.get_frame_chain()
+        self._frame_chain = driver.frame_chain.clone()
         if self._frame_chain:
             chain_len = len(self._frame_chain)
-            self._frame_size = self._frame_chain[chain_len - 1].size
+            self._frame_size = self._frame_chain[chain_len - 1].outer_size
         else:
             try:
                 self._frame_size = driver.get_entire_page_size()
@@ -106,6 +107,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         self._frame_screenshot_intersect.intersect(Region(width=self._screenshot.width,
                                                           height=self._screenshot.height))
 
+    @staticmethod
     def calc_frame_location_in_screenshot(frame_chain, is_viewport_screenshot):
         first_frame = frame_chain[0]
         location_in_screenshot = Point(first_frame.location['x'], first_frame.location['y'])
@@ -122,8 +124,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             location_in_screenshot.y += frame.location['y'] - frame.parent_scroll_position.y
         return location_in_screenshot
 
-    def get_frame_chain(self):
-        return [frame.clone() for frame in self._frame_chain]
+    @property
+    def frame_chain(self):
+        return self._frame_chain
 
     def get_base64(self):
         if not self._screenshot64:
