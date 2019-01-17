@@ -4,6 +4,7 @@ import math
 import typing as tp
 from collections import OrderedDict
 
+from .utils import argument_guard
 from .metadata import CoordinatesType
 from .errors import EyesError
 
@@ -228,10 +229,11 @@ class Region(object):
         return Point(self.left, self.top)
 
     @location.setter
-    def location(self, p):
+    def location(self, point):
         # type: (Point) -> None
         """Sets the top left corner of the region"""
-        self.left, self.top = p.x, p.y
+        argument_guard.not_none(point)
+        self.left, self.top = point.x, point.y
 
     @property
     def bottom_right(self):

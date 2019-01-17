@@ -1,11 +1,9 @@
 import abc
 import typing as tp
 
-import attr
-
 from .geometry import Point, Region
 from .metadata import CoordinatesType
-from .utils import ABC, image_utils
+from .utils import ABC, image_utils, argument_guard
 
 if tp.TYPE_CHECKING:
     from PIL import Image
@@ -13,13 +11,14 @@ if tp.TYPE_CHECKING:
 __all__ = ('EyesScreenshot',)
 
 
-@attr.s
 class EyesScreenshot(ABC):
     """
      Base class for handling screenshots.
      """
 
-    _image = attr.ib()  # type: Image.Image
+    def __init__(self, image):
+        # type: (Image.Image) -> None
+        self._image = image  # type: Image.Image
 
     @abc.abstractmethod
     def sub_screenshot(self, region, throw_if_clipped=False):
@@ -85,13 +84,13 @@ class EyesScreenshot(ABC):
         :return:       A new region which is the transformation of `region` to
                        the `to` coordinates type.
         """
-        assert region is not None
-        assert isinstance(region, Region)
-        assert from_ is not None
-        assert to is not None
-
+        argument_guard.not_none(region)
+        argument_guard.is_a(region, Region)
         if region.is_size_empty:
             return Region.create_empty_region()
+
+        argument_guard.not_none(from_)
+        argument_guard.not_none(to)
 
         updated_location = self.convert_location(region.location, from_, to)
         return Region(updated_location.x, updated_location.y, region.width, region.height)
@@ -100,11 +99,6 @@ class EyesScreenshot(ABC):
     def image_region(self):
         # type: () -> Region
         return Region(0, 0, self._image.width, self._image.height, CoordinatesType.SCREENSHOT_AS_IS)
-
-    @staticmethod
-    def from_region(region):
-        # type: (Region) -> Image.Image
-        return Image.new('RGBA', (region.width, region.height))
 
     @property
     def bytes(self):
