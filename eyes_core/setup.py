@@ -40,7 +40,7 @@ if sys.version_info < (3, 5):
 setup(
     name='eyes_core',
     version=get_version('core'),
-    packages=find_packages(include=['applitools.*'], exclude=('tests',)),
+    packages=find_packages(),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
     author='Applitools Team',

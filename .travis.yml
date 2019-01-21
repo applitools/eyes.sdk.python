@@ -1,14 +1,25 @@
 language: python
-python:
- - 2.7
- - 3.5
- - 3.6
-sudo: false
-env:
-  - DISPLAY=:0.0
+matrix:
+    include:
+        - python: 2.7
+          env:
+              - TOX_ENV=images
+        - python: 3.5
+          env:
+              - TOX_ENV=images
+        - python: 2.7
+          env:
+              - TOX_ENV=integration
+        - python: 3.6
+          env:
+              - TOX_ENV=integration
+        - python: 3.6
+          env:
+              - TOX_ENV=lint
 install:
-  - pip install -U tox-travis
-script:
+  - pip install -U tox
+before_script:
   - export APPLITOOLS_BATCH_ID=`uuidgen -t`
   - echo $APPLITOOLS_BATCH_ID
-  - tox
+script:
+  - tox -e $TOX_ENV
