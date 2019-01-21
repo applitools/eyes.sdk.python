@@ -37,7 +37,7 @@ if sys.version_info < (3, 5):
 setup(
     name='eyes_images',
     version=get_version('images'),
-    packages=find_packages(include=['applitools.*'], exclude=('tests',)),
+    packages=find_packages(),
     url='http://www.applitools.com',
     license='Apache License, Version 2.0',
     author='Applitools Team',
@@ -60,7 +60,7 @@ setup(
     install_requires=install_requires,
     package_data={
         '':     ['README.rst', 'LICENSE'],
-        'core': ['py.typed'],
+        'images': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
