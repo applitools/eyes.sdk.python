@@ -35,24 +35,35 @@ def dist(c, core=None,
 
 
 @task
-def install_requirements(c):
+def install_requirements(c, dev=None, testing=None, lint=None):
     dev_requires = [
         'ipython',
         'ipdb',
         'bumpversion',
-        'flake8',
-        'flake8-import-order',
-        'flake8-bugbear',
-        'mypy',
         'wheel',
         'twine',
+        'pathlib',
     ]
     testing_requires = [
         'pytest==3.8.2',
         'pytest-cov',
         'pytest-xdist',
+        'pytest_virtualenv',
     ]
-    requires = dev_requires + testing_requires
+    lint_requires = [
+        'flake8',
+        'flake8-import-order',
+        'flake8-bugbear',
+        'mypy',
+    ]
+    if testing:
+        requires = testing_requires
+    elif dev:
+        requires = dev_requires
+    elif lint:
+        requires = lint_requires
+    else:
+        requires = dev_requires + testing_requires + lint_requires
     c.run("pip install {}".format(' '.join(requires)), echo=True)
 
 
@@ -109,7 +120,12 @@ def mypy_check(c, core=None,
 
 
 @task
-def test_run(c, core=None,
-             selenium=None, images=None):
+def test_run_packs(c, core=None,
+                   selenium=None, images=None):
     for pack in _packages_resolver(core, selenium, images):
-        c.run('pytest tests/{}'.format(pack), echo=True)
+        c.run('pytest tests/functional/{}'.format(pack), echo=True)
+
+
+@task
+def test_run_integration(c):
+    c.run('pytest tests/test_integration.py')
