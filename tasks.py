@@ -48,7 +48,8 @@ def install_requirements(c, dev=None, testing=None, lint=None):
         'pytest==3.8.2',
         'pytest-cov',
         'pytest-xdist',
-        'pytest_virtualenv',
+        'virtualenv',
+        'pytest-virtualenv',
     ]
     lint_requires = [
         'flake8',
