@@ -1,8 +1,8 @@
-from pathlib import Path
+from os import path
 
-from invoke import task, Collection
+from invoke import task
 
-here = Path('.').absolute()
+here = path.dirname(path.abspath(__file__))
 
 
 @task
@@ -42,7 +42,6 @@ def install_requirements(c, dev=None, testing=None, lint=None):
         'bumpversion',
         'wheel',
         'twine',
-        'pathlib',
     ]
     testing_requires = [
         'pytest==3.8.2',
@@ -84,7 +83,7 @@ def _packages_resolver(core=None, selenium=None, images=None,
 
     for pack in packages:
         if full_path:
-            pack = here / pack
+            pack = path.join(here, pack)
             if path_as_str:
                 pack = str(pack)
         yield pack
