@@ -1,6 +1,7 @@
-from pathlib import Path
+import os.path
 
-here = Path('.').absolute()
+here = os.path.dirname(os.path.join(__file__))
+root_dir = os.path.normpath(os.path.join(here, os.pardir))
 
 
 def _packages_resolver(core=None, selenium=None, images=None):
@@ -14,7 +15,7 @@ def _packages_resolver(core=None, selenium=None, images=None):
         pack = images_pkg
     else:
         return None
-    return str(here / pack)
+    return str(os.path.join(root_dir, pack))
 
 
 def test_setup_eyes_core(virtualenv):
@@ -53,11 +54,9 @@ def test_eyes_images_namespace_package(virtualenv):
                                build_egg=True)
     virtualenv.run('python -c "from applitools.images import *"')
 
-
 # def test_eyes_selenium_namespace_package(virtualenv):
 #     virtualenv.install_package(_packages_resolver(core=True),
 #                                build_egg=True)
 #     virtualenv.install_package(_packages_resolver(selenium=True),
 #                                build_egg=True)
 #     virtualenv.run('python -c "from applitools.selenium import *"')
-
