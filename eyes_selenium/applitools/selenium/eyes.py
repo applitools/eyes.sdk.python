@@ -76,6 +76,13 @@ class Eyes(EyesBase):
         # If true, Eyes will remove the scrollbars from the pages before taking the screenshot.
         self.hide_scrollbars = False  # type: bool
 
+        # The number of milliseconds to wait before each time a screenshot is taken.
+        self.wait_before_screenshots = EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS  # type: int
+
+    @property
+    def _seconds_to_wait_screenshot(self):
+        return self.wait_before_screenshots / 1000.0
+
     @property
     def base_agent_id(self):
         return "eyes.selenium.python/{version}".format(version=__version__)
@@ -119,7 +126,7 @@ class Eyes(EyesBase):
 
             if not inside_a_frame:
                 if ((force_fullpage and not stitch_content)
-                        or (stitch_content and not is_element)):
+                    or (stitch_content and not is_element)):
                     return ScreenshotType.FULLPAGE_SCREENSHOT
 
             if inside_a_frame or stitch_content:

@@ -98,9 +98,6 @@ class EyesBase(ABC):
         # If true, Eyes will treat new tests the same as failed tests.
         self.fail_on_new_test = False  # type: bool
 
-        # The number of milliseconds to wait before each time a screenshot is taken.
-        self.wait_before_screenshots = EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS  # type: int
-
         # If true, we will send full DOM to the server for analyzing
         self.send_dom = False  # type: bool
 
@@ -149,10 +146,6 @@ class EyesBase(ABC):
     @abc.abstractmethod
     def _inferred_environment(self):
         pass
-
-    @property
-    def _seconds_to_wait_screenshot(self):
-        return self.wait_before_screenshots / 1000.0
 
     @property
     def match_level(self):
