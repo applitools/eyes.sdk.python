@@ -32,7 +32,7 @@ class FailureReports(object):
 class EyesBase(ABC):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
-    DEFAULT_EYES_SERVER = 'https://eyessdk.applitools.com'
+    DEFAULT_EYES_SERVER = 'https://eyesapi.applitools.com'
 
     def __init__(self, server_url=DEFAULT_EYES_SERVER):
         # type: (tp.Text) -> None
