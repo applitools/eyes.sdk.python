@@ -109,11 +109,26 @@ SUPPORTED_PLATFORMS = [
         "browserName":       "Safari",
     }),
     Platform(name='Android', version='6.0', browsers=[], extra={
-        "appiumVersion":     "1.7.2",
+        "appiumVersion":     "1.9.1",
         "deviceName":        "Android Emulator",
         "deviceOrientation": "portrait",
-        "browserName":       "Browser",
-    })
+        "browserName":       "Chrome",
+        "newCommandTimeout": 60 * 5
+    }),
+    # Platform(name='Android', version='7.0', browsers=[], extra={
+    #     "appiumVersion":     "1.9.1",
+    #     "deviceName":        "Android Emulator",
+    #     "deviceOrientation": "portrait",
+    #     "browserName":       "Chrome",
+    #     "newCommandTimeout": 60 * 5
+    # }),
+    # Platform(name='Android', version='8.0', browsers=[], extra={
+    #     "appiumVersion":     "1.9.1",
+    #     "deviceName":        "Samsung S9+",
+    #     "deviceOrientation": "portrait",
+    #     "browserName":       "Chrome",
+    #     "newCommandTimeout": 60 * 5
+    # })
 ]
 SUPPORTED_PLATFORMS_DICT = {platform.full_name: platform for platform in SUPPORTED_PLATFORMS}
 SUPPORTED_BROWSERS = set(chain(*[platform.browsers for platform in SUPPORTED_PLATFORMS]))

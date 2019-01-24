@@ -27,7 +27,7 @@ def test_quickstart_example(eyes, driver):
 @pytest.mark.eyes(force_full_page_screenshot=True, stitch_mode=StitchMode.CSS)
 def test_sample_script(eyes, driver):
     driver = eyes.open(driver, "Python app", "applitools", {'width': 800, 'height': 600})
-    driver.get('http://www.applitools.com')
+    driver.get('http://applitools.github.io/demo/TestPages/FramesTestPage/')
     eyes.check_window("Home", target=(Target()
                                       .ignore(IgnoreRegionBySelector(By.CLASS_NAME, 'hero-container'))
                                       .floating(FloatingRegion(Region(10, 20, 30, 40), FloatingBounds(10, 0, 20, 10))))

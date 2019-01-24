@@ -49,6 +49,7 @@ def install_requirements(c, dev=None, testing=None, lint=None):
         'pytest-xdist',
         'virtualenv',
         'pytest-virtualenv',
+        'mock'
     ]
     lint_requires = [
         'flake8',
