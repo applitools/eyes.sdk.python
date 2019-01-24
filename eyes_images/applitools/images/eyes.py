@@ -22,9 +22,9 @@ class Eyes(EyesBase):
     @property
     def full_agent_id(self):
         # type: () -> tp.Text
-        if self.agent_id is None:
+        if self._config.agent_id is None:
             return self.base_agent_id
-        return "%s [%s]" % (self.agent_id, self.base_agent_id)
+        return "%s [%s]" % (self._config.agent_id, self.base_agent_id)
 
     @property
     def base_agent_id(self):
@@ -44,11 +44,11 @@ class Eyes(EyesBase):
 
     def get_viewport_size(self):
         # type: () -> ViewPort
-        return self._viewport_size
+        return self._config.viewport_size
 
     def set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self._viewport_size = size
+        self._config.viewport_size = size
 
     def _assign_viewport_size(self):
         pass
@@ -102,7 +102,7 @@ class Eyes(EyesBase):
 
         image = target._image  # type: Image.Image
         self._screenshot = EyesImagesScreenshot(image)
-        if not self._viewport_size:
+        if not self._config.viewport_size:
             self.set_viewport_size(dict(width=image.width, height=image.height))
 
         match_result = self._check_window_base(name, -1, target, ignore_mismatch)
@@ -114,6 +114,6 @@ class Eyes(EyesBase):
     def _environment(self):
         # type: () -> AppEnvironment
         app_env = {'os':          self.host_os, 'hostingApp': self.host_app,
-                   'displaySize': self._viewport_size,
+                   'displaySize': self._config.viewport_size,
                    'inferred':    self._inferred_environment}
         return app_env

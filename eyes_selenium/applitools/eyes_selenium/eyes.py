@@ -174,13 +174,13 @@ class Eyes(EyesBase):
         original_frame_chain = self._driver.get_frame_chain()
         self._driver.switch_to.default_content()
         try:
-            if self._viewport_size:
-                logger.debug("Assigning viewport size {0}".format(self._viewport_size))
-                self.set_viewport_size(self._viewport_size)
+            if self._config.viewport_size:
+                logger.debug("Assigning viewport size {0}".format(self._config.viewport_size))
+                self.set_viewport_size(self._config.viewport_size)
             else:
                 logger.debug("No viewport size given. Extracting the viewport size from the driver...")
-                self._viewport_size = self.get_viewport_size()
-                logger.debug("Viewport size {0}".format(self._viewport_size))
+                self._config.viewport_size = self.get_viewport_size()
+                logger.debug("Viewport size {0}".format(self._config.viewport_size))
         except EyesError:
             raise TestFailedError('Failed to assign viewport size!')
         finally:

@@ -4,6 +4,7 @@ import abc
 import os
 import typing as tp
 
+from applitools.core.config import Configuration
 from . import logger
 from .utils import ABC
 from .match import ImageMatchSettings
@@ -34,6 +35,15 @@ class EyesBase(ABC):
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
     DEFAULT_EYES_SERVER = 'https://eyesapi.applitools.com'
 
+    _config = None  # type: tp.Optional[Configuration]
+    _running_session = None  # type: tp.Optional[RunningSession]
+    _start_info = None  # type: tp.Optional[SessionStartInfo]
+    _region_to_check = None  # type: tp.Optional[RegionOrElement]
+    # A string identifying the OS running the AUT. Use this to override Eyes automatic inference.
+    host_os = None  # type: tp.Optional[tp.Text]
+    # A string identifying the app running the AUT. Use this to override Eyes automatic inference.
+    host_app = None  # type: tp.Optional[tp.Text]
+
     def __init__(self, server_url=DEFAULT_EYES_SERVER):
         # type: (tp.Text) -> None
         """
@@ -44,16 +54,12 @@ class EyesBase(ABC):
         self._agent_connector = AgentConnector(server_url)  # type: AgentConnector
         self._should_get_title = False  # type: bool
         self._is_open = False  # type: bool
-        self._app_name = None  # type: tp.Optional[tp.Text]
-        self._running_session = None  # type: tp.Optional[RunningSession]
         self._match_timeout = EyesBase._DEFAULT_MATCH_TIMEOUT  # type: int
         self._last_screenshot = None  # type: tp.Optional[EyesScreenshot]
         self._should_match_once_on_timeout = False  # type: bool
-        self._start_info = None  # type: tp.Optional[SessionStartInfo]
-        self._test_name = None  # type: tp.Optional[tp.Text]
         self._user_inputs = []  # type: UserInputs
-        self._region_to_check = None  # type: tp.Optional[RegionOrElement]
-        self._viewport_size = None  # type: ViewPort
+
+        self._ensure_configuration()
 
         # key-value pairs to be associated with the test. Can be used for filtering later.
         self._properties = []  # type: tp.List
@@ -61,39 +67,17 @@ class EyesBase(ABC):
         # Disables Applitools Eyes and uses the webdriver directly.
         self.is_disabled = False  # type: bool
 
-        # An optional string identifying the current library using the SDK.
-        self.agent_id = None  # type: tp.Optional[tp.Text]
-
         # Should the test report mismatches immediately or when it is finished. See FailureReports.
         self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
 
         # The default match settings for the session. See ImageMatchSettings.
         self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
 
-        # The batch to which the tests belong to. See BatchInfo. None means no batch.
-        self.batch = None  # type: tp.Optional[BatchInfo]
-
-        # A string identifying the OS running the AUT. Use this to override Eyes automatic inference.
-        self.host_os = None  # type: tp.Optional[tp.Text]
-
-        # A string identifying the app running the AUT. Use this to override Eyes automatic inference.
-        self.host_app = None  # type: tp.Optional[tp.Text]
-
-        # A string that, if specified, determines the baseline to compare with and disables automatic baseline
-        # inference.
-        self.baseline_branch_name = None  # type: tp.Optional[tp.Text]
-
         # A boolean denoting whether new tests should be automatically accepted.
         self.save_new_tests = True  # type: bool
 
         # Whether failed tests should be automatically saved with all new output accepted.
         self.save_failed_tests = False  # type: bool
-
-        # A string identifying the branch in which tests are run.
-        self.branch_name = None  # type: tp.Optional[tp.Text]
-
-        # A string identifying the parent branch of the branch set by "branch_name".
-        self.parent_branch_name = None  # type: tp.Optional[tp.Text]
 
         # If true, Eyes will treat new tests the same as failed tests.
         self.fail_on_new_test = False  # type: bool
@@ -103,6 +87,10 @@ class EyesBase(ABC):
 
         # If true, we will send full DOM to the server for analyzing
         self.send_dom = False  # type: bool
+
+    def _ensure_configuration(self):
+        if not self._config:
+            self._config = Configuration()
 
     @property
     @abc.abstractmethod
@@ -255,9 +243,9 @@ class EyesBase(ABC):
 
         :return: The agent id.
         """
-        if self.agent_id is None:
+        if self._config.agent_id is None:
             return self.base_agent_id
-        return "{0} [{1}]".format(self.agent_id, self.base_agent_id)
+        return "{0} [{1}]".format(self._config.agent_id, self.base_agent_id)
 
     def add_property(self, name, value):
         # type: (tp.Text, tp.Text) -> None
@@ -407,10 +395,9 @@ class EyesBase(ABC):
             raise EyesError('a test is already running')
 
         self._before_open()
-
-        self._app_name = app_name
-        self._test_name = test_name
-        self._viewport_size = viewport_size
+        self._config.app_name = app_name
+        self._config.test_name = test_name
+        self._config.viewport_size = viewport_size
 
         if viewport_size is not None:
             self._ensure_running_session()
@@ -422,11 +409,12 @@ class EyesBase(ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._environment
-        self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._app_name,
-                            'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
-                            'envName':              self.baseline_branch_name, 'environment': app_env,
+        self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._config.app_name,
+                            'scenarioIdOrName':     self._config.test_name, 'batchInfo': self._config.batch,
+                            'envName':              self._config.baseline_branch_name, 'environment': app_env,
                             'defaultMatchSettings': self.default_match_settings, 'verId': None,
-                            'branchName':           self.branch_name, 'parentBranchName': self.parent_branch_name,
+                            'branchName':           self._config.branch_name,
+                            'parentBranchName':     self._config.parent_branch_name,
                             'properties':           self._properties}
 
     def _start_session(self):
@@ -435,14 +423,14 @@ class EyesBase(ABC):
         self._assign_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
-        if not self.branch_name:
-            self.branch_name = os.environ.get('APPLITOOLS_BRANCH', None)
-        if not self.baseline_branch_name:
-            self.baseline_branch_name = os.environ.get('APPLITOOLS_BASELINE_BRANCH', None)
-        if not self.parent_branch_name:
-            self.parent_branch_name = os.environ.get('APPLITOOLS_PARENT_BRANCH', None)
-        if not self.batch:
-            self.batch = BatchInfo()
+        if not self._config.branch_name:
+            self._config.branch_name = os.environ.get('APPLITOOLS_BRANCH', None)
+        if not self._config.baseline_branch_name:
+            self._config.baseline_branch_name = os.environ.get('APPLITOOLS_BASELINE_BRANCH', None)
+        if not self._config.parent_branch_name:
+            self._config.parent_branch_name = os.environ.get('APPLITOOLS_PARENT_BRANCH', None)
+        if not self._config.batch:
+            self._config.batch = BatchInfo()
 
         self._create_start_info()
         # Actually start the session.

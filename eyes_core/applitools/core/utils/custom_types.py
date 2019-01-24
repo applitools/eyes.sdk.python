@@ -16,6 +16,7 @@ if tp.TYPE_CHECKING:
     MatchResult = tp.Dict[tp.Text, tp.Any]
     AppEnvironment = tp.Dict[tp.Text, tp.Any]
     SessionStartInfo = tp.Dict[tp.Text, tp.Any]
+    SessionType = tp.Dict
     Num = tp.Union[int, float]
 
     AnyWebDriver = tp.Union[EyesWebDriver, WebDriver]
