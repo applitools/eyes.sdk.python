@@ -1,5 +1,4 @@
 import os
-import typing as tp
 from collections import namedtuple
 from itertools import chain
 
@@ -8,7 +7,7 @@ import pytest
 
 class Platform(namedtuple('Platform', 'name version browsers extra')):
     def platform_capabilities(self):
-        # type: () -> tp.Optional[tp.Iterable[dict]]
+        # type: () -> Optional[Iterable[dict]]
         """
         Get capabilities for mobile platform
         """
@@ -24,7 +23,7 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         return caps
 
     def browsers_capabilities(self, headless=False):
-        # type: (bool) -> tp.Generator[dict]
+        # type: (bool) -> Generator[dict]
         """
         Get all browsers capabilities for the platform
         :rtype: collections.Iterable[dict]
@@ -33,7 +32,7 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
             yield self.get_browser_capabilities(browser_name, headless)
 
     def get_browser_capabilities(self, browser_name, headless=False):
-        # type: (tp.Text, bool) -> tp.Optional[dict]
+        # type: (Text, bool) -> Optional[dict]
         """
         Get browser capabilities for specific browser with included options inside
 
@@ -95,12 +94,13 @@ SUPPORTED_PLATFORMS = [Platform(name='Windows', version='10',
                            "deviceOrientation": "portrait",
                            "browserName":       "Safari",
                        }), Platform(name='Android', version='6.0', browsers=[], extra={
-        "appiumVersion":     "1.9.1",
-        "deviceName":        "Android Emulator",
-        "deviceOrientation": "portrait",
-        "browserName":       "Chrome",
-        "newCommandTimeout": 60 * 5
-    }),  # Platform(name='Android', version='7.0', browsers=[], extra={
+                            "appiumVersion":     "1.9.1",
+                            "deviceName":        "Android Emulator",
+                            "deviceOrientation": "portrait",
+                            "browserName":       "Chrome",
+                            "newCommandTimeout": 60 * 5
+                        }),
+                       # Platform(name='Android', version='7.0', browsers=[], extra={
                        #     "appiumVersion":     "1.9.1",
                        #     "deviceName":        "Android Emulator",
                        #     "deviceOrientation": "portrait",
