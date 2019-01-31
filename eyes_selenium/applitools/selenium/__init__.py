@@ -2,7 +2,6 @@ from applitools.core import (
     BatchInfo, ExactMatchSettings, ImageMatchSettings, Region, TestResults, MatchLevel, FailureReports,
     TestResultsStatus, TestResults, logger,
 )
-
 from .capture import EyesWebDriverScreenshot, dom_capture
 from .positioning import StitchMode
 from .eyes import Eyes

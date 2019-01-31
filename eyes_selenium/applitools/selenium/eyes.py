@@ -342,6 +342,9 @@ class Eyes(EyesBase):
         :return: None
         """
         logger.info("check_window('%s')" % tag)
+        if target is None:
+            target = Target()
+
         self._screenshot_type = self._obtain_screenshot_type(is_element=False,
                                                              inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=False,
@@ -365,6 +368,9 @@ class Eyes(EyesBase):
         logger.info("check_region([%s], '%s')" % (region, tag))
         if region.is_empty:
             raise EyesError("region cannot be empty!")
+        if target is None:
+            target = Target()
+
         self._screenshot_type = self._obtain_screenshot_type(is_element=False,
                                                              inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=stitch_content,
@@ -386,6 +392,9 @@ class Eyes(EyesBase):
         :return: None
         """
         logger.info("check_region_by_element('%s')" % tag)
+        if target is None:
+            target = Target()
+
         self._screenshot_type = self._obtain_screenshot_type(is_element=True,
                                                              inside_a_frame=bool(self._driver.frame_chain),
                                                              stitch_content=stitch_content,

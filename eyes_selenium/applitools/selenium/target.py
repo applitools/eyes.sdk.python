@@ -9,8 +9,9 @@ if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import AnyWebElement
     from .capture import EyesWebDriverScreenshot
 
-__all__ = ('IgnoreRegionByElement', 'IgnoreRegionBySelector', 'FloatingBounds', 'FloatingRegion',
-           'FloatingRegionByElement', 'FloatingRegionBySelector', 'Target')
+__all__ = (
+    'IgnoreRegionByElement', 'IgnoreRegionBySelector', 'FloatingBounds', 'FloatingRegion', 'FloatingRegionByElement',
+    'FloatingRegionBySelector', 'Target')
 
 
 # Ignore regions related classes.
@@ -150,6 +151,28 @@ class FloatingRegionBySelector(object):
                                                                                 self.value, self.bounds)
 
 
+class _CheckSettingsValues:
+    """
+    Access to values stored in :py:class:`CheckSettings`
+    """
+
+    def __init__(self, check_settings):
+        # type: (Target) -> None
+        self.check_settings = check_settings
+
+    @property
+    def ignore_caret(self):
+        return self.check_settings._ignore_caret
+
+    @property
+    def ignore_regions(self):
+        return self.check_settings._ignore_regions
+
+    @property
+    def floating_regions(self):
+        return self.check_settings._floating_regions
+
+
 # Main class for the module
 class Target(object):
     """
@@ -161,6 +184,10 @@ class Target(object):
         self._ignore_caret = True
         self._ignore_regions = []  # type: tp.List
         self._floating_regions = []  # type: tp.List
+
+    @property
+    def values(self):
+        return _CheckSettingsValues(self)
 
     def ignore(self, *regions):
         # type: (*tp.Union[Region, IgnoreRegionByElement, IgnoreRegionBySelector]) -> Target
@@ -204,6 +231,3 @@ class Target(object):
         """
         self._ignore_caret = ignore
         return self
-
-    def get_ignore_caret(self):
-        return self._ignore_caret

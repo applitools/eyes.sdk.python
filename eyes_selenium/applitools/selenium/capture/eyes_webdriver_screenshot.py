@@ -5,10 +5,10 @@ import typing as tp
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.core import EyesScreenshot, EyesError, Point, Region, OutOfBoundsError
+from applitools.core import EyesError, Point, Region, OutOfBoundsError
 from applitools.core.utils import image_utils
 from applitools.selenium import eyes_selenium_utils
-from applitools.selenium.frames import FrameChain
+from .._core_backup.capture import EyesScreenshot
 
 if tp.TYPE_CHECKING:
     from PIL import Image
@@ -110,7 +110,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @staticmethod
     def calc_frame_location_in_screenshot(frame_chain, is_viewport_screenshot):
         first_frame = frame_chain[0]
-        location_in_screenshot = Point(first_frame.location['x'], first_frame.location['y'])
+        location_in_screenshot = Point(first_frame.location.x, first_frame.location.y)
         # We only need to consider the scroll of the default content if the screenshot is a
         # viewport screenshot. If this is a full page screenshot, the frame location will not
         # change anyway.
@@ -120,8 +120,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         # For inner frames we must calculate the scroll
         inner_frames = frame_chain[1:]
         for frame in inner_frames:
-            location_in_screenshot.x += frame.location['x'] - frame.parent_scroll_position.x
-            location_in_screenshot.y += frame.location['y'] - frame.parent_scroll_position.y
+            location_in_screenshot.x += frame.location.x - frame.parent_scroll_position.x
+            location_in_screenshot.y += frame.location.y - frame.parent_scroll_position.y
         return location_in_screenshot
 
     @property
@@ -134,7 +134,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return self._screenshot64
 
     def get_location_relative_to_frame_viewport(self, location):
-        result = {'x': location['x'], 'y': location['y']}
+        result = {'x': location.x, 'y': location.y}
         if self._frame_chain or self._is_viewport_screenshot:
             result['x'] -= self._scroll_position.x
             result['y'] -= self._scroll_position.y

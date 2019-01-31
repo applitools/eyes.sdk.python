@@ -43,14 +43,9 @@ class FloatingRegion(RegionProvider):
         self.bounds = bounds  # type: FloatingBounds
 
     def __getstate__(self):
-        return dict(top=self.region.top,
-                    left=self.region.left,
-                    width=self.region.width,
-                    height=self.region.height,
-                    maxLeftOffset=self.bounds.max_left_offset,
-                    maxUpOffset=self.bounds.max_up_offset,
-                    maxRightOffset=self.bounds.max_right_offset,
-                    maxDownOffset=self.bounds.max_down_offset)
+        return dict(top=self.region.top, left=self.region.left, width=self.region.width, height=self.region.height,
+                    maxLeftOffset=self.bounds.max_left_offset, maxUpOffset=self.bounds.max_up_offset,
+                    maxRightOffset=self.bounds.max_right_offset, maxDownOffset=self.bounds.max_down_offset)
 
     # This is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
@@ -59,6 +54,28 @@ class FloatingRegion(RegionProvider):
 
     def _str_(self):
         return "{0} {{region: {1}, bounds: {2}}}".format(self.__class__.__name__, self.region, self.bounds)
+
+
+class _CheckSettingsValues:
+    """
+    Access to values stored in :py:class:`CheckSettings`
+    """
+
+    def __init__(self, check_settings):
+        # type: (Target) -> None
+        self.check_settings = check_settings
+
+    @property
+    def ignore_caret(self):
+        return self.check_settings._ignore_caret
+
+    @property
+    def ignore_regions(self):
+        return self.check_settings._ignore_regions
+
+    @property
+    def floating_regions(self):
+        return self.check_settings._floating_regions
 
 
 # Main class for the module
@@ -73,7 +90,11 @@ class Target(object):
     _target_region = None  # type: tp.Optional[Region]
     _timeout = -1
 
-    ignore_caret = None
+    _ignore_caret = None
+
+    @property
+    def values(self):
+        return _CheckSettingsValues(self)
 
     def ignore(self, *regions):
         # type: (*tp.Union[Region]) -> Target
