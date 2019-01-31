@@ -1,8 +1,18 @@
+import os
+
 import pytest
 
-from applitools.images import Eyes
+from applitools.images import Eyes, __version__
 
 
 @pytest.fixture
 def eyes_class():
     return Eyes
+
+
+def _setup_env_vars_for_session():
+    python_version = os.environ.get('TRAVIS_PYTHON_VERSION', None)
+    if not python_version:
+        import platform
+        python_version = platform.python_version()
+    os.environ['APPLITOOLS_BATCH_NAME'] = 'Python {} | Images SDK {} Tests'.format(python_version, __version__)
