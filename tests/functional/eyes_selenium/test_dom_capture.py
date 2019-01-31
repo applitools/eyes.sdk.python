@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from applitools.selenium import dom_capture
 
 
-@pytest.mark.usefixtures('driver_session')
+@pytest.mark.usefixtures('driver_for_class')
 @pytest.mark.browser('chrome')
 @pytest.mark.platform('Linux')
 @pytest.mark.viewport_size({'width': 800, 'height': 600})
@@ -88,7 +88,7 @@ class TestDomCaptureUnit(object):
         assert inner_css(dom_json) == inner_css(expected_json)
 
 
-@pytest.mark.usefixtures("eyes_session")
+@pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.test_suite_name('Eyes Selenium SDK - DynamicPages')
 @pytest.mark.viewport_size({'width': 1200, 'height': 800})
 @pytest.mark.skip("Only for local testing because changes always")
@@ -121,7 +121,7 @@ class TestDynamicPages(object):
         self.eyes.check_window("BestBuy Test")
 
 
-@pytest.mark.usefixtures("eyes_session")
+@pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.test_suite_name('Eyes Selenium SDK - CustomersPages')
 @pytest.mark.viewport_size({'width': 1200, 'height': 800})
 @pytest.mark.skip("Only for local testing because changes always")

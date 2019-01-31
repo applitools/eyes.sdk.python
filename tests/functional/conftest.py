@@ -158,31 +158,6 @@ def eyes(request, eyes_class):
     eyes.abort_if_not_closed()
 
 
-@pytest.fixture(scope="function")
-def eyes_session(request, eyes, driver):
-    test_page_url = request.node.get_closest_marker('test_page_url').args[-1]
-    viewport_size = request.node.get_closest_marker('viewport_size').args[-1]
-    test_suite_name = request.node.get_closest_marker('test_suite_name').args[-1]
-    # use camel case in method name for fit java sdk tests name
-    test_name = request.function.__name__.title().replace('_', '')
-
-    if eyes.force_full_page_screenshot:
-        test_suite_name += ' - ForceFPS'
-        test_name += '_FPS'
-    driver = eyes.open(driver, test_suite_name, test_name,
-                       viewport_size=viewport_size)
-    driver.get(test_page_url)
-
-    # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
-
-    request.cls.eyes = eyes
-    request.cls.driver = driver
-
-    yield
-    results = eyes.close()
-    print(results)
-
-
 def pytest_addoption(parser):
     parser.addoption("--platform", action="store")
     parser.addoption("--browser", action="store")
