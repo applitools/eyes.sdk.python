@@ -127,28 +127,11 @@ _CAPTURE_FRAME_SCRIPT = """function captureFrame({ styleProps, attributeProps, r
 return JSON.stringify(captureFrame(arguments[0]));
 """
 _ARGS_OBJ = {
-    'styleProps': [
-        "background-color",
-        "background-image",
-        "background-size",
-        "color",
-        "border-width",
-        "border-color",
-        "border-style",
-        "padding",
-        "margin"
-    ],
-    'attributeProps': None,
-    'rectProps': [
-        "width",
-        "height",
-        "top",
-        "left",
-    ],
-    'ignoredTagNames': [
-        "HEAD",
-        "SCRIPT"
-    ]
+    'styleProps':      ["background-color", "background-image", "background-size", "color", "border-width",
+                        "border-color", "border-style", "padding", "margin"],
+    'attributeProps':  None,
+    'rectProps':       ["width", "height", "top", "left", ],
+    'ignoredTagNames': ["HEAD", "SCRIPT"]
 }
 CSS_DOWNLOAD_TIMEOUT = 3  # Secs
 
@@ -160,7 +143,10 @@ def get_full_window_dom(driver, return_as_dict=False):
     dom_tree = json.loads(driver.execute_script(_CAPTURE_FRAME_SCRIPT, _ARGS_OBJ), object_pairs_hook=OrderedDict)
 
     logger.debug('Traverse DOM Tree')
-    _traverse_dom_tree(driver, {'childNodes': [dom_tree], 'tagName': 'OUTER_HTML'})
+    _traverse_dom_tree(driver, {
+        'childNodes': [dom_tree],
+        'tagName':    'OUTER_HTML'
+    })
 
     if return_as_dict:
         return dom_tree
@@ -233,8 +219,7 @@ def _get_frame_bundled_css(driver):
         logger.info('Base URL is not an absolute URL!')
 
     cssom_results = driver.execute_script(_CAPTURE_CSSOM_SCRIPT)
-    raw_css_nodes = [CssNode.create(base_url, css_href, css_text)
-                     for css_text, css_href in cssom_results]
+    raw_css_nodes = [CssNode.create(base_url, css_href, css_text) for css_text, css_href in cssom_results]
 
     if len(raw_css_nodes) > 5:
         pool = mp.Pool(processes=mp.cpu_count() * 2)
@@ -274,17 +259,16 @@ def _process_raw_css_node(node, minimize_css=True):
 
 def _parse_and_serialize_css(node, text, minimize=False):
     # type: (CssNode, tp.Text, bool) -> tp.Generator
-    is_import_node = lambda n: n.type == 'at-rule' and n.lower_at_keyword == 'import'
-    stylesheet = tinycss2.parse_stylesheet(text, skip_comments=True,
-                                           skip_whitespace=True)
+    def is_import_node(n):
+        return n.type == 'at-rule' and n.lower_at_keyword == 'import'
+
+    stylesheet = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
     for style_node in stylesheet:
         if is_import_node(style_node):
             for tag in style_node.prelude:
                 if tag.type == 'url':
                     logger.debug('The node has import')
-                    yield CssNode.create_sub_node(
-                        parent_node=node,
-                        href=tag.value)
+                    yield CssNode.create_sub_node(parent_node=node, href=tag.value)
             continue
 
         try:
@@ -307,7 +291,7 @@ def _parse_and_serialize_css(node, text, minimize=False):
 def _make_url(base_url, value):
     # type: (tp.Text, tp.Text) -> tp.Text
     if (general_utils.is_absolute_url(value) and  # noqa
-            not general_utils.is_url_with_scheme(value)):
+        not general_utils.is_url_with_scheme(value)):
         url = urljoin('http://', value)
     else:
         url = urljoin(base_url, value)

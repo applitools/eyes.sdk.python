@@ -114,7 +114,7 @@ class _EyesSwitchTo(object):
 
             try:
                 self._switch_to.parent_frame()
-            except WebDriverException as e:
+            except WebDriverException:
                 self._switch_to.default_content()
                 for frame in frames:
                     self._switch_to.frame(frame.reference)
@@ -157,13 +157,12 @@ class EyesWebDriver(object):
     """
     # Properties require special handling since even testing if they're callable "activates"
     # them, which makes copying them automatically a problem.
-    _READONLY_PROPERTIES = ['application_cache', 'current_url', 'current_window_handle',
-                            'desired_capabilities', 'log_types', 'name', 'page_source', 'title',
-                            'window_handles', 'switch_to', 'mobile', 'current_context', 'context',
-                            'current_activity', 'network_connection', 'available_ime_engines',
-                            'active_ime_engine', 'device_time', 'w3c', 'contexts', 'current_package',
-                            # Appium specific
-                            'battery_info']
+    _READONLY_PROPERTIES = ['application_cache', 'current_url', 'current_window_handle', 'desired_capabilities',
+                            'log_types', 'name', 'page_source', 'title', 'window_handles', 'switch_to', 'mobile',
+                            'current_context', 'context', 'current_activity', 'network_connection',
+                            'available_ime_engines', 'active_ime_engine', 'device_time', 'w3c', 'contexts',
+                            'current_package', ]
+    _READONLY_PROPERTIES += ['battery_info']  # Appium specific
     _SETTABLE_PROPERTIES = ['orientation', 'file_detector']
 
     # This should pretty much cover all scroll bars (and some fixed position footer elements :) ).
@@ -193,8 +192,7 @@ class EyesWebDriver(object):
 
         # Creating the rest of the driver interface by simply forwarding it to the underlying
         # driver.
-        general_utils.create_proxy_interface(self, driver,
-                                             self._READONLY_PROPERTIES + self._SETTABLE_PROPERTIES)
+        general_utils.create_proxy_interface(self, driver, self._READONLY_PROPERTIES + self._SETTABLE_PROPERTIES)
 
         for attr in self._READONLY_PROPERTIES:
             if not hasattr(self.__class__, attr):
@@ -254,7 +252,7 @@ class EyesWebDriver(object):
         try:
             user_agent = self.driver.execute_script("return navigator.userAgent")
             logger.info("user agent: {}".format(user_agent))
-        except Exception as e:
+        except Exception:
             logger.info("Failed to obtain user-agent string")
             user_agent = None
         return user_agent
@@ -499,8 +497,7 @@ class EyesWebDriver(object):
         :return: The width of the full page.
         """
         # noinspection PyUnresolvedReferences
-        default_scroll_width = int(round(self.driver.execute_script(
-                "return document.documentElement.scrollWidth")))
+        default_scroll_width = int(round(self.driver.execute_script("return document.documentElement.scrollWidth")))
         body_scroll_width = int(round(self.driver.execute_script("return document.body.scrollWidth")))
         return max(default_scroll_width, body_scroll_width)
 
@@ -516,11 +513,9 @@ class EyesWebDriver(object):
         maximum between them.
         """
         # noinspection PyUnresolvedReferences
-        default_client_height = int(round(self.driver.execute_script(
-                "return document.documentElement.clientHeight")))
+        default_client_height = int(round(self.driver.execute_script("return document.documentElement.clientHeight")))
         # noinspection PyUnresolvedReferences
-        default_scroll_height = int(round(self.driver.execute_script(
-                "return document.documentElement.scrollHeight")))
+        default_scroll_height = int(round(self.driver.execute_script("return document.documentElement.scrollHeight")))
         # noinspection PyUnresolvedReferences
         body_client_height = int(round(self.driver.execute_script("return document.body.clientHeight")))
         # noinspection PyUnresolvedReferences
@@ -554,8 +549,10 @@ class EyesWebDriver(object):
 
         :return: The page width and height.
         """
-        return {'width':  self.extract_full_page_width(),
-                'height': self.extract_full_page_height()}
+        return {
+            'width':  self.extract_full_page_width(),
+            'height': self.extract_full_page_height()
+        }
 
     def set_overflow(self, overflow, stabilization_time=None):
         # type: (tp.Text, tp.Optional[int]) -> tp.Text
@@ -594,8 +591,8 @@ class EyesWebDriver(object):
         """
         # noinspection PyBroadException
         try:
-            WebDriverWait(self.driver, timeout) \
-                .until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
+            WebDriverWait(self.driver, timeout).until(
+                lambda driver: driver.execute_script('return document.readyState') == 'complete')
         except Exception:
             logger.debug('Page load timeout reached!')
             if throw_on_timeout:
@@ -723,8 +720,7 @@ class EyesWebDriver(object):
 
         # IMPORTANT This is required! Since when calculating the screenshot parts for full size,
         # we use a screenshot size which is a bit smaller (see comment below).
-        if (screenshot.width >= entire_page_size['width']) and \
-                (screenshot.height >= entire_page_size['height']):
+        if (screenshot.width >= entire_page_size['width']) and (screenshot.height >= entire_page_size['height']):
             self.restore_origin()
             self.switch_to.frames(original_frame)
 
@@ -732,12 +728,12 @@ class EyesWebDriver(object):
 
         #  We use a smaller size than the actual screenshot size in order to eliminate duplication
         #  of bottom scroll bars, as well as footer-like elements with fixed position.
-        screenshot_part_size = {'width':  screenshot.width,
-                                'height': max(screenshot.height - self._MAX_SCROLL_BAR_SIZE,
-                                              self._MIN_SCREENSHOT_PART_HEIGHT)}
+        screenshot_part_size = {
+            'width':  screenshot.width,
+            'height': max(screenshot.height - self._MAX_SCROLL_BAR_SIZE, self._MIN_SCREENSHOT_PART_HEIGHT)
+        }
 
-        logger.debug("Total size: {0}, Screenshot part size: {1}".format(entire_page_size,
-                                                                         screenshot_part_size))
+        logger.debug("Total size: {0}, Screenshot part size: {1}".format(entire_page_size, screenshot_part_size))
 
         entire_page = Region(0, 0, entire_page_size['width'], entire_page_size['height'])
         screenshot_parts = entire_page.get_sub_regions(screenshot_part_size)
@@ -758,8 +754,7 @@ class EyesWebDriver(object):
             EyesWebDriver._wait_before_screenshot(wait_before_screenshots)
             # Since screen size might cause the scroll to reach only part of the way
             current_scroll_position = self.get_current_position()
-            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x,
-                                                        current_scroll_position.y))
+            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x, current_scroll_position.y))
             part64 = self.get_screenshot_as_base64()
             part_image = image_utils.image_from_bytes(base64.b64decode(part64))
 
@@ -797,9 +792,10 @@ class EyesWebDriver(object):
                     or self.browser_name in ('chrome', 'MicrosoftEdge', 'internet explorer', 'safari')):
                 element_region.left += int(self._frame_chain.peek.location.x)
 
-        screenshot_part_size = {'width':  element_region.width,
-                                'height': max(element_region.height - self._MAX_SCROLL_BAR_SIZE,
-                                              self._MIN_SCREENSHOT_PART_HEIGHT)}
+        screenshot_part_size = {
+            'width':  element_region.width,
+            'height': max(element_region.height - self._MAX_SCROLL_BAR_SIZE, self._MIN_SCREENSHOT_PART_HEIGHT)
+        }
         entire_element = Region(0, 0, entire_size['width'], entire_size['height'])
 
         screenshot_parts = entire_element.get_sub_regions(screenshot_part_size)
@@ -821,8 +817,7 @@ class EyesWebDriver(object):
             EyesWebDriver._wait_before_screenshot(wait_before_screenshots)
             # Since screen size might cause the scroll to reach only part of the way
             current_scroll_position = self._position_provider.get_current_position()
-            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x,
-                                                        current_scroll_position.y))
+            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x, current_scroll_position.y))
             part64 = self.get_screenshot_as_base64()
             part_image = image_utils.image_from_bytes(base64.b64decode(part64))
             # Cut to viewport size the full page screenshot of main frame for some browsers
@@ -831,9 +826,9 @@ class EyesWebDriver(object):
                         or self.browser_name in ('internet explorer', 'safari')):
                     # TODO: Refactor this to make main screenshot only once
                     frame_scroll_position = int(self._frame_chain.peek.location.y)
-                    part_image = image_utils.get_image_part(part_image, Region(top=frame_scroll_position,
-                                                                               height=viewport['height'],
-                                                                               width=viewport['width']))
+                    part_image = image_utils.get_image_part(part_image,
+                                                            Region(top=frame_scroll_position, height=viewport['height'],
+                                                                   width=viewport['width']))
             # We cut original image before scaling to prevent appearing of artifacts
             part_image = image_utils.get_image_part(part_image, element_region)
             if need_to_scale:

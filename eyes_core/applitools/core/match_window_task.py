@@ -88,7 +88,7 @@ class MatchWindowTask(object):
         }
         match_data_json_bytes = general_utils.to_json(match_data).encode('utf-8')  # type: bytes
         match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-        screenshot_bytes = screenshot.bytes
+        screenshot_bytes = screenshot.bytes  # type: bytes
         body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
         return body
 

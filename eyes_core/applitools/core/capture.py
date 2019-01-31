@@ -102,7 +102,7 @@ class EyesScreenshot(ABC):
 
     @property
     def bytes(self):
-        # type: () -> bytes
+        # type: () -> __builtins__.bytes
         """
         Returns the bytes of the screenshot.
 

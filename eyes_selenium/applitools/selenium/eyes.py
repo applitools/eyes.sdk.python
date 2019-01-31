@@ -125,8 +125,7 @@ class Eyes(EyesBase):
                 return ScreenshotType.REGION_OR_ELEMENT_SCREENSHOT
 
             if not inside_a_frame:
-                if ((force_fullpage and not stitch_content)
-                    or (stitch_content and not is_element)):
+                if (force_fullpage and not stitch_content) or (stitch_content and not is_element):
                     return ScreenshotType.FULLPAGE_SCREENSHOT
 
             if inside_a_frame or stitch_content:
@@ -164,9 +163,10 @@ class Eyes(EyesBase):
                 logger.info("Setting OS: " + os)
             else:
                 logger.info('No mobile OS detected.')
-        app_env = {'os':          os, 'hostingApp': self.host_app,
-                   'displaySize': self._viewport_size,
-                   'inferred':    self._inferred_environment}
+        app_env = {
+            'os':       os, 'hostingApp': self.host_app, 'displaySize': self._viewport_size,
+            'inferred': self._inferred_environment
+        }
         return app_env
 
     @property
@@ -176,8 +176,7 @@ class Eyes(EyesBase):
             try:
                 return self._driver.title
             except Exception:
-                self._should_get_title = False
-                # Couldn't get _title, return empty string.
+                self._should_get_title = False  # Couldn't get _title, return empty string.
         return ''
 
     @property
@@ -209,8 +208,7 @@ class Eyes(EyesBase):
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self.get_viewport_size(),
-                device_pixel_ratio=device_pixel_ratio,
+                viewport_size=self.get_viewport_size(), device_pixel_ratio=device_pixel_ratio,
                 # always False as in Java version
                 is_mobile_device=False)  # type: ScaleProvider
         except Exception:
@@ -267,8 +265,7 @@ class Eyes(EyesBase):
     def _entire_element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info('Entire element screenshot requested')
-        screenshot = self._driver.get_stitched_screenshot(self._region_to_check,
-                                                          self._seconds_to_wait_screenshot,
+        screenshot = self._driver.get_stitched_screenshot(self._region_to_check, self._seconds_to_wait_screenshot,
                                                           scale_provider)
         return EyesWebDriverScreenshot.create_from_image(screenshot, self._driver)
 
@@ -283,8 +280,7 @@ class Eyes(EyesBase):
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info('Full page screenshot requested')
-        screenshot = self._driver.get_full_page_screenshot(self._seconds_to_wait_screenshot,
-                                                           scale_provider)
+        screenshot = self._driver.get_full_page_screenshot(self._seconds_to_wait_screenshot, scale_provider)
         return EyesWebDriverScreenshot.create_from_image(screenshot, self._driver)
 
     def _viewport_screenshot(self, scale_provider):
@@ -419,9 +415,7 @@ class Eyes(EyesBase):
         element_height = element.get_client_height()
         border_left_width = element.get_computed_style_int('border-left-width')
         border_top_width = element.get_computed_style_int('border-top-width')
-        element_region = Region(pl['x'] + border_left_width,
-                                pl['y'] + border_top_width,
-                                element_width, element_height)
+        element_region = Region(pl['x'] + border_left_width, pl['y'] + border_top_width, element_width, element_height)
         return element_region
 
     def check_region_by_selector(self, by, value, tag=None, match_timeout=-1, target=None, stitch_content=False):
@@ -440,8 +434,7 @@ class Eyes(EyesBase):
         logger.debug("calling 'check_region_by_selector'...")
         # hack: prevent stale element exception by saving viewport value before catching element
         self._driver.get_default_content_viewport_size()
-        self.check_region_by_element(self._driver.find_element(by, value), tag,
-                                     match_timeout, target, stitch_content)
+        self.check_region_by_element(self._driver.find_element(by, value), tag, match_timeout, target, stitch_content)
 
     def check_region_in_frame_by_selector(self, frame_reference,  # type: FrameReference
                                           by,  # type: tp.Text
