@@ -13,6 +13,12 @@ matrix:
         - python: 3.6
           env:
               - TOX_ENV=integration
+        - python: 2.7
+          env:
+              - TOX_ENV=selenium
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium
         - python: 3.6
           env:
               - TOX_ENV=lint
