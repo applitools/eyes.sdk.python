@@ -1,9 +1,9 @@
-import re
 import codecs
+import re
 import sys
 from os import path
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -16,7 +16,7 @@ def read(filename):
 def get_version(package_name):
     version_file = read("applitools/{}/__version__.py".format(package_name))
     try:
-        version = re.findall(r"^__version__ = '([^']+)'\r?$", version_file, re.M)[0]
+        version = re.findall(r"^__version__ = \"([^']+)\"\r?$", version_file, re.M)[0]
     except IndexError:
         raise RuntimeError("Unable to determine version.")
 
