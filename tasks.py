@@ -130,7 +130,7 @@ def test_run_packs(c, core=None,
     elif images:
         c.run('pytest tests/functional/eyes_images')
     elif appium:
-        c.run('pytest -n 5 --remote 1 tests/functional/eyes_seleniumtest_appium.py')
+        c.run('pytest -n 5 --remote 1 tests/functional/eyes_selenium/test_appium.py')
     # for pack in _packages_resolver(core, selenium, images):
     #     c.run('pytest tests/functional/{}'.format(pack), echo=True)
 

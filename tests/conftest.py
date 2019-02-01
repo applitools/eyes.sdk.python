@@ -123,6 +123,7 @@ def pytest_addoption(parser):
     parser.addoption("--platform", action="store")
     parser.addoption("--browser", action="store")
     parser.addoption("--headless", action="store")
+    parser.addoption("--remote", action="store")
 
 
 def _get_capabilities(platform_name=None, browser_name=None, headless=False):
