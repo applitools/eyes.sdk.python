@@ -6,7 +6,7 @@ from applitools.core import Point, EyesError
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import FrameReference, RectangleSize
 
-__all__ = ('Frame', 'FrameChain')
+__all__ = ("Frame", "FrameChain")
 
 
 class Frame(object):
@@ -15,18 +15,29 @@ class Frame(object):
     and it's actual type is determined by the reference used by the user in
     order to switch into the frame.
     """
-    __slots__ = ('reference', 'location', 'outer_size', 'inner_size', 'parent_scroll_position',
-                 '_scroll_root_element', '_original_overflow')
 
-    def __init__(self, reference, location, outer_size, inner_size, parent_scroll_position):
+    __slots__ = (
+        "reference",
+        "location",
+        "outer_size",
+        "inner_size",
+        "parent_scroll_position",
+        "_scroll_root_element",
+        "_original_overflow",
+    )
+
+    def __init__(
+        self, reference, location, outer_size, inner_size, parent_scroll_position
+    ):
         # type: (FrameReference, Point, RectangleSize, RectangleSize, Point) -> None
         """
-        :param reference:         The web element for the frame, used as a reference to switch into the frame.
-        :param location:          The location of the frame within the current frame.
-        :param outer_size:        The frame element outerSize
-        (i.e., the outer_size of the frame on the screen, not the internal document outer_size).
-        :param inner_size:        The frame element inner outerSize
-        (i.e., the outer_size of the frame actual outer_size, without borders).
+        :param reference: The web element for the frame, used as a reference to
+                          switch  into the frame.
+        :param location: The location of the frame within the current frame.
+        :param outer_size: The frame element outerSize (i.e., the outer_size of the
+                           frame on the screen, not the internal document outer_size).
+        :param inner_size: The frame element inner outerSize (i.e., the outer_size
+                           of the frame actual outer_size, without borders).
         :param parent_scroll_position: The scroll location of the frame.
         """
         self._scroll_root_element = None
@@ -43,12 +54,12 @@ class Frame(object):
 
 
 class FrameChain(tp.Sequence[Frame]):
-    __slots__ = ('_frames',)
+    __slots__ = ("_frames",)
 
     def __init__(self, frame_chain=None):
         self._frames = []
         if frame_chain is not None:
-            assert isinstance(frame_chain, FrameChain), 'Must be a FrameChain'
+            assert isinstance(frame_chain, FrameChain), "Must be a FrameChain"
             self._frames = copy.copy(frame_chain._frames)
 
     def __iter__(self):
@@ -61,7 +72,7 @@ class FrameChain(tp.Sequence[Frame]):
         return len(self._frames)
 
     def __str__(self):
-        return 'FrameChain with {} frames'.format(len(self))
+        return "FrameChain with {} frames".format(len(self))
 
     def __eq__(self, other):
         cl1, cl2 = len(self._frames), len(other)
@@ -86,7 +97,7 @@ class FrameChain(tp.Sequence[Frame]):
 
     def push(self, frame):
         # type: (Frame) -> None
-        assert isinstance(frame, Frame), 'frame must be instance of Frame!'
+        assert isinstance(frame, Frame), "frame must be instance of Frame!"
         self._frames.append(frame)
 
     def pop(self):
@@ -115,7 +126,7 @@ class FrameChain(tp.Sequence[Frame]):
     def default_content_scroll_position(self):
         # type: () -> tp.Union[Point, EyesError]
         if len(self) == 0:
-            raise EyesError('No frames in frame chain')
+            raise EyesError("No frames in frame chain")
         result = self[0].parent_scroll_position
         return Point(result.x, result.y)
 

@@ -13,9 +13,9 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.webelement import EyesWebElement
 
-    T = tp.TypeVar('T', bound='EyesScreenshot')
+    T = tp.TypeVar("T", bound="EyesScreenshot")
 
-__all__ = ('EyesScreenshot',)
+__all__ = ("EyesScreenshot",)
 
 
 class EyesScreenshot(ABC):
