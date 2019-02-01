@@ -12,9 +12,9 @@ from applitools.core import logger, EyesError
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
 
-__all__ = ('get_current_frame_content_entire_size', 'get_device_pixel_ratio', 'get_viewport_size',
-           'get_window_size', 'set_window_size', 'set_browser_size', 'set_browser_size_by_viewport_size',
-           'set_viewport_size', 'hide_scrollbars', 'set_overflow')
+__all__ = ('get_current_frame_content_entire_size', 'get_device_pixel_ratio', 'get_viewport_size', 'get_window_size',
+           'set_window_size', 'set_browser_size', 'set_browser_size_by_viewport_size', 'set_viewport_size',
+           'hide_scrollbars', 'set_overflow')
 
 _NATIVE_APP = 'NATIVE_APP'
 _JS_GET_VIEWPORT_SIZE = """
@@ -80,13 +80,37 @@ def is_mobile_device(driver):
 
     :return: True if the platform running the test is a mobile platform. False otherwise.
     """
+    is_mobile = """
+if( navigator.userAgent.match(/Android/i) ||
+    navigator.userAgent.match(/iPhone/i) ||
+    navigator.userAgent.match(/iPad/i)   ||
+    navigator.userAgent.match(/iPod/i) ) {
+    return true;
+} else {
+    return false;
+}
+    """
+    # TODO: Implement proper UserAgent handling
     driver = get_underlying_driver(driver)
-    return driver.desired_capabilities.get('platformName') in ('Android', 'iOS')
+    platform_name = driver.desired_capabilities.get('platformName', '').lower()
+    # platformName sometime have different names
+    is_mobile_platform = 'android' in platform_name or 'ios' in platform_name
+    if not is_mobile_platform:
+        try:
+            is_mobile_platform = driver.execute_script(is_mobile)
+        except WebDriverException as e:
+            logger.warning('Got error during checking if current platform is mobile')
+            if 'Method is not implemented' in str(e):
+                # potentially mobile app
+                is_mobile_platform = True
+            else:
+                is_mobile_platform = False
+    return is_mobile_platform
 
 
 def get_underlying_driver(driver):
     # type: (AnyWebDriver) -> WebDriver
-    from applitools.eyes_selenium.webdriver import EyesWebDriver
+    from ..selenium.webdriver import EyesWebDriver
     if isinstance(driver, EyesWebDriver):
         driver = driver.driver
     return driver
@@ -164,10 +188,9 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 
     browser_size = get_window_size(driver)
     logger.debug("Current browser size: {}".format(browser_size))
-    required_browser_size = dict(
-        width=browser_size['width'] + (required_size['width'] - actual_viewport_size['width']),
-        height=browser_size['height'] + (required_size['height'] - actual_viewport_size['height'])
-    )
+    required_browser_size = dict(width=browser_size['width'] + (required_size['width'] - actual_viewport_size['width']),
+                                 height=browser_size['height'] + (
+                                     required_size['height'] - actual_viewport_size['height']))
     return set_browser_size(driver, required_browser_size)
 
 
@@ -222,13 +245,11 @@ def set_viewport_size(driver, required_size):
             if abs(curr_height_change) <= height_diff:
                 curr_height_change += height_step
 
-            required_browser_size = dict(
-                width=browser_size['width'] + curr_width_change,
-                height=browser_size['height'] + curr_height_change)
+            required_browser_size = dict(width=browser_size['width'] + curr_width_change,
+                                         height=browser_size['height'] + curr_height_change)
             if required_browser_size == last_required_browser_size:
                 logger.info("Browser size is as required but viewport size does not match!")
-                logger.info("Browser size: {}, Viewport size: {}".format(required_browser_size,
-                                                                         actual_viewport_size))
+                logger.info("Browser size: {}, Viewport size: {}".format(required_browser_size, actual_viewport_size))
                 logger.info("Stopping viewport size attempts.")
                 break
 
@@ -258,3 +279,56 @@ def set_overflow(driver, overflow):
 def timeout(timeout):
     time.sleep(timeout)
     yield
+
+
+def is_landscape_orientation(driver):
+    if is_mobile_device(driver):
+        # could be AppiumRemoteWebDriver
+        appium_driver = get_underlying_driver(driver)  # type: WebDriver
+
+        original_context = None
+        try:
+            # We must be in native context in order to ask for orientation,
+            # because of an Appium bug.
+            original_context = appium_driver.context
+            if len(appium_driver.contexts) > 1 and not original_context.uppar() == 'NATIVE_APP':
+                appium_driver.switch_to.context('NATIVE_APP')
+            else:
+                original_context = None
+        except WebDriverException:
+            original_context = None
+
+        try:
+            orieintation = appium_driver.orientation
+            return orieintation.lower() == 'landscape'
+        except Exception:
+            logger.debug("WARNING: Couldn't get device orientation. Assuming Portrait.")
+        finally:
+            if original_context is not None:
+                appium_driver.switch_to.context(original_context)
+
+        return False
+
+
+def get_viewport_size_or_display_size(driver):
+    logger.info("get_viewport_size_or_display_size()")
+
+    try:
+        return get_viewport_size(driver)
+    except Exception as e:
+        logger.info("Failed to extract viewport size using Javascript: {}".format(str(e)))
+    # If we failed to extract the viewport size using JS, will use the
+    # window size instead.
+
+    logger.info("Using window size as viewport size.")
+    window_size = get_window_size(driver)
+    width = window_size['width']
+    height = window_size['height']
+    try:
+        if is_landscape_orientation(driver) and height > width:
+            height, width = width, height
+    except WebDriverException:
+        # Not every WebDriver supports querying for orientation.
+        pass
+    logger.info("Done! Size {:d} x {:d}".format(width, height))
+    return dict(width=width, height=height)

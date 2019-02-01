@@ -1,15 +1,15 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.core import Region
-from applitools.eyes_selenium import StitchMode, Target, IgnoreRegionBySelector, FloatingRegion, FloatingBounds
+from applitools.selenium import StitchMode, Region, Target, IgnoreRegionBySelector, \
+    FloatingRegion,  FloatingBounds
 
 
 @pytest.mark.platform('Linux')
 def test_quickstart_example(eyes, driver):
     required_viewport = {'width': 450, 'height': 300}
     eyes.set_viewport_size(driver, required_viewport)
-    eyes.open(driver=driver, app_name='Hello World!', test_name='My first Selenium Python test!',
+    eyes.open(driver=driver, app_name='TestQuickstartExample', test_name='My first Selenium Python test!',
               viewport_size={'width': 800, 'height': 600})
     driver.get('https://applitools.com/helloworld')
 

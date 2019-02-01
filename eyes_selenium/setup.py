@@ -62,11 +62,11 @@ setup(
     install_requires=install_requires,
     package_data={
         '':              ['README.rst', 'LICENSE'],
-        'eyes_selenium': ['py.typed'],
+        'selenium': ['py.typed'],
     },
     project_urls={
         'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
         'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master'
-                       '/eyes_selenium/applitools/eyes_selenium',
+                       '/eyes_selenium/applitools/selenium',
     },
 )

@@ -72,7 +72,7 @@ class MatchWindowTask(object):
                 "UserInputs":         user_inputs,
                 "ImageMatchSettings": {
                     "MatchLevel":  default_match_settings.match_level,
-                    "IgnoreCaret": target.ignore_caret,
+                    "IgnoreCaret": target.values.ignore_caret,
                     "Exact":       default_match_settings.exact_settings,
                     "Ignore":      ignore,
                     "Floating":    floating
@@ -88,7 +88,7 @@ class MatchWindowTask(object):
         }
         match_data_json_bytes = general_utils.to_json(match_data).encode('utf-8')  # type: bytes
         match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-        screenshot_bytes = screenshot.get_bytes()
+        screenshot_bytes = screenshot.bytes  # type: bytes
         body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
         return body
 
@@ -97,13 +97,13 @@ class MatchWindowTask(object):
         ignore = []  # type: tp.List[Region]
         floating = []  # type: tp.List[Region]
         if target is not None:
-            for region_wrapper in target._ignore_regions:
+            for region_wrapper in target.values.ignore_regions:
                 try:
                     current_region = region_wrapper.get_region(eyes_screenshot)
                     ignore.append(current_region)
                 except OutOfBoundsError as err:
                     logger.info("WARNING: Region specified by {} is out of bounds! {}".format(region_wrapper, err))
-            for floating_wrapper in target._floating_regions:
+            for floating_wrapper in target.values.floating_regions:
                 try:
                     current_floating = floating_wrapper.get_region(eyes_screenshot)
                     floating.append(current_floating)

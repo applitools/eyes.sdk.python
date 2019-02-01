@@ -16,8 +16,8 @@ if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
     from selenium.webdriver.remote.switch_to import SwitchTo
 
-    from applitools.eyes_selenium.webdriver import EyesWebDriver, _EyesSwitchTo
-    from applitools.eyes_selenium.webelement import EyesWebElement
+    from applitools.selenium.webdriver import EyesWebDriver, _EyesSwitchTo
+    from applitools.selenium.webelement import EyesWebElement
 
 
 class _UtcTz(tzinfo):

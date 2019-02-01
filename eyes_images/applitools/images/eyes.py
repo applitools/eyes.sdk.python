@@ -50,7 +50,7 @@ class Eyes(EyesBase):
         # type: (ViewPort) -> None
         self._viewport_size = size
 
-    def _assign_viewport_size(self):
+    def _ensure_viewport_size(self):
         pass
 
     def get_screenshot(self, **kwargs):

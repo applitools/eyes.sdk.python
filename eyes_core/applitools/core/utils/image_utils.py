@@ -100,6 +100,6 @@ def get_image_part(image, region):
 
     :return: The part of the image.
     """
-    if region.is_empty():
+    if region.is_empty:
         raise EyesError('region is empty!')
     return image.crop(box=(region.left, region.top, region.right, region.bottom))

@@ -9,8 +9,9 @@ if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import AnyWebElement
     from .capture import EyesWebDriverScreenshot
 
-__all__ = ('IgnoreRegionByElement', 'IgnoreRegionBySelector', 'FloatingBounds', 'FloatingRegion',
-           'FloatingRegionByElement', 'FloatingRegionBySelector', 'Target')
+__all__ = (
+    'IgnoreRegionByElement', 'IgnoreRegionBySelector', 'FloatingBounds', 'FloatingRegion', 'FloatingRegionByElement',
+    'FloatingRegionBySelector', 'Target')
 
 
 # Ignore regions related classes.
@@ -150,6 +151,28 @@ class FloatingRegionBySelector(object):
                                                                                 self.value, self.bounds)
 
 
+class _CheckSettingsValues:
+    """
+    Access to values stored in :py:class:`CheckSettings`
+    """
+
+    def __init__(self, check_settings):
+        # type: (Target) -> None
+        self.check_settings = check_settings
+
+    @property
+    def ignore_caret(self):
+        return self.check_settings._ignore_caret
+
+    @property
+    def ignore_regions(self):
+        return self.check_settings._ignore_regions
+
+    @property
+    def floating_regions(self):
+        return self.check_settings._floating_regions
+
+
 # Main class for the module
 class Target(object):
     """
@@ -162,8 +185,12 @@ class Target(object):
         self._ignore_regions = []  # type: tp.List
         self._floating_regions = []  # type: tp.List
 
+    @property
+    def values(self):
+        return _CheckSettingsValues(self)
+
     def ignore(self, *regions):
-        # type: (*tp.Union['Region', 'IgnoreRegionByElement', 'IgnoreRegionBySelector']) -> Target
+        # type: (*tp.Union[Region, IgnoreRegionByElement, IgnoreRegionBySelector]) -> Target
         """
         Add ignore regions to this target.
         :param regions: Ignore regions to add. Can be of several types:
@@ -182,7 +209,7 @@ class Target(object):
         return self
 
     def floating(self, *regions):
-        # type: (*tp.Union['FloatingRegion', 'FloatingRegionByElement', 'FloatingRegionBySelector']) -> Target
+        # type: (*tp.Union[FloatingRegion, FloatingRegionByElement, FloatingRegionBySelector]) -> Target
         """
         Add floating regions to this target.
         :param regions: Floating regions to add. Can be of several types:
@@ -204,18 +231,3 @@ class Target(object):
         """
         self._ignore_caret = ignore
         return self
-
-    def get_ignore_caret(self):
-        return self._ignore_caret
-
-    @property
-    def ignore_regions(self):
-        # type: () -> tp.List
-        """The ignore regions defined on the current target."""
-        return self._ignore_regions
-
-    @property
-    def floating_regions(self):
-        # type: () -> tp.List
-        """The floating regions defined on the current target."""
-        return self._floating_regions
