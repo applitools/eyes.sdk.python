@@ -24,6 +24,7 @@ class _UtcTz(tzinfo):
     """
     A UTC timezone class which is tzinfo compliant.
     """
+
     _ZERO = timedelta(0)
 
     def utcoffset(self, dt):
@@ -72,10 +73,11 @@ def create_proxy_property(property_name, target_name, is_settable=False):
         return property(_proxy_get, _proxy_set)
 
 
-def create_forwarded_method(from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-                            to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
-                            func_name,  # type: str
-                            ):
+def create_forwarded_method(
+    from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
+    to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
+    func_name,  # type: str
+):
     # type: (...) -> tp.Callable
     """
     Returns a method(!) to be set on 'from_', which activates 'func_name' on 'to'.
@@ -94,28 +96,33 @@ def create_forwarded_method(from_,  # type: tp.Union[EyesWebDriver, EyesWebEleme
     return types.MethodType(forwarded_method, from_)
 
 
-def create_proxy_interface(from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-                           to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
-                           ignore_list=None,  # type: tp.List[str]
-                           override_existing=False,  # type: bool
-                           ):
+def create_proxy_interface(
+    from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
+    to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
+    ignore_list=None,  # type: tp.List[str]
+    override_existing=False,  # type: bool
+):
     # type: (...) -> None
     """
-    Copies the public interface of the destination object, excluding names in the ignore_list,
-    and creates an identical interface in 'eyes_core', which forwards calls to dst.
+    Copies the public interface of the destination object, excluding names in the
+    ignore_list, and creates an identical interface in 'eyes_core',
+    which forwards calls to dst.
 
     :param from_: Source.
     :param to: Destination.
     :param ignore_list: List of names to ignore while copying.
-    :param override_existing: If False, attributes already existing in 'eyes_core' will not be overridden.
+    :param override_existing: If False, attributes already existing in 'eyes_core'
+                              will not be overridden.
     """
     if not ignore_list:
         ignore_list = []
     for attr_name in dir(to):
-        if not attr_name.startswith('_') and attr_name not in ignore_list:
+        if not attr_name.startswith("_") and attr_name not in ignore_list:
             if callable(getattr(to, attr_name)):
                 if override_existing or not hasattr(from_, attr_name):
-                    setattr(from_, attr_name, create_forwarded_method(from_, to, attr_name))
+                    setattr(
+                        from_, attr_name, create_forwarded_method(from_, to, attr_name)
+                    )
 
 
 def cached_property(f):
@@ -152,19 +159,17 @@ def timeit(method):
         result = method(*args, **kw)
         te = time.time()
 
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
+        if "log_time" in kw:
+            name = kw.get("log_name", method.__name__.upper())
+            kw["log_time"][name] = int((te - ts) * 1000)
         else:
-            logger.debug('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
+            logger.debug("%r  %2.2f ms" % (method.__name__, (te - ts) * 1000))
         return result
 
     return timed
 
 
-def retry(delays=(0, 1, 5),
-          exception=Exception,
-          report=lambda *args: None):
+def retry(delays=(0, 1, 5), exception=Exception, report=lambda *args: None):
     """
     This is a Python decorator which helps implementing an aspect oriented
     implementation of a retrying of certain steps which might fail sometimes.
@@ -183,8 +188,9 @@ def retry(delays=(0, 1, 5),
                         report("retryable failed definitely:", problems)
                         raise
                     else:
-                        report("retryable failed:", problem,
-                               "-- delaying for %ds" % delay)
+                        report(
+                            "retryable failed:", problem, "-- delaying for %ds" % delay
+                        )
                         time.sleep(delay)
 
         return wrapped

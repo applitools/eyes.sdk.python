@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import base64
 import contextlib
 import time
-import typing as tp
+import typing
 
 from PIL import Image
 from selenium.common.exceptions import WebDriverException
@@ -17,13 +17,14 @@ from applitools.core.errors import EyesError
 from applitools.core.geometry import Point, Region
 from applitools.core.utils import cached_property, image_utils, general_utils
 from . import eyes_selenium_utils, StitchMode
-from .positioning import ElementPositionProvider, build_position_provider_for, ScrollPositionProvider
+from .positioning import build_position_provider_for, ScrollPositionProvider
 from .webelement import EyesWebElement
 from .frames import Frame, FrameChain
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Generator, Text, Optional, List, Dict, Any
     from applitools.core.scaling import ScaleProvider
-    from applitools.core.utils.custom_types import Num, ViewPort, FrameReference, AnyWebDriver, AnyWebElement
+    from applitools.core.utils.custom_types import Num, ViewPort, FrameReference
     from .eyes import Eyes
 
 
@@ -33,7 +34,7 @@ class FrameResolver(object):
         if isinstance(frame_ref, str):
             frame_eyes_webelement = driver.find_element_by_name(frame_ref)
         elif isinstance(frame_ref, int):
-            frame_elements_list = driver.find_elements_by_css_selector('frame, iframe')
+            frame_elements_list = driver.find_elements_by_css_selector("frame, iframe")
             frame_eyes_webelement = frame_elements_list[frame_ref]
         elif isinstance(frame_ref, EyesWebElement):
             frame_eyes_webelement = frame_ref
@@ -47,11 +48,12 @@ class FrameResolver(object):
 
 class _EyesSwitchTo(object):
     """
-    Wraps a selenium "SwitchTo" object, so we can keep track of switching between frames.
-    It has name EyesTargetLocator in other SDK's
+    Wraps :py:class:`selenium.webdriver.remote.switch_to.SwitchTo` object, so we can
+    keep track of  switching between frames. It names EyesTargetLocator in other SDK's
     """
+
     # TODO: Make more similar to EyesTargetLocator
-    _READONLY_PROPERTIES = ['alert', 'active_element']
+    _READONLY_PROPERTIES = ["alert", "active_element"]
     PARENT_FRAME = 1
 
     def __init__(self, driver, switch_to):
@@ -69,7 +71,7 @@ class _EyesSwitchTo(object):
 
     @contextlib.contextmanager
     def frame_and_back(self, frame_reference):
-        # type: (FrameReference) -> tp.Generator
+        # type: (FrameReference) -> Generator
         self.frame(frame_reference)
         yield
         self.parent_frame()
@@ -120,7 +122,7 @@ class _EyesSwitchTo(object):
                     self._switch_to.frame(frame.reference)
 
     def window(self, window_name):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         """
         Switch to window.
         """
@@ -141,37 +143,62 @@ class _EyesSwitchTo(object):
         borders = size_and_borders.borders
         frame_inner_size = size_and_borders.size
 
-        content_location = Point(pl['x'] + borders['left'], pl['y'] + borders['top'])
+        content_location = Point(pl["x"] + borders["left"], pl["y"] + borders["top"])
         original_location = self._scroll_position.get_current_position()
 
         self._driver.scroll_to(content_location)
-        frame = Frame(target_frame, content_location, target_frame.size, frame_inner_size,
-                      parent_scroll_position=original_location)
+        frame = Frame(
+            target_frame,
+            content_location,
+            target_frame.size,
+            frame_inner_size,
+            parent_scroll_position=original_location,
+        )
         self._driver.frame_chain.push(frame)
 
 
 class EyesWebDriver(object):
     """
-    A wrapper for selenium web driver which creates wrapped elements, and notifies us about
-    events / actions.
+    A wrapper for selenium web driver which creates wrapped elements,
+    and notifies us about events / actions.
     """
-    # Properties require special handling since even testing if they're callable "activates"
-    # them, which makes copying them automatically a problem.
-    _READONLY_PROPERTIES = ['application_cache', 'current_url', 'current_window_handle', 'desired_capabilities',
-                            'log_types', 'name', 'page_source', 'title', 'window_handles', 'switch_to', 'mobile',
-                            'current_context', 'context', 'current_activity', 'network_connection',
-                            'available_ime_engines', 'active_ime_engine', 'device_time', 'w3c', 'contexts',
-                            'current_package', ]
-    _READONLY_PROPERTIES += ['battery_info']  # Appium specific
-    _SETTABLE_PROPERTIES = ['orientation', 'file_detector']
 
-    # This should pretty much cover all scroll bars (and some fixed position footer elements :) ).
+    # Properties require special handling since even testing if they're
+    # callable "activates" them, which makes copying them automatically a problem.
+    _READONLY_PROPERTIES = [
+        "application_cache",
+        "current_url",
+        "current_window_handle",
+        "desired_capabilities",
+        "log_types",
+        "name",
+        "page_source",
+        "title",
+        "window_handles",
+        "switch_to",
+        "mobile",
+        "current_context",
+        "context",
+        "current_activity",
+        "network_connection",
+        "available_ime_engines",
+        "active_ime_engine",
+        "device_time",
+        "w3c",
+        "contexts",
+        "current_package",
+    ]
+    _READONLY_PROPERTIES += ["battery_info"]  # Appium specific
+    _SETTABLE_PROPERTIES = ["orientation", "file_detector"]
+
+    # This should pretty much cover all scroll bars
+    # (and some fixed position footer elements :) ).
     _MAX_SCROLL_BAR_SIZE = 50
 
     _MIN_SCREENSHOT_PART_HEIGHT = 10
 
     def __init__(self, driver, eyes, stitch_mode=StitchMode.Scroll):
-        # type: (WebDriver, Eyes, tp.Text) -> None
+        # type: (WebDriver, Eyes, Text) -> None
         """
         Ctor.
 
@@ -181,25 +208,37 @@ class EyesWebDriver(object):
         """
         self.driver = driver
         self._eyes = eyes
-        self._origin_position_provider = build_position_provider_for(StitchMode.Scroll, driver)
+        self._origin_position_provider = build_position_provider_for(
+            StitchMode.Scroll, driver
+        )
         self._position_provider = build_position_provider_for(stitch_mode, driver)
-        # tp.List of frames the user switched to, and the current offset, so we can properly
-        # calculate elements' coordinates
+        # List of frames the user switched to, and the current offset,
+        # so we can properly calculate elements' coordinates
         self._frame_chain = FrameChain()
-        self._default_content_viewport_size = None  # type: tp.Optional[ViewPort]
+        self._default_content_viewport_size = None  # type: Optional[ViewPort]
 
-        self.driver_takes_screenshot = driver.capabilities.get('takesScreenshot', False)
+        self.driver_takes_screenshot = driver.capabilities.get("takesScreenshot", False)
 
-        # Creating the rest of the driver interface by simply forwarding it to the underlying
-        # driver.
-        general_utils.create_proxy_interface(self, driver, self._READONLY_PROPERTIES + self._SETTABLE_PROPERTIES)
+        # Creating the rest of the driver interface by simply forwarding it to the
+        # underlying driver.
+        general_utils.create_proxy_interface(
+            self, driver, self._READONLY_PROPERTIES + self._SETTABLE_PROPERTIES
+        )
 
         for attr in self._READONLY_PROPERTIES:
             if not hasattr(self.__class__, attr):
-                setattr(self.__class__, attr, general_utils.create_proxy_property(attr, 'driver'))
+                setattr(
+                    self.__class__,
+                    attr,
+                    general_utils.create_proxy_property(attr, "driver"),
+                )
         for attr in self._SETTABLE_PROPERTIES:
             if not hasattr(self.__class__, attr):
-                setattr(self.__class__, attr, general_utils.create_proxy_property(attr, 'driver', True))
+                setattr(
+                    self.__class__,
+                    attr,
+                    general_utils.create_proxy_property(attr, "driver", True),
+                )
 
     def get_display_rotation(self):
         # type: () -> int
@@ -208,7 +247,7 @@ class EyesWebDriver(object):
 
         :return: The rotation of the screenshot we get from the webdriver in (degrees).
         """
-        if self.platform_name == 'Android' and self.driver.orientation == "LANDSCAPE":
+        if self.platform_name == "Android" and self.driver.orientation == "LANDSCAPE":
             return -90
         return 0
 
@@ -220,32 +259,32 @@ class EyesWebDriver(object):
 
     @cached_property
     def platform_name(self):
-        # type: () -> tp.Optional[tp.Text]
-        return self.driver.desired_capabilities.get('platformName', None)
+        # type: () -> Optional[Text]
+        return self.driver.desired_capabilities.get("platformName", None)
 
     @cached_property
     def platform_version(self):
-        # type: () -> tp.Optional[tp.Text]
-        return self.driver.desired_capabilities.get('platformVersion', None)
+        # type: () -> Optional[Text]
+        return self.driver.desired_capabilities.get("platformVersion", None)
 
     @cached_property
     def browser_version(self):
-        # type: () -> tp.Optional[float]
+        # type: () -> Optional[float]
         caps = self.driver.capabilities
-        version = caps.get('browserVersion', caps.get('version', None))
+        version = caps.get("browserVersion", caps.get("version", None))
         if version:
             # convert version that has few dots in to float number (e.g. Edge 1.23.45)
-            if version.find('.') != -1:
-                version = float(version[:version.index('.') + 2])
+            if version.find(".") != -1:
+                version = float(version[: version.index(".") + 2])
             else:
                 version = float(version)
         return version
 
     @cached_property
     def browser_name(self):
-        # type: () -> tp.Optional[tp.Text]
+        # type: () -> Optional[Text]
         caps = self.driver.capabilities
-        return caps.get('browserName', caps.get('browser', None))
+        return caps.get("browserName", caps.get("browser", None))
 
     @cached_property
     def user_agent(self):
@@ -262,12 +301,13 @@ class EyesWebDriver(object):
         """
         Returns whether the platform running is a mobile device or not.
 
-        :return: True if the platform running the test is a mobile platform. False otherwise.
+        :return: True if the platform running the test is a mobile platform.
+                 False otherwise.
         """
         return eyes_selenium_utils.is_mobile_device(self.driver)
 
     def get(self, url):
-        # type: (tp.Text) -> tp.Optional[tp.Any]
+        # type: (Text) -> Optional[Any]
         """
         Navigates the driver to the given url.
 
@@ -279,7 +319,7 @@ class EyesWebDriver(object):
         return self.driver.get(url)
 
     def find_element(self, by=By.ID, value=None):
-        # type: (tp.Text, tp.Text) -> EyesWebElement
+        # type: (Text, Text) -> EyesWebElement
         """
         Returns a WebElement denoted by "By".
 
@@ -295,7 +335,7 @@ class EyesWebDriver(object):
         return result
 
     def find_elements(self, by=By.ID, value=None):
-        # type: (tp.Text, tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text, Text) -> List[EyesWebElement]
         """
         Returns a list of web elements denoted by "By".
 
@@ -314,7 +354,7 @@ class EyesWebDriver(object):
         return results
 
     def find_element_by_id(self, id_):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by id.
 
@@ -323,7 +363,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.ID, value=id_)
 
     def find_elements_by_id(self, id_):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds multiple elements by id.
 
@@ -332,7 +372,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.ID, value=id_)
 
     def find_element_by_xpath(self, xpath):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by xpath.
 
@@ -341,7 +381,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.XPATH, value=xpath)
 
     def find_elements_by_xpath(self, xpath):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds multiple elements by xpath.
 
@@ -350,7 +390,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.XPATH, value=xpath)
 
     def find_element_by_link_text(self, link_text):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by link text.
 
@@ -359,7 +399,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.LINK_TEXT, value=link_text)
 
     def find_elements_by_link_text(self, text):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by link text.
 
@@ -368,7 +408,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.LINK_TEXT, value=text)
 
     def find_element_by_partial_link_text(self, link_text):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by a partial match of its link text.
 
@@ -377,7 +417,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.PARTIAL_LINK_TEXT, value=link_text)
 
     def find_elements_by_partial_link_text(self, link_text):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by a partial match of their link text.
 
@@ -386,7 +426,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.PARTIAL_LINK_TEXT, value=link_text)
 
     def find_element_by_name(self, name):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by name.
 
@@ -395,7 +435,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.NAME, value=name)
 
     def find_elements_by_name(self, name):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by name.
 
@@ -404,7 +444,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.NAME, value=name)
 
     def find_element_by_tag_name(self, name):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by tag name.
 
@@ -413,7 +453,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.TAG_NAME, value=name)
 
     def find_elements_by_tag_name(self, name):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by tag name.
 
@@ -422,7 +462,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.TAG_NAME, value=name)
 
     def find_element_by_class_name(self, name):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by class name.
 
@@ -431,7 +471,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.CLASS_NAME, value=name)
 
     def find_elements_by_class_name(self, name):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by class name.
 
@@ -440,7 +480,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.CLASS_NAME, value=name)
 
     def find_element_by_css_selector(self, css_selector):
-        # type: (tp.Text) -> EyesWebElement
+        # type: (Text) -> EyesWebElement
         """
         Finds an element by css selector.
 
@@ -449,7 +489,7 @@ class EyesWebDriver(object):
         return self.find_element(by=By.CSS_SELECTOR, value=css_selector)
 
     def find_elements_by_css_selector(self, css_selector):
-        # type: (tp.Text) -> tp.List[EyesWebElement]
+        # type: (Text) -> List[EyesWebElement]
         """
         Finds elements by css selector.
 
@@ -458,7 +498,7 @@ class EyesWebDriver(object):
         return self.find_elements(by=By.CSS_SELECTOR, value=css_selector)
 
     def get_screenshot_as_base64(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Gets the screenshot of the current window as a base64 encoded string
            which is useful in embedded images in HTML.
@@ -466,20 +506,20 @@ class EyesWebDriver(object):
         screenshot64 = self.driver.get_screenshot_as_base64()
         display_rotation = self.get_display_rotation()
         if display_rotation != 0:
-            logger.info('Rotation required.')
+            logger.info("Rotation required.")
             # num_quadrants = int(-(display_rotation / 90))
-            logger.debug('Done! Creating image object...')
+            logger.debug("Done! Creating image object...")
             screenshot = image_utils.image_from_base64(screenshot64)
 
             # rotating
             if display_rotation == -90:
                 screenshot64 = image_utils.get_base64(screenshot.rotate(90))
-            logger.debug('Done! Rotating...')
+            logger.debug("Done! Rotating...")
 
         return screenshot64
 
     def get_screesnhot_as_base64_from_main_frame(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Make screenshot from main frame
         """
@@ -497,8 +537,16 @@ class EyesWebDriver(object):
         :return: The width of the full page.
         """
         # noinspection PyUnresolvedReferences
-        default_scroll_width = int(round(self.driver.execute_script("return document.documentElement.scrollWidth")))
-        body_scroll_width = int(round(self.driver.execute_script("return document.body.scrollWidth")))
+        default_scroll_width = int(
+            round(
+                self.driver.execute_script(
+                    "return document.documentElement.scrollWidth"
+                )
+            )
+        )
+        body_scroll_width = int(
+            round(self.driver.execute_script("return document.body.scrollWidth"))
+        )
         return max(default_scroll_width, body_scroll_width)
 
     def extract_full_page_height(self):
@@ -513,13 +561,29 @@ class EyesWebDriver(object):
         maximum between them.
         """
         # noinspection PyUnresolvedReferences
-        default_client_height = int(round(self.driver.execute_script("return document.documentElement.clientHeight")))
+        default_client_height = int(
+            round(
+                self.driver.execute_script(
+                    "return document.documentElement.clientHeight"
+                )
+            )
+        )
         # noinspection PyUnresolvedReferences
-        default_scroll_height = int(round(self.driver.execute_script("return document.documentElement.scrollHeight")))
+        default_scroll_height = int(
+            round(
+                self.driver.execute_script(
+                    "return document.documentElement.scrollHeight"
+                )
+            )
+        )
         # noinspection PyUnresolvedReferences
-        body_client_height = int(round(self.driver.execute_script("return document.body.clientHeight")))
+        body_client_height = int(
+            round(self.driver.execute_script("return document.body.clientHeight"))
+        )
         # noinspection PyUnresolvedReferences
-        body_scroll_height = int(round(self.driver.execute_script("return document.body.scrollHeight")))
+        body_scroll_height = int(
+            round(self.driver.execute_script("return document.body.scrollHeight"))
+        )
         max_document_element_height = max(default_client_height, default_scroll_height)
         max_body_height = max(body_client_height, body_scroll_height)
         return max(max_document_element_height, max_body_height)
@@ -543,37 +607,42 @@ class EyesWebDriver(object):
         self._origin_position_provider.set_position(point)
 
     def get_entire_page_size(self):
-        # type: () -> tp.Dict[tp.Text, int]
+        # type: () -> Dict[Text, int]
         """
         Extracts the size of the current page from the browser using Javascript.
 
         :return: The page width and height.
         """
         return {
-            'width':  self.extract_full_page_width(),
-            'height': self.extract_full_page_height()
+            "width": self.extract_full_page_width(),
+            "height": self.extract_full_page_height(),
         }
 
     def set_overflow(self, overflow, stabilization_time=None):
-        # type: (tp.Text, tp.Optional[int]) -> tp.Text
+        # type: (Text, Optional[int]) -> Text
         """
         Sets the overflow of the current context's document element.
 
-        :param overflow: The overflow value to set. If the given value is None, then overflow will be set to
-                         undefined.
-        :param stabilization_time: The time to wait for the page to stabilize after overflow is set. If the value is
-                                    None, then no waiting will take place. (Milliseconds)
+        :param overflow: The overflow value to set. If the given value is None,
+                         then overflow will be set to undefined.
+        :param stabilization_time: The time to wait for the page to stabilize
+                after overflow is set. If the value is None,
+                then no waiting will take place. (Milliseconds)
         :return: The previous overflow value.
         """
         logger.debug("Setting overflow: %s" % overflow)
         if overflow is None:
-            script = "var origOverflow = document.documentElement.style.overflow; " \
-                     "document.documentElement.style.overflow = undefined; " \
-                     "return origOverflow;"
+            script = (
+                "var origOverflow = document.documentElement.style.overflow; "
+                "document.documentElement.style.overflow = undefined; "
+                "return origOverflow;"
+            )
         else:
-            script = "var origOverflow = document.documentElement.style.overflow; " \
-                     "document.documentElement.style.overflow = \"{0}\"; " \
-                     "return origOverflow;".format(overflow)
+            script = (
+                "var origOverflow = document.documentElement.style.overflow; "
+                'document.documentElement.style.overflow = "{0}"; '
+                "return origOverflow;".format(overflow)
+            )
         # noinspection PyUnresolvedReferences
         original_overflow = self.driver.execute_script(script)
         logger.debug("Original overflow: %s" % original_overflow)
@@ -592,31 +661,33 @@ class EyesWebDriver(object):
         # noinspection PyBroadException
         try:
             WebDriverWait(self.driver, timeout).until(
-                lambda driver: driver.execute_script('return document.readyState') == 'complete')
+                lambda driver: driver.execute_script("return document.readyState")
+                == "complete"
+            )
         except Exception:
-            logger.debug('Page load timeout reached!')
+            logger.debug("Page load timeout reached!")
             if throw_on_timeout:
                 raise
 
     def hide_scrollbars(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Hides the scrollbars of the current context's document element.
 
         :return: The previous value of the overflow property (could be None).
         """
-        logger.debug('HideScrollbars() called. Waiting for page load...')
+        logger.debug("HideScrollbars() called. Waiting for page load...")
         self.wait_for_page_load()
-        logger.debug('About to hide scrollbars')
-        return self.set_overflow('hidden')
+        logger.debug("About to hide scrollbars")
+        return self.set_overflow("hidden")
 
     @property
     def frame_chain(self):
         """
         Gets the frame chain.
 
-        :return: A list of Frame instances which represents the path to the current frame.
-            This can later be used as an argument to _EyesSwitchTo.frames().
+        :return: A list of Frame instances which represents the path to the current
+            frame. This can later be used as an argument to _EyesSwitchTo.frames().
         """
         return self._frame_chain
 
@@ -643,7 +714,9 @@ class EyesWebDriver(object):
         # Optimization
         if current_frames:
             self.switch_to.default_content()
-        self._default_content_viewport_size = eyes_selenium_utils.get_viewport_size_or_display_size(self.driver)
+        self._default_content_viewport_size = eyes_selenium_utils.get_viewport_size_or_display_size(  # noqa: B950
+            self.driver
+        )
 
         if current_frames:
             self.switch_to.frames(current_frames)
@@ -685,7 +758,9 @@ class EyesWebDriver(object):
 
     @staticmethod
     def _wait_before_screenshot(seconds):
-        logger.debug("Waiting {} ms before taking screenshot..".format(int(seconds * 1000)))
+        logger.debug(
+            "Waiting {} ms before taking screenshot..".format(int(seconds * 1000))
+        )
         time.sleep(seconds)
         logger.debug("Finished waiting!")
 
@@ -697,7 +772,7 @@ class EyesWebDriver(object):
         :param wait_before_screenshots: Seconds to wait before taking each screenshot.
         :return: The full page screenshot.
         """
-        logger.info('getting full page screenshot..')
+        logger.info("getting full page screenshot..")
 
         # Saving the current frame reference and moving to the outermost frame.
         original_frame = self.frame_chain
@@ -720,33 +795,45 @@ class EyesWebDriver(object):
 
         # IMPORTANT This is required! Since when calculating the screenshot parts for full size,
         # we use a screenshot size which is a bit smaller (see comment below).
-        if (screenshot.width >= entire_page_size['width']) and (screenshot.height >= entire_page_size['height']):
+        if (screenshot.width >= entire_page_size["width"]) and (
+            screenshot.height >= entire_page_size["height"]
+        ):
             self.restore_origin()
             self.switch_to.frames(original_frame)
 
             return screenshot
 
-        #  We use a smaller size than the actual screenshot size in order to eliminate duplication
-        #  of bottom scroll bars, as well as footer-like elements with fixed position.
+        #  We use a smaller size than the actual screenshot size in order to
+        #  eliminate duplication of bottom scroll bars, as well as footer-like
+        #  elements with fixed position.
         screenshot_part_size = {
-            'width':  screenshot.width,
-            'height': max(screenshot.height - self._MAX_SCROLL_BAR_SIZE, self._MIN_SCREENSHOT_PART_HEIGHT)
+            "width": screenshot.width,
+            "height": max(
+                screenshot.height - self._MAX_SCROLL_BAR_SIZE,
+                self._MIN_SCREENSHOT_PART_HEIGHT,
+            ),
         }
 
-        logger.debug("Total size: {0}, Screenshot part size: {1}".format(entire_page_size, screenshot_part_size))
+        logger.debug(
+            "Total size: {0}, Screenshot part size: {1}".format(
+                entire_page_size, screenshot_part_size
+            )
+        )
 
-        entire_page = Region(0, 0, entire_page_size['width'], entire_page_size['height'])
+        entire_page = Region(
+            0, 0, entire_page_size["width"], entire_page_size["height"]
+        )
         screenshot_parts = entire_page.get_sub_regions(screenshot_part_size)
 
         # Starting with the screenshot we already captured at (0,0).
-        stitched_image = Image.new('RGBA', (entire_page.width, entire_page.height))
+        stitched_image = Image.new("RGBA", (entire_page.width, entire_page.height))
         stitched_image.paste(screenshot, box=(0, 0))
         self.save_position()
 
         for part in screenshot_parts:
             # Since we already took the screenshot for 0,0
             if part.left == 0 and part.top == 0:
-                logger.debug('Skipping screenshot for 0,0 (already taken)')
+                logger.debug("Skipping screenshot for 0,0 (already taken)")
                 continue
             logger.debug("Taking screenshot for {0}".format(part))
             # Scroll to the part's top/left and give it time to stabilize.
@@ -754,14 +841,20 @@ class EyesWebDriver(object):
             EyesWebDriver._wait_before_screenshot(wait_before_screenshots)
             # Since screen size might cause the scroll to reach only part of the way
             current_scroll_position = self.get_current_position()
-            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x, current_scroll_position.y))
+            logger.debug(
+                "Scrolled To ({0},{1})".format(
+                    current_scroll_position.x, current_scroll_position.y
+                )
+            )
             part64 = self.get_screenshot_as_base64()
             part_image = image_utils.image_from_bytes(base64.b64decode(part64))
 
             if need_to_scale:
                 part_image = image_utils.scale_image(part_image, 1.0 / pixel_ratio)
 
-            stitched_image.paste(part_image, box=(current_scroll_position.x, current_scroll_position.y))
+            stitched_image.paste(
+                part_image, box=(current_scroll_position.x, current_scroll_position.y)
+            )
 
         self.restore_position()
         self.restore_origin()
@@ -769,7 +862,9 @@ class EyesWebDriver(object):
 
         return stitched_image
 
-    def get_stitched_screenshot(self, element_region, wait_before_screenshots, scale_provider):
+    def get_stitched_screenshot(
+        self, element_region, wait_before_screenshots, scale_provider
+    ):
         # type: (Region, int, ScaleProvider) -> Image.Image
         """
         Gets a stitched screenshot for specific element
@@ -779,28 +874,39 @@ class EyesWebDriver(object):
         :param scale_provider: Scale image if needed.
         :return: The full element screenshot.
         """
-        logger.info('getting stitched element screenshot..')
+        logger.info("getting stitched element screenshot..")
         self._position_provider = self._eyes._element_position_provider
         entire_size = self._position_provider.get_entire_size()
         logger.debug("Element region: {}".format(element_region))
         # Firefox 60 and above make a screenshot of the current frame when other browsers
-        # make a screenshot of the viewport. So we scroll down to frame at _will_switch_to method
-        # and add a left margin here.
+        # make a screenshot of the viewport. So we scroll down to frame at
+        # _will_switch_to method and add a left margin here.
         # TODO: Refactor code. Use EyesScreenshot
         if self._frame_chain:
-            if ((self.browser_name == 'firefox' and self.browser_version < 60.0)
-                    or self.browser_name in ('chrome', 'MicrosoftEdge', 'internet explorer', 'safari')):
+            if (
+                self.browser_name == "firefox" and self.browser_version < 60.0
+            ) or self.browser_name in (
+                "chrome",
+                "MicrosoftEdge",
+                "internet explorer",
+                "safari",
+            ):
                 element_region.left += int(self._frame_chain.peek.location.x)
 
         screenshot_part_size = {
-            'width':  element_region.width,
-            'height': max(element_region.height - self._MAX_SCROLL_BAR_SIZE, self._MIN_SCREENSHOT_PART_HEIGHT)
+            "width": element_region.width,
+            "height": max(
+                element_region.height - self._MAX_SCROLL_BAR_SIZE,
+                self._MIN_SCREENSHOT_PART_HEIGHT,
+            ),
         }
-        entire_element = Region(0, 0, entire_size['width'], entire_size['height'])
+        entire_element = Region(0, 0, entire_size["width"], entire_size["height"])
 
         screenshot_parts = entire_element.get_sub_regions(screenshot_part_size)
         viewport = self.get_viewport_size()
-        screenshot = image_utils.image_from_bytes(base64.b64decode(self.get_screenshot_as_base64()))
+        screenshot = image_utils.image_from_bytes(
+            base64.b64decode(self.get_screenshot_as_base64())
+        )
         scale_provider.update_scale_ratio(screenshot.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         need_to_scale = True if pixel_ratio != 1.0 else False
@@ -809,7 +915,9 @@ class EyesWebDriver(object):
             element_region = element_region.scale(scale_provider.device_pixel_ratio)
 
         # Starting with element region size part of the screenshot. Use it as a size template.
-        stitched_image = Image.new('RGBA', (entire_element.width, entire_element.height))
+        stitched_image = Image.new(
+            "RGBA", (entire_element.width, entire_element.height)
+        )
         for part in screenshot_parts:
             logger.debug("Taking screenshot for {0}".format(part))
             # Scroll to the part's top/left and give it time to stabilize.
@@ -817,18 +925,30 @@ class EyesWebDriver(object):
             EyesWebDriver._wait_before_screenshot(wait_before_screenshots)
             # Since screen size might cause the scroll to reach only part of the way
             current_scroll_position = self._position_provider.get_current_position()
-            logger.debug("Scrolled To ({0},{1})".format(current_scroll_position.x, current_scroll_position.y))
+            logger.debug(
+                "Scrolled To ({0},{1})".format(
+                    current_scroll_position.x, current_scroll_position.y
+                )
+            )
             part64 = self.get_screenshot_as_base64()
             part_image = image_utils.image_from_bytes(base64.b64decode(part64))
             # Cut to viewport size the full page screenshot of main frame for some browsers
             if self._frame_chain:
-                if (self.browser_name == 'firefox' and self.browser_version < 60.0
-                        or self.browser_name in ('internet explorer', 'safari')):
+                if (
+                    self.browser_name == "firefox"
+                    and self.browser_version < 60.0
+                    or self.browser_name in ("internet explorer", "safari")
+                ):
                     # TODO: Refactor this to make main screenshot only once
                     frame_scroll_position = int(self._frame_chain.peek.location.y)
-                    part_image = image_utils.get_image_part(part_image,
-                                                            Region(top=frame_scroll_position, height=viewport['height'],
-                                                                   width=viewport['width']))
+                    part_image = image_utils.get_image_part(
+                        part_image,
+                        Region(
+                            top=frame_scroll_position,
+                            height=viewport["height"],
+                            width=viewport["width"],
+                        ),
+                    )
             # We cut original image before scaling to prevent appearing of artifacts
             part_image = image_utils.get_image_part(part_image, element_region)
             if need_to_scale:
@@ -838,7 +958,9 @@ class EyesWebDriver(object):
             if stitched_image is None:
                 stitched_image = part_image
                 continue
-            stitched_image.paste(part_image, box=(current_scroll_position.x, current_scroll_position.y))
+            stitched_image.paste(
+                part_image, box=(current_scroll_position.x, current_scroll_position.y)
+            )
 
         self._position_provider = self._origin_position_provider
         return stitched_image
@@ -855,18 +977,18 @@ class EyesWebDriver(object):
         """
         x, y = 0, 0
         for frame in self._frame_chain:
-            x += frame.location['x']
-            y += frame.location['y']
+            x += frame.location["x"]
+            y += frame.location["y"]
         return Point(x, y)
 
     def execute_script(self, script, *args):
         return self.driver.execute_script(script, *args)
 
-    def get_window_size(self, windowHandle='current'):
+    def get_window_size(self, windowHandle="current"):
         return self.driver.get_window_size(windowHandle)
 
-    def set_window_size(self, width, height, windowHandle='current'):
+    def set_window_size(self, width, height, windowHandle="current"):
         self.driver.set_window_size(width, height, windowHandle)
 
-    def set_window_position(self, x, y, windowHandle='current'):
+    def set_window_position(self, x, y, windowHandle="current"):
         self.driver.set_window_position(x, y, windowHandle)

@@ -1,4 +1,4 @@
-|Build Status|
+|Build Status| |Black Formatter|
 
 Eyes.Sdk.Python
 ===============
@@ -23,6 +23,8 @@ Please check the applitools website for usage instructions:
 -  Python Image SDK example:
    https://applitools.com/tutorials/screenshots-python.html
 
+.. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
 .. |Build Status| image:: https://travis-ci.org/applitools/eyes.sdk.python.svg?branch=master
    :target: https://travis-ci.org/applitools/eyes.sdk.python
 
@@ -32,7 +34,7 @@ Development
 
 For smother development experience install Invoke for task run first
 
-:: 
+::
 
     pip install invoke
     inv install-requirements  # install libs required for development
@@ -41,6 +43,18 @@ For smother development experience install Invoke for task run first
     inv dist -core  # publish eyes_core to test.pypi.org
     inv dist -core  -prod # publish eyes_core to pypi.org
 
+Install pre-commit hook
+***********************
+We're using `pre-commit <https://github.com/pre-commit/pre-commit>`_ for check and format code before commit. For
+manage hooks you could use invoke:
+
+::
+
+    # installing of git hooks
+    inv install-precommit-hook
+    # removing of git hooks
+    inv remove-precommit-hook
+
 
 Testing
 -------
@@ -48,6 +62,6 @@ Testing
 For local testing, for example, images sdk
 
 ::
-    
+
     inv install-packages -core -images
     inv test-run -images

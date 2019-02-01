@@ -11,13 +11,15 @@ import functools
 import typing as tp
 
 
-_DEFAULT_EYES_LOGGER_NAME = 'eyes'
-_DEFAULT_EYES_FORMATTER = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-_DEFAULT_LOGGER_LEVEL = int(os.environ.get('LOGGER_LEVEL', logging.INFO))
-_DEBUG_SCREENSHOT_PREFIX = os.environ.get('DEBUG_SCREENSHOT_PREFIX', 'screenshot_')
-_DEBUG_SCREENSHOT_PATH = os.environ.get('DEBUG_SCREENSHOT_PATH', '.')
+_DEFAULT_EYES_LOGGER_NAME = "eyes"
+_DEFAULT_EYES_FORMATTER = logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+_DEFAULT_LOGGER_LEVEL = int(os.environ.get("LOGGER_LEVEL", logging.INFO))
+_DEBUG_SCREENSHOT_PREFIX = os.environ.get("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
+_DEBUG_SCREENSHOT_PATH = os.environ.get("DEBUG_SCREENSHOT_PATH", ".")
 
-__all__ = ('StdoutLogger', 'FileLogger', 'NullLogger')
+__all__ = ("StdoutLogger", "FileLogger", "NullLogger")
 
 
 class _Logger(object):
@@ -25,16 +27,22 @@ class _Logger(object):
     Simple logger. Supports only info and debug.
     """
 
-    def __init__(self, name=__name__, level=_DEFAULT_LOGGER_LEVEL, handler_factory=lambda: None,
-                 formatter=None):
+    def __init__(
+        self,
+        name=__name__,
+        level=_DEFAULT_LOGGER_LEVEL,
+        handler_factory=lambda: None,
+        formatter=None,
+    ):
         # type: (tp.Text, int, tp.Callable, logging.Formatter) -> None
         """
         Ctor.
 
         :param name: The logger name.
         :param level: The log level (e.g., logging.DEBUG).
-        :param handler_factory: A callable which creates a handler object. We use a factory
-                                    since the actual creation of the handler should occur in open.
+        :param handler_factory: A callable which creates a handler object.
+                                We use a factory since the actual creation of the
+                                handler should occur in open.
         :param formatter: A custom formatter for the logs.
         """
         self._name = name
@@ -69,8 +77,9 @@ class _Logger(object):
         """
         if self._logger:
             self._handler.close()
-            # If we don't remove the handler and a call to logging.getLogger(...) will be made with
-            # the same name as the current logger, the handler will remain.
+            # If we don't remove the handler and a call to logging.getLogger(...)
+            # will be made with the same name as the current logger,
+            # the handler will remain.
             self._logger.removeHandler(self._handler)
             self._logger = None
             self._handler = None
@@ -110,7 +119,9 @@ class StdoutLogger(_Logger):
         :param level: The log level (default is logging.DEBUG).
         """
         handler_factory = functools.partial(logging.StreamHandler, sys.stdout)
-        super(StdoutLogger, self).__init__(name, level, handler_factory, _DEFAULT_EYES_FORMATTER)
+        super(StdoutLogger, self).__init__(
+            name, level, handler_factory, _DEFAULT_EYES_FORMATTER
+        )
 
 
 class FileLogger(_Logger):
@@ -118,20 +129,33 @@ class FileLogger(_Logger):
     A simple logger class for outputting log messages to a file
     """
 
-    def __init__(self, filename="eyes.log", mode='a', encoding=None, delay=0,
-                 name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
+    def __init__(
+        self,
+        filename="eyes.log",
+        mode="a",
+        encoding=None,
+        delay=0,
+        name=_DEFAULT_EYES_LOGGER_NAME,
+        level=_DEFAULT_LOGGER_LEVEL,
+    ):
         """
         Ctor.
 
         :param filename: The name of this file to which logs should be written.
-        :param mode: The mode in which the log file is opened ('a' for appending, 'w' for overwrite).
+        :param mode: The mode in which the log file is opened
+                     ('a' for appending, 'w' for overwrite).
         :param encoding: The encoding in which logs will be written to the file.
-        :param delay: If True, file will not be opened until the first log message is emitted.
+        :param delay: If True, file will not be opened until the first log message
+                      is emitted.
         :param name: The logger name.
         :param level: The log level (e.g., logging.DEBUG)
         """
-        handler_factory = functools.partial(logging.FileHandler, filename, mode, encoding, delay)
-        super(FileLogger, self).__init__(name, level, handler_factory, _DEFAULT_EYES_FORMATTER)
+        handler_factory = functools.partial(
+            logging.FileHandler, filename, mode, encoding, delay
+        )
+        super(FileLogger, self).__init__(
+            name, level, handler_factory, _DEFAULT_EYES_FORMATTER
+        )
 
 
 class NullLogger(_Logger):
@@ -221,4 +245,4 @@ def warning(msg):
 
 
 def deprecation(msg):
-    warnings.warn('DEPRECATION: {}'.format(msg))
+    warnings.warn("DEPRECATION: {}".format(msg))

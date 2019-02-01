@@ -12,7 +12,7 @@ from applitools.core.geometry import Region
 if tp.TYPE_CHECKING:
     from applitools.images.capture import EyesImagesScreenshot
 
-__all__ = ('FloatingBounds', 'FloatingRegion', 'Target')
+__all__ = ("FloatingBounds", "FloatingRegion", "Target")
 
 
 # TODO: Refactor this
@@ -24,7 +24,9 @@ class _NopRegionWrapper(RegionProvider):
 
 # Floating regions related classes.
 class FloatingBounds(object):
-    def __init__(self, max_left_offset=0, max_up_offset=0, max_right_offset=0, max_down_offset=0):
+    def __init__(
+        self, max_left_offset=0, max_up_offset=0, max_right_offset=0, max_down_offset=0
+    ):
         # type: (int, int, int, int) -> None
         self.max_left_offset = max_left_offset
         self.max_up_offset = max_up_offset
@@ -43,17 +45,26 @@ class FloatingRegion(RegionProvider):
         self.bounds = bounds  # type: FloatingBounds
 
     def __getstate__(self):
-        return dict(top=self.region.top, left=self.region.left, width=self.region.width, height=self.region.height,
-                    maxLeftOffset=self.bounds.max_left_offset, maxUpOffset=self.bounds.max_up_offset,
-                    maxRightOffset=self.bounds.max_right_offset, maxDownOffset=self.bounds.max_down_offset)
+        return dict(
+            top=self.region.top,
+            left=self.region.left,
+            width=self.region.width,
+            height=self.region.height,
+            maxLeftOffset=self.bounds.max_left_offset,
+            maxUpOffset=self.bounds.max_up_offset,
+            maxRightOffset=self.bounds.max_right_offset,
+            maxDownOffset=self.bounds.max_down_offset,
+        )
 
     # This is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
     def __setstate__(self, state):
-        raise EyesError('Cannot create FloatingRegion instance from dict!')
+        raise EyesError("Cannot create FloatingRegion instance from dict!")
 
     def _str_(self):
-        return "{0} {{region: {1}, bounds: {2}}}".format(self.__class__.__name__, self.region, self.bounds)
+        return "{0} {{region: {1}, bounds: {2}}}".format(
+            self.__class__.__name__, self.region, self.bounds
+        )
 
 
 class _CheckSettingsValues:

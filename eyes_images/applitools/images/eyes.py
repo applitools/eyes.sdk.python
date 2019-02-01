@@ -1,4 +1,4 @@
-import typing as tp
+import typing
 
 from PIL import Image
 
@@ -7,28 +7,29 @@ from .__version__ import __version__
 from .target import Target
 from .capture import EyesImagesScreenshot
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Text, Union, Optional, Dict
     from applitools.core.utils.custom_types import ViewPort, AppEnvironment
 
 
 class Eyes(EyesBase):
     def __init__(self, server_url=EyesBase.DEFAULT_EYES_SERVER):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         super(Eyes, self).__init__(server_url)
-        self._raw_title = None  # type: tp.Optional[tp.Text]
-        self._screenshot = None  # type: tp.Optional[EyesImagesScreenshot]
-        self._inferred = None  # type: tp.Optional[tp.Text]
+        self._raw_title = None  # type: Optional[Text]
+        self._screenshot = None  # type: Optional[EyesImagesScreenshot]
+        self._inferred = None  # type: Optional[Text]
 
     @property
     def full_agent_id(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         if self.agent_id is None:
             return self.base_agent_id
         return "%s [%s]" % (self.agent_id, self.base_agent_id)
 
     @property
     def base_agent_id(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         return "eyes.images.python/{version}".format(version=__version__)
 
     @property
@@ -37,7 +38,7 @@ class Eyes(EyesBase):
 
     @property
     def _inferred_environment(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         if self._inferred:
             return self._inferred
         return ""
@@ -54,7 +55,7 @@ class Eyes(EyesBase):
         pass
 
     def get_screenshot(self, **kwargs):
-        # type: (**tp.Dict) -> EyesImagesScreenshot
+        # type: (**Dict) -> EyesImagesScreenshot
         return self._screenshot
 
     def _try_capture_dom(self):
@@ -62,43 +63,52 @@ class Eyes(EyesBase):
         return None
 
     def open(self, app_name, test_name, dimension=None):
-        # type: (tp.Text, tp.Text, tp.Optional[ViewPort]) -> None
+        # type: (Text, Text, Optional[ViewPort]) -> None
         self._open_base(app_name, test_name, dimension)
 
     def check(self, name, target):
-        # type: (tp.Text, Target) -> bool
+        # type: (Text, Target) -> bool
         if self.is_disabled:
             return False
         return self._check_image(name, False, target)
 
     def check_image(self, image, tag=None, ignore_mismatch=False, retry_timeout=-1):
-        # type: (tp.Union[Image.Image, tp.Text], tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
+        # type: (Union[Image.Image, Text], Optional[Text], bool, int) -> Optional[bool]
         if self.is_disabled:
             return None
         logger.info(
-            'check_image(Image {}, tag {}, ignore_mismatch {}, retry_timeout {}'.format(image, tag, ignore_mismatch,
-                                                                                        retry_timeout))
-        return self._check_image(tag, ignore_mismatch, Target().image(image).timeout(retry_timeout))
+            "check_image(Image {}, tag {}, ignore_mismatch {}, retry_timeout {}".format(
+                image, tag, ignore_mismatch, retry_timeout
+            )
+        )
+        return self._check_image(
+            tag, ignore_mismatch, Target().image(image).timeout(retry_timeout)
+        )
 
-    def check_region(self, image, region, tag=None, ignore_mismatch=False, retry_timeout=-1):
-        # type: (Image.Image, Region, tp.Optional[tp.Text], bool, int) -> tp.Optional[bool]
+    def check_region(
+        self, image, region, tag=None, ignore_mismatch=False, retry_timeout=-1
+    ):
+        # type: (Image.Image, Region, Optional[Text], bool, int) -> Optional[bool]
         if self.is_disabled:
             return None
         logger.info(
-            'check_region(Image {}, region {}, tag {}, '
-            'ignore_mismatch {}, retry_timeout {}'.format(image, region, tag,
-                                                          ignore_mismatch,
-                                                          retry_timeout))
-        return self._check_image(tag, ignore_mismatch, Target().region(image, region).timeout(retry_timeout))
+            "check_region(Image {}, region {}, tag {}, "
+            "ignore_mismatch {}, retry_timeout {}".format(
+                image, region, tag, ignore_mismatch, retry_timeout
+            )
+        )
+        return self._check_image(
+            tag, ignore_mismatch, Target().region(image, region).timeout(retry_timeout)
+        )
 
     def _check_image(self, name, ignore_mismatch, target):
-        # type: (tp.Text, bool, Target) -> bool
+        # type: (Text, bool, Target) -> bool
         # Set the title to be linked to the screenshot.
-        self._raw_title = name if name else ''
+        self._raw_title = name if name else ""
 
         if not self.is_open:
             self.abort_if_not_closed()
-            raise EyesError('you must call open() before checking')
+            raise EyesError("you must call open() before checking")
 
         image = target._image  # type: Image.Image
         self._screenshot = EyesImagesScreenshot(image)
@@ -108,12 +118,15 @@ class Eyes(EyesBase):
         match_result = self._check_window_base(name, -1, target, ignore_mismatch)
         self._screenshot = None
         self._raw_title = None
-        return match_result['as_expected']
+        return match_result["as_expected"]
 
     @property
     def _environment(self):
         # type: () -> AppEnvironment
-        app_env = {'os':          self.host_os, 'hostingApp': self.host_app,
-                   'displaySize': self._viewport_size,
-                   'inferred':    self._inferred_environment}
+        app_env = {
+            "os": self.host_os,
+            "hostingApp": self.host_app,
+            "displaySize": self._viewport_size,
+            "inferred": self._inferred_environment,
+        }
         return app_env

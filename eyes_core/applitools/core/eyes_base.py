@@ -14,17 +14,25 @@ from .match_window_task import MatchWindowTask
 from .test_results import TestResults, TestResultsStatus
 
 if tp.TYPE_CHECKING:
-    from .utils.custom_types import (ViewPort, UserInputs, AppEnvironment, MatchResult,
-                                     RunningSession, SessionStartInfo, RegionOrElement)
+    from .utils.custom_types import (
+        ViewPort,
+        UserInputs,
+        AppEnvironment,
+        MatchResult,
+        RunningSession,
+        SessionStartInfo,
+        RegionOrElement,
+    )
     from .capture import EyesScreenshot
 
-__all__ = ('FailureReports', 'EyesBase')
+__all__ = ("FailureReports", "EyesBase")
 
 
 class FailureReports(object):
     """
     Failures are either reported immediately when they are detected, or when the test is closed.
     """
+
     IMMEDIATE = "Immediate"
     ON_CLOSE = "OnClose"
 
@@ -32,12 +40,13 @@ class FailureReports(object):
 class EyesBase(ABC):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
-    DEFAULT_EYES_SERVER = 'https://eyesapi.applitools.com'
+    DEFAULT_EYES_SERVER = "https://eyesapi.applitools.com"
 
     def __init__(self, server_url=DEFAULT_EYES_SERVER):
         # type: (tp.Text) -> None
         """
-        Creates a new (possibly disabled) Eyes instance that interacts with the Eyes server.
+        Creates a new (possibly disabled) Eyes instance that
+        interacts with the Eyes server.
 
         :param server_url: The URL of the Eyes server
         """
@@ -55,7 +64,8 @@ class EyesBase(ABC):
         self._region_to_check = None  # type: tp.Optional[RegionOrElement]
         self._viewport_size = None  # type: ViewPort
 
-        # key-value pairs to be associated with the test. Can be used for filtering later.
+        # key-value pairs to be associated with the test.
+        # Can be used for filtering later.
         self._properties = []  # type: tp.List
 
         # Disables Applitools Eyes and uses the webdriver directly.
@@ -64,7 +74,7 @@ class EyesBase(ABC):
         # An optional string identifying the current library using the SDK.
         self.agent_id = None  # type: tp.Optional[tp.Text]
 
-        # Should the test report mismatches immediately or when it is finished. See FailureReports.
+        # Should the test report mismatches immediately or when it is finished.
         self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
 
         # The default match settings for the session. See ImageMatchSettings.
@@ -73,20 +83,23 @@ class EyesBase(ABC):
         # The batch to which the tests belong to. See BatchInfo. None means no batch.
         self.batch = None  # type: tp.Optional[BatchInfo]
 
-        # A string identifying the OS running the AUT. Use this to override Eyes automatic inference.
+        # A string identifying the OS running the AUT.
+        # Use this to override Eyes automatic inference.
         self.host_os = None  # type: tp.Optional[tp.Text]
 
-        # A string identifying the app running the AUT. Use this to override Eyes automatic inference.
+        # A string identifying the app running the AUT.
+        # Use this to override Eyes automatic inference.
         self.host_app = None  # type: tp.Optional[tp.Text]
 
-        # A string that, if specified, determines the baseline to compare with and disables automatic baseline
-        # inference.
+        # A string that, if specified, determines the baseline to compare
+        # with and disables automatic baseline inference.
         self.baseline_branch_name = None  # type: tp.Optional[tp.Text]
 
         # A boolean denoting whether new tests should be automatically accepted.
         self.save_new_tests = True  # type: bool
 
-        # Whether failed tests should be automatically saved with all new output accepted.
+        # Whether failed tests should be automatically saved
+        # with all new output accepted.
         self.save_failed_tests = False  # type: bool
 
         # A string identifying the branch in which tests are run.
@@ -106,7 +119,8 @@ class EyesBase(ABC):
     def _title(self):
         # type: () -> tp.Text
         """
-        Returns the title of the window of the AUT, or empty string if the title is not available.
+        Returns the title of the window of the AUT, or empty string
+         if the title is not available.
         """
 
     @abc.abstractmethod
@@ -138,7 +152,8 @@ class EyesBase(ABC):
     def _environment(self):
         # type: () -> AppEnvironment
         """
-        Application environment is the environment (e.g., the host OS) which runs the application under test.
+        Application environment is the environment (e.g., the host OS)
+        which runs the application under test.
 
         :return: The current application environment.
         """
@@ -161,7 +176,8 @@ class EyesBase(ABC):
         """
         Sets the default match level for the entire session. See ImageMatchSettings.
 
-        :param match_level: The match level to set. Should be one of the values defined by MatchLevel
+        :param match_level: The match level to set. Should be one of
+                            the values defined by MatchLevel
         """
         self.default_match_settings.match_level = match_level
 
@@ -257,7 +273,7 @@ class EyesBase(ABC):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self._properties.append({'name': name, 'value': value})
+        self._properties.append({"name": name, "value": value})
 
     @property
     def is_open(self):
@@ -276,10 +292,10 @@ class EyesBase(ABC):
         :return: The test results.
         """
         if self.is_disabled:
-            logger.debug('close(): ignored (disabled)')
+            logger.debug("close(): ignored (disabled)")
             return None
         try:
-            logger.debug('close({})'.format(raise_ex))
+            logger.debug("close({})".format(raise_ex))
             if not self._is_open:
                 raise ValueError("Eyes not open")
 
@@ -289,18 +305,21 @@ class EyesBase(ABC):
 
             # If there's no running session, we simply return the default test results.
             if not self._running_session:
-                logger.debug('close(): Server session was not started')
-                logger.info('close(): --- Empty test ended.')
+                logger.debug("close(): Server session was not started")
+                logger.info("close(): --- Empty test ended.")
                 return TestResults()
 
-            is_new_session = self._running_session['is_new_session']
-            results_url = self._running_session['session_url']
+            is_new_session = self._running_session["is_new_session"]
+            results_url = self._running_session["session_url"]
 
             logger.info("close(): Ending server session...")
-            should_save = (is_new_session and self.save_new_tests) or \
-                          ((not is_new_session) and self.save_failed_tests)
+            should_save = (is_new_session and self.save_new_tests) or (
+                (not is_new_session) and self.save_failed_tests
+            )
             logger.debug("close(): automatically save session? %s" % should_save)
-            results = self._agent_connector.stop_session(self._running_session, False, should_save)
+            results = self._agent_connector.stop_session(
+                self._running_session, False, should_save
+            )
             results.is_new = is_new_session
             results.url = results_url
             logger.info("close(): %s" % results)
@@ -310,24 +329,38 @@ class EyesBase(ABC):
                     instructions = "Please approve the new baseline at " + results_url
                     logger.info("--- New test ended. " + instructions)
                     if raise_ex:
-                        message = "'%s' of '%s'. %s" % (self._start_info['scenarioIdOrName'],
-                                                        self._start_info['appIdOrName'],
-                                                        instructions)
+                        message = "'%s' of '%s'. %s" % (
+                            self._start_info["scenarioIdOrName"],
+                            self._start_info["appIdOrName"],
+                            instructions,
+                        )
                         raise NewTestError(message, results)
                 else:
-                    logger.info("--- Failed test ended. See details at {}".format(results_url))
+                    logger.info(
+                        "--- Failed test ended. See details at {}".format(results_url)
+                    )
                     if raise_ex:
-                        raise DiffsFoundError("Test '{}' of '{}' detected differences! See details at: {}".format(
-                            self._start_info['scenarioIdOrName'],
-                            self._start_info['appIdOrName'],
-                            results_url), results)
+                        raise DiffsFoundError(
+                            "Test '{}' of '{}' detected differences! See details at: {}".format(
+                                self._start_info["scenarioIdOrName"],
+                                self._start_info["appIdOrName"],
+                                results_url,
+                            ),
+                            results,
+                        )
             elif results.status == TestResultsStatus.Failed:
-                logger.info("--- Failed test ended. See details at {}".format(results_url))
+                logger.info(
+                    "--- Failed test ended. See details at {}".format(results_url)
+                )
                 if raise_ex:
-                    raise TestFailedError("Test '{}' of '{}'. See details at: {}".format(
-                        self._start_info['scenarioIdOrName'],
-                        self._start_info['appIdOrName'],
-                        results_url), results)
+                    raise TestFailedError(
+                        "Test '{}' of '{}'. See details at: {}".format(
+                            self._start_info["scenarioIdOrName"],
+                            self._start_info["appIdOrName"],
+                            results_url,
+                        ),
+                        results,
+                    )
             # Test passed
             logger.info("--- Test passed. See details at {}".format(results_url))
 
@@ -342,16 +375,18 @@ class EyesBase(ABC):
         If a test is running, aborts it. Otherwise, does nothing.
         """
         if self.is_disabled:
-            logger.debug('abort_if_not_closed(): ignored (disabled)')
+            logger.debug("abort_if_not_closed(): ignored (disabled)")
             return
         try:
             self._reset_last_screenshot()
 
             if self._running_session:
-                logger.debug('abort_if_not_closed(): Aborting session...')
+                logger.debug("abort_if_not_closed(): Aborting session...")
                 try:
-                    self._agent_connector.stop_session(self._running_session, True, False)
-                    logger.info('--- Test aborted.')
+                    self._agent_connector.stop_session(
+                        self._running_session, True, False
+                    )
+                    logger.info("--- Test aborted.")
                 except EyesError as e:
                     logger.info("Failed to abort server session: %s " % e)
                     pass
@@ -373,29 +408,35 @@ class EyesBase(ABC):
 
         :param app_name: The name of the application under test.
         :param test_name: The test name.
-        :param viewport_size: The client's viewport size (i.e., the visible part of the document's body) or None to
-                                allow any viewport size.
+        :param viewport_size: The client's viewport size (i.e.,
+                              the visible part of the document's body) or None to
+                              allow any viewport size.
         :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
         logger.open_()
         if self.is_disabled:
-            logger.debug('_open_base(): ignored (disabled)')
+            logger.debug("_open_base(): ignored (disabled)")
             return
-        logger.info('\nEyes version: {}\n'.format(self.full_agent_id))
+        logger.info("\nEyes version: {}\n".format(self.full_agent_id))
 
         if self.api_key is None:
             try:
-                self.api_key = os.environ['APPLITOOLS_API_KEY']
+                self.api_key = os.environ["APPLITOOLS_API_KEY"]
             except KeyError:
-                raise EyesError("API key not set! Log in to https://applitools.com to obtain your"
-                                " API Key and use 'api_key' to set it.")
+                raise EyesError(
+                    "API key not set! Log in to https://applitools.com to obtain your"
+                    " API Key and use 'api_key' to set it."
+                )
 
-        logger.info("open(%s, %s, %s, %s)" % (app_name, test_name, viewport_size, self.failure_reports))
+        logger.info(
+            "open(%s, %s, %s, %s)"
+            % (app_name, test_name, viewport_size, self.failure_reports)
+        )
 
         if self.is_open:
             self.abort_if_not_closed()
-            raise EyesError('a test is already running')
+            raise EyesError("a test is already running")
 
         self._before_open()
 
@@ -413,12 +454,19 @@ class EyesBase(ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._environment
-        self._start_info = {'agentId':              self.full_agent_id, 'appIdOrName': self._app_name,
-                            'scenarioIdOrName':     self._test_name, 'batchInfo': self.batch,
-                            'envName':              self.baseline_branch_name, 'environment': app_env,
-                            'defaultMatchSettings': self.default_match_settings, 'verId': None,
-                            'branchName':           self.branch_name, 'parentBranchName': self.parent_branch_name,
-                            'properties':           self._properties}
+        self._start_info = {
+            "agentId": self.full_agent_id,
+            "appIdOrName": self._app_name,
+            "scenarioIdOrName": self._test_name,
+            "batchInfo": self.batch,
+            "envName": self.baseline_branch_name,
+            "environment": app_env,
+            "defaultMatchSettings": self.default_match_settings,
+            "verId": None,
+            "branchName": self.branch_name,
+            "parentBranchName": self.parent_branch_name,
+            "properties": self._properties,
+        }
 
     def _start_session(self):
         # type: () -> None
@@ -427,18 +475,20 @@ class EyesBase(ABC):
 
         # initialization of Eyes parameters if empty from ENV variables
         if not self.branch_name:
-            self.branch_name = os.environ.get('APPLITOOLS_BRANCH', None)
+            self.branch_name = os.environ.get("APPLITOOLS_BRANCH", None)
         if not self.baseline_branch_name:
-            self.baseline_branch_name = os.environ.get('APPLITOOLS_BASELINE_BRANCH', None)
+            self.baseline_branch_name = os.environ.get(
+                "APPLITOOLS_BASELINE_BRANCH", None
+            )
         if not self.parent_branch_name:
-            self.parent_branch_name = os.environ.get('APPLITOOLS_PARENT_BRANCH', None)
+            self.parent_branch_name = os.environ.get("APPLITOOLS_PARENT_BRANCH", None)
         if not self.batch:
             self.batch = BatchInfo()
 
         self._create_start_info()
         # Actually start the session.
         self._running_session = self._agent_connector.start_session(self._start_info)
-        self._should_match_once_on_timeout = self._running_session['is_new_session']
+        self._should_match_once_on_timeout = self._running_session["is_new_session"]
 
     def _reset_last_screenshot(self):
         # type: () -> None
@@ -447,12 +497,12 @@ class EyesBase(ABC):
 
     def _ensure_running_session(self):
         if self._running_session:
-            logger.debug('Session already running.')
+            logger.debug("Session already running.")
             return
         self._start_session()
-        self._match_window_task = MatchWindowTask(self, self._agent_connector,
-                                                  self._running_session,
-                                                  self.match_timeout)
+        self._match_window_task = MatchWindowTask(
+            self, self._agent_connector, self._running_session, self.match_timeout
+        )
 
     def _before_match_window(self):
         """
@@ -464,7 +514,9 @@ class EyesBase(ABC):
         Allow to add custom behavior before sending data to the server
         """
 
-    def _check_window_base(self, tag=None, match_timeout=-1, target=None, ignore_mismatch=False):
+    def _check_window_base(
+        self, tag=None, match_timeout=-1, target=None, ignore_mismatch=False
+    ):
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             # TODO: create propper MatchResult class
@@ -476,30 +528,36 @@ class EyesBase(ABC):
         self._before_match_window()
 
         # TODO: implement MatchWIndow_ analog
-        result = self._match_window_task.match_window(retry_timeout=match_timeout,
-                                                      tag=tag,
-                                                      user_inputs=self._user_inputs,
-                                                      default_match_settings=self.default_match_settings,
-                                                      target=target,
-                                                      ignore_mismatch=ignore_mismatch,
-                                                      run_once_after_wait=self._should_match_once_on_timeout)
+        result = self._match_window_task.match_window(
+            retry_timeout=match_timeout,
+            tag=tag,
+            user_inputs=self._user_inputs,
+            default_match_settings=self.default_match_settings,
+            target=target,
+            ignore_mismatch=ignore_mismatch,
+            run_once_after_wait=self._should_match_once_on_timeout,
+        )
         self._after_match_window()
         self._handle_match_result(result, tag)
         return result
 
     def _handle_match_result(self, result, tag):
         # type: (MatchResult, tp.Text) -> None
-        self._last_screenshot = result['screenshot']
-        as_expected = result['as_expected']
+        self._last_screenshot = result["screenshot"]
+        as_expected = result["as_expected"]
         self._user_inputs = []
         if not as_expected:
             self._should_match_once_on_timeout = True
-            if self._running_session and not self._running_session['is_new_session']:
+            if self._running_session and not self._running_session["is_new_session"]:
                 logger.info("Window mismatch %s" % tag)
                 if self.failure_reports == FailureReports.IMMEDIATE:
-                    raise TestFailedError("Mismatch found in '%s' of '%s'" %
-                                          (self._start_info['scenarioIdOrName'],
-                                           self._start_info['appIdOrName']))
+                    raise TestFailedError(
+                        "Mismatch found in '%s' of '%s'"
+                        % (
+                            self._start_info["scenarioIdOrName"],
+                            self._start_info["appIdOrName"],
+                        )
+                    )
 
     @abc.abstractmethod
     def _try_capture_dom(self):
@@ -518,5 +576,7 @@ class EyesBase(ABC):
         try:
             return self._agent_connector.post_dom_snapshot(dom_json)
         except Exception as e:
-            logger.warning("Couldn't send DOM Json. Passing...\n Got next error: {}".format(e))
+            logger.warning(
+                "Couldn't send DOM Json. Passing...\n Got next error: {}".format(e)
+            )
             return None

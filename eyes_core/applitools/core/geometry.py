@@ -11,7 +11,7 @@ from .errors import EyesError
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import ViewPort
 
-__all__ = ('Point', 'Region',)
+__all__ = ("Point", "Region")
 
 
 class DictAccessMixin(object):
@@ -28,14 +28,15 @@ class StateMixin(object):
     # Required is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
     def __setstate__(self, state):
-        raise EyesError('Cannot create Point instance from dict!')
+        raise EyesError("Cannot create Point instance from dict!")
 
 
 class Point(DictAccessMixin, StateMixin):
     """
     A point with the coordinates (x,y).
     """
-    __slots__ = ('x', 'y')
+
+    __slots__ = ("x", "y")
 
     def __init__(self, x=0, y=0):
         # type: (float, float) -> None
@@ -173,16 +174,26 @@ class Point(DictAccessMixin, StateMixin):
         return result
 
     def scale(self, scale_ratio):
-        return Point(int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio)))
+        return Point(
+            int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio))
+        )
 
 
 class Region(DictAccessMixin, StateMixin):
     """
     A rectangle identified by left,top, width, height.
     """
-    __slots__ = ('left', 'top', 'width', 'height', 'coordinates_type')
 
-    def __init__(self, left=0, top=0, width=0, height=0, coordinates_type=CoordinatesType.SCREENSHOT_AS_IS):
+    __slots__ = ("left", "top", "width", "height", "coordinates_type")
+
+    def __init__(
+        self,
+        left=0,
+        top=0,
+        width=0,
+        height=0,
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
+    ):
         # type: (float, float, float, float, tp.Text) -> None
         self.left = int(round(left))
         self.top = int(round(top))
@@ -196,11 +207,17 @@ class Region(DictAccessMixin, StateMixin):
 
     @classmethod
     def from_region(cls, region):
-        return cls(region.left, region.top, region.width, region.height, region.coordinates_type)
+        return cls(
+            region.left,
+            region.top,
+            region.width,
+            region.height,
+            region.coordinates_type,
+        )
 
     @classmethod
     def from_location_size(cls, location, size):
-        return cls(location.x, location.y, size['width'], size['height'])
+        return cls(location.x, location.y, size["width"], size["height"])
 
     @property
     def x(self):
@@ -321,16 +338,20 @@ class Region(DictAccessMixin, StateMixin):
         :return: True if the point is inside the rectangle. Otherwise False.
         """
         x, y = pt.as_tuple()
-        return (self.left <= x <= self.right and  # noqa
-                self.top <= y <= self.bottom)
+        return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
 
     def overlaps(self, other):
         # type: (Region) -> bool
         """
         Return true if a rectangle overlaps this rectangle.
         """
-        return ((self.left <= other.left <= self.right or other.left <= self.left <= other.right) and (
-            self.top <= other.top <= self.bottom or other.top <= self.top <= other.bottom))
+        return (
+            self.left <= other.left <= self.right
+            or other.left <= self.left <= other.right
+        ) and (
+            self.top <= other.top <= self.bottom
+            or other.top <= self.top <= other.bottom
+        )
 
     def intersect(self, other):
         # type: (Region) -> None
@@ -341,7 +362,9 @@ class Region(DictAccessMixin, StateMixin):
         intersection_left = self.left if self.left >= other.left else other.left
         intersection_top = self.top if self.top >= other.top else other.top
         intersection_right = self.right if self.right <= other.right else other.right
-        intersection_bottom = self.bottom if self.bottom <= other.bottom else other.bottom
+        intersection_bottom = (
+            self.bottom if self.bottom <= other.bottom else other.bottom
+        )
         self.left, self.top = intersection_left, intersection_top
         self.width = intersection_right - intersection_left
         self.height = intersection_bottom - intersection_top
@@ -368,7 +391,9 @@ class Region(DictAccessMixin, StateMixin):
                 current_height = current_bottom - current_top
                 current_width = current_right - current_left
 
-                sub_regions.append(Region(current_left, current_top, current_width, current_height))
+                sub_regions.append(
+                    Region(current_left, current_top, current_width, current_height)
+                )
 
                 current_left += max_sub_region_size["width"]
 
@@ -383,11 +408,20 @@ class Region(DictAccessMixin, StateMixin):
 
     def offset(self, dx, dy):
         location = self.location.offset(dx, dy)
-        return Region(left=location.x, top=location.y, width=self.size['width'], height=self.size['height'])
+        return Region(
+            left=location.x,
+            top=location.y,
+            width=self.size["width"],
+            height=self.size["height"],
+        )
 
     def scale(self, scale_ratio):
-        return Region(left=int(math.ceil(self.left * scale_ratio)), top=int(math.ceil(self.top * scale_ratio)),
-                      width=int(math.ceil(self.width * scale_ratio)), height=int(math.ceil(self.height * scale_ratio)))
+        return Region(
+            left=int(math.ceil(self.left * scale_ratio)),
+            top=int(math.ceil(self.top * scale_ratio)),
+            width=int(math.ceil(self.width * scale_ratio)),
+            height=int(math.ceil(self.height * scale_ratio)),
+        )
 
     def __str__(self):
         return "(%s, %s) %s x %s" % (self.left, self.top, self.width, self.height)

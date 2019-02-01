@@ -8,7 +8,7 @@ from .utils import ABC, image_utils, argument_guard
 if tp.TYPE_CHECKING:
     from PIL import Image
 
-__all__ = ('EyesScreenshot',)
+__all__ = ("EyesScreenshot",)
 
 
 class EyesScreenshot(ABC):
@@ -93,12 +93,20 @@ class EyesScreenshot(ABC):
         argument_guard.not_none(to)
 
         updated_location = self.convert_location(region.location, from_, to)
-        return Region(updated_location.x, updated_location.y, region.width, region.height)
+        return Region(
+            updated_location.x, updated_location.y, region.width, region.height
+        )
 
     @property
     def image_region(self):
         # type: () -> Region
-        return Region(0, 0, self._image.width, self._image.height, CoordinatesType.SCREENSHOT_AS_IS)
+        return Region(
+            0,
+            0,
+            self._image.width,
+            self._image.height,
+            CoordinatesType.SCREENSHOT_AS_IS,
+        )
 
     @property
     def bytes(self):

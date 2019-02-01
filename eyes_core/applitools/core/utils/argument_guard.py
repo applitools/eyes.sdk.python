@@ -1,5 +1,3 @@
-import typing as tp
-
 from applitools.core.errors import EyesIllegalArgument
 from .compat import iteritems
 
@@ -15,7 +13,7 @@ def not_none(param):
     Fails if the input parameter is None
     """
     if param is None:
-        raise ValueError('{} is None'.format(get_name_from_param(param)))
+        raise ValueError("{} is None".format(get_name_from_param(param)))
 
 
 def not_none_or_empty(param):
@@ -24,7 +22,7 @@ def not_none_or_empty(param):
     """
     not_none(param)
     if not param:
-        raise ValueError('{} is empty'.format(get_name_from_param(param)))
+        raise ValueError("{} is empty".format(get_name_from_param(param)))
 
 
 def greater_than_or_equal_to_zero(param, *args):
@@ -36,14 +34,14 @@ def greater_than_or_equal_to_zero(param, *args):
         # adaptation for attr library
         param = args[1]
     if 0 >= param:
-        raise ValueError('{} < 0'.format(get_name_from_param(param)))
+        raise ValueError("{} < 0".format(get_name_from_param(param)))
 
 
 # TODO: update after resolving issue
 def greater_than_zero(param):
     # type: (int) -> None
     if 0 >= param:
-        raise ValueError('{} < 1'.format(get_name_from_param(param)))
+        raise ValueError("{} < 1".format(get_name_from_param(param)))
 
 
 def is_valid_state(is_valid, message):
@@ -56,4 +54,4 @@ def is_valid_state(is_valid, message):
 
 def is_a(param, klass):
     if not isinstance(param, klass):
-        raise EyesIllegalArgument('{} is not instance of {}'.format(param, klass))
+        raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))

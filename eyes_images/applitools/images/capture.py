@@ -8,6 +8,7 @@ class EyesImagesScreenshot(EyesScreenshot):
     """
     Encapsulates a screenshot taken by the images SDK.
     """
+
     SCREENSHOT_AS_IS = CoordinatesType.SCREENSHOT_AS_IS
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
 
@@ -17,8 +18,9 @@ class EyesImagesScreenshot(EyesScreenshot):
             location = Point.create_top_left()
         argument_guard.is_a(location, Point)
         self._location = location
-        self._bounds = Region.from_location_size(location, dict(width=self._image.width,
-                                                                height=self._image.height))
+        self._bounds = Region.from_location_size(
+            location, dict(width=self._image.width, height=self._image.height)
+        )
 
     def sub_screenshot(self, region, throw_if_clipped=False):
         # type: (Region, bool) -> Region
@@ -27,18 +29,27 @@ class EyesImagesScreenshot(EyesScreenshot):
         # We want to get the sub-screenshot in as-is coordinates type.
         sub_screenshot_region = self.intersected_region(region, self.SCREENSHOT_AS_IS)
 
-        if (sub_screenshot_region.is_size_empty
-                and (throw_if_clipped or not sub_screenshot_region.size == region.size)):
-            raise OutOfBoundsError("Region [{}] is out of screenshot bounds [{}]".format(region, self._bounds))
+        if sub_screenshot_region.is_size_empty and (
+            throw_if_clipped or not sub_screenshot_region.size == region.size
+        ):
+            raise OutOfBoundsError(
+                "Region [{}] is out of screenshot bounds [{}]".format(
+                    region, self._bounds
+                )
+            )
 
-        sub_screenshot_image = image_utils.get_image_part(self._image, sub_screenshot_region)
+        sub_screenshot_image = image_utils.get_image_part(
+            self._image, sub_screenshot_region
+        )
 
-        # Notice that we need the bounds-relative coordinates as parameter for new sub-screenshot.
-        relative_sub_screenshot_region = self.convert_region_location(sub_screenshot_region,
-                                                                      self.SCREENSHOT_AS_IS,
-                                                                      self.CONTEXT_RELATIVE)
-        return EyesImagesScreenshot(sub_screenshot_image,
-                                    relative_sub_screenshot_region.location)
+        # Notice that we need the bounds-relative coordinates as parameter
+        # for new sub-screenshot.
+        relative_sub_screenshot_region = self.convert_region_location(
+            sub_screenshot_region, self.SCREENSHOT_AS_IS, self.CONTEXT_RELATIVE
+        )
+        return EyesImagesScreenshot(
+            sub_screenshot_image, relative_sub_screenshot_region.location
+        )
 
     def convert_location(self, location, from_, to):
         # type: (Point, CoordinatesType, CoordinatesType) -> Point
@@ -72,15 +83,20 @@ class EyesImagesScreenshot(EyesScreenshot):
         # type: (Point, CoordinatesType) -> Point
         argument_guard.not_none(location)
         argument_guard.not_none(coordinates_type)
-        location = self.convert_location(location, coordinates_type, self.CONTEXT_RELATIVE)
+        location = self.convert_location(
+            location, coordinates_type, self.CONTEXT_RELATIVE
+        )
 
         if not self._bounds.contains(location):
             raise OutOfBoundsError(
-                "Point {} ('{}') is not visible in screenshot!".format(location, coordinates_type))
+                "Point {} ('{}') is not visible in screenshot!".format(
+                    location, coordinates_type
+                )
+            )
 
-        return self.convert_location(location,
-                                     self.CONTEXT_RELATIVE,
-                                     self.SCREENSHOT_AS_IS)
+        return self.convert_location(
+            location, self.CONTEXT_RELATIVE, self.SCREENSHOT_AS_IS
+        )
 
     def intersected_region(self, region, coordinates_type):
         # type: (Region, CoordinatesType) -> Region
@@ -90,13 +106,15 @@ class EyesImagesScreenshot(EyesScreenshot):
         if region.is_size_empty:
             return Region.from_region(region)
 
-        intersected_region = self.convert_region_location(region, region.coordinates_type,
-                                                          self.CONTEXT_RELATIVE)
+        intersected_region = self.convert_region_location(
+            region, region.coordinates_type, self.CONTEXT_RELATIVE
+        )
         intersected_region.intersect(self._bounds)
 
         if region.is_size_empty:
             return region
 
-        intersected_region.location = self.convert_location(intersected_region.location,
-                                                            self.CONTEXT_RELATIVE, coordinates_type)
+        intersected_region.location = self.convert_location(
+            intersected_region.location, self.CONTEXT_RELATIVE, coordinates_type
+        )
         return intersected_region
