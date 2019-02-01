@@ -43,6 +43,18 @@ For smother development experience install Invoke for task run first
     inv dist -core  # publish eyes_core to test.pypi.org
     inv dist -core  -prod # publish eyes_core to pypi.org
 
+Install pre-commit hook
+***********************
+We're using `pre-commit <https://github.com/pre-commit/pre-commit>`_ for check and format code before commit. For
+manage hooks you could use invoke:
+
+::
+
+    # installing of git hooks
+    inv install-precommit-hook
+    # removing of git hooks
+    inv remove-precommit-hook
+
 
 Testing
 -------
