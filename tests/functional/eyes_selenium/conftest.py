@@ -5,7 +5,8 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 
-from applitools.core import logger, __version__
+from applitools.core import logger
+from applitools.selenium.__version__ import __version__
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 
 
@@ -14,8 +15,11 @@ def _setup_env_vars_for_session():
     if not python_version:
         import platform
         python_version = platform.python_version()
-    os.environ['APPLITOOLS_BATCH_NAME'] = 'Python {} | Selenium SDK {} Tests'.format(
-        python_version, __version__)
+    os.environ['APPLITOOLS_BATCH_NAME'] = 'Python {} | Selenium SDK {}'.format(python_version, __version__)
+
+
+def pytest_generate_tests(metafunc):
+    _setup_env_vars_for_session()
 
 
 @pytest.fixture
