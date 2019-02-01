@@ -129,3 +129,12 @@ def test_run_packs(c, core=None, selenium=None, images=None, appium=None):
 @task
 def test_run_integration(c):
     c.run("pytest tests/test_integration.py")
+
+
+def install_precommit_hook(c):
+    c.run("pip install pre-commit")
+    c.run("pre-commit install")
+
+
+def remove_precommit_hook(c):
+    c.run("pre-commit uninstall")

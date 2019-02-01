@@ -1,4 +1,4 @@
-|Build Status||Black Formatter|
+|Build Status| |Black Formatter|
 
 Eyes.Sdk.Python
 ===============
@@ -34,7 +34,7 @@ Development
 
 For smother development experience install Invoke for task run first
 
-:: 
+::
 
     pip install invoke
     inv install-requirements  # install libs required for development
@@ -50,6 +50,6 @@ Testing
 For local testing, for example, images sdk
 
 ::
-    
+
     inv install-packages -core -images
     inv test-run -images
