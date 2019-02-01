@@ -27,27 +27,22 @@ from .target import (  # noqa
 from .frames import Frame  # noqa
 
 __all__ = (
-    "Frame"
-    + target.__all__  # noqa
-    + (  # noqa
-        "BatchInfo",
-        "ExactMatchSettings",
-        "ImageMatchSettings",
-        "Region",
-        "TestResults",
-        "MatchLevel",
-        "FailureReports",
-        "TestResultsStatus",
-        "TestResults",
-        "logger",
-    )
-    + (  # noqa
-        "Eyes",
-        "EyesWebElement",
-        "EyesWebDriver",
-        "Frame",
-        "EyesWebDriverScreenshot",
-        "StitchMode",
-        "dom_capture",
-    )
+    # noqa
+    "BatchInfo",
+    "ExactMatchSettings",
+    "ImageMatchSettings",
+    "Region",
+    "TestResults",
+    "MatchLevel",
+    "FailureReports",
+    "TestResultsStatus",
+    "TestResults",
+    "logger",
+    "Eyes",
+    "EyesWebElement",
+    "EyesWebDriver",
+    "Frame",
+    "EyesWebDriverScreenshot",
+    "StitchMode",
+    "dom_capture",
 )

@@ -64,9 +64,9 @@ class AgentConnector(object):
     def server_url(self, server_url):
         # type: (tp.Text) -> None
         self._server_url = server_url  # type: ignore
-        self._endpoint_uri = (
+        self._endpoint_uri = (  # type: ignore
             server_url.rstrip("/") + "/api/sessions/running"
-        )  # type: ignore
+        )
 
     @staticmethod
     def _send_long_request(name, method, *args, **kwargs):
