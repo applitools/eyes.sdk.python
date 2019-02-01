@@ -1,13 +1,12 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
-import typing as tp
 import multiprocessing as mp
+import typing as tp
 from collections import OrderedDict
 
 import requests
 import tinycss2
-
 from applitools.core import logger
 from applitools.core.utils import general_utils
 from applitools.core.utils.compat import urljoin
@@ -18,8 +17,8 @@ if tp.TYPE_CHECKING:
 __all__ = ("get_full_window_dom",)
 _CAPTURE_CSSOM_SCRIPT = """
 function extractCssResources() {
-    cssAndText = Array.from(document.querySelectorAll('link[rel="stylesheet"],
-    style')).map(el => {
+    cssAndText = Array.from(document.querySelectorAll(
+    'link[rel="stylesheet"],style')).map(el => {
         if (el.tagName.toUpperCase() === 'LINK') {
             return [null, el.getAttribute('href')];
         } else {
@@ -30,8 +29,8 @@ function extractCssResources() {
 }
 return extractCssResources();
 """
-_CAPTURE_FRAME_SCRIPT = """function captureFrame({ styleProps, attributeProps,
- rectProps, ignoredTagNames }) {
+_CAPTURE_FRAME_SCRIPT = """
+function captureFrame({ styleProps, attributeProps, rectProps, ignoredTagNames }) {
   const NODE_TYPES = {
     ELEMENT: 1,
     TEXT: 3,
