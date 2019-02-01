@@ -189,7 +189,8 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
     browser_size = get_window_size(driver)
     logger.debug("Current browser size: {}".format(browser_size))
     required_browser_size = dict(width=browser_size['width'] + (required_size['width'] - actual_viewport_size['width']),
-        height=browser_size['height'] + (required_size['height'] - actual_viewport_size['height']))
+                                 height=browser_size['height'] + (
+                                     required_size['height'] - actual_viewport_size['height']))
     return set_browser_size(driver, required_browser_size)
 
 
@@ -245,7 +246,7 @@ def set_viewport_size(driver, required_size):
                 curr_height_change += height_step
 
             required_browser_size = dict(width=browser_size['width'] + curr_width_change,
-                height=browser_size['height'] + curr_height_change)
+                                         height=browser_size['height'] + curr_height_change)
             if required_browser_size == last_required_browser_size:
                 logger.info("Browser size is as required but viewport size does not match!")
                 logger.info("Browser size: {}, Viewport size: {}".format(required_browser_size, actual_viewport_size))
@@ -294,13 +295,13 @@ def is_landscape_orientation(driver):
                 appium_driver.switch_to.context('NATIVE_APP')
             else:
                 original_context = None
-        except WebDriverException as e:
+        except WebDriverException:
             original_context = None
 
         try:
             orieintation = appium_driver.orientation
             return orieintation.lower() == 'landscape'
-        except Exception as e:
+        except Exception:
             logger.debug("WARNING: Couldn't get device orientation. Assuming Portrait.")
         finally:
             if original_context is not None:
@@ -326,7 +327,7 @@ def get_viewport_size_or_display_size(driver):
     try:
         if is_landscape_orientation(driver) and height > width:
             height, width = width, height
-    except WebDriverException as e:
+    except WebDriverException:
         # Not every WebDriver supports querying for orientation.
         pass
     logger.info("Done! Size {:d} x {:d}".format(width, height))

@@ -266,8 +266,11 @@ class Region(DictAccessMixin, StateMixin):
         :rtype: bool
         """
         return (
-            self.left == other.left and self.top == other.top and self.width == other.width and self.height ==
-            other.height)
+            self.left == other.left
+            and self.top == other.top
+            and self.width == other.width
+            and self.height == other.height
+        )
 
     def is_same_size(self, other):
         # type: (Region) -> bool

@@ -43,20 +43,20 @@ class Eyes(EyesBase):
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
 
     @staticmethod
-    def set_viewport_size_static(driver, size):
+    def set_viewport_size(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     @staticmethod
-    def get_viewport_size_static(driver):
+    def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
-    def get_viewport_size(self):
-        return self.get_viewport_size_static(self._driver)
+    def _get_viewport_size(self):
+        return self.get_viewport_size(self._driver)
 
-    def set_viewport_size(self, size):
-        self.set_viewport_size_static(self._driver, size)
+    def _set_viewport_size(self, size):
+        self.set_viewport_size(self._driver, size)
 
     def __init__(self, server_url=EyesBase.DEFAULT_EYES_SERVER):
         super(Eyes, self).__init__(server_url)
@@ -208,7 +208,7 @@ class Eyes(EyesBase):
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self.get_viewport_size(), device_pixel_ratio=device_pixel_ratio,
+                viewport_size=self._get_viewport_size(), device_pixel_ratio=device_pixel_ratio,
                 # always False as in Java version
                 is_mobile_device=False)  # type: ScaleProvider
         except Exception:
