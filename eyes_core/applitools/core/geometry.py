@@ -14,7 +14,24 @@ if tp.TYPE_CHECKING:
 __all__ = ('Point', 'Region',)
 
 
-class Point(object):
+class DictAccessMixin(object):
+    def __getitem__(self, item):
+        if item not in self.__slots__:
+            raise KeyError
+        return getattr(self, item)
+
+
+class StateMixin(object):
+    def __getstate__(self):
+        return OrderedDict([(name, getattr(self, name)) for name in self.__slots__])
+
+    # Required is required in order for jsonpickle to work on this object.
+    # noinspection PyMethodMayBeStatic
+    def __setstate__(self, state):
+        raise EyesError('Cannot create Point instance from dict!')
+
+
+class Point(DictAccessMixin, StateMixin):
     """
     A point with the coordinates (x,y).
     """
@@ -24,15 +41,6 @@ class Point(object):
         # type: (float, float) -> None
         self.x = int(round(x))
         self.y = int(round(y))
-
-    def __getstate__(self):
-        return OrderedDict([("x", self.x),
-                            ("y", self.y)])
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create Point instance from dict!')
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -165,11 +173,10 @@ class Point(object):
         return result
 
     def scale(self, scale_ratio):
-        return Point(int(math.ceil(self.x * scale_ratio)),
-                     int(math.ceil(self.y * scale_ratio)))
+        return Point(int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio)))
 
 
-class Region(object):
+class Region(DictAccessMixin, StateMixin):
     """
     A rectangle identified by left,top, width, height.
     """
@@ -182,15 +189,6 @@ class Region(object):
         self.width = int(round(width))
         self.height = int(round(height))
         self.coordinates_type = coordinates_type
-
-    def __getstate__(self):
-        return OrderedDict([("top", self.top), ("left", self.left), ("width", self.width),
-                            ("height", self.height), ("coordinatesType", self.coordinates_type)])
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create Region instance from dict!')
 
     @classmethod
     def create_empty_region(cls):
@@ -267,8 +265,9 @@ class Region(object):
         :return: Whether or not the rectangles have same coordinates.
         :rtype: bool
         """
-        return (self.left == other.left and self.top == other.top and self.width == other.width
-                and self.height == other.height)
+        return (
+            self.left == other.left and self.top == other.top and self.width == other.width and self.height ==
+            other.height)
 
     def is_same_size(self, other):
         # type: (Region) -> bool
@@ -327,8 +326,8 @@ class Region(object):
         """
         Return true if a rectangle overlaps this rectangle.
         """
-        return ((self.left <= other.left <= self.right or other.left <= self.left <= other.right)
-                and (self.top <= other.top <= self.bottom or other.top <= self.top <= other.bottom))
+        return ((self.left <= other.left <= self.right or other.left <= self.left <= other.right) and (
+            self.top <= other.top <= self.bottom or other.top <= self.top <= other.bottom))
 
     def intersect(self, other):
         # type: (Region) -> None
@@ -366,8 +365,7 @@ class Region(object):
                 current_height = current_bottom - current_top
                 current_width = current_right - current_left
 
-                sub_regions.append(Region(current_left, current_top, current_width,
-                                          current_height))
+                sub_regions.append(Region(current_left, current_top, current_width, current_height))
 
                 current_left += max_sub_region_size["width"]
 
@@ -382,17 +380,11 @@ class Region(object):
 
     def offset(self, dx, dy):
         location = self.location.offset(dx, dy)
-        return Region(left=location.x, top=location.y,
-                      width=self.size['width'],
-                      height=self.size['height'])
+        return Region(left=location.x, top=location.y, width=self.size['width'], height=self.size['height'])
 
     def scale(self, scale_ratio):
-        return Region(
-            left=int(math.ceil(self.left * scale_ratio)),
-            top=int(math.ceil(self.top * scale_ratio)),
-            width=int(math.ceil(self.width * scale_ratio)),
-            height=int(math.ceil(self.height * scale_ratio))
-        )
+        return Region(left=int(math.ceil(self.left * scale_ratio)), top=int(math.ceil(self.top * scale_ratio)),
+                      width=int(math.ceil(self.width * scale_ratio)), height=int(math.ceil(self.height * scale_ratio)))
 
     def __str__(self):
         return "(%s, %s) %s x %s" % (self.left, self.top, self.width, self.height)

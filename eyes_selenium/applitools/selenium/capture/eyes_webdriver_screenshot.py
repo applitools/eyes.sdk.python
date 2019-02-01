@@ -134,7 +134,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return self._screenshot64
 
     def get_location_relative_to_frame_viewport(self, location):
-        result = {'x': location.x, 'y': location.y}
+        result = {'x': location['x'], 'y': location['y']}
         if self._frame_chain or self._is_viewport_screenshot:
             result['x'] -= self._scroll_position.x
             result['y'] -= self._scroll_position.y
