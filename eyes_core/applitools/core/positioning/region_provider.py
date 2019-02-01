@@ -8,7 +8,7 @@ from applitools.core.utils import ABC
 if tp.TYPE_CHECKING:
     from applitools.core.capture import EyesScreenshot
 
-__all__ = ('RegionProvider', 'NullRegionProvider', 'NULL_REGION_INSTANCE')
+__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_INSTANCE")
 
 
 @attr.s
@@ -16,6 +16,7 @@ class RegionProvider(ABC):
     """
     Encapsulates a getRegion "callback" and how the region's coordinates should be used.
     """
+
     _region = attr.ib()
 
     def get_region(self, eyes_screenshot=None):

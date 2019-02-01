@@ -15,8 +15,15 @@ from applitools.core.errors import EyesError
 if tp.TYPE_CHECKING:
     from applitools.core.geometry import Region
 
-__all__ = ('image_from_file', 'image_from_bytes', 'image_from_base64',
-           'scale_image', 'get_base64', 'get_bytes', 'get_image_part')
+__all__ = (
+    "image_from_file",
+    "image_from_bytes",
+    "image_from_base64",
+    "scale_image",
+    "get_base64",
+    "get_bytes",
+    "get_image_part",
+)
 
 
 def image_from_file(f):
@@ -56,13 +63,13 @@ def scale_image(image, scale_ratio):
     image_ratio = float(image.height) / float(image.width)
     scale_width = int(math.ceil(image.width * scale_ratio))
     scale_height = int(math.ceil(scale_width * image_ratio))
-    image = image.convert('RGBA')
+    image = image.convert("RGBA")
     scaled_image = image.resize((scale_width, scale_height), resample=Image.BICUBIC)
     return scaled_image
 
 
 def get_device_pixel_ratio(driver):
-    return driver.execute_script('return window.devicePixelRatio;')
+    return driver.execute_script("return window.devicePixelRatio;")
 
 
 def get_base64(image):
@@ -73,8 +80,8 @@ def get_base64(image):
     :return: The base64 representation of the PNG bytes.
     """
     image_bytes_stream = io.BytesIO()
-    image.save(image_bytes_stream, format='PNG')
-    image64 = base64.b64encode(image_bytes_stream.getvalue()).decode('utf-8')
+    image.save(image_bytes_stream, format="PNG")
+    image64 = base64.b64encode(image_bytes_stream.getvalue()).decode("utf-8")
     image_bytes_stream.close()
     return image64
 
@@ -87,7 +94,7 @@ def get_bytes(image):
     :return: The image bytes.
     """
     image_bytes_stream = io.BytesIO()
-    image.save(image_bytes_stream, format='PNG')
+    image.save(image_bytes_stream, format="PNG")
     image_bytes = image_bytes_stream.getvalue()
     image_bytes_stream.close()
     return image_bytes
@@ -101,5 +108,5 @@ def get_image_part(image, region):
     :return: The part of the image.
     """
     if region.is_empty:
-        raise EyesError('region is empty!')
+        raise EyesError("region is empty!")
     return image.crop(box=(region.left, region.top, region.right, region.bottom))
