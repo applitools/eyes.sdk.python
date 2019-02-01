@@ -1,4 +1,4 @@
-|Build Status|
+|Build Status||Black Formatter|
 
 Eyes.Sdk.Python
 ===============
@@ -23,6 +23,8 @@ Please check the applitools website for usage instructions:
 -  Python Image SDK example:
    https://applitools.com/tutorials/screenshots-python.html
 
+.. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
 .. |Build Status| image:: https://travis-ci.org/applitools/eyes.sdk.python.svg?branch=master
    :target: https://travis-ci.org/applitools/eyes.sdk.python
 
