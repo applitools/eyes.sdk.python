@@ -14,7 +14,7 @@ charset = utf-8
 [*.{py,rst,ini}]
 indent_style = space
 indent_size = 4
-max_line_length = 80
+max_line_length = 88
 
 [*.rst]
 max_line_length = off
