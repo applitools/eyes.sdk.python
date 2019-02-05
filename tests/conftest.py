@@ -1,11 +1,17 @@
 import os
+import sys
 from collections import namedtuple
 from itertools import chain
 
 import pytest
 
+try:
+    from typing import Text, Optional, Generator, Iterable
+except ImportError:
+    pass
 
-class Platform(namedtuple('Platform', 'name version browsers extra')):
+
+class Platform(namedtuple("Platform", "name version browsers extra")):
     def platform_capabilities(self):
         # type: () -> Optional[Iterable[dict]]
         """
@@ -14,10 +20,7 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         if not self.is_appium_based:
             return
 
-        caps = {
-            'platformName':    self.name,
-            'platformVersion': self.version
-        }
+        caps = {"platformName": self.name, "platformVersion": self.version}
         if isinstance(self.extra, dict):
             caps.update(self.extra)
         return caps
@@ -47,76 +50,102 @@ class Platform(namedtuple('Platform', 'name version browsers extra')):
         from selenium.webdriver import ChromeOptions
 
         options = None
-        if 'firefox' == browser_name:
+        if "firefox" == browser_name:
             options = FirefoxOptions()
-        elif 'chrome' == browser_name:
+        elif "chrome" == browser_name:
             options = ChromeOptions()
-            options.add_argument('disable-infobars')
+            options.add_argument("disable-infobars")
         if options and headless:
             options.headless = True
 
         # huck for preventing overwriting 'platform' value in desired_capabilities by chrome options
         browser_caps = options.to_capabilities() if options else {}
-        browser_name, browser_version = [b for b in self.browsers if browser_name.lower() == b[0].lower()][0]
-        browser_caps.update({
-            'browserName': browser_name,
-            'version':     browser_version,
-            'platform':    self.full_name
-        })
+        browser_name, browser_version = [
+            b for b in self.browsers if browser_name.lower() == b[0].lower()
+        ][0]
+        browser_caps.update(
+            {
+                "browserName": browser_name,
+                "version": browser_version,
+                "platform": self.full_name,
+            }
+        )
         if isinstance(self.extra, dict):
             browser_caps.update(self.extra)
         return browser_caps
 
     @property
     def is_appium_based(self):
-        if self.extra and ('appiumVersion' in self.extra or 'deviceName' in self.extra):
+        if self.extra and ("appiumVersion" in self.extra or "deviceName" in self.extra):
             return True
         return False
 
     @property
     def full_name(self):
         if self.version:
-            return '{} {}'.format(self.name, self.version)
+            return "{} {}".format(self.name, self.version)
         return self.name
 
 
-COMMON_BROWSERS = [('chrome', 'latest'), ('firefox', 'latest')]
-SUPPORTED_PLATFORMS = [Platform(name='Windows', version='10',
-                                browsers=COMMON_BROWSERS + [('internet explorer', 'latest'),
-                                                            ('MicrosoftEdge', 'latest')], extra=None),
-                       Platform(name='Linux', version='', browsers=COMMON_BROWSERS, extra=None),
-                       Platform(name='macOS', version='10.13', browsers=COMMON_BROWSERS + [('safari', 'latest')],
-                                extra=None),
-
-                       Platform(name='iPhone', version='10.0', browsers=[], extra={
-                           "appiumVersion":     "1.7.2",
-                           "deviceName":        "Iphone Emulator",
-                           "deviceOrientation": "portrait",
-                           "browserName":       "Safari",
-                       }), Platform(name='Android', version='6.0', browsers=[], extra={
-                            "appiumVersion":     "1.9.1",
-                            "deviceName":        "Android Emulator",
-                            "deviceOrientation": "portrait",
-                            "browserName":       "Chrome",
-                            "newCommandTimeout": 60 * 5
-                        }),
-                       # Platform(name='Android', version='7.0', browsers=[], extra={
-                       #     "appiumVersion":     "1.9.1",
-                       #     "deviceName":        "Android Emulator",
-                       #     "deviceOrientation": "portrait",
-                       #     "browserName":       "Chrome",
-                       #     "newCommandTimeout": 60 * 5
-                       # }),
-                       # Platform(name='Android', version='8.0', browsers=[], extra={
-                       #     "appiumVersion":     "1.9.1",
-                       #     "deviceName":        "Samsung S9+",
-                       #     "deviceOrientation": "portrait",
-                       #     "browserName":       "Chrome",
-                       #     "newCommandTimeout": 60 * 5
-                       # })
-                       ]
-SUPPORTED_PLATFORMS_DICT = {platform.full_name: platform for platform in SUPPORTED_PLATFORMS}
-SUPPORTED_BROWSERS = set(chain(*[platform.browsers for platform in SUPPORTED_PLATFORMS]))
+COMMON_BROWSERS = [("chrome", "latest"), ("firefox", "latest")]
+SUPPORTED_PLATFORMS = [
+    Platform(
+        name="Windows",
+        version="10",
+        browsers=COMMON_BROWSERS
+        + [("internet explorer", "latest"), ("MicrosoftEdge", "latest")],
+        extra=None,
+    ),
+    Platform(name="Linux", version="", browsers=COMMON_BROWSERS, extra=None),
+    Platform(
+        name="macOS",
+        version="10.13",
+        browsers=COMMON_BROWSERS + [("safari", "latest")],
+        extra=None,
+    ),
+    Platform(
+        name="iPhone",
+        version="10.0",
+        browsers=[],
+        extra={
+            "appiumVersion": "1.7.2",
+            "deviceName": "Iphone Emulator",
+            "deviceOrientation": "portrait",
+            "browserName": "Safari",
+        },
+    ),
+    Platform(
+        name="Android",
+        version="9",
+        browsers=[],
+        extra={
+            "appiumVersion": "1.9.1",
+            "deviceName": "Samsung S9+",
+            "deviceOrientation": "portrait",
+            "browserName": "Chrome",
+            "newCommandTimeout": 60 * 5,
+        },
+    ),  # Platform(name='Android', version='7.0', browsers=[], extra={
+    #     "appiumVersion":     "1.9.1",
+    #     "deviceName":        "Android Emulator",
+    #     "deviceOrientation": "portrait",
+    #     "browserName":       "Chrome",
+    #     "newCommandTimeout": 60 * 5
+    # }),
+    # Platform(name='Android', version='8.0', browsers=[], extra={
+    #     "appiumVersion":     "1.9.1",
+    #     "deviceName":        "Samsung S9+",
+    #     "deviceOrientation": "portrait",
+    #     "browserName":       "Chrome",
+    #     "newCommandTimeout": 60 * 5
+    # })
+]
+SUPPORTED_PLATFORMS_DICT = {
+    platform.full_name: platform for platform in SUPPORTED_PLATFORMS
+}
+SUPPORTED_BROWSERS = set(
+    chain(*[platform.browsers for platform in SUPPORTED_PLATFORMS])
+)
 
 
 def pytest_addoption(parser):
@@ -129,9 +158,9 @@ def pytest_addoption(parser):
 def _get_capabilities(platform_name=None, browser_name=None, headless=False):
     if platform_name is None:
         sys2platform_name = {
-            'linux':  'Linux',
-            'darwin': 'macOS 10.13',
-            'win32':  'Windows 10'
+            "linux": "Linux",
+            "darwin": "macOS 10.13",
+            "win32": "Windows 10",
         }
         platform_name = sys2platform_name[sys.platform]
     platform = SUPPORTED_PLATFORMS_DICT[platform_name]
@@ -146,15 +175,18 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
 
 def _setup_env_vars_for_session():
     import uuid
+
     # setup environment variables once per test run if not settled up
     # needed for multi thread run
-    os.environ['APPLITOOLS_BATCH_ID'] = os.environ.get('APPLITOOLS_BATCH_ID', str(uuid.uuid4()))
+    os.environ["APPLITOOLS_BATCH_ID"] = os.environ.get(
+        "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
+    )
 
 
 def pytest_generate_tests(metafunc):
-    platform_name = metafunc.config.getoption('platform')
-    browser_name = metafunc.config.getoption('browser')
-    headless = metafunc.config.getoption('headless')
+    platform_name = metafunc.config.getoption("platform")
+    browser_name = metafunc.config.getoption("browser")
+    headless = metafunc.config.getoption("headless")
 
     _setup_env_vars_for_session()
 
@@ -162,40 +194,47 @@ def pytest_generate_tests(metafunc):
         desired_caps = _get_capabilities(platform_name, browser_name, headless)
     else:
         desired_caps = []
-        platforms = getattr(metafunc.function, 'platform', [])
+        platforms = getattr(metafunc.function, "platform", [])
         if platforms:
             platforms = platforms.args
 
         for platform in SUPPORTED_PLATFORMS:
             if platform.name not in platforms:
                 continue
-            desired_caps.extend(_get_capabilities(platform.full_name, headless=headless))
+            desired_caps.extend(
+                _get_capabilities(platform.full_name, headless=headless)
+            )
 
     # update capabilities from capabilities marker
-    if hasattr(metafunc, 'function'):
-        func_capabilities = getattr(metafunc.function, 'capabilities', {})
+    if hasattr(metafunc, "function"):
+        func_capabilities = getattr(metafunc.function, "capabilities", {})
         if func_capabilities:
             for caps in desired_caps:
                 caps.update(func_capabilities.kwargs)
 
     # generate combinations of driver options before run
-    if 'driver' in metafunc.fixturenames:
-        metafunc.parametrize('browser_config', desired_caps, ids=_generate_param_ids(desired_caps), scope='function')
+    if "driver" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "browser_config",
+            desired_caps,
+            ids=_generate_param_ids(desired_caps),
+            scope="function",
+        )
 
 
 def _generate_param_ids(desired_caps):
     results = []
     for caps in desired_caps:
-        platform = caps.get('platform')
-        browser = caps.get('browserName', '')
+        platform = caps.get("platform")
+        browser = caps.get("browserName", "")
         if platform:
-            browser_version = caps.get('version', '')
+            browser_version = caps.get("version", "")
             browser += str(browser_version)
         else:
-            platform = caps.get('platformName')
-            platform_version = caps.get('version', '')
+            platform = caps.get("platformName")
+            platform_version = caps.get("version", "")
             platform += platform_version
-        results.append('platform: {}, browser: {}'.format(platform, browser))
+        results.append("platform: {}, browser: {}".format(platform, browser))
     return results
 
 

@@ -11,8 +11,7 @@ Example of usage:
     pytest --browser firefox --headless 1   # run all tests on your current platform with firefox browser in headless mode
 """
 import pytest
-
-from applitools.core import logger, StdoutLogger
+from applitools.core import StdoutLogger, logger
 from applitools.core.utils import iteritems
 
 logger.set_logger(StdoutLogger())
@@ -26,13 +25,15 @@ def eyes(request, eyes_class):
     eyes.hide_scrollbars = True
 
     # configure eyes options through @pytest.mark.eyes() marker
-    eyes_mark_opts = request.node.get_closest_marker('eyes')
+    eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}
 
     # configure eyes through @pytest.mark.parametrize('eyes', [])
-    eyes_parametrized_opts = getattr(request, 'param', {})
+    eyes_parametrized_opts = getattr(request, "param", {})
     if set(eyes_mark_opts.keys()).intersection(eyes_parametrized_opts):
-        raise ValueError("Eyes options conflict. The values from .mark.eyes and .mark.parametrize shouldn't intersect.")
+        raise ValueError(
+            "Eyes options conflict. The values from .mark.eyes and .mark.parametrize shouldn't intersect."
+        )
 
     eyes_mark_opts.update(eyes_parametrized_opts)
     for key, val in iteritems(eyes_mark_opts):
@@ -40,4 +41,3 @@ def eyes(request, eyes_class):
 
     yield eyes
     eyes.abort_if_not_closed()
-
