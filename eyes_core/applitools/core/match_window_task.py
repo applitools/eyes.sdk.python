@@ -7,9 +7,9 @@ from struct import pack
 
 # noinspection PyProtectedMember
 from . import logger
-from .utils import general_utils
 from .errors import OutOfBoundsError
 from .geometry import Region
+from .utils import general_utils
 
 if tp.TYPE_CHECKING:
     from .eyes_base import EyesBase
@@ -195,7 +195,7 @@ class MatchWindowTask(object):
         while retry < retry_timeout:
             logger.debug("Matching...")
             time.sleep(self._MATCH_INTERVAL)
-            data = prepare_action()
+            data = prepare_action(ignore_mismatch=True)
             as_expected = self._agent_connector.match_window(
                 self._running_session, data
             )
