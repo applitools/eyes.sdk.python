@@ -116,11 +116,11 @@ SUPPORTED_PLATFORMS = [
     ),
     Platform(
         name="Android",
-        version="9",
+        version="6.0",
         browsers=[],
         extra={
             "appiumVersion": "1.9.1",
-            "deviceName": "Samsung S9+",
+            "deviceName": "Android Emulator",
             "deviceOrientation": "portrait",
             "browserName": "Chrome",
             "newCommandTimeout": 60 * 5,
