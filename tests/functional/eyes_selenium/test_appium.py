@@ -4,6 +4,7 @@ from applitools.selenium import (
     FloatingRegion,
     IgnoreRegionBySelector,
     Region,
+    StitchMode,
     Target,
 )
 from selenium.webdriver.common.by import By
@@ -38,6 +39,7 @@ def test_android_native(eyes, driver):
 @pytest.mark.test_page_url("http://applitools.com")
 def test_final_application_ios(eyes_open):
     eyes, driver = eyes_open
+    eyes.stitch_mode = StitchMode.CSS
     eyes.check_window(
         "Home",
         target=(
@@ -70,6 +72,7 @@ def test_final_application_ios(eyes_open):
 @pytest.mark.test_page_url("http://applitools.com")
 def test_final_application_android(eyes_open):
     eyes, driver = eyes_open
+    eyes.stitch_mode = StitchMode.CSS
     eyes.check_window(
         "Home",
         target=(
