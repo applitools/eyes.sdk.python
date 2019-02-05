@@ -45,4 +45,10 @@ __all__ = (
     "EyesWebDriverScreenshot",
     "StitchMode",
     "dom_capture",
+    "IgnoreRegionByElement",
+    "IgnoreRegionBySelector",
+    "FloatingBounds",
+    "FloatingRegionByElement",
+    "FloatingRegionBySelector",
+    "Target",
 )
