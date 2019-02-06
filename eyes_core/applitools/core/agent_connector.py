@@ -1,18 +1,18 @@
 from __future__ import absolute_import
 
+import os
 import time
 import typing as tp
 
 import requests
 from requests.packages import urllib3
 
-from .utils import general_utils
-from .utils.compat import urljoin, gzip_compress  # type: ignore
 from . import logger
 from .test_results import TestResults
+from .utils import general_utils
+from .utils.compat import gzip_compress, urljoin  # type: ignore
 
 if tp.TYPE_CHECKING:
-    from requests.models import Response
     from .utils.custom_types import RunningSession, SessionStartInfo, Num
 
 # Prints out all data sent/received through 'requests'
@@ -23,11 +23,80 @@ if tp.TYPE_CHECKING:
 if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
+__all__ = ("AgentConnector",)
 
-def _parse_response_with_json_data(response):
-    # type: (Response) -> tp.Dict[tp.Text, tp.Any]
-    response.raise_for_status()
-    return response.json()
+
+class _RequestsCommunicator(object):
+    LONG_REQUEST_DELAY = 2  # seconds
+    MAX_LONG_REQUEST_DELAY = 10  # seconds
+    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
+
+    endpoint_uri = None
+    api_key = None
+    timeout = None
+
+    def __init__(self, timeout, headers):
+        # type: (int, dict) -> None
+        self.timeout = timeout
+        self.headers = headers.copy()
+
+    def _request(self, method, url_resource, **kwargs):
+        if url_resource is not None:
+            # makes URL relative
+            url_resource = url_resource.lstrip("/")
+        url_resource = urljoin(self.endpoint_uri, url_resource)
+
+        params = dict(apiKey=self.api_key)
+        params.update(kwargs.get("params", {}))
+        headers = kwargs.get("headers", self.headers)
+        timeout = kwargs.get("timeout", self.timeout)
+
+        response = method(
+            url_resource,
+            data=kwargs.get("data", None),
+            verify=False,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        return response
+
+    def _long_request(self, method, url_resource, **kwargs):
+        headers = kwargs["headers"].copy()
+        headers["Eyes-Expect"] = "202-accepted"
+        for delay in self.request_delay():
+            # Sending the current time of the request (in RFC 1123 format)
+            headers["Eyes-Date"] = time.strftime(
+                "%a, %d %b %Y %H:%M:%S GMT", time.gmtime()
+            )
+            kwargs["headers"] = headers
+            response = self._request(method, url_resource, **kwargs)
+            if response.status_code != 202:
+                return response
+            logger.debug("Still running... Retrying in {}s".format(delay))
+        else:
+            raise requests.Timeout("Couldn't process request")
+
+    def post(self, url_resource=None, **kwargs):
+        return self._request(requests.post, url_resource, **kwargs)
+
+    def long_delete(self, url_resource=None, **kwargs):
+        return self._long_request(requests.delete, url_resource, **kwargs)
+
+    @staticmethod
+    def request_delay(
+        first_delay=LONG_REQUEST_DELAY,
+        step_factor=LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR,
+        max_delay=MAX_LONG_REQUEST_DELAY,
+    ):
+        delay = _RequestsCommunicator.LONG_REQUEST_DELAY  # type: Num
+        while True:
+            yield delay
+            time.sleep(first_delay)
+            delay = delay * step_factor
+            if delay > max_delay:
+                raise StopIteration
 
 
 class AgentConnector(object):
@@ -35,58 +104,61 @@ class AgentConnector(object):
     Provides an API for communication with the Applitools server.
     """
 
-    _TIMEOUT = 60 * 5  # Seconds
-    _DEFAULT_HEADERS = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
+    DEFAULT_TIMEOUT = 60 * 5  # Seconds
+    DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
+    DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
+    API_SESSIONS_RUNNING = "/api/sessions/running/"
 
     def __init__(self, server_url):
-        # type: (tp.Text) -> None
+        # type: (tp.Optional[tp.Text]) -> None
         """
         Ctor.
 
         :param server_url: The url of the Applitools server.
         """
-        # Used inside the server_url property.
-        self._server_url = None
-        self._endpoint_uri = None
-
-        self.api_key = None  # type: ignore
+        self._request = _RequestsCommunicator(
+            timeout=AgentConnector.DEFAULT_TIMEOUT,
+            headers=AgentConnector.DEFAULT_HEADERS,
+        )
         self.server_url = server_url
 
     @property
     def server_url(self):
         # type: () -> tp.Text
-        return self._server_url  # type: ignore
+        return self._server_url
 
     @server_url.setter
     def server_url(self, server_url):
         # type: (tp.Text) -> None
-        self._server_url = server_url  # type: ignore
-        self._endpoint_uri = (  # type: ignore
-            server_url.rstrip("/") + "/api/sessions/running"
+        if server_url is None:
+            self._server_url = self.DEFAULT_SERVER_URL
+        else:
+            self._server_url = server_url
+        self._request.endpoint_uri = urljoin(
+            self._server_url, AgentConnector.API_SESSIONS_RUNNING
         )
 
-    @staticmethod
-    def _send_long_request(name, method, *args, **kwargs):
-        # type: (tp.Text, tp.Callable, *tp.Any, **tp.Any) -> Response
-        delay = 2  # type: Num  # Seconds
-        headers = kwargs["headers"].copy()
-        headers["Eyes-Expect"] = "202-accepted"
-        while True:
-            # Sending the current time of the request (in RFC 1123 format)
-            headers["Eyes-Date"] = time.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT", time.gmtime()
-            )
-            kwargs["headers"] = headers
-            response = method(*args, **kwargs)
-            if response.status_code != 202:
-                return response
-            logger.debug("{0}: Still running... Retrying in {1}s".format(name, delay))
-            time.sleep(delay)
-            delay = min(10, delay * 1.5)
+    @property
+    def api_key(self):
+        if self._request.api_key is None:
+            self._request.api_key = os.environ["APPLITOOLS_API_KEY"]
+        return self._request.api_key
 
+    @api_key.setter
+    def api_key(self, api_key):
+        self._request.api_key = api_key
+
+    @property
+    def timeout(self):
+        if self._request.timeout is None:
+            self._request.timeout = self.DEFAULT_TIMEOUT
+        return self._request.timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        self._request.timeout = timeout
+
+    # TODO: Add Proxy
     def start_session(self, session_start_info):
         # type: (SessionStartInfo) -> RunningSession
         """
@@ -98,15 +170,8 @@ class AgentConnector(object):
         :return: Represents the current running session.
         """
         data = '{"startInfo": %s}' % (general_utils.to_json(session_start_info))
-        response = requests.post(
-            self._endpoint_uri,
-            data=data,
-            verify=False,
-            params=dict(apiKey=self.api_key),
-            headers=AgentConnector._DEFAULT_HEADERS,
-            timeout=AgentConnector._TIMEOUT,
-        )
-        parsed_response = _parse_response_with_json_data(response)
+        response = self._request.post(data=data)
+        parsed_response = response.json()
         return dict(
             session_id=parsed_response["id"],
             session_url=parsed_response["url"],
@@ -124,18 +189,12 @@ class AgentConnector(object):
         :return: Test results of the stopped session.
         """
         logger.debug("Stop session called..")
-        session_uri = "%s/%s" % (self._endpoint_uri, running_session["session_id"])
         params = {"aborted": is_aborted, "updateBaseline": save, "apiKey": self.api_key}
-        response = AgentConnector._send_long_request(
-            "stop_session",
-            requests.delete,
-            session_uri,
-            params=params,
-            verify=False,
-            headers=AgentConnector._DEFAULT_HEADERS,
-            timeout=AgentConnector._TIMEOUT,
+        headers = AgentConnector.DEFAULT_HEADERS.copy()
+        response = self._request.long_delete(
+            url_resource=running_session["session_id"], params=params, headers=headers
         )
-        pr = _parse_response_with_json_data(response)
+        pr = response.json()
         logger.debug("stop_session(): parsed response: {}".format(pr))
         return TestResults(
             pr["steps"],
@@ -162,36 +221,25 @@ class AgentConnector(object):
         :return: The parsed response.
         """
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
-        session_uri = "%s/%s" % (self._endpoint_uri, running_session["session_id"])
         # Using the default headers, but modifying the "content type" to binary
-        headers = AgentConnector._DEFAULT_HEADERS.copy()
+        headers = AgentConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
-        response = requests.post(
-            session_uri,
-            params=dict(apiKey=self.api_key),
-            data=data,
-            verify=False,
-            headers=headers,
-            timeout=AgentConnector._TIMEOUT,
+        response = self._request.post(
+            url_resource=running_session["session_id"], data=data, headers=headers
         )
-        parsed_response = _parse_response_with_json_data(response)
-        return parsed_response["asExpected"]
+        return response.json()["asExpected"]
 
     def post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
         """
         Upload the DOM of the tested page.
-        Return an URL of uploaded resource which should be posted to AppOutput.
+        Return an URL of uploaded resource which should be posted to :py:   `AppOutput`.
         """
-        headers = AgentConnector._DEFAULT_HEADERS.copy()
+        headers = AgentConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
-        response = requests.post(
-            url=urljoin(self._endpoint_uri, "running/data"),
-            data=dom_bytes,
-            params=dict(apiKey=self.api_key),
-            headers=headers,
-            timeout=AgentConnector._TIMEOUT,
+        response = self._request.post(
+            url_resource="running/data", data=dom_bytes, headers=headers
         )
         dom_url = None
         if response.ok:

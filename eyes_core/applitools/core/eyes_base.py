@@ -5,13 +5,13 @@ import os
 import typing as tp
 
 from . import logger
-from .utils import ABC
-from .match import ImageMatchSettings
-from .metadata import BatchInfo
 from .agent_connector import AgentConnector
-from .errors import EyesError, NewTestError, DiffsFoundError, TestFailedError
+from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
+from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
+from .metadata import BatchInfo
 from .test_results import TestResults, TestResultsStatus
+from .utils import ABC
 
 if tp.TYPE_CHECKING:
     from .utils.custom_types import (
@@ -40,9 +40,8 @@ class FailureReports(object):
 class EyesBase(ABC):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
-    DEFAULT_EYES_SERVER = "https://eyesapi.applitools.com"
 
-    def __init__(self, server_url=DEFAULT_EYES_SERVER):
+    def __init__(self, server_url=None):
         # type: (tp.Text) -> None
         """
         Creates a new (possibly disabled) Eyes instance that
@@ -240,10 +239,7 @@ class EyesBase(ABC):
         :param server_url: The URL of the Eyes server, or None to use the default server.
         :return: None
         """
-        if server_url is None:
-            self._agent_connector.server_url = EyesBase.DEFAULT_EYES_SERVER
-        else:
-            self._agent_connector.server_url = server_url
+        self._agent_connector.server_url = server_url
 
     @property
     @abc.abstractmethod
@@ -421,13 +417,10 @@ class EyesBase(ABC):
         logger.info("\nEyes version: {}\n".format(self.full_agent_id))
 
         if self.api_key is None:
-            try:
-                self.api_key = os.environ["APPLITOOLS_API_KEY"]
-            except KeyError:
-                raise EyesError(
-                    "API key not set! Log in to https://applitools.com to obtain your"
-                    " API Key and use 'api_key' to set it."
-                )
+            raise EyesError(
+                "API key not set! Log in to https://applitools.com to obtain your"
+                " API Key and use 'api_key' to set it."
+            )
 
         logger.info(
             "open(%s, %s, %s, %s)"
@@ -436,7 +429,7 @@ class EyesBase(ABC):
 
         if self.is_open:
             self.abort_if_not_closed()
-            raise EyesError("a test is already running")
+            raise EyesError("A test is already running")
 
         self._before_open()
 
