@@ -9,6 +9,12 @@ matrix:
     include:
         - python: 2.7
           env:
+              - TOX_ENV=core
+        - python: 3.5
+          env:
+              - TOX_ENV=core
+        - python: 2.7
+          env:
               - TOX_ENV=images
         - python: 3.5
           env:
