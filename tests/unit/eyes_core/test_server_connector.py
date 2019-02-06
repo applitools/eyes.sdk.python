@@ -69,7 +69,7 @@ def mocked_requests_post(*args, **kwargs):
         )
     elif url == urljoin(RUNNING_SESSION_URL, "some_session_id"):
         return MockResponse({"asExpected": True}, 200)
-    elif url == urljoin(RUNNING_SESSION_URL, "running/data"):
+    elif url == urljoin(RUNNING_SESSION_URL, "data"):
         return MockResponse(
             {}, 200, headers={"Location": RUNNING_SESSION["session_url"]}
         )

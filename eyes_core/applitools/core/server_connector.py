@@ -240,7 +240,7 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
         response = self._request.post(
-            url_resource="running/data", data=dom_bytes, headers=headers
+            url_resource="data", data=dom_bytes, headers=headers
         )
         dom_url = None
         if response.ok:
