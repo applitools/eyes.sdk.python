@@ -20,7 +20,7 @@ if tp.TYPE_CHECKING:
         UserInputs,
         MatchResult,
     )
-    from .agent_connector import AgentConnector
+    from .server_connector import ServerConnector
     from .match import ImageMatchSettings
     from .capture import EyesScreenshot
 
@@ -41,7 +41,7 @@ class MatchWindowTask(object):
     MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
     def __init__(self, eyes, agent_connector, running_session, default_retry_timeout):
-        # type: (EyesBase, AgentConnector, RunningSession, Num) -> None
+        # type: (EyesBase, ServerConnector, RunningSession, Num) -> None
         """
         Ctor.
 

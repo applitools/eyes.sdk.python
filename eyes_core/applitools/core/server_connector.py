@@ -23,7 +23,7 @@ if tp.TYPE_CHECKING:
 if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
-__all__ = ("AgentConnector",)
+__all__ = ("ServerConnector",)
 
 
 class _RequestsCommunicator(object):
@@ -99,7 +99,7 @@ class _RequestsCommunicator(object):
                 raise StopIteration
 
 
-class AgentConnector(object):
+class ServerConnector(object):
     """
     Provides an API for communication with the Applitools server.
     """
@@ -117,8 +117,8 @@ class AgentConnector(object):
         :param server_url: The url of the Applitools server.
         """
         self._request = _RequestsCommunicator(
-            timeout=AgentConnector.DEFAULT_TIMEOUT,
-            headers=AgentConnector.DEFAULT_HEADERS,
+            timeout=ServerConnector.DEFAULT_TIMEOUT,
+            headers=ServerConnector.DEFAULT_HEADERS,
         )
         self.server_url = server_url
 
@@ -135,7 +135,7 @@ class AgentConnector(object):
         else:
             self._server_url = server_url
         self._request.endpoint_uri = urljoin(
-            self._server_url, AgentConnector.API_SESSIONS_RUNNING
+            self._server_url, ServerConnector.API_SESSIONS_RUNNING
         )
 
     @property
@@ -190,7 +190,7 @@ class AgentConnector(object):
         """
         logger.debug("Stop session called..")
         params = {"aborted": is_aborted, "updateBaseline": save, "apiKey": self.api_key}
-        headers = AgentConnector.DEFAULT_HEADERS.copy()
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
         response = self._request.long_delete(
             url_resource=running_session["session_id"], params=params, headers=headers
         )
@@ -222,7 +222,7 @@ class AgentConnector(object):
         """
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         # Using the default headers, but modifying the "content type" to binary
-        headers = AgentConnector.DEFAULT_HEADERS.copy()
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         response = self._request.post(
             url_resource=running_session["session_id"], data=data, headers=headers
@@ -235,7 +235,7 @@ class AgentConnector(object):
         Upload the DOM of the tested page.
         Return an URL of uploaded resource which should be posted to :py:   `AppOutput`.
         """
-        headers = AgentConnector.DEFAULT_HEADERS.copy()
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
         response = self._request.post(

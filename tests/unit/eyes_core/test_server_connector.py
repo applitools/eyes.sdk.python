@@ -1,9 +1,8 @@
 import os
-from urllib.parse import urljoin
 
 import pytest
-from applitools.core import AgentConnector as ServerConnector
-from applitools.core import TestResults
+from applitools.core import ServerConnector, TestResults
+from applitools.core.utils.compat import urljoin
 from mock import patch
 
 API_KEY = "TEST API KEY"

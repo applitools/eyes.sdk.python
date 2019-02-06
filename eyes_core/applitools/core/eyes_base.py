@@ -5,11 +5,11 @@ import os
 import typing as tp
 
 from . import logger
-from .agent_connector import AgentConnector
 from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
 from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
 from .metadata import BatchInfo
+from .server_connector import ServerConnector
 from .test_results import TestResults, TestResultsStatus
 from .utils import ABC
 
@@ -49,7 +49,7 @@ class EyesBase(ABC):
 
         :param server_url: The URL of the Eyes server
         """
-        self._agent_connector = AgentConnector(server_url)  # type: AgentConnector
+        self._server_connector = ServerConnector(server_url)  # type: ServerConnector
         self._should_get_title = False  # type: bool
         self._is_open = False  # type: bool
         self._app_name = None  # type: tp.Optional[tp.Text]
@@ -208,7 +208,7 @@ class EyesBase(ABC):
 
         :return: The Api key used for authenticating the user with Eyes.
         """
-        return self._agent_connector.api_key
+        return self._server_connector.api_key
 
     @api_key.setter
     def api_key(self, api_key):
@@ -218,7 +218,7 @@ class EyesBase(ABC):
 
         :param api_key: The api key used for authenticating the user with Eyes.
         """
-        self._agent_connector.api_key = api_key  # type: ignore
+        self._server_connector.api_key = api_key  # type: ignore
 
     @property
     def server_url(self):
@@ -228,7 +228,7 @@ class EyesBase(ABC):
 
         :return: The URL of the Eyes server, or None to use the default server.
         """
-        return self._agent_connector.server_url
+        return self._server_connector.server_url
 
     @server_url.setter
     def server_url(self, server_url):
@@ -239,7 +239,7 @@ class EyesBase(ABC):
         :param server_url: The URL of the Eyes server, or None to use the default server.
         :return: None
         """
-        self._agent_connector.server_url = server_url
+        self._server_connector.server_url = server_url
 
     @property
     @abc.abstractmethod
@@ -313,7 +313,7 @@ class EyesBase(ABC):
                 (not is_new_session) and self.save_failed_tests
             )
             logger.debug("close(): automatically save session? %s" % should_save)
-            results = self._agent_connector.stop_session(
+            results = self._server_connector.stop_session(
                 self._running_session, False, should_save
             )
             results.is_new = is_new_session
@@ -379,7 +379,7 @@ class EyesBase(ABC):
             if self._running_session:
                 logger.debug("abort_if_not_closed(): Aborting session...")
                 try:
-                    self._agent_connector.stop_session(
+                    self._server_connector.stop_session(
                         self._running_session, True, False
                     )
                     logger.info("--- Test aborted.")
@@ -480,7 +480,7 @@ class EyesBase(ABC):
 
         self._create_start_info()
         # Actually start the session.
-        self._running_session = self._agent_connector.start_session(self._start_info)
+        self._running_session = self._server_connector.start_session(self._start_info)
         self._should_match_once_on_timeout = self._running_session["is_new_session"]
 
     def _reset_last_screenshot(self):
@@ -494,7 +494,7 @@ class EyesBase(ABC):
             return
         self._start_session()
         self._match_window_task = MatchWindowTask(
-            self, self._agent_connector, self._running_session, self.match_timeout
+            self, self._server_connector, self._running_session, self.match_timeout
         )
 
     def _before_match_window(self):
@@ -567,7 +567,7 @@ class EyesBase(ABC):
         if dom_json is None:
             return None
         try:
-            return self._agent_connector.post_dom_snapshot(dom_json)
+            return self._server_connector.post_dom_snapshot(dom_json)
         except Exception as e:
             logger.warning(
                 "Couldn't send DOM Json. Passing...\n Got next error: {}".format(e)
