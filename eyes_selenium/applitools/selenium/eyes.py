@@ -4,24 +4,24 @@ import base64
 import contextlib
 import typing
 
+# noinspection PyProtectedMember
+from applitools.core import logger
+from applitools.core.errors import EyesError
+from applitools.core.eyes_base import EyesBase
+from applitools.core.geometry import Region
+from applitools.core.match_window_task import MatchWindowTask
+from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
+from applitools.core.triggers import MouseTrigger, TextTrigger
+from applitools.core.utils import image_utils
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
-# noinspection PyProtectedMember
-from applitools.core import logger
-from applitools.core.eyes_base import EyesBase
-from applitools.core.match_window_task import MatchWindowTask
-from applitools.core.triggers import MouseTrigger, TextTrigger
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Region
-from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
-from applitools.core.utils import image_utils
 from . import eyes_selenium_utils
-from .webdriver import EyesWebDriver
-from .capture import EyesWebDriverScreenshot, dom_capture
-from .target import Target
-from .positioning import StitchMode, ElementPositionProvider
 from .__version__ import __version__
+from .capture import EyesWebDriverScreenshot, dom_capture
+from .positioning import ElementPositionProvider, StitchMode
+from .target import Target
+from .webdriver import EyesWebDriver
 
 if typing.TYPE_CHECKING:
     from typing import Text, Optional
@@ -65,7 +65,7 @@ class Eyes(EyesBase):
     def _set_viewport_size(self, size):
         self.set_viewport_size(self._driver, size)
 
-    def __init__(self, server_url=EyesBase.DEFAULT_EYES_SERVER):
+    def __init__(self, server_url=None):
         super(Eyes, self).__init__(server_url)
 
         self._driver = None  # type: Optional[AnyWebDriver]

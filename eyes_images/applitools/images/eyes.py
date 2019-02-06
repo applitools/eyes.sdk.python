@@ -1,11 +1,11 @@
 import typing
 
+from applitools.core import EyesBase, EyesError, Region, logger
 from PIL import Image
 
-from applitools.core import EyesBase, logger, EyesError, Region
 from .__version__ import __version__
-from .target import Target
 from .capture import EyesImagesScreenshot
+from .target import Target
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
 
 
 class Eyes(EyesBase):
-    def __init__(self, server_url=EyesBase.DEFAULT_EYES_SERVER):
+    def __init__(self, server_url=None):
         # type: (Text) -> None
         super(Eyes, self).__init__(server_url)
         self._raw_title = None  # type: Optional[Text]
