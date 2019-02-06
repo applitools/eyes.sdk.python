@@ -4,10 +4,9 @@ import time
 import typing as tp
 from contextlib import contextmanager
 
+from applitools.core import EyesError, logger
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
-
-from applitools.core import logger, EyesError
 
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
@@ -108,7 +107,10 @@ if( navigator.userAgent.match(/Android/i) ||
         try:
             is_mobile_platform = driver.execute_script(is_mobile)
         except WebDriverException as e:
-            logger.warning("Got error during checking if current platform is mobile")
+            logger.warning(
+                "Got error during checking if current platform is mobile. "
+                "\n\t {}".format(str(e))
+            )
             if "Method is not implemented" in str(e):
                 # potentially mobile app
                 is_mobile_platform = True
