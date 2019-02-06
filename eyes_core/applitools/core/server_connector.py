@@ -31,7 +31,7 @@ class _RequestsCommunicator(object):
     MAX_LONG_REQUEST_DELAY = 10  # seconds
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
 
-    endpoint_uri = None
+    endpoint_uri = None  # type: tp.Optional[tp.Text]
     api_key = None
     timeout = None
 
@@ -141,7 +141,8 @@ class ServerConnector(object):
     @property
     def api_key(self):
         if self._request.api_key is None:
-            self._request.api_key = os.environ["APPLITOOLS_API_KEY"]
+            # if api_key is None the error will be raised in EyesBase._open_base
+            self._request.api_key = os.environ.get("APPLITOOLS_API_KEY", None)
         return self._request.api_key
 
     @api_key.setter
