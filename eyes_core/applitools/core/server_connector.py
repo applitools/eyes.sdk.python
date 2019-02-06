@@ -31,14 +31,19 @@ class _RequestsCommunicator(object):
     MAX_LONG_REQUEST_DELAY = 10  # seconds
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
 
-    endpoint_uri = None  # type: tp.Optional[tp.Text]
     api_key = None
     timeout = None
+    server_url = None
 
-    def __init__(self, timeout, headers):
-        # type: (int, dict) -> None
+    def __init__(self, timeout, headers, api_session_running):
+        # type: (int, dict, str) -> None
         self.timeout = timeout
         self.headers = headers.copy()
+        self.api_session_running = api_session_running
+
+    @property
+    def endpoint_uri(self):
+        return urljoin(self.server_url, self.api_session_running)
 
     def _request(self, method, url_resource, **kwargs):
         if url_resource is not None:
@@ -119,24 +124,22 @@ class ServerConnector(object):
         self._request = _RequestsCommunicator(
             timeout=ServerConnector.DEFAULT_TIMEOUT,
             headers=ServerConnector.DEFAULT_HEADERS,
+            api_session_running=ServerConnector.API_SESSIONS_RUNNING,
         )
         self.server_url = server_url
 
     @property
     def server_url(self):
         # type: () -> tp.Text
-        return self._server_url
+        return self._request.server_url
 
     @server_url.setter
     def server_url(self, server_url):
         # type: (tp.Text) -> None
         if server_url is None:
-            self._server_url = self.DEFAULT_SERVER_URL
+            self._request.server_url = self.DEFAULT_SERVER_URL
         else:
-            self._server_url = server_url
-        self._request.endpoint_uri = urljoin(
-            self._server_url, ServerConnector.API_SESSIONS_RUNNING
-        )
+            self._request.server_url = server_url
 
     @property
     def api_key(self):
