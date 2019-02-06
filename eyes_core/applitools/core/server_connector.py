@@ -33,10 +33,10 @@ class _RequestsCommunicator(object):
 
     api_key = None
     timeout = None
-    server_url = None
+    server_url = None  # type: tp.Optional[tp.Text]
 
     def __init__(self, timeout, headers, api_session_running):
-        # type: (int, dict, str) -> None
+        # type: (int, tp.Dict, tp.Text) -> None
         self.timeout = timeout
         self.headers = headers.copy()
         self.api_session_running = api_session_running

@@ -36,22 +36,22 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    _MATCH_INTERVAL = 0.5
+    MATCH_INTERVAL = 0.5
 
     MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
-    def __init__(self, eyes, agent_connector, running_session, default_retry_timeout):
+    def __init__(self, eyes, server_connector, running_session, default_retry_timeout):
         # type: (EyesBase, ServerConnector, RunningSession, Num) -> None
         """
         Ctor.
 
         :param eyes: The Eyes instance which created this task.
-        :param agent_connector: The agent connector to use for communication.
+        :param server_connector: The agent connector to use for communication.
         :param running_session:  The current eyes session.
         :param default_retry_timeout: The default match timeout. (milliseconds)
         """
         self._eyes = eyes
-        self._agent_connector = agent_connector
+        self._server_connector = server_connector
         self._running_session = running_session
         self._default_retry_timeout = (
             default_retry_timeout / 1000.0
@@ -186,7 +186,7 @@ class MatchWindowTask(object):
         # Start the timer.
         start = time.time()
         logger.debug("First match attempt...")
-        as_expected = self._agent_connector.match_window(self._running_session, data)
+        as_expected = self._server_connector.match_window(self._running_session, data)
         if as_expected:
             return {"as_expected": True, "screenshot": self._screenshot}
         retry = time.time() - start
@@ -194,9 +194,9 @@ class MatchWindowTask(object):
 
         while retry < retry_timeout:
             logger.debug("Matching...")
-            time.sleep(self._MATCH_INTERVAL)
+            time.sleep(self.MATCH_INTERVAL)
             data = prepare_action(ignore_mismatch=True)
-            as_expected = self._agent_connector.match_window(
+            as_expected = self._server_connector.match_window(
                 self._running_session, data
             )
             if as_expected:
@@ -206,7 +206,7 @@ class MatchWindowTask(object):
         # One last try
         logger.debug("One last matching attempt...")
         data = prepare_action()
-        as_expected = self._agent_connector.match_window(self._running_session, data)
+        as_expected = self._server_connector.match_window(self._running_session, data)
         return {"as_expected": as_expected, "screenshot": self._screenshot}
 
     def _run(self, prepare_action, run_once_after_wait=False, retry_timeout=-1):
@@ -228,7 +228,7 @@ class MatchWindowTask(object):
             # If the load time is 0, the sleep would immediately return anyway.
             time.sleep(retry_timeout)
             data = prepare_action()
-            as_expected = self._agent_connector.match_window(
+            as_expected = self._server_connector.match_window(
                 self._running_session, data
             )
             result = {
