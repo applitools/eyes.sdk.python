@@ -214,7 +214,7 @@ class ServerConnector(object):
         )
 
     def match_window(self, running_session, data):
-        # type: (RunningSession, tp.Text) -> bool
+        # type: (RunningSession, bytes) -> bool
         """
         Matches the current window to the immediate expected window in the Eyes server.
         Notice that a window might be matched later at the end of the test, even if it

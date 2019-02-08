@@ -72,34 +72,27 @@ class Eyes(EyesBase):
             return False
         return self._check_image(name, False, target)
 
-    def check_image(self, image, tag=None, ignore_mismatch=False, retry_timeout=-1):
-        # type: (Union[Image.Image, Text], Optional[Text], bool, int) -> Optional[bool]
+    def check_image(self, image, tag=None, ignore_mismatch=False):
+        # type: (Union[Image.Image, Text], Optional[Text], bool) -> Optional[bool]
         if self.is_disabled:
             return None
         logger.info(
-            "check_image(Image {}, tag {}, ignore_mismatch {}, retry_timeout {}".format(
-                image, tag, ignore_mismatch, retry_timeout
+            "check_image(Image {}, tag {}, ignore_mismatch {}".format(
+                image, tag, ignore_mismatch
             )
         )
-        return self._check_image(
-            tag, ignore_mismatch, Target().image(image).timeout(retry_timeout)
-        )
+        return self._check_image(tag, ignore_mismatch, Target().image(image))
 
-    def check_region(
-        self, image, region, tag=None, ignore_mismatch=False, retry_timeout=-1
-    ):
-        # type: (Image.Image, Region, Optional[Text], bool, int) -> Optional[bool]
+    def check_region(self, image, region, tag=None, ignore_mismatch=False):
+        # type: (Image.Image, Region, Optional[Text], bool) -> Optional[bool]
         if self.is_disabled:
             return None
         logger.info(
-            "check_region(Image {}, region {}, tag {}, "
-            "ignore_mismatch {}, retry_timeout {}".format(
-                image, region, tag, ignore_mismatch, retry_timeout
+            "check_region(Image {}, region {}, tag {}, ignore_mismatch {}".format(
+                image, region, tag, ignore_mismatch
             )
         )
-        return self._check_image(
-            tag, ignore_mismatch, Target().region(image, region).timeout(retry_timeout)
-        )
+        return self._check_image(tag, ignore_mismatch, Target().region(image, region))
 
     def _check_image(self, name, ignore_mismatch, target):
         # type: (Text, bool, Target) -> bool
@@ -110,12 +103,13 @@ class Eyes(EyesBase):
             self.abort_if_not_closed()
             raise EyesError("you must call open() before checking")
 
-        image = target._image  # type: Image.Image
+        image = target.values.image  # type: Image.Image
+        timeout = 0  # run match_window once
         self._screenshot = EyesImagesScreenshot(image)
         if not self._viewport_size:
             self.set_viewport_size(dict(width=image.width, height=image.height))
 
-        match_result = self._check_window_base(name, -1, target, ignore_mismatch)
+        match_result = self._check_window_base(name, timeout, target, ignore_mismatch)
         self._screenshot = None
         self._raw_title = None
         return match_result["as_expected"]
