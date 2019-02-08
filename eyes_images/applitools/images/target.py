@@ -2,12 +2,11 @@ from __future__ import absolute_import
 
 import typing as tp
 
-from PIL import Image
-
 from applitools.core import RegionProvider
-from applitools.core.utils import image_utils
 from applitools.core.errors import EyesError
 from applitools.core.geometry import Region
+from applitools.core.utils import image_utils
+from PIL import Image
 
 if tp.TYPE_CHECKING:
     from applitools.images.capture import EyesImagesScreenshot
@@ -88,6 +87,10 @@ class _CheckSettingsValues:
     def floating_regions(self):
         return self.check_settings._floating_regions
 
+    @property
+    def image(self):
+        return self.check_settings._image
+
 
 # Main class for the module
 class Target(object):
@@ -99,7 +102,6 @@ class Target(object):
     __floating_regions = None  # type: tp.Optional[tp.List]
     _image = None  # type: tp.Optional[EyesImagesScreenshot]
     _target_region = None  # type: tp.Optional[Region]
-    _timeout = -1
 
     _ignore_caret = None
 
