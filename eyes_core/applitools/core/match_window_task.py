@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import functools
 import time
 import typing as tp
 from struct import pack
@@ -56,7 +55,7 @@ class MatchWindowTask(object):
         self._default_retry_timeout = (
             default_retry_timeout / 1000.0
         )  # type: Num # since we want the time in seconds.
-        self._screenshot = None  # type: tp.Optional[EyesScreenshot]
+        self._last_screenshot = None  # type: tp.Optional[EyesScreenshot]
 
     @staticmethod
     def _create_match_data_bytes(
@@ -143,14 +142,16 @@ class MatchWindowTask(object):
         # TODO: Refactor this
         if hasattr(self._eyes, "_hide_scrollbars_if_needed"):
             with self._eyes._hide_scrollbars_if_needed():  # type: ignore
-                self._screenshot = self._eyes.get_screenshot(
+                self._last_screenshot = self._eyes.get_screenshot(
                     hide_scrollbars_called=True
                 )
         else:
-            self._screenshot = self._eyes.get_screenshot()
+            self._last_screenshot = self._eyes.get_screenshot()
 
-        dynamic_regions = MatchWindowTask._get_dynamic_regions(target, self._screenshot)
-        app_output = {"_title": title, "screenshot64": None}  # type: AppOutput
+        dynamic_regions = MatchWindowTask._get_dynamic_regions(
+            target, self._last_screenshot
+        )
+        app_output = {"title": title, "screenshot64": None}  # type: AppOutput
 
         if self._eyes.send_dom:
             dom_json = self._eyes._try_capture_dom()
@@ -167,80 +168,53 @@ class MatchWindowTask(object):
             user_inputs,
             tag,
             ignore_mismatch,
-            self._screenshot,
+            self._last_screenshot,
             default_match_settings,
             target,
             dynamic_regions["ignore"],
             dynamic_regions["floating"],
         )
 
-    def _run_with_intervals(self, prepare_action, retry_timeout):
-        # type: (tp.Callable, Num) -> MatchResult
+    def _run_with_intervals(self, prepare_match_data_options, retry_timeout):
+        # type: (tp.Dict, Num) -> MatchResult
         """
         Includes retries in case the screenshot does not match.
         """
         logger.debug("Matching with intervals...")
         # We intentionally take the first screenshot before starting the timer,
         # to allow the page just a tad more time to stabilize.
-        data = prepare_action()
+        prepare_match_data_options = prepare_match_data_options.copy()
+        prepare_match_data_options["ignore_mismatch"] = True
+        data = self._prepare_match_data_for_window(**prepare_match_data_options)
+
         # Start the timer.
         start = time.time()
         logger.debug("First match attempt...")
         as_expected = self._server_connector.match_window(self._running_session, data)
         if as_expected:
-            return {"as_expected": True, "screenshot": self._screenshot}
+            return {"as_expected": True, "screenshot": self._last_screenshot}
         retry = time.time() - start
         logger.debug("Failed. Elapsed time: {0:.1f} seconds".format(retry))
 
         while retry < retry_timeout:
             logger.debug("Matching...")
             time.sleep(self.MATCH_INTERVAL)
-            data = prepare_action(ignore_mismatch=True)
+
+            data = self._prepare_match_data_for_window(**prepare_match_data_options)
             as_expected = self._server_connector.match_window(
                 self._running_session, data
             )
             if as_expected:
-                return {"as_expected": True, "screenshot": self._screenshot}
+                return {"as_expected": True, "screenshot": self._last_screenshot}
             retry = time.time() - start
             logger.debug("Elapsed time: {0:.1f} seconds".format(retry))
+
         # One last try
         logger.debug("One last matching attempt...")
-        data = prepare_action()
+        prepare_match_data_options["ignore_mismatch"] = False
+        data = self._prepare_match_data_for_window(**prepare_match_data_options)
         as_expected = self._server_connector.match_window(self._running_session, data)
-        return {"as_expected": as_expected, "screenshot": self._screenshot}
-
-    def _run(self, prepare_action, run_once_after_wait=False, retry_timeout=-1):
-        # type: (tp.Callable, bool, Num) -> MatchResult
-        if 0 < retry_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
-            raise ValueError(
-                "Match timeout must be at least 60ms, got {} instead.".format(
-                    retry_timeout
-                )
-            )
-        if retry_timeout < 0:
-            retry_timeout = self._default_retry_timeout
-        else:
-            retry_timeout /= 1000.0
-        logger.debug("Match timeout set to: {0} seconds".format(retry_timeout))
-        start = time.time()
-        if run_once_after_wait or retry_timeout == 0:
-            logger.debug("Matching once...")
-            # If the load time is 0, the sleep would immediately return anyway.
-            time.sleep(retry_timeout)
-            data = prepare_action()
-            as_expected = self._server_connector.match_window(
-                self._running_session, data
-            )
-            result = {
-                "as_expected": as_expected,
-                "screenshot": self._screenshot,
-            }  # type: MatchResult
-        else:
-            result = self._run_with_intervals(prepare_action, retry_timeout)
-        logger.debug("Match result: {0}".format(result["as_expected"]))
-        elapsed_time = time.time() - start
-        logger.debug("_run(): Completed in {0:.1f} seconds".format(elapsed_time))
-        return result
+        return {"as_expected": as_expected, "screenshot": self._last_screenshot}
 
     def match_window(
         self,
@@ -266,12 +240,43 @@ class MatchWindowTask(object):
         :param run_once_after_wait: Whether or not to run again after waiting.
         :return: The result of the run.
         """
-        prepare_action = functools.partial(
-            self._prepare_match_data_for_window,
-            tag,
-            user_inputs,
-            default_match_settings,
-            target,
-            ignore_mismatch,
+        prepare_match_data_options = dict(
+            tag=tag,
+            user_inputs=user_inputs,
+            default_match_settings=default_match_settings,
+            target=target,
+            ignore_mismatch=ignore_mismatch,
         )
-        return self._run(prepare_action, run_once_after_wait, retry_timeout)
+
+        if 0 < retry_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
+            raise ValueError(
+                "Match timeout must be at least 60ms, got {} instead.".format(
+                    retry_timeout
+                )
+            )
+        if retry_timeout < 0:
+            retry_timeout = self._default_retry_timeout
+        else:
+            retry_timeout /= 1000.0
+
+        logger.debug("Match timeout set to: {0} seconds".format(retry_timeout))
+        start = time.time()
+        if run_once_after_wait or retry_timeout == 0:
+            logger.debug("Matching once...")
+            # If the load time is 0, the sleep would immediately return anyway.
+            time.sleep(retry_timeout)
+            data = self._prepare_match_data_for_window(**prepare_match_data_options)
+            as_expected = self._server_connector.match_window(
+                self._running_session, data
+            )
+            result = {
+                "as_expected": as_expected,
+                "screenshot": self._last_screenshot,
+            }  # type: MatchResult
+        else:
+            result = self._run_with_intervals(prepare_match_data_options, retry_timeout)
+
+        logger.debug("Match result: {0}".format(result["as_expected"]))
+        elapsed_time = time.time() - start
+        logger.debug("_run(): Completed in {0:.1f} seconds".format(elapsed_time))
+        return result
