@@ -1,53 +1,52 @@
-import re
 import codecs
+import re
 import sys
 from os import path
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
 
 def read(filename):
-    return codecs.open(path.join(here, filename), 'r', 'utf-8').read()
+    return codecs.open(path.join(here, filename), "r", "utf-8").read()
 
 
 # preventing ModuleNotFoundError caused by importing lib before installing deps
 def get_version(package_name):
-    version_file = read('applitools/{}/__version__.py'.format(package_name))
+    version_file = read("applitools/{}/__version__.py".format(package_name))
     try:
-        version = re.findall(r"^__version__ = '([^']+)'\r?$",
-                             version_file, re.M)[0]
+        version = re.findall(r"^__version__ = \"([^']+)\"\r?$", version_file, re.M)[0]
     except IndexError:
-        raise RuntimeError('Unable to determine version.')
+        raise RuntimeError("Unable to determine version.")
 
     return version
 
 
 install_requires = [
-    'attrs>=18',
-    'Pillow>=5.0.0',
-    'requests>=2.1.0',
+    "attrs>=18",
+    "Pillow>=5.0.0",
+    "requests>=2.1.0",
     # uses for check if the mobile platform is used in the test
-    'Appium-Python-Client>=0.31'
+    "Appium-Python-Client>=0.31",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):
     # typing module was added as builtin in Python 3.5
-    install_requires.append('typing >= 3.5.2')
+    install_requires.append("typing >= 3.5.2")
 
 setup(
-    name='eyes_core',
-    version=get_version('core'),
+    name="eyes_core",
+    version=get_version("core"),
     packages=find_packages(),
-    url='http://www.applitools.com',
-    license='Apache License, Version 2.0',
-    author='Applitools Team',
-    author_email='team@applitools.com',
-    description='Applitools Python SDK. Core package',
-    long_description=read('README.rst'),
-    long_description_content_type='text/x-rst',
+    url="http://www.applitools.com",
+    license="Apache License, Version 2.0",
+    author="Applitools Team",
+    author_email="team@applitools.com",
+    description="Applitools Python SDK. Core package",
+    long_description=read("README.rst"),
+    long_description_content_type="text/x-rst",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
@@ -57,16 +56,14 @@ setup(
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Topic :: Software Development :: Quality Assurance",
-        "Topic :: Software Development :: Testing"
+        "Topic :: Software Development :: Testing",
     ],
-    keywords='applitools eyes eyes_core',
+    keywords="applitools eyes eyes_core",
     install_requires=install_requires,
-    package_data={
-        '':     ['README.rst', 'LICENSE'],
-        'core': ['py.typed'],
-    },
+    package_data={"": ["README.rst", "LICENSE"], "core": ["py.typed"]},
     project_urls={
-        'Bug Reports': 'https://github.com/applitools/eyes.sdk.python/issues',
-        'Source':      'https://github.com/applitools/eyes.sdk.python/tree/master/eyes_core/applitools/core',
+        "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
+        "Source": "https://github.com/applitools/eyes.sdk.python/tree/master/"
+        "eyes_core/applitools/core",
     },
 )

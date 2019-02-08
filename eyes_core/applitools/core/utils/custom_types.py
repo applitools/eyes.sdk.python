@@ -7,8 +7,8 @@ if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
 
     from applitools.core.geometry import Region
-    from applitools.eyes_selenium.webdriver import EyesWebDriver
-    from applitools.eyes_selenium.webelement import EyesWebElement
+    from applitools.selenium.webdriver import EyesWebDriver
+    from applitools.selenium.webelement import EyesWebElement
 
     RunningSession = tp.Dict[tp.Text, tp.Any]
     ViewPort = tp.Dict[tp.Text, int]

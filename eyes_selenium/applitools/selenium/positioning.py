@@ -1,13 +1,14 @@
 from __future__ import absolute_import
 
 import re
-import typing as tp
+import typing
 
 from selenium.common.exceptions import WebDriverException
 
 from applitools.core import logger, EyesError, Point, PositionProvider
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Text, Optional, List
     from applitools.core.utils.custom_types import AnyWebDriver, ViewPort, AnyWebElement
     from . import EyesWebDriver
 
@@ -16,12 +17,14 @@ class StitchMode(object):
     """
     The type of methods for stitching full-page screenshots.
     """
+
     Scroll = "Scroll"
     CSS = "CSS"
 
 
 class SeleniumPositionProvider(PositionProvider):
     """ Encapsulates page/element positioning """
+
     _JS_GET_CONTENT_ENTIRE_SIZE = """
         var scrollWidth = document.documentElement.scrollWidth;
         var bodyScrollWidth = document.body.scrollWidth;
@@ -42,7 +45,7 @@ class SeleniumPositionProvider(PositionProvider):
         self._driver = driver
 
     def _execute_script(self, script):
-        # type: (tp.Text) -> tp.List[int]
+        # type: (Text) -> List[int]
         return self._driver.execute_script(script)
 
     def get_entire_size(self):
@@ -51,18 +54,20 @@ class SeleniumPositionProvider(PositionProvider):
         :return: The entire size of the container which the position is relative to.
         """
         try:
-            width, height = self._driver.execute_script(self._JS_GET_CONTENT_ENTIRE_SIZE)
+            width, height = self._driver.execute_script(
+                self._JS_GET_CONTENT_ENTIRE_SIZE
+            )
         except WebDriverException:
-            raise EyesError('Failed to extract entire size!')
+            raise EyesError("Failed to extract entire size!")
         return dict(width=width, height=height)
 
 
 class ScrollPositionProvider(SeleniumPositionProvider):
     _JS_GET_CURRENT_SCROLL_POSITION = """
-        var doc = document.documentElement;
-        var x = window.scrollX || ((window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0));
-        var y = window.scrollY || ((window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0));
-        return [x, y]"""
+    var doc=document.documentElement;
+    var x=window.scrollX||((window.pageXOffset||doc.scrollLeft)-(doc.clientLeft||0));
+    var y=window.scrollY||((window.pageYOffset||doc.scrollTop)-(doc.clientTop||0));
+    return [x, y]"""
 
     def set_position(self, location):
         scroll_command = "window.scrollTo({0}, {1})".format(location.x, location.y)
@@ -87,23 +92,25 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         self._current_position = Point(0, 0)
 
     def _set_transform(self, transform_list):
-        script = ''
+        script = ""
         for key, value in transform_list.items():
             script += "document.documentElement.style['{}'] = '{}';".format(key, value)
         self._execute_script(script)
 
     def _get_current_transform(self):
-        script = 'return {'
+        script = "return {"
         for key in self._JS_TRANSFORM_KEYS:
             script += "'{0}': document.documentElement.style['{0}'],".format(key)
-        script += ' }'
+        script += " }"
         return self._execute_script(script)
 
     def get_current_position(self):
         return self._current_position.clone()
 
     def _get_position_from_transform(self, transform):
-        data = re.match(r"^translate\(\s*(\-?)([\d, \.]+)px,\s*(\-?)([\d, \.]+)px\s*\)", transform)
+        data = re.match(
+            r"^translate\(\s*(\-?)([\d, \.]+)px,\s*(\-?)([\d, \.]+)px\s*\)", transform
+        )
         if not data:
             raise EyesError("Can't parse CSS transition")
 
@@ -120,7 +127,9 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
         translate_command = "translate(-{}px, -{}px)".format(location.x, location.y)
         logger.debug(translate_command)
-        transform_list = dict((key, translate_command) for key in self._JS_TRANSFORM_KEYS)
+        transform_list = dict(
+            (key, translate_command) for key in self._JS_TRANSFORM_KEYS
+        )
         self._set_transform(transform_list)
         self._current_position = location.clone()
 
@@ -140,14 +149,15 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
 
 
 class ElementPositionProvider(SeleniumPositionProvider):
-
     def __init__(self, driver, element):
-        # type: (AnyWebDriver, tp.Optional[AnyWebElement]) -> None
+        # type: (AnyWebDriver, Optional[AnyWebElement]) -> None
         super(ElementPositionProvider, self).__init__(driver)
         self._element = element
 
     def get_current_position(self):
-        position = Point(self._element.get_scroll_left(), self._element.get_scroll_top())
+        position = Point(
+            self._element.get_scroll_left(), self._element.get_scroll_top()
+        )
         logger.info("Current position: {}".format(position))
         return position
 
@@ -158,17 +168,18 @@ class ElementPositionProvider(SeleniumPositionProvider):
 
     def get_entire_size(self):
         try:
-            size = {'width': self._element.get_scroll_width(), 'height': self._element.get_scroll_height()}
+            size = {
+                "width": self._element.get_scroll_width(),
+                "height": self._element.get_scroll_height(),
+            }
         except WebDriverException:
-            raise EyesError('Failed to extract entire size!')
+            raise EyesError("Failed to extract entire size!")
         logger.info("ElementPositionProvider - Entire size: {}".format(size))
         return size
 
 
-def build_position_provider_for(stitch_mode,  # type: tp.Text
-                                driver,  # type: AnyWebDriver
-                                ):
-    # type: (...) -> PositionProvider
+def build_position_provider_for(stitch_mode, driver):
+    # type: (Text, AnyWebDriver) -> PositionProvider
     if stitch_mode == StitchMode.Scroll:
         return ScrollPositionProvider(driver)
     elif stitch_mode == StitchMode.CSS:

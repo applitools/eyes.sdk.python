@@ -1,5 +1,12 @@
-__all__ = ('EyesError', 'EyesIllegalArgument', 'OutOfBoundsError', 'TestFailedError', 'NewTestError',
-           'DiffsFoundError', 'CoordinatesTypeConversionError')
+__all__ = (
+    "EyesError",
+    "EyesIllegalArgument",
+    "OutOfBoundsError",
+    "TestFailedError",
+    "NewTestError",
+    "DiffsFoundError",
+    "CoordinatesTypeConversionError",
+)
 
 
 class EyesError(Exception):
@@ -54,5 +61,5 @@ class DiffsFoundError(TestFailedError):
 
 class CoordinatesTypeConversionError(EyesError):
     def __init__(self, from_, to, test_results=None):
-        message = 'Cannot convert from {} to {}'.format(from_, to)
+        message = "Cannot convert from {} to {}".format(from_, to)
         super(CoordinatesTypeConversionError, self).__init__(message, test_results)

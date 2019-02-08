@@ -2,17 +2,16 @@ from __future__ import absolute_import
 
 import typing as tp
 
-from PIL import Image
-
 from applitools.core import RegionProvider
-from applitools.core.utils import image_utils
 from applitools.core.errors import EyesError
 from applitools.core.geometry import Region
+from applitools.core.utils import image_utils
+from PIL import Image
 
 if tp.TYPE_CHECKING:
     from applitools.images.capture import EyesImagesScreenshot
 
-__all__ = ('FloatingBounds', 'FloatingRegion', 'Target')
+__all__ = ("FloatingBounds", "FloatingRegion", "Target")
 
 
 # TODO: Refactor this
@@ -24,7 +23,9 @@ class _NopRegionWrapper(RegionProvider):
 
 # Floating regions related classes.
 class FloatingBounds(object):
-    def __init__(self, max_left_offset=0, max_up_offset=0, max_right_offset=0, max_down_offset=0):
+    def __init__(
+        self, max_left_offset=0, max_up_offset=0, max_right_offset=0, max_down_offset=0
+    ):
         # type: (int, int, int, int) -> None
         self.max_left_offset = max_left_offset
         self.max_up_offset = max_up_offset
@@ -43,22 +44,52 @@ class FloatingRegion(RegionProvider):
         self.bounds = bounds  # type: FloatingBounds
 
     def __getstate__(self):
-        return dict(top=self.region.top,
-                    left=self.region.left,
-                    width=self.region.width,
-                    height=self.region.height,
-                    maxLeftOffset=self.bounds.max_left_offset,
-                    maxUpOffset=self.bounds.max_up_offset,
-                    maxRightOffset=self.bounds.max_right_offset,
-                    maxDownOffset=self.bounds.max_down_offset)
+        return dict(
+            top=self.region.top,
+            left=self.region.left,
+            width=self.region.width,
+            height=self.region.height,
+            maxLeftOffset=self.bounds.max_left_offset,
+            maxUpOffset=self.bounds.max_up_offset,
+            maxRightOffset=self.bounds.max_right_offset,
+            maxDownOffset=self.bounds.max_down_offset,
+        )
 
     # This is required in order for jsonpickle to work on this object.
     # noinspection PyMethodMayBeStatic
     def __setstate__(self, state):
-        raise EyesError('Cannot create FloatingRegion instance from dict!')
+        raise EyesError("Cannot create FloatingRegion instance from dict!")
 
     def _str_(self):
-        return "{0} {{region: {1}, bounds: {2}}}".format(self.__class__.__name__, self.region, self.bounds)
+        return "{0} {{region: {1}, bounds: {2}}}".format(
+            self.__class__.__name__, self.region, self.bounds
+        )
+
+
+class _CheckSettingsValues:
+    """
+    Access to values stored in :py:class:`CheckSettings`
+    """
+
+    def __init__(self, check_settings):
+        # type: (Target) -> None
+        self.check_settings = check_settings
+
+    @property
+    def ignore_caret(self):
+        return self.check_settings._ignore_caret
+
+    @property
+    def ignore_regions(self):
+        return self.check_settings._ignore_regions
+
+    @property
+    def floating_regions(self):
+        return self.check_settings._floating_regions
+
+    @property
+    def image(self):
+        return self.check_settings._image
 
 
 # Main class for the module
@@ -71,9 +102,12 @@ class Target(object):
     __floating_regions = None  # type: tp.Optional[tp.List]
     _image = None  # type: tp.Optional[EyesImagesScreenshot]
     _target_region = None  # type: tp.Optional[Region]
-    _timeout = -1
 
-    ignore_caret = None
+    _ignore_caret = None
+
+    @property
+    def values(self):
+        return _CheckSettingsValues(self)
 
     def ignore(self, *regions):
         # type: (*tp.Union[Region]) -> Target

@@ -9,7 +9,7 @@ from applitools.core.utils.compat import ABC
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import ViewPort
 
-__all__ = ('PositionProvider', 'InvalidPositionProvider', 'PositionMemento')
+__all__ = ("PositionProvider", "InvalidPositionProvider", "PositionMemento")
 
 
 @attr.s

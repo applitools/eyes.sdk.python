@@ -4,34 +4,44 @@ import math
 import typing as tp
 from collections import OrderedDict
 
+from .utils import argument_guard
 from .metadata import CoordinatesType
 from .errors import EyesError
 
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import ViewPort
 
-__all__ = ('Point', 'Region',)
+__all__ = ("Point", "Region")
 
 
-class Point(object):
+class DictAccessMixin(object):
+    def __getitem__(self, item):
+        if item not in self.__slots__:
+            raise KeyError
+        return getattr(self, item)
+
+
+class StateMixin(object):
+    def __getstate__(self):
+        return OrderedDict([(name, getattr(self, name)) for name in self.__slots__])
+
+    # Required is required in order for jsonpickle to work on this object.
+    # noinspection PyMethodMayBeStatic
+    def __setstate__(self, state):
+        raise EyesError("Cannot create Point instance from dict!")
+
+
+class Point(DictAccessMixin, StateMixin):
     """
     A point with the coordinates (x,y).
     """
-    __slots__ = ('x', 'y')
+
+    __slots__ = ("x", "y")
 
     def __init__(self, x=0, y=0):
         # type: (float, float) -> None
         self.x = int(round(x))
         self.y = int(round(y))
-
-    def __getstate__(self):
-        return OrderedDict([("x", self.x),
-                            ("y", self.y)])
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create Point instance from dict!')
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -164,17 +174,26 @@ class Point(object):
         return result
 
     def scale(self, scale_ratio):
-        return Point(int(math.ceil(self.x * scale_ratio)),
-                     int(math.ceil(self.y * scale_ratio)))
+        return Point(
+            int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio))
+        )
 
 
-class Region(object):
+class Region(DictAccessMixin, StateMixin):
     """
     A rectangle identified by left,top, width, height.
     """
-    __slots__ = ('left', 'top', 'width', 'height', 'coordinates_type')
 
-    def __init__(self, left=0, top=0, width=0, height=0, coordinates_type=CoordinatesType.SCREENSHOT_AS_IS):
+    __slots__ = ("left", "top", "width", "height", "coordinates_type")
+
+    def __init__(
+        self,
+        left=0,
+        top=0,
+        width=0,
+        height=0,
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
+    ):
         # type: (float, float, float, float, tp.Text) -> None
         self.left = int(round(left))
         self.top = int(round(top))
@@ -182,26 +201,23 @@ class Region(object):
         self.height = int(round(height))
         self.coordinates_type = coordinates_type
 
-    def __getstate__(self):
-        return OrderedDict([("top", self.top), ("left", self.left), ("width", self.width),
-                            ("height", self.height), ("coordinatesType", self.coordinates_type)])
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError('Cannot create Region instance from dict!')
-
     @classmethod
     def create_empty_region(cls):
         return cls(0, 0, 0, 0)
 
     @classmethod
     def from_region(cls, region):
-        return cls(region.left, region.top, region.width, region.height, region.coordinates_type)
+        return cls(
+            region.left,
+            region.top,
+            region.width,
+            region.height,
+            region.coordinates_type,
+        )
 
     @classmethod
     def from_location_size(cls, location, size):
-        return cls(location.x, location.y, size['width'], size['height'])
+        return cls(location.x, location.y, size["width"], size["height"])
 
     @property
     def x(self):
@@ -228,10 +244,11 @@ class Region(object):
         return Point(self.left, self.top)
 
     @location.setter
-    def location(self, p):
+    def location(self, point):
         # type: (Point) -> None
         """Sets the top left corner of the region"""
-        self.left, self.top = p.x, p.y
+        argument_guard.not_none(point)
+        self.left, self.top = point.x, point.y
 
     @property
     def bottom_right(self):
@@ -265,8 +282,12 @@ class Region(object):
         :return: Whether or not the rectangles have same coordinates.
         :rtype: bool
         """
-        return (self.left == other.left and self.top == other.top and self.width == other.width
-                and self.height == other.height)
+        return (
+            self.left == other.left
+            and self.top == other.top
+            and self.width == other.width
+            and self.height == other.height
+        )
 
     def is_same_size(self, other):
         # type: (Region) -> bool
@@ -291,6 +312,7 @@ class Region(object):
         self.left = max(self.left, 0)
         self.top = max(self.top, 0)
 
+    @property
     def is_size_empty(self):
         # type: () -> bool
         """
@@ -298,6 +320,7 @@ class Region(object):
         """
         return self.width <= 0 or self.height <= 0
 
+    @property
     def is_empty(self):
         # type: () -> bool
         """
@@ -315,16 +338,20 @@ class Region(object):
         :return: True if the point is inside the rectangle. Otherwise False.
         """
         x, y = pt.as_tuple()
-        return (self.left <= x <= self.right and  # noqa
-                self.top <= y <= self.bottom)
+        return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
 
     def overlaps(self, other):
         # type: (Region) -> bool
         """
         Return true if a rectangle overlaps this rectangle.
         """
-        return ((self.left <= other.left <= self.right or other.left <= self.left <= other.right)
-                and (self.top <= other.top <= self.bottom or other.top <= self.top <= other.bottom))
+        return (
+            self.left <= other.left <= self.right
+            or other.left <= self.left <= other.right
+        ) and (
+            self.top <= other.top <= self.bottom
+            or other.top <= self.top <= other.bottom
+        )
 
     def intersect(self, other):
         # type: (Region) -> None
@@ -335,7 +362,9 @@ class Region(object):
         intersection_left = self.left if self.left >= other.left else other.left
         intersection_top = self.top if self.top >= other.top else other.top
         intersection_right = self.right if self.right <= other.right else other.right
-        intersection_bottom = self.bottom if self.bottom <= other.bottom else other.bottom
+        intersection_bottom = (
+            self.bottom if self.bottom <= other.bottom else other.bottom
+        )
         self.left, self.top = intersection_left, intersection_top
         self.width = intersection_right - intersection_left
         self.height = intersection_bottom - intersection_top
@@ -362,8 +391,9 @@ class Region(object):
                 current_height = current_bottom - current_top
                 current_width = current_right - current_left
 
-                sub_regions.append(Region(current_left, current_top, current_width,
-                                          current_height))
+                sub_regions.append(
+                    Region(current_left, current_top, current_width, current_height)
+                )
 
                 current_left += max_sub_region_size["width"]
 
@@ -378,16 +408,19 @@ class Region(object):
 
     def offset(self, dx, dy):
         location = self.location.offset(dx, dy)
-        return Region(left=location.x, top=location.y,
-                      width=self.size['width'],
-                      height=self.size['height'])
+        return Region(
+            left=location.x,
+            top=location.y,
+            width=self.size["width"],
+            height=self.size["height"],
+        )
 
     def scale(self, scale_ratio):
         return Region(
             left=int(math.ceil(self.left * scale_ratio)),
             top=int(math.ceil(self.top * scale_ratio)),
             width=int(math.ceil(self.width * scale_ratio)),
-            height=int(math.ceil(self.height * scale_ratio))
+            height=int(math.ceil(self.height * scale_ratio)),
         )
 
     def __str__(self):
