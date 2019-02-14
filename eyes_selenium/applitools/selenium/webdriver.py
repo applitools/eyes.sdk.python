@@ -5,6 +5,10 @@ import contextlib
 import time
 import typing
 
+from applitools.core import logger
+from applitools.core.errors import EyesError
+from applitools.core.geometry import Point, Region
+from applitools.core.utils import cached_property, general_utils, image_utils
 from PIL import Image
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -12,14 +16,10 @@ from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 
-from applitools.core import logger
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Point, Region
-from applitools.core.utils import cached_property, image_utils, general_utils
-from . import eyes_selenium_utils, StitchMode
-from .positioning import build_position_provider_for, ScrollPositionProvider
-from .webelement import EyesWebElement
+from . import StitchMode, eyes_selenium_utils
 from .frames import Frame, FrameChain
+from .positioning import ScrollPositionProvider, build_position_provider_for
+from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
     from typing import Generator, Text, Optional, List, Dict, Any
@@ -800,7 +800,7 @@ class EyesWebDriver(object):
         ):
             self.restore_origin()
             self.switch_to.frames(original_frame)
-
+            logger.debug("Entire page has size as screenshot")
             return screenshot
 
         #  We use a smaller size than the actual screenshot size in order to
@@ -829,7 +829,6 @@ class EyesWebDriver(object):
         stitched_image = Image.new("RGBA", (entire_page.width, entire_page.height))
         stitched_image.paste(screenshot, box=(0, 0))
         self.save_position()
-
         for part in screenshot_parts:
             # Since we already took the screenshot for 0,0
             if part.left == 0 and part.top == 0:
@@ -837,10 +836,11 @@ class EyesWebDriver(object):
                 continue
             logger.debug("Taking screenshot for {0}".format(part))
             # Scroll to the part's top/left and give it time to stabilize.
-            self.scroll_to(Point(part.left, part.top))
+            self._position_provider.set_position(Point(part.left, part.top))
+            # self.scroll_to(Point(part.left, part.top))
             EyesWebDriver._wait_before_screenshot(wait_before_screenshots)
             # Since screen size might cause the scroll to reach only part of the way
-            current_scroll_position = self.get_current_position()
+            current_scroll_position = self._position_provider.get_current_position()
             logger.debug(
                 "Scrolled To ({0},{1})".format(
                     current_scroll_position.x, current_scroll_position.y
