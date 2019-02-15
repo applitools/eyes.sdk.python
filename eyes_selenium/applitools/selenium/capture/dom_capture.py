@@ -7,6 +7,7 @@ from collections import OrderedDict
 
 import requests
 import tinycss2
+
 from applitools.core import logger
 from applitools.core.utils import general_utils
 from applitools.core.utils.compat import urljoin
@@ -157,6 +158,9 @@ def get_full_window_dom(driver, return_as_dict=False):
 
     logger.debug("Traverse DOM Tree")
     _traverse_dom_tree(driver, {"childNodes": [dom_tree], "tagName": "OUTER_HTML"})
+
+    # After traversing page could be scrolled down. Reset to origin position
+    driver.reset_origin()
 
     if return_as_dict:
         return dom_tree

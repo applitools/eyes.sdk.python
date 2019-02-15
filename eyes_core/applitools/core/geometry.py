@@ -4,9 +4,9 @@ import math
 import typing as tp
 from collections import OrderedDict
 
-from .utils import argument_guard
-from .metadata import CoordinatesType
 from .errors import EyesError
+from .metadata import CoordinatesType
+from .utils import argument_guard
 
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import ViewPort
@@ -58,11 +58,14 @@ class Point(DictAccessMixin, StateMixin):
     def __div__(self, scalar):
         return Point(self.x / scalar, self.y / scalar)
 
-    def __str__(self):
+    def __repr__(self):
         return "({0}, {1})".format(self.x, self.y)
 
     def __bool__(self):
         return self.x and self.y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
 
     @classmethod
     def create_top_left(cls):
@@ -423,5 +426,5 @@ class Region(DictAccessMixin, StateMixin):
             height=int(math.ceil(self.height * scale_ratio)),
         )
 
-    def __str__(self):
+    def __repr__(self):
         return "(%s, %s) %s x %s" % (self.left, self.top, self.width, self.height)
