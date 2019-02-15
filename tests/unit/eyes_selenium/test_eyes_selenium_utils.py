@@ -1,7 +1,8 @@
 import mock
 import pytest
-from applitools.selenium import eyes_selenium_utils
 from selenium.common.exceptions import WebDriverException
+
+from applitools.selenium import eyes_selenium_utils
 
 
 @pytest.fixture

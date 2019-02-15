@@ -113,7 +113,7 @@ def mypy_check(c, core=None, selenium=None, images=None):
 @task
 def test_run_packs(c, core=None, selenium=None, images=None, appium=None):
     if core:
-        c.run("pytest tests/unit/eyes_core")
+        c.run("pytest tests/functional/eyes_core")
     elif selenium:
         c.run(
             'pytest -n 2 --platform="Linux" --browser chrome --headless 1 tests/functional/eyes_selenium'
@@ -124,6 +124,11 @@ def test_run_packs(c, core=None, selenium=None, images=None, appium=None):
         c.run("pytest -n 3 --remote 1 tests/functional/eyes_selenium/test_appium.py")
     # for pack in _packages_resolver(core, selenium, images):
     #     c.run('pytest tests/functional/{}'.format(pack), echo=True)
+
+
+@task
+def test_run_unit(c):
+    c.run("pytest tests/unit")
 
 
 @task

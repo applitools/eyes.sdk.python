@@ -1,12 +1,13 @@
 import os
 
 import pytest
-from applitools.core import logger
-from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
-from applitools.selenium.__version__ import __version__
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
+
+from applitools.core import logger
+from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
+from applitools.selenium.__version__ import __version__
 
 
 def _setup_env_vars_for_session():
@@ -37,7 +38,9 @@ def eyes_open(request, eyes, driver):
     viewport_size = viewport_size.args[-1] if viewport_size else None
 
     test_suite_name = request.node.get_closest_marker("test_suite_name")
-    test_suite_name = test_suite_name.args[-1] if test_suite_name else "Python SDK"
+    test_suite_name = (
+        test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
+    )
 
     # use camel case in method name for fit java sdk tests name
     test_name = request.function.__name__.title().replace("_", "")
