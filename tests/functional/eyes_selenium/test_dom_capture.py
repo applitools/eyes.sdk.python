@@ -4,8 +4,10 @@ import time
 from collections import OrderedDict
 
 import pytest
-from applitools.selenium import dom_capture
 from selenium.webdriver.common.by import By
+
+from applitools.core import Point
+from applitools.selenium import dom_capture
 
 
 @pytest.mark.usefixtures("driver_for_class")
@@ -116,6 +118,14 @@ class TestDomCaptureUnit(object):
             return o["childNodes"][1]["childNodes"][3]["childNodes"][0]["css"]
 
         assert inner_css(dom_json) == inner_css(expected_json)
+
+    @pytest.mark.test_page_url(
+        "https://nikita-andreev.github.io/applitools/dom_capture.html?aaa"
+    )
+    def test_position_scrolled_to_origin_after_traversing(self):
+        # Page must contain scrolling
+        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+        assert self.driver.get_current_position() == Point(0, 0)
 
 
 @pytest.mark.usefixtures("eyes_for_class")
