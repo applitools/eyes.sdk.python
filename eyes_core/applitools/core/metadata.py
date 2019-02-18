@@ -1,6 +1,6 @@
 import os
-import uuid
 import typing as tp
+import uuid
 from datetime import datetime
 
 from .errors import EyesError
@@ -44,7 +44,7 @@ class BatchInfo(object):
     def __setstate__(self, state):
         raise EyesError("Cannot create BatchInfo instance from dict!")
 
-    def __str__(self):
+    def __repr__(self):
         return "%s - %s - %s" % (self.name, self.started_at, self.id)
 
 
