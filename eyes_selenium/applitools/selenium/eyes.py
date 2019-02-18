@@ -4,6 +4,9 @@ import base64
 import contextlib
 import typing
 
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
+
 # noinspection PyProtectedMember
 from applitools.core import logger
 from applitools.core.errors import EyesError
@@ -13,8 +16,6 @@ from applitools.core.match_window_task import MatchWindowTask
 from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
 from applitools.core.triggers import MouseTrigger, TextTrigger
 from applitools.core.utils import image_utils
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from . import eyes_selenium_utils
 from .__version__ import __version__
@@ -50,8 +51,13 @@ class Eyes(EyesBase):
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
 
     @staticmethod
-    def set_viewport_size(driver, size):
-        # type: (AnyWebDriver, ViewPort) -> None
+    def set_viewport_size(driver, size=None, viewportsize=None):
+        # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
+        assert driver is not None
+        if size is None and viewportsize is None:
+            raise ValueError("set_viewport_size require `size` parameter")
+        if viewportsize:
+            logger.deprecation("Use `size` parameter instead")
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     @staticmethod
