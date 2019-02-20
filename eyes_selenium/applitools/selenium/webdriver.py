@@ -5,16 +5,17 @@ import contextlib
 import time
 import typing
 
-from applitools.core import logger
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Point, Region
-from applitools.core.utils import cached_property, general_utils, image_utils
 from PIL import Image
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
+
+from applitools.core import logger
+from applitools.core.errors import EyesError
+from applitools.core.geometry import Point, Region
+from applitools.core.utils import cached_property, general_utils, image_utils
 
 from . import StitchMode, eyes_selenium_utils
 from .frames import Frame, FrameChain
@@ -188,7 +189,7 @@ class EyesWebDriver(object):
         "contexts",
         "current_package",
     ]
-    _READONLY_PROPERTIES += ["battery_info"]  # Appium specific
+    _READONLY_PROPERTIES += ["battery_info", "location"]  # Appium specific
     _SETTABLE_PROPERTIES = ["orientation", "file_detector"]
 
     # This should pretty much cover all scroll bars

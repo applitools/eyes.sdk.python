@@ -3,7 +3,6 @@ import os
 import pytest
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.remote_connection import RemoteConnection
 
 from applitools.core import logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
@@ -28,6 +27,11 @@ def pytest_generate_tests(metafunc):
 @pytest.fixture
 def eyes_class():
     return Eyes
+
+
+@pytest.fixture
+def webdriver_module():
+    return webdriver
 
 
 @pytest.fixture(scope="function")
@@ -81,7 +85,7 @@ def driver_for_class(request, driver):
 
 
 @pytest.yield_fixture(scope="function")
-def driver(request, browser_config):
+def driver(request, browser_config, webdriver_module):
     test_name = request.node.name
     build_tag = os.environ.get("BUILD_TAG", None)
     tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
@@ -102,9 +106,8 @@ def driver(request, browser_config):
     desired_caps["tunnelIdentifier"] = tunnel_id
     desired_caps["name"] = test_name
 
-    executor = RemoteConnection(selenium_url, resolve_ip=False)
-    browser = webdriver.Remote(
-        command_executor=executor, desired_capabilities=desired_caps
+    browser = webdriver_module.Remote(
+        command_executor=selenium_url, desired_capabilities=desired_caps
     )
     if browser is None:
         raise WebDriverException("Never created!")
