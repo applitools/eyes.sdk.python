@@ -1,4 +1,5 @@
 import pytest
+from appium import webdriver
 from selenium.webdriver.common.by import By
 
 from applitools.selenium import (
@@ -11,6 +12,11 @@ from applitools.selenium import (
 )
 
 
+@pytest.fixture
+def webdriver_module():
+    return webdriver
+
+
 @pytest.mark.platform("Android")
 @pytest.mark.capabilities(
     **{
@@ -18,10 +24,28 @@ from applitools.selenium import (
         "clearSystemFiles": True,
         "noReset": True,
         "browserName": "",
+        "automationName": "UiAutomator2",
     }
 )
 @pytest.mark.eyes(hide_scrollbars=False)
 def test_android_native(eyes, driver):
+    eyes.open(driver, "Contacts!", "My first Appium Python test!")
+    eyes.check_window("Contact list!")
+    eyes.close()
+
+
+@pytest.mark.platform("iOS")
+@pytest.mark.capabilities(
+    **{
+        "app": "http://174.138.1.48/doc/Demo_Application.zip",
+        "clearSystemFiles": True,
+        "noReset": True,
+        "browserName": "",
+        "automationName": "XCUITest",
+    }
+)
+@pytest.mark.eyes(hide_scrollbars=False)
+def test_ios_native(eyes, driver):
     eyes.open(driver, "Contacts!", "My first Appium Python test!")
     eyes.check_window("Contact list!")
     eyes.close()

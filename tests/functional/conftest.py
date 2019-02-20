@@ -11,6 +11,7 @@ Example of usage:
     pytest --browser firefox --headless 1   # run all tests on your current platform with firefox browser in headless mode
 """
 import pytest
+
 from applitools.core import StdoutLogger, logger
 from applitools.core.utils import iteritems
 

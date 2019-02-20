@@ -30,6 +30,11 @@ def eyes_class():
     return Eyes
 
 
+@pytest.fixture
+def webdriver_module():
+    return webdriver
+
+
 @pytest.fixture(scope="function")
 def eyes_open(request, eyes, driver):
     test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
@@ -81,7 +86,7 @@ def driver_for_class(request, driver):
 
 
 @pytest.yield_fixture(scope="function")
-def driver(request, browser_config):
+def driver(request, browser_config, webdriver_module):
     test_name = request.node.name
     build_tag = os.environ.get("BUILD_TAG", None)
     tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
@@ -103,7 +108,7 @@ def driver(request, browser_config):
     desired_caps["name"] = test_name
 
     executor = RemoteConnection(selenium_url, resolve_ip=False)
-    browser = webdriver.Remote(
+    browser = webdriver_module.Remote(
         command_executor=executor, desired_capabilities=desired_caps
     )
     if browser is None:
