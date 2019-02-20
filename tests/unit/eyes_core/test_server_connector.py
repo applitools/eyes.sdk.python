@@ -1,9 +1,10 @@
 import os
 
 import pytest
-from applitools.core import ServerConnector, TestResults
-from applitools.core.utils.compat import urljoin
 from mock import patch
+
+from applitools.core import EyesError, ServerConnector, TestResults
+from applitools.core.utils.compat import urljoin
 
 API_KEY = "TEST API KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -22,6 +23,16 @@ def configured_connector():
     connector = ServerConnector(CUSTOM_EYES_SERVER)
     connector.api_key = API_KEY
     return connector
+
+
+@pytest.fixture(scope="function")
+def started_connector(configured_connector):
+    configured_connector._request = configured_connector._request_factory.create(
+        server_url=configured_connector.server_url,
+        api_key=configured_connector.api_key,
+        timeout=configured_connector.timeout,
+    )
+    return configured_connector
 
 
 class MockResponse:
@@ -143,6 +154,14 @@ def test_set_get_timeout(connector):
     assert connector.timeout == 100
 
 
+def test_is_session_started_True(started_connector):
+    assert started_connector.is_session_started
+
+
+def test_is_session_started_False(configured_connector):
+    assert not configured_connector.is_session_started
+
+
 def test_start_session(configured_connector):
     # type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
@@ -150,24 +169,24 @@ def test_start_session(configured_connector):
     assert respo == RUNNING_SESSION
 
 
-def test_match_window(configured_connector):
+def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        as_expected = configured_connector.match_window(RUNNING_SESSION, b"data")
+        as_expected = started_connector.match_window(RUNNING_SESSION, b"data")
     assert as_expected
 
 
-def test_post_dom_snapshot(configured_connector):
+def test_post_dom_snapshot(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        dom_url = configured_connector.post_dom_snapshot("{HTML: []")
+        dom_url = started_connector.post_dom_snapshot("{HTML: []")
     assert dom_url == RUNNING_SESSION["session_url"]
 
 
-def test_stop_session(configured_connector):
+def test_stop_session(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.delete", side_effect=mocked_requests_delete):
-        respo = configured_connector.stop_session(
+        respo = started_connector.stop_session(
             RUNNING_SESSION, is_aborted=False, save=False
         )
     pr = STOP_SESSION
@@ -185,3 +204,30 @@ def test_stop_session(configured_connector):
             pr["status"],
         )
     )
+    # should be False after stop_session
+    assert not started_connector.is_session_started
+
+
+def test_raise_error_when_session_was_not_run(configured_connector):
+    with pytest.raises(EyesError):
+        configured_connector.match_window(RUNNING_SESSION, b"data")
+    with pytest.raises(EyesError):
+        configured_connector.post_dom_snapshot("{HTML: []")
+    with pytest.raises(EyesError):
+        configured_connector.stop_session(RUNNING_SESSION, is_aborted=False, save=False)
+
+
+def test_request_with_changed_values(configured_connector):
+    new_timeout = 99999
+    new_api_key = "NEW API KEY"
+    new_server_url = "http://new-server.com/"
+    configured_connector.timeout = new_timeout
+    configured_connector.api_key = new_api_key
+    configured_connector.server_url = new_server_url
+
+    with patch("requests.post") as mocked_post:
+        configured_connector.start_session(START_INFO)
+
+    assert mocked_post.call_args[1]["timeout"] == new_timeout
+    assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
+    assert new_server_url in mocked_post.call_args[0][0]
