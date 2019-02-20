@@ -51,7 +51,7 @@ def test_ios_native(eyes, driver):
     eyes.close()
 
 
-@pytest.mark.platform("Android", "iOS")
+@pytest.mark.platform("Android")
 @pytest.mark.test_page_url("http://applitools.com")
 @pytest.mark.eyes(force_full_page_screenshot=True, stitch_mode=StitchMode.CSS)
 def test_final_application(eyes_open):
