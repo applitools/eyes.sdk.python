@@ -7,7 +7,7 @@ import typing as tp
 import requests
 from requests.packages import urllib3
 
-from applitools.core import EyesError
+from applitools.core.errors import EyesError
 
 from . import logger
 from .test_results import TestResults

@@ -8,7 +8,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 # noinspection PyProtectedMember
-from applitools.core import logger
+from applitools.core import NullScaleProvider, logger
 from applitools.core.errors import EyesError
 from applitools.core.eyes_base import EyesBase
 from applitools.core.geometry import Region
@@ -224,13 +224,17 @@ class Eyes(EyesBase):
 
     def _update_scaling_params(self):
         # type: () -> Optional[ScaleProvider]
-        if self._device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO:
+        if self._device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO or isinstance(
+            self._scale_provider, NullScaleProvider
+        ):
             logger.debug("Device pixel ratio was already changed")
-            return None
+            return self._scale_provider
 
         logger.info("Trying to extract device pixel ratio...")
         try:
-            device_pixel_ratio = image_utils.get_device_pixel_ratio(self._driver)
+            device_pixel_ratio = eyes_selenium_utils.get_device_pixel_ratio(
+                self._driver
+            )
         except Exception as e:
             logger.info(
                 "Failed to extract device pixel ratio! Using default. Error %s " % e

@@ -9,6 +9,7 @@ from applitools.core import (  # noqa
     TestResultsStatus,
     TestResults,
     logger,
+    StdoutLogger,
 )
 from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
 from .positioning import StitchMode  # noqa
@@ -38,6 +39,7 @@ __all__ = (
     "TestResultsStatus",
     "TestResults",
     "logger",
+    "StdoutLogger",
     "Eyes",
     "EyesWebElement",
     "EyesWebDriver",

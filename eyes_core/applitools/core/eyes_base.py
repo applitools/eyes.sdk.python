@@ -9,6 +9,7 @@ from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
 from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
 from .metadata import BatchInfo
+from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 from .test_results import TestResults, TestResultsStatus
 from .utils import ABC
@@ -62,6 +63,7 @@ class EyesBase(ABC):
         self._user_inputs = []  # type: UserInputs
         self._region_to_check = None  # type: tp.Optional[RegionOrElement]
         self._viewport_size = None  # type: ViewPort
+        self._scale_provider = None  # type: tp.Optional[ScaleProvider]
 
         # key-value pairs to be associated with the test.
         # Can be used for filtering later.
@@ -139,6 +141,17 @@ class EyesBase(ABC):
         """
         :param size: The required viewport size.
         """
+
+    @property
+    def scale_ratio(self):
+        return self._scale_provider.scale_ratio
+
+    @scale_ratio.setter
+    def scale_ratio(self, value):
+        if value:
+            self._scale_provider = FixedScaleProvider(value)
+        else:
+            self._scale_provider = NullScaleProvider()
 
     @abc.abstractmethod
     def _ensure_viewport_size(self):

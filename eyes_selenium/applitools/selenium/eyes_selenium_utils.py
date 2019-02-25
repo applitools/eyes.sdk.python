@@ -4,9 +4,11 @@ import time
 import typing as tp
 from contextlib import contextmanager
 
-from applitools.core import EyesError, logger
+from appium.webdriver import Remote as AppiumWebDriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
+
+from applitools.core import EyesError, logger
 
 if tp.TYPE_CHECKING:
     from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
@@ -100,6 +102,10 @@ if( navigator.userAgent.match(/Android/i) ||
     """
     # TODO: Implement proper UserAgent handling
     driver = get_underlying_driver(driver)
+    if isinstance(driver, AppiumWebDriver):
+        return True
+
+    # if driver is selenium based
     platform_name = driver.desired_capabilities.get("platformName", "").lower()
     # platformName sometime have different names
     is_mobile_platform = "android" in platform_name or "ios" in platform_name
@@ -120,7 +126,7 @@ if( navigator.userAgent.match(/Android/i) ||
 
 
 def get_underlying_driver(driver):
-    # type: (AnyWebDriver) -> WebDriver
+    # type: (AnyWebDriver) -> tp.Union[WebDriver, AppiumWebDriver]
     from ..selenium.webdriver import EyesWebDriver
 
     if isinstance(driver, EyesWebDriver):
@@ -310,7 +316,9 @@ def timeout(timeout):
 def is_landscape_orientation(driver):
     if is_mobile_device(driver):
         # could be AppiumRemoteWebDriver
-        appium_driver = get_underlying_driver(driver)  # type: WebDriver
+        appium_driver = get_underlying_driver(
+            driver
+        )  # type: tp.Union[AppiumWebDriver, WebDriver]
 
         original_context = None
         try:

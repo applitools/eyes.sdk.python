@@ -68,10 +68,6 @@ def scale_image(image, scale_ratio):
     return scaled_image
 
 
-def get_device_pixel_ratio(driver):
-    return driver.execute_script("return window.devicePixelRatio;")
-
-
 def get_base64(image):
     # type: (Image.Image) -> str
     """

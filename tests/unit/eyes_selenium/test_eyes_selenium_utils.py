@@ -1,17 +1,8 @@
 import mock
 import pytest
-from selenium.common.exceptions import WebDriverException
+from appium.webdriver import Remote as AppiumWebDriver
 
 from applitools.selenium import eyes_selenium_utils
-
-
-@pytest.fixture
-def driver_mock():
-    driver = mock.Mock()
-    driver.desired_capabilities = {"platformName": ""}
-    # need to configure below
-    driver.execute_script = mock.MagicMock(side_effect=WebDriverException())
-    return driver
 
 
 @pytest.mark.parametrize(
@@ -37,3 +28,8 @@ def test_different_mobile_platform_names(driver_mock, platform_name):
 def test_different_not_mobile_platform_names(driver_mock, platform_name):
     driver_mock.desired_capabilities["platformName"] = platform_name
     assert not eyes_selenium_utils.is_mobile_device(driver_mock)
+
+
+def test_appium_webdriver(driver_mock):
+    driver_mock.driver = mock.Mock(AppiumWebDriver)
+    assert eyes_selenium_utils.is_mobile_device(driver_mock)

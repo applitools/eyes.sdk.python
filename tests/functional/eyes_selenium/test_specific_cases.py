@@ -76,3 +76,12 @@ def test_check_window_with_ignore_region_fluent(eyes, driver):
         target=Target().ignore(Region(left=50, top=50, width=100, height=100)),
     )
     eyes.close()
+
+
+@pytest.mark.browser("chrome")
+@pytest.mark.platform("Linux")
+def test_directly_set_viewport_size(eyes, driver):
+    required_viewport = {"width": 450, "height": 300}
+    eyes.set_viewport_size(driver, required_viewport)
+    driver = eyes.open(driver, "Python SDK", "TestViewPort-DirectlySetViewportt")
+    assert required_viewport == eyes.get_viewport_size(driver)

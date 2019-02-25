@@ -7,10 +7,10 @@ __all__ = ("FixedScaleProvider", "NullScaleProvider", "ContextBasedScaleProvider
 
 
 class ScaleProvider(ABC):
-    _UNKNOWN_SCALE_RATIO = 0.0
+    UNKNOWN_SCALE_RATIO = 0.0
 
     def __init__(self, *args, **kwargs):
-        self._scale_ratio = self._UNKNOWN_SCALE_RATIO
+        self._scale_ratio = self.UNKNOWN_SCALE_RATIO
         self.device_pixel_ratio = 1
 
     @property
@@ -28,7 +28,10 @@ class FixedScaleProvider(ScaleProvider):
 
 
 class NullScaleProvider(FixedScaleProvider):
-    _UNKNOWN_SCALE_RATIO = 1.0
+    UNKNOWN_SCALE_RATIO = 1.0
+
+    def __init__(self):
+        super(NullScaleProvider, self).__init__(self.UNKNOWN_SCALE_RATIO)
 
 
 class ContextBasedScaleProvider(ScaleProvider):
