@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from .utils import ABC
 from . import logger
+from .utils import ABC
 
 __all__ = ("FixedScaleProvider", "NullScaleProvider", "ContextBasedScaleProvider")
 
@@ -86,7 +86,7 @@ class ContextBasedScaleProvider(ScaleProvider):
                 logger.info(
                     "Mobile device, so using 2 step calculation for scale ration..."
                 )
-                logger.info("Scale ratio based on DRP: " + self._scale_ratio)
+                logger.info("Scale ratio based on DRP: {}".format(self._scale_ratio))
                 self._scale_ratio = self.get_scale_ratio_to_viewport(
                     viewport_width, image_to_scale_width, self._scale_ratio
                 )
