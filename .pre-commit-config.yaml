@@ -33,4 +33,4 @@ repos:
           - id: debug-statements
           - id: mixed-line-ending
             args:
-                - --fix=no
+                - --fix=lf
