@@ -64,5 +64,5 @@ def test_eyes_selenium_old_namespace(virtualenv):
     virtualenv.run('python -c "from applitools.logger import StdoutLogger"')
     virtualenv.run('python -c "from applitools.errors import EyesError"')
     virtualenv.run(
-        'python -c "from applitools.utils import general_utils, ' 'image_utils"'
+        'python -c "from applitools.utils import general_utils, image_utils"'
     )
