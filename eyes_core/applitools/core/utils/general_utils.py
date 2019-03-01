@@ -1,6 +1,7 @@
 """
 General purpose utilities.
 """
+import hashlib
 import itertools
 import json
 import time
@@ -196,3 +197,9 @@ def retry(delays=(0, 1, 5), exception=Exception, report=lambda *args: None):
         return wrapped
 
     return wrapper
+
+
+def get_sha256_hash(content):
+    m = hashlib.sha256()
+    m.update(content.encode("utf-8"))
+    return "".join(["%02x" % b for b in m.digest()])
