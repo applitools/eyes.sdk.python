@@ -52,3 +52,17 @@ def test_eyes_selenium_namespace_package(virtualenv):
     virtualenv.install_package(_packages_resolver(core=True), build_egg=True)
     virtualenv.install_package(_packages_resolver(selenium=True), build_egg=True)
     virtualenv.run('python -c "from applitools.selenium import *"')
+
+
+def test_eyes_selenium_old_namespace(virtualenv):
+    virtualenv.install_package(_packages_resolver(core=True), build_egg=True)
+    virtualenv.install_package(_packages_resolver(selenium=True), build_egg=True)
+    virtualenv.run('python -c "from applitools.eyes import Eyes"')
+    virtualenv.run('python -c "from applitools.target import Target"')
+    virtualenv.run('python -c "from applitools.common import StitchMode"')
+    virtualenv.run('python -c "from applitools.geometry import Point, Region"')
+    virtualenv.run('python -c "from applitools.logger import StdoutLogger"')
+    virtualenv.run('python -c "from applitools.errors import EyesError"')
+    virtualenv.run(
+        'python -c "from applitools.utils import general_utils, image_utils"'
+    )
