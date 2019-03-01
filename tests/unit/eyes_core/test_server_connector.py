@@ -4,11 +4,28 @@ import pytest
 from mock import patch
 
 from applitools.core import EyesError, ServerConnector, TestResults
+from applitools.core.metadata import RenderingInfo
 from applitools.core.utils.compat import urljoin
 
 API_KEY = "TEST API KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
-RUNNING_SESSION_URL = urljoin(CUSTOM_EYES_SERVER, ServerConnector.API_SESSIONS_RUNNING)
+
+API_SESSIONS = "api/sessions"
+API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
+RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
+RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
+
+RUNNING_SESSION_URL = urljoin(CUSTOM_EYES_SERVER, API_SESSIONS_RUNNING)
+RUNNING_SESSION_DATA_URL = urljoin(RUNNING_SESSION_URL, "data")
+RENDER_INFO_PATH_URL = urljoin(CUSTOM_EYES_SERVER, RENDER_INFO_PATH)
+
+RENDER_INFO_URL = "https://render-wus.applitools.com"
+RENDER_INFO_AT = "Some Token"
+RENDERING_INFO_DATA = {
+    "ServiceUrl": RENDER_INFO_URL,
+    "AccessToken": RENDER_INFO_AT,
+    "ResultsUrl": RUNNING_SESSION_DATA_URL + "?accessKey=" + API_KEY,
+}
 
 
 @pytest.fixture(scope="function")
@@ -21,7 +38,7 @@ def connector():
 def configured_connector():
     # type: () -> ServerConnector
     connector = ServerConnector(CUSTOM_EYES_SERVER)
-    connector.api_key = API_KEY
+    connector.api_key = os.environ["APPLITOOLS_API_KEY"]
     return connector
 
 
@@ -67,6 +84,14 @@ def mocked_requests_delete(*args, **kwargs):
     return MockResponse(None, 404)
 
 
+def mocked_requests_get(*args, **kwargs):
+    _request_check(*args, **kwargs)
+    url = args[0]
+    if url == RENDER_INFO_PATH_URL:
+        return MockResponse(RENDERING_INFO_DATA, 200)
+    return MockResponse(None, 404)
+
+
 def mocked_requests_post(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
@@ -80,7 +105,7 @@ def mocked_requests_post(*args, **kwargs):
         )
     elif url == urljoin(RUNNING_SESSION_URL, "some_session_id"):
         return MockResponse({"asExpected": True}, 200)
-    elif url == urljoin(RUNNING_SESSION_URL, "data"):
+    elif url == RUNNING_SESSION_DATA_URL:
         return MockResponse(
             {}, 200, headers={"Location": RUNNING_SESSION["session_url"]}
         )
@@ -231,3 +256,10 @@ def test_request_with_changed_values(configured_connector):
     assert mocked_post.call_args[1]["timeout"] == new_timeout
     assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
     assert new_server_url in mocked_post.call_args[0][0]
+
+
+def test_get_rendering_info(started_connector):
+    expected_ri = RenderingInfo.from_json(RENDERING_INFO_DATA)
+    with patch("requests.get", side_effect=mocked_requests_get):
+        render_info = started_connector.get_render_info()
+    assert render_info == expected_ri

@@ -8,6 +8,7 @@ import requests
 from requests.packages import urllib3
 
 from applitools.core.errors import EyesError
+from applitools.core.metadata import RenderingInfo
 
 from . import logger
 from .test_results import TestResults
@@ -114,20 +115,18 @@ class _Request(object):
         return func(requests.delete, url_resource, **kwargs)
 
 
-def create_request_factory(headers, server_url, api_session_running_url):
+def create_request_factory(headers, server_url):
     class RequestFactory(object):
         def __init__(self):
             self._com = None
 
         def create(self, api_key, server_url, timeout):
+            # server_url could be updated
             if self._com:
                 return self._com
 
             self._com = _RequestCommunicator(
-                timeout,
-                headers,
-                api_key,
-                endpoint_uri=urljoin(server_url, api_session_running_url),
+                timeout, headers, api_key, endpoint_uri=server_url
             )
             return _Request(self._com)
 
@@ -142,7 +141,16 @@ class ServerConnector(object):
     DEFAULT_TIMEOUT = 60 * 5  # Seconds
     DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
     DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
-    API_SESSIONS_RUNNING = "/api/sessions/running/"
+
+    API_SESSIONS = "api/sessions"
+    API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
+    RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
+
+    # Rendering Grid
+    RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
+    RESOURCES_SHA_256 = "/resources/sha256/"
+    RENDER_STATUS = "/render-status"
+    RENDER = "/render"
 
     _api_key = None
     _timeout = None
@@ -158,9 +166,7 @@ class ServerConnector(object):
         """
         self.server_url = server_url
         self._request_factory = create_request_factory(
-            headers=ServerConnector.DEFAULT_HEADERS,
-            server_url=server_url,
-            api_session_running_url=ServerConnector.API_SESSIONS_RUNNING,
+            headers=ServerConnector.DEFAULT_HEADERS, server_url=server_url
         )
 
     @property
@@ -219,7 +225,7 @@ class ServerConnector(object):
         self._request = self._request_factory.create(
             server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
         )
-        response = self._request.post(data=data)
+        response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
         parsed_response = response.json()
         return dict(
             session_id=parsed_response["id"],
@@ -244,7 +250,9 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._request.delete(
-            url_resource=running_session["session_id"],
+            url_resource=urljoin(
+                self.API_SESSIONS_RUNNING, running_session["session_id"]
+            ),
             long_query=True,
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
@@ -290,7 +298,11 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/octet-stream"
 
         response = self._request.post(
-            url_resource=running_session["session_id"], data=data, headers=headers
+            url_resource=urljoin(
+                self.API_SESSIONS_RUNNING, running_session["session_id"]
+            ),
+            data=data,
+            headers=headers,
         )
         return response.json()["asExpected"]
 
@@ -310,9 +322,37 @@ class ServerConnector(object):
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
         response = self._request.post(
-            url_resource="data", data=dom_bytes, headers=headers
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
+            data=dom_bytes,
+            headers=headers,
         )
         dom_url = None
         if response.ok:
             dom_url = response.headers["Location"]
         return dom_url
+
+    def get_render_info(self):
+        # type: () -> tp.Optional[RenderingInfo]
+        logger.debug("get_render_info called.")
+
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
+        if response.ok:
+            render_info = RenderingInfo.from_json(response.json())
+            return render_info
+
+    def render(self, render_request):
+        logger.debug("render called with {}".format(render_request))
+
+    def render_check_resource(self, running_render, check_resource):
+        ...
+
+    def render_put_resource(self, running_render, resource, listener):
+        ...
+
+    def render_status(self, running_render):
+        ...

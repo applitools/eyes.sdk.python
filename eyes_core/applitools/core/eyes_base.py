@@ -8,7 +8,7 @@ from . import logger
 from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
 from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
-from .metadata import BatchInfo
+from .metadata import BatchInfo, RenderingInfo
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 from .test_results import TestResults, TestResultsStatus
@@ -115,6 +115,8 @@ class EyesBase(ABC):
         # If true, we will send full DOM to the server for analyzing
         self.send_dom = False  # type: bool
 
+        self.render_info = None
+
     @property
     @abc.abstractmethod
     def _title(self):
@@ -141,6 +143,12 @@ class EyesBase(ABC):
         """
         :param size: The required viewport size.
         """
+
+    def get_rendering_info(self):
+        # type: () -> RenderingInfo
+        if self.render_info is None:
+            self.render_info = self._server_connector.get_render_info()
+        return self.render_info
 
     @property
     def scale_ratio(self):

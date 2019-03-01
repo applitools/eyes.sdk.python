@@ -3,6 +3,8 @@ import typing as tp
 import uuid
 from datetime import datetime
 
+import attr
+
 from .errors import EyesError
 from .utils import general_utils
 
@@ -68,3 +70,18 @@ class CoordinatesType(object):
     # an element's region, we will need to calculate their respective "as
     # is" coordinates.
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
+
+
+@attr.s
+class RenderingInfo(object):
+    service_url = attr.ib()
+    access_token = attr.ib()
+    results_url = attr.ib()
+
+    @classmethod
+    def from_json(cls, d):
+        return cls(
+            service_url=d["ServiceUrl"],
+            access_token=d["AccessToken"],
+            results_url=d["ResultsUrl"],
+        )
