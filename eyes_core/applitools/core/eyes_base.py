@@ -1,18 +1,19 @@
 from __future__ import absolute_import
 
 import abc
-import os
 import typing as tp
 
 from . import logger
+from .config import Configuration
 from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
 from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
-from .metadata import BatchInfo, RenderingInfo
+from .metadata import BatchInfo
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 from .test_results import TestResults, TestResultsStatus
 from .utils import ABC
+from .visualgridclient.model import RenderingInfo
 
 if tp.TYPE_CHECKING:
     from .utils.custom_types import (
@@ -38,10 +39,87 @@ class FailureReports(object):
     ON_CLOSE = "OnClose"
 
 
-class EyesBase(ABC):
+class EyesConfigMixin(object):
     _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
     _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
 
+    _config = None  # type: tp.Optional[Configuration]
+    _host_os = None  # type: tp.Optional[tp.Text]
+    _host_app = None  # type: tp.Optional[tp.Text]
+    _running_session = None  # type: tp.Optional[RunningSession]
+    _start_info = None  # type: tp.Optional[SessionStartInfo]
+    _region_to_check = None  # type: tp.Optional[RegionOrElement]
+    _last_screenshot = None  # type: tp.Optional[EyesScreenshot]
+    _viewport_size = None  # type: ViewPort
+    _scale_provider = None  # type: tp.Optional[ScaleProvider]
+    _render_info = None  # type: tp.Optional[RenderingInfo]
+
+    def _ensure_configuration(self):
+        if not self._config:
+            self._config = Configuration()
+
+    @property
+    def host_os(self):
+        # type: () -> tp.Optional[tp.Text]
+        return self._host_os
+
+    @host_os.setter
+    def host_os(self, value):
+        # type: (tp.Optional[tp.Text]) -> None
+        """
+        :param value: The host OS running the AUT.
+        """
+        logger.debug("Host OS: {}".format(value))
+        if value.strip():
+            self._host_os = value.strip()
+
+    @property
+    def host_app(self):
+        # type: () -> tp.Optional[tp.Text]
+        return self._host_os
+
+    @host_app.setter
+    def host_app(self, value):
+        # type: (tp.Optional[tp.Text]) -> None
+        """
+        :param value: The application running the AUT (e.g., Chrome).
+        """
+        logger.debug("Host OS: {}".format(value))
+        if value.strip():
+            self._host_app = value.strip()
+
+    @property
+    def baseline_name(self):
+        logger.deprecation("use `baseline_env_name` instead")
+        return self.baseline_env_name
+
+    @baseline_name.setter
+    def baseline_name(self, value):
+        logger.deprecation("use `baseline_env_name` instead")
+        self.baseline_env_name = value
+
+    @property
+    def baseline_env_name(self):
+        return self._config.baseline_env_name
+
+    @baseline_env_name.setter
+    def baseline_env_name(self, value):
+        logger.debug("Baseline environment name: {}".format(value))
+        if value.strip():
+            self._config.baseline_env_name = value
+
+    @property
+    def env_name(self):
+        return self._config.environment_name
+
+    @env_name.setter
+    def env_name(self, value):
+        logger.debug("Environment name: {}".format(value))
+        if value.strip():
+            self._config.environment_name = value
+
+
+class EyesBase(EyesConfigMixin, ABC):
     def __init__(self, server_url=None):
         # type: (tp.Text) -> None
         """
@@ -53,48 +131,23 @@ class EyesBase(ABC):
         self._server_connector = ServerConnector(server_url)  # type: ServerConnector
         self._should_get_title = False  # type: bool
         self._is_open = False  # type: bool
-        self._app_name = None  # type: tp.Optional[tp.Text]
-        self._running_session = None  # type: tp.Optional[RunningSession]
-        self._match_timeout = EyesBase._DEFAULT_MATCH_TIMEOUT  # type: int
-        self._last_screenshot = None  # type: tp.Optional[EyesScreenshot]
+        self._match_timeout = self._DEFAULT_MATCH_TIMEOUT  # type: int
         self._should_match_once_on_timeout = False  # type: bool
-        self._start_info = None  # type: tp.Optional[SessionStartInfo]
-        self._test_name = None  # type: tp.Optional[tp.Text]
         self._user_inputs = []  # type: UserInputs
-        self._region_to_check = None  # type: tp.Optional[RegionOrElement]
-        self._viewport_size = None  # type: ViewPort
-        self._scale_provider = None  # type: tp.Optional[ScaleProvider]
 
-        # key-value pairs to be associated with the test.
-        # Can be used for filtering later.
+        self._ensure_configuration()
+
+        # key-value pairs to be associated with the test. Can be used for filtering later.
         self._properties = []  # type: tp.List
 
         # Disables Applitools Eyes and uses the webdriver directly.
         self.is_disabled = False  # type: bool
-
-        # An optional string identifying the current library using the SDK.
-        self.agent_id = None  # type: tp.Optional[tp.Text]
 
         # Should the test report mismatches immediately or when it is finished.
         self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
 
         # The default match settings for the session. See ImageMatchSettings.
         self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
-
-        # The batch to which the tests belong to. See BatchInfo. None means no batch.
-        self.batch = None  # type: tp.Optional[BatchInfo]
-
-        # A string identifying the OS running the AUT.
-        # Use this to override Eyes automatic inference.
-        self.host_os = None  # type: tp.Optional[tp.Text]
-
-        # A string identifying the app running the AUT.
-        # Use this to override Eyes automatic inference.
-        self.host_app = None  # type: tp.Optional[tp.Text]
-
-        # A string that, if specified, determines the baseline to compare
-        # with and disables automatic baseline inference.
-        self.baseline_branch_name = None  # type: tp.Optional[tp.Text]
 
         # A boolean denoting whether new tests should be automatically accepted.
         self.save_new_tests = True  # type: bool
@@ -103,19 +156,11 @@ class EyesBase(ABC):
         # with all new output accepted.
         self.save_failed_tests = False  # type: bool
 
-        # A string identifying the branch in which tests are run.
-        self.branch_name = None  # type: tp.Optional[tp.Text]
-
-        # A string identifying the parent branch of the branch set by "branch_name".
-        self.parent_branch_name = None  # type: tp.Optional[tp.Text]
-
         # If true, Eyes will treat new tests the same as failed tests.
         self.fail_on_new_test = False  # type: bool
 
         # If true, we will send full DOM to the server for analyzing
         self.send_dom = False  # type: bool
-
-        self.render_info = None
 
     @property
     @abc.abstractmethod
@@ -146,9 +191,9 @@ class EyesBase(ABC):
 
     def get_rendering_info(self):
         # type: () -> RenderingInfo
-        if self.render_info is None:
-            self.render_info = self._server_connector.get_render_info()
-        return self.render_info
+        if self._render_info is None:
+            self._render_info = self._server_connector.get_render_info()
+        return self._render_info
 
     @property
     def scale_ratio(self):
@@ -168,6 +213,7 @@ class EyesBase(ABC):
         Assign the viewport size we need to be in the default content frame.
         """
 
+    @property
     @abc.abstractmethod
     def _environment(self):
         # type: () -> AppEnvironment
@@ -178,6 +224,7 @@ class EyesBase(ABC):
         :return: The current application environment.
         """
 
+    @property
     @abc.abstractmethod
     def _inferred_environment(self):
         pass
@@ -279,9 +326,9 @@ class EyesBase(ABC):
 
         :return: The agent id.
         """
-        if self.agent_id is None:
+        if self._config.agent_id is None:
             return self.base_agent_id
-        return "{0} [{1}]".format(self.agent_id, self.base_agent_id)
+        return "{0} [{1}]".format(self._config.agent_id, self.base_agent_id)
 
     def add_property(self, name, value):
         # type: (tp.Text, tp.Text) -> None
@@ -453,10 +500,9 @@ class EyesBase(ABC):
             raise EyesError("A test is already running")
 
         self._before_open()
-
-        self._app_name = app_name
-        self._test_name = test_name
-        self._viewport_size = viewport_size
+        self._config.app_name = app_name
+        self._config.test_name = test_name
+        self._config.viewport_size = viewport_size
 
         if viewport_size is not None:
             self._ensure_running_session()
@@ -470,15 +516,15 @@ class EyesBase(ABC):
         app_env = self._environment
         self._start_info = {
             "agentId": self.full_agent_id,
-            "appIdOrName": self._app_name,
-            "scenarioIdOrName": self._test_name,
-            "batchInfo": self.batch,
-            "envName": self.baseline_branch_name,
+            "appIdOrName": self._config.app_name,
+            "scenarioIdOrName": self._config.test_name,
+            "batchInfo": self._config.batch,
+            "envName": self._config.baseline_branch_name,
             "environment": app_env,
             "defaultMatchSettings": self.default_match_settings,
             "verId": None,
-            "branchName": self.branch_name,
-            "parentBranchName": self.parent_branch_name,
+            "branchName": self._config.branch_name,
+            "parentBranchName": self._config.parent_branch_name,
             "properties": self._properties,
         }
 
@@ -488,16 +534,11 @@ class EyesBase(ABC):
         self._ensure_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
-        if not self.branch_name:
-            self.branch_name = os.environ.get("APPLITOOLS_BRANCH", None)
-        if not self.baseline_branch_name:
-            self.baseline_branch_name = os.environ.get(
-                "APPLITOOLS_BASELINE_BRANCH", None
-            )
-        if not self.parent_branch_name:
-            self.parent_branch_name = os.environ.get("APPLITOOLS_PARENT_BRANCH", None)
-        if not self.batch:
-            self.batch = BatchInfo()
+        if self._config.batch is None:
+            logger.info("No Batch set")
+            self._config.batch = BatchInfo()
+        else:
+            logger.info("Batch is {}".format(self._config.batch))
 
         self._create_start_info()
         # Actually start the session.
