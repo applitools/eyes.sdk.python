@@ -5,11 +5,11 @@ import typing as tp
 
 from PIL import Image
 
-from applitools.core.utils import ABC, image_utils, argument_guard
+from applitools.common.utils import ABC, argument_guard, image_utils
 
 if tp.TYPE_CHECKING:
-    from applitools.core.geometry import Point, Region
-    from applitools.core.utils.custom_types import AnyWebElement, Num
+    from applitools.common.geometry import Point, Region
+    from applitools.common.utils.custom_types import AnyWebElement, Num
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.webelement import EyesWebElement
 

@@ -1,16 +1,15 @@
+from applitools.common import BatchInfo, Region, logger
 from applitools.core import (
-    BatchInfo,
     ExactMatchSettings,
-    ImageMatchSettings,
-    Region,
-    TestResults,
-    MatchLevel,
     FailureReports,
+    ImageMatchSettings,
+    MatchLevel,
+    TestResults,
     TestResultsStatus,
-    logger,
 )
+
 from .eyes import Eyes
-from .target import Target, FloatingBounds, FloatingRegion
+from .target import FloatingBounds, FloatingRegion, Target
 
 __all__ = (
     "Eyes",

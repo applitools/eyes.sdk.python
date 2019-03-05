@@ -5,15 +5,16 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.core import EyesError, Point, Region, OutOfBoundsError
-from applitools.core.utils import image_utils
+from applitools.common import EyesError, OutOfBoundsError, Point, Region
+from applitools.common.utils import image_utils
 from applitools.selenium import eyes_selenium_utils
+
 from .._core_backup.capture import EyesScreenshot
 
 if typing.TYPE_CHECKING:
     from typing import Optional
     from PIL import Image
-    from applitools.core.utils.custom_types import ViewPort
+    from applitools.common.utils.custom_types import ViewPort
     from applitools.selenium import EyesWebDriver
 
 

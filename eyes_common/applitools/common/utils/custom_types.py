@@ -10,18 +10,12 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
 
-    RunningSession = tp.Dict[tp.Text, tp.Any]
     ViewPort = tp.Dict[tp.Text, int]
-    AppOutput = tp.Dict[tp.Text, tp.Any]
-    MatchResult = tp.Dict[tp.Text, tp.Any]
-    AppEnvironment = tp.Dict[tp.Text, tp.Any]
-    SessionStartInfo = tp.Dict[tp.Text, tp.Any]
     Num = tp.Union[int, float]
 
     AnyWebDriver = tp.Union[EyesWebDriver, WebDriver]
     AnyWebElement = tp.Union[EyesWebElement, WebElement]
     FrameReference = tp.Union[tp.Text, int, EyesWebElement, WebElement]
-
     # could contain MouseTrigger, TextTrigger
     UserInputs = tp.List
     RegionOrElement = tp.Union[EyesWebElement, Region]

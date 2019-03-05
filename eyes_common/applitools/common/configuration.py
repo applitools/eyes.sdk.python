@@ -1,16 +1,45 @@
 import os
 import typing
+import uuid
 from copy import copy
+from datetime import datetime
 from typing import Optional, Text
 
 import attr
 
-from applitools.common.metadata import SessionType
-
-from .batch_info import BatchInfo
+from applitools.common.utils import general_utils
+from applitools.common.utils.converters import isoformat
 
 if typing.TYPE_CHECKING:
+    from applitools.common.metadata import SessionType
     from applitools.common.utils.custom_types import ViewPort
+__all__ = ("BatchInfo", "Branch", "Configuration")
+
+
+@attr.s
+class BatchInfo(object):
+    """
+    A batch of tests.
+    """
+
+    name = attr.ib(
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME")
+    )  # type: Optional[Text]
+    started_at = attr.ib(
+        factory=lambda: datetime.now(general_utils.UTC), converter=isoformat
+    )  # # type: ignore
+    id = attr.ib(
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
+    )  # type: Text
+
+    @property
+    def id_(self):
+        # TODO: Remove in this way of initialization in future
+        return self.id
+
+    @id_.setter
+    def id_(self, value):
+        self.id = value
 
 
 @attr.s
@@ -39,6 +68,10 @@ class Configuration(object):
     test_name = attr.ib(default=None)  # type: Optional[Text]
     _viewport_size = attr.ib(default=None)  # type: Optional[ViewPort]
     session_type = attr.ib(default=None)  # type: Optional[SessionType]
+    ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
+    ignore_caret = attr.ib(default=False)
+    send_dom = attr.ib(default=False)
+    compare_with_parent_branch = attr.ib(default=None)  # type: Optional[bool]
 
     @property
     def viewport_size(self):
@@ -48,5 +81,17 @@ class Configuration(object):
     def viewport_size(self, value):
         self._viewport_size = value
 
+    @property
+    def is_dom_send(self):
+        return self.send_dom
+
     def clone(self):
         return copy(self)
+
+
+@attr.s
+class Branch(object):
+    id = attr.ib()
+    name = attr.ib()
+    is_deleted = attr.ib()
+    update_info = attr.ib()

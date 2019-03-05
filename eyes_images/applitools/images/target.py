@@ -2,11 +2,12 @@ from __future__ import absolute_import
 
 import typing as tp
 
-from applitools.core import RegionProvider
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Region
-from applitools.core.utils import image_utils
 from PIL import Image
+
+from applitools.common.errors import EyesError
+from applitools.common.geometry import Region
+from applitools.common.utils import image_utils
+from applitools.core import RegionProvider
 
 if tp.TYPE_CHECKING:
     from applitools.images.capture import EyesImagesScreenshot

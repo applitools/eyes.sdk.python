@@ -1,12 +1,12 @@
 import abc
-import typing as tp
+import typing
 
-from .geometry import Point, Region
-from .metadata import CoordinatesType
-from .utils import ABC, image_utils, argument_guard
+from .geometry import CoordinatesType, Region
+from .utils import ABC, argument_guard
 
-if tp.TYPE_CHECKING:
-    from PIL import Image
+if typing.TYPE_CHECKING:
+    from PIL.Image import Image
+    from .geometry import Point
 
 __all__ = ("EyesScreenshot",)
 
@@ -17,12 +17,16 @@ class EyesScreenshot(ABC):
      """
 
     def __init__(self, image):
-        # type: (Image.Image) -> None
-        self._image = image  # type: Image.Image
+        # type: (Image) -> None
+        self._image = image  # type: Image
+
+    @property
+    def image(self):
+        return self._image
 
     @abc.abstractmethod
     def sub_screenshot(self, region, throw_if_clipped=False):
-        # type: (Region, bool) -> Region
+        # type: (Region, bool) -> EyesScreenshot
         """
         Returns a part of the screenshot based on the given region.
 
@@ -103,17 +107,7 @@ class EyesScreenshot(ABC):
         return Region(
             0,
             0,
-            self._image.width,
-            self._image.height,
+            self._image.size.width,
+            self._image.size.height,
             CoordinatesType.SCREENSHOT_AS_IS,
         )
-
-    @property
-    def bytes(self):
-        # type: () -> __builtins__.bytes
-        """
-        Returns the bytes of the screenshot.
-
-        :return: The bytes representation of the png.
-        """
-        return image_utils.get_bytes(self._image)

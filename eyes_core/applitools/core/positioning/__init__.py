@@ -1,12 +1,12 @@
 from .position_provider import (  # noqa
-    PositionProvider,
     InvalidPositionProvider,
     PositionMemento,
+    PositionProvider,
 )
 from .region_provider import (  # noqa
-    RegionProvider,
-    NullRegionProvider,
     NULL_REGION_INSTANCE,
+    NullRegionProvider,
+    RegionProvider,
 )
 
 __all__ = position_provider.__all__ + region_provider.__all__  # noqa

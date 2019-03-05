@@ -24,6 +24,7 @@ def get_version(package_name):
 
 
 install_requires = [
+    "eyes-common=={}".format(get_version("core")),
     "attrs>=18",
     "Pillow>=5.0.0",
     "requests>=2.1.0",

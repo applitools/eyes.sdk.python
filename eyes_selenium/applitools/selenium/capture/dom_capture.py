@@ -8,9 +8,9 @@ from collections import OrderedDict
 import requests
 import tinycss2
 
-from applitools.core import logger
-from applitools.core.utils import general_utils
-from applitools.core.utils.compat import urljoin
+from applitools.common import logger
+from applitools.common.utils import general_utils
+from applitools.common.utils.compat import urljoin
 
 if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver

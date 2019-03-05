@@ -5,21 +5,21 @@ import typing as tp
 from struct import pack
 
 # noinspection PyProtectedMember
-from . import logger
-from .errors import OutOfBoundsError
-from .geometry import Region
-from .utils import general_utils
+from applitools.common import logger
+from applitools.common.errors import OutOfBoundsError
+from applitools.common.geometry import Region
+from applitools.common.utils import general_utils
 
 if tp.TYPE_CHECKING:
-    from .eyes_base import EyesBase
-    from .utils.custom_types import (
+    from applitools.common.utils.custom_types import (
         Num,
         RunningSession,
         AppOutput,
         UserInputs,
         MatchResult,
     )
-    from .server_connector import ServerConnector
+    from applitools.core.server_connector import ServerConnector
+    from .eyes_base import EyesBase
     from .match import ImageMatchSettings
     from .capture import EyesScreenshot
 

@@ -1,6 +1,6 @@
 import typing as tp
 
-from .errors import EyesError
+from applitools.common.errors import EyesError
 
 __all__ = ("MatchLevel", "ExactMatchSettings", "ImageMatchSettings")
 

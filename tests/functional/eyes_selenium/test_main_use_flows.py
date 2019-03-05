@@ -1,6 +1,7 @@
 import pytest
-from applitools.selenium import Region, Target
 from selenium.webdriver.common.by import By
+
+from applitools.selenium import Region, Target
 
 
 @pytest.mark.platform("Linux", "Windows", "macOS")

@@ -4,7 +4,7 @@ import pytest
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.core import logger
+from applitools.common import logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 

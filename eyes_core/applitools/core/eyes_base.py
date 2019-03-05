@@ -2,21 +2,28 @@ from __future__ import absolute_import
 
 import abc
 import typing as tp
+from typing import Optional, Text
 
-from . import logger
-from .config import Configuration
-from .errors import DiffsFoundError, EyesError, NewTestError, TestFailedError
+from applitools.common import logger
+from applitools.common.config import BatchInfo, Configuration
+from applitools.common.errors import (
+    DiffsFoundError,
+    EyesError,
+    NewTestError,
+    TestFailedError,
+)
+from applitools.common.metadata import SessionType
+from applitools.common.utils import ABC, argument_guard
+from applitools.core.server_connector import ServerConnector
+
 from .match import ImageMatchSettings
 from .match_window_task import MatchWindowTask
-from .metadata import BatchInfo
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
-from .server_connector import ServerConnector
 from .test_results import TestResults, TestResultsStatus
-from .utils import ABC
 from .visualgridclient.model import RenderingInfo
 
 if tp.TYPE_CHECKING:
-    from .utils.custom_types import (
+    from applitools.common.utils.custom_types import (
         ViewPort,
         UserInputs,
         AppEnvironment,
@@ -57,6 +64,21 @@ class EyesConfigMixin(object):
     def _ensure_configuration(self):
         if not self._config:
             self._config = Configuration()
+
+    def _init_providers(self, hard_reset=False):
+        if hard_reset:
+            self._scale_provider = NullScaleProvider()
+            # self._cut_provider = NullCutProvider()
+            # self._position_provider = InvalidPositionProvider()
+
+        if self._scale_provider is None:
+            self._scale_provider = NullScaleProvider()
+
+        # if self._cut_provider is None:
+        #     self._cut_provider = NullCutProvider()
+        #
+        # if self._position_provider is None:
+        #     self._position_provider = InvalidPositionProvider()
 
     @property
     def host_os(self):
@@ -134,6 +156,7 @@ class EyesBase(EyesConfigMixin, ABC):
         self._match_timeout = self._DEFAULT_MATCH_TIMEOUT  # type: int
         self._should_match_once_on_timeout = False  # type: bool
         self._user_inputs = []  # type: UserInputs
+        # self._is_viewport_size_set = False  # type: bool
 
         self._ensure_configuration()
 
@@ -366,6 +389,7 @@ class EyesBase(EyesConfigMixin, ABC):
             self._is_open = False
 
             self._reset_last_screenshot()
+            self._init_providers(hard_reset=True)
 
             # If there's no running session, we simply return the default test results.
             if not self._running_session:
@@ -465,8 +489,14 @@ class EyesBase(EyesConfigMixin, ABC):
     def _after_open(self):
         pass
 
-    def _open_base(self, app_name, test_name, viewport_size=None):
-        # type: (tp.Text, tp.Text, tp.Optional[ViewPort]) -> None
+    def open_base(
+        self,
+        app_name,  # type: Text
+        test_name,  # type: Text
+        viewport_size=None,  # type: Optional[ViewPort]
+        session_type=SessionType.SEQUENTIAL,  # type: SessionType
+    ):
+        # type: (...) -> None
         """
         Starts a test.
 
@@ -475,41 +505,78 @@ class EyesBase(EyesConfigMixin, ABC):
         :param viewport_size: The client's viewport size (i.e.,
                               the visible part of the document's body) or None to
                               allow any viewport size.
+        :param session_type: The type of test (e.g., Progression for timing tests)
+                              or Sequential by default.
         :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
         logger.open_()
         if self.is_disabled:
-            logger.debug("_open_base(): ignored (disabled)")
+            logger.debug("open_base(): ignored (disabled)")
             return
-        logger.info("\nEyes version: {}\n".format(self.full_agent_id))
 
+        if self._server_connector is None:
+            raise EyesError("Server connector not set.")
+
+        # If there's no default application name, one must be provided for the current test.
+        if self._config.app_name is None:
+            argument_guard.not_none(app_name)
+            self._config.app_name = app_name
+
+        argument_guard.not_none(test_name)
+        self._config.test_name = test_name
+
+        logger.info("\nAgent: {}\n".format(self.full_agent_id))
+        logger.info(
+            "open_base(%s, %s, %s, %s)"
+            % (app_name, test_name, viewport_size, self.failure_reports)
+        )
+        self._config.session_type = session_type
+
+        self._config.viewport_size = viewport_size
+        self._open_base()
+
+    def _open_base(self):
+        logger.open_()
+
+        # TODO: Add repeatable check here
+        self._validate_api_key()
+        self._log_open_base()
+        self._validate_session_open()
+        self._init_providers()
+
+        self._viewport_size = self._config.viewport_size
+
+        if self._viewport_size is not None:
+            self._ensure_running_session()
+        self._before_open()
+
+        self._is_open = True
+
+        self._after_open()
+
+    def _validate_session_open(self):
+        if self.is_open:
+            self.abort_if_not_closed()
+            raise EyesError("A test is already running")
+
+    def _log_open_base(self):
+        logger.debug(
+            "Eyes server URL is '{}'".format(self._server_connector.server_url)
+        )
+        logger.info("Timeout = '{}'".format(self._server_connector.timeout))
+        logger.debug("match_timeout = '{}'".format(self._match_timeout))
+        logger.debug(
+            "Default match settings = '{}' ".format(self.default_match_settings)
+        )
+        logger.debug("FailureReports = '{}' ".format(self.failure_reports))
+
+    def _validate_api_key(self):
         if self.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
                 " API Key and use 'api_key' to set it."
             )
-
-        logger.info(
-            "open(%s, %s, %s, %s)"
-            % (app_name, test_name, viewport_size, self.failure_reports)
-        )
-
-        if self.is_open:
-            self.abort_if_not_closed()
-            raise EyesError("A test is already running")
-
-        self._before_open()
-        self._config.app_name = app_name
-        self._config.test_name = test_name
-        self._config.viewport_size = viewport_size
-
-        if viewport_size is not None:
-            self._ensure_running_session()
-
-        self._is_open = True
-
-        self._after_open()
 
     def _create_start_info(self):
         # type: () -> None
@@ -554,6 +621,8 @@ class EyesBase(EyesConfigMixin, ABC):
         if self._running_session:
             logger.debug("Session already running.")
             return
+
+        logger.debug("No running session, calling start session...")
         self._start_session()
         self._match_window_task = MatchWindowTask(
             self, self._server_connector, self._running_session, self.match_timeout

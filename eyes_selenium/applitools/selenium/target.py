@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Region
+from applitools.common.errors import EyesError
+from applitools.common.geometry import Region
 
 if typing.TYPE_CHECKING:
     from typing import Union, List, Any
@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
         "FloatingRegion", "FloatingRegionByElement", "FloatingRegionBySelector"
     ]
     IgnoreType = Union["Region", "IgnoreRegionByElement", "IgnoreRegionBySelector"]
-    from applitools.core.utils.custom_types import AnyWebElement
+    from applitools.common.utils.custom_types import AnyWebElement
     from .capture import EyesWebDriverScreenshot
 
 __all__ = (

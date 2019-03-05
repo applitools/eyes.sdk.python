@@ -1,7 +1,9 @@
 import typing
 
-from applitools.core import EyesBase, EyesError, Region, logger
 from PIL import Image
+
+from applitools.common import EyesError, Region, logger
+from applitools.core import EyesBase
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
@@ -9,7 +11,7 @@ from .target import Target
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
-    from applitools.core.utils.custom_types import ViewPort, AppEnvironment
+    from applitools.common.utils.custom_types import ViewPort, AppEnvironment
 
 
 class Eyes(EyesBase):
@@ -45,11 +47,11 @@ class Eyes(EyesBase):
 
     def get_viewport_size(self):
         # type: () -> ViewPort
-        return self._viewport_size
+        return self._config.viewport_size
 
     def set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self._viewport_size = size
+        self._config.viewport_size = size
 
     def _ensure_viewport_size(self):
         pass
@@ -64,7 +66,7 @@ class Eyes(EyesBase):
 
     def open(self, app_name, test_name, dimension=None):
         # type: (Text, Text, Optional[ViewPort]) -> None
-        self._open_base(app_name, test_name, dimension)
+        self.open_base(app_name, test_name, dimension)
 
     def check(self, name, target):
         # type: (Text, Target) -> bool
@@ -106,7 +108,7 @@ class Eyes(EyesBase):
         image = target.values.image  # type: Image.Image
         timeout = 0  # run match_window once
         self._screenshot = EyesImagesScreenshot(image)
-        if not self._viewport_size:
+        if not self._config.viewport_size:
             self.set_viewport_size(dict(width=image.width, height=image.height))
 
         match_result = self._check_window_base(name, timeout, target, ignore_mismatch)
@@ -120,7 +122,7 @@ class Eyes(EyesBase):
         app_env = {
             "os": self.host_os,
             "hostingApp": self.host_app,
-            "displaySize": self._viewport_size,
+            "displaySize": self._config.viewport_size,
             "inferred": self._inferred_environment,
         }
         return app_env

@@ -8,10 +8,10 @@ from appium.webdriver import Remote as AppiumWebDriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from applitools.core import EyesError, logger
+from applitools.common import EyesError, logger
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
+    from applitools.common.utils.custom_types import AnyWebDriver, ViewPort
 
 __all__ = (
     "get_current_frame_content_entire_size",

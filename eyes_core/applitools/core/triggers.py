@@ -6,10 +6,10 @@ from __future__ import absolute_import
 import typing as tp
 from collections import OrderedDict
 
-from .errors import EyesError
+from applitools.common.errors import EyesError
 
 if tp.TYPE_CHECKING:
-    from .geometry import Point, Region
+    from applitools.common.geometry import Point, Region
 
 __all__ = ("TextTrigger", "MouseTrigger")
 

@@ -3,9 +3,10 @@ import os
 import pytest
 from mock import patch
 
-from applitools.core import EyesError, ServerConnector, TestResults
-from applitools.core.metadata import RenderingInfo
-from applitools.core.utils.compat import urljoin
+from applitools.common import EyesError
+from applitools.common.utils.compat import urljoin
+from applitools.core import ServerConnector, TestResults
+from applitools.core.visualgridclient.model import RenderingInfo
 
 API_KEY = "TEST API KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"

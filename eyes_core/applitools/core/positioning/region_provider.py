@@ -2,8 +2,8 @@ import typing as tp
 
 import attr
 
-from applitools.core.geometry import Region
-from applitools.core.utils import ABC
+from applitools.common.geometry import Region
+from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
     from applitools.core.capture import EyesScreenshot

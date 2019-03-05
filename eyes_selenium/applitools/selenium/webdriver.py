@@ -12,10 +12,10 @@ from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 
-from applitools.core import logger
-from applitools.core.errors import EyesError
-from applitools.core.geometry import Point, Region
-from applitools.core.utils import cached_property, general_utils, image_utils
+from applitools.common import logger
+from applitools.common.errors import EyesError
+from applitools.common.geometry import Point, Region
+from applitools.common.utils import cached_property, general_utils, image_utils
 
 from . import StitchMode, eyes_selenium_utils
 from .frames import Frame, FrameChain
@@ -25,7 +25,7 @@ from .webelement import EyesWebElement
 if typing.TYPE_CHECKING:
     from typing import Generator, Text, Optional, List, Dict, Any
     from applitools.core.scaling import ScaleProvider
-    from applitools.core.utils.custom_types import Num, ViewPort, FrameReference
+    from applitools.common.utils.custom_types import Num, ViewPort, FrameReference
     from .eyes import Eyes
 
 

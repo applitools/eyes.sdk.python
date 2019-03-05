@@ -4,13 +4,17 @@ General purpose utilities.
 import hashlib
 import itertools
 import json
+import re
 import time
 import types
 import typing as tp
 from datetime import timedelta, tzinfo
 
+import attr
+
 from .. import logger
-from .compat import urlparse
+from ..geometry import RectangleSize
+from .compat import iteritems, urlparse
 
 if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -42,12 +46,53 @@ class _UtcTz(tzinfo):
 UTC = _UtcTz()
 
 
-def to_json(obj):
-    # type: (tp.Dict[str, tp.Any]) -> str
+def underscore_to_camelcase(text):
+    return "".join(
+        word.title() if i else word for i, word in enumerate(text.split("_"))
+    )
+
+
+def camelcase_to_underscore(text):
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def change_case_of_keys(d, to_camel=False, to_underscore=False):
+    # type: (dict, bool, bool)->dict
+    if to_camel:
+        func = underscore_to_camelcase
+    elif to_underscore:
+        func = camelcase_to_underscore
+    else:
+        raise ValueError("You should select to_camel or to_underscore")
+    new = {}
+    for k, v in iteritems(d):
+        if isinstance(v, dict):
+            v = change_case_of_keys(v, to_camel, to_underscore)
+        new[func(k)] = v
+    return new
+
+
+def to_json(obj, keys_to_camel_case=True):
+    # type: (tp.Any, bool) -> str
     """
     Returns an object's json representation (defaults to __getstate__ for user defined types).
     """
-    return json.dumps(obj, default=lambda o: o.__getstate__(), indent=4)
+
+    d = attr.asdict(obj)
+    if keys_to_camel_case:
+        d = change_case_of_keys(d, to_camel=True)
+    return json.dumps(d)
+
+
+def use_default_if_none_factory(default_obj, obj):
+    def default(attr_name):
+        val = getattr(obj, attr_name)
+        if val is None:
+            return getattr(default_obj, attr_name)
+        return val
+
+    return default
 
 
 def create_proxy_property(property_name, target_name, is_settable=False):
@@ -203,3 +248,13 @@ def get_sha256_hash(content):
     m = hashlib.sha256()
     m.update(content.encode("utf-8"))
     return "".join(["%02x" % b for b in m.digest()])
+
+
+def to_rectangle(d):
+    # type: (dict) -> RectangleSize
+
+    if "width" in d.keys() and "height" in d.keys():
+        pass
+    if set(d.keys()) != {"width", "height"}:
+        raise ValueError("Dict must contain `width` and `height`")
+    return RectangleSize(**d)

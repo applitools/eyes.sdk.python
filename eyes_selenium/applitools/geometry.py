@@ -1,5 +1,5 @@
-from .core import logger  # noqa
-from .core.geometry import *  # noqa
+from applitools.common import logger  # noqa
+from applitools.common.geometry import *  # noqa
 
 logger.deprecation(
     "Will be deprecated in version 4.0. Import from  "

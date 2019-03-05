@@ -12,8 +12,8 @@ Example of usage:
 """
 import pytest
 
-from applitools.core import StdoutLogger, logger
-from applitools.core.utils import iteritems
+from applitools.common import StdoutLogger, logger
+from applitools.common.utils import iteritems
 
 logger.set_logger(StdoutLogger())
 

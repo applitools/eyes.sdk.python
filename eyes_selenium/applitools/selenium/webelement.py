@@ -6,14 +6,14 @@ import typing as tp
 
 from selenium.webdriver.common.by import By
 
-from applitools.core.geometry import Region
-from applitools.core import logger
-from applitools.core.utils import general_utils
+from applitools.common import logger
+from applitools.common.geometry import Region
+from applitools.common.utils import general_utils
 
 if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.core.geometry import Point
-    from applitools.core.utils.custom_types import AnyWebDriver
+    from applitools.common.geometry import Point
+    from applitools.common.utils.custom_types import AnyWebDriver
     from .webdriver import EyesWebDriver
 
 

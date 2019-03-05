@@ -1,31 +1,28 @@
+from applitools.common import BatchInfo, Region, StdoutLogger, logger
 from applitools.core import (  # noqa
-    BatchInfo,
     ExactMatchSettings,
-    ImageMatchSettings,
-    Region,
-    TestResults,
-    MatchLevel,
     FailureReports,
-    TestResultsStatus,
+    ImageMatchSettings,
+    MatchLevel,
     TestResults,
-    logger,
-    StdoutLogger,
+    TestResultsStatus,
 )
+
 from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
-from .positioning import StitchMode  # noqa
 from .eyes import Eyes  # noqa
-from .webdriver import EyesWebDriver  # noqa
-from .webelement import EyesWebElement  # noqa
+from .frames import Frame  # noqa
+from .positioning import StitchMode  # noqa
 from .target import (  # noqa
-    IgnoreRegionByElement,
-    IgnoreRegionBySelector,
     FloatingBounds,
     FloatingRegion,
     FloatingRegionByElement,
     FloatingRegionBySelector,
+    IgnoreRegionByElement,
+    IgnoreRegionBySelector,
     Target,
 )
-from .frames import Frame  # noqa
+from .webdriver import EyesWebDriver  # noqa
+from .webelement import EyesWebElement  # noqa
 
 __all__ = (
     # noqa

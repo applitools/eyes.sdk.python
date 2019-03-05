@@ -3,11 +3,11 @@ import typing as tp
 
 import attr
 
-from applitools.core.geometry import Point
-from applitools.core.utils.compat import ABC
+from applitools.common.geometry import Point
+from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import ViewPort
+    from applitools.common.utils.custom_types import ViewPort
 
 __all__ = ("PositionProvider", "InvalidPositionProvider", "PositionMemento")
 

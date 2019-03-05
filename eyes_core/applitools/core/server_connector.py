@@ -5,18 +5,26 @@ import time
 import typing as tp
 
 import requests
-from requests.packages import urllib3
+from requests.packages import urllib3  # noqa
 
-from applitools.core.errors import EyesError
-from applitools.core.metadata import RenderingInfo
+from applitools.common import logger
+from applitools.common.errors import EyesError
+from applitools.common.utils import general_utils
+from applitools.common.utils.compat import gzip_compress, url_join  # noqa
+from applitools.core.visualgridclient.model import (
+    RenderingInfo,
+    RenderRequest,
+    RunningRender,
+)
 
-from . import logger
 from .test_results import TestResults
-from .utils import general_utils
-from .utils.compat import gzip_compress, urljoin  # type: ignore
 
 if tp.TYPE_CHECKING:
-    from .utils.custom_types import RunningSession, SessionStartInfo, Num
+    from applitools.common.utils.custom_types import (
+        RunningSession,
+        SessionStartInfo,
+        Num,
+    )
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -103,14 +111,17 @@ class _Request(object):
         self._com = com
 
     def post(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, ...) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.post, url_resource, **kwargs)
 
     def get(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, ...) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.get, url_resource, **kwargs)
 
     def delete(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, ...) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.delete, url_resource, **kwargs)
 
@@ -165,6 +176,7 @@ class ServerConnector(object):
         :param server_url: The url of the Applitools server.
         """
         self.server_url = server_url
+        self._render_info = None  # type: tp.Optional[RenderingInfo]
         self._request_factory = create_request_factory(
             headers=ServerConnector.DEFAULT_HEADERS, server_url=server_url
         )
@@ -185,7 +197,7 @@ class ServerConnector(object):
     @property
     def api_key(self):
         if self._api_key is None:
-            # if api_key is None the error will be raised in EyesBase._open_base
+            # if api_key is None the error will be raised in EyesBase.open_base
             self._api_key = os.environ.get("APPLITOOLS_API_KEY", None)
         return self._api_key
 
@@ -342,17 +354,35 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
         if response.ok:
-            render_info = RenderingInfo.from_json(response.json())
-            return render_info
+            self._render_info = RenderingInfo.from_json(response.json())
+            return self._render_info
 
-    def render(self, render_request):
-        logger.debug("render called with {}".format(render_request))
+    def render(self, *render_requests):
+        # type: (*RenderRequest) -> tp.List[RunningRender]
+        logger.debug("render called with {}".format(render_requests))
+        url = urljoin(self._render_info.service_url, self.RENDER)
+        # if len(render_requests) > 1:
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        response = self._request.post(
+            url, headers=headers, params={"render-id": render_requests}
+        )
+        if response.ok or response.status_code == 404:
+            d = response.json()
+            return d
+        raise EyesError(
+            "ServerConnector.render - unexpected status ({})".format(
+                response.status_code
+            )
+        )
 
     def render_check_resource(self, running_render, check_resource):
-        ...
+        pass
 
     def render_put_resource(self, running_render, resource, listener):
-        ...
+        pass
 
     def render_status(self, running_render):
-        ...
+        pass

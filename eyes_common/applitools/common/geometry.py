@@ -2,15 +2,18 @@ from __future__ import absolute_import
 
 import math
 import typing as tp
-from collections import OrderedDict
+from enum import Enum
 
-from .errors import EyesError
+import attr
+
+from applitools.common.utils.converters import name_from_enum, round_converter
+
 from .utils import argument_guard
 
 if tp.TYPE_CHECKING:
     from .utils.custom_types import ViewPort
 
-__all__ = ("Point", "Region", "CoordinatesType")
+__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
 
 
 class DictAccessMixin(object):
@@ -20,73 +23,45 @@ class DictAccessMixin(object):
         return getattr(self, item)
 
 
-class StateMixin(object):
-    def __getstate__(self):
-        return OrderedDict([(name, getattr(self, name)) for name in self.__slots__])
-
-    # Required is required in order for jsonpickle to work on this object.
-    # noinspection PyMethodMayBeStatic
-    def __setstate__(self, state):
-        raise EyesError("Cannot create Point instance from dict!")
-
-
-class CoordinatesType(object):
+class CoordinatesType(Enum):
     """
      Encapsulates the type of coordinates used by the region provider.
     """
 
     # The coordinates should be used "as is" on the screenshot image.
     # Regardless of the current context.
-    SCREENSHOT_AS_IS = "SCREENSHOT_AS_IS"
+    SCREENSHOT_AS_IS = 0
 
     # The coordinates should be used "as is" within the current context. For
     # example, if we're inside a frame, the coordinates are "as is",
     # but within the current frame's viewport.
-    CONTEXT_AS_IS = "CONTEXT_AS_IS"
+    CONTEXT_AS_IS = 1
 
     # Coordinates are relative to the context. For example, if we are in
     # a context of a frame in a web page, then the coordinates are relative to
     # the  frame. In this case, if we want to crop an image region based on
     # an element's region, we will need to calculate their respective "as
     # is" coordinates.
-    CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
+    CONTEXT_RELATIVE = 2
 
 
-class Point(DictAccessMixin, StateMixin):
+@attr.s
+class RectangleSize(DictAccessMixin):
+    width = attr.ib()  # type: int
+    height = attr.ib()  # type:int
+
+
+@attr.s
+class Point(DictAccessMixin):
     """
     A point with the coordinates (x,y).
     """
 
-    __slots__ = ("x", "y")
-
-    def __init__(self, x=0, y=0):
-        # type: (float, float) -> None
-        self.x = int(round(x))
-        self.y = int(round(y))
-
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __iadd__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
+    x = attr.ib(converter=round_converter)  # type: int
+    y = attr.ib(converter=round_converter)  # type: int
 
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, scalar):
-        return Point(self.x * scalar, self.y * scalar)
-
-    def __div__(self, scalar):
-        return Point(self.x / scalar, self.y / scalar)
-
-    def __repr__(self):
-        return "({0}, {1})".format(self.x, self.y)
-
-    def __bool__(self):
-        return self.x and self.y
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
 
     @classmethod
     def create_top_left(cls):
@@ -203,27 +178,19 @@ class Point(DictAccessMixin, StateMixin):
         )
 
 
-class Region(DictAccessMixin, StateMixin):
+@attr.s
+class Region(DictAccessMixin):
     """
     A rectangle identified by left,top, width, height.
     """
 
-    __slots__ = ("left", "top", "width", "height", "coordinates_type")
-
-    def __init__(
-        self,
-        left=0,
-        top=0,
-        width=0,
-        height=0,
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
-    ):
-        # type: (float, float, float, float, tp.Text) -> None
-        self.left = int(round(left))
-        self.top = int(round(top))
-        self.width = int(round(width))
-        self.height = int(round(height))
-        self.coordinates_type = coordinates_type
+    left = attr.ib(converter=round_converter)  # type: int
+    top = attr.ib(converter=round_converter)  # type: int
+    width = attr.ib(converter=round_converter)  # type: int
+    height = attr.ib(converter=round_converter)  # type: int
+    coordinates_type = attr.ib(
+        default=CoordinatesType.SCREENSHOT_AS_IS, converter=name_from_enum
+    )  # type: CoordinatesType
 
     @classmethod
     def create_empty_region(cls):
@@ -446,6 +413,3 @@ class Region(DictAccessMixin, StateMixin):
             width=int(math.ceil(self.width * scale_ratio)),
             height=int(math.ceil(self.height * scale_ratio)),
         )
-
-    def __repr__(self):
-        return "(%s, %s) %s x %s" % (self.left, self.top, self.width, self.height)

@@ -1,8 +1,9 @@
 # from applitools.core import Region, UnscaledFixedCutProvider
 from os import path
 
-from applitools.images import Region, Target
 from PIL import Image
+
+from applitools.images import Region, Target
 
 here = path.abspath(path.dirname(__file__))
 

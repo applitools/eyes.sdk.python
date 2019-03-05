@@ -24,6 +24,7 @@ def get_version(package_name):
 
 
 install_requires = [
+    "eyes-common=={}".format(get_version("selenium")),
     "eyes-core=={}".format(get_version("selenium")),
     "tinycss2>=0.6.1",
     "selenium>=2.53.0",

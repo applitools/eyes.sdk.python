@@ -23,11 +23,7 @@ def get_version(package_name):
     return version
 
 
-install_requires = [
-    "attrs>=18",
-    # uses for check if the mobile platform is used in the test
-    "trafaret>=1.2.0",
-]
+install_requires = ["attrs>=18"]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):
