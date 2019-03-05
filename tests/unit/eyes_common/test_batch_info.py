@@ -4,7 +4,7 @@ from datetime import datetime
 
 from mock import patch
 
-from applitools.core.metadata import BatchInfo
+from applitools.common.config import BatchInfo
 
 
 def test_create_batch_info(monkeypatch):

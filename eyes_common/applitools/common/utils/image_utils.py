@@ -10,7 +10,7 @@ import typing as tp
 
 from PIL import Image
 
-from applitools.core.errors import EyesError
+from applitools.common.errors import EyesError
 
 if tp.TYPE_CHECKING:
     from applitools.core.geometry import Region

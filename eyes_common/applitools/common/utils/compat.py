@@ -3,12 +3,21 @@ Compatibility layer between Python 2 and 3
 """
 from __future__ import absolute_import
 
-import io
 import abc
+import io
 import sys
 from gzip import GzipFile
 
-__all__ = ("ABC", "range", "iteritems")
+__all__ = (
+    "ABC",
+    "range",
+    "iteritems",
+    "urlparse",
+    "urljoin",
+    "Queue",
+    "gzip_compress",
+    "range",
+)
 
 PY3 = sys.version_info >= (3,)
 

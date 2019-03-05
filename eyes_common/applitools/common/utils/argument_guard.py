@@ -1,4 +1,5 @@
-from applitools.core.errors import EyesIllegalArgument
+from applitools.common.errors import EyesIllegalArgument
+
 from .compat import iteritems
 
 
