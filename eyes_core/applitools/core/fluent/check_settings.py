@@ -15,7 +15,7 @@ from .region import (
     IgnoreRegionByRectangle,
 )
 
-__all__ = ("CheckSettings", "CheckSettingsValues")
+__all__ = ("CheckSettings",)
 
 
 @attr.s
@@ -24,63 +24,10 @@ class CheckSettingsValues:
     Access to values stored in :py:class:`CheckSettings`
     """
 
-    _check_settings = attr.ib()  # type: CheckSettings
+    _check_settings = attr.ib(repr=False)  # type: CheckSettings
 
-    @property
-    def ignore_caret(self):
-        return self._check_settings._ignore_caret
-
-    @property
-    def stitch_content(self):
-        return self._check_settings._stitch_content
-
-    @property
-    def ignore_regions(self):
-        return self._check_settings._ignore_regions
-
-    @property
-    def strict_regions(self):
-        return self._check_settings._strict_regions
-
-    @property
-    def content_regions(self):
-        return self._check_settings._content_regions
-
-    @property
-    def floating_regions(self):
-        return self._check_settings._floating_regions
-
-    @property
-    def layout_regions(self):
-        return self._check_settings._layout_regions
-
-    @property
-    def match_level(self):
-        return self._check_settings._match_level
-
-    @property
-    def timeout(self):
-        return self._check_settings._timeout
-
-    @property
-    def target_region(self):
-        return self._check_settings._target_region
-
-    @property
-    def name(self):
-        return self._check_settings._name
-
-    @property
-    def send_dom(self):
-        return self._check_settings._send_dom
-
-    @property
-    def use_dom(self):
-        return self._check_settings._use_dom
-
-    @property
-    def enable_patterns(self):
-        return self._check_settings._enable_patterns
+    def __getattr__(self, attr_name):
+        return getattr(self._check_settings, "_{name}".format(name=attr_name))
 
 
 @attr.s
