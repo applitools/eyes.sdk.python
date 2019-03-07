@@ -42,7 +42,7 @@ class MatchLevel(Enum):
 
 @attr.s
 class MatchResult(object):
-    as_expected = attr.ib()
+    as_expected = attr.ib(default=None)
     window_id = attr.ib(default=None)
     screenshot = attr.ib(default=None)
 

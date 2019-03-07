@@ -3,28 +3,33 @@ from __future__ import absolute_import
 import os
 import time
 import typing as tp
+from struct import pack
 
+import attr
 import requests
 from requests.packages import urllib3  # noqa
 
-from applitools.common import logger
+from applitools.common import RunningSession, logger
 from applitools.common.errors import EyesError
-from applitools.common.utils import general_utils
-from applitools.common.utils.compat import gzip_compress, url_join  # noqa
-from applitools.core.visualgridclient.model import (
+from applitools.common.match import MatchResult
+from applitools.common.match_window_data import MatchWindowData
+from applitools.common.metadata import SessionStartInfo
+from applitools.common.test_results import TestResults
+from applitools.common.utils import (
+    general_utils,
+    gzip_compress,
+    image_utils,
+    iteritems,
+    urljoin,
+)
+from applitools.common.visualgridclient.model import (
     RenderingInfo,
     RenderRequest,
     RunningRender,
 )
 
-from .test_results import TestResults
-
 if tp.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import (
-        RunningSession,
-        SessionStartInfo,
-        Num,
-    )
+    from applitools.common.utils.custom_types import Num
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -35,6 +40,16 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
 __all__ = ("ServerConnector",)
+
+
+def json_response_to_attrs_class(dct, cls):
+    """
+    Prevent failing if some params were added on server
+    """
+    fields = [f.name for f in attr.fields(cls)]
+    parsed_response = general_utils.change_case_of_keys(dct, to_underscore=True)
+    params = {k: v for k, v in iteritems(parsed_response) if k in fields}
+    return cls(**params)
 
 
 class _RequestCommunicator(object):
@@ -231,19 +246,15 @@ class ServerConnector(object):
         :return: Represents the current running session.
         """
         logger.debug("start_session called.")
-
-        data = '{"startInfo": %s}' % (general_utils.to_json(session_start_info))
+        data = session_start_info.to_json()
 
         self._request = self._request_factory.create(
             server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
         )
         response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
-        parsed_response = response.json()
-        return dict(
-            session_id=parsed_response["id"],
-            session_url=parsed_response["url"],
-            is_new_session=(response.status_code == requests.codes.created),
-        )
+        running_session = json_response_to_attrs_class(response.json(), RunningSession)
+        running_session.is_new_session = response.status_code == requests.codes.created
+        return running_session
 
     def stop_session(self, running_session, is_aborted, save):
         # type: (RunningSession, bool, bool) -> TestResults
@@ -262,34 +273,21 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._request.delete(
-            url_resource=urljoin(
-                self.API_SESSIONS_RUNNING, running_session["session_id"]
-            ),
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             long_query=True,
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
         )
-        pr = response.json()
-        logger.debug("stop_session(): parsed response: {}".format(pr))
+
+        test_results = json_response_to_attrs_class(response.json(), TestResults)
+        logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         # mark that session isn't started
         self._request = None
-
-        return TestResults(
-            pr["steps"],
-            pr["matches"],
-            pr["mismatches"],
-            pr["missing"],
-            pr["exactMatches"],
-            pr["strictMatches"],
-            pr["contentMatches"],
-            pr["layoutMatches"],
-            pr["noneMatches"],
-            pr["status"],
-        )
+        return test_results
 
     def match_window(self, running_session, data):
-        # type: (RunningSession, bytes) -> bool
+        # type: (RunningSession, MatchWindowData) -> MatchResult
         """
         Matches the current window to the immediate expected window in the Eyes server.
         Notice that a window might be matched later at the end of the test, even if it
@@ -305,18 +303,18 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
+        data = self._prepare_data(data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
 
         response = self._request.post(
-            url_resource=urljoin(
-                self.API_SESSIONS_RUNNING, running_session["session_id"]
-            ),
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
             headers=headers,
         )
-        return response.json()["asExpected"]
+        match_result = json_response_to_attrs_class(response.json(), MatchResult)
+        return match_result
 
     def post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
@@ -354,7 +352,9 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
         if response.ok:
-            self._render_info = RenderingInfo.from_json(response.json())
+            self._render_info = json_response_to_attrs_class(
+                response.json(), RenderingInfo
+            )
             return self._render_info
 
     def render(self, *render_requests):
@@ -386,3 +386,15 @@ class ServerConnector(object):
 
     def render_status(self, running_render):
         pass
+
+    @staticmethod
+    def _prepare_data(match_data):
+        match_data_json_bytes = general_utils.to_json(match_data).encode(
+            "utf-8"
+        )  # type: bytes
+        match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
+        screenshot64 = match_data.app_output.screenshot64
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+        body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+        return body

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from mock import patch
 
-from applitools.common.config import BatchInfo
+from applitools.common.configuration import BatchInfo
 
 
 def test_create_batch_info(monkeypatch):
@@ -15,13 +15,13 @@ def test_create_batch_info(monkeypatch):
     monkeypatch.delenv("APPLITOOLS_BATCH_ID")
     with patch("uuid.uuid4") as mock_uuid:
         mock_uuid.return_value = uuid_value
-        with patch("applitools.core.metadata.datetime") as mocked_datetime:
+        with patch("applitools.common.configuration.datetime") as mocked_datetime:
             mocked_datetime.now.return_value = now
             bi = BatchInfo(batch_name)
 
     assert bi.name == batch_name
     assert bi.id == uuid_value
-    assert bi.started_at == now
+    assert bi.started_at == now.isoformat()
 
 
 def test_set_env_params_in_batch_info():

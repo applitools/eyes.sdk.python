@@ -3,15 +3,17 @@ import typing
 from PIL import Image
 
 from applitools.common import EyesError, Region, logger
-from applitools.core import EyesBase
+from applitools.common.metadata import AppEnvironment
+from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
+from applitools.images.fluent import ImagesCheckSettings
+from applitools.images.fluent.target import Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
-from .target import Target
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
-    from applitools.common.utils.custom_types import ViewPort, AppEnvironment
+    from applitools.common.utils.custom_types import ViewPort
 
 
 class Eyes(EyesBase):
@@ -68,11 +70,15 @@ class Eyes(EyesBase):
         # type: (Text, Text, Optional[ViewPort]) -> None
         self.open_base(app_name, test_name, dimension)
 
-    def check(self, name, target):
-        # type: (Text, Target) -> bool
+    def check(self, name, check_settings):
+        # type: (Text, ImagesCheckSettings) -> bool
         if self.is_disabled:
             return False
-        return self._check_image(name, False, target)
+        image = check_settings.values.image
+        if self._config.viewport_size is None:
+            self._config.viewport_size = {"width": image.width, "height": image.height}
+
+        return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
         # type: (Union[Image.Image, Text], Optional[Text], bool) -> Optional[bool]
@@ -83,7 +89,9 @@ class Eyes(EyesBase):
                 image, tag, ignore_mismatch
             )
         )
-        return self._check_image(tag, ignore_mismatch, Target().image(image))
+        return self._check_image(
+            NULL_REGION_PROVIDER, tag, ignore_mismatch, Target.image(image)
+        )
 
     def check_region(self, image, region, tag=None, ignore_mismatch=False):
         # type: (Image.Image, Region, Optional[Text], bool) -> Optional[bool]
@@ -94,10 +102,12 @@ class Eyes(EyesBase):
                 image, region, tag, ignore_mismatch
             )
         )
-        return self._check_image(tag, ignore_mismatch, Target().region(image, region))
+        return self._check_image(
+            NULL_REGION_PROVIDER, tag, ignore_mismatch, Target.region(image, region)
+        )
 
-    def _check_image(self, name, ignore_mismatch, target):
-        # type: (Text, bool, Target) -> bool
+    def _check_image(self, region_provider, name, ignore_mismatch, check_settings):
+        # type: (RegionProvider, Text, bool, ImagesCheckSettings) -> bool
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
@@ -105,24 +115,34 @@ class Eyes(EyesBase):
             self.abort_if_not_closed()
             raise EyesError("you must call open() before checking")
 
-        image = target.values.image  # type: Image.Image
-        timeout = 0  # run match_window once
+        image = check_settings.values.image  # type: Image.Image
+        # TODO: Add cut provider
+
         self._screenshot = EyesImagesScreenshot(image)
         if not self._config.viewport_size:
             self.set_viewport_size(dict(width=image.width, height=image.height))
 
-        match_result = self._check_window_base(name, timeout, target, ignore_mismatch)
+        check_settings = check_settings.timeout(0)
+        match_result = self._check_window_base(
+            region_provider, self._raw_title, ignore_mismatch, check_settings
+        )
         self._screenshot = None
         self._raw_title = None
-        return match_result["as_expected"]
+        return match_result.as_expected
 
     @property
     def _environment(self):
         # type: () -> AppEnvironment
-        app_env = {
-            "os": self.host_os,
-            "hostingApp": self.host_app,
-            "displaySize": self._config.viewport_size,
-            "inferred": self._inferred_environment,
-        }
+        app_env = AppEnvironment(
+            os=self.host_os,
+            hosting_app=self._config.host_app,
+            display_size=self._config.viewport_size,
+            inferred=self._inferred,
+        )
+        # app_env = {
+        #     "os": self.host_os,
+        #     "hostingApp": self.host_app,
+        #     "displaySize": self._config.viewport_size,
+        #     "inferred": self._inferred_environment,
+        # }
         return app_env

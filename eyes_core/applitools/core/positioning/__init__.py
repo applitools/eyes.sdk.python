@@ -4,7 +4,7 @@ from .position_provider import (  # noqa
     PositionProvider,
 )
 from .region_provider import (  # noqa
-    NULL_REGION_INSTANCE,
+    NULL_REGION_PROVIDER,
     NullRegionProvider,
     RegionProvider,
 )

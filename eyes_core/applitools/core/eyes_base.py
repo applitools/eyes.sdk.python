@@ -4,52 +4,49 @@ import abc
 import typing as tp
 from typing import Optional, Text
 
-from applitools.common import logger
-from applitools.common.config import BatchInfo, Configuration
+from mock import Mock
+
+from applitools.common import BatchInfo, Configuration, Region, RunningSession, logger
+from applitools.common.app_output import (
+    AppOutput,
+    AppOutputProvider,
+    AppOutputWithScreenshot,
+)
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
     NewTestError,
     TestFailedError,
 )
-from applitools.common.metadata import SessionType
-from applitools.common.utils import ABC, argument_guard
-from applitools.core.server_connector import ServerConnector
+from applitools.common.match import ImageMatchSettings, MatchLevel, MatchResult
+from applitools.common.metadata import (
+    AppEnvironment,
+    FailureReports,
+    SessionStartInfo,
+    SessionType,
+)
+from applitools.common.test_results import TestResults
+from applitools.common.utils import ABC, argument_guard, image_utils
+from applitools.common.visualgridclient.model import RenderingInfo
 
-from .match import ImageMatchSettings
+from .fluent import CheckSettings
 from .match_window_task import MatchWindowTask
+from .positioning import RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
-from .test_results import TestResults, TestResultsStatus
-from .visualgridclient.model import RenderingInfo
+from .server_connector import ServerConnector
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         ViewPort,
         UserInputs,
-        AppEnvironment,
-        MatchResult,
-        RunningSession,
-        SessionStartInfo,
         RegionOrElement,
     )
-    from .capture import EyesScreenshot
+    from applitools.common.capture import EyesScreenshot
 
-__all__ = ("FailureReports", "EyesBase")
-
-
-class FailureReports(object):
-    """
-    Failures are either reported immediately when they are detected, or when the test is closed.
-    """
-
-    IMMEDIATE = "Immediate"
-    ON_CLOSE = "OnClose"
+__all__ = ("EyesBase",)
 
 
 class EyesConfigMixin(object):
-    _DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
-    _DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100  # ms
-
     _config = None  # type: tp.Optional[Configuration]
     _host_os = None  # type: tp.Optional[tp.Text]
     _host_app = None  # type: tp.Optional[tp.Text]
@@ -83,7 +80,7 @@ class EyesConfigMixin(object):
     @property
     def host_os(self):
         # type: () -> tp.Optional[tp.Text]
-        return self._host_os
+        return self._config.host_os
 
     @host_os.setter
     def host_os(self, value):
@@ -93,12 +90,12 @@ class EyesConfigMixin(object):
         """
         logger.debug("Host OS: {}".format(value))
         if value.strip():
-            self._host_os = value.strip()
+            self._config.host_os = value.strip()
 
     @property
     def host_app(self):
         # type: () -> tp.Optional[tp.Text]
-        return self._host_os
+        return self._config.host_os
 
     @host_app.setter
     def host_app(self, value):
@@ -108,17 +105,17 @@ class EyesConfigMixin(object):
         """
         logger.debug("Host OS: {}".format(value))
         if value.strip():
-            self._host_app = value.strip()
+            self._config.host_app = value.strip()
 
     @property
     def baseline_name(self):
         logger.deprecation("use `baseline_env_name` instead")
-        return self.baseline_env_name
+        return self._config.baseline_env_name
 
     @baseline_name.setter
     def baseline_name(self, value):
         logger.deprecation("use `baseline_env_name` instead")
-        self.baseline_env_name = value
+        self._config.baseline_env_name = value
 
     @property
     def baseline_env_name(self):
@@ -140,6 +137,128 @@ class EyesConfigMixin(object):
         if value.strip():
             self._config.environment_name = value
 
+    @property
+    def send_dom(self):
+        return self._config.environment_name
+
+    @send_dom.setter
+    def send_dom(self, send):
+        # type: (bool) -> None
+        if send:
+            self._config.send_dom = send
+
+    @property
+    def match_level(self):
+        # type: () -> tp.Text
+        """
+        Gets the default match level for the entire session. See ImageMatchSettings.
+        """
+        return self.default_match_settings.match_level
+
+    @match_level.setter
+    def match_level(self, match_level):
+        # type: (MatchLevel) -> None
+        """
+        Sets the default match level for the entire session. See ImageMatchSettings.
+
+        :param match_level: The match level to set. Should be one of
+                            the values defined by MatchLevel
+        """
+        self.default_match_settings.match_level = match_level
+
+    @property
+    def match_timeout(self):
+        # type: () -> int
+        """
+        Gets the default timeout for check_XXXX operations. (milliseconds)
+
+        :return: The match timeout (milliseconds)
+        """
+        return self._config.match_timeout
+
+    @match_timeout.setter
+    def match_timeout(self, match_timeout):
+        # type: (int) -> None
+        """
+        Sets the default timeout for check_XXXX operations. (milliseconds)
+        """
+        if 0 < match_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
+            raise ValueError("Match timeout must be at least 60ms.")
+        self._config.match_timeout = match_timeout
+
+    @property
+    def is_disabled(self):
+        return self._config.is_disabled
+
+    @property
+    def save_new_tests(self):
+        """A boolean denoting whether new tests should be automatically accepted."""
+        return self._config.save_new_tests
+
+    @save_new_tests.setter
+    def save_new_tests(self, save):
+        self._config.save_new_tests = save
+
+    @property
+    def save_failed_tests(self):
+        """Whether failed tests should be automatically saved with all new output
+        accepted."""
+        return self._config.save_failed_tests
+
+    @save_failed_tests.setter
+    def save_failed_tests(self, save):
+        self._config.save_failed_tests = save
+
+    @property
+    def fail_on_new_test(self):
+        """ If true, Eyes will treat new tests the same as failed tests."""
+        return self._config.fail_on_new_test
+
+    @fail_on_new_test.setter
+    def fail_on_new_test(self, save):
+        self._config.fail_on_new_test = save
+
+    @property
+    def api_key(self):
+        # type: () -> tp.Text
+        """
+        Gets the Api key used for authenticating the user with Eyes.
+
+        :return: The Api key used for authenticating the user with Eyes.
+        """
+        return self._server_connector.api_key
+
+    @api_key.setter
+    def api_key(self, api_key):
+        # type: (tp.Text) -> None
+        """
+        Sets the api key used for authenticating the user with Eyes.
+
+        :param api_key: The api key used for authenticating the user with Eyes.
+        """
+        self._server_connector.api_key = api_key  # type: ignore
+
+    @property
+    def server_url(self):
+        # type: () -> tp.Text
+        """
+        Gets the URL of the Eyes server.
+
+        :return: The URL of the Eyes server, or None to use the default server.
+        """
+        return self._server_connector.server_url
+
+    @server_url.setter
+    def server_url(self, server_url):
+        # type: (tp.Text) -> None
+        """
+        Sets the URL of the Eyes server.
+
+        :param server_url: The URL of the Eyes server, or None to use the default server.
+        :return: None
+        """
+        self._server_connector.server_url = server_url
+
 
 class EyesBase(EyesConfigMixin, ABC):
     def __init__(self, server_url=None):
@@ -150,40 +269,22 @@ class EyesBase(EyesConfigMixin, ABC):
 
         :param server_url: The URL of the Eyes server
         """
+        self._debug_screenshot_provider = Mock()
+        self._render = False
         self._server_connector = ServerConnector(server_url)  # type: ServerConnector
         self._should_get_title = False  # type: bool
         self._is_open = False  # type: bool
-        self._match_timeout = self._DEFAULT_MATCH_TIMEOUT  # type: int
         self._should_match_once_on_timeout = False  # type: bool
         self._user_inputs = []  # type: UserInputs
+        self._stitch_content = False  # type: bool
         # self._is_viewport_size_set = False  # type: bool
 
         self._ensure_configuration()
 
-        # key-value pairs to be associated with the test. Can be used for filtering later.
-        self._properties = []  # type: tp.List
-
-        # Disables Applitools Eyes and uses the webdriver directly.
-        self.is_disabled = False  # type: bool
-
         # Should the test report mismatches immediately or when it is finished.
         self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
-
         # The default match settings for the session. See ImageMatchSettings.
         self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
-
-        # A boolean denoting whether new tests should be automatically accepted.
-        self.save_new_tests = True  # type: bool
-
-        # Whether failed tests should be automatically saved
-        # with all new output accepted.
-        self.save_failed_tests = False  # type: bool
-
-        # If true, Eyes will treat new tests the same as failed tests.
-        self.fail_on_new_test = False  # type: bool
-
-        # If true, we will send full DOM to the server for analyzing
-        self.send_dom = False  # type: bool
 
     @property
     @abc.abstractmethod
@@ -253,86 +354,6 @@ class EyesBase(EyesConfigMixin, ABC):
         pass
 
     @property
-    def match_level(self):
-        # type: () -> tp.Text
-        """
-        Gets the default match level for the entire session. See ImageMatchSettings.
-        """
-        return self.default_match_settings.match_level
-
-    @match_level.setter
-    def match_level(self, match_level):
-        # type: (tp.Text) -> None
-        """
-        Sets the default match level for the entire session. See ImageMatchSettings.
-
-        :param match_level: The match level to set. Should be one of
-                            the values defined by MatchLevel
-        """
-        self.default_match_settings.match_level = match_level
-
-    @property
-    def match_timeout(self):
-        # type: () -> int
-        """
-        Gets the default timeout for check_XXXX operations. (milliseconds)
-
-        :return: The match timeout (milliseconds)
-        """
-        return self._match_timeout
-
-    @match_timeout.setter
-    def match_timeout(self, match_timeout):
-        # type: (int) -> None
-        """
-        Sets the default timeout for check_XXXX operations. (milliseconds)
-        """
-        if 0 < match_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
-            raise ValueError("Match timeout must be at least 60ms.")
-        self._match_timeout = match_timeout
-
-    @property
-    def api_key(self):
-        # type: () -> tp.Text
-        """
-        Gets the Api key used for authenticating the user with Eyes.
-
-        :return: The Api key used for authenticating the user with Eyes.
-        """
-        return self._server_connector.api_key
-
-    @api_key.setter
-    def api_key(self, api_key):
-        # type: (tp.Text) -> None
-        """
-        Sets the api key used for authenticating the user with Eyes.
-
-        :param api_key: The api key used for authenticating the user with Eyes.
-        """
-        self._server_connector.api_key = api_key  # type: ignore
-
-    @property
-    def server_url(self):
-        # type: () -> tp.Text
-        """
-        Gets the URL of the Eyes server.
-
-        :return: The URL of the Eyes server, or None to use the default server.
-        """
-        return self._server_connector.server_url
-
-    @server_url.setter
-    def server_url(self, server_url):
-        # type: (tp.Text) -> None
-        """
-        Sets the URL of the Eyes server.
-
-        :param server_url: The URL of the Eyes server, or None to use the default server.
-        :return: None
-        """
-        self._server_connector.server_url = server_url
-
-    @property
     @abc.abstractmethod
     def base_agent_id(self):
         # type: () -> tp.Text
@@ -360,7 +381,7 @@ class EyesBase(EyesConfigMixin, ABC):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self._properties.append({"name": name, "value": value})
+        self._config.properties.append({"name": name, "value": value})
 
     @property
     def is_open(self):
@@ -397,8 +418,8 @@ class EyesBase(EyesConfigMixin, ABC):
                 logger.info("close(): --- Empty test ended.")
                 return TestResults()
 
-            is_new_session = self._running_session["is_new_session"]
-            results_url = self._running_session["session_url"]
+            is_new_session = self._running_session.is_new_session
+            results_url = self._running_session.url
 
             logger.info("close(): Ending server session...")
             should_save = (is_new_session and self.save_new_tests) or (
@@ -412,14 +433,14 @@ class EyesBase(EyesConfigMixin, ABC):
             results.url = results_url
             logger.info("close(): %s" % results)
 
-            if results.status == TestResultsStatus.Unresolved:
+            if results.is_unresolved:
                 if results.is_new:
                     instructions = "Please approve the new baseline at " + results_url
                     logger.info("--- New test ended. " + instructions)
                     if raise_ex:
                         message = "'%s' of '%s'. %s" % (
-                            self._start_info["scenarioIdOrName"],
-                            self._start_info["appIdOrName"],
+                            self._start_info.scenario_id_or_name,
+                            self._start_info.app_id_or_name,
                             instructions,
                         )
                         raise NewTestError(message, results)
@@ -430,21 +451,21 @@ class EyesBase(EyesConfigMixin, ABC):
                     if raise_ex:
                         raise DiffsFoundError(
                             "Test '{}' of '{}' detected differences! See details at: {}".format(
-                                self._start_info["scenarioIdOrName"],
-                                self._start_info["appIdOrName"],
+                                self._start_info.scenario_id_or_name,
+                                self._start_info.app_id_or_name,
                                 results_url,
                             ),
                             results,
                         )
-            elif results.status == TestResultsStatus.Failed:
+            elif results.is_failed:
                 logger.info(
                     "--- Failed test ended. See details at {}".format(results_url)
                 )
                 if raise_ex:
                     raise TestFailedError(
                         "Test '{}' of '{}'. See details at: {}".format(
-                            self._start_info["scenarioIdOrName"],
-                            self._start_info["appIdOrName"],
+                            self._start_info.scenario_id_or_name,
+                            self._start_info.app_id_or_name,
                             results_url,
                         ),
                         results,
@@ -565,7 +586,7 @@ class EyesBase(EyesConfigMixin, ABC):
             "Eyes server URL is '{}'".format(self._server_connector.server_url)
         )
         logger.info("Timeout = '{}'".format(self._server_connector.timeout))
-        logger.debug("match_timeout = '{}'".format(self._match_timeout))
+        logger.debug("match_timeout = '{}'".format(self.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(self.default_match_settings)
         )
@@ -581,19 +602,26 @@ class EyesBase(EyesConfigMixin, ABC):
     def _create_start_info(self):
         # type: () -> None
         app_env = self._environment
-        self._start_info = {
-            "agentId": self.full_agent_id,
-            "appIdOrName": self._config.app_name,
-            "scenarioIdOrName": self._config.test_name,
-            "batchInfo": self._config.batch,
-            "envName": self._config.baseline_branch_name,
-            "environment": app_env,
-            "defaultMatchSettings": self.default_match_settings,
-            "verId": None,
-            "branchName": self._config.branch_name,
-            "parentBranchName": self._config.parent_branch_name,
-            "properties": self._properties,
-        }
+        self._start_info = SessionStartInfo(
+            agent_id=self.full_agent_id,
+            session_type=self._config.session_type,
+            app_id_or_name=self._config.app_name,
+            ver_id=None,
+            scenario_id_or_name=self._config.test_name,
+            batch_info=self._config.batch,
+            baseline_env_name=self._config.baseline_env_name,
+            environment_name=self._config.environment_name,
+            environment=app_env,
+            default_match_settings=self.default_match_settings,
+            branch_name=self._config.branch_name,
+            parent_branch_name=self._config.parent_branch_name,
+            baseline_branch_name=self._config.baseline_branch_name,
+            compare_with_parent_branch=self._config.compare_with_parent_branch,
+            ignore_baseline=self._config.ignore_baseline,
+            save_diffs=self._config.save_diffs,
+            render=self._render,
+            properties=self._config.properties,
+        )
 
     def _start_session(self):
         # type: () -> None
@@ -610,7 +638,7 @@ class EyesBase(EyesConfigMixin, ABC):
         self._create_start_info()
         # Actually start the session.
         self._running_session = self._server_connector.start_session(self._start_info)
-        self._should_match_once_on_timeout = self._running_session["is_new_session"]
+        self._should_match_once_on_timeout = self._running_session.is_new_session
 
     def _reset_last_screenshot(self):
         # type: () -> None
@@ -624,9 +652,49 @@ class EyesBase(EyesConfigMixin, ABC):
 
         logger.debug("No running session, calling start session...")
         self._start_session()
+
+        output_provider = AppOutputProvider(self._get_app_output_with_screenshot)
         self._match_window_task = MatchWindowTask(
-            self, self._server_connector, self._running_session, self.match_timeout
+            self._server_connector,
+            self._running_session,
+            self.match_timeout,
+            eyes=self,
+            app_output_provider=output_provider,
         )
+
+    def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
+        # type: (Region, EyesScreenshot, CheckSettings) -> AppOutputWithScreenshot
+        logger.info("getting screenshot...")
+        screenshot = self.get_screenshot()
+        logger.info("Done getting screenshot!")
+
+        if screenshot:
+            # cropping by region if necessary
+            if not region.is_size_empty:
+                screenshot = last_screenshot.sub_screenshot(region, False)
+                self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
+        else:
+            logger.info("getting screenshot url...")
+            # screenshot_url = self.get_screenshot_url()
+            logger.info("Done getting screenshot_url!")
+
+        logger.info("Getting title, dom_url, image_location...")
+        title = self._title
+        dom_url = self.get_dom_url()
+        logger.info("Done getting title, dom_url, image_location!")
+        if not dom_url and (
+            check_settings.values.send_dom or self.default_match_settings.send_dom
+        ):
+            dom_json = self._try_capture_dom()
+            dom_url = self._try_post_dom_snapshot(dom_json)
+            logger.info("dom_url: {}".format(dom_url))
+
+        app_output = AppOutput(
+            title=title, screenshot64=image_utils.get_base64(screenshot.image)
+        )
+        result = AppOutputWithScreenshot(app_output, screenshot)
+        logger.info("Done")
+        return result
 
     def _before_match_window(self):
         """
@@ -639,7 +707,7 @@ class EyesBase(EyesConfigMixin, ABC):
         """
 
     def _check_window_base(
-        self, tag=None, match_timeout=-1, target=None, ignore_mismatch=False
+        self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
@@ -651,15 +719,8 @@ class EyesBase(EyesConfigMixin, ABC):
 
         self._before_match_window()
 
-        # TODO: implement MatchWIndow_ analog
-        result = self._match_window_task.match_window(
-            retry_timeout=match_timeout,
-            tag=tag,
-            user_inputs=self._user_inputs,
-            default_match_settings=self.default_match_settings,
-            target=target,
-            ignore_mismatch=ignore_mismatch,
-            run_once_after_wait=self._should_match_once_on_timeout,
+        result = self.match_window(
+            region_provider, tag, ignore_mismatch, check_settings
         )
         self._after_match_window()
         self._handle_match_result(result, tag)
@@ -667,19 +728,19 @@ class EyesBase(EyesConfigMixin, ABC):
 
     def _handle_match_result(self, result, tag):
         # type: (MatchResult, tp.Text) -> None
-        self._last_screenshot = result["screenshot"]
-        as_expected = result["as_expected"]
+        self._last_screenshot = result.screenshot
+        as_expected = result.as_expected
         self._user_inputs = []
         if not as_expected:
             self._should_match_once_on_timeout = True
-            if self._running_session and not self._running_session["is_new_session"]:
+            if self._running_session and not self._running_session.is_new_session:
                 logger.info("Window mismatch %s" % tag)
                 if self.failure_reports == FailureReports.IMMEDIATE:
                     raise TestFailedError(
                         "Mismatch found in '%s' of '%s'"
                         % (
-                            self._start_info["scenarioIdOrName"],
-                            self._start_info["appIdOrName"],
+                            self._start_info.scenario_id_or_name,
+                            self._start_info.app_id_or_name,
                         )
                     )
 
@@ -704,3 +765,44 @@ class EyesBase(EyesConfigMixin, ABC):
                 "Couldn't send DOM Json. Passing...\n Got next error: {}".format(e)
             )
             return None
+
+    def get_screenshot_url(self):
+        return None
+
+    def get_dom_url(self):
+        pass
+
+    def get_image_location(self):
+        pass
+
+    def match_window(self, region_provider, tag, ignore_mismatch, check_settings):
+        # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
+        # Update retry timeout if it wasn't specified.
+        retry_timeout = -1
+        if check_settings:
+            retry_timeout = check_settings.values.timeout
+
+        default_match_settings = self.default_match_settings
+        # Set defaults if necessary
+        if check_settings:
+            if check_settings.values.match_level is None:
+                check_settings = check_settings.match_level(
+                    default_match_settings.match_level
+                )
+            if check_settings.values.ignore_caret is None:
+                check_settings = check_settings.ignore_caret(
+                    default_match_settings.ignore_caret
+                )
+        region = region_provider.get_region()
+        logger.info("params: ([{}], {}, {})".format(region, tag, retry_timeout))
+
+        result = self._match_window_task.match_window(
+            self._user_inputs,
+            region,
+            tag,
+            self._should_match_once_on_timeout,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout,
+        )
+        return result

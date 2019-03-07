@@ -13,7 +13,10 @@ from applitools.common.utils.converters import isoformat
 if typing.TYPE_CHECKING:
     from applitools.common.metadata import SessionType
     from applitools.common.utils.custom_types import ViewPort
+
 __all__ = ("BatchInfo", "Branch", "Configuration")
+
+DEFAULT_VALUES = {"batch_name"}
 
 
 @attr.s
@@ -27,7 +30,7 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     started_at = attr.ib(
         factory=lambda: datetime.now(general_utils.UTC), converter=isoformat
-    )  # # type: ignore
+    )  # # type: Text
     id = attr.ib(
         factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
     )  # type: Text
@@ -44,22 +47,18 @@ class BatchInfo(object):
 
 @attr.s
 class Configuration(object):
-    # The batch to which the tests belong to. See BatchInfo. None means no batch.
+    DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
+
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
-    # A string identifying the branch in which tests are run.
     branch_name = attr.ib(
-        default=os.environ.get("APPLITOOLS_BRANCH", None)
+        factory=lambda: os.environ.get("APPLITOOLS_BRANCH", None)
     )  # type: Optional[Text]
-    # A string identifying the parent branch of the branch set by "branch_name".
     parent_branch_name = attr.ib(
-        default=os.environ.get("APPLITOOLS_PARENT_BRANCH", None)
+        factory=lambda: os.environ.get("APPLITOOLS_PARENT_BRANCH", None)
     )  # type: Optional[Text]
-    # A string that, if specified, determines the baseline to compare with and
-    # disables automatic baseline inference.
     baseline_branch_name = attr.ib(
-        default=os.environ.get("APPLITOOLS_BASELINE_BRANCH", None)
+        factory=lambda: os.environ.get("APPLITOOLS_BASELINE_BRANCH", None)
     )  # type: Optional[Text]
-    # An optional string identifying the current library using the SDK.
     agent_id = attr.ib(default=None)  # type: Optional[Text]
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     environment_name = attr.ib(default=None)  # type: Optional[Text]
@@ -72,6 +71,15 @@ class Configuration(object):
     ignore_caret = attr.ib(default=False)
     send_dom = attr.ib(default=False)
     compare_with_parent_branch = attr.ib(default=None)  # type: Optional[bool]
+    host_app = attr.ib(default=None)
+    host_os = attr.ib(default=None)
+    properties = attr.ib(factory=list)
+    hide_scrollbars = attr.ib(default=False)
+    match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT)
+    is_disabled = attr.ib(default=False)
+    save_new_tests = attr.ib(default=True)
+    save_failed_tests = attr.ib(default=False)
+    fail_on_new_test = attr.ib(default=False)
 
     @property
     def viewport_size(self):

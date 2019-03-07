@@ -6,9 +6,9 @@ from applitools.common.geometry import Region
 from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
-    from applitools.core.capture import EyesScreenshot
+    from applitools.common.capture import EyesScreenshot
 
-__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_INSTANCE")
+__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_PROVIDER")
 
 
 @attr.s
@@ -35,4 +35,4 @@ class NullRegionProvider(RegionProvider):
     _region = attr.ib(init=False, factory=Region.create_empty_region)
 
 
-NULL_REGION_INSTANCE = NullRegionProvider()
+NULL_REGION_PROVIDER = NullRegionProvider()
