@@ -4,7 +4,7 @@ import attr
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Region
-from applitools.core.fluent.check_settings import CheckSettings, CheckSettingsValues
+from applitools.core.fluent.check_settings import CheckSettings
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import IgnoreRegionByElement, IgnoreRegionBySelector
@@ -23,57 +23,56 @@ class FrameLocator(object):
     frame_index = attr.ib()
 
 
-class SeleniumCheckSettingsValues(CheckSettingsValues):
-    _check_settings = attr.ib()  # type: SeleniumCheckSettings
-
-    @property
-    def target_element(self):
-        return self._check_settings._target_element
-
-    @property
-    def target_selector(self):
-        return self._check_settings._target_selector
+@attr.s
+class SeleniumCheckSettingsValues(object):
+    _check_settings_values = attr.ib()
 
     @property
     def target_provider(self):
-        if self.target_selector:
-            return SelectorByLocator(self.target_selector)
-        elif self.target_element:
-            return SelectorByElement(self.target_element)
+        target_selector = self._check_settings_values.target_selector
+        target_element = self._check_settings_values.target_element
+        if target_selector:
+            return SelectorByLocator(target_selector)
+        elif target_element:
+            return SelectorByElement(target_element)
 
     @property
     def size_mode(self):
-        if (
-            not self.target_region
-            and not self.target_element
-            and not self.target_selector
-        ):
-            if self.stitch_content:
+        target_region = self._check_settings_values.target_region
+        target_element = self._check_settings_values.target_element
+        stitch_content = self._check_settings_values.stitch_content
+        target_selector = self._check_settings_values.target_selector
+        if not target_region and not target_element and not target_selector:
+            if stitch_content:
                 return "full-page"
             return "viewport"
-        if self.target_region:
-            if self.stitch_content:
+        if target_region:
+            if stitch_content:
                 return "region"
             return "region"
-        if self.stitch_content:
+        if stitch_content:
             return "selector"
         return "selector"
 
 
-@attr.s(init=False)
+@attr.s
 class SeleniumCheckSettings(CheckSettings):
-    _target_selector = attr.ib(default=None)
-    _target_element = attr.ib(default=None)
-    _frame_chain = attr.ib(factory=list)  # type: List[FrameLocator]
+    _region = attr.ib(default=None)
+    _frame = attr.ib(default=None)
 
-    def __init__(self, region=None, frame=None):
+    _target_selector = attr.ib(init=False, default=None)
+    _target_element = attr.ib(init=False, default=None)
+    _frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
-        # super(SeleniumCheckSettings).__init__(*args, **kwargs)
-        if region:
-            self.region(region)
+    def __attrs_post_init__(self):
+        if self._region:
+            self.region(self._region)
+        if self._frame:
+            self.frame(self._frame)
 
-        if frame:
-            self.frame(frame)
+    def values(self):
+        val = super(SeleniumCheckSettings, self).values()
+        return SeleniumCheckSettingsValues(val)
 
     def region(self, region):
         if isinstance(region, Region):

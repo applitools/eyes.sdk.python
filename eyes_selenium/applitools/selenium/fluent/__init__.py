@@ -6,7 +6,7 @@ from .region import (
     IgnoreRegionByElement,
     IgnoreRegionBySelector,
 )
-from .selenium_check_settings import SeleniumCheckSettings, SeleniumCheckSettingsValues
+from .selenium_check_settings import SeleniumCheckSettings
 from .target import Target
 
 __all__ = (
@@ -18,5 +18,4 @@ __all__ = (
     "FloatingRegionByElement",
     "FloatingRegionBySelector",
     "SeleniumCheckSettings",
-    "SeleniumCheckSettingsValues",
 )

@@ -4,7 +4,7 @@ import typing
 
 from applitools.core.fluent import CheckTarget
 
-from .selenium_check_settings import SeleniumCheckSettings, SeleniumCheckSettingsValues
+from .selenium_check_settings import SeleniumCheckSettings
 
 if typing.TYPE_CHECKING:
     from typing import Union
@@ -21,10 +21,6 @@ class Target(CheckTarget):
     """
     Target for an eyes.check_window/region.
     """
-
-    @property
-    def values(self):
-        return SeleniumCheckSettingsValues(self)
 
     @staticmethod
     def window():
