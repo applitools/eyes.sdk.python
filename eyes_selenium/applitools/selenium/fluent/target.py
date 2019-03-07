@@ -27,7 +27,7 @@ class Target(CheckTarget):
         return SeleniumCheckSettings()
 
     @staticmethod
-    def region(region, frame):
+    def region(region, frame=None):
         return SeleniumCheckSettings(region=region, frame=frame)
 
     @staticmethod

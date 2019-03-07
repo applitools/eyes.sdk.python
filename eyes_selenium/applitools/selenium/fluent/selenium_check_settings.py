@@ -70,6 +70,7 @@ class SeleniumCheckSettings(CheckSettings):
         if self._frame:
             self.frame(self._frame)
 
+    @property
     def values(self):
         val = super(SeleniumCheckSettings, self).values()
         return SeleniumCheckSettingsValues(val)

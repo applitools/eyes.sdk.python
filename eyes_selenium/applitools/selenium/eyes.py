@@ -5,9 +5,10 @@ import typing
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
-from applitools.common import EyesError, Region, logger
+from applitools.common import EyesError, MatchResult, Region, logger
 from applitools.common.utils import image_utils
 from applitools.core import (
+    NULL_REGION_PROVIDER,
     ContextBasedScaleProvider,
     EyesBase,
     FixedScaleProvider,
@@ -16,6 +17,7 @@ from applitools.core import (
     TextTrigger,
 )
 from applitools.selenium.configuration import SeleniumConfiguration
+from applitools.selenium.fluent import SeleniumCheckSettings
 
 from . import eyes_selenium_utils
 from .__version__ import __version__
@@ -102,6 +104,14 @@ class Eyes(EyesBase):
     def _ensure_configuration(self):
         if self._config is None:
             self._config = SeleniumConfiguration()
+
+    @property
+    def wait_before_screenshots(self):
+        return self._config.wait_before_screenshots
+
+    @wait_before_screenshots.setter
+    def wait_before_screenshots(self, value):
+        self._config.wait_before_screenshots = value
 
     @property
     def _seconds_to_wait_screenshot(self):
@@ -395,8 +405,19 @@ class Eyes(EyesBase):
 
         return self._driver
 
+    def check(self, name, check_settings):
+        # type: (Text, SeleniumCheckSettings) -> MatchResult
+        if name:
+            check_settings = check_settings.with_name(name)
+        else:
+            name = check_settings.values.name
+
+        if not eyes_selenium_utils.is_mobile_device(self.driver):
+            logger.info("URL: %s" % self.driver.current_url)
+        logger.info("check('%s') - begin" % check_settings)
+
     def check_window(self, tag=None, match_timeout=-1, target=None):
-        # type: (Optional[Text], int, Optional[Target]) -> None
+        # type: (Optional[Text], int, Optional[SeleniumCheckSettings]) -> MatchResult
         """
         Takes a snapshot from the browser using the web driver and matches
         it with the expected output.
@@ -404,25 +425,31 @@ class Eyes(EyesBase):
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint (
                               milliseconds).
-        :param target: The target for the check_window call
         :return: None
         """
         logger.info("check_window('%s')" % tag)
-        if target is None:
-            target = Target()
+        if target:
+            logger.deprecation(
+                "Use fluent interface with check_window is deprecated. Use `eyes.check()` instead"
+            )
 
-        self._screenshot_type = self._obtain_screenshot_type(
-            is_element=False,
-            inside_a_frame=bool(self._driver.frame_chain),
-            stitch_content=False,
-            force_fullpage=self.force_full_page_screenshot,
-        )
-        self._check_window_base(tag, match_timeout, target)
+        check_settings = target
+        if check_settings is None:
+            check_settings = Target.window()
+        return self.check(tag, check_settings.timeout(match_timeout))
+
+        # self._screenshot_type = self._obtain_screenshot_type(
+        #     is_element=False,
+        #     inside_a_frame=bool(self._driver.frame_chain),
+        #     stitch_content=False,
+        #     force_fullpage=self.force_full_page_screenshot,
+        # )
+        # self._check_window_base(NULL_REGION_PROVIDER, tag, False, check_settings)
 
     def check_region(
         self, region, tag=None, match_timeout=-1, target=None, stitch_content=False
     ):
-        # type: (Region, Optional[Text], int, Optional[Target], bool) -> None
+        # type: (Region, Optional[Text], int, Optional[Target], bool) -> MatchResult
         """
         Takes a snapshot of the given region from the browser using the web driver
         and matches it with the expected output. If the current context is a frame,
@@ -433,29 +460,33 @@ class Eyes(EyesBase):
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint
                               (milliseconds).
-        :param target: The target for the check_window call
         :return: None
         """
         logger.info("check_region([%s], '%s')" % (region, tag))
-        if region.is_empty:
-            raise EyesError("region cannot be empty!")
-        if target is None:
-            target = Target()
+        if target or stitch_content:
+            logger.deprecation(
+                "Use fluent interface with check_region is deprecated. Use `eyes.check()` instead"
+            )
+        return self.check(tag, Target.region(region).timeout(match_timeout))
+        # if region.is_empty:
+        #     raise EyesError("region cannot be empty!")
+        # if target is None:
+        #     target = Target()
 
-        self._screenshot_type = self._obtain_screenshot_type(
-            is_element=False,
-            inside_a_frame=bool(self._driver.frame_chain),
-            stitch_content=stitch_content,
-            force_fullpage=self.force_full_page_screenshot,
-            is_region=True,
-        )
-        self._region_to_check = region
-        self._check_window_base(tag, match_timeout, target)
+        # self._screenshot_type = self._obtain_screenshot_type(
+        #     is_element=False,
+        #     inside_a_frame=bool(self._driver.frame_chain),
+        #     stitch_content=stitch_content,
+        #     force_fullpage=self.force_full_page_screenshot,
+        #     is_region=True,
+        # )
+        # self._region_to_check = region
+        # self._check_window_base(tag, match_timeout, target)
 
     def check_region_by_element(
         self, element, tag=None, match_timeout=-1, target=None, stitch_content=False
     ):
-        # type: (AnyWebElement, Optional[Text], int, Optional[Target], bool) -> None
+        # type: (AnyWebElement, Optional[Text], int, Optional[Target], bool) -> MatchResult
         """
         Takes a snapshot of the region of the given element from the browser using
         the web driver and matches it with the expected output.
@@ -468,28 +499,33 @@ class Eyes(EyesBase):
         :return: None
         """
         logger.info("check_region_by_element('%s')" % tag)
-        if target is None:
-            target = Target()
-
-        self._screenshot_type = self._obtain_screenshot_type(
-            is_element=True,
-            inside_a_frame=bool(self._driver.frame_chain),
-            stitch_content=stitch_content,
-            force_fullpage=self.force_full_page_screenshot,
-        )
-
-        self._element_position_provider = ElementPositionProvider(self._driver, element)
-
-        origin_overflow = element.get_overflow()
-        element.set_overflow("hidden")
-
-        element_region = self._get_element_region(element)
-        self._region_to_check = element_region
-        self._check_window_base(tag, match_timeout, target)
-        self._element_position_provider = None
-
-        if origin_overflow:
-            element.set_overflow(origin_overflow)
+        if target or stitch_content:
+            logger.deprecation(
+                "Use fluent interface with check_region_by_element is deprecated. Use `eyes.check()` instead"
+            )
+        return self.check(tag, Target.region(element).timeout(match_timeout))
+        # if target is None:
+        #     target = Target()
+        #
+        # self._screenshot_type = self._obtain_screenshot_type(
+        #     is_element=True,
+        #     inside_a_frame=bool(self._driver.frame_chain),
+        #     stitch_content=stitch_content,
+        #     force_fullpage=self.force_full_page_screenshot,
+        # )
+        #
+        # self._element_position_provider = ElementPositionProvider(self._driver, element)
+        #
+        # origin_overflow = element.get_overflow()
+        # element.set_overflow("hidden")
+        #
+        # element_region = self._get_element_region(element)
+        # self._region_to_check = element_region
+        # self._check_window_base(tag, match_timeout, target)
+        # self._element_position_provider = None
+        #
+        # if origin_overflow:
+        #     element.set_overflow(origin_overflow)
 
     def _get_element_region(self, element):
         #  We use a smaller size than the actual screenshot size in order to
@@ -514,7 +550,7 @@ class Eyes(EyesBase):
     def check_region_by_selector(
         self, by, value, tag=None, match_timeout=-1, target=None, stitch_content=False
     ):
-        # type: (Text, Text, Optional[Text], int, Optional[Target], bool) -> None
+        # type: (Text, Text, Optional[Text], int, Optional[Target], bool) -> MatchResult
         """
         Takes a snapshot of the region of the element found by calling find_element
         (by, value) and matches it with the expected output.
@@ -550,7 +586,7 @@ class Eyes(EyesBase):
         target=None,  # type: Optional[Target]
         stitch_content=False,  # type: bool
     ):
-        # type: (...) -> None
+        # type: (...) -> MatchResult
         """
         Checks a region within a frame, and returns to the current frame.
 

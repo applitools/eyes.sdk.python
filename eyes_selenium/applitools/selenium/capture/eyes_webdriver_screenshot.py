@@ -73,7 +73,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
         # initializing of screenshot
         super(EyesWebDriverScreenshot, self).__init__(image=screenshot)
-
+        # For future adaptation
+        self._image = self._screenshot
         self._driver = driver
         self._viewport_size = driver.get_default_content_viewport_size(
             force_query=False
@@ -121,8 +122,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._frame_size["height"],
         )
         self._frame_screenshot_intersect.intersect(
-            Region(width=self._screenshot.width, height=self._screenshot.height)
+            Region(0, 0, width=self._screenshot.width, height=self._screenshot.height)
         )
+
+    @property
+    def image(self):
+        return self._image
 
     @staticmethod
     def calc_frame_location_in_screenshot(frame_chain, is_viewport_screenshot):
