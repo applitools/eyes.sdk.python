@@ -4,7 +4,6 @@ from enum import Enum
 import attr
 
 from applitools.common.utils.converters import name_from_enum
-from applitools.common.visualgridclient.model import RenderingInfo
 
 from .configuration import BatchInfo, Branch
 from .match import ImageMatchSettings
@@ -44,7 +43,7 @@ class RunningSession(object):
     batch_id = attr.ib()  # type: Text
     baseline_id = attr.ib()  # type: Text
     url = attr.ib()  # type: Text
-    rendering_info = attr.ib(default=None, type=RenderingInfo)  # type: RenderingInfo
+    rendering_info = attr.ib(default=None)
     is_new_session = attr.ib(default=False)  # type: bool
 
 

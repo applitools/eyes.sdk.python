@@ -1,4 +1,7 @@
-from .core import logger  # noqa
+from applitools.common.configuration import BatchInfo
+from applitools.common.metadata import FailureReports
+from applitools.сommon import logger  # noqa
+
 from .selenium import (  # noqa
     BatchInfo,
     ExactMatchSettings,

@@ -6,13 +6,14 @@ from PIL import Image
 
 from applitools.common.geometry import Region
 from applitools.common.utils import image_utils
+from applitools.core.fluent import CheckTarget
 
 from .check_settings import ImagesCheckSettings
 
 __all__ = ("Target",)
 
 
-class Target(object):
+class Target(CheckTarget):
     """
     Target for an eyes.check_window/region.
     """

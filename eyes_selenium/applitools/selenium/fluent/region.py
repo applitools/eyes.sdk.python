@@ -1,19 +1,11 @@
-from __future__ import absolute_import
-
 import typing
 
-from applitools.common.errors import EyesError
-from applitools.common.geometry import Region
+from applitools.common import EyesError, Region
+from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Union, List, Any
-
-    FloatingType = Union[
-        "FloatingRegion", "FloatingRegionByElement", "FloatingRegionBySelector"
-    ]
-    IgnoreType = Union["Region", "IgnoreRegionByElement", "IgnoreRegionBySelector"]
+    from typing import Any
     from applitools.common.utils.custom_types import AnyWebElement
-    from .capture import EyesWebDriverScreenshot
 
 __all__ = (
     "IgnoreRegionByElement",
@@ -22,11 +14,9 @@ __all__ = (
     "FloatingRegion",
     "FloatingRegionByElement",
     "FloatingRegionBySelector",
-    "Target",
 )
 
 
-# Ignore regions related classes.
 class IgnoreRegionByElement(object):
     def __init__(self, element):
         # type: (AnyWebElement) -> None
@@ -77,7 +67,6 @@ class _NopRegionWrapper(object):
         return str(self.region)
 
 
-# Floating regions related classes.
 class FloatingBounds(object):
     def __init__(
         self, max_left_offset=0, max_up_offset=0, max_right_offset=0, max_down_offset=0
@@ -173,85 +162,3 @@ class FloatingRegionBySelector(object):
         return "{0} {{element: {{ by: {1}, value: {2}}}, bounds: {3} }}".format(
             self.__class__.__name__, self.by, self.value, self.bounds
         )
-
-
-class _CheckSettingsValues:
-    """
-    Access to values stored in :py:class:`CheckSettings`
-    """
-
-    def __init__(self, check_settings):
-        # type: (Target) -> None
-        self.check_settings = check_settings
-
-    @property
-    def ignore_caret(self):
-        return self.check_settings._ignore_caret
-
-    @property
-    def ignore_regions(self):
-        return self.check_settings._ignore_regions
-
-    @property
-    def floating_regions(self):
-        return self.check_settings._floating_regions
-
-
-# Main class for the module
-class Target(object):
-    """
-    Target for an eyes.check_window/region.
-    """
-
-    def __init__(self):
-        # type: () -> None
-        self._ignore_caret = True
-        self._ignore_regions = []  # type: List
-        self._floating_regions = []  # type: List
-
-    @property
-    def values(self):
-        return _CheckSettingsValues(self)
-
-    def ignore(self, *regions):
-        # type: (*IgnoreType) -> Target
-        """
-        Add ignore regions to this target.
-        :param regions: Ignore regions to add. Can be of several types:
-            (Region) Region specified by coordinates
-            (IgnoreRegionBySelector) Region specified by a selector of an element
-            (IgnoreRegionByElement) Region specified by a WebElement instance.
-        :return: (Target) self.
-        """
-        for region in regions:
-            if region is None:
-                continue
-            if isinstance(region, Region):
-                self._ignore_regions.append(_NopRegionWrapper(region))
-            else:
-                self._ignore_regions.append(region)
-        return self
-
-    def floating(self, *regions):
-        # type: (*FloatingType) -> Target
-        """
-        Add floating regions to this target.
-        :param regions: Floating regions to add. Can be of several types:
-            (Region) Region specified by coordinates
-            (FloatingRegionByElement) Region specified by a WebElement instance.
-            (FloatingRegionBySelector) Region specified by a selector of an element
-        :return: (Target) self.
-        """
-        for region in regions:
-            if region is None:
-                continue
-            self._floating_regions.append(region)
-        return self
-
-    def ignore_caret(self, ignore=True):
-        # type: (bool) -> Target
-        """
-        Whether we should ignore caret when matching screenshots.
-        """
-        self._ignore_caret = ignore
-        return self

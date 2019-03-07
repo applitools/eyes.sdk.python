@@ -17,9 +17,9 @@ from applitools.common.errors import EyesError
 from applitools.common.geometry import Point, Region
 from applitools.common.utils import cached_property, general_utils, image_utils
 
-from . import StitchMode, eyes_selenium_utils
+from . import eyes_selenium_utils
 from .frames import Frame, FrameChain
-from .positioning import ScrollPositionProvider, build_position_provider_for
+from .positioning import ScrollPositionProvider, StitchMode, build_position_provider_for
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:

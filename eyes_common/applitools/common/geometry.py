@@ -413,3 +413,6 @@ class Region(DictAccessMixin):
             width=int(math.ceil(self.width * scale_ratio)),
             height=int(math.ceil(self.height * scale_ratio)),
         )
+
+
+EMPTY_REGION = Region(0, 0, 0, 0)

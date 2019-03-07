@@ -7,11 +7,16 @@ from contextlib import contextmanager
 from appium.webdriver import Remote as AppiumWebDriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import EyesError, logger
 
 if tp.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import AnyWebDriver, ViewPort
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        ViewPort,
+        AnyWebElement,
+    )
 
 __all__ = (
     "get_current_frame_content_entire_size",
@@ -127,11 +132,20 @@ if( navigator.userAgent.match(/Android/i) ||
 
 def get_underlying_driver(driver):
     # type: (AnyWebDriver) -> tp.Union[WebDriver, AppiumWebDriver]
-    from ..selenium.webdriver import EyesWebDriver
+    from applitools.selenium.webdriver import EyesWebDriver
 
     if isinstance(driver, EyesWebDriver):
         driver = driver.driver
     return driver
+
+
+def get_underlying_webelement(element):
+    # type: (AnyWebElement) -> WebElement
+    from applitools.selenium.webelement import EyesWebElement
+
+    if isinstance(element, EyesWebElement):
+        element = element.element
+    return element
 
 
 def get_current_frame_content_entire_size(driver):

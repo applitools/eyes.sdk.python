@@ -1,38 +1,41 @@
-from applitools.common import BatchInfo, Region, StdoutLogger, logger
-from applitools.core import (  # noqa
+from applitools.common import (
+    BatchInfo,
     ExactMatchSettings,
-    FailureReports,
     ImageMatchSettings,
     MatchLevel,
-    TestResults,
-    TestResultsStatus,
+    Region,
+    StdoutLogger,
+    logger,
 )
-
-from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
-from .eyes import Eyes  # noqa
-from .frames import Frame  # noqa
-from .positioning import StitchMode  # noqa
-from .target import (  # noqa
+from applitools.common.metadata import FailureReports
+from applitools.common.test_results import TestResults, TestResultsStatus  # noqa
+from applitools.selenium.fluent.region import (
     FloatingBounds,
     FloatingRegion,
     FloatingRegionByElement,
     FloatingRegionBySelector,
     IgnoreRegionByElement,
     IgnoreRegionBySelector,
-    Target,
 )
+from applitools.selenium.fluent.target import Target  # noqa
+
+from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
+from .configuration import SeleniumConfiguration  # noqa
+from .eyes import Eyes  # noqa
+from .frames import Frame  # noqa
+from .positioning import StitchMode  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
 
 __all__ = (
     # noqa
-    "BatchInfo",
     "ExactMatchSettings",
+    "BatchInfo",
     "ImageMatchSettings",
+    "FailureReports",
     "Region",
     "TestResults",
     "MatchLevel",
-    "FailureReports",
     "TestResultsStatus",
     "TestResults",
     "logger",
@@ -44,10 +47,12 @@ __all__ = (
     "EyesWebDriverScreenshot",
     "StitchMode",
     "dom_capture",
+    "Target",
+    "SeleniumConfiguration",
     "IgnoreRegionByElement",
     "IgnoreRegionBySelector",
     "FloatingBounds",
+    "FloatingRegion",
     "FloatingRegionByElement",
     "FloatingRegionBySelector",
-    "Target",
 )

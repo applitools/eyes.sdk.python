@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import base64
 import contextlib
 import typing
@@ -7,32 +5,37 @@ import typing
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
-# noinspection PyProtectedMember
-from applitools.core import NullScaleProvider, logger
-from applitools.core.errors import EyesError
-from applitools.core.eyes_base import EyesBase
-from applitools.core.geometry import Region
-from applitools.core.match_window_task import MatchWindowTask
-from applitools.core.scaling import ContextBasedScaleProvider, FixedScaleProvider
-from applitools.core.triggers import MouseTrigger, TextTrigger
-from applitools.core.utils import image_utils
+from applitools.common import EyesError, Region, logger
+from applitools.common.utils import image_utils
+from applitools.core import (
+    ContextBasedScaleProvider,
+    EyesBase,
+    FixedScaleProvider,
+    MouseTrigger,
+    NullScaleProvider,
+    TextTrigger,
+)
+from applitools.selenium.configuration import SeleniumConfiguration
 
 from . import eyes_selenium_utils
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
-from .positioning import ElementPositionProvider, StitchMode
-from .target import Target
-from .webdriver import EyesWebDriver
+from .fluent import Target
+from .positioning import ElementPositionProvider
+from .webdriver import EyesWebDriver, StitchMode
+
+# noinspection PyProtectedMember
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional
-    from applitools.core.scaling import ScaleProvider
-    from applitools.core.utils.custom_types import (
-        ViewPort,
+    from typing import Optional, Text
+    from applitools.common.utils.custom_types import (
         AnyWebDriver,
+        ViewPort,
         FrameReference,
         AnyWebElement,
     )
+    from applitools.core import MatchWindowTask
+    from applitools.core.scaling import ScaleProvider
 
 
 class ScreenshotType(object):
@@ -76,7 +79,6 @@ class Eyes(EyesBase):
 
         self._driver = None  # type: Optional[AnyWebDriver]
         self._match_window_task = None  # type: Optional[MatchWindowTask]
-        self._viewport_size = None  # type: Optional[ViewPort]
         self._screenshot_type = None  # type: Optional[str]  # ScreenshotType
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_mode = StitchMode.Scroll  # type: Text
@@ -86,16 +88,20 @@ class Eyes(EyesBase):
 
         # If true, Eyes will create a full page screenshot (by using stitching)
         # for browsers which only returns the viewport screenshot.
-        self.force_full_page_screenshot = False  # type: bool
+        # self.force_full_page_screenshot = False  # type: bool
 
         # If true, Eyes will remove the scrollbars from the pages
         # before taking the screenshot.
-        self.hide_scrollbars = False  # type: bool
+        # self.hide_scrollbars = False  # type: bool
 
         # The number of milliseconds to wait before each time a screenshot is taken.
-        self.wait_before_screenshots = (
-            EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS
-        )  # type: int
+        # self.wait_before_screenshots = (
+        #     EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS
+        # )  # type: int
+
+    def _ensure_configuration(self):
+        if self._config is None:
+            self._config = SeleniumConfiguration()
 
     @property
     def _seconds_to_wait_screenshot(self):
@@ -135,6 +141,9 @@ class Eyes(EyesBase):
         Returns the current web driver.
         """
         return self._driver
+
+    def get_rendering_info(self):
+        return None
 
     def _obtain_screenshot_type(
         self,
@@ -193,8 +202,8 @@ class Eyes(EyesBase):
                 logger.info("No mobile OS detected.")
         app_env = {
             "os": os,
-            "hostingApp": self.host_app,
-            "displaySize": self._viewport_size,
+            "hostingApp": self._config.host_app,
+            "displaySize": self._config.viewport_size,
             "inferred": self._inferred_environment,
         }
         return app_env
@@ -224,8 +233,9 @@ class Eyes(EyesBase):
 
     def _update_scaling_params(self):
         # type: () -> Optional[ScaleProvider]
-        if self._device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO or isinstance(
-            self._scale_provider, NullScaleProvider
+        if (
+            self._device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO
+            or not isinstance(self._scale_provider, NullScaleProvider)
         ):
             logger.debug("Device pixel ratio was already changed")
             return self._scale_provider
@@ -348,10 +358,14 @@ class Eyes(EyesBase):
         ).get_viewport_screenshot()
 
     def _ensure_viewport_size(self):
-        if self._viewport_size is None:
-            self._viewport_size = self._driver.get_default_content_viewport_size()
+        if self._config.viewport_size is None:
+            self._config.viewport_size = (
+                self._driver.get_default_content_viewport_size()
+            )
             if not eyes_selenium_utils.is_mobile_device(self._driver):
-                eyes_selenium_utils.set_viewport_size(self._driver, self._viewport_size)
+                eyes_selenium_utils.set_viewport_size(
+                    self._driver, self._config.viewport_size
+                )
 
     def open(self, driver, app_name, test_name, viewport_size=None):
         # type: (AnyWebDriver, Text, Text, Optional[ViewPort]) -> EyesWebDriver
@@ -373,11 +387,11 @@ class Eyes(EyesBase):
             self._driver = EyesWebDriver(driver, self, self._stitch_mode)
 
         if viewport_size is not None:
-            self._viewport_size = viewport_size
+            self._config.viewport_size = viewport_size
             eyes_selenium_utils.set_viewport_size(self._driver, viewport_size)
 
         self._ensure_viewport_size()
-        self._open_base(app_name, test_name, viewport_size)
+        self.open_base(app_name, test_name, viewport_size)
 
         return self._driver
 

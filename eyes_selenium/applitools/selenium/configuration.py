@@ -1,11 +1,10 @@
-from enum import Enum
-from typing import List, Text
+from typing import Text
 
 import attr
 
-from applitools.common.config import Configuration
-from applitools.core.visualgridclient.model import RenderBrowserInfo
-from applitools.selenium import StitchMode
+from applitools.common import Configuration
+
+from .positioning import StitchMode
 
 
 @attr.s

@@ -139,10 +139,4 @@ class Eyes(EyesBase):
             display_size=self._config.viewport_size,
             inferred=self._inferred,
         )
-        # app_env = {
-        #     "os": self.host_os,
-        #     "hostingApp": self.host_app,
-        #     "displaySize": self._config.viewport_size,
-        #     "inferred": self._inferred_environment,
-        # }
         return app_env

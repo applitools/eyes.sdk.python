@@ -1,10 +1,10 @@
 import copy
 import typing as tp
 
-from applitools.common import EyesError, Point
+from applitools.common import EyesError, Point, RectangleSize
 
 if tp.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import FrameReference, RectangleSize
+    from applitools.common.utils.custom_types import FrameReference
 
 __all__ = ("Frame", "FrameChain")
 

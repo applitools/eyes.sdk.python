@@ -27,7 +27,6 @@ from applitools.common.metadata import (
 )
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard, image_utils
-from applitools.common.visualgridclient.model import RenderingInfo
 
 from .fluent import CheckSettings
 from .match_window_task import MatchWindowTask
@@ -56,7 +55,6 @@ class EyesConfigMixin(object):
     _last_screenshot = None  # type: tp.Optional[EyesScreenshot]
     _viewport_size = None  # type: ViewPort
     _scale_provider = None  # type: tp.Optional[ScaleProvider]
-    _render_info = None  # type: tp.Optional[RenderingInfo]
 
     def _ensure_configuration(self):
         if not self._config:
@@ -76,6 +74,24 @@ class EyesConfigMixin(object):
         #
         # if self._position_provider is None:
         #     self._position_provider = InvalidPositionProvider()
+
+    @property
+    def agent_id(self):
+        # type: () -> tp.Optional[tp.Text]
+        return self._config.agent_id
+
+    @agent_id.setter
+    def agent_id(self, value):
+        # type: (tp.Optional[tp.Text]) -> None
+        """
+        Sets the user given agent id of the SDK. {@code null} is referred to
+          as no id.
+
+        :param value: The agent ID to set
+        """
+        logger.debug("Agent ID: {}".format(value))
+        if value.strip():
+            self._config.agent_id = value.strip()
 
     @property
     def host_os(self):
@@ -312,12 +328,6 @@ class EyesBase(EyesConfigMixin, ABC):
         """
         :param size: The required viewport size.
         """
-
-    def get_rendering_info(self):
-        # type: () -> RenderingInfo
-        if self._render_info is None:
-            self._render_info = self._server_connector.get_render_info()
-        return self._render_info
 
     @property
     def scale_ratio(self):
