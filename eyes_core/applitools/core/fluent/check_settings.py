@@ -1,6 +1,5 @@
-import typing as tp
+import typing
 from abc import ABC
-from typing import Text
 
 import attr
 
@@ -15,6 +14,10 @@ from .region import (
     IgnoreRegionByRectangle,
 )
 
+if typing.TYPE_CHECKING:
+    from typing import Text, Optional, List, Union
+
+    T = typing.TypeVar("T", bound="CheckSettings")
 __all__ = ("CheckSettings",)
 
 
@@ -36,7 +39,7 @@ class CheckSettings(ABC):
     The Match settings object to use in the various Eyes.Check methods.
     """
 
-    _target_region = attr.ib(init=False, default=None)  # type: tp.Optional[Region]
+    _target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
     _timeout = attr.ib(init=False, default=-1)  # type: int
 
     _ignore_caret = attr.ib(init=False, default=False)  # type: bool
@@ -47,70 +50,70 @@ class CheckSettings(ABC):
     _send_dom = attr.ib(init=False, default=False)  # type: bool
     _use_dom = attr.ib(init=False, default=False)
     _enable_patterns = attr.ib(init=False, default=False)
-    _ignore_regions = attr.ib(init=False, factory=list)  # type: tp.List[GetRegion]
-    _layout_regions = attr.ib(init=False, factory=list)  # type: tp.List[GetRegion]
-    _strict_regions = attr.ib(init=False, factory=list)  # type: tp.List[GetRegion]
-    _content_regions = attr.ib(init=False, factory=list)  # type: tp.List[GetRegion]
+    _ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
+    _layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
+    _strict_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
+    _content_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     _floating_regions = attr.ib(
         init=False, factory=list
-    )  # type: tp.List[GetFloatingRegion]
+    )  # type: List[GetFloatingRegion]
 
     @property
     def values(self):
         return CheckSettingsValues(self)
 
     def layout(self):
-        # type: ()  -> CheckSettings
+        # type: ()  -> T
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self._match_level = MatchLevel.LAYOUT
         return self
 
     def exact(self):
-        # type: ()  -> CheckSettings
+        # type: ()  -> T
 
         """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
         self._match_level = MatchLevel.EXACT
         return self
 
     def strict(self):
-        # type: ()  -> CheckSettings
+        # type: ()  -> T
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self._match_level = MatchLevel.STRICT
         return self
 
     def content(self):
-        # type: ()  -> CheckSettings
+        # type: ()  -> T
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self._match_level = MatchLevel.CONTENT
         return self
 
     def match_level(self, match_level):
-        # type: (MatchLevel)  -> CheckSettings
+        # type: (MatchLevel)  -> T
         self._match_level = match_level
         return self
 
     def ignore_caret(self, ignore=True):
-        # type: (bool)  -> CheckSettings
+        # type: (bool)  -> T
         self._ignore_caret = ignore
         return self
 
     def fully(self, fully=True):
-        # type: (bool)  -> CheckSettings
+        # type: (bool)  -> T
         self._stitch_content = fully
         return self
 
     def with_name(self, name):
-        # type: (Text)  -> CheckSettings
+        # type: (Text)  -> T
         self._name = name
         return self
 
     def stitch_content(self, stitch_content=True):
-        # type: (bool)  -> CheckSettings
+        # type: (bool)  -> T
         self._stitch_content = stitch_content
         return self
 
     def timeout(self, timeout_ms):
-        # type: (int)  -> CheckSettings
+        # type: (int)  -> T
         self._timeout = timeout_ms
         return self
 
@@ -119,29 +122,29 @@ class CheckSettings(ABC):
         self._target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (*Region)  -> CheckSettings
+        # type: (*Region)  -> T
         """ Adds one or more ignore regions. """
         return self.__regions(regions, method_name="ignore_regions")
 
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (*Region)  -> CheckSettings
+        # type: (*Region)  -> T
         """ Adds one or more layout regions. """
         return self.__regions(regions, method_name="layout_regions")
 
     def strict_regions(self, *regions):
-        # type: (*Region)  -> CheckSettings
+        # type: (*Region)  -> T
         """ Adds one or more strict regions. """
         return self.__regions(regions, method_name="strict_regions")
 
     def content_regions(self, *regions):
-        # type: (*Region)  -> CheckSettings
+        # type: (*Region)  -> T
         """ Adds one or more content regions. """
         return self.__regions(regions, method_name="content_regions")
 
     def floating_regions(self, *args):
-        # type: (*Region)  -> CheckSettings
+        # type: (*Region)  -> T
         """ Adds a floating region. Details in :py:func:`_floating_to_region` """
         region_or_container = self._floating_to_region(*args)
         self._floating_regions.append(region_or_container)
@@ -150,7 +153,7 @@ class CheckSettings(ABC):
     floating = floating_regions
 
     def send_dom(self, send=True):
-        # type: (bool) -> CheckSettings
+        # type: (bool) -> T
         """
          Defines whether to send the document DOM or not.
         """
@@ -158,7 +161,7 @@ class CheckSettings(ABC):
         return self
 
     def use_dom(self, use=True):
-        # type: (bool) -> CheckSettings
+        # type: (bool) -> T
         """
          Defines useDom for enabling the match algorithm to use dom.
         """
@@ -166,12 +169,12 @@ class CheckSettings(ABC):
         return self
 
     def enable_patterns(self, enable=True):
-        # type: (bool) -> CheckSettings
+        # type: (bool) -> T
         self._enable_patterns = enable
         return self
 
     def __regions(self, regions, method_name):
-        # type: (Region, Text)  -> CheckSettings
+        # type: (Region, Text)  -> T
         if not regions:
             raise TypeError(
                 "{name} method called without arguments!".format(name=method_name)
@@ -184,7 +187,7 @@ class CheckSettings(ABC):
 
     @staticmethod
     def _region_to_region_provider(region, method_name):
-        # type: (tp.Union[GetRegion, Region], Text) -> GetRegion
+        # type: (Union[GetRegion, Region], Text) -> GetRegion
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             return IgnoreRegionByRectangle(region)

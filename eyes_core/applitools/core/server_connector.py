@@ -280,7 +280,7 @@ class ServerConnector(object):
         self._request = None
         return test_results
 
-    def match_window(self, running_session, data):
+    def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """
         Matches the current window to the immediate expected window in the Eyes server.
@@ -288,7 +288,7 @@ class ServerConnector(object):
         was not immediately matched in this call.
 
         :param running_session: The current session that is running.
-        :param data: The data for the requests.post.
+        :param match_data: The data for the requests.post.
         :return: The parsed response.
         """
         logger.debug("match_window called.")
@@ -297,7 +297,7 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
-        data = self._prepare_data(data)
+        data = self._prepare_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
@@ -337,12 +337,15 @@ class ServerConnector(object):
 
     @staticmethod
     def _prepare_data(match_data):
+        # type: (MatchWindowData) -> bytes
+        screenshot64 = match_data.app_output.screenshot64
+        match_data.app_output.screenshot64 = None
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+
         match_data_json_bytes = general_utils.to_json(match_data).encode(
             "utf-8"
         )  # type: bytes
         match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-        screenshot64 = match_data.app_output.screenshot64
-        image = image_utils.image_from_base64(screenshot64)
-        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
         body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
         return body

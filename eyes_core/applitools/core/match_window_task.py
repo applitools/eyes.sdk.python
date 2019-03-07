@@ -1,29 +1,31 @@
 from __future__ import absolute_import
 
 import time
-import typing as tp
+import typing
 from datetime import datetime
-from typing import List
 
-from applitools.common import AppOutputProvider, RunningSession, logger
+from applitools.common import (
+    AppOutputProvider,
+    AppOutputWithScreenshot,
+    RunningSession,
+    logger,
+)
 from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import general_utils
+from applitools.common.utils import general_utils, image_utils
 
 from .fluent import CheckSettings, GetRegion
 
-if tp.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import Num
+if typing.TYPE_CHECKING:
+    from typing import List, Text, Optional
+    from applitools.common.capture import EyesScreenshot
+    from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
-    from applitools.common.capture import EyesScreenshot
 
 __all__ = ("MatchWindowTask",)
-
-
-# TODO: remove Eyes and Target dependencies from here
 
 
 class MatchWindowTask(object):
@@ -63,7 +65,7 @@ class MatchWindowTask(object):
         )  # type: Num # since we want the time in seconds.
 
         self._match_result = None
-        self._last_screenshot = None  # type: tp.Optional[EyesScreenshot]
+        self._last_screenshot = None  # type: Optional[EyesScreenshot]
 
     @property
     def last_screenshot(self):
@@ -75,17 +77,16 @@ class MatchWindowTask(object):
 
     def match_window(
         self,
-        user_inputs,
-        region,
-        tag,
-        should_run_once_on_timeout,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        should_run_once_on_timeout,  # type: bool
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout,  # type: int
     ):
         if retry_timeout is None or retry_timeout < 0:
             retry_timeout = self._default_retry_timeout
-
         logger.info("retry_timeout = {}".format(retry_timeout))
         screenshot = self._take_screenshot(
             user_inputs,
@@ -103,8 +104,17 @@ class MatchWindowTask(object):
         return self._match_result
 
     def perform_match(
-        self, user_inputs, app_output, name, ignore_mismatch, image_match_settings
+        self,
+        user_inputs,  # type: UserInputs
+        app_output_width_screenshot,  # type: AppOutputWithScreenshot
+        name,  # type: Text
+        ignore_mismatch,  # type: bool
+        image_match_settings,  # type: ImageMatchSettings
     ):
+        screenshot = app_output_width_screenshot.screenshot
+        app_output = app_output_width_screenshot.app_output
+        app_output.screenshot64 = image_utils.get_base64(screenshot.image)
+
         match_window_data = MatchWindowData(
             ignore_mismatch=ignore_mismatch,
             user_inputs=user_inputs,
@@ -117,7 +127,7 @@ class MatchWindowTask(object):
                 force_match=False,
                 image_match_settings=image_match_settings,
             ),
-            app_output=app_output.app_output,
+            app_output=app_output,
             tag=name,
         )
         return self._server_connector.match_window(

@@ -26,7 +26,7 @@ from applitools.common.metadata import (
     SessionType,
 )
 from applitools.common.test_results import TestResults
-from applitools.common.utils import ABC, argument_guard, image_utils
+from applitools.common.utils import ABC, argument_guard
 
 from .fluent import CheckSettings
 from .match_window_task import MatchWindowTask
@@ -699,9 +699,7 @@ class EyesBase(EyesConfigMixin, ABC):
             dom_url = self._try_post_dom_snapshot(dom_json)
             logger.info("dom_url: {}".format(dom_url))
 
-        app_output = AppOutput(
-            title=title, screenshot64=image_utils.get_base64(screenshot.image)
-        )
+        app_output = AppOutput(title=title, screenshot64=None)
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done")
         return result
@@ -719,16 +717,16 @@ class EyesBase(EyesConfigMixin, ABC):
     def _check_window_base(
         self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
+        # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
-            # TODO: create propper MatchResult class
-            result = {"as_expected": True, "screenshot": None}
-            return result
+            return MatchResult(as_expected=True)
 
         self._ensure_running_session()
 
         self._before_match_window()
 
+        tag = tag if tag is not None else ""
         result = self.match_window(
             region_provider, tag, ignore_mismatch, check_settings
         )

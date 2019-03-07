@@ -74,6 +74,11 @@ class Eyes(EyesBase):
         # type: (Text, ImagesCheckSettings) -> bool
         if self.is_disabled:
             return False
+        if name:
+            check_settings = check_settings.with_name(name)
+        else:
+            name = check_settings.values.name
+
         image = check_settings.values.image
         if self._config.viewport_size is None:
             self._config.viewport_size = {"width": image.width, "height": image.height}
