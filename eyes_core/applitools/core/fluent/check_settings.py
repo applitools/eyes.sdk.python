@@ -1,11 +1,11 @@
 import typing
-from abc import ABC
 
 import attr
 
 from applitools.common import logger
 from applitools.common.geometry import Region
 from applitools.common.match import FloatingMatchSettings, MatchLevel
+from applitools.common.utils import ABC
 
 from .region import (
     FloatingRegionByRectangle,

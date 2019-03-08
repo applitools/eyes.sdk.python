@@ -4,6 +4,7 @@ import typing
 import attr
 
 from applitools.common.geometry import Region
+from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from typing import List
@@ -20,14 +21,14 @@ __all__ = (
 )
 
 
-class GetFloatingRegion(abc.ABC):
+class GetFloatingRegion(ABC):
     @abc.abstractmethod
     def get_region(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
         pass
 
 
-class GetRegion(abc.ABC):
+class GetRegion(ABC):
     @abc.abstractmethod
     def get_region(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> Region

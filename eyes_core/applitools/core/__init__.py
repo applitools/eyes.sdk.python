@@ -1,4 +1,5 @@
 from .eyes_base import *  # noqa
+from .fluent import *  # noqa
 from .match_window_task import *  # noqa
 from .positioning import *  # noqa
 from .scaling import *  # noqa
@@ -11,5 +12,6 @@ __all__ = (
     + scaling.__all__  # noqa
     + eyes_base.__all__  # noqa
     + positioning.__all__  # noqa
+    + fluent.__all__  # noqa
     + ("logger", "ServerConnector")  # noqa
 )
