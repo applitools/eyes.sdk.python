@@ -678,15 +678,15 @@ class EyesBase(EyesConfigMixin, ABC):
         screenshot = self.get_screenshot()
         logger.info("Done getting screenshot!")
 
-        if screenshot:
-            # cropping by region if necessary
-            if not region.is_size_empty:
-                screenshot = last_screenshot.sub_screenshot(region, False)
-                self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
-        else:
-            logger.info("getting screenshot url...")
-            # screenshot_url = self.get_screenshot_url()
-            logger.info("Done getting screenshot_url!")
+        # if screenshot:
+        #     # cropping by region if necessary
+        #     if not region.is_size_empty:
+        #         screenshot = screenshot.sub_screenshot(region, False)
+        #         self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
+        # else:
+        #     logger.info("getting screenshot url...")
+        #     # screenshot_url = self.get_screenshot_url()
+        #     logger.info("Done getting screenshot_url!")
 
         logger.info("Getting title, dom_url, image_location...")
         title = self._title

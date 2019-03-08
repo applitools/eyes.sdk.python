@@ -5,7 +5,7 @@ import typing
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
-from applitools.common import EyesError, MatchResult, Region, logger
+from applitools.common import AppEnvironment, EyesError, MatchResult, Region, logger
 from applitools.common.utils import image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -14,6 +14,7 @@ from applitools.core import (
     FixedScaleProvider,
     MouseTrigger,
     NullScaleProvider,
+    RegionProvider,
     TextTrigger,
 )
 from applitools.selenium.configuration import SeleniumConfiguration
@@ -23,6 +24,7 @@ from . import eyes_selenium_utils
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
 from .fluent import Target
+from .frames import FrameChain
 from .positioning import ElementPositionProvider
 from .webdriver import EyesWebDriver, StitchMode
 
@@ -47,7 +49,74 @@ class ScreenshotType(object):
     VIEWPORT_SCREENSHOT = "ViewportScreenshot"
 
 
-class Eyes(EyesBase):
+class SeleniumEyesConfigMixin(object):
+    @property
+    def wait_before_screenshots(self):
+        return self._config.wait_before_screenshots
+
+    @wait_before_screenshots.setter
+    def wait_before_screenshots(self, value):
+        self._config.wait_before_screenshots = value
+
+    @property
+    def _seconds_to_wait_screenshot(self):
+        return self.wait_before_screenshots / 1000.0
+
+    @property
+    def hide_scrollbars(self):
+        # type: () -> Text
+        """
+        Gets the stitch mode.
+
+        :return: The stitch mode.
+        """
+        return self._config.hide_scrollbars
+
+    @hide_scrollbars.setter
+    def hide_scrollbars(self, hide):
+        # type: (bool) -> None
+        self._config.hide_scrollbars = hide
+
+    @property
+    def force_full_page_screenshot(self):
+        # type: () -> bool
+        """
+        Gets the stitch mode.
+
+        :return: The stitch mode.
+        """
+        return self._config.force_full_page_screenshot
+
+    @force_full_page_screenshot.setter
+    def force_full_page_screenshot(self, force):
+        # type: (bool) -> None
+        self._config.force_full_page_screenshot = force
+
+    @property
+    def stitch_mode(self):
+        # type: () -> Text
+        """
+        Gets the stitch mode.
+
+        :return: The stitch mode.
+        """
+        return self._config.stitch_mode
+
+    @stitch_mode.setter
+    def stitch_mode(self, stitch_mode):
+        # type: (Text) -> None
+        """
+        Sets the stitch property - default is by scrolling.
+
+        :param stitch_mode: The stitch mode to set - either scrolling or css.
+        """
+        self._config.stitch_mode = stitch_mode
+        if stitch_mode == StitchMode.CSS:
+            self._config.hide_scrollbars = True
+            self._config.send_dom = True
+
+
+class Eyes(SeleniumEyesConfigMixin, EyesBase):
     """
     Applitools Selenium Eyes API for python.
     """
@@ -83,66 +152,21 @@ class Eyes(EyesBase):
         self._match_window_task = None  # type: Optional[MatchWindowTask]
         self._screenshot_type = None  # type: Optional[str]  # ScreenshotType
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
-        self._stitch_mode = StitchMode.Scroll  # type: Text
         self._element_position_provider = (
             None
         )  # type: Optional[ElementPositionProvider]
-
-        # If true, Eyes will create a full page screenshot (by using stitching)
-        # for browsers which only returns the viewport screenshot.
-        # self.force_full_page_screenshot = False  # type: bool
-
-        # If true, Eyes will remove the scrollbars from the pages
-        # before taking the screenshot.
-        # self.hide_scrollbars = False  # type: bool
-
-        # The number of milliseconds to wait before each time a screenshot is taken.
-        # self.wait_before_screenshots = (
-        #     EyesBase._DEFAULT_WAIT_BEFORE_SCREENSHOTS
-        # )  # type: int
+        self._original_fc = None  # type: Optional[FrameChain]
+        self._scroll_root_element = None
+        self._image_location = None
+        self._position_memento = None
 
     def _ensure_configuration(self):
         if self._config is None:
             self._config = SeleniumConfiguration()
 
     @property
-    def wait_before_screenshots(self):
-        return self._config.wait_before_screenshots
-
-    @wait_before_screenshots.setter
-    def wait_before_screenshots(self, value):
-        self._config.wait_before_screenshots = value
-
-    @property
-    def _seconds_to_wait_screenshot(self):
-        return self.wait_before_screenshots / 1000.0
-
-    @property
     def base_agent_id(self):
         return "eyes.selenium.python/{version}".format(version=__version__)
-
-    @property
-    def stitch_mode(self):
-        # type: () -> Text
-        """
-        Gets the stitch mode.
-
-        :return: The stitch mode.
-        """
-        return self._stitch_mode
-
-    @stitch_mode.setter
-    def stitch_mode(self, stitch_mode):
-        # type: (Text) -> None
-        """
-        Sets the stitch property - default is by scrolling.
-
-        :param stitch_mode: The stitch mode to set - either scrolling or css.
-        """
-        self._stitch_mode = stitch_mode
-        if stitch_mode == StitchMode.CSS:
-            self.hide_scrollbars = True
-            self.send_dom = True
 
     @property
     def driver(self):
@@ -151,9 +175,6 @@ class Eyes(EyesBase):
         Returns the current web driver.
         """
         return self._driver
-
-    def get_rendering_info(self):
-        return None
 
     def _obtain_screenshot_type(
         self,
@@ -210,12 +231,12 @@ class Eyes(EyesBase):
                 logger.info("Setting OS: " + os)
             else:
                 logger.info("No mobile OS detected.")
-        app_env = {
-            "os": os,
-            "hostingApp": self._config.host_app,
-            "displaySize": self._config.viewport_size,
-            "inferred": self._inferred_environment,
-        }
+        app_env = AppEnvironment(
+            os,
+            hosting_app=self._config.host_app,
+            display_size=self._config.viewport_size,
+            inferred=self._inferred_environment,
+        )
         return app_env
 
     @property
@@ -394,7 +415,7 @@ class Eyes(EyesBase):
                         driver.__class__
                     )
                 )
-            self._driver = EyesWebDriver(driver, self, self._stitch_mode)
+            self._driver = EyesWebDriver(driver, self, self.stitch_mode)
 
         if viewport_size is not None:
             self._config.viewport_size = viewport_size
@@ -412,9 +433,114 @@ class Eyes(EyesBase):
         else:
             name = check_settings.values.name
 
-        if not eyes_selenium_utils.is_mobile_device(self.driver):
-            logger.info("URL: %s" % self.driver.current_url)
-        logger.info("check('%s') - begin" % check_settings)
+        if not eyes_selenium_utils.is_mobile_device(self._driver):
+            logger.info("URL: {}".format(self._driver.current_url))
+
+        element = self._get_element(check_settings)
+        region = self._get_region(check_settings)
+        self._screenshot_type = self._obtain_screenshot_type(
+            is_element=bool(element),
+            # is_region=bool(check_settings.values.),
+            inside_a_frame=bool(self._driver.frame_chain),
+            stitch_content=check_settings.values.stitch_content,
+            force_fullpage=self.force_full_page_screenshot,
+        )
+        self._region_to_check = region
+        if not region:
+            region = NULL_REGION_PROVIDER
+        else:
+            region = RegionProvider(region)
+        result = self._check_window_base(region, name, False, check_settings)
+        # import ipdb
+        #
+        # ipdb.set_trace()
+        # logger.info("check({}) - begin".format(check_settings))
+        # self._stitch_content = check_settings.values.stitch_content
+        # target_region = check_settings.values.target_region
+        #
+        # self._original_fc = self.driver.frame_chain.clone()
+        # switched_frame_count = self._switch_to_frame(check_settings)
+        #
+        # self._scroll_root_element = None
+        # self._region_to_check = None
+        # self._image_location = None
+        #
+        # original_FC = None
+        #
+        # result = None
+        # if target_region:
+        #     original_FC = self._try_hide_scrollbars()
+        #     self._image_location = target_region.location
+        #     result = self._check_window_base(
+        #         RegionProvider(target_region),
+        #         name,
+        #         ignore_mismatch=False,
+        #         check_settings=check_settings,
+        #     )
+        # elif check_settings:
+        #     target_element = self._get_element(check_settings)
+        #     if target_element:
+        #         original_FC = self._try_hide_scrollbars()
+        #         self._target_element = EyesWebElement(
+        #             eyes_selenium_utils.get_underlying_webelement(target_element),
+        #             self.driver,
+        #         )
+        #         if self._stitch_content:
+        #             result = self._check_element(None, name, check_settings)
+        #         else:
+        #             result = self._check_region_by_element(name, check_settings)
+        #
+        #         self._target_element = None
+        #     elif len(check_settings.values.frame_chain) > 0:
+        #         original_FC = self._try_hide_scrollbars()
+        #         if self._stitch_content:
+        #             result = self._check_full_frame_or_element(name, check_settings)
+        #         else:
+        #             result = self._check_frame_fluent(name, check_settings)
+        #     else:
+        #         if eyes_selenium_utils.is_mobile_device(self.driver):
+        #             self.driver.switch_to.default_content()
+        #             original_FC = self._try_hide_scrollbars()
+        #         result = self._check_window_base(
+        #             NULL_REGION_PROVIDER,
+        #             name,
+        #             ignore_mismatch=False,
+        #             check_settings=check_settings,
+        #         )
+        # if not result:
+        #     result = MatchResult()
+        # self._switch_to_parent_frame(switched_frame_count)
+        # if self._position_memento:
+        #     self._position_provider.restore_state(self._position_memento)
+        #     self._position_memento = None
+        #
+        # self.driver.switch_to.reset_scroll()
+        #
+        # if original_FC:
+        #     self._try_restore_scrollbars(original_FC)
+        # self._try_switch_to_frames(self.driver, self._original_fc)
+        #
+        # self._stitch_content = False
+        # self._image_location = None
+        #
+        # logger.info("check - done!")
+        return result
+
+    # def _switch_to_parent_frame(self, frame_count):
+    #     if frame_count > 0:
+    #         self.driver.switch_to.parent_frame()
+    #         return self._switch_to_parent_frame(frame_count - 1)
+    #
+    # def _switch_to_frame(self, check_settings):
+    #     # type: (SeleniumCheckSettings) -> int
+    #     if check_settings is None:
+    #         return 0
+    #     switched_to_frame_count = 0
+    #     frame_chain = check_settings.values.frame_chain
+    #     for i, frame in enumerate(frame_chain):
+    #         if self.driver.switch_to(frame):
+    #             switched_to_frame_count += 1
+    #     return switched_to_frame_count
 
     def check_window(self, tag=None, match_timeout=-1, target=None):
         # type: (Optional[Text], int, Optional[SeleniumCheckSettings]) -> MatchResult
@@ -432,11 +558,25 @@ class Eyes(EyesBase):
             logger.deprecation(
                 "Use fluent interface with check_window is deprecated. Use `eyes.check()` instead"
             )
-
         check_settings = target
         if check_settings is None:
             check_settings = Target.window()
         return self.check(tag, check_settings.timeout(match_timeout))
+
+    def _get_region(self, check_settings):
+        target_element = self._get_element(check_settings)
+        target_region = check_settings.values.target_region
+        if target_region:
+            return target_region
+        if target_element:
+            return self._get_element_region(target_element)
+
+    def _get_element(self, check_settings):
+        target_element = check_settings.values.target_element
+        target_selector = check_settings.values.target_selector
+        if not target_element and target_selector:
+            target_element = self._driver.find_element_by_css_selector(target_selector)
+        return target_element
 
         # self._screenshot_type = self._obtain_screenshot_type(
         #     is_element=False,
@@ -463,13 +603,17 @@ class Eyes(EyesBase):
         :return: None
         """
         logger.info("check_region([%s], '%s')" % (region, tag))
+        if region.is_empty:
+            raise EyesError("region cannot be empty!")
         if target or stitch_content:
             logger.deprecation(
                 "Use fluent interface with check_region is deprecated. Use `eyes.check()` instead"
             )
-        return self.check(tag, Target.region(region).timeout(match_timeout))
-        # if region.is_empty:
-        #     raise EyesError("region cannot be empty!")
+        return self.check(
+            tag,
+            Target.region(region).timeout(match_timeout).stitch_content(stitch_content),
+        )
+
         # if target is None:
         #     target = Target()
 
@@ -503,7 +647,21 @@ class Eyes(EyesBase):
             logger.deprecation(
                 "Use fluent interface with check_region_by_element is deprecated. Use `eyes.check()` instead"
             )
-        return self.check(tag, Target.region(element).timeout(match_timeout))
+
+        origin_overflow = element.get_overflow()
+        element.set_overflow("hidden")
+        self._element_position_provider = ElementPositionProvider(self._driver, element)
+        result = self.check(
+            tag,
+            Target.region(element)
+            .timeout(match_timeout)
+            .stitch_content(stitch_content),
+        )
+        self._element_position_provider = None
+        if origin_overflow:
+            element.set_overflow(origin_overflow)
+        return result
+
         # if target is None:
         #     target = Target()
         #
