@@ -39,13 +39,13 @@ class MatchWindowTask(object):
 
     def __init__(
         self,
-        server_connector,
-        running_session,
-        retry_timeout,
-        eyes,
-        app_output_provider,
+        server_connector,  # type: ServerConnector
+        running_session,  # type: RunningSession
+        retry_timeout,  # type: Num
+        eyes,  # type: EyesBase
+        app_output_provider,  # type: AppOutputProvider
     ):
-        # type: (ServerConnector, RunningSession, Num, EyesBase, AppOutputProvider) -> None
+        # type: (...) -> None
         """
         Ctor.
 
@@ -53,7 +53,8 @@ class MatchWindowTask(object):
         :param running_session:  The current eyes session.
         :param retry_timeout: The default match timeout. (milliseconds)
         :param eyes: The Eyes instance which created this task.
-        :param app_output_provider: A callback for getting the application output when performing match.
+        :param app_output_provider: A callback for getting the application output
+                                    when performing match.
        """
         self._server_connector = server_connector
         self._running_session = running_session
@@ -205,7 +206,8 @@ class MatchWindowTask(object):
                     self._last_screenshot.image.height,
                 )
             else:
-                # We set an "infinite" image size since we don't know what the screenshot size is...
+                # We set an "infinite" image size since we don't know what the
+                # screenshot size is...
                 self._last_screenshot_bounds = Region(0, 0, float("inf"), float("inf"))
         else:
             self._last_screenshot_bounds = region

@@ -556,7 +556,8 @@ class Eyes(SeleniumEyesConfigMixin, EyesBase):
         logger.info("check_window('%s')" % tag)
         if target:
             logger.deprecation(
-                "Use fluent interface with check_window is deprecated. Use `eyes.check()` instead"
+                "Use fluent interface with check_window is deprecated. "
+                "Use `eyes.check()` instead"
             )
         check_settings = target
         if check_settings is None:
@@ -607,7 +608,8 @@ class Eyes(SeleniumEyesConfigMixin, EyesBase):
             raise EyesError("region cannot be empty!")
         if target or stitch_content:
             logger.deprecation(
-                "Use fluent interface with check_region is deprecated. Use `eyes.check()` instead"
+                "Use fluent interface with check_region is deprecated. "
+                "Use `eyes.check()` instead"
             )
         return self.check(
             tag,
@@ -645,7 +647,8 @@ class Eyes(SeleniumEyesConfigMixin, EyesBase):
         logger.info("check_region_by_element('%s')" % tag)
         if target or stitch_content:
             logger.deprecation(
-                "Use fluent interface with check_region_by_element is deprecated. Use `eyes.check()` instead"
+                "Use fluent interface with check_region_by_element is deprecated. "
+                "Use `eyes.check()` instead"
             )
 
         origin_overflow = element.get_overflow()
