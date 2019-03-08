@@ -25,11 +25,11 @@ def get_version(package_name):
 
 install_requires = [
     "eyes-common=={}".format(get_version("core")),
-    "attrs>=18",
-    "Pillow>=5.0.0",
-    "requests>=2.1.0",
+    "attrs >= 18,<19",
+    "Pillow >= 5.0.0,<7.0.0",
+    "requests>=2.1.0,<2.21.0",
     # uses for check if the mobile platform is used in the test
-    "Appium-Python-Client>=0.31",
+    "Appium-Python-Client>=0.31,<0.39",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
