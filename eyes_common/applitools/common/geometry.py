@@ -6,9 +6,8 @@ from enum import Enum
 
 import attr
 
-from applitools.common.utils.converters import name_from_enum, round_converter
-
 from .utils import argument_guard
+from .utils.converters import name_from_enum, round_converter
 
 if tp.TYPE_CHECKING:
     from .utils.custom_types import ViewPort

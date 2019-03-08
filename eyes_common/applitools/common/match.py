@@ -3,9 +3,8 @@ from enum import Enum
 
 import attr
 
-from applitools.common.utils.converters import name_from_enum
-
 from .geometry import Region
+from .utils.converters import name_from_enum
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Text, Union

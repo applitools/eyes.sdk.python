@@ -6,7 +6,7 @@ from collections import OrderedDict
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.core import Point
+from applitools.common import Point
 from applitools.selenium import dom_capture
 
 

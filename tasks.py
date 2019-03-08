@@ -23,7 +23,7 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
 
 
 @task(pre=[clean])
-def dist(c, common=None, core=None, selenium=None, images=None, prod=False):
+def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
     packages = list(
         _packages_resolver(
             common, core, selenium, images, full_path=True, path_as_str=True
@@ -37,7 +37,7 @@ def dist(c, common=None, core=None, selenium=None, images=None, prod=False):
 
 
 @task
-def install_requirements(c, dev=None, testing=None, lint=None):
+def install_requirements(c, dev=False, testing=False, lint=False):
     dev_requires = ["ipython", "ipdb", "bumpversion", "wheel", "twine", "pre-commit"]
     testing_requires = [
         "pytest==3.9.3",
@@ -60,10 +60,10 @@ def install_requirements(c, dev=None, testing=None, lint=None):
 
 
 def _packages_resolver(
-    common=None,
-    core=None,
-    selenium=None,
-    images=None,
+    common=False,
+    core=False,
+    selenium=False,
+    images=False,
     full_path=False,
     path_as_str=False,
 ):
@@ -95,28 +95,29 @@ def _packages_resolver(
 
 
 @task
-def install_packages(c, common=None, core=None, selenium=None, images=None):
+def install_packages(c, common=False, core=False, selenium=False, images=False):
     packages = _packages_resolver(
         common, core, selenium, images, full_path=True, path_as_str=True
     )
+
     for pack in packages:
-        c.run("pip install -U -e {}".format(pack), echo=True)
+        c.run("pip install -U {}".format(pack), echo=True)
 
 
 @task
-def uninstall_packages(c, common=None, core=None, selenium=None, images=None):
+def uninstall_packages(c, common=False, core=False, selenium=False, images=False):
     packages = _packages_resolver(common, core, selenium, images)
     c.run("pip uninstall {}".format(" ".join(packages)), echo=True)
 
 
 @task
-def pep_check(c, common=None, core=None, selenium=None, images=None):
+def pep_check(c, common=False, core=False, selenium=False, images=False):
     for pack in _packages_resolver(common, core, selenium, images, full_path=True):
         c.run("flake8 {}".format(pack), echo=True)
 
 
 @task
-def mypy_check(c, common=None, core=None, selenium=None, images=None):
+def mypy_check(c, common=False, core=False, selenium=False, images=False):
     for pack in _packages_resolver(common, core, selenium, images, full_path=True):
         c.run(
             "mypy --no-incremental --ignore-missing-imports {}/applitools".format(pack),
@@ -125,7 +126,9 @@ def mypy_check(c, common=None, core=None, selenium=None, images=None):
 
 
 @task
-def test_run_packs(c, core=None, selenium=None, images=None, appium=None, common=None):
+def test_run_packs(
+    c, core=False, selenium=False, images=False, appium=False, common=False
+):
     if core:
         c.run("pytest tests/functional/eyes_core")
     elif selenium:

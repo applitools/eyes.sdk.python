@@ -1,6 +1,5 @@
-"""
-General purpose utilities.
-"""
+from __future__ import absolute_import
+
 import hashlib
 import itertools
 import json
@@ -13,12 +12,16 @@ from datetime import timedelta, tzinfo
 import attr
 
 from applitools.common import logger
-from applitools.common.geometry import RectangleSize
 
 from .compat import iteritems, urlparse
 
+"""
+General purpose utilities.
+"""
+
+
 if typing.TYPE_CHECKING:
-    from typing import Optional, Union, Callable, Any, Dict, List
+    from typing import Union, Callable, Any, Dict, List
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
     from selenium.webdriver.remote.switch_to import SwitchTo
@@ -250,15 +253,6 @@ def get_sha256_hash(content):
     m = hashlib.sha256()
     m.update(content.encode("utf-8"))
     return "".join(["%02x" % b for b in m.digest()])
-
-
-def to_rectangle(d):
-    # type: (Optional[Dict]) -> Optional[RectangleSize]
-    if d is None:
-        return None
-    if set(d.keys()) != {"width", "height"}:
-        raise TypeError("Dict must contain `width` and `height`")
-    return RectangleSize(**d)
 
 
 def json_response_to_attrs_class(dct, cls):

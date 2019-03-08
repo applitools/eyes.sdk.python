@@ -4,7 +4,7 @@ here = os.path.dirname(os.path.join(__file__))
 root_dir = os.path.normpath(os.path.join(here, os.pardir))
 
 
-def _packages_resolver(common=None, core=None, selenium=None, images=None):
+def _packages_resolver(common=False, core=False, selenium=False, images=False):
     common_pkg, core_pkg, selenium_pkg, images_pkg = (
         "eyes_common",
         "eyes_core",

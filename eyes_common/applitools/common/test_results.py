@@ -1,19 +1,19 @@
 from __future__ import absolute_import
 
-import typing as tp
+import typing
 from enum import Enum
-from typing import Text
 
 import attr
 
-from .geometry import RectangleSize
-from .utils.general_utils import to_rectangle
+if typing.TYPE_CHECKING:
+    from typing import Text, Any, Dict, Optional
+    from .geometry import RectangleSize
+
+    # TODO: Implement objects
+    SessionUrls = Dict[Any, Any]
+    StepInfo = Dict[Any, Any]
 
 __all__ = ("TestResults",)
-
-# TODO: Implement objects
-SessionUrls = tp.Dict[tp.Any, tp.Any]
-StepInfo = tp.Dict[tp.Any, tp.Any]
 
 
 class TestResultsStatus(Enum):
@@ -41,10 +41,10 @@ class TestResults(object):
     content_matches = attr.ib(default=0, repr=False)  # type: int
     layout_matches = attr.ib(default=0, repr=False)  # type: int
     none_matches = attr.ib(default=0, repr=False)  # type: int
-    is_new = attr.ib(default=None, repr=False)  # type: tp.Optional[bool]
+    is_new = attr.ib(default=None, repr=False)  # type: Optional[bool]
 
-    url = attr.ib(init=False, default=None)  # type: tp.Optional[tp.Text]
-    status = attr.ib(default=None, repr=False)  # type: tp.Optional[tp.Text]
+    url = attr.ib(init=False, default=None)  # type: Optional[Text]
+    status = attr.ib(default=None, repr=False)  # type: Optional[Text]
 
     name = attr.ib(default=None, repr=False)  # type: Text
     secret_token = attr.ib(default=None, repr=False)  # type: Text
@@ -56,7 +56,9 @@ class TestResults(object):
     host_os = attr.ib(default=None, repr=False)  # type: Text
     host_app = attr.ib(default=None, repr=False)  # type: Text
     host_display_size = attr.ib(
-        default=None, repr=False, converter=to_rectangle
+        default=None,
+        repr=False,
+        # validator=validators.check_if_rectangle_protocol,
     )  # type: RectangleSize
     # started_at = attr.ib(
     #     default=None,
