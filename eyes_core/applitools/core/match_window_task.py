@@ -7,6 +7,7 @@ from datetime import datetime
 from applitools.common import (
     AppOutputProvider,
     AppOutputWithScreenshot,
+    MatchResult,
     RunningSession,
     logger,
 )
@@ -34,9 +35,7 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    MATCH_INTERVAL = 0.5
-
-    MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
+    MATCH_INTERVAL = 0.5  # sec
 
     def __init__(
         self,
@@ -64,7 +63,7 @@ class MatchWindowTask(object):
             retry_timeout / 1000.0
         )  # type: Num # since we want the time in seconds.
 
-        self._match_result = None
+        self._match_result = None  # type: MatchResult
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
 
     @property
@@ -88,6 +87,7 @@ class MatchWindowTask(object):
         if retry_timeout is None or retry_timeout < 0:
             retry_timeout = self._default_retry_timeout
         logger.info("retry_timeout = {}".format(retry_timeout))
+
         screenshot = self._take_screenshot(
             user_inputs,
             region,
@@ -201,8 +201,8 @@ class MatchWindowTask(object):
                 self._last_screenshot_bounds = Region(
                     0,
                     0,
-                    self._last_screenshot._image.width,
-                    self._last_screenshot._image.height,
+                    self._last_screenshot.image.width,
+                    self._last_screenshot.image.height,
                 )
             else:
                 # We set an "infinite" image size since we don't know what the screenshot size is...
@@ -253,8 +253,10 @@ class MatchWindowTask(object):
     def _retry_taking_screenshot(
         self, user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
     ):
-        start = datetime.now()
-        retry = (datetime.now() - start).microseconds
+        start = datetime.now()  # Start the retry timer.
+        retry = (datetime.now() - start).seconds
+
+        # The match retry loop.
         screenshot = self._taking_screenshot_loop(
             user_inputs,
             region,
@@ -265,7 +267,7 @@ class MatchWindowTask(object):
             retry,
             start,
         )
-
+        # If we're here because we haven't found a match yet, try once more
         if not self._match_result.as_expected:
             return self._try_take_screenshot(
                 user_inputs, region, tag, ignore_mismatch, check_settings
@@ -299,7 +301,7 @@ class MatchWindowTask(object):
         if self._match_result.as_expected:
             return new_screenshot
 
-        retry = (start - datetime.now()).microseconds
+        retry = (start - datetime.now()).seconds
         return self._taking_screenshot_loop(
             user_inputs,
             region,

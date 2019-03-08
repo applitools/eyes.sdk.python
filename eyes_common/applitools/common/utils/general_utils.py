@@ -7,7 +7,7 @@ import json
 import re
 import time
 import types
-import typing as tp
+import typing
 from datetime import timedelta, tzinfo
 
 import attr
@@ -16,13 +16,16 @@ from .. import logger
 from ..geometry import RectangleSize
 from .compat import iteritems, urlparse
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Optional, Union, Callable, Any, Dict, List
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
     from selenium.webdriver.remote.switch_to import SwitchTo
 
     from applitools.selenium.webdriver import EyesWebDriver, _EyesSwitchTo
     from applitools.selenium.webelement import EyesWebElement
+
+    T = typing.TypeVar("T")
 
 
 class _UtcTz(tzinfo):
@@ -47,9 +50,7 @@ UTC = _UtcTz()
 
 
 def underscore_to_camelcase(text):
-    return "".join(
-        word.title() if i else word for i, word in enumerate(text.split("_"))
-    )
+    return re.sub(r"(?!^)_([a-zA-Z])", lambda m: m.group(1).upper(), text)
 
 
 def camelcase_to_underscore(text):
@@ -74,7 +75,7 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
 
 
 def to_json(obj, keys_to_camel_case=True):
-    # type: (tp.Any, bool) -> str
+    # type: (Any, bool) -> str
     """
     Returns an object's json representation (defaults to __getstate__ for user defined types).
     """
@@ -106,7 +107,7 @@ def create_proxy_property(property_name, target_name, is_settable=False):
 
     # noinspection PyUnusedLocal
     def _proxy_get(self):
-        # type: (tp.Any) -> tp.Dict[str, float]
+        # type: (Any) -> Dict[str, float]
         return getattr(getattr(self, target_name), property_name)
 
     # noinspection PyUnusedLocal
@@ -120,11 +121,11 @@ def create_proxy_property(property_name, target_name, is_settable=False):
 
 
 def create_forwarded_method(
-    from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-    to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
+    from_,  # type: Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
+    to,  # type: Union[WebDriver, WebElement, SwitchTo]
     func_name,  # type: str
 ):
-    # type: (...) -> tp.Callable
+    # type: (...) -> Callable
     """
     Returns a method(!) to be set on 'from_', which activates 'func_name' on 'to'.
 
@@ -136,16 +137,16 @@ def create_forwarded_method(
 
     # noinspection PyUnusedLocal
     def forwarded_method(self_, *args, **kwargs):
-        # type: (EyesWebDriver, *tp.Any, **tp.Any) -> tp.Callable
+        # type: (EyesWebDriver, *Any, **Any) -> Callable
         return getattr(to, func_name)(*args, **kwargs)
 
     return types.MethodType(forwarded_method, from_)
 
 
 def create_proxy_interface(
-    from_,  # type: tp.Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-    to,  # type: tp.Union[WebDriver, WebElement, SwitchTo]
-    ignore_list=None,  # type: tp.List[str]
+    from_,  # type: Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
+    to,  # type: Union[WebDriver, WebElement, SwitchTo]
+    ignore_list=None,  # type: List[str]
     override_existing=False,  # type: bool
 ):
     # type: (...) -> None
@@ -172,7 +173,7 @@ def create_proxy_interface(
 
 
 def cached_property(f):
-    # type: (tp.Callable) -> tp.Any
+    # type: (Callable) -> Any
     """
     Returns a cached property that is calculated by function f
     """
@@ -251,10 +252,24 @@ def get_sha256_hash(content):
 
 
 def to_rectangle(d):
-    # type: (dict) -> RectangleSize
-
-    if "width" in d.keys() and "height" in d.keys():
-        pass
+    # type: (Optional[Dict]) -> Optional[RectangleSize]
+    if d is None:
+        return None
     if set(d.keys()) != {"width", "height"}:
-        raise ValueError("Dict must contain `width` and `height`")
+        raise TypeError("Dict must contain `width` and `height`")
     return RectangleSize(**d)
+
+
+def json_response_to_attrs_class(dct, cls):
+    """
+    Change case of `dct` keys to snake_case. Map existing keys in `dct` and `cls` and
+    initialize `cls` by `dct` data.
+
+    :param dct: dict with camelCase keys
+    :param cls: class created by attrs
+    :return: class instance
+    """
+    fields = [f.name for f in attr.fields(cls)]
+    parsed_response = change_case_of_keys(dct, to_underscore=True)
+    params = {k: v for k, v in iteritems(parsed_response) if k in fields}
+    return cls(**params)

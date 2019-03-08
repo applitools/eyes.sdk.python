@@ -45,13 +45,13 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = 2
 
 
-@attr.s
+@attr.s(slots=True)
 class RectangleSize(DictAccessMixin):
     width = attr.ib()  # type: int
     height = attr.ib()  # type:int
 
 
-@attr.s
+@attr.s(slots=True)
 class Point(DictAccessMixin):
     """
     A point with the coordinates (x,y).
@@ -178,7 +178,7 @@ class Point(DictAccessMixin):
         )
 
 
-@attr.s
+@attr.s(slots=True)
 class Region(DictAccessMixin):
     """
     A rectangle identified by left,top, width, height.

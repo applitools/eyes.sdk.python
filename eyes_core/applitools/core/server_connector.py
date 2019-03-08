@@ -5,7 +5,6 @@ import time
 import typing as tp
 from struct import pack
 
-import attr
 import requests
 from requests.packages import urllib3  # noqa
 
@@ -15,13 +14,8 @@ from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
-from applitools.common.utils import (
-    general_utils,
-    gzip_compress,
-    image_utils,
-    iteritems,
-    urljoin,
-)
+from applitools.common.utils import general_utils, gzip_compress, image_utils, urljoin
+from applitools.common.utils.general_utils import json_response_to_attrs_class
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num
@@ -35,16 +29,6 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
 __all__ = ("ServerConnector",)
-
-
-def json_response_to_attrs_class(dct, cls):
-    """
-    Prevent failing if some params were added on server
-    """
-    fields = [f.name for f in attr.fields(cls)]
-    parsed_response = general_utils.change_case_of_keys(dct, to_underscore=True)
-    params = {k: v for k, v in iteritems(parsed_response) if k in fields}
-    return cls(**params)
 
 
 class _RequestCommunicator(object):
@@ -301,7 +285,7 @@ class ServerConnector(object):
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
-
+        # TODO: allow to send images as base64
         response = self._request.post(
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
