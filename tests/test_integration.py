@@ -67,6 +67,7 @@ def test_eyes_core_namespace_package(virtualenv):
 
 
 def test_eyes_images_namespace_package(virtualenv):
+    virtualenv.install_package(_packages_resolver(common=True), build_egg=True)
     virtualenv.install_package(_packages_resolver(core=True), build_egg=True)
     virtualenv.install_package(_packages_resolver(images=True), build_egg=True)
     virtualenv.run('python -c "from applitools.images import *"')

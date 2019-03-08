@@ -4,8 +4,6 @@ import abc
 import typing as tp
 from typing import Optional, Text
 
-from mock import Mock
-
 from applitools.common import BatchInfo, Configuration, Region, RunningSession, logger
 from applitools.common.app_output import (
     AppOutput,
@@ -285,7 +283,7 @@ class EyesBase(EyesConfigMixin, ABC):
 
         :param server_url: The URL of the Eyes server
         """
-        self._debug_screenshot_provider = Mock()
+        self._debug_screenshot_provider = None
         self._render = False
         self._server_connector = ServerConnector(server_url)  # type: ServerConnector
         self._should_get_title = False  # type: bool
