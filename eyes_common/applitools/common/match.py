@@ -78,7 +78,7 @@ class ExactMatchSettings(object):
 
 
 @attr.s
-class ImageMatchSettings:
+class ImageMatchSettings(object):
     """
     Encapsulates match settings for the a session.
     """

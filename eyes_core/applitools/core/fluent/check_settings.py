@@ -22,7 +22,7 @@ __all__ = ("CheckSettings",)
 
 
 @attr.s
-class CheckSettingsValues:
+class CheckSettingsValues(object):
     """
     Access to values stored in :py:class:`CheckSettings`
     """

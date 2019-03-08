@@ -65,7 +65,7 @@ def started_connector(configured_connector):
     return configured_connector
 
 
-class MockResponse:
+class MockResponse(object):
     def __init__(self, json_data, status_code, headers=None):
         self.json_data = json_data
         self.status_code = status_code
