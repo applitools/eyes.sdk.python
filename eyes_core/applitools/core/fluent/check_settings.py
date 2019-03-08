@@ -44,8 +44,8 @@ class CheckSettings(ABC):
 
     _ignore_caret = attr.ib(init=False, default=False)  # type: bool
     _stitch_content = attr.ib(init=False, default=False)  # type: bool
-    _match_level = attr.ib(init=False, default=None)  # type: MatchLevel
-    _name = attr.ib(init=False)  # type: Text
+    _match_level = attr.ib(init=False, default=None)  # type: Optional[MatchLevel]
+    _name = attr.ib(init=False, default=None)  # type: Optional[Text]
 
     _send_dom = attr.ib(init=False, default=False)  # type: bool
     _use_dom = attr.ib(init=False, default=False)

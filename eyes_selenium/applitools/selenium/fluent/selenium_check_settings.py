@@ -27,6 +27,9 @@ class FrameLocator(object):
 class SeleniumCheckSettingsValues(object):
     _check_settings_values = attr.ib()
 
+    def __getattr__(self, attr_name):
+        return getattr(self._check_settings_values, attr_name)
+
     @property
     def target_provider(self):
         target_selector = self._check_settings_values.target_selector
@@ -72,7 +75,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @property
     def values(self):
-        val = super(SeleniumCheckSettings, self).values()
+        val = super(SeleniumCheckSettings, self).values
         return SeleniumCheckSettingsValues(val)
 
     def region(self, region):
