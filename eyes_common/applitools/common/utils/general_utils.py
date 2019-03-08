@@ -65,7 +65,7 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
     elif to_underscore:
         func = camelcase_to_underscore
     else:
-        raise ValueError("You should select to_camel or to_underscore")
+        raise ValueError("One of options should be selected. [to_camel|to_underscore]")
     new = {}
     for k, v in iteritems(d):
         if isinstance(v, dict):

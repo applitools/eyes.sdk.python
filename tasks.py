@@ -72,17 +72,17 @@ def _packages_resolver(
         "eyes_images",
         "eyes_common",
     )
-
+    if common:
+        packages.append(common_pkg)
     if core:
         packages.append(core_pkg)
     if selenium:
         packages.append(selenium_pkg)
     if images:
         packages.append(images_pkg)
-    if common:
-        packages.append(common_pkg)
+
     if not packages:
-        packages = [core_pkg, selenium_pkg, images_pkg, common_pkg]
+        packages = [common_pkg, core_pkg, selenium_pkg, images_pkg]
 
     for pack in packages:
         if full_path:
