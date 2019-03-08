@@ -3,10 +3,22 @@ import os
 import pytest
 from mock import patch
 
-from applitools.common import EyesError
+from applitools.common import (
+    AppEnvironment,
+    AppOutput,
+    BatchInfo,
+    EyesError,
+    ImageMatchSettings,
+    MatchWindowData,
+    Options,
+    RunningSession,
+    SessionStartInfo,
+    SessionType,
+    TestResults,
+)
 from applitools.common.utils.compat import urljoin
-from applitools.core import ServerConnector, TestResults
-from applitools.core.visualgridclient.model import RenderingInfo
+from applitools.common.utils.general_utils import json_response_to_attrs_class
+from applitools.core import ServerConnector
 
 API_KEY = "TEST API KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -80,8 +92,8 @@ def _request_check(*args, **kwargs):
 def mocked_requests_delete(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
-    if url == urljoin(RUNNING_SESSION_URL, "some_session_id"):
-        return MockResponse(STOP_SESSION, 200)
+    if url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA["id"]):
+        return MockResponse(STOP_SESSION_DATA, 200)
     return MockResponse(None, 404)
 
 
@@ -97,25 +109,15 @@ def mocked_requests_post(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == RUNNING_SESSION_URL:
-        return MockResponse(
-            {
-                "id": RUNNING_SESSION["session_id"],
-                "url": RUNNING_SESSION["session_url"],
-            },
-            201,
-        )
-    elif url == urljoin(RUNNING_SESSION_URL, "some_session_id"):
+        return MockResponse(RUNNING_SESSION_DATA, 201)
+    elif url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA["id"]):
         return MockResponse({"asExpected": True}, 200)
     elif url == RUNNING_SESSION_DATA_URL:
-        return MockResponse(
-            {}, 200, headers={"Location": RUNNING_SESSION["session_url"]}
-        )
+        return MockResponse({}, 200, headers={"Location": RUNNING_SESSION_DATA["url"]})
     return MockResponse(None, 404)
 
 
-START_INFO = {
-    "agentId": "eyes.core.python/3.15.4",
-    "appIdOrName": "TestApp",
+SESSION_START_INFO_DATA = {
     "scenarioIdOrName": "TestName",
     "batchInfo": {
         "name": None,
@@ -130,14 +132,36 @@ START_INFO = {
     "parentBranchName": None,
     "properties": [],
 }
-
-RUNNING_SESSION = {
-    "session_id": "some_session_id",
-    "session_url": "http://some-session-url.com",
-    "is_new_session": True,
+SESSION_START_INFO_OBJ = SessionStartInfo(
+    agent_id="eyes.core.python/3.15.4",
+    session_type=SessionType.SEQUENTIAL,
+    app_id_or_name="TestApp",
+    ver_id=None,
+    scenario_id_or_name="TestName",
+    batch_info=BatchInfo(),
+    baseline_env_name="Baseline env name",
+    environment_name="Env name",
+    environment=AppEnvironment(),
+    default_match_settings=ImageMatchSettings(match_level="STRICT"),
+    branch_name="branch Name",
+    parent_branch_name="parentBranchName",
+    baseline_branch_name="baselineBranchName",
+    compare_with_parent_branch=False,
+    ignore_baseline=False,
+    save_diffs=True,
+    render=False,
+    properties=[],
+)
+RUNNING_SESSION_DATA = {
+    "id": "some id",
+    "sessionId": "some session id",
+    "url": "http://some-session-url.com",
+    "batchId": "other url",
+    "baselineId": "other url",
 }
+RUNNING_SESSION_OBJ = json_response_to_attrs_class(RUNNING_SESSION_DATA, RunningSession)
 
-STOP_SESSION = {
+STOP_SESSION_DATA = {
     "steps": 1,
     "matches": 1,
     "mismatches": 0,
@@ -149,6 +173,23 @@ STOP_SESSION = {
     "noneMatches": None,
     "status": "Passed",
 }
+STOP_SESSION_OBJ = json_response_to_attrs_class(STOP_SESSION_DATA, TestResults)
+
+MATCH_WINDOW_DATA_OBJ = MatchWindowData(
+    ignore_mismatch=False,
+    user_inputs=[],
+    app_output=AppOutput(title="Title", screenshot64="some image"),
+    tag="Tag",
+    options=Options(
+        name="Opt name",
+        user_inputs=[],
+        ignore_mismatch=False,
+        ignore_match=False,
+        force_match=False,
+        force_mismatch=False,
+        image_match_settings=SESSION_START_INFO_OBJ.default_match_settings,
+    ),
+)
 
 
 def test_set_get_server_url():
@@ -191,56 +232,54 @@ def test_is_session_started_False(configured_connector):
 def test_start_session(configured_connector):
     # type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        respo = configured_connector.start_session(START_INFO)
-    assert respo == RUNNING_SESSION
+        running_session = configured_connector.start_session(SESSION_START_INFO_OBJ)
+    assert running_session.id == RUNNING_SESSION_DATA["id"]
+    assert running_session.session_id == RUNNING_SESSION_DATA["sessionId"]
+    assert running_session.batch_id == RUNNING_SESSION_DATA["batchId"]
+    assert running_session.baseline_id == RUNNING_SESSION_DATA["baselineId"]
+    assert running_session.url == RUNNING_SESSION_DATA["url"]
 
 
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        as_expected = started_connector.match_window(RUNNING_SESSION, b"data")
-    assert as_expected
+        with patch(
+            "applitools.core.server_connector.ServerConnector._prepare_data",
+            return_value=b"Some value",
+        ):
+            match = started_connector.match_window(
+                RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+            )
+    assert match.as_expected
 
 
 def test_post_dom_snapshot(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
         dom_url = started_connector.post_dom_snapshot("{HTML: []")
-    assert dom_url == RUNNING_SESSION["session_url"]
+    assert dom_url == RUNNING_SESSION_DATA["url"]
 
 
 def test_stop_session(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.delete", side_effect=mocked_requests_delete):
         respo = started_connector.stop_session(
-            RUNNING_SESSION, is_aborted=False, save=False
+            RUNNING_SESSION_OBJ, is_aborted=False, save=False
         )
-    pr = STOP_SESSION
-    assert vars(respo) == vars(
-        TestResults(
-            pr["steps"],
-            pr["matches"],
-            pr["mismatches"],
-            pr["missing"],
-            pr["exactMatches"],
-            pr["strictMatches"],
-            pr["contentMatches"],
-            pr["layoutMatches"],
-            pr["noneMatches"],
-            pr["status"],
-        )
-    )
+    assert respo == json_response_to_attrs_class(STOP_SESSION_DATA, TestResults)
     # should be False after stop_session
     assert not started_connector.is_session_started
 
 
 def test_raise_error_when_session_was_not_run(configured_connector):
     with pytest.raises(EyesError):
-        configured_connector.match_window(RUNNING_SESSION, b"data")
+        configured_connector.match_window(RUNNING_SESSION_OBJ, b"data")
     with pytest.raises(EyesError):
         configured_connector.post_dom_snapshot("{HTML: []")
     with pytest.raises(EyesError):
-        configured_connector.stop_session(RUNNING_SESSION, is_aborted=False, save=False)
+        configured_connector.stop_session(
+            RUNNING_SESSION_OBJ, is_aborted=False, save=False
+        )
 
 
 def test_request_with_changed_values(configured_connector):
@@ -252,15 +291,12 @@ def test_request_with_changed_values(configured_connector):
     configured_connector.server_url = new_server_url
 
     with patch("requests.post") as mocked_post:
-        configured_connector.start_session(START_INFO)
+        with patch(
+            "applitools.core.server_connector.json_response_to_attrs_class",
+            return_value=RUNNING_SESSION_OBJ,
+        ):
+            configured_connector.start_session(SESSION_START_INFO_OBJ)
 
     assert mocked_post.call_args[1]["timeout"] == new_timeout
     assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
     assert new_server_url in mocked_post.call_args[0][0]
-
-
-def test_get_rendering_info(started_connector):
-    expected_ri = RenderingInfo.from_json(RENDERING_INFO_DATA)
-    with patch("requests.get", side_effect=mocked_requests_get):
-        render_info = started_connector.get_render_info()
-    assert render_info == expected_ri
