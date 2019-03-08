@@ -12,8 +12,9 @@ from datetime import timedelta, tzinfo
 
 import attr
 
-from .. import logger
-from ..geometry import RectangleSize
+from applitools.common import logger
+from applitools.common.geometry import RectangleSize
+
 from .compat import iteritems, urlparse
 
 if typing.TYPE_CHECKING:

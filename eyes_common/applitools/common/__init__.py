@@ -9,6 +9,14 @@ from .match_window_data import *  # noqa
 from .metadata import *  # noqa
 from .test_results import *  # noqa
 
+
+class StitchMode(object):
+    """For backward compatibility for eyes.selenium"""
+
+    Scroll = "Scroll"
+    CSS = "CSS"
+
+
 __all__ = (
     logger.__all__  # noqa
     + configuration.__all__  # noqa
@@ -20,5 +28,5 @@ __all__ = (
     + capture.__all__  # noqa
     + match_window_data.__all__  # noqa
     + test_results.__all__  # noqa
-    + ("logger",)  # noqa
+    + ("logger", "StitchMode")  # noqa
 )

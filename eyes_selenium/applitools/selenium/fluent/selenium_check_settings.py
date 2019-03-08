@@ -4,7 +4,7 @@ import attr
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Region
-from applitools.core.fluent.check_settings import CheckSettings
+from applitools.core.fluent import CheckSettings
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import IgnoreRegionByElement, IgnoreRegionBySelector

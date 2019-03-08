@@ -1,4 +1,4 @@
-from .core import logger  # noqa
+from .common import logger  # noqa
 from .selenium.fluent.target import *  # noqa
 
 logger.deprecation(

@@ -13,5 +13,5 @@ __all__ = (
     + eyes_base.__all__  # noqa
     + positioning.__all__  # noqa
     + fluent.__all__  # noqa
-    + ("logger", "ServerConnector")  # noqa
+    + ("ServerConnector",)  # noqa
 )

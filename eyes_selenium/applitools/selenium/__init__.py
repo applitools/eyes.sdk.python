@@ -9,7 +9,11 @@ from applitools.common import (
 )
 from applitools.common.metadata import FailureReports
 from applitools.common.test_results import TestResults, TestResultsStatus  # noqa
-from applitools.selenium.fluent.region import (
+
+from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
+from .configuration import SeleniumConfiguration  # noqa
+from .eyes import Eyes  # noqa
+from .fluent.region import (
     FloatingBounds,
     FloatingRegion,
     FloatingRegionByElement,
@@ -17,11 +21,7 @@ from applitools.selenium.fluent.region import (
     IgnoreRegionByElement,
     IgnoreRegionBySelector,
 )
-from applitools.selenium.fluent.target import Target  # noqa
-
-from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
-from .configuration import SeleniumConfiguration  # noqa
-from .eyes import Eyes  # noqa
+from .fluent.target import Target  # noqa
 from .frames import Frame  # noqa
 from .positioning import StitchMode  # noqa
 from .webdriver import EyesWebDriver  # noqa
