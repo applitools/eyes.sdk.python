@@ -74,6 +74,12 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
     for k, v in iteritems(d):
         if isinstance(v, dict):
             v = change_case_of_keys(v, to_camel, to_underscore)
+        if v and isinstance(v, list):
+            new_list = []
+            for region in v[:]:
+                if isinstance(region, dict):
+                    new_list.append({func(k1): v1 for k1, v1 in iteritems(region)})
+            v = new_list
         new[func(k)] = v
     return new
 
@@ -84,7 +90,7 @@ def to_json(obj, keys_to_camel_case=True):
     Returns an object's json representation of attrs based classes.
     """
     # TODO: Convert Enums to text
-    d = attr.asdict(obj)
+    d = attr.asdict(obj, filter=lambda a, _: not a.name.startswith("_"))
     if keys_to_camel_case:
         d = change_case_of_keys(d, to_camel=True)
     return json.dumps(d)
