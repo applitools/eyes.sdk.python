@@ -189,7 +189,7 @@ class Region(DictAccessMixin):
     width = attr.ib(converter=round_converter)  # type: int
     height = attr.ib(converter=round_converter)  # type: int
     coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS, converter=value_from_enum
+        default=CoordinatesType.SCREENSHOT_AS_IS.value, converter=value_from_enum
     )  # type: Text
 
     @classmethod

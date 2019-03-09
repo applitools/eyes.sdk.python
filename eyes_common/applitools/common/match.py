@@ -82,7 +82,7 @@ class ImageMatchSettings(object):
     """
 
     match_level = attr.ib(
-        default=MatchLevel.STRICT, converter=value_from_enum
+        default=MatchLevel.STRICT.value, converter=value_from_enum
     )  # type: Text
     exact = attr.ib(
         default=None, type=ExactMatchSettings
