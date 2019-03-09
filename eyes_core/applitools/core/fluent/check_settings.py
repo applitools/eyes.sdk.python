@@ -185,8 +185,7 @@ class CheckSettings(ABC):
             regions_list.append(self._region_to_region_provider(region, method_name))
         return self
 
-    @staticmethod
-    def _region_to_region_provider(region, method_name):
+    def _region_to_region_provider(self, region, method_name):
         # type: (Union[GetRegion, Region], Text) -> GetRegion
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):

@@ -99,15 +99,14 @@ class SeleniumCheckSettings(CheckSettings):
         elif isinstance(frame, WebElement) or isinstance(frame, EyesWebElement):
             fl.frame_element = frame
         else:
-            raise TypeError("region method called with argument of unknown type!")
+            raise TypeError("frame method called with argument of unknown type!")
         return self
 
-    @staticmethod
-    def _region_to_region_provider(region, method_name):
+    def _region_to_region_provider(self, region, method_name):
         if isinstance(region, str):
             return IgnoreRegionBySelector(region)
         elif isinstance(region, WebElement) or isinstance(region, EyesWebElement):
             return IgnoreRegionByElement(region)
-        return super(SeleniumCheckSettings)._region_to_region_provider(
+        return super(SeleniumCheckSettings, self)._region_to_region_provider(
             region, method_name
         )
