@@ -18,6 +18,8 @@ if typing.TYPE_CHECKING:
     from typing import Text, Optional, List, Union
 
     T = typing.TypeVar("T", bound="CheckSettings")
+    G = typing.TypeVar("G", bound="GetRegion")
+
 __all__ = ("CheckSettings",)
 
 
@@ -124,24 +126,28 @@ class CheckSettings(ABC):
     def ignore_regions(self, *regions):
         # type: (*Region)  -> T
         """ Adds one or more ignore regions. """
-        return self.__regions(regions, method_name="ignore_regions")
+        self._ignore_regions = self.__regions(regions, method_name="ignore_regions")
+        return self
 
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
         # type: (*Region)  -> T
         """ Adds one or more layout regions. """
-        return self.__regions(regions, method_name="layout_regions")
+        self._layout_regions = self.__regions(regions, method_name="layout_regions")
+        return self
 
     def strict_regions(self, *regions):
         # type: (*Region)  -> T
         """ Adds one or more strict regions. """
-        return self.__regions(regions, method_name="strict_regions")
+        self._strict_regions = self.__regions(regions, method_name="strict_regions")
+        return self
 
     def content_regions(self, *regions):
         # type: (*Region)  -> T
         """ Adds one or more content regions. """
-        return self.__regions(regions, method_name="content_regions")
+        self._content_regions = self.__regions(regions, method_name="content_regions")
+        return self
 
     def floating_regions(self, *args):
         # type: (*Region)  -> T
@@ -183,17 +189,16 @@ class CheckSettings(ABC):
         regions_list = getattr(self, "_" + method_name)
         for region in regions:
             regions_list.append(self._region_to_region_provider(region, method_name))
-        return self
+        return regions_list
 
     def _region_to_region_provider(self, region, method_name):
-        # type: (Union[GetRegion, Region], Text) -> GetRegion
+        # type: (Union[G, Region], Text) -> G
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             return IgnoreRegionByRectangle(region)
 
         if isinstance(region, GetRegion):
             return region
-
         raise TypeError("Unknown region type.")
 
     @staticmethod

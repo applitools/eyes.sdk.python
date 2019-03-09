@@ -213,7 +213,7 @@ class Eyes(EyesBase):
         region = self._get_region(check_settings)
         self._screenshot_type = self._obtain_screenshot_type(
             is_element=bool(element),
-            # is_region=bool(check_settings.values.),
+            is_region=bool(check_settings.values.target_region),
             inside_a_frame=bool(self._driver.frame_chain),
             stitch_content=check_settings.values.stitch_content,
             force_fullpage=self.force_full_page_screenshot,

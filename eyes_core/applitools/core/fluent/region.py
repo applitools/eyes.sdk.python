@@ -40,8 +40,8 @@ class IgnoreRegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Region
 
     def get_region(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> FloatingMatchSettings
-        return [self._region]
+        # type: (EyesBase, EyesScreenshot) -> Region
+        return self._region
 
 
 @attr.s

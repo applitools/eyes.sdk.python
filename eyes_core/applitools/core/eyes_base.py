@@ -122,6 +122,7 @@ class EyesBase(EyesBaseAbstract):
     _viewport_size = None  # type: ViewPort
     _scale_provider = None  # type: tp.Optional[ScaleProvider]
     _debug_screenshot_provider = None
+    _dom_url = None  # type: Optional[Text]
 
     def __init__(self, server_url=None):
         # type: (tp.Text) -> None
@@ -503,9 +504,6 @@ class EyesBase(EyesBaseAbstract):
     def get_screenshot_url(self):
         return None
 
-    def get_dom_url(self):
-        pass
-
     def get_image_location(self):
         pass
 
@@ -704,16 +702,15 @@ class EyesBase(EyesBaseAbstract):
 
         logger.info("Getting title, dom_url, image_location...")
         title = self._title
-        dom_url = self.get_dom_url()
         logger.info("Done getting title, dom_url, image_location!")
-        if not dom_url and (
+        if not self._dom_url and (
             check_settings.values.send_dom or self.default_match_settings.send_dom
         ):
             dom_json = self._try_capture_dom()
-            dom_url = self._try_post_dom_snapshot(dom_json)
-            logger.info("dom_url: {}".format(dom_url))
+            self._dom_url = self._try_post_dom_snapshot(dom_json)
+            logger.info("dom_url: {}".format(self._dom_url))
 
-        app_output = AppOutput(title=title, screenshot64=None)
+        app_output = AppOutput(title=title, screenshot64=None, dom_url=self._dom_url)
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done")
         return result

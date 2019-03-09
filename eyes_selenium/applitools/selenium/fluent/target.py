@@ -18,14 +18,14 @@ class BackwardTarget(object):
         logger.deprecation(
             "Use new interface e.g. Target.window(), Target.region(), Target.frame()"
         )
-        return Target.window().ignore_regions(regions)
+        return Target.window().ignore_regions(*regions)
 
     @staticmethod
     def floating(*regions):
         logger.deprecation(
             "Use new interface e.g. Target.window(), Target.region(), Target.frame()"
         )
-        return Target.window().floating_regions(regions)
+        return Target.window().floating_regions(*regions)
 
 
 class Target(BackwardTarget, CheckTarget):

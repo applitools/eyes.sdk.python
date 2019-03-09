@@ -92,8 +92,8 @@ class ImageMatchSettings(object):
     use_dom = attr.ib(default=False)
     enable_patterns = attr.ib(default=False)
 
-    ignore_regions = attr.ib(factory=list)
-    layout_regions = attr.ib(factory=list)
-    strict_regions = attr.ib(factory=list)
-    content_regions = attr.ib(factory=list)
-    floating_regions = attr.ib(factory=list)
+    ignore = attr.ib(factory=list, type=typing.List[Region])
+    layout = attr.ib(factory=list, type=typing.List[Region])
+    strict = attr.ib(factory=list, type=typing.List[Region])
+    content = attr.ib(factory=list, type=typing.List[Region])
+    floating = attr.ib(factory=list, type=typing.List[Region])

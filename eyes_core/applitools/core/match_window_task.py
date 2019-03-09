@@ -162,22 +162,22 @@ class MatchWindowTask(object):
     def _collect_simple_regions(self, check_settings, image_match_settings, screenshot):
         # type: (CheckSettings, ImageMatchSettings, EyesScreenshot) -> None
 
-        image_match_settings.ignore_regions = self._collect_regions(
+        image_match_settings.ignore = self._collect_regions(
             check_settings.values.ignore_regions, screenshot
         )
-        image_match_settings.layout_regions = self._collect_regions(
+        image_match_settings.layout = self._collect_regions(
             check_settings.values.layout_regions, screenshot
         )
-        image_match_settings.strict_regions = self._collect_regions(
+        image_match_settings.strict = self._collect_regions(
             check_settings.values.strict_regions, screenshot
         )
-        image_match_settings.content_regions = self._collect_regions(
+        image_match_settings.content = self._collect_regions(
             check_settings.values.content_regions, screenshot
         )
 
     def _collect_float_regions(self, check_settings, image_match_settings, screenshot):
         # type: (CheckSettings, ImageMatchSettings, EyesScreenshot) -> None
-        image_match_settings.floating_regions = self._collect_regions(
+        image_match_settings.floating = self._collect_regions(
             check_settings.values.floating_regions, screenshot
         )
 
