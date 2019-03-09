@@ -195,6 +195,8 @@ class CheckSettings(ABC):
         if isinstance(region, GetRegion):
             return region
 
+        raise TypeError("Unknown region type.")
+
     @staticmethod
     def _floating_to_region(*args):
         region_or_container = args[0]

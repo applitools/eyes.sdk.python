@@ -4,6 +4,7 @@ import os
 import time
 import typing as tp
 from struct import pack
+from typing import Any
 
 import requests
 from requests.packages import urllib3  # noqa
@@ -105,17 +106,17 @@ class _Request(object):
         self._com = com
 
     def post(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, ...) -> requests.Response
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.post, url_resource, **kwargs)
 
     def get(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, ...) -> requests.Response
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.get, url_resource, **kwargs)
 
     def delete(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, ...) -> requests.Response
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.delete, url_resource, **kwargs)
 
@@ -275,7 +276,7 @@ class ServerConnector(object):
         :param match_data: The data for the requests.post.
         :return: The parsed response.
         """
-        logger.debug("match_window called.")
+        logger.debug("_match_window called.")
 
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:

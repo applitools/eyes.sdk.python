@@ -25,6 +25,9 @@ class Target(CheckTarget):
             return ImagesCheckSettings(image_or_path)
         elif isinstance(image_or_path, str) or isinstance(image_or_path, tp.Text):
             return ImagesCheckSettings(image_utils.image_from_file(image_or_path))
+        raise TypeError(
+            "Unsupported image type. Should be `PIL.Image` or path to " "image"
+        )
 
     @staticmethod
     def region(image_or_path, rect):

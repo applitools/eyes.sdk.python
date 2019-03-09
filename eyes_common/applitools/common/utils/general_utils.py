@@ -81,9 +81,9 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
 def to_json(obj, keys_to_camel_case=True):
     # type: (Any, bool) -> str
     """
-    Returns an object's json representation (defaults to __getstate__ for user defined types).
+    Returns an object's json representation of attrs based classes.
     """
-
+    # TODO: Convert Enums to text
     d = attr.asdict(obj)
     if keys_to_camel_case:
         d = change_case_of_keys(d, to_camel=True)

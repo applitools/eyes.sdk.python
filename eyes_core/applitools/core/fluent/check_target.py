@@ -9,9 +9,11 @@ class CheckTarget(ABC):
     @staticmethod
     def window():
         # type: () -> CheckSettings
-        return CheckSettings(None)
+        return CheckSettings()
 
     @staticmethod
     def region(rect):
         # type: (Region) -> CheckSettings
-        return CheckSettings(rect)
+        cs = CheckSettings()
+        cs.update_target_region(rect)
+        return cs

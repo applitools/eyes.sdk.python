@@ -3,14 +3,13 @@ from enum import Enum
 
 import attr
 
-from applitools.common.utils.converters import name_from_enum
-
 from .configuration import BatchInfo, Branch
-from .match import ImageMatchSettings
+from .match import ImageMatchSettings, MatchLevel
 from .utils import general_utils
+from .utils.converters import value_from_enum
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text
+    from typing import Optional, Text, List
     from .utils.custom_types import Num
     from .app_output import ExpectedAppOutput, ActualAppOutput
 
@@ -27,9 +26,9 @@ __all__ = (
 
 class SessionType(Enum):
     # default type of sessions.
-    SEQUENTIAL = 0
+    SEQUENTIAL = "SEQUENTIAL"
     # a timing test session
-    PROGRESSION = 1
+    PROGRESSION = "PROGRESSION"
 
 
 @attr.s
@@ -64,31 +63,26 @@ class AppEnvironment(object):
 
 @attr.s
 class StartInfo(object):
-    session_type = attr.ib(type=SessionType, converter=name_from_enum)
-    is_transient = attr.ib()
-    ignore_baseline = attr.ib()
+    session_type = attr.ib(validator=attr.validators.in_(SessionType))  # type: Text
+    is_transient = attr.ib()  # type: bool
+    ignore_baseline = attr.ib()  # type: bool
     app_id_or_name = attr.ib()  # type: Text
     compare_with_parent_branch = attr.ib()
     scenario_id_or_name = attr.ib()  # type: Text
-    match_level = attr.ib(converter=name_from_enum)  # type: Text
+    match_level = attr.ib(validator=attr.validators.in_(MatchLevel))  # type: Text
     agent_id = attr.ib()  # type: Text
     batch_info = attr.ib(type=BatchInfo)  # type: BatchInfo
     environment = attr.ib(type=AppEnvironment)  # type: AppEnvironment
     default_match_settings = attr.ib(
         type=ImageMatchSettings
     )  # type: ImageMatchSettings
-    properties = attr.ib(factory=list)
-
-    # env_name = attr.ib()
-    # ver_id = attr.ib()
-    # branch_name = attr.ib()
-    # parent_branch_name = attr.ib()
+    properties = attr.ib(factory=list)  # type: List
 
 
 @attr.s
 class SessionStartInfo(object):
     agent_id = attr.ib()  # type: Text
-    session_type = attr.ib(type=SessionType, converter=name_from_enum)
+    session_type = attr.ib(converter=value_from_enum)  # type: Text
     app_id_or_name = attr.ib()  # type: Text
     ver_id = attr.ib()  # type: Optional[Text]
     scenario_id_or_name = attr.ib()  # type: Text

@@ -95,13 +95,15 @@ def _packages_resolver(
 
 
 @task
-def install_packages(c, common=False, core=False, selenium=False, images=False):
+def install_packages(
+    c, common=False, core=False, selenium=False, images=False, editable=False
+):
     packages = _packages_resolver(
         common, core, selenium, images, full_path=True, path_as_str=True
     )
-
+    editable = "-e" if editable else ""
     for pack in packages:
-        c.run("pip install -U {}".format(pack), echo=True)
+        c.run("pip install -U {} {}".format(editable, pack), echo=True)
 
 
 @task

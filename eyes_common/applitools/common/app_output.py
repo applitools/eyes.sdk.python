@@ -12,6 +12,7 @@ if typing.TYPE_CHECKING:
     from .capture import EyesScreenshot
     from .geometry import Region
     from .utils.custom_types import UserInputs
+    from applitools.core import CheckSettings  # noqa
 
     T = typing.TypeVar("T", bound="CheckSettings")
 

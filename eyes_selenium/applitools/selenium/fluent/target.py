@@ -1,18 +1,8 @@
 from __future__ import absolute_import
 
-import typing
-
 from applitools.core.fluent import CheckTarget
 
 from .selenium_check_settings import SeleniumCheckSettings
-
-if typing.TYPE_CHECKING:
-    from typing import Union
-
-    FloatingType = Union[
-        "FloatingRegion", "FloatingRegionByElement", "FloatingRegionBySelector"
-    ]
-    IgnoreType = Union["Region", "IgnoreRegionByElement", "IgnoreRegionBySelector"]
 
 __all__ = ("Target",)
 

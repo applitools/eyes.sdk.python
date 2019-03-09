@@ -43,7 +43,75 @@ if tp.TYPE_CHECKING:
 __all__ = ("EyesBase",)
 
 
-class EyesConfigMixin(object):
+class EyesBaseAbstract(ABC):
+    @abc.abstractmethod
+    def _try_capture_dom(self):
+        # type: () -> tp.Text
+        """
+        Returns the string with DOM of the current page in the prepared format or empty string
+        """
+
+    @property
+    @abc.abstractmethod
+    def base_agent_id(self):
+        # type: () -> tp.Text
+        """
+        Must return version of SDK. (e.g. Selenium, Images) in next format:
+            "eyes.{package}.python/{lib_version}"
+        """
+
+    @abc.abstractmethod
+    def get_screenshot(self, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def get_viewport_size(self):
+        # type: () -> ViewPort
+        """
+        :return: The viewport size of the AUT.
+        """
+
+    @abc.abstractmethod
+    def set_viewport_size(self, size):
+        # type: (ViewPort) -> None
+        """
+        :param size: The required viewport size.
+        """
+
+    @property
+    @abc.abstractmethod
+    def _title(self):
+        # type: () -> tp.Text
+        """
+        Returns the title of the window of the AUT, or empty string
+         if the title is not available.
+        """
+
+    @abc.abstractmethod
+    def _ensure_viewport_size(self):
+        # type: () -> None
+        """
+        Assign the viewport size we need to be in the default content frame.
+        """
+
+    @property
+    @abc.abstractmethod
+    def _environment(self):
+        # type: () -> AppEnvironment
+        """
+        Application environment is the environment (e.g., the host OS)
+        which runs the application under test.
+
+        :return: The current application environment.
+        """
+
+    @property
+    @abc.abstractmethod
+    def _inferred_environment(self):
+        pass
+
+
+class EyesBase(EyesBaseAbstract):
     _config = None  # type: tp.Optional[Configuration]
     _host_os = None  # type: tp.Optional[tp.Text]
     _host_app = None  # type: tp.Optional[tp.Text]
@@ -53,25 +121,31 @@ class EyesConfigMixin(object):
     _last_screenshot = None  # type: tp.Optional[EyesScreenshot]
     _viewport_size = None  # type: ViewPort
     _scale_provider = None  # type: tp.Optional[ScaleProvider]
+    _debug_screenshot_provider = None
 
-    def _ensure_configuration(self):
-        if not self._config:
-            self._config = Configuration()
+    def __init__(self, server_url=None):
+        # type: (tp.Text) -> None
+        """
+        Creates a new (possibly disabled) Eyes instance that
+        interacts with the Eyes server.
 
-    def _init_providers(self, hard_reset=False):
-        if hard_reset:
-            self._scale_provider = NullScaleProvider()
-            # self._cut_provider = NullCutProvider()
-            # self._position_provider = InvalidPositionProvider()
+        :param server_url: The URL of the Eyes server
+        """
+        self._render = False
+        self._server_connector = ServerConnector(server_url)  # type: ServerConnector
+        self._should_get_title = False  # type: bool
+        self._is_open = False  # type: bool
+        self._should_match_once_on_timeout = False  # type: bool
+        self._user_inputs = []  # type: UserInputs
+        self._stitch_content = False  # type: bool
+        # self._is_viewport_size_set = False  # type: bool
 
-        if self._scale_provider is None:
-            self._scale_provider = NullScaleProvider()
+        self._ensure_configuration()
 
-        # if self._cut_provider is None:
-        #     self._cut_provider = NullCutProvider()
-        #
-        # if self._position_provider is None:
-        #     self._position_provider = InvalidPositionProvider()
+        # Should the test report mismatches immediately or when it is finished.
+        self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
+        # The default match settings for the session. See ImageMatchSettings.
+        self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
 
     @property
     def agent_id(self):
@@ -273,60 +347,6 @@ class EyesConfigMixin(object):
         """
         self._server_connector.server_url = server_url
 
-
-class EyesBase(EyesConfigMixin, ABC):
-    def __init__(self, server_url=None):
-        # type: (tp.Text) -> None
-        """
-        Creates a new (possibly disabled) Eyes instance that
-        interacts with the Eyes server.
-
-        :param server_url: The URL of the Eyes server
-        """
-        self._debug_screenshot_provider = None
-        self._render = False
-        self._server_connector = ServerConnector(server_url)  # type: ServerConnector
-        self._should_get_title = False  # type: bool
-        self._is_open = False  # type: bool
-        self._should_match_once_on_timeout = False  # type: bool
-        self._user_inputs = []  # type: UserInputs
-        self._stitch_content = False  # type: bool
-        # self._is_viewport_size_set = False  # type: bool
-
-        self._ensure_configuration()
-
-        # Should the test report mismatches immediately or when it is finished.
-        self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
-        # The default match settings for the session. See ImageMatchSettings.
-        self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
-
-    @property
-    @abc.abstractmethod
-    def _title(self):
-        # type: () -> tp.Text
-        """
-        Returns the title of the window of the AUT, or empty string
-         if the title is not available.
-        """
-
-    @abc.abstractmethod
-    def get_screenshot(self, **kwargs):
-        pass
-
-    @abc.abstractmethod
-    def get_viewport_size(self):
-        # type: () -> ViewPort
-        """
-        :return: The viewport size of the AUT.
-        """
-
-    @abc.abstractmethod
-    def set_viewport_size(self, size):
-        # type: (ViewPort) -> None
-        """
-        :param size: The required viewport size.
-        """
-
     @property
     def scale_ratio(self):
         return self._scale_provider.scale_ratio
@@ -337,38 +357,6 @@ class EyesBase(EyesConfigMixin, ABC):
             self._scale_provider = FixedScaleProvider(value)
         else:
             self._scale_provider = NullScaleProvider()
-
-    @abc.abstractmethod
-    def _ensure_viewport_size(self):
-        # type: () -> None
-        """
-        Assign the viewport size we need to be in the default content frame.
-        """
-
-    @property
-    @abc.abstractmethod
-    def _environment(self):
-        # type: () -> AppEnvironment
-        """
-        Application environment is the environment (e.g., the host OS)
-        which runs the application under test.
-
-        :return: The current application environment.
-        """
-
-    @property
-    @abc.abstractmethod
-    def _inferred_environment(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def base_agent_id(self):
-        # type: () -> tp.Text
-        """
-        Must return version of SDK. (e.g. Selenium, Images) in next format:
-            "eyes.{package}.python/{lib_version}"
-        """
 
     @property
     def full_agent_id(self):
@@ -512,10 +500,13 @@ class EyesBase(EyesConfigMixin, ABC):
         finally:
             logger.close()
 
-    def _before_open(self):
+    def get_screenshot_url(self):
+        return None
+
+    def get_dom_url(self):
         pass
 
-    def _after_open(self):
+    def get_image_location(self):
         pass
 
     def open_base(
@@ -564,6 +555,31 @@ class EyesBase(EyesConfigMixin, ABC):
 
         self._config.viewport_size = viewport_size
         self._open_base()
+
+    def _before_open(self):
+        pass
+
+    def _after_open(self):
+        pass
+
+    def _ensure_configuration(self):
+        if not self._config:
+            self._config = Configuration()
+
+    def _init_providers(self, hard_reset=False):
+        if hard_reset:
+            self._scale_provider = NullScaleProvider()
+            # self._cut_provider = NullCutProvider()
+            # self._position_provider = InvalidPositionProvider()
+
+        if self._scale_provider is None:
+            self._scale_provider = NullScaleProvider()
+
+        # if self._cut_provider is None:
+        #     self._cut_provider = NullCutProvider()
+        #
+        # if self._position_provider is None:
+        #     self._position_provider = InvalidPositionProvider()
 
     def _open_base(self):
         logger.open_()
@@ -725,7 +741,7 @@ class EyesBase(EyesConfigMixin, ABC):
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        result = self.match_window(
+        result = self._match_window(
             region_provider, tag, ignore_mismatch, check_settings
         )
         self._after_match_window()
@@ -750,13 +766,6 @@ class EyesBase(EyesConfigMixin, ABC):
                         )
                     )
 
-    @abc.abstractmethod
-    def _try_capture_dom(self):
-        # type: () -> tp.Text
-        """
-        Returns the string with DOM of the current page in the prepared format or empty string
-        """
-
     def _try_post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
         """
@@ -772,16 +781,7 @@ class EyesBase(EyesConfigMixin, ABC):
             )
             return None
 
-    def get_screenshot_url(self):
-        return None
-
-    def get_dom_url(self):
-        pass
-
-    def get_image_location(self):
-        pass
-
-    def match_window(self, region_provider, tag, ignore_mismatch, check_settings):
+    def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
         # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout = -1

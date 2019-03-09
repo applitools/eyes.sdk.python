@@ -5,9 +5,11 @@ from enum import Enum
 
 import attr
 
+from .geometry import RectangleSize
+from .match import ImageMatchSettings
+
 if typing.TYPE_CHECKING:
     from typing import Text, Any, Dict, Optional
-    from .geometry import RectangleSize
 
     # TODO: Implement objects
     SessionUrls = Dict[Any, Any]
@@ -55,11 +57,7 @@ class TestResults(object):
     branch_name = attr.ib(default=None, repr=False)  # type: Text
     host_os = attr.ib(default=None, repr=False)  # type: Text
     host_app = attr.ib(default=None, repr=False)  # type: Text
-    host_display_size = attr.ib(
-        default=None,
-        repr=False,
-        # validator=validators.check_if_rectangle_protocol,
-    )  # type: RectangleSize
+    host_display_size = attr.ib(default=None, repr=False)  # type: RectangleSize
     # started_at = attr.ib(
     #     default=None,
     #     repr=False,
@@ -72,6 +70,8 @@ class TestResults(object):
     app_urls = attr.ib(default=None, repr=False)  # type: SessionUrls
     api_urls = attr.ib(default=None, repr=False)  # type: SessionUrls
     steps_info = attr.ib(default=None, repr=False)  # type: StepInfo
+    baseline_id = attr.ib(default=None, repr=False)  # type: Text
+    default_match_settings = attr.ib(default=None, repr=False, type=ImageMatchSettings)
 
     @property
     def is_passed(self):

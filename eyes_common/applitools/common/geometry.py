@@ -1,15 +1,16 @@
 from __future__ import absolute_import
 
 import math
-import typing as tp
+import typing
 from enum import Enum
 
 import attr
 
 from .utils import argument_guard
-from .utils.converters import name_from_enum, round_converter
+from .utils.converters import round_converter, value_from_enum
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Text, Dict, List
     from .utils.custom_types import ViewPort
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
@@ -29,19 +30,19 @@ class CoordinatesType(Enum):
 
     # The coordinates should be used "as is" on the screenshot image.
     # Regardless of the current context.
-    SCREENSHOT_AS_IS = 0
+    SCREENSHOT_AS_IS = "SCREENSHOT_AS_IS"
 
     # The coordinates should be used "as is" within the current context. For
     # example, if we're inside a frame, the coordinates are "as is",
     # but within the current frame's viewport.
-    CONTEXT_AS_IS = 1
+    CONTEXT_AS_IS = "CONTEXT_AS_IS"
 
     # Coordinates are relative to the context. For example, if we are in
     # a context of a frame in a web page, then the coordinates are relative to
     # the  frame. In this case, if we want to crop an image region based on
     # an element's region, we will need to calculate their respective "as
     # is" coordinates.
-    CONTEXT_RELATIVE = 2
+    CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
 @attr.s(slots=True)
@@ -188,8 +189,8 @@ class Region(DictAccessMixin):
     width = attr.ib(converter=round_converter)  # type: int
     height = attr.ib(converter=round_converter)  # type: int
     coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS, converter=name_from_enum
-    )  # type: CoordinatesType
+        default=CoordinatesType.SCREENSHOT_AS_IS, converter=value_from_enum
+    )  # type: Text
 
     @classmethod
     def create_empty_region(cls):
@@ -360,7 +361,7 @@ class Region(DictAccessMixin):
         self.height = intersection_bottom - intersection_top
 
     def get_sub_regions(self, max_sub_region_size):
-        # type: (tp.Dict) -> tp.List[Region]
+        # type: (Dict) -> List[Region]
         """
         Returns a list of Region objects which compose the current region.
         """

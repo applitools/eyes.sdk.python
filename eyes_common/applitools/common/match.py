@@ -3,11 +3,12 @@ from enum import Enum
 
 import attr
 
+from applitools.common.utils.converters import value_from_enum
+
 from .geometry import Region
-from .utils.converters import name_from_enum
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text, Union
+    from typing import Optional, Text
 
 __all__ = (
     "MatchLevel",
@@ -24,19 +25,17 @@ class MatchLevel(Enum):
     """
 
     # Images do not necessarily match.
-    NONE = 0
-    # Images have the same layout (legacy algorithm).
-    LEGACY_LAYOUT = 1
+    NONE = "None"
     # Images have the same layout.
-    LAYOUT = 2
+    LAYOUT = "Layout"
     # Images have the same layout.
-    LAYOUT2 = 3
+    LAYOUT2 = "Layout2"
     # Images have the same content.
-    CONTENT = 4
+    CONTENT = "Content"
     # Images are nearly identical.
-    STRICT = 5
+    STRICT = "Strict"
     # Images are identical.
-    EXACT = 6
+    EXACT = "Exact"
 
 
 @attr.s
@@ -83,8 +82,8 @@ class ImageMatchSettings(object):
     """
 
     match_level = attr.ib(
-        default=MatchLevel.STRICT, converter=name_from_enum
-    )  # type: Union[Text, MatchLevel]
+        default=MatchLevel.STRICT, converter=value_from_enum
+    )  # type: Text
     exact = attr.ib(
         default=None, type=ExactMatchSettings
     )  # type: Optional[ExactMatchSettings]

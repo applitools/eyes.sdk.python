@@ -4,7 +4,7 @@ import attr
 
 if typing.TYPE_CHECKING:
     from typing import Text
-    from applitools.core import EyesBase
+    from applitools.core.eyes_base import EyesBase
 
 
 @attr.s

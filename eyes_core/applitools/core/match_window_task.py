@@ -36,6 +36,7 @@ class MatchWindowTask(object):
     """
 
     MATCH_INTERVAL = 0.5  # sec
+    MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
     def __init__(
         self,
