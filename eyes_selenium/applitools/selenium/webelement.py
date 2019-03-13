@@ -10,6 +10,8 @@ from applitools.common import logger
 from applitools.common.geometry import Region
 from applitools.common.utils import general_utils
 
+from . import eyes_selenium_utils
+
 if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common.geometry import Point
@@ -62,6 +64,9 @@ class EyesWebElement(object):
             arguments[0].scrollLeft = {:d};
             arguments[0].scrollTop = {:d};
     """
+    _JS_GET_SCROLL_POSITION = """
+    return arguments[0].scrollLeft + ';' + arguments[0].scrollTop;
+    """
     _JS_GET_BORDER_WIDTHS_ARR = """
             var retVal = retVal || [];
             if (window.getComputedStyle) {
@@ -100,6 +105,9 @@ class EyesWebElement(object):
         """
         self.element = element
         self._driver = driver  # type: AnyWebDriver
+
+        # setting from outside
+        self.position_provider = None
         # Replacing implementation of the underlying driver with ours. We'll put the original
         # methods back before destruction.
         self._original_methods = {}  # type: tp.Dict[tp.Text, tp.Callable]
@@ -319,15 +327,18 @@ class EyesWebElement(object):
         )
 
     def scroll_to(self, location):
-        # type: (Point) -> None
+        # type: (Point) -> Point
         """Scrolls to the specified location inside the element."""
-        self._driver.execute_script(
-            self._JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y),
+        position = self._driver.execute_script(
+            self._JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y)
+            + self._JS_GET_SCROLL_POSITION,
             self.element,
         )
+        return eyes_selenium_utils.parse_location_string(position)
 
     @property
     def size_and_borders(self):
+        # type: () -> SizeAndBorders
         ret_val = self._driver.execute_script(
             self._JS_GET_SIZE_AND_BORDER_WIDTHS, self.element
         )
