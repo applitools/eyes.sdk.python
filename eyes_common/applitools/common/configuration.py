@@ -7,11 +7,11 @@ from typing import Optional, Text
 
 import attr
 
+from applitools.common import SessionType
 from applitools.common.utils import general_utils
 from applitools.common.utils.converters import isoformat
 
 if typing.TYPE_CHECKING:
-    from applitools.common.metadata import SessionType
     from applitools.common.utils.custom_types import ViewPort
 
 __all__ = ("BatchInfo", "Branch", "Configuration")
@@ -66,10 +66,9 @@ class Configuration(object):
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     _viewport_size = attr.ib(default=None)  # type: Optional[ViewPort]
-    session_type = attr.ib(default=None)  # type: Optional[SessionType]
+    session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)
-    send_dom = attr.ib(default=False)
     compare_with_parent_branch = attr.ib(default=None)  # type: Optional[bool]
     host_app = attr.ib(default=None)
     host_os = attr.ib(default=None)
@@ -80,6 +79,11 @@ class Configuration(object):
     save_new_tests = attr.ib(default=True)
     save_failed_tests = attr.ib(default=False)
     fail_on_new_test = attr.ib(default=False)
+    send_dom = attr.ib(default=False)
+    use_dom = attr.ib(default=False)
+    enable_patterns = attr.ib(default=False)
+    hide_caret = attr.ib(init=False, default=None)
+    stitching_overlap = attr.ib(init=False, default=50)
 
     @property
     def viewport_size(self):
