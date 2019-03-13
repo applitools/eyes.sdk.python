@@ -45,9 +45,13 @@ def eyes_open(request, eyes, driver):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-
+    test_name_pattern = request.node.get_closest_marker("test_name_pattern")
+    test_name_pattern = (
+        test_name_pattern.args[-1] if test_name_pattern else {"from": "", "to": ""}
+    )
     # use camel case in method name for fit java sdk tests name
     test_name = request.function.__name__.title().replace("_", "")
+    test_name = test_name.replace(test_name_pattern["from"], test_name_pattern["to"])
 
     if eyes.force_full_page_screenshot:
         test_suite_name += " - ForceFPS"
@@ -82,6 +86,7 @@ def driver_for_class(request, driver):
 
     driver.get(test_page_url)
     yield
+    driver.quit()
 
 
 @pytest.yield_fixture(scope="function")
