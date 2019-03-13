@@ -4,18 +4,13 @@ import time
 import typing
 from datetime import datetime
 
-from applitools.common import (
-    AppOutputProvider,
-    AppOutputWithScreenshot,
-    MatchResult,
-    RunningSession,
-    logger,
-)
+from applitools.common import MatchResult, RunningSession, logger
 from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.utils import general_utils, image_utils
+from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
 from .fluent import CheckSettings, GetRegion
 
@@ -184,14 +179,14 @@ class MatchWindowTask(object):
     def _collect_regions(self, region_providers, screenshot):
         # type: (List[GetRegion], EyesScreenshot) -> List[Region]
         eyes = self._eyes
-        regions = []
+        collected = []  # type: List[Region]
         for provider in region_providers:
             try:
-                region = provider.get_region(eyes, screenshot)
-                regions.append(region)
+                regions = provider.get_regions(eyes, screenshot)
+                collected.extend(regions)
             except OutOfBoundsError:
                 logger.warning("Region was out of bounds")
-        return regions
+        return collected
 
     def _update_last_screenshot(self, screenshot):
         if screenshot:

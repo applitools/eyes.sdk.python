@@ -4,6 +4,7 @@ import typing
 import attr
 
 from applitools.common.geometry import Region
+from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
@@ -11,7 +12,6 @@ if typing.TYPE_CHECKING:
 
     from applitools.core.eyes_base import EyesBase
     from applitools.common.capture import EyesScreenshot
-    from applitools.common.match import FloatingMatchSettings
 
 __all__ = (
     "GetFloatingRegion",
@@ -23,15 +23,15 @@ __all__ = (
 
 class GetFloatingRegion(ABC):
     @abc.abstractmethod
-    def get_region(self, eyes, screenshot):
+    def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
         pass
 
 
 class GetRegion(ABC):
     @abc.abstractmethod
-    def get_region(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> Region
+    def get_regions(self, eyes, screenshot):
+        # type: (EyesBase, EyesScreenshot) -> List[Region]
         pass
 
 
@@ -39,28 +39,16 @@ class GetRegion(ABC):
 class IgnoreRegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Region
 
-    def get_region(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> Region
-        return self._region
+    def get_regions(self, eyes, screenshot):
+        # type: (EyesBase, EyesScreenshot) -> List[Region]
+        return [self._region]
 
 
 @attr.s
 class FloatingRegionByRectangle(GetFloatingRegion):
     _rect = attr.ib()  # type: Region
-    _max_up_offset = attr.ib()
-    _max_down_offset = attr.ib()
-    _max_left_offset = attr.ib()
-    _max_right_offset = attr.ib()
+    _bounds = attr.ib()
 
-    def get_region(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> FloatingMatchSettings
-        return FloatingMatchSettings(
-            self._rect.left,
-            self._rect.top,
-            self._rect.width,
-            self._rect.height,
-            self._max_up_offset,
-            self._max_down_offset,
-            self._max_left_offset,
-            self._max_right_offset,
-        )
+    def get_regions(self, eyes, screenshot):
+        # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
+        return [FloatingMatchSettings(self._rect, self._bounds)]
