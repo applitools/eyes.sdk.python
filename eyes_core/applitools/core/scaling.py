@@ -3,7 +3,12 @@ from __future__ import absolute_import
 from applitools.common import logger
 from applitools.common.utils import ABC
 
-__all__ = ("FixedScaleProvider", "NullScaleProvider", "ContextBasedScaleProvider")
+__all__ = (
+    "FixedScaleProvider",
+    "NullScaleProvider",
+    "ContextBasedScaleProvider",
+    "ScaleProvider",
+)
 
 
 class ScaleProvider(ABC):
