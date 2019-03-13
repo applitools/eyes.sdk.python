@@ -15,7 +15,8 @@ from .region import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional, List, Union
+    from typing import Text, Optional, List, Union, Tuple
+    from applitools.common.utils.custom_types import AnyWebElement
 
     T = typing.TypeVar("T", bound="CheckSettings")
     G = typing.TypeVar("G", bound="GetRegion")
@@ -124,7 +125,7 @@ class CheckSettings(ABC):
         self._target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (*Region)  -> T
+        # type: (*Union[Region, Text, AnyWebElement])  -> T
         """ Adds one or more ignore regions. """
         self._ignore_regions = self.__regions(regions, method_name="ignore_regions")
         return self
@@ -132,27 +133,27 @@ class CheckSettings(ABC):
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (*Region)  -> T
+        # type: (*Union[Region, Text, AnyWebElement])  -> T
         """ Adds one or more layout regions. """
         self._layout_regions = self.__regions(regions, method_name="layout_regions")
         return self
 
     def strict_regions(self, *regions):
-        # type: (*Region)  -> T
+        # type: (*Union[Region, Text, AnyWebElement])  -> T
         """ Adds one or more strict regions. """
         self._strict_regions = self.__regions(regions, method_name="strict_regions")
         return self
 
     def content_regions(self, *regions):
-        # type: (*Region)  -> T
+        # type: (*Union[Region, Text, AnyWebElement])  -> T
         """ Adds one or more content regions. """
         self._content_regions = self.__regions(regions, method_name="content_regions")
         return self
 
     def floating_regions(self, *args):
-        # type: (*Region)  -> T
-        """ Adds a floating region. Details in :py:func:`_floating_to_region` """
-        region_or_container = self._floating_to_region(*args)
+        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        """ Adds a floating region. Details in :py:func:`_floating_to_region_provider` """
+        region_or_container = self._floating_to_region_provider(*args)
         self._floating_regions.append(region_or_container)
         return self
 
@@ -180,7 +181,7 @@ class CheckSettings(ABC):
         return self
 
     def __regions(self, regions, method_name):
-        # type: (Region, Text)  -> T
+        # type: (Tuple[Union[Region, Text, AnyWebElement]], Text)  -> T
         if not regions:
             raise TypeError(
                 "{name} method called without arguments!".format(name=method_name)
@@ -188,10 +189,10 @@ class CheckSettings(ABC):
 
         regions_list = getattr(self, "_" + method_name)
         for region in regions:
-            regions_list.append(self._region_to_region_provider(region, method_name))
+            regions_list.append(self._ignore_to_region_provider(region, method_name))
         return regions_list
 
-    def _region_to_region_provider(self, region, method_name):
+    def _ignore_to_region_provider(self, region, method_name):
         # type: (Union[G, Region], Text) -> G
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
@@ -201,33 +202,16 @@ class CheckSettings(ABC):
             return region
         raise TypeError("Unknown region type.")
 
-    @staticmethod
-    def _floating_to_region(*args):
+    def _floating_to_region_provider(self, *args, **kwargs):
         region_or_container = args[0]
-        if isinstance(region_or_container, GetFloatingRegion):
-            logger.debug("_floating: GetFloatingRegion")
-            return region_or_container
-        elif len(args) > 1 and isinstance(
-            region_or_container, FloatingRegionByRectangle
-        ):
-            max_up_offset = args[1]
-            max_down_offset = args[2]
-            max_left_offset = args[3]
-            max_right_offset = args[4]
-            logger.debug("_floating: FloatingRegionByRectangle")
-            return FloatingRegionByRectangle(
-                Region.from_region(region_or_container),
-                max_up_offset,
-                max_down_offset,
-                max_left_offset,
-                max_right_offset,
-            )
-        elif isinstance(region_or_container, FloatingMatchSettings):
+        bounds = kwargs.pop("bounds", None)
+        if bounds:
+            if isinstance(region_or_container, Region):
+                logger.debug("_floating: FloatingRegionByRectangle")
+                return FloatingRegionByRectangle(
+                    Region.from_region(region_or_container), bounds
+                )
+        if isinstance(region_or_container, FloatingMatchSettings):
             logger.debug("_floating: FloatingMatchSettings")
-            return FloatingRegionByRectangle(
-                region_or_container.get_region(),
-                region_or_container.max_up_offset,
-                region_or_container.max_down_offset,
-                region_or_container.max_left_offset,
-                region_or_container.max_right_offset,
-            )
+            return region_or_container
+        raise TypeError("Unknown region type.")
