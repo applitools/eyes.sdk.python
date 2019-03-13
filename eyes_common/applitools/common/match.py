@@ -3,12 +3,10 @@ from enum import Enum
 
 import attr
 
-from applitools.common.utils.converters import value_from_enum
-
 from .geometry import Region
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text
+    from typing import Optional
 
 __all__ = (
     "MatchLevel",
@@ -16,6 +14,7 @@ __all__ = (
     "FloatingMatchSettings",
     "ExactMatchSettings",
     "ImageMatchSettings",
+    "FloatingBounds",
 )
 
 
@@ -47,20 +46,26 @@ class MatchResult(object):
 
 @attr.s
 class FloatingMatchSettings(object):
-    left = attr.ib()
-    top = attr.ib()
-    width = attr.ib()
-    height = attr.ib()
-    max_up_offset = attr.ib()
-    max_down_offset = attr.ib()
-    max_left_offset = attr.ib()
-    max_right_offset = attr.ib()
+    _region = attr.ib()  # type: Region
+    _bounds = attr.ib()  # type: FloatingBounds
+    left = attr.ib(init=False)
+    top = attr.ib(init=False)
+    width = attr.ib(init=False)
+    height = attr.ib(init=False)
+    max_up_offset = attr.ib(init=False)
+    max_down_offset = attr.ib(init=False)
+    max_left_offset = attr.ib(init=False)
+    max_right_offset = attr.ib(init=False)
 
-    def get_region(self):
-        # type: () -> Region
-        return Region(
-            left=self.left, top=self.top, width=self.width, height=self.height
-        )
+    def __attrs_post_init__(self):
+        self.left = self._region.left
+        self.top = self._region.top
+        self.width = self._region.width
+        self.height = self._region.height
+        self.max_up_offset = self._bounds.max_up_offset
+        self.max_down_offset = self._bounds.max_down_offset
+        self.max_left_offset = self._bounds.max_left_offset
+        self.max_right_offset = self._bounds.max_right_offset
 
 
 @attr.s
@@ -81,9 +86,7 @@ class ImageMatchSettings(object):
     Encapsulates match settings for the a session.
     """
 
-    match_level = attr.ib(
-        default=MatchLevel.STRICT.value, converter=value_from_enum
-    )  # type: Text
+    match_level = attr.ib(default=MatchLevel.STRICT.value)  # type: MatchLevel
     exact = attr.ib(
         default=None, type=ExactMatchSettings
     )  # type: Optional[ExactMatchSettings]
@@ -97,3 +100,11 @@ class ImageMatchSettings(object):
     strict = attr.ib(factory=list, type=typing.List[Region])
     content = attr.ib(factory=list, type=typing.List[Region])
     floating = attr.ib(factory=list, type=typing.List[Region])
+
+
+@attr.s
+class FloatingBounds(object):
+    max_left_offset = attr.ib(default=0)  # type: int
+    max_up_offset = attr.ib(default=0)  # type: int
+    max_right_offset = attr.ib(default=0)  # type: int
+    max_down_offset = attr.ib(default=0)  # type: int
