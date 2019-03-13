@@ -1,60 +1,78 @@
 import copy
 import typing as tp
 
-from applitools.common import EyesError, Point, RectangleSize
+import attr
+
+from applitools.common import EyesError, Point, RectangleSize, logger
+
+from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import FrameReference
+    from applitools.common.utils.custom_types import AnyWebDriver
 
 __all__ = ("Frame", "FrameChain")
 
 
+@attr.s(slots=True)
 class Frame(object):
     """
     Encapsulates a frame/iframe. This is a generic type class,
     and it's actual type is determined by the reference used by the user in
     order to switch into the frame.
+    :param reference: The web element for the frame, used as a reference to
+                      switch  into the frame.
+    :param location: The location of the frame within the current frame.
+    :param outer_size: The frame element outerSize (i.e., the outer_size of the
+                       frame on the screen, not the internal document outer_size).
+    :param inner_size: The frame element inner outerSize (i.e., the outer_size
+                       of the frame actual outer_size, without borders).
+    :param parent_scroll_position: The scroll location of the frame.
     """
 
-    __slots__ = (
-        "reference",
-        "location",
-        "outer_size",
-        "inner_size",
-        "parent_scroll_position",
-        "_scroll_root_element",
-        "_original_overflow",
-    )
+    reference = attr.ib()
+    location = attr.ib()
+    outer_size = attr.ib()
+    inner_size = attr.ib()
+    parent_scroll_position = attr.ib()
+    scroll_root_element = attr.ib(default=None)
+    original_overflow = attr.ib(default=None)
 
-    def __init__(
-        self, reference, location, outer_size, inner_size, parent_scroll_position
-    ):
-        # type: (FrameReference, Point, RectangleSize, RectangleSize, Point) -> None
-        """
-        :param reference: The web element for the frame, used as a reference to
-                          switch  into the frame.
-        :param location: The location of the frame within the current frame.
-        :param outer_size: The frame element outerSize (i.e., the outer_size of the
-                           frame on the screen, not the internal document outer_size).
-        :param inner_size: The frame element inner outerSize (i.e., the outer_size
-                           of the frame actual outer_size, without borders).
-        :param parent_scroll_position: The scroll location of the frame.
-        """
-        self._scroll_root_element = None
-        self._original_overflow = None
+    def return_to_original_overflow(self, driver):
+        # type: (AnyWebDriver) -> None
+        if not self.scroll_root_element:
+            self.scroll_root_element = driver.find_element_by_tag_name("html")
+        element = eyes_selenium_utils.get_underlying_webelement(
+            self.scroll_root_element
+        )
+        logger.info(
+            "returning overflow of element to its original value: {}".format(element)
+        )
+        driver.execute_script(
+            "arguments[0].style.overflow='%s'" % self.original_overflow, element
+        )
 
-        self.reference = reference
-        self.location = location
-        self.outer_size = outer_size
-        self.inner_size = inner_size
-        self.parent_scroll_position = parent_scroll_position
+    def _scroll_root_element(self, driver):
+        scroll_root = self.scroll_root_element
+        if scroll_root is None:
+            logger.debug("no scroll root element. selecting default.")
+            scroll_root = driver.finde_element_by_tag_name("html")
+        return scroll_root
 
-    def __str__(self):
-        return "Frame: {}".format(self.reference)
+    def hide_scrollbars(self, driver):
+        scroll_root_element = eyes_selenium_utils.get_underlying_webelement(
+            self._scroll_root_element(driver)
+        )
+        original_overflow = driver.execute_script(
+            "var origOF = arguments[0].style.overflow; arguments["
+            "0].style.overflow='hidden'; return origOF;",
+            scroll_root_element,
+        )
+        return original_overflow
 
 
+@attr.s(slots=True, init=False)
 class FrameChain(tp.Sequence[Frame]):
-    __slots__ = ("_frames",)
+    _frames = attr.ib()
 
     def __init__(self, frame_chain=None):
         self._frames = []
@@ -93,7 +111,8 @@ class FrameChain(tp.Sequence[Frame]):
     @property
     def peek(self):
         # type: () -> Frame
-        return self[-1]
+        if self._frames:
+            return self[-1]
 
     def push(self, frame):
         # type: (Frame) -> None
@@ -107,7 +126,7 @@ class FrameChain(tp.Sequence[Frame]):
     @property
     def current_frame_offset(self):
         # type: () -> Point
-        location = Point.create_top_left()
+        location = Point.zero()
         for frame in self:
             location.offset_by_location(frame.location)
         return location
