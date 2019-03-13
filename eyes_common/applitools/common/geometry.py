@@ -45,7 +45,7 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, cmp=False)
 class RectangleSize(DictAccessMixin):
     width = attr.ib()  # type: int
     height = attr.ib()  # type:int
@@ -56,6 +56,9 @@ class RectangleSize(DictAccessMixin):
 
     def scale(self, ratio):
         return RectangleSize(self.width * ratio, self.height * ratio)
+
+    def __eq__(self, other):
+        return self.width == other["width"] and self.height == other["height"]
 
 
 @attr.s(slots=True)
