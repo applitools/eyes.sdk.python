@@ -7,13 +7,13 @@ from enum import Enum
 import attr
 
 from .utils import argument_guard
-from .utils.converters import round_converter, value_from_enum
+from .utils.converters import round_converter
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Dict, List
+    from typing import List
     from .utils.custom_types import ViewPort
 
-__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
+__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
 
 
 class DictAccessMixin(object):
@@ -50,6 +50,13 @@ class RectangleSize(DictAccessMixin):
     width = attr.ib()  # type: int
     height = attr.ib()  # type:int
 
+    @classmethod
+    def from_image(cls, image):
+        return cls(width=image.width, height=image.height)
+
+    def scale(self, ratio):
+        return RectangleSize(self.width * ratio, self.height * ratio)
+
 
 @attr.s(slots=True)
 class Point(DictAccessMixin):
@@ -76,8 +83,12 @@ class Point(DictAccessMixin):
         return Point(self.x / scalar, self.y / scalar)
 
     @classmethod
-    def create_top_left(cls):
+    def zero(cls):
         return cls(0, 0)
+
+    @classmethod
+    def from_location(cls, location):
+        return cls(location.x, location.y)
 
     def length(self):
         # type: () -> float
@@ -201,8 +212,8 @@ class Region(DictAccessMixin):
     width = attr.ib(converter=round_converter)  # type: int
     height = attr.ib(converter=round_converter)  # type: int
     coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS.value, converter=value_from_enum
-    )  # type: Text
+        default=CoordinatesType.SCREENSHOT_AS_IS
+    )  # type: CoordinatesType
 
     @classmethod
     def create_empty_region(cls):
@@ -220,7 +231,11 @@ class Region(DictAccessMixin):
 
     @classmethod
     def from_location_size(cls, location, size):
-        return cls(location.x, location.y, size["width"], size["height"])
+        return cls(location["x"], location["y"], size["width"], size["height"])
+
+    @classmethod
+    def from_image(cls, image):
+        return cls(0, 0, image.width, image.height)
 
     @property
     def x(self):
@@ -373,7 +388,7 @@ class Region(DictAccessMixin):
         self.height = intersection_bottom - intersection_top
 
     def get_sub_regions(self, max_sub_region_size):
-        # type: (Dict) -> List[Region]
+        # type: (RectangleSize) -> List[Region]
         """
         Returns a list of Region objects which compose the current region.
         """

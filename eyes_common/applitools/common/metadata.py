@@ -6,7 +6,6 @@ import attr
 from .configuration import BatchInfo, Branch
 from .match import ImageMatchSettings, MatchLevel
 from .utils import general_utils
-from .utils.converters import value_from_enum
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Text, List
@@ -63,7 +62,7 @@ class AppEnvironment(object):
 
 @attr.s
 class StartInfo(object):
-    session_type = attr.ib(validator=attr.validators.in_(SessionType))  # type: Text
+    session_type = attr.ib(type=SessionType)  # type: SessionType
     is_transient = attr.ib()  # type: bool
     ignore_baseline = attr.ib()  # type: bool
     app_id_or_name = attr.ib()  # type: Text
@@ -82,7 +81,7 @@ class StartInfo(object):
 @attr.s
 class SessionStartInfo(object):
     agent_id = attr.ib()  # type: Text
-    session_type = attr.ib(converter=value_from_enum)  # type: Text
+    session_type = attr.ib(type=SessionType)  # type: SessionType
     app_id_or_name = attr.ib()  # type: Text
     ver_id = attr.ib()  # type: Optional[Text]
     scenario_id_or_name = attr.ib()  # type: Text
