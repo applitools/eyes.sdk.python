@@ -9,20 +9,10 @@ from .match import ImageMatchSettings
 if typing.TYPE_CHECKING:
     Image = typing.ByteString
     from .match import FloatingMatchSettings
-    from .capture import EyesScreenshot
     from .geometry import Region
     from .utils.custom_types import UserInputs
-    from applitools.core import CheckSettings  # noqa
 
-    T = typing.TypeVar("T", bound="CheckSettings")
-
-__all__ = (
-    "AppOutput",
-    "AppOutputWithScreenshot",
-    "AppOutputProvider",
-    "ExpectedAppOutput",
-    "ActualAppOutput",
-)
+__all__ = ("AppOutput", "ExpectedAppOutput", "ActualAppOutput")
 
 
 @attr.s
@@ -40,21 +30,6 @@ class AppOutput(object):
     screenshot64 = attr.ib(repr=False)
     screenshot_url = attr.ib(default=None)
     dom_url = attr.ib(default=None)
-
-
-@attr.s
-class AppOutputWithScreenshot(object):
-    app_output = attr.ib(type=AppOutput)  # type: AppOutput
-    screenshot = attr.ib()  # type: EyesScreenshot
-
-
-@attr.s
-class AppOutputProvider(object):
-    method = attr.ib()
-
-    def get_app_output(self, region, last_screenshot, check_settings):
-        # type: (Region, EyesScreenshot, T) -> AppOutputWithScreenshot
-        return self.method(region, last_screenshot, check_settings)
 
 
 @attr.s
