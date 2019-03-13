@@ -14,7 +14,8 @@ __all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_PROVIDER")
 @attr.s
 class RegionProvider(ABC):
     """
-    Encapsulates a getRegion "callback" and how the region's coordinates should be used.
+    Encapsulates a get_region "callback" and how the region's coordinates should be
+    used.
     """
 
     _region = attr.ib()
@@ -24,7 +25,10 @@ class RegionProvider(ABC):
         """
         :return: A region with "as is" viewport coordinates.
         """
-        return self._region
+        if callable(self._region):
+            return self._region()
+        else:
+            return self._region
 
     def __str__(self):
         return str(self._region)
