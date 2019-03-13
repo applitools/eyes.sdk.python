@@ -1,4 +1,4 @@
-from .eyes_base import *  # noqa
+from .eyes_base import EyesBase  # noqa
 from .fluent import *  # noqa
 from .match_window_task import *  # noqa
 from .positioning import *  # noqa

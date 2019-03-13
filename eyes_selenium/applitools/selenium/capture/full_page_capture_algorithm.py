@@ -71,9 +71,7 @@ class FullPageCaptureAlgorithm(object):
                 self.origin_provider.pop_state()
                 return image
 
-            full_area = Region.from_location_size(
-                Point.zero(), entire_size
-            )  # type: Region
+            full_area = Region.from_location_size(Point.zero(), entire_size)
 
         image_parts = self._get_image_parts(full_area, image)
 

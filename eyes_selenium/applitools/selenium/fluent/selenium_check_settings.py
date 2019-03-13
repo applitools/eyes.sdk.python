@@ -131,7 +131,7 @@ class SeleniumCheckSettings(CheckSettings):
         self._frame_chain.append(fl)
         return self
 
-    def _ignore_to_region_provider(self, region, method_name):
+    def _region_provider_from(self, region, method_name):
         if isinstance(region, typing.Text):
             return IgnoreRegionByCssSelector(region)
         if is_list_or_tuple(region):
@@ -140,7 +140,7 @@ class SeleniumCheckSettings(CheckSettings):
             return IgnoreRegionByCssSelector(sel)
         elif is_webelement(region):
             return IgnoreRegionByElement(region)
-        return super(SeleniumCheckSettings, self)._ignore_to_region_provider(
+        return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name
         )
 
@@ -152,7 +152,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _set_scroll_root_element(self, element):
         if len(self._frame_chain) == 0:
-            self.scroll_root_element = element
+            self._scroll_root_element = element
         else:
             self._frame_chain[-1].scroll_root_element = element
 
@@ -162,7 +162,7 @@ class SeleniumCheckSettings(CheckSettings):
         elif is_webelement(element_or_selector):
             self._set_scrool_root_element(element_or_selector)
 
-    def _floating_to_region_provider(self, *args, **kwargs):
+    def _floating_provider_from(self, *args, **kwargs):
         region_or_container = args[0]
         if len(args) > 1:
             bounds = FloatingBounds(

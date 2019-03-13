@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 import abc
-import typing as tp
-from typing import Optional, Text
+import typing
 
 from applitools.common import (
     BatchInfo,
@@ -37,13 +36,14 @@ from .positioning import InvalidPositionProvider, PositionProvider, RegionProvid
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         ViewPort,
         UserInputs,
         RegionOrElement,
     )
     from applitools.common.capture import EyesScreenshot
+    from typing import Optional, Text, Dict, Union
 
 __all__ = ("EyesBase",)
 
@@ -51,7 +51,7 @@ __all__ = ("EyesBase",)
 class EyesBaseAbstract(ABC):
     @abc.abstractmethod
     def _try_capture_dom(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Returns the string with DOM of the current page in the prepared format or empty string
         """
@@ -59,7 +59,7 @@ class EyesBaseAbstract(ABC):
     @property
     @abc.abstractmethod
     def base_agent_id(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Must return version of SDK. (e.g. Selenium, Images) in next format:
             "eyes.{package}.python/{lib_version}"
@@ -72,7 +72,7 @@ class EyesBaseAbstract(ABC):
 
     @abc.abstractmethod
     def get_viewport_size_static(self):
-        # type: () -> ViewPort
+        # type: () -> RectangleSize
         """
         :return: The viewport size of the AUT.
         """
@@ -87,7 +87,7 @@ class EyesBaseAbstract(ABC):
     @property
     @abc.abstractmethod
     def _title(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Returns the title of the window of the AUT, or empty string
          if the title is not available.
@@ -114,6 +114,7 @@ class EyesBaseAbstract(ABC):
 
     @abc.abstractmethod
     def _set_viewport_size(self, size):
+        # type: (ViewPort) -> None
         """
 
         """
@@ -125,15 +126,15 @@ class EyesBaseAbstract(ABC):
 
 
 class EyesBase(EyesBaseAbstract):
-    _config = None  # type: tp.Optional[Configuration]
-    _host_os = None  # type: tp.Optional[tp.Text]
-    _host_app = None  # type: tp.Optional[tp.Text]
-    _running_session = None  # type: tp.Optional[RunningSession]
-    _session_start_info = None  # type: tp.Optional[SessionStartInfo]
-    _region_to_check = None  # type: tp.Optional[RegionOrElement]
-    _last_screenshot = None  # type: tp.Optional[EyesScreenshot]
+    _config = None  # type: Optional[Configuration]
+    _host_os = None  # type: Optional[Text]
+    _host_app = None  # type: Optional[Text]
+    _running_session = None  # type: Optional[RunningSession]
+    _session_start_info = None  # type: Optional[SessionStartInfo]
+    _region_to_check = None  # type: Optional[RegionOrElement]
+    _last_screenshot = None  # type: Optional[EyesScreenshot]
     _viewport_size = None  # type: ViewPort
-    _scale_provider = None  # type: tp.Optional[ScaleProvider]
+    _scale_provider = None  # type: Optional[ScaleProvider]
     _dom_url = None  # type: Optional[Text]
     _position_provider = None  # type: Optional[PositionProvider]
     _is_viewport_size_set = False
@@ -154,7 +155,7 @@ class EyesBase(EyesBaseAbstract):
     #     self._is_viewport_size_set = True
 
     def __init__(self, server_url=None):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         """
         Creates a new (possibly disabled) Eyes instance that
         interacts with the Eyes server.
@@ -175,7 +176,7 @@ class EyesBase(EyesBaseAbstract):
         self._ensure_configuration()
 
         # Should the test report mismatches immediately or when it is finished.
-        self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
+        self.failure_reports = FailureReports.ON_CLOSE  # type: Text
         # The default match settings for the session. See ImageMatchSettings.
         self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
 
@@ -196,28 +197,35 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def viewport_size(self):
+        # type: () -> RectangleSize
         return self._config.viewport_size
 
     @viewport_size.setter
     def viewport_size(self, size):
-        self._config.viewport_size = size
+        # type: (Union[RectangleSize, Dict]) -> None
+        if isinstance(size, RectangleSize) or isinstance(size, dict):
+            self._config.viewport_size = RectangleSize(size["width"], size["height"])
+        else:
+            logger.warning("Wrong viewport type settled")
 
     @property
     def stitching_overlap(self):
+        # type: () -> int
         return self._config.stitching_overlap
 
     @stitching_overlap.setter
     def stitching_overlap(self, value):
+        # type: (int) -> None
         self._config.stitching_overlap = value
 
     @property
     def agent_id(self):
-        # type: () -> tp.Optional[tp.Text]
+        # type: () -> Optional[Text]
         return self._config.agent_id
 
     @agent_id.setter
     def agent_id(self, value):
-        # type: (tp.Optional[tp.Text]) -> None
+        # type: (Text) -> None
         """
         Sets the user given agent id of the SDK. {@code null} is referred to
           as no id.
@@ -230,12 +238,12 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def host_os(self):
-        # type: () -> tp.Optional[tp.Text]
+        # type: () -> Optional[Text]
         return self._config.host_os
 
     @host_os.setter
     def host_os(self, value):
-        # type: (tp.Optional[tp.Text]) -> None
+        # type: (Text) -> None
         """
         :param value: The host OS running the AUT.
         """
@@ -245,12 +253,12 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def host_app(self):
-        # type: () -> tp.Optional[tp.Text]
+        # type: () -> Optional[Text]
         return self._config.host_os
 
     @host_app.setter
     def host_app(self, value):
-        # type: (tp.Optional[tp.Text]) -> None
+        # type: (Text) -> None
         """
         :param value: The application running the AUT (e.g., Chrome).
         """
@@ -270,6 +278,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def baseline_env_name(self):
+        # type: () -> Text
         return self._config.baseline_env_name
 
     @baseline_env_name.setter
@@ -280,6 +289,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def env_name(self):
+        # type: () -> Text
         return self._config.environment_name
 
     @env_name.setter
@@ -290,6 +300,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def send_dom(self):
+        # type: () -> bool
         return self._config.send_dom
 
     @send_dom.setter
@@ -299,6 +310,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def use_dom(self):
+        # type: () -> bool
         return self._config.use_dom
 
     @use_dom.setter
@@ -308,6 +320,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def enable_patterns(self):
+        # type: () -> bool
         return self._config.enable_patterns
 
     @enable_patterns.setter
@@ -317,7 +330,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def match_level(self):
-        # type: () -> tp.Text
+        # type: () -> MatchLevel
         """
         Gets the default match level for the entire session. See ImageMatchSettings.
         """
@@ -325,13 +338,15 @@ class EyesBase(EyesBaseAbstract):
 
     @match_level.setter
     def match_level(self, match_level):
-        # type: (MatchLevel) -> None
+        # type: (Union[MatchLevel, Text]) -> None
         """
         Sets the default match level for the entire session. See ImageMatchSettings.
 
         :param match_level: The match level to set. Should be one of
                             the values defined by MatchLevel
         """
+        if isinstance(match_level, Text):
+            match_level = MatchLevel(match_level)
         self.default_match_settings.match_level = match_level
 
     @property
@@ -356,39 +371,46 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def is_disabled(self):
+        # type: () -> bool
         return self._config.is_disabled
 
     @property
     def save_new_tests(self):
+        # type: () -> bool
         """A boolean denoting whether new tests should be automatically accepted."""
         return self._config.save_new_tests
 
     @save_new_tests.setter
     def save_new_tests(self, save):
+        # type: (bool) -> None
         self._config.save_new_tests = save
 
     @property
     def save_failed_tests(self):
+        # type: () -> bool
         """Whether failed tests should be automatically saved with all new output
         accepted."""
         return self._config.save_failed_tests
 
     @save_failed_tests.setter
     def save_failed_tests(self, save):
+        # type: (bool) -> None
         self._config.save_failed_tests = save
 
     @property
     def fail_on_new_test(self):
+        # type: () -> bool
         """ If true, Eyes will treat new tests the same as failed tests."""
         return self._config.fail_on_new_test
 
     @fail_on_new_test.setter
     def fail_on_new_test(self, save):
+        # type: (bool) -> None
         self._config.fail_on_new_test = save
 
     @property
     def api_key(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Gets the Api key used for authenticating the user with Eyes.
 
@@ -398,7 +420,7 @@ class EyesBase(EyesBaseAbstract):
 
     @api_key.setter
     def api_key(self, api_key):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         """
         Sets the api key used for authenticating the user with Eyes.
 
@@ -408,7 +430,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def server_url(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Gets the URL of the Eyes server.
 
@@ -418,7 +440,7 @@ class EyesBase(EyesBaseAbstract):
 
     @server_url.setter
     def server_url(self, server_url):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         """
         Sets the URL of the Eyes server.
 
@@ -429,10 +451,12 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def scale_ratio(self):
+        # type: () -> float
         return self._scale_provider.scale_ratio
 
     @scale_ratio.setter
     def scale_ratio(self, value):
+        # type: (float) -> None
         if value:
             self._scale_provider = FixedScaleProvider(value)
         else:
@@ -440,10 +464,12 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def position_provider(self):
+        # type: () -> PositionProvider
         return self._position_provider
 
     @position_provider.setter
     def position_provider(self, provider):
+        # type: (PositionProvider) -> None
         if isinstance(provider, PositionProvider):
             self._position_provider = provider
         else:
@@ -451,7 +477,7 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def full_agent_id(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         """
         Gets the agent id, which identifies the current library using the SDK.
 
@@ -462,7 +488,7 @@ class EyesBase(EyesBaseAbstract):
         return "{0} [{1}]".format(self._config.agent_id, self.base_agent_id)
 
     def add_property(self, name, value):
-        # type: (tp.Text, tp.Text) -> None
+        # type: (Text, Text) -> None
         """
         Associates a key/value pair with the test. This can be used later for filtering.
         :param name: (string) The property name.
@@ -479,7 +505,7 @@ class EyesBase(EyesBaseAbstract):
         return self._is_open
 
     def close(self, raise_ex=True):
-        # type: (bool) -> tp.Optional[TestResults]
+        # type: (bool) -> Optional[TestResults]
         """
         Ends the test.
 
@@ -590,12 +616,6 @@ class EyesBase(EyesBaseAbstract):
                     self._running_session = None
         finally:
             logger.close()
-
-    def get_screenshot_url(self):
-        return None
-
-    def get_image_location(self):
-        pass
 
     def open_base(
         self,
@@ -833,7 +853,7 @@ class EyesBase(EyesBaseAbstract):
         return result
 
     def _handle_match_result(self, result, tag):
-        # type: (MatchResult, tp.Text) -> None
+        # type: (MatchResult, Text) -> None
         self._last_screenshot = result.screenshot
         as_expected = result.as_expected
         self._user_inputs = []
@@ -851,7 +871,7 @@ class EyesBase(EyesBaseAbstract):
                     )
 
     def _try_post_dom_snapshot(self, dom_json):
-        # type: (tp.Text) -> tp.Optional[tp.Text]
+        # type: (Text) -> Optional[Text]
         """
         In case DOM data is valid uploads it to the server and return URL where it stored.
         """

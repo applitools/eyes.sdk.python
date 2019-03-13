@@ -83,6 +83,7 @@ class ScrollPositionProvider(SeleniumPositionProvider):
         return eyes_selenium_utils.parse_location_string(xy)
 
     def get_current_position(self):
+        # type: () -> Point
         """
         The scroll position of the current frame.
         """

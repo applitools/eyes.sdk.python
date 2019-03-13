@@ -8,6 +8,7 @@ from applitools.common import EyesError, Point, RectangleSize, logger
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
+    from typing import Optional
     from applitools.common.utils.custom_types import AnyWebDriver
 
 __all__ = ("Frame", "FrameChain")
@@ -110,9 +111,10 @@ class FrameChain(tp.Sequence[Frame]):
 
     @property
     def peek(self):
-        # type: () -> Frame
+        # type: () -> Optional[Frame]
         if self._frames:
             return self[-1]
+        return None
 
     def push(self, frame):
         # type: (Frame) -> None

@@ -8,8 +8,9 @@ from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from applitools.core import EyesBase
+    from applitools.core.fluent import CheckSettings
 
-    T = typing.TypeVar("T", bound="CheckSettings")
+    T = typing.TypeVar("T", bound=CheckSettings)
 
 
 @attr.s

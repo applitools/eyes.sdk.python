@@ -78,7 +78,8 @@ _JS_SET_OVERFLOW = """
 var origOF = arguments[0].style.overflow;
 arguments[0].style.overflow = '%s';
 return origOF;
-if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN') arguments[0].setAttribute('data-applitools-original-overflow',origOF);
+if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN')
+arguments[0].setAttribute('data-applitools-original-overflow',origOF);
 return origOF;
 """
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
@@ -391,6 +392,7 @@ def get_viewport_size_or_display_size(driver):
 
 
 def parse_location_string(position):
+    # type: (str) -> Point
     xy = position.split(";")
     if len(xy) != 2:
         raise EyesError("Could not get scroll position!")

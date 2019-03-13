@@ -31,5 +31,5 @@ def test_different_not_mobile_platform_names(driver_mock, platform_name):
 
 
 def test_appium_webdriver(driver_mock):
-    driver_mock.driver = mock.Mock(AppiumWebDriver)
+    driver_mock._driver = mock.Mock(AppiumWebDriver)
     assert eyes_selenium_utils.is_mobile_device(driver_mock)

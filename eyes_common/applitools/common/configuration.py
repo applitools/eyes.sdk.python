@@ -1,5 +1,4 @@
 import os
-import typing
 import uuid
 from copy import copy
 from datetime import datetime
@@ -7,12 +6,10 @@ from typing import Optional, Text
 
 import attr
 
+from .geometry import RectangleSize
 from .server import SessionType
 from .utils import general_utils
 from .utils.converters import isoformat
-
-if typing.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import ViewPort
 
 __all__ = ("BatchInfo", "Branch", "Configuration")
 
@@ -65,7 +62,7 @@ class Configuration(object):
     save_diffs = attr.ib(default=None)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
-    _viewport_size = attr.ib(default=None)  # type: Optional[ViewPort]
+    _viewport_size = attr.ib(default=None)  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)

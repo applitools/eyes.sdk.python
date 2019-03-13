@@ -15,7 +15,7 @@ __all__ = ("PositionProvider", "InvalidPositionProvider")
 
 @attr.s
 class PositionProvider(ABC):
-    _states = attr.ib(init=False, factory=list)
+    _states = attr.ib(init=False, factory=list)  # type: List[Point]
 
     @abc.abstractmethod
     def get_current_position(self):
@@ -47,16 +47,18 @@ class PositionProvider(ABC):
         self._states.append(self.get_current_position())
 
     def pop_state(self):
+        # type: ()-> Point
         """
         Sets the position to be the last position added to the states list.
         """
-        self.set_position(self._states.pop())
+        state = self._states.pop()
+        self.set_position(state)
+        return state
 
     @property
     def states(self):
         # type: () -> List[Point]
-        if self._states:
-            return self._states[-1]
+        return self._states
 
 
 class InvalidPositionProvider(PositionProvider):

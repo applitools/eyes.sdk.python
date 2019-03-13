@@ -4,7 +4,7 @@ import attr
 
 from applitools.common import logger
 from applitools.common.geometry import Region
-from applitools.common.match import FloatingMatchSettings, MatchLevel
+from applitools.common.match import MatchLevel
 from applitools.common.utils import ABC
 
 from .region import (
@@ -19,7 +19,9 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
 
     T = typing.TypeVar("T", bound="CheckSettings")
-    G = typing.TypeVar("G", bound="GetRegion")
+    ACCEPTING_VALUE = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
+    GR = typing.TypeVar("GR", bound=GetRegion)
+    FR = typing.TypeVar("FR", bound=GetFloatingRegion)
 
 __all__ = ("CheckSettings",)
 
@@ -125,7 +127,7 @@ class CheckSettings(ABC):
         self._target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        # type: (*ACCEPTING_VALUE)  -> T
         """ Adds one or more ignore regions. """
         self._ignore_regions = self.__regions(regions, method_name="ignore_regions")
         return self
@@ -133,25 +135,25 @@ class CheckSettings(ABC):
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        # type: (*ACCEPTING_VALUE)  -> T
         """ Adds one or more layout regions. """
         self._layout_regions = self.__regions(regions, method_name="layout_regions")
         return self
 
     def strict_regions(self, *regions):
-        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        # type: (*ACCEPTING_VALUE)  -> T
         """ Adds one or more strict regions. """
         self._strict_regions = self.__regions(regions, method_name="strict_regions")
         return self
 
     def content_regions(self, *regions):
-        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        # type: (*ACCEPTING_VALUE)  -> T
         """ Adds one or more content regions. """
         self._content_regions = self.__regions(regions, method_name="content_regions")
         return self
 
     def floating_regions(self, *args):
-        # type: (*Union[Region, Text, AnyWebElement])  -> T
+        # type: (*ACCEPTING_VALUE)  -> T
         """ Adds a floating region. Details in :py:func:`_floating_to_region_provider` """
         region_or_container = self._floating_to_region_provider(*args)
         self._floating_regions.append(region_or_container)
@@ -181,7 +183,6 @@ class CheckSettings(ABC):
         return self
 
     def __regions(self, regions, method_name):
-        # type: (Tuple[Union[Region, Text, AnyWebElement]], Text)  -> T
         if not regions:
             raise TypeError(
                 "{name} method called without arguments!".format(name=method_name)
@@ -189,11 +190,10 @@ class CheckSettings(ABC):
 
         regions_list = getattr(self, "_" + method_name)
         for region in regions:
-            regions_list.append(self._ignore_to_region_provider(region, method_name))
+            regions_list.append(self._region_provider_from(region, method_name))
         return regions_list
 
-    def _ignore_to_region_provider(self, region, method_name):
-        # type: (Union[G, Region], Text) -> G
+    def _region_provider_from(self, region, method_name):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             return IgnoreRegionByRectangle(region)
@@ -211,7 +211,4 @@ class CheckSettings(ABC):
                 return FloatingRegionByRectangle(
                     Region.from_region(region_or_container), bounds
                 )
-        if isinstance(region_or_container, FloatingMatchSettings):
-            logger.debug("_floating: FloatingMatchSettings")
-            return region_or_container
         raise TypeError("Unknown region type.")

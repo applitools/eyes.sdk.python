@@ -130,12 +130,9 @@ class Eyes(EyesBase):
         )  # type: Optional[RegionPositionCompensation]
 
     @property
-    def _viewport_size(self):
-        return self._config.viewport_size
-
-    @_viewport_size.setter
-    def viewport_size(self, size):
-        self._set_viewport_size(size)
+    def original_frame_chain(self):
+        # type: () -> FrameChain
+        return self._original_frame_chain
 
     @property
     def wait_before_screenshots(self):
@@ -243,7 +240,7 @@ class Eyes(EyesBase):
 
         ua_string = self._session_start_info.environment.inferred
         if ua_string:
-            ua_string = ua_string.rstrip("useragent:")
+            ua_string = ua_string.replace("useragent:", "")
             self._user_agent = useragent.parse_user_agent_string(ua_string)
 
         self._image_provider = get_image_provider(self._user_agent, self)
@@ -276,7 +273,7 @@ class Eyes(EyesBase):
         return scroll_root_element
 
     def _try_hide_scrollbars(self):
-        # type: () -> FrameChain
+        # type: () -> Optional[FrameChain]
         if self.driver.is_mobile_device():
             return FrameChain()
 
@@ -320,6 +317,7 @@ class Eyes(EyesBase):
             self.driver.switch_to.frames(original_frame_chain)
             logger.info("done hiding scrollbars.")
             return original_frame_chain
+        return None
 
     def _try_restore_scrollbars(self, frame_chain):
         if self.driver.is_mobile_device():
@@ -826,7 +824,7 @@ class Eyes(EyesBase):
         return self.get_viewport_size_static(self._driver)
 
     def _ensure_viewport_size(self):
-        if self._viewport_size is None:
+        if self.viewport_size is None:
             self._set_viewport_size(self.driver.get_default_content_viewport_size())
 
     def _set_viewport_size(self, size):
@@ -887,7 +885,7 @@ class Eyes(EyesBase):
         app_env = AppEnvironment(
             os,
             hosting_app=self._config.host_app,
-            display_size=self._viewport_size,
+            display_size=self.viewport_size,
             inferred=self._inferred_environment,
         )
         return app_env
@@ -1006,7 +1004,8 @@ class Eyes(EyesBase):
         if self._config.hide_caret:
             try:
                 self.driver.execute_script(
-                    "var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;"
+                    "var activeElement = document.activeElement; activeElement "
+                    "&& activeElement.blur(); return activeElement;"
                 )
             except WebDriverException as e:
                 logger.warning("Cannot hide caret! \n{}".format(e))

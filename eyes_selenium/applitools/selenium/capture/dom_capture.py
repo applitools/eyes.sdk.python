@@ -160,7 +160,7 @@ def get_full_window_dom(driver, return_as_dict=False):
     _traverse_dom_tree(driver, {"childNodes": [dom_tree], "tagName": "OUTER_HTML"})
 
     # After traversing page could be scrolled down. Reset to origin position
-    driver.reset_origin()
+    driver.switch_to.default_content()
 
     if return_as_dict:
         return dom_tree

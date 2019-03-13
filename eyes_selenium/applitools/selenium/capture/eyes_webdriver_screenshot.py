@@ -46,14 +46,14 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def from_screenshot(cls, driver, image, screenshot_region):
-        # type: (EyesWebDriver, Image.Image, ScreenshotType) -> EyesWebDriverScreenshot
+        # type: (EyesWebDriver, Image.Image, Region) -> EyesWebDriverScreenshot
         instance = cls(driver, image, ScreenshotType.ENTIRE_FRAME, Point.zero())
         # The frame comprises the entire screenshot.
         instance._screenshot_type = ScreenshotType.ENTIRE_FRAME
-        instance.frame_window = Region.from_location_size(
+        instance.frame_window = Region.from_location_size(  # type: ignore
             Point.zero(), screenshot_region.size
         )
-        instance.region_window = Region.from_region(screenshot_region)
+        instance.region_window = Region.from_region(screenshot_region)  # type: ignore
         return instance
 
     def __init__(self, driver, image, screenshot_type, frame_location_in_screenshot):
@@ -66,10 +66,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
          which the screenshot was retrieved.
         :param image: image instance. If screenshot64 is None,
          this variable must NOT be none.
-        :param screenshot64: The base64 representation of a png image. If screenshot
-         is None, this variable must NOT be none.
-        :param is_viewport_screenshot: Whether the screenshot object represents a
-         viewport screenshot or a full screenshot.
+        :param screenshot_type: possible VIEWPORT OR ENTIRE_FRAME
         :param frame_location_in_screenshot: The location of the frame relative
          to the top,left of the screenshot.
         :raise EyesError: If the screenshots are None.
@@ -129,7 +126,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     def update_screenshot_type(self, screenshot_type, image):
         if screenshot_type is None:
-            viewport_size = self._driver.eyes._viewport_size
+            viewport_size = self._driver.eyes.viewport_size
             scale_viewport = self._driver.eyes._stitch_content
 
             if scale_viewport:
@@ -165,7 +162,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @staticmethod
     def _get_default_content_scroll_position(driver):
-        # type: (EyesWebDriver) -> None
+        # type: (EyesWebDriver) -> Point
         scroll_root_element = driver.eyes.get_current_frame_scroll_root_element()
         position_provider = ScrollPositionProvider(driver, scroll_root_element)
         return position_provider.get_current_position()
@@ -173,7 +170,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @staticmethod
     def get_default_content_scroll_position(current_frames, driver):
         if current_frames.size == 0:
-            default_content_scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
+            scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
                 driver
             )
         else:
@@ -181,11 +178,11 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             # breakpoint()
             current_fc = driver.eyes._original_frame_chain
             driver.switch_to.frames(current_fc)
-            default_content_scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
+            scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
                 driver
             )
             driver.switch_to.frames(original_fc)
-        return default_content_scroll_position
+        return scroll_position
 
     @staticmethod
     def calc_frame_location_in_screenshot(driver, frame_chain, screenshot_type):

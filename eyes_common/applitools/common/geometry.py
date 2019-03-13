@@ -10,8 +10,9 @@ from .utils import argument_guard
 from .utils.converters import round_converter
 
 if typing.TYPE_CHECKING:
-    from typing import List
+    from typing import List, Dict, Union
     from .utils.custom_types import ViewPort
+    from PIL.Image import Image
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
 
@@ -52,10 +53,12 @@ class RectangleSize(DictAccessMixin):
 
     @classmethod
     def from_image(cls, image):
+        # type: (Image) -> RectangleSize
         return cls(width=image.width, height=image.height)
 
     def scale(self, ratio):
-        return RectangleSize(self.width * ratio, self.height * ratio)
+        # type: (float) -> RectangleSize
+        return RectangleSize(round(self.width * ratio), round(self.height * ratio))
 
     def __eq__(self, other):
         return self.width == other["width"] and self.height == other["height"]
@@ -224,6 +227,7 @@ class Region(DictAccessMixin):
 
     @classmethod
     def from_region(cls, region):
+        # type: (Region) -> Region
         return cls(
             region.left,
             region.top,
@@ -234,10 +238,12 @@ class Region(DictAccessMixin):
 
     @classmethod
     def from_location_size(cls, location, size):
+        # type: (Point, Union[Dict,RectangleSize]) -> Region
         return cls(location["x"], location["y"], size["width"], size["height"])
 
     @classmethod
     def from_image(cls, image):
+        # type: (Image) -> Region
         return cls(0, 0, image.width, image.height)
 
     @property

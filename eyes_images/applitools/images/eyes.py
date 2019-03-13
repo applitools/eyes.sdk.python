@@ -1,6 +1,6 @@
 import typing
 
-from applitools.common import EyesError, Region, logger
+from applitools.common import EyesError, RectangleSize, Region, logger
 from applitools.common.metadata import AppEnvironment
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 
@@ -87,7 +87,7 @@ class Eyes(EyesBase):
 
         image = check_settings.values.image
         if self.viewport_size is None:
-            self.viewport_size = {"width": image.width, "height": image.height}
+            self.viewport_size = RectangleSize.from_image(image)  # type: RectangleSize
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
