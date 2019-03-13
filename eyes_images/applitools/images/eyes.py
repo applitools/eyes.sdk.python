@@ -45,11 +45,19 @@ class Eyes(EyesBase):
             return self._inferred
         return ""
 
-    def get_viewport_size(self):
+    @staticmethod
+    def get_viewport_size_static():
+        pass
+
+    @staticmethod
+    def set_viewport_size_static(value):
+        pass
+
+    def _get_viewport_size(self):
         # type: () -> ViewPort
         return self._config.viewport_size
 
-    def set_viewport_size(self, size):
+    def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
         self._config.viewport_size = size
 
@@ -78,8 +86,8 @@ class Eyes(EyesBase):
             name = check_settings.values.name
 
         image = check_settings.values.image
-        if self._config.viewport_size is None:
-            self._config.viewport_size = {"width": image.width, "height": image.height}
+        if self.viewport_size is None:
+            self.viewport_size = {"width": image.width, "height": image.height}
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
@@ -122,8 +130,8 @@ class Eyes(EyesBase):
         # TODO: Add cut provider
 
         self._screenshot = EyesImagesScreenshot(image)
-        if not self._config.viewport_size:
-            self.set_viewport_size(dict(width=image.width, height=image.height))
+        if not self.viewport_size:
+            self._set_viewport_size(dict(width=image.width, height=image.height))
 
         check_settings = check_settings.timeout(0)
         match_result = self._check_window_base(
@@ -139,7 +147,7 @@ class Eyes(EyesBase):
         app_env = AppEnvironment(
             os=self.host_os,
             hosting_app=self._config.host_app,
-            display_size=self._config.viewport_size,
+            display_size=self.viewport_size,
             inferred=self._inferred,
         )
         return app_env

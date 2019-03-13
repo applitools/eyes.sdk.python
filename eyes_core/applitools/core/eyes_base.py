@@ -4,12 +4,15 @@ import abc
 import typing as tp
 from typing import Optional, Text
 
-from applitools.common import BatchInfo, Configuration, Region, RunningSession, logger
-from applitools.common.app_output import (
-    AppOutput,
-    AppOutputProvider,
-    AppOutputWithScreenshot,
+from applitools.common import (
+    BatchInfo,
+    Configuration,
+    RectangleSize,
+    Region,
+    RunningSession,
+    logger,
 )
+from applitools.common.app_output import AppOutput
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
@@ -17,18 +20,20 @@ from applitools.common.errors import (
     TestFailedError,
 )
 from applitools.common.match import ImageMatchSettings, MatchLevel, MatchResult
-from applitools.common.metadata import (
-    AppEnvironment,
-    FailureReports,
-    SessionStartInfo,
-    SessionType,
-)
+from applitools.common.metadata import AppEnvironment, SessionStartInfo
+from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard
+from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
+from applitools.core.cut import NullCutProvider
+from applitools.core.debug import (
+    FileDebugScreenshotProvider,
+    NullDebugScreenshotProvider,
+)
 
 from .fluent import CheckSettings
 from .match_window_task import MatchWindowTask
-from .positioning import RegionProvider
+from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 
@@ -62,17 +67,18 @@ class EyesBaseAbstract(ABC):
 
     @abc.abstractmethod
     def get_screenshot(self, **kwargs):
+        # type: (...) -> EyesScreenshot
         pass
 
     @abc.abstractmethod
-    def get_viewport_size(self):
+    def get_viewport_size_static(self):
         # type: () -> ViewPort
         """
         :return: The viewport size of the AUT.
         """
 
     @abc.abstractmethod
-    def set_viewport_size(self, size):
+    def set_viewport_size_static(self, size):
         # type: (ViewPort) -> None
         """
         :param size: The required viewport size.
@@ -87,13 +93,6 @@ class EyesBaseAbstract(ABC):
          if the title is not available.
         """
 
-    @abc.abstractmethod
-    def _ensure_viewport_size(self):
-        # type: () -> None
-        """
-        Assign the viewport size we need to be in the default content frame.
-        """
-
     @property
     @abc.abstractmethod
     def _environment(self):
@@ -103,6 +102,20 @@ class EyesBaseAbstract(ABC):
         which runs the application under test.
 
         :return: The current application environment.
+        """
+
+    @abc.abstractmethod
+    def _get_viewport_size(self):
+        # type: () -> RectangleSize
+        """
+
+        :return:
+        """
+
+    @abc.abstractmethod
+    def _set_viewport_size(self, size):
+        """
+
         """
 
     @property
@@ -116,13 +129,29 @@ class EyesBase(EyesBaseAbstract):
     _host_os = None  # type: tp.Optional[tp.Text]
     _host_app = None  # type: tp.Optional[tp.Text]
     _running_session = None  # type: tp.Optional[RunningSession]
-    _start_info = None  # type: tp.Optional[SessionStartInfo]
+    _session_start_info = None  # type: tp.Optional[SessionStartInfo]
     _region_to_check = None  # type: tp.Optional[RegionOrElement]
     _last_screenshot = None  # type: tp.Optional[EyesScreenshot]
     _viewport_size = None  # type: ViewPort
     _scale_provider = None  # type: tp.Optional[ScaleProvider]
-    _debug_screenshot_provider = None
     _dom_url = None  # type: Optional[Text]
+    _position_provider = None  # type: Optional[PositionProvider]
+    _is_viewport_size_set = False
+
+    # TODO: make it run with no effect to other pices of code
+    # def set_explicit_viewport_size(self, size):
+    #     """
+    #     Define the viewport size as {@code size} without doing any actual action on the
+    #
+    #     :param size: The size of the viewport.
+    #     """
+    #     if not size:
+    #         self.viewport_size = None
+    #         self._is_viewport_size_set = False
+    #         return None
+    #     logger.info("Viewport size explicitly set to {}".format(size))
+    #     self.viewport_size = RectangleSize(size["width"], size["height"])
+    #     self._is_viewport_size_set = True
 
     def __init__(self, server_url=None):
         # type: (tp.Text) -> None
@@ -139,6 +168,8 @@ class EyesBase(EyesBaseAbstract):
         self._should_match_once_on_timeout = False  # type: bool
         self._user_inputs = []  # type: UserInputs
         self._stitch_content = False  # type: bool
+        self._debug_screenshot_provider = NullDebugScreenshotProvider()
+        self._cut_provider = NullCutProvider()
         # self._is_viewport_size_set = False  # type: bool
 
         self._ensure_configuration()
@@ -147,6 +178,37 @@ class EyesBase(EyesBaseAbstract):
         self.failure_reports = FailureReports.ON_CLOSE  # type: tp.Text
         # The default match settings for the session. See ImageMatchSettings.
         self.default_match_settings = ImageMatchSettings()  # type: ImageMatchSettings
+
+    @property
+    def is_debug_screenshot_provided(self):
+        # type: () -> bool
+        """True if screenshots saving enabled."""
+        return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
+
+    def set_debug_screenshot_provider_for_saving(self, save=True):
+        prev = self._debug_screenshot_provider
+        if save:
+            self._debug_screenshot_provider = FileDebugScreenshotProvider(
+                prev.prefix, prev.path
+            )
+        else:
+            self._debug_screenshot_provider = NullDebugScreenshotProvider()
+
+    @property
+    def viewport_size(self):
+        return self._config.viewport_size
+
+    @viewport_size.setter
+    def viewport_size(self, size):
+        self._config.viewport_size = size
+
+    @property
+    def stitching_overlap(self):
+        return self._config.stitching_overlap
+
+    @stitching_overlap.setter
+    def stitching_overlap(self, value):
+        self._config.stitching_overlap = value
 
     @property
     def agent_id(self):
@@ -228,13 +290,30 @@ class EyesBase(EyesBaseAbstract):
 
     @property
     def send_dom(self):
-        return self._config.environment_name
+        return self._config.send_dom
 
     @send_dom.setter
     def send_dom(self, send):
         # type: (bool) -> None
-        if send:
-            self._config.send_dom = send
+        self._config.send_dom = send
+
+    @property
+    def use_dom(self):
+        return self._config.use_dom
+
+    @use_dom.setter
+    def use_dom(self, send):
+        # type: (bool) -> None
+        self._config.use_dom = send
+
+    @property
+    def enable_patterns(self):
+        return self._config.enable_patterns
+
+    @enable_patterns.setter
+    def enable_patterns(self, enable):
+        # type: (bool) -> None
+        self._config.enable_patterns = enable
 
     @property
     def match_level(self):
@@ -360,6 +439,17 @@ class EyesBase(EyesBaseAbstract):
             self._scale_provider = NullScaleProvider()
 
     @property
+    def position_provider(self):
+        return self._position_provider
+
+    @position_provider.setter
+    def position_provider(self, provider):
+        if isinstance(provider, PositionProvider):
+            self._position_provider = provider
+        else:
+            self._position_provider = InvalidPositionProvider()
+
+    @property
     def full_agent_id(self):
         # type: () -> tp.Text
         """
@@ -436,8 +526,8 @@ class EyesBase(EyesBaseAbstract):
                     logger.info("--- New test ended. " + instructions)
                     if raise_ex:
                         message = "'%s' of '%s'. %s" % (
-                            self._start_info.scenario_id_or_name,
-                            self._start_info.app_id_or_name,
+                            self._session_start_info.scenario_id_or_name,
+                            self._session_start_info.app_id_or_name,
                             instructions,
                         )
                         raise NewTestError(message, results)
@@ -448,8 +538,8 @@ class EyesBase(EyesBaseAbstract):
                     if raise_ex:
                         raise DiffsFoundError(
                             "Test '{}' of '{}' detected differences! See details at: {}".format(
-                                self._start_info.scenario_id_or_name,
-                                self._start_info.app_id_or_name,
+                                self._session_start_info.scenario_id_or_name,
+                                self._session_start_info.app_id_or_name,
                                 results_url,
                             ),
                             results,
@@ -461,8 +551,8 @@ class EyesBase(EyesBaseAbstract):
                 if raise_ex:
                     raise TestFailedError(
                         "Test '{}' of '{}'. See details at: {}".format(
-                            self._start_info.scenario_id_or_name,
-                            self._start_info.app_id_or_name,
+                            self._session_start_info.scenario_id_or_name,
+                            self._session_start_info.app_id_or_name,
                             results_url,
                         ),
                         results,
@@ -551,7 +641,7 @@ class EyesBase(EyesBaseAbstract):
         )
         self._config.session_type = session_type
 
-        self._config.viewport_size = viewport_size
+        self.viewport_size = viewport_size
         self._open_base()
 
     def _before_open(self):
@@ -567,17 +657,17 @@ class EyesBase(EyesBaseAbstract):
     def _init_providers(self, hard_reset=False):
         if hard_reset:
             self._scale_provider = NullScaleProvider()
-            # self._cut_provider = NullCutProvider()
-            # self._position_provider = InvalidPositionProvider()
+            self._position_provider = InvalidPositionProvider()
+            self._cut_provider = NullCutProvider()
 
         if self._scale_provider is None:
             self._scale_provider = NullScaleProvider()
 
-        # if self._cut_provider is None:
-        #     self._cut_provider = NullCutProvider()
-        #
-        # if self._position_provider is None:
-        #     self._position_provider = InvalidPositionProvider()
+        if self._position_provider is None:
+            self._position_provider = InvalidPositionProvider()
+
+        if self._cut_provider is None:
+            self._cut_provider = NullCutProvider()
 
     def _open_base(self):
         logger.open_()
@@ -588,9 +678,7 @@ class EyesBase(EyesBaseAbstract):
         self._validate_session_open()
         self._init_providers()
 
-        self._viewport_size = self._config.viewport_size
-
-        if self._viewport_size is not None:
+        if self.viewport_size is not None:
             self._ensure_running_session()
         self._before_open()
 
@@ -621,10 +709,10 @@ class EyesBase(EyesBaseAbstract):
                 " API Key and use 'api_key' to set it."
             )
 
-    def _create_start_info(self):
+    def _create_session_start_info(self):
         # type: () -> None
         app_env = self._environment
-        self._start_info = SessionStartInfo(
+        self._session_start_info = SessionStartInfo(
             agent_id=self.full_agent_id,
             session_type=self._config.session_type,
             app_id_or_name=self._config.app_name,
@@ -657,9 +745,11 @@ class EyesBase(EyesBaseAbstract):
         else:
             logger.info("Batch is {}".format(self._config.batch))
 
-        self._create_start_info()
+        self._create_session_start_info()
         # Actually start the session.
-        self._running_session = self._server_connector.start_session(self._start_info)
+        self._running_session = self._server_connector.start_session(
+            self._session_start_info
+        )
         self._should_match_once_on_timeout = self._running_session.is_new_session
 
     def _reset_last_screenshot(self):
@@ -689,16 +779,13 @@ class EyesBase(EyesBaseAbstract):
         logger.info("getting screenshot...")
         screenshot = self.get_screenshot()
         logger.info("Done getting screenshot!")
+        if not region.is_size_empty:
+            screenshot = screenshot.sub_screenshot(region)
+            self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
 
-        # if screenshot:
-        #     # cropping by region if necessary
-        #     if not region.is_size_empty:
-        #         screenshot = screenshot.sub_screenshot(region, False)
-        #         self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
-        # else:
-        #     logger.info("getting screenshot url...")
-        #     # screenshot_url = self.get_screenshot_url()
-        #     logger.info("Done getting screenshot_url!")
+        # logger.info("getting screenshot url...")
+        # screenshot_url = self.get_screenshot_url()
+        # logger.info("Done getting screenshot_url!")
 
         logger.info("Getting title, dom_url, image_location...")
         title = self._title
@@ -758,8 +845,8 @@ class EyesBase(EyesBaseAbstract):
                     raise TestFailedError(
                         "Mismatch found in '%s' of '%s'"
                         % (
-                            self._start_info.scenario_id_or_name,
-                            self._start_info.app_id_or_name,
+                            self._session_start_info.scenario_id_or_name,
+                            self._session_start_info.app_id_or_name,
                         )
                     )
 
@@ -809,3 +896,22 @@ class EyesBase(EyesBaseAbstract):
             retry_timeout,
         )
         return result
+
+    def _ensure_viewport_size(self):
+        # type: () -> None
+        """
+        Assign the viewport size we need to be in the default content frame.
+        """
+        if not self._is_viewport_size_set:
+            try:
+                if self.viewport_size is None:
+                    # TODO: ignore if viewport_size settled explicitly
+                    target_size = self._get_viewport_size()
+                    self.viewport_size = target_size
+                else:
+                    target_size = self.viewport_size
+                    self._set_viewport_size(target_size)
+                self._is_viewport_size_set = True
+            except Exception as e:
+                logger.warning("Viewport has not been setup. {}".format(e))
+                self._is_viewport_size_set = False
