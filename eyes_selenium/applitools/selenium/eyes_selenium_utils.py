@@ -9,7 +9,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import EyesError, logger
+from applitools.common import EyesError, Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
@@ -29,6 +29,7 @@ __all__ = (
     "set_viewport_size",
     "hide_scrollbars",
     "set_overflow",
+    "parse_location_string",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -74,13 +75,12 @@ _JS_GET_CONTENT_ENTIRE_SIZE = """
     return [totalWidth, totalHeight];";
 """
 _JS_SET_OVERFLOW = """
-  return (function() {
-    var origOF = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = '{overflow}';
-    return origOF;
-  }());
+var origOF = arguments[0].style.overflow;
+arguments[0].style.overflow = '%s';
+return origOF;
+if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN') arguments[0].setAttribute('data-applitools-original-overflow',origOF);
+return origOF;
 """
-
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
@@ -135,7 +135,7 @@ def get_underlying_driver(driver):
     from applitools.selenium.webdriver import EyesWebDriver
 
     if isinstance(driver, EyesWebDriver):
-        driver = driver.driver
+        driver = driver._driver
     return driver
 
 
@@ -166,7 +166,7 @@ def get_device_pixel_ratio(driver):
 
 
 def get_viewport_size(driver):
-    # type: (AnyWebDriver) -> ViewPort
+    # type: (AnyWebDriver) -> RectangleSize
     """
     Tries to get the viewport size using Javascript. If fails, gets the entire browser window
     size!
@@ -176,14 +176,14 @@ def get_viewport_size(driver):
     # noinspection PyBroadException
     try:
         width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
-        return dict(width=width, height=height)
+        return RectangleSize(width=width, height=height)
     except WebDriverException:
         logger.info("Failed to get viewport size. Only window size is available")
         return get_window_size(driver)
 
 
 def get_window_size(driver):
-    # type: (AnyWebDriver) -> ViewPort
+    # type: (AnyWebDriver) -> RectangleSize
     return driver.get_window_size()
 
 
@@ -232,7 +232,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 def set_viewport_size(driver, required_size):
     # type: (AnyWebDriver, ViewPort) -> None
 
-    logger.info("set_viewport_size({})".format(str(required_size)))
+    logger.info("set_viewport_size_static({})".format(str(required_size)))
 
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -316,9 +316,12 @@ def hide_scrollbars(driver):
     return set_overflow(driver, _OVERFLOW_HIDDEN)
 
 
-def set_overflow(driver, overflow):
+def set_overflow(driver, overflow, root_element):
+    root_element = get_underlying_webelement(root_element)
     with timeout(0.1):
-        return driver.execute_script(_JS_SET_OVERFLOW.format(overflow=overflow))
+        return driver.execute_script(
+            _JS_SET_OVERFLOW % (overflow, overflow), root_element
+        )
 
 
 @contextmanager
@@ -384,4 +387,11 @@ def get_viewport_size_or_display_size(driver):
         # Not every WebDriver supports querying for orientation.
         pass
     logger.info("Done! Size {:d} x {:d}".format(width, height))
-    return dict(width=width, height=height)
+    return RectangleSize(width=width, height=height)
+
+
+def parse_location_string(position):
+    xy = position.split(";")
+    if len(xy) != 2:
+        raise EyesError("Could not get scroll position!")
+    return Point(float(xy[0]), float(xy[1]))
