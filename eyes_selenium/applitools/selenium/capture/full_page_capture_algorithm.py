@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     from typing import Optional
     from applitools.core.scaling import ScaleProvider
     from applitools.core.debug import DebugScreenshotProvider
-    from applitools.selenium.positioning import RegionPositionCompensation
+    from applitools.selenium.region_compensation import RegionPositionCompensation
     from applitools.core.capture import EyesScreenshotFactory, ImageProvider
     from applitools.core.cut import CutProvider
 
@@ -104,37 +104,8 @@ class FullPageCaptureAlgorithm(object):
                 "original-scrolled-{}".format(position_provider.get_current_position()),
             )
             part_image = self._cut_if_needed(part_image, scaled_cut_provider)
-            # if not isinstance(scaled_cut_provider, NullCutProvider):
-            #     logger.debug("cutting")
-            #     part_image = scaled_cut_provider.cut(part_image)
-            #     self.debug_screenshots_provider.save(
-            #         part_image,
-            #         "original-scrolled-cut-{}".format(
-            #             position_provider.get_current_position()
-            #         ),
-            #     )
             part_image = self._crop_if_needed(part_image, region_in_screenshot)
-            # if not region_in_screenshot.is_size_empty:
-            #     logger.debug("cropping...")
-            #     part_image = image_utils.get_image_part(
-            #         part_image, region_in_screenshot
-            #     )
-            #     self.debug_screenshots_provider.save(
-            #         part_image,
-            #         "original-scrolled-crop-{}".format(
-            #             position_provider.get_current_position()
-            #         ),
-            #     )
-            image = self._scale_if_needed(part_image, pixel_ratio)
-            # if pixel_ratio != 0:
-            #     logger.debug("scaling..")
-            #     part_image = image_utils.scale_image(part_image, 1.0 / pixel_ratio)
-            #     self.debug_screenshots_provider.save(
-            #         image,
-            #         "original-scrolled-scale-{}".format(
-            #             position_provider.get_current_position()
-            #         ),
-            #     )
+            part_image = self._scale_if_needed(part_image, pixel_ratio)
 
             # Stitching the current part.
             stitched_image.paste(part_image, box=(target_position.x, target_position.y))
@@ -147,7 +118,7 @@ class FullPageCaptureAlgorithm(object):
         self.origin_provider.pop_state()
 
         # If the actual image size is smaller than the extracted size, we crop the image.
-        stitched_image = self._crop_if_smaler(
+        stitched_image = self._crop_if_smaller(
             full_area,
             last_successful_location,
             last_successful_part_size,
@@ -157,7 +128,7 @@ class FullPageCaptureAlgorithm(object):
         self.debug_screenshots_provider.save(stitched_image, "stitched")
         return stitched_image
 
-    def _crop_if_smaler(
+    def _crop_if_smaller(
         self,
         full_area,
         last_successful_location,
