@@ -1,20 +1,14 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.selenium import (
-    FloatingBounds,
-    FloatingRegion,
-    IgnoreRegionBySelector,
-    Region,
-    StitchMode,
-    Target,
-)
+from applitools.selenium import Region, StitchMode, Target
+from applitools.selenium.fluent import IgnoreRegionBy
 
 
 @pytest.mark.platform("Linux")
 def test_quickstart_example(eyes, driver):
     required_viewport = {"width": 450, "height": 300}
-    eyes.set_viewport_size(driver, required_viewport)
+    eyes.set_viewport_size_static(driver, required_viewport)
     eyes.open(
         driver=driver,
         app_name="TestQuickstartExample",
@@ -43,13 +37,7 @@ def test_sample_script(eyes, driver):
     eyes.check_window(
         "Search page",
         target=(
-            Target()
-            .ignore(IgnoreRegionBySelector(By.CLASS_NAME, "fbar"))
-            .send_dom()
-            .use_dom()
-            .floating(
-                FloatingRegion(Region(10, 20, 30, 40), FloatingBounds(10, 0, 20, 10))
-            )
+            Target().ignore(IgnoreRegionBy(By.CLASS_NAME, "fbar")).send_dom().use_dom()
         ),
     )
 
@@ -84,6 +72,26 @@ def test_check_window_with_ignore_region_fluent(eyes, driver):
 @pytest.mark.platform("Linux")
 def test_directly_set_viewport_size(eyes, driver):
     required_viewport = {"width": 450, "height": 300}
-    eyes.set_viewport_size(driver, required_viewport)
+    eyes.set_viewport_size_static(driver, required_viewport)
     driver = eyes.open(driver, "Python SDK", "TestViewPort-DirectlySetViewportt")
-    assert required_viewport == eyes.get_viewport_size(driver)
+    assert required_viewport == eyes.get_viewport_size_static(driver)
+
+
+@pytest.mark.platform("Linux")
+@pytest.mark.eyes(hide_scrollbars=True)
+def test_check_window_with_send_dom(eyes, driver):
+    eyes.open(
+        driver,
+        "Eyes Selenium SDK - Fluent API",
+        "TestCheckWindowWithSendDom",
+        {"width": 800, "height": 600},
+    )
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+    driver.find_element_by_tag_name("input").send_keys("My Input")
+    eyes.check_window(
+        "Fluent - Window with Ignore region",
+        target=Target.window().send_dom().use_dom(),
+    )
+    assert "data-applitools-scroll" in driver.page_source
+    assert "data-applitools-original-overflow" in driver.page_source
+    eyes.close()

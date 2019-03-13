@@ -13,9 +13,9 @@ from applitools.common import (
     Options,
     RunningSession,
     SessionStartInfo,
-    SessionType,
     TestResults,
 )
+from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.general_utils import json_response_to_attrs_class
 from applitools.core import ServerConnector
