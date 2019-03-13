@@ -10,10 +10,11 @@ import typing as tp
 
 from PIL import Image
 
+from applitools.common import logger
 from applitools.common.errors import EyesError
 
 if tp.TYPE_CHECKING:
-    from applitools.core.geometry import Region
+    from applitools.common.geometry import Region
 
 __all__ = (
     "image_from_file",
@@ -106,3 +107,35 @@ def get_image_part(image, region):
     if region.is_empty:
         raise EyesError("region is empty!")
     return image.crop(box=(region.left, region.top, region.right, region.bottom))
+
+
+def save_image(image, filename):
+    try:
+        logger.info("Saving file: {}".format(filename))
+        image.save(filename)
+    except Exception:
+        logger.warning("Failed to save image")
+
+
+def crop_image(image, region_to_crop):
+    image_region = Region.from_image(image)
+    image_region.intersect(region_to_crop)
+    if image_region.is_size_empty:
+        logger.warning(
+            "requested cropped area results in zero-size image! "
+            "Cropped not performed. Returning original image."
+        )
+        return image
+
+    if image_region != region_to_crop:
+        logger.warning("requested cropped area overflows image boundaries.")
+
+    cropped_image = image.cut(
+        box=(
+            image_region.left,
+            image_region.top,
+            image_region.right,
+            image_region.bottom,
+        )
+    )
+    return cropped_image

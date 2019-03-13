@@ -7,9 +7,9 @@ from typing import Optional, Text
 
 import attr
 
-from applitools.common import SessionType
-from applitools.common.utils import general_utils
-from applitools.common.utils.converters import isoformat
+from .server import SessionType
+from .utils import general_utils
+from .utils.converters import isoformat
 
 if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort

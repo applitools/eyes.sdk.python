@@ -1,10 +1,10 @@
 import typing
-from enum import Enum
 
 import attr
 
 from .configuration import BatchInfo, Branch
 from .match import ImageMatchSettings, MatchLevel
+from .server import SessionType
 from .utils import general_utils
 
 if typing.TYPE_CHECKING:
@@ -13,21 +13,12 @@ if typing.TYPE_CHECKING:
     from .app_output import ExpectedAppOutput, ActualAppOutput
 
 __all__ = (
-    "SessionType",
     "RunningSession",
     "AppEnvironment",
     "StartInfo",
     "SessionStartInfo",
     "SessionResults",
-    "FailureReports",
 )
-
-
-class SessionType(Enum):
-    # default type of sessions.
-    SEQUENTIAL = "SEQUENTIAL"
-    # a timing test session
-    PROGRESSION = "PROGRESSION"
 
 
 @attr.s
@@ -136,15 +127,3 @@ class SessionResults(object):
     app_name = attr.ib()  # type: Text
     baseline_branch_name = attr.ib()  # type: Text
     is_new = attr.ib()  # type: bool
-
-
-class FailureReports(Enum):
-    """
-    Failures are either reported immediately when they are detected, or when the test is closed.
-    """
-
-    # Failures are reported immediately when they are detected.
-    IMMEDIATE = "Immediate"
-    # Failures are reported when tests are completed (i.e., when
-    # :py:class:`EyesBase.close()` is called).
-    ON_CLOSE = "OnClose"

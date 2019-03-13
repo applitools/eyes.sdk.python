@@ -86,7 +86,7 @@ class ImageMatchSettings(object):
     Encapsulates match settings for the a session.
     """
 
-    match_level = attr.ib(default=MatchLevel.STRICT.value)  # type: MatchLevel
+    match_level = attr.ib(default=MatchLevel.STRICT)  # type: MatchLevel
     exact = attr.ib(
         default=None, type=ExactMatchSettings
     )  # type: Optional[ExactMatchSettings]
