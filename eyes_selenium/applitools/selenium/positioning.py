@@ -12,7 +12,7 @@ from applitools.core import PositionProvider
 from . import eyes_selenium_utils
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional, List
+    from typing import Text, Optional, List, Union
     from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
     from . import EyesWebDriver
 
@@ -45,7 +45,7 @@ class SeleniumPositionProvider(PositionProvider):
         logger.info("Creating {}".format(self.__class__.__name__))
 
     def _execute_script(self, script):
-        # type: (Text) -> List[int]
+        # type: (Text) -> Union[List[int], Text]
         return self._driver.execute_script(script, self._scroll_root_element)
 
     def get_entire_size(self):

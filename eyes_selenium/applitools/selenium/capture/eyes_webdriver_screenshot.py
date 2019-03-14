@@ -12,12 +12,12 @@ from applitools.common import (
     EyesError,
     OutOfBoundsError,
     Point,
+    RectangleSize,
     Region,
     logger,
 )
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
-from applitools.selenium.frames import FrameChain
 from applitools.selenium.positioning import ScrollPositionProvider
 
 if typing.TYPE_CHECKING:
@@ -35,14 +35,25 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-        return cls(driver, image, ScreenshotType.VIEWPORT, Point.zero())
+        instance = cls(driver, image, ScreenshotType.VIEWPORT, Point.zero())
+        instance._validate_frame_window()
+        return instance
 
     @classmethod
-    def create_entire_frame(cls, driver, image, frame_location_in_screenshot):
+    def create_full_page(cls, driver, image, frame_location_in_screenshot):
         # type: (EyesWebDriver, Image.Image, Point) -> EyesWebDriverScreenshot
-        return cls(
-            driver, image, ScreenshotType.ENTIRE_FRAME, frame_location_in_screenshot
+        return cls(driver, image, None, frame_location_in_screenshot)
+
+    @classmethod
+    def create_entire_frame(cls, driver, image, entire_frame_size):
+        # type: (EyesWebDriver, Image.Image, RectangleSize) -> EyesWebDriverScreenshot
+        instance = cls(driver, image, ScreenshotType.ENTIRE_FRAME, Point.zero())
+        instance._current_frame_scroll_position = Point(0, 0)  # type: ignore
+        instance._frame_location_in_screenshot = Point(0, 0)  # type: ignore
+        instance.frame_window = Region.from_location_size(  # type: ignore
+            Point(0, 0), entire_frame_size
         )
+        return instance
 
     @classmethod
     def from_screenshot(cls, driver, image, screenshot_region):
@@ -57,7 +68,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return instance
 
     def __init__(self, driver, image, screenshot_type, frame_location_in_screenshot):
-        # type: (EyesWebDriver, Image.Image, ScreenshotType, Optional[Point]) -> None
+        # type: (EyesWebDriver, Image.Image, Optional[ScreenshotType], Optional[Point]) -> None
         """
         Initializes a Screenshot instance. Either screenshot or screenshot64 must NOT be None.
         Should not be used directly. Use create_from_image/create_from_base64 instead.
@@ -74,7 +85,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         # initializing of screenshot
         super(EyesWebDriverScreenshot, self).__init__(image=image)
         # For future adaptation
-        self._screenshot = image
+        # TODO: Refactor initialization!
         self._driver = driver
 
         self._screenshot_type = self.update_screenshot_type(screenshot_type, image)
@@ -100,10 +111,13 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         self.frame_window.intersect(
             Region(0, 0, width=image.width, height=image.height)
         )
+        self.region_window = Region(0, 0, 0, 0)
+
+        # self._validate_frame_window()
+
+    def _validate_frame_window(self):
         if self.frame_window.width <= 0 or self.frame_window.height <= 0:
             raise EyesError("Got empty frame window for screenshot!")
-
-        self.region_window = Region(0, 0, 0, 0)
 
     def get_updated_frame_location_in_screenshot(self, frame_location_in_screenshot):
         if self.frame_chain.size > 0:
@@ -164,8 +178,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     def _get_default_content_scroll_position(driver):
         # type: (EyesWebDriver) -> Point
         scroll_root_element = driver.eyes.get_current_frame_scroll_root_element()
-        position_provider = ScrollPositionProvider(driver, scroll_root_element)
-        return position_provider.get_current_position()
+        return ScrollPositionProvider.get_current_position_static(
+            driver, scroll_root_element
+        )
 
     @staticmethod
     def get_default_content_scroll_position(current_frames, driver):
@@ -174,14 +189,11 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 driver
             )
         else:
-            original_fc = FrameChain(current_frames)
-            # breakpoint()
             current_fc = driver.eyes._original_frame_chain
-            driver.switch_to.frames(current_fc)
-            scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
-                driver
-            )
-            driver.switch_to.frames(original_fc)
+            with driver.switch_to.frames_and_back(current_fc):
+                scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
+                    driver
+                )
         return scroll_position
 
     @staticmethod

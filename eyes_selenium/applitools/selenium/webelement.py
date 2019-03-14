@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import math
-import time
 import typing as tp
 
 from selenium.webdriver.common.by import By
@@ -103,7 +102,9 @@ class EyesWebElement(object):
         :param eyes: The eyes sdk instance.
         :param driver: EyesWebDriver instance.
         """
-        self.element = element
+        if isinstance(element, EyesWebElement):
+            element = element.element
+        self.element = element  # type: WebElement
         self._driver = driver  # type: AnyWebDriver
 
         # setting from outside
@@ -212,39 +213,11 @@ class EyesWebElement(object):
             if isinstance(val, int):
                 val = val.__str__()
             text += val.encode("utf-8").decode("utf-8")
-        self._driver._eyes.add_text_trigger_by_element(self, text)
+        self._driver.eyes.add_text_trigger_by_element(self, text)
         self.element.send_keys(*value)
 
-    def set_overflow(self, overflow, stabilization_time=None):
-        """
-        Sets the overflow of the current element.
-
-        :param overflow: The overflow value to set. If the given value is None,
-                then overflow will be set to undefined.
-        :param stabilization_time: The time to wait for the page to stabilize after
-                overflow is set. If the value is None, then no waiting will take place.
-                 (Milliseconds)
-        :return: The previous overflow value.
-        """
-        logger.debug("Setting overflow: %s" % overflow)
-        if overflow is None:
-            script = (
-                "var elem = arguments[0]; var origOverflow = elem.style.overflow; "
-                "elem.style.overflow = undefined; "
-                "return origOverflow;"
-            )
-        else:
-            script = (
-                "var elem = arguments[0]; var origOverflow = elem.style.overflow; "
-                'elem.style.overflow = "{0}"; '
-                "return origOverflow;".format(overflow)
-            )
-        # noinspection PyUnresolvedReferences
-        original_overflow = self._driver.execute_script(script, self.element)
-        logger.debug("Original overflow: %s" % original_overflow)
-        if stabilization_time is not None:
-            time.sleep(stabilization_time / 1000)
-        return original_overflow
+    def set_overflow(self, overflow):
+        return eyes_selenium_utils.set_overflow(self._driver, overflow, self.element)
 
     def hide_scrollbars(self):
         # type: () -> tp.Text

@@ -32,14 +32,11 @@ class FullPageCaptureAlgorithm(object):
     stitching_overlap = attr.ib()  # type: int
     image_provider = attr.ib()  # type: ImageProvider
     region_position_compensation = attr.ib()  # type: RegionPositionCompensation
-    position_provider = attr.ib()  # type: PositionProvider
 
     def get_stitched_region(self, region, full_area, position_provider):
         # type: (Region, Optional[Region], Optional[PositionProvider]) -> Image.Image
         argument_guard.not_none(region)
         argument_guard.not_none(position_provider)
-        if position_provider is None:
-            position_provider = self.position_provider
 
         logger.info("get_stitched_region()")
         logger.info("PositionProvider: %s ; Region: %s" % (position_provider, region))

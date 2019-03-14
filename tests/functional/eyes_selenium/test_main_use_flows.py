@@ -22,10 +22,6 @@ class TestClassicAPI(TestSetup):
             By.ID, "overflowing-div", tag="Region", stitch_content=True
         )
 
-    @pytest.mark.skip("Not implemented yet")
-    def test_check_frame(self):
-        self.eyes.check_frame("frame1", "frame1", stitch_content=True)
-
     def test_check_region_in_frame(self):
         self.eyes.check_region_in_frame_by_selector(
             "frame1",

@@ -81,7 +81,7 @@ class _Logger(object):
         """
         Close a handler.
         """
-        if self._logger:
+        if self._logger and self._handler:
             self._handler.close()
             # If we don't remove the handler and a call to logging.getLogger(...)
             # will be made with the same name as the current logger,
@@ -227,7 +227,7 @@ def close():
         _logger = None
 
 
-def info(msg: object) -> object:
+def info(msg):
     # type: (tp.Text) -> None
     """
     Writes info level msg to the logger.

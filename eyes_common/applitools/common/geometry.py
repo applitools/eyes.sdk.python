@@ -56,6 +56,11 @@ class RectangleSize(DictAccessMixin):
         # type: (Image) -> RectangleSize
         return cls(width=image.width, height=image.height)
 
+    @classmethod
+    def from_dict(cls, dict_or_rect):
+        # type: (Union[Dict,RectangleSize]) -> RectangleSize
+        return cls(width=dict_or_rect["width"], height=dict_or_rect["height"])
+
     def scale(self, ratio):
         # type: (float) -> RectangleSize
         return RectangleSize(round(self.width * ratio), round(self.height * ratio))

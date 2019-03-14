@@ -14,6 +14,7 @@ from applitools.common import (
     TestFailedError,
     logger,
 )
+from applitools.common.errors import EyesDriverOperationError
 from applitools.common.geometry import EMPTY_REGION, Point
 from applitools.common.utils import image_utils
 from applitools.core import (
@@ -53,6 +54,7 @@ from .positioning import (
     ScrollPositionProvider,
     StitchMode,
 )
+from .useragent import BrowserNames, UserAgent
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
@@ -68,7 +70,6 @@ if typing.TYPE_CHECKING:
     )
     from applitools.core import MatchWindowTask
     from applitools.core.scaling import ScaleProvider
-    from .useragent import UserAgent
     from .frames import Frame
     from .webdriver import _EyesSwitchTo
 
@@ -825,7 +826,10 @@ class Eyes(EyesBase):
         return ScreenshotType.VIEWPORT_SCREENSHOT
 
     def _get_viewport_size(self):
-        return self.get_viewport_size_static(self._driver)
+        size = self.viewport_size
+        if size is None:
+            size = self.get_viewport_size_static(self._driver)
+        return size
 
     def _ensure_viewport_size(self):
         if self._config.viewport_size is None:
@@ -944,8 +948,7 @@ class Eyes(EyesBase):
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
                 viewport_size=self.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
-                # always False as in Java version
-                is_mobile_device=False,
+                is_mobile_device=self.driver.is_mobile_device(),
             )  # type: ScaleProvider
         except Exception:
             # This can happen in Appium for example.
@@ -985,10 +988,9 @@ class Eyes(EyesBase):
         return target_element
 
     def _mark_element_for_layout_rca(self, pos_provider):
-        # TODO: Update method
-        pass
+        logger.warning("Need to implement")
 
-    def _create_full_page_capture_algorithm(self, scale_provider, position_provider):
+    def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = self.get_current_frame_scroll_root_element()
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
@@ -1001,7 +1003,6 @@ class Eyes(EyesBase):
             self.stitching_overlap,
             self._image_provider,
             self._region_position_compensation,
-            position_provider,
         )
 
     def _try_hide_caret(self):
@@ -1021,30 +1022,22 @@ class Eyes(EyesBase):
             stitch_content=self._stitch_content,
             force_fullpage=self.force_full_page_screenshot,
         )
-        switch_to = self.driver.switch_to
-        if switch_to:
-            switch_to.frames(self._original_frame_chain)
+        with self._driver.switch_to.frames_and_back(self._original_frame_chain):
+            position_provider = self.position_provider
+            if position_provider and not self.driver.is_mobile_device():
+                position_provider.push_state()
+            # breakpoint()
+            fc = self.driver.frame_chain.clone()
+            if fc.size > 0:
+                original_frame_position = fc.default_content_scroll_position
+            else:
+                original_frame_position = Point.zero()
 
-        position_provider = self.position_provider
-        if position_provider and self.driver.is_mobile_device():
-            position_provider.push_state()
-        # breakpoint()
-        original_fc = self.driver.frame_chain.clone()
-        if original_fc.size > 0:
-            original_frame_position = original_fc.default_content_scroll_position
-        else:
-            original_frame_position = Point.zero()
-
-        self._try_hide_caret()
-
-        if switch_to:
-            switch_to.frames(original_fc)
+            self._try_hide_caret()
 
         scale_provider = self._update_scaling_params()
 
-        algo = self._create_full_page_capture_algorithm(
-            scale_provider, self.position_provider
-        )
+        algo = self._create_full_page_capture_algorithm(scale_provider)
         if self._screenshot_type == ScreenshotType.ENTIRE_ELEMENT_SCREENSHOT:
             self._last_screenshot = self._entire_element_screenshot(
                 algo, original_frame_position
@@ -1072,20 +1065,28 @@ class Eyes(EyesBase):
             )
         self._mark_element_for_layout_rca(elem_position_provider)
 
+        # TODO: Should be moved in proper place???
+        if self.driver.frame_chain:
+            if (
+                self._user_agent.browser == BrowserNames.Firefox
+                and self._user_agent.browser_major_version < 60
+            ) or self._user_agent.browser in (
+                BrowserNames.Chrome,
+                BrowserNames.HeadlessChrome,
+                BrowserNames.Safari,
+                BrowserNames.Edge,
+                BrowserNames.IE,
+            ):
+                self._region_to_check.left += int(
+                    self._driver.frame_chain.peek.location.x
+                )
+
         image = algo.get_stitched_region(
             self._region_to_check, None, self._element_position_provider
         )
         return EyesWebDriverScreenshot.create_entire_frame(
-            self._driver, image, original_frame_position
+            self._driver, image, RectangleSize.from_image(image)
         )
-
-    # def _region_or_screenshot(self, scale_provider):
-    # #     type: # (ScaleProvider) -> EyesWebDriverScreenshot
-    #     logger.info("Not entire element screenshot requested")
-    #     screenshot = self._viewport_screenshot(scale_provider)
-    #     region = screenshot.get_element_region_in_frame_viewport(self._region_to_check)
-    #     screenshot = screenshot.get_sub_screenshot_by_region(region)
-    #     return screenshot
 
     def _full_page_screenshot(self, algo):
         # type: (FullPageCaptureAlgorithm) -> EyesWebDriverScreenshot
@@ -1096,7 +1097,7 @@ class Eyes(EyesBase):
         else:
             original_frame_position = Point.zero()
         image = algo.get_stitched_region(EMPTY_REGION, None, self.position_provider)
-        return EyesWebDriverScreenshot.create_entire_frame(
+        return EyesWebDriverScreenshot.create_full_page(
             self._driver, image, original_frame_position
         )
 
@@ -1114,19 +1115,61 @@ class Eyes(EyesBase):
 
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
+    def _get_viewport_scroll_bounds(self):
+        switch_to = self.driver.switch_to
+        with switch_to.frames_and_back(self.original_frame_chain):
+            try:
+                location = ScrollPositionProvider.get_current_position_static(
+                    self.driver, self.scroll_root_element
+                )
+            except EyesDriverOperationError as e:
+                logger.warning(str(e))
+                logger.info("Assuming position is 0,0")
+                location = Point(0, 0)
+        viewport_bounds = Region.from_location_size(location, self._get_viewport_size())
+        return viewport_bounds
+
     def _ensure_element_visible(self, element):
-        # TODO: Need to implement
-        pass
+        if self._target_element is None:
+            # No element? we must be checking the window.
+            return None
+        if self.driver.is_mobile_device():
+            logger.debug("NATIVE context identified, skipping 'ensure element visible'")
+            return None
+
+        original_fc = self.driver.frame_chain.clone()
+        switch_to = self.driver.switch_to
+        eyes_element = EyesWebElement(element, self.driver)
+        element_bounds = eyes_element.bounds
+
+        current_frame_offset = original_fc.current_frame_offset
+        element_bounds.offset(current_frame_offset.x, current_frame_offset.y)
+        viewport_bounds = self._get_viewport_scroll_bounds()
+        logger.info(
+            "viewport_bounds: {}; element_bounds: {}".format(
+                viewport_bounds, element_bounds
+            )
+        )
+        if not element_bounds.contains(viewport_bounds):
+            self._ensure_frame_visible()
+            element_location = Point.from_location(element.location)
+            if len(original_fc) > 0 and element is not original_fc.peek.reference:
+                switch_to.frames(original_fc)
+                scroll_root_element = self.driver.find_element_by_tag_name("html")
+            else:
+                scroll_root_element = self.scroll_root_element
+            position_provider = self._get_element_position_provider(scroll_root_element)
+            position_provider.set_position(element_location)
 
     def get_current_frame_scroll_root_element(self):
         fc = self.driver.frame_chain.clone()
         cur_frame = fc.peek
-        scrool_root_element = None
+        root_element = None
         if cur_frame:
-            scrool_root_element = cur_frame.scroll_root_element
-        if scrool_root_element is None and not self.driver.is_mobile_device():
-            scrool_root_element = self.driver.find_element_by_tag_name("html")
-        return scrool_root_element
+            root_element = cur_frame.scroll_root_element
+        if root_element is None and not self.driver.is_mobile_device():
+            root_element = self.driver.find_element_by_tag_name("html")
+        return root_element
 
     def _create_position_provider(self, scroll_root_element):
         stitch_mode = self.stitch_mode
@@ -1148,12 +1191,12 @@ class Eyes(EyesBase):
         self._ensure_element_visible(element)
         original_overflow = None
         pl = element.location
-        result = None
         try:
             self._check_frame_or_element = True
             display_style = element.get_computed_style("display")
 
             if self.hide_scrollbars:
+                # FIXME bug if trying to hide
                 original_overflow = element.get_overflow()
                 element.set_overflow("hidden")
 
@@ -1186,7 +1229,7 @@ class Eyes(EyesBase):
                 NULL_REGION_PROVIDER, name, False, check_settings
             )
         except Exception as e:
-            logger.warning(str(e))
+            logger.exception(e)
             raise e
         finally:
             if original_overflow:

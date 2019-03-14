@@ -10,6 +10,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import EyesError, Point, RectangleSize, logger
+from applitools.common.errors import EyesDriverOperationError
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
@@ -158,7 +159,7 @@ def get_current_frame_content_entire_size(driver):
         width, height = driver.execute_script(_JS_GET_CONTENT_ENTIRE_SIZE)
     except WebDriverException:
         raise EyesError("Failed to extract entire size!")
-    return dict(width=width, height=height)
+    return RectangleSize(width, height)
 
 
 def get_device_pixel_ratio(driver):
@@ -179,7 +180,7 @@ def get_viewport_size(driver):
         width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
         return RectangleSize(width=width, height=height)
     except WebDriverException:
-        logger.info("Failed to get viewport size. Only window size is available")
+        logger.warning("Failed to get viewport size. Only window size is available")
         return get_window_size(driver)
 
 
@@ -310,7 +311,7 @@ def set_viewport_size(driver, required_size):
                 return None
         else:
             logger.info("Zoom workaround failed.")
-    raise EyesError("Failed to set the viewport size.")
+    raise EyesDriverOperationError("Failed to set the viewport size.")
 
 
 def hide_scrollbars(driver):
@@ -356,8 +357,8 @@ def is_landscape_orientation(driver):
         try:
             orieintation = appium_driver.orientation
             return orieintation.lower() == "landscape"
-        except Exception:
-            logger.debug("WARNING: Couldn't get device orientation. Assuming Portrait.")
+        except WebDriverException:
+            logger.warning("Couldn't get device orientation. Assuming Portrait.")
         finally:
             if original_context is not None:
                 appium_driver.switch_to.context(original_context)
@@ -371,7 +372,7 @@ def get_viewport_size_or_display_size(driver):
     try:
         return get_viewport_size(driver)
     except Exception as e:
-        logger.info(
+        logger.warning(
             "Failed to extract viewport size using Javascript: {}".format(str(e))
         )
     # If we failed to extract the viewport size using JS, will use the
@@ -395,5 +396,5 @@ def parse_location_string(position):
     # type: (str) -> Point
     xy = position.split(";")
     if len(xy) != 2:
-        raise EyesError("Could not get scroll position!")
+        raise EyesDriverOperationError("Could not get scroll position!")
     return Point(float(xy[0]), float(xy[1]))

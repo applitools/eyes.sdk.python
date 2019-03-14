@@ -62,9 +62,7 @@ class Configuration(object):
     save_diffs = attr.ib(default=None)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
-    _viewport_size = attr.ib(
-        default=None, converter=attr.converters.optional(RectangleSize)
-    )  # type: Optional[RectangleSize]
+    _viewport_size = attr.ib(default=None)  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)
@@ -90,7 +88,7 @@ class Configuration(object):
 
     @viewport_size.setter
     def viewport_size(self, value):
-        self._viewport_size = value
+        self._viewport_size = RectangleSize.from_dict(value)
 
     @property
     def is_dom_send(self):
