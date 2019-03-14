@@ -1099,10 +1099,11 @@ class Eyes(EyesBase):
     def _viewport_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Viewport screenshot requested")
+        self._ensure_element_visible(self._target_element)
 
         sleep(self._seconds_to_wait_screenshot)
         image = self._image_provider.get_image()
-
+        self._debug_screenshot_provider.save(image, "original")
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:

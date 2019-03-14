@@ -7,6 +7,7 @@ from applitools.selenium import Region, StitchMode, Target
 @pytest.mark.platform("Linux", "Windows", "macOS")
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.viewport_size({"width": 800, "height": 600})
+@pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 class TestSetup(object):
     pass
@@ -38,7 +39,6 @@ class TestClassicAPI(TestSetup):
 
 
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API")
-@pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 @pytest.mark.test_name_pattern({"from": "Fluent", "to": "_Fluent"})
 class TestFluentAPI(TestSetup):
     def test_check_window_with_ignore_region_fluent(self):
