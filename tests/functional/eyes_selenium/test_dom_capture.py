@@ -135,7 +135,7 @@ class TestDomCaptureUnit(object):
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.test_suite_name("Eyes Selenium SDK - DynamicPages")
 @pytest.mark.viewport_size({"width": 1200, "height": 800})
-# @pytest.mark.skip("Only for local testing because changes always")
+@pytest.mark.skip("Only for local testing because changes always")
 class TestDynamicPages(object):
     @pytest.mark.test_page_url("https://www.nbcnews.com/")
     @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
