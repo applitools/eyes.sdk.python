@@ -6,7 +6,7 @@ import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import FloatingBounds, Region
+from applitools.common import FloatingBounds, Region, logger
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings
 from applitools.selenium.webelement import EyesWebElement
@@ -136,12 +136,15 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
+            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
             return IgnoreRegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
             sel = _css_selector_from_(by, val)
+            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
             return IgnoreRegionByCssSelector(sel)
         elif is_webelement(region):
+            logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
             return IgnoreRegionByElement(region)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name
@@ -175,15 +178,18 @@ class SeleniumCheckSettings(CheckSettings):
                 max_right_offset=args[4],
             )
             if is_webelement(region_or_container):
+                logger.debug("floating: FloatingRegionByElement")
                 return FloatingRegionByElement(region_or_container, bounds)
             if isinstance(region_or_container, basestring):
+                logger.debug("floating: FloatingRegionByCssSelector")
                 return FloatingRegionByCssSelector(region_or_container, bounds)
             if is_list_or_tuple(region_or_container):
                 by, value = region_or_container
                 selector = _css_selector_from_(by, value)
+                logger.debug("floating: FloatingRegionByCssSelector")
                 return FloatingRegionByCssSelector(selector, bounds)
             kwargs["bounds"] = bounds
-        return super(SeleniumCheckSettings, self)._floating_to_region_provider(
+        return super(SeleniumCheckSettings, self)._floating_provider_from(
             *args, **kwargs
         )
 

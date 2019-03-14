@@ -154,8 +154,8 @@ class CheckSettings(ABC):
 
     def floating_regions(self, *args):
         # type: (*ACCEPTING_VALUE)  -> T
-        """ Adds a floating region. Details in :py:func:`_floating_to_region_provider` """
-        region_or_container = self._floating_to_region_provider(*args)
+        """ Adds a floating region. Details in :py:func:`_floating_provider_from` """
+        region_or_container = self._floating_provider_from(*args)
         self._floating_regions.append(region_or_container)
         return self
 
@@ -196,18 +196,16 @@ class CheckSettings(ABC):
     def _region_provider_from(self, region, method_name):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
+            logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
             return IgnoreRegionByRectangle(region)
-
-        if isinstance(region, GetRegion):
-            return region
         raise TypeError("Unknown region type.")
 
-    def _floating_to_region_provider(self, *args, **kwargs):
+    def _floating_provider_from(self, *args, **kwargs):
         region_or_container = args[0]
         bounds = kwargs.pop("bounds", None)
         if bounds:
             if isinstance(region_or_container, Region):
-                logger.debug("_floating: FloatingRegionByRectangle")
+                logger.debug("floating: FloatingRegionByRectangle")
                 return FloatingRegionByRectangle(
                     Region.from_region(region_or_container), bounds
                 )
