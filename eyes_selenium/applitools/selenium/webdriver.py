@@ -112,11 +112,11 @@ class _EyesSwitchTo(object):
             self.frame(frame.reference)
             logger.debug(
                 "frame.Reference: %s ; frame.ScrollRootElement: %s"
-                % (frame.reference, frame.scroll_root_element)
+                % (frame.reference.id, frame.scroll_root_element.id)
             )
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
-        logger.info("Done swithcing into nested frame")
+        logger.info("Done switching into nested frame")
 
     def default_content(self):
         # type: () -> None
@@ -130,16 +130,10 @@ class _EyesSwitchTo(object):
         """
         Switch to parent frame.
         """
-        frames = self._driver.frame_chain
-        if frames:
-            frames.pop()
-
-            try:
-                self._switch_to.parent_frame()
-            except WebDriverException:
-                self._switch_to.default_content()
-                for frame in frames:
-                    self._switch_to.frame(frame.reference)
+        if len(self._driver.frame_chain) > 0:
+            frame = self._driver.frame_chain.pop()
+            frame.return_to_original_overflow(self._driver)
+            self.parent_frame_static(self._switch_to, self._driver.frame_chain)
 
     def window(self, window_name):
         # type: (Text) -> None

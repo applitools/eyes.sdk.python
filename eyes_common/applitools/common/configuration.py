@@ -62,7 +62,9 @@ class Configuration(object):
     save_diffs = attr.ib(default=None)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
-    _viewport_size = attr.ib(default=None)  # type: Optional[RectangleSize]
+    _viewport_size = attr.ib(
+        default=None, converter=attr.converters.optional(RectangleSize)
+    )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)

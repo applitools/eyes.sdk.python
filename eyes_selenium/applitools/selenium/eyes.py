@@ -233,10 +233,15 @@ class Eyes(EyesBase):
         if self.is_disabled:
             logger.debug("open(): ignored (disabled)")
             return driver
-        self._init_driver(driver)
+        self._config.app_name = app_name
+        self._config.test_name = test_name
+        self._config.viewport_size = viewport_size
 
+        self._init_driver(driver)
         self._screenshot_factory = EyesWebDriverScreenshotFactory(self.driver)
-        self.open_base(app_name, test_name, viewport_size)
+        self._ensure_viewport_size()
+
+        self._open_base()
 
         ua_string = self._session_start_info.environment.inferred
         if ua_string:
@@ -280,16 +285,14 @@ class Eyes(EyesBase):
         if self.hide_scrollbars or (
             self.stitch_mode == StitchMode.CSS and self._stitch_content
         ):
-            original_frame_chain = self.driver.frame_chain.clone()
-            frame_chain = self.driver.frame_chain.clone()
+            original_fc = self.driver.frame_chain.clone()
+            fc = self.driver.frame_chain.clone()
 
-            if len(frame_chain) > 0:
-                frame = frame_chain.peek  # type: Frame
-                while len(frame_chain) > 0:
-                    logger.info("fc count = {}".format(len(frame_chain)))
-                    if self._stitch_content and len(frame_chain) != len(
-                        original_frame_chain
-                    ):
+            if len(fc) > 0:
+                frame = fc.peek  # type: Frame
+                while len(fc) > 0:
+                    logger.info("fc count = {}".format(len(fc)))
+                    if self._stitch_content or len(fc) != len(original_fc):
                         if frame:
                             frame.hide_scrollbars(self.driver)
                         else:
@@ -302,8 +305,8 @@ class Eyes(EyesBase):
                                 self.driver, "hidden", self._scroll_root_element
                             )
                     self.driver.switch_to.parent_frame()
-                    frame_chain.pop()
-                    frame = frame_chain.peek
+                    fc.pop()
+                    frame = fc.peek
             else:
                 logger.info(
                     "hiding scrollbars of element (2): {}".format(
@@ -314,9 +317,9 @@ class Eyes(EyesBase):
                     self.driver, "hidden", self._scroll_root_element
                 )
             logger.info("switching back to original frame")
-            self.driver.switch_to.frames(original_frame_chain)
+            self.driver.switch_to.frames(original_fc)
             logger.info("done hiding scrollbars.")
-            return original_frame_chain
+            return original_fc
         return None
 
     def _try_restore_scrollbars(self, frame_chain):
@@ -378,11 +381,11 @@ class Eyes(EyesBase):
         )
         switched_to_frame_count = self._switch_to_frame(check_settings)
         # breakpoint()
-        origin_frame_chain = None
+        origin_fc = None
         result = None
         if target_region:
             logger.info("have target region")
-            origin_frame_chain = self._try_hide_scrollbars()
+            origin_fc = self._try_hide_scrollbars()
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
@@ -390,8 +393,8 @@ class Eyes(EyesBase):
             )
         elif check_settings:
             target_element = self._get_element(check_settings)
-            origin_frame_chain = self._try_hide_scrollbars()
             if target_element:
+                origin_fc = self._try_hide_scrollbars()
                 logger.info("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
@@ -430,8 +433,8 @@ class Eyes(EyesBase):
             self.position_provider.pop_state()
         if switch_to:
             switch_to.reset_scroll()
-            if origin_frame_chain:
-                self._try_restore_scrollbars(origin_frame_chain)
+            if origin_fc:
+                self._try_restore_scrollbars(origin_fc)
 
             self._try_switch_to_frames(
                 self.driver, switch_to, self._original_frame_chain
@@ -549,6 +552,7 @@ class Eyes(EyesBase):
 
     def _switch_to_frame_with_locator(self, frame_locator):
         # type: (FrameLocator) -> bool
+        # We don't want to track frames here
         switch_to = self.driver.switch_to
         if frame_locator.frame_index:
             switch_to.frame(frame_locator.frame_index)
@@ -824,8 +828,8 @@ class Eyes(EyesBase):
         return self.get_viewport_size_static(self._driver)
 
     def _ensure_viewport_size(self):
-        if self.viewport_size is None:
-            self._set_viewport_size(self.driver.get_default_content_viewport_size())
+        if self._config.viewport_size is None:
+            self._config.viewport_size = self.driver.get_default_content_viewport_size()
 
     def _set_viewport_size(self, size):
         """
@@ -852,7 +856,7 @@ class Eyes(EyesBase):
             finally:
                 # Just in case the user catches this error
                 self.driver.switch_to.frames(original_frame)
-        self._config.viewport_size = RectangleSize(size["width"], size["height"])
+        self.viewport_size = RectangleSize(size["width"], size["height"])
 
     def _ensure_configuration(self):
         if self._config is None:
@@ -938,7 +942,7 @@ class Eyes(EyesBase):
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self._get_viewport_size(),
+                viewport_size=self.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
                 # always False as in Java version
                 is_mobile_device=False,

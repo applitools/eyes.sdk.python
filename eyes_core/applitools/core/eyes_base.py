@@ -126,6 +126,7 @@ class EyesBaseAbstract(ABC):
 
 
 class EyesBase(EyesBaseAbstract):
+    MAX_ITERATION = 10
     _config = None  # type: Optional[Configuration]
     _host_os = None  # type: Optional[Text]
     _host_app = None  # type: Optional[Text]
@@ -171,7 +172,7 @@ class EyesBase(EyesBaseAbstract):
         self._stitch_content = False  # type: bool
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
         self._cut_provider = NullCutProvider()
-        # self._is_viewport_size_set = False  # type: bool
+        self._is_viewport_size_set = False  # type: bool
 
         self._ensure_configuration()
 
@@ -198,13 +199,13 @@ class EyesBase(EyesBaseAbstract):
     @property
     def viewport_size(self):
         # type: () -> RectangleSize
-        return self._config.viewport_size
+        return self._viewport_size
 
     @viewport_size.setter
     def viewport_size(self, size):
         # type: (Union[RectangleSize, Dict]) -> None
         if isinstance(size, RectangleSize) or isinstance(size, dict):
-            self._config.viewport_size = RectangleSize(size["width"], size["height"])
+            self._viewport_size = RectangleSize(size["width"], size["height"])
         else:
             logger.warning("Wrong viewport type settled")
 
@@ -690,21 +691,39 @@ class EyesBase(EyesBaseAbstract):
             self._cut_provider = NullCutProvider()
 
     def _open_base(self):
+        if self.is_disabled:
+            logger.debug("open_base(): ignored (disabled)")
+            return
         logger.open_()
+        retry = 0
+        while retry < self.MAX_ITERATION:
+            try:
+                self._validate_api_key()
+                self._log_open_base()
+                self._validate_session_open()
+                self._init_providers()
 
-        # TODO: Add repeatable check here
-        self._validate_api_key()
-        self._log_open_base()
-        self._validate_session_open()
-        self._init_providers()
+                self._is_viewport_size_set = False
 
-        if self.viewport_size is not None:
-            self._ensure_running_session()
-        self._before_open()
+                self._before_open()
+                self.viewport_size = self._config.viewport_size
+                try:
+                    if self.viewport_size:
+                        self._ensure_running_session()
+                except Exception as e:
+                    logger.debug(str(e))
+                    retry += 1
+                    continue
 
-        self._is_open = True
+                self._is_open = True
+                self._after_open()
+                return None
+            except EyesError as e:
+                logger.debug(str(e))
+                logger.close()
+                raise e
 
-        self._after_open()
+        raise EyesError("eyes.open_base() failed")
 
     def _validate_session_open(self):
         if self.is_open:
@@ -756,7 +775,7 @@ class EyesBase(EyesBaseAbstract):
     def _start_session(self):
         # type: () -> None
         logger.debug("_start_session()")
-        self._ensure_viewport_size()
+        self.__ensure_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
         if self._config.batch is None:
@@ -917,7 +936,7 @@ class EyesBase(EyesBaseAbstract):
         )
         return result
 
-    def _ensure_viewport_size(self):
+    def __ensure_viewport_size(self):
         # type: () -> None
         """
         Assign the viewport size we need to be in the default content frame.

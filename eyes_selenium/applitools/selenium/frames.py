@@ -10,6 +10,7 @@ from . import eyes_selenium_utils
 if tp.TYPE_CHECKING:
     from typing import Optional
     from applitools.common.utils.custom_types import AnyWebDriver
+    from .webelement import EyesWebElement
 
 __all__ = ("Frame", "FrameChain")
 
@@ -30,12 +31,12 @@ class Frame(object):
     :param parent_scroll_position: The scroll location of the frame.
     """
 
-    reference = attr.ib()
+    reference = attr.ib()  # type: EyesWebElement
     location = attr.ib()
     outer_size = attr.ib()
     inner_size = attr.ib()
     parent_scroll_position = attr.ib()
-    scroll_root_element = attr.ib(default=None)
+    scroll_root_element = attr.ib(default=None)  # type: Optional[EyesWebElement]
     original_overflow = attr.ib(default=None)
 
     def return_to_original_overflow(self, driver):

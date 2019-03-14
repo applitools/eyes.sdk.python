@@ -131,7 +131,9 @@ class Eyes(EyesBase):
 
         self._screenshot = EyesImagesScreenshot(image)
         if not self.viewport_size:
-            self._set_viewport_size(dict(width=image.width, height=image.height))
+            self._set_viewport_size(
+                RectangleSize(width=image.width, height=image.height)
+            )
 
         check_settings = check_settings.timeout(0)
         match_result = self._check_window_base(

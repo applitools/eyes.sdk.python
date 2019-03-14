@@ -8,7 +8,7 @@ applitools/__pycache__/
 applitools/utils/__pycache__/
 dist/
 test/__pycache__/
-.envrc
+.env
 .pytest_cache/
 geckodriver.log
 .mypy_cache
@@ -173,6 +173,7 @@ celerybeat-schedule
 
 # Environments
 .env
+.envrc
 env/
 venv/
 ENV/
