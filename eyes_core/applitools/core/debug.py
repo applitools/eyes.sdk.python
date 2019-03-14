@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 from datetime import datetime
 
@@ -10,8 +11,8 @@ from applitools.common.utils import image_utils
 class DebugScreenshotProvider(object):
     """Interface for saving debug screenshots."""
 
-    DEFAULT_PREFIX = "screenshot_"
-    DEFAULT_PATH = ""
+    DEFAULT_PREFIX = os.environ.get("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
+    DEFAULT_PATH = os.environ.get("DEBUG_SCREENSHOT_PATH", "")
 
     _prefix = attr.ib(default=DEFAULT_PREFIX)
     _path = attr.ib(default=DEFAULT_PATH)
