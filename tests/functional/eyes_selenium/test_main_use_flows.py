@@ -128,7 +128,6 @@ class TestFluentAPI(TestSetup):
     #
     def test_check_element_fluent(self):
         element = self.driver.find_element(By.ID, "overflowing-div-image")
-        self.eyes.hide_scrollbars = True
         self.eyes.check("Fluent - Region by element", Target.region(element))
 
 

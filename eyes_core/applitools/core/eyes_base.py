@@ -825,13 +825,10 @@ class EyesBase(EyesBaseAbstract):
         # logger.info("getting screenshot url...")
         # screenshot_url = self.get_screenshot_url()
         # logger.info("Done getting screenshot_url!")
-
-        logger.info("Getting title, dom_url, image_location...")
         title = self._title
-        logger.info("Done getting title, dom_url, image_location!")
-        if not self._dom_url and (
-            check_settings.values.send_dom or self.default_match_settings.send_dom
-        ):
+        logger.info("Done getting title")
+
+        if not self._dom_url and (self.send_dom or check_settings.values.send_dom):
             dom_json = self._try_capture_dom()
             self._dom_url = self._try_post_dom_snapshot(dom_json)
             logger.info("dom_url: {}".format(self._dom_url))
