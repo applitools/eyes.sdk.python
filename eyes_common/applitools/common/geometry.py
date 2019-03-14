@@ -94,7 +94,7 @@ class Point(DictAccessMixin):
 
     @classmethod
     def from_location(cls, location):
-        return cls(location.x, location.y)
+        return cls(location["x"], location["y"])
 
     def length(self):
         # type: () -> float
@@ -220,6 +220,15 @@ class Region(DictAccessMixin):
     coordinates_type = attr.ib(
         default=CoordinatesType.SCREENSHOT_AS_IS
     )  # type: CoordinatesType
+
+    def __str__(self):
+        return "Region({left}, {top} {width} x {height} {type})".format(
+            left=self.left,
+            top=self.top,
+            width=self.width,
+            height=self.height,
+            type=self.coordinates_type.value,
+        )
 
     @classmethod
     def create_empty_region(cls):
@@ -358,14 +367,28 @@ class Region(DictAccessMixin):
         return self.left == self.top == self.width == self.height == 0
 
     def contains(self, pt):
-        # type: (Point) -> bool
+        # type: (Union[Point, Region]) -> bool
         """
         Return true if a point is inside the rectangle.
 
         :return: True if the point is inside the rectangle. Otherwise False.
         """
-        x, y = pt.as_tuple()
-        return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
+        if isinstance(pt, Point):
+            x, y = pt.as_tuple()
+            return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
+        else:
+            right = self.left + self.width
+            pt_right = pt.left + pt.width
+
+            bottom = self.top + self.height
+            pt_bottom = pt.top + pt.height
+
+            return (
+                self.top <= pt.top
+                and self.left <= pt.left
+                and bottom >= pt_bottom
+                and right >= pt_right
+            )
 
     def overlaps(self, other):
         # type: (Region) -> bool

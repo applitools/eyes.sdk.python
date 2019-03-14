@@ -9,6 +9,7 @@ import os
 import sys
 import typing as tp
 import warnings
+from logging import Logger
 
 _DEFAULT_EYES_LOGGER_NAME = "eyes"
 _DEFAULT_EYES_FORMATTER = logging.Formatter(
@@ -45,7 +46,7 @@ class _Logger(object):
         :param formatter: A custom formatter for the logs.
         """
         self._name = name
-        self._logger = None
+        self._logger = None  # type: tp.Optional[Logger]
         # Setting handler (a logger must have at least one handler attached to it)
         self._handler_factory = handler_factory
         self._handler = None
@@ -109,6 +110,14 @@ class _Logger(object):
         """
         if self._logger:
             self._logger.debug(msg)
+
+    def exception(self, msg):
+        if self._logger:
+            self._logger.exception(msg)
+
+    def error(self, msg):
+        if self._logger:
+            self._logger.error(msg)
 
 
 class StdoutLogger(_Logger):
@@ -218,7 +227,7 @@ def close():
         _logger = None
 
 
-def info(msg):
+def info(msg: object) -> object:
     # type: (tp.Text) -> None
     """
     Writes info level msg to the logger.
@@ -252,3 +261,13 @@ def warning(msg):
 
 def deprecation(msg):
     warnings.warn("DEPRECATION: {}".format(msg))
+
+
+def exception(msg):
+    if _logger is not None:
+        _logger.exception(msg)
+
+
+def error(msg):
+    if _logger is not None:
+        _logger.error(msg)
