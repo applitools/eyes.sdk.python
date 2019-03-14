@@ -92,12 +92,14 @@ class _EyesSwitchTo(object):
     @contextlib.contextmanager
     def frames_and_back(self, frame_chain):
         # type: (FrameChain) -> Generator
-        if self._driver.is_mobile_device():
-            raise StopIteration
         origin_fc = self._driver.frame_chain.clone()
-        self.frames(frame_chain)
+        if not self._driver.is_mobile_device():
+            self.frames(frame_chain)
+
         yield origin_fc
-        self.frames(origin_fc)
+
+        if not self._driver.is_mobile_device():
+            self.frames(origin_fc)
 
     def frame(self, frame_reference):
         # type: (FrameReference) -> None

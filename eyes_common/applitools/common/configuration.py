@@ -88,7 +88,8 @@ class Configuration(object):
 
     @viewport_size.setter
     def viewport_size(self, value):
-        self._viewport_size = RectangleSize.from_dict(value)
+        if value:
+            self._viewport_size = RectangleSize.from_dict(value)
 
     @property
     def is_dom_send(self):

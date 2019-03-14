@@ -381,7 +381,6 @@ class Eyes(EyesBase):
             self._scroll_root_element
         )
         switched_to_frame_count = self._switch_to_frame(check_settings)
-        # breakpoint()
         origin_fc = None
         result = None
         if target_region:
@@ -581,7 +580,6 @@ class Eyes(EyesBase):
         # type: (FrameLocator) -> None
         root_element = self._get_scroll_root_element_from_(frame_locator)
         frame = self.driver.frame_chain.peek
-        # breakpoint()
         frame.scroll_root_element = root_element
 
     @property
@@ -1026,7 +1024,6 @@ class Eyes(EyesBase):
             position_provider = self.position_provider
             if position_provider and not self.driver.is_mobile_device():
                 position_provider.push_state()
-            # breakpoint()
             fc = self.driver.frame_chain.clone()
             if fc.size > 0:
                 original_frame_position = fc.default_content_scroll_position
@@ -1082,7 +1079,7 @@ class Eyes(EyesBase):
                 )
 
         image = algo.get_stitched_region(
-            self._region_to_check, None, self._element_position_provider
+            self._region_to_check, None, elem_position_provider
         )
         return EyesWebDriverScreenshot.create_entire_frame(
             self._driver, image, RectangleSize.from_image(image)

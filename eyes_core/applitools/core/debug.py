@@ -51,7 +51,7 @@ class FileDebugScreenshotProvider(DebugScreenshotProvider):
     """ A debug screenshot provider for saving screenshots to file."""
 
     def save(self, image, suffix):
-        now = datetime.now().timestamp()
+        now = datetime.now().isoformat()
         filename = "{path}/{prefix}_{timestamp}_{suffix}.png".format(
             path=self.path, prefix=self.DEFAULT_PREFIX, timestamp=now, suffix=suffix
         )

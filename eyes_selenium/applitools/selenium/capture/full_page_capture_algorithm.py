@@ -53,7 +53,6 @@ class FullPageCaptureAlgorithm(object):
         self.debug_screenshots_provider.save(image, "original")
         pixel_ratio = self._get_pixel_ratio(image)
         scaled_cut_provider = self.cut_provider.scale(pixel_ratio)
-        # breakpoint()
         image = self._cut_if_needed(image, scaled_cut_provider)
         region_in_screenshot = self._get_region_in_screenshot(
             region, image, pixel_ratio

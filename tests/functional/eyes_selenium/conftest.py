@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
@@ -79,7 +80,8 @@ def driver_for_class(request, driver):
     test_page_url = request.node.get_closest_marker("test_page_url").args[0]
     viewport_size = request.node.get_closest_marker("viewport_size").args[0]
 
-    driver = EyesWebDriver(driver, None)
+    driver = EyesWebDriver(driver, MagicMock(Eyes))
+    driver.quit = MagicMock()
     if viewport_size:
         eyes_selenium_utils.set_browser_size(driver, viewport_size)
     request.cls.driver = driver

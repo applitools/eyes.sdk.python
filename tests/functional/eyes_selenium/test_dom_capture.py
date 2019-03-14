@@ -126,14 +126,16 @@ class TestDomCaptureUnit(object):
     def test_position_scrolled_to_origin_after_traversing(self):
         # Page must contain scrolling
         dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
-        current_scroll = ScrollPositionProvider.get_current_position_static(self.driver)
+        current_scroll = ScrollPositionProvider.get_current_position_static(
+            self.driver, self.driver.find_element_by_tag_name("html")
+        )
         assert current_scroll == Point(0, 0)
 
 
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.test_suite_name("Eyes Selenium SDK - DynamicPages")
 @pytest.mark.viewport_size({"width": 1200, "height": 800})
-@pytest.mark.skip("Only for local testing because changes always")
+# @pytest.mark.skip("Only for local testing because changes always")
 class TestDynamicPages(object):
     @pytest.mark.test_page_url("https://www.nbcnews.com/")
     @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)

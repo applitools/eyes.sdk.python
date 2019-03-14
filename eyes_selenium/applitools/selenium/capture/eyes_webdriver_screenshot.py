@@ -96,7 +96,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             position_provider = driver.eyes.position_provider
 
         self._frame_chain = driver.frame_chain.clone()
-        # breakpoint()
         frame_size = self.get_frame_size(position_provider)
         self._current_frame_scroll_position = self.get_updated_scroll_position(
             position_provider
@@ -148,7 +147,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 viewport_size = viewport_size.scale(pixel_ratio)
             if (
                 image.width <= viewport_size["width"]
-                and image <= viewport_size["height"]
+                and image.height <= viewport_size["height"]
             ):
                 screenshot_type = ScreenshotType.VIEWPORT
             else:
