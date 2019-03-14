@@ -14,7 +14,6 @@ from . import eyes_selenium_utils
 if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common.geometry import Point
-    from applitools.common.utils.custom_types import AnyWebDriver
     from .webdriver import EyesWebDriver
 
 
@@ -103,9 +102,9 @@ class EyesWebElement(object):
         :param driver: EyesWebDriver instance.
         """
         if isinstance(element, EyesWebElement):
-            element = element.element
-        self.element = element  # type: WebElement
-        self._driver = driver  # type: AnyWebDriver
+            element = element._element
+        self._element = element  # type: WebElement
+        self._driver = driver  # type: EyesWebDriver
 
         # setting from outside
         self.position_provider = None
@@ -127,6 +126,16 @@ class EyesWebElement(object):
             )
 
     @property
+    def element(self):
+        # type: () -> WebElement
+        return self._element
+
+    @property
+    def driver(self):
+        # type: () -> EyesWebDriver
+        return self._driver
+
+    @property
     def bounds(self):
         # type: () -> Region
         # noinspection PyUnresolvedReferences
@@ -136,7 +145,7 @@ class EyesWebElement(object):
 
         # noinspection PyBroadException
         try:
-            size = self.element.size
+            size = self._element.size
             width, height = size["width"], size["height"]
         except Exception:
             # Not implemented on all platforms.
@@ -149,18 +158,18 @@ class EyesWebElement(object):
 
     @property
     def location(self):
-        return self.element.location
+        return self._element.location
 
     @property
     def size(self):
-        return self.element.size
+        return self._element.size
 
     @property
     def id(self):
-        return self.element.id
+        return self._element.id
 
     def value_of_css_property(self, property_name):
-        return self.element.value_of_css_property(property_name)
+        return self._element.value_of_css_property(property_name)
 
     def find_element(self, by=By.ID, value=None):
         """
@@ -200,7 +209,7 @@ class EyesWebElement(object):
         Clicks and element.
         """
         self._driver._eyes.add_mouse_trigger_by_element("click", self)
-        self.element.click()
+        self._element.click()
 
     def send_keys(self, *value):
         """
@@ -214,10 +223,10 @@ class EyesWebElement(object):
                 val = val.__str__()
             text += val.encode("utf-8").decode("utf-8")
         self._driver.eyes.add_text_trigger_by_element(self, text)
-        self.element.send_keys(*value)
+        self._element.send_keys(*value)
 
     def set_overflow(self, overflow):
-        return eyes_selenium_utils.set_overflow(self._driver, overflow, self.element)
+        return eyes_selenium_utils.set_overflow(self._driver, overflow, self._element)
 
     def hide_scrollbars(self):
         # type: () -> tp.Text
@@ -231,7 +240,7 @@ class EyesWebElement(object):
 
     def get_computed_style(self, prop_style):
         script = self._JS_GET_COMPUTED_STYLE_FORMATTED_STR % prop_style
-        return self._driver.execute_script(script, self.element)
+        return self._driver.execute_script(script, self._element)
 
     def get_computed_style_int(self, prop_style):
 
@@ -241,26 +250,26 @@ class EyesWebElement(object):
     def get_scroll_left(self):
         return int(
             math.ceil(
-                self._driver.execute_script(self._JS_GET_SCROLL_LEFT, self.element)
+                self._driver.execute_script(self._JS_GET_SCROLL_LEFT, self._element)
             )
         )
 
     def get_scroll_top(self):
         return math.ceil(
-            self._driver.execute_script(self._JS_GET_SCROLL_TOP, self.element)
+            self._driver.execute_script(self._JS_GET_SCROLL_TOP, self._element)
         )
 
     def get_scroll_width(self):
         return int(
             math.ceil(
-                self._driver.execute_script(self._JS_GET_SCROLL_WIDTH, self.element)
+                self._driver.execute_script(self._JS_GET_SCROLL_WIDTH, self._element)
             )
         )
 
     def get_scroll_height(self):
         return int(
             math.ceil(
-                self._driver.execute_script(self._JS_GET_SCROLL_HEIGHT, self.element)
+                self._driver.execute_script(self._JS_GET_SCROLL_HEIGHT, self._element)
             )
         )
 
@@ -277,13 +286,15 @@ class EyesWebElement(object):
         return self.get_computed_style_int("border-right-width")
 
     def get_overflow(self):
-        return self._driver.execute_script(self._JS_GET_OVERFLOW, self.element)
+        return self._driver.execute_script(self._JS_GET_OVERFLOW, self._element)
 
     def get_client_width(self):
         return int(
             math.ceil(
                 float(
-                    self._driver.execute_script(self._JS_GET_CLIENT_WIDTH, self.element)
+                    self._driver.execute_script(
+                        self._JS_GET_CLIENT_WIDTH, self._element
+                    )
                 )
             )
         )
@@ -293,7 +304,7 @@ class EyesWebElement(object):
             math.ceil(
                 float(
                     self._driver.execute_script(
-                        self._JS_GET_CLIENT_HEIGHT, self.element
+                        self._JS_GET_CLIENT_HEIGHT, self._element
                     )
                 )
             )
@@ -305,7 +316,7 @@ class EyesWebElement(object):
         position = self._driver.execute_script(
             self._JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y)
             + self._JS_GET_SCROLL_POSITION,
-            self.element,
+            self._element,
         )
         return eyes_selenium_utils.parse_location_string(position)
 
@@ -313,7 +324,7 @@ class EyesWebElement(object):
     def size_and_borders(self):
         # type: () -> SizeAndBorders
         ret_val = self._driver.execute_script(
-            self._JS_GET_SIZE_AND_BORDER_WIDTHS, self.element
+            self._JS_GET_SIZE_AND_BORDER_WIDTHS, self._element
         )
         return SizeAndBorders(
             width=int(ret_val[0]),
@@ -326,7 +337,7 @@ class EyesWebElement(object):
 
     def __str__(self):
         return "EyesWebElement: id {}, tag_name {}".format(
-            self.element.id, self.element.tag_name
+            self._element.id, self._element.tag_name
         )
 
 
