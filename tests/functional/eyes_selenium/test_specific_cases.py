@@ -2,7 +2,6 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from applitools.selenium import Region, StitchMode, Target
-from applitools.selenium.fluent import IgnoreRegionBy
 
 
 @pytest.mark.platform("Linux")
@@ -36,16 +35,14 @@ def test_sample_script(eyes, driver):
     driver.get("https://www.google.com/")
     eyes.check_window(
         "Search page",
-        target=(
-            Target().ignore(IgnoreRegionBy(By.CLASS_NAME, "fbar")).send_dom().use_dom()
-        ),
+        target=(Target.window().ignore((By.CLASS_NAME, "fbar")).send_dom().use_dom()),
     )
 
     hero = driver.find_element_by_id("body")
     eyes.check_region_by_element(
         hero,
         "Search",
-        target=(Target().ignore(Region(20, 20, 50, 50), Region(40, 40, 10, 20))),
+        target=(Target.window().ignore(Region(20, 20, 50, 50), Region(40, 40, 10, 20))),
     )
     eyes.close()
 

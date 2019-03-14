@@ -381,11 +381,10 @@ class Eyes(EyesBase):
             self._scroll_root_element
         )
         switched_to_frame_count = self._switch_to_frame(check_settings)
-        origin_fc = None
+        origin_fc = self._try_hide_scrollbars()
         result = None
         if target_region:
             logger.info("have target region")
-            origin_fc = self._try_hide_scrollbars()
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
@@ -394,7 +393,6 @@ class Eyes(EyesBase):
         elif check_settings:
             target_element = self._get_element(check_settings)
             if target_element:
-                origin_fc = self._try_hide_scrollbars()
                 logger.info("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
