@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import typing
 
 import attr
@@ -5,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import FloatingBounds, Region
+from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings
 from applitools.selenium.webelement import EyesWebElement
 
@@ -109,7 +112,7 @@ class SeleniumCheckSettings(CheckSettings):
         elif is_list_or_tuple(region):
             by, value = region
             self._target_selector = _css_selector_from_(by, value)
-        elif isinstance(region, typing.Text):
+        elif isinstance(region, basestring):
             self._target_selector = region
         elif is_webelement(region):
             self._target_element = region
@@ -122,7 +125,7 @@ class SeleniumCheckSettings(CheckSettings):
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame
-        elif isinstance(frame, typing.Text):
+        elif isinstance(frame, basestring):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
             fl.frame_element = frame
@@ -132,7 +135,7 @@ class SeleniumCheckSettings(CheckSettings):
         return self
 
     def _region_provider_from(self, region, method_name):
-        if isinstance(region, typing.Text):
+        if isinstance(region, basestring):
             return IgnoreRegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
@@ -157,7 +160,7 @@ class SeleniumCheckSettings(CheckSettings):
             self._frame_chain[-1].scroll_root_element = element
 
     def scroll_root_element(self, element_or_selector):
-        if isinstance(element_or_selector, typing.Text):
+        if isinstance(element_or_selector, basestring):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
             self._set_scrool_root_element(element_or_selector)
@@ -173,7 +176,7 @@ class SeleniumCheckSettings(CheckSettings):
             )
             if is_webelement(region_or_container):
                 return FloatingRegionByElement(region_or_container, bounds)
-            if isinstance(region_or_container, typing.Text):
+            if isinstance(region_or_container, basestring):
                 return FloatingRegionByCssSelector(region_or_container, bounds)
             if is_list_or_tuple(region_or_container):
                 by, value = region_or_container

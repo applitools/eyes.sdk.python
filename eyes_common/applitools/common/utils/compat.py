@@ -17,6 +17,7 @@ __all__ = (
     "Queue",
     "gzip_compress",
     "range",
+    "basestring",
 )
 
 PY3 = sys.version_info >= (3,)
@@ -26,12 +27,14 @@ if PY3:
     from gzip import compress as gzip_compress  # noqa
     from queue import Queue  # noqa
 
+    basestring = str
     ABC = abc.ABC
     range = range  # type: ignore
 else:
     from urlparse import urlparse, urljoin  # noqa
     from Queue import Queue  # noqa
 
+    basestring = basestring
     ABC = abc.ABCMeta(str("ABC"), (), {})
     range = xrange  # type: ignore  # noqa
 
