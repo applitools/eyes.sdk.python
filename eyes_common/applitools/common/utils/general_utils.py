@@ -78,10 +78,12 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
             new_list = []
             for region in v[:]:
                 if isinstance(region, dict):
+                    d = {}
                     for k1, v1 in iteritems(region):
                         if hasattr(v1, "value"):
                             v1 = v1.value
-                        new_list.append({func(k1): v1})
+                        d[k1] = v1
+            new_list.append(d)
             v = new_list
         # Enum
         if hasattr(v, "value"):
