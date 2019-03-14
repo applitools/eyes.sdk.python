@@ -9,7 +9,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import EyesError, Point, RectangleSize, logger
+from applitools.common import Point, RectangleSize, logger
 from applitools.common.errors import EyesDriverOperationError
 
 if tp.TYPE_CHECKING:
@@ -158,7 +158,7 @@ def get_current_frame_content_entire_size(driver):
     try:
         width, height = driver.execute_script(_JS_GET_CONTENT_ENTIRE_SIZE)
     except WebDriverException:
-        raise EyesError("Failed to extract entire size!")
+        raise EyesDriverOperationError("Failed to extract entire size!")
     return RectangleSize(width, height)
 
 
@@ -314,16 +314,22 @@ def set_viewport_size(driver, required_size):
     raise EyesDriverOperationError("Failed to set the viewport size.")
 
 
-def hide_scrollbars(driver):
-    return set_overflow(driver, _OVERFLOW_HIDDEN)
+def hide_scrollbars(driver, root_element):
+    return set_overflow(driver, _OVERFLOW_HIDDEN, root_element)
 
 
 def set_overflow(driver, overflow, root_element):
     root_element = get_underlying_webelement(root_element)
     with timeout(0.1):
-        return driver.execute_script(
-            _JS_SET_OVERFLOW % (overflow, overflow), root_element
-        )
+        try:
+            return driver.execute_script(
+                _JS_SET_OVERFLOW % (overflow, overflow), root_element
+            )
+        except WebDriverException as e:
+            logger.warning(
+                "Couldn't sent overflow {} to element {}".format(overflow, root_element)
+            )
+            logger.exception(e)
 
 
 @contextmanager

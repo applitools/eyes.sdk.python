@@ -5,7 +5,7 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import EyesError, Point, logger
+from applitools.common import EyesDriverOperationError, EyesError, Point, logger
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionProvider
 
@@ -56,7 +56,9 @@ class SeleniumPositionProvider(PositionProvider):
         try:
             width, height = self._execute_script(self._JS_GET_ENTIRE_PAGE_SIZE)
         except WebDriverException as e:
-            raise EyesError("Failed to extract entire size! \n{}".format(e))
+            raise EyesDriverOperationError(
+                "Failed to extract entire size! \n{}".format(e)
+            )
         return RectangleSize(width=width, height=height)
 
 
@@ -183,6 +185,8 @@ class ElementPositionProvider(SeleniumPositionProvider):
                 "height": self._element.get_scroll_height(),
             }
         except WebDriverException as e:
-            raise EyesError("Failed to extract entire size! \n {}".format(e))
+            raise EyesDriverOperationError(
+                "Failed to extract entire size! \n {}".format(e)
+            )
         logger.info("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
