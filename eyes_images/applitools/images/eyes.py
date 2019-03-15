@@ -64,7 +64,7 @@ class Eyes(EyesBase):
     def _ensure_viewport_size(self):
         pass
 
-    def get_screenshot(self, **kwargs):
+    def _get_screenshot(self, **kwargs):
         # type: (**Dict) -> EyesImagesScreenshot
         return self._screenshot
 

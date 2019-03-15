@@ -41,16 +41,16 @@ class Frame(object):
 
     def return_to_original_overflow(self, driver):
         # type: (AnyWebDriver) -> None
-        if not self.scroll_root_element:
-            self.scroll_root_element = driver.find_element_by_tag_name("html")
-        element = eyes_selenium_utils.get_underlying_webelement(
-            self.scroll_root_element
+        root_element = eyes_selenium_utils.get_underlying_webelement(
+            self._scroll_root_element(driver)
         )
         logger.info(
-            "returning overflow of element to its original value: {}".format(element)
+            "returning overflow of element to its original value: {}".format(
+                root_element
+            )
         )
         driver.execute_script(
-            "arguments[0].style.overflow='%s'" % self.original_overflow, element
+            "arguments[0].style.overflow='%s'" % self.original_overflow, root_element
         )
 
     def _scroll_root_element(self, driver):
@@ -72,7 +72,7 @@ class Frame(object):
         return original_overflow
 
 
-@attr.s(slots=True, init=False)
+@attr.s(slots=True, init=False, cmp=False)
 class FrameChain(tp.Sequence[Frame]):
     _frames = attr.ib()
 

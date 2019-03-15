@@ -1,3 +1,4 @@
+import contextlib
 import typing
 from time import sleep
 
@@ -46,7 +47,7 @@ from applitools.selenium.region_compensation import (
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
-from .fluent import FrameLocator, Target
+from .fluent import Target
 from .frames import FrameChain
 from .positioning import (
     CSSTranslatePositionProvider,
@@ -58,10 +59,8 @@ from .useragent import BrowserNames, UserAgent
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
-# noinspection PyProtectedMember
-
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text
+    from typing import Optional, Text, Generator
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
@@ -71,7 +70,6 @@ if typing.TYPE_CHECKING:
     from applitools.core import MatchWindowTask
     from applitools.core.scaling import ScaleProvider
     from .frames import Frame
-    from .webdriver import _EyesSwitchTo
 
 
 class ScreenshotType(object):
@@ -163,6 +161,12 @@ class Eyes(EyesBase):
         self._config.hide_scrollbars = hide
 
     @property
+    def should_scrollbars_be_hidden(self):
+        return self.hide_scrollbars or (
+            self.stitch_mode == StitchMode.CSS and self._stitch_content
+        )
+
+    @property
     def force_full_page_screenshot(self):
         # type: () -> bool
         """
@@ -212,9 +216,6 @@ class Eyes(EyesBase):
         """
         return self._driver
 
-    def get_screenshot(self):
-        return self._get_screenshot()
-
     def _init_driver(self, driver):
         if isinstance(driver, EyesWebDriver):
             # If the driver is an EyesWebDriver (as might be the case when tests are ran
@@ -255,91 +256,29 @@ class Eyes(EyesBase):
         )
         return self._driver
 
-    def _get_scroll_root_element_from_(self, container=None):
-        def get_root_html():
-            return self.driver.find_element_by_tag_name("html")
-
-        scroll_root_element = None
-        if not self.driver.is_mobile_device():
-            if container is None:
-                scroll_root_element = get_root_html()
-            else:
-                if hasattr(container, "values"):
-                    # check settings
-                    container = container.values
-                scroll_root_element = container.scroll_root_element
-                if not scroll_root_element:
-                    scroll_root_selector = container.scroll_root_selector
-                    if scroll_root_selector:
-                        scroll_root_element = self.driver.find_element_by_css_selector(
-                            scroll_root_selector
-                        )
-                    else:
-                        scroll_root_element = get_root_html()
-        return scroll_root_element
-
-    def _try_hide_scrollbars(self):
-        # type: () -> Optional[FrameChain]
-        if self.driver.is_mobile_device():
-            return FrameChain()
-
-        if self.hide_scrollbars or (
-            self.stitch_mode == StitchMode.CSS and self._stitch_content
-        ):
-            original_fc = self.driver.frame_chain.clone()
-            fc = self.driver.frame_chain.clone()
-
-            if len(fc) > 0:
-                frame = fc.peek  # type: Frame
-                while len(fc) > 0:
-                    logger.info("fc count = {}".format(len(fc)))
-                    if self._stitch_content or len(fc) != len(original_fc):
-                        if frame:
-                            frame.hide_scrollbars(self.driver)
-                        else:
-                            logger.info(
-                                "hiding scrollbars of element (1): {}".format(
-                                    self._scroll_root_element
-                                )
-                            )
-                            eyes_selenium_utils.set_overflow(
-                                self.driver, "hidden", self._scroll_root_element
-                            )
-                    self.driver.switch_to.parent_frame()
-                    fc.pop()
-                    frame = fc.peek
+    def _try_hide_scrollbars(self, frame=None):
+        # type: (Optional[Frame]) -> bool
+        if self.should_scrollbars_be_hidden:
+            if frame:
+                frame.hide_scrollbars(self.driver)
             else:
                 logger.info(
-                    "hiding scrollbars of element (2): {}".format(
+                    "hiding scrollbars of element (1): {}".format(
                         self._scroll_root_element
                     )
                 )
                 self._original_overflow = eyes_selenium_utils.set_overflow(
                     self.driver, "hidden", self._scroll_root_element
                 )
-            logger.info("switching back to original frame")
-            self.driver.switch_to.frames(original_fc)
             logger.info("done hiding scrollbars.")
-            return original_fc
-        return None
+            return True
+        return False
 
-    def _try_restore_scrollbars(self, frame_chain):
-        if self.driver.is_mobile_device():
-            return None
-        if self.hide_scrollbars or (
-            self.stitch_mode == StitchMode.CSS or self._stitch_content
-        ):
-            self.driver.switch_to.frames(frame_chain)
-            original_fc = frame_chain.clone()
-            fc = frame_chain.clone()
-            if len(fc) > 0:
-                while len(fc) > 0:
-                    frame = fc.pop()
-                    frame.return_to_original_overflow(self.driver)
-                    origin_switch_to = eyes_selenium_utils.get_underlying_driver(
-                        self.driver
-                    ).switch_to
-                    self.driver.switch_to.parent_frame_static(origin_switch_to, fc)
+    def _try_restore_scrollbars(self, frame=None):
+        # type: (Optional[Frame]) -> bool
+        if self.should_scrollbars_be_hidden:
+            if frame:
+                frame.return_to_original_overflow(self.driver)
             else:
                 logger.info(
                     "returning overflow of element to its original value: {}".format(
@@ -349,13 +288,11 @@ class Eyes(EyesBase):
                 eyes_selenium_utils.set_overflow(
                     self.driver, self._original_overflow, self._scroll_root_element
                 )
-            self.driver.switch_to.frames(original_fc)
             logger.info("done restoring scrollbars.")
-        else:
-            logger.info("no need to restore scrollbars.")
-        self.driver.frame_chain.clear()
+            return True
+        return False
 
-    def check(self, name, check_settings):  # noqa: C901
+    def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         if name:
             check_settings = check_settings.with_name(name)
@@ -363,25 +300,37 @@ class Eyes(EyesBase):
             name = check_settings.values.name
 
         logger.info("check('{}', check_settings) - begin".format(name))
+
+        # Set up required settings
         self._stitch_content = check_settings.values.stitch_content
-        target_region = check_settings.values.target_region
-
-        self.current_frame_position_provider = None
-        self._original_frame_chain = self.driver.frame_chain.clone()
-
-        if not eyes_selenium_utils.is_mobile_device(self._driver):
-            logger.info("URL: {}".format(self._driver.current_url))
-
-        switch_to = None  # type: _EyesSwitchTo
-        if not self.driver.is_mobile_device():
-            switch_to = self.driver.switch_to
-
-        self._scroll_root_element = self._get_scroll_root_element_from_(check_settings)
-        self.position_provider = self._create_position_provider(
+        self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+            self.driver, check_settings
+        )
+        self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
-        switched_to_frame_count = self._switch_to_frame(check_settings)
-        origin_fc = self._try_hide_scrollbars()
+
+        if not self.driver.is_mobile_device():
+            # hide scrollbar for main window
+            self._try_hide_scrollbars()
+
+            logger.info("URL: {}".format(self._driver.current_url))
+            with self._switch_to_frame(check_settings):
+                result = self._check_result_flow(name, check_settings)
+
+            # restore scrollbar of main window
+            self._try_restore_scrollbars()
+        else:
+            result = self._check_result_flow(name, check_settings)
+
+        self._stitch_content = False
+        self._scroll_root_element = None
+        self._position_provider = None
+        logger.info("check - done!")
+        return result
+
+    def _check_result_flow(self, name, check_settings):
+        target_region = check_settings.values.target_region
         result = None
         if target_region:
             logger.info("have target region")
@@ -391,7 +340,7 @@ class Eyes(EyesBase):
                 RegionProvider(target_region), name, False, check_settings
             )
         elif check_settings:
-            target_element = self._get_element(check_settings)
+            target_element = self._element_from(check_settings)
             if target_element:
                 logger.info("have target element")
                 self._target_element = target_element
@@ -408,43 +357,24 @@ class Eyes(EyesBase):
                     result = self._check_frame_fluent(name, check_settings)
             else:
                 logger.info("default case")
-                if switch_to:
+                if not self.driver.is_mobile_device():
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
-                    switch_to.default_content()
+                    self.driver.switch_to.default_content()
                     self.current_frame_position_provider = self._create_position_provider(
                         self.driver.find_element_by_tag_name("html")
                     )
                 result = self._check_window_base(
                     NULL_REGION_PROVIDER, name, False, check_settings
                 )
-            if switch_to:
-                switch_to.frames(self._original_frame_chain)
-
         if result is None:
             result = MatchResult()
-
-        while switched_to_frame_count > 0:
-            switch_to.parent_frame()
-            switched_to_frame_count -= 1
-        if self.position_provider.states:
-            self.position_provider.pop_state()
-        if switch_to:
-            switch_to.reset_scroll()
-            if origin_fc:
-                self._try_restore_scrollbars(origin_fc)
-
-            self._try_switch_to_frames(
-                self.driver, switch_to, self._original_frame_chain
-            )
-        self._stitch_content = False
-        logger.info("check - done!")
         return result
 
     def _check_full_frame_or_element(self, name, check_settings):
         self._check_frame_or_element = True
         resutl = self._check_window_base(
-            RegionProvider(self._get_full_frame_or_element_region),
+            RegionProvider(self._full_frame_or_element_region),
             name,
             False,
             check_settings,
@@ -477,14 +407,16 @@ class Eyes(EyesBase):
                     scroll_root_element = self.driver.find_element_by_tag_name("html")
             logger.debug("scroll_root_element {}".format(scroll_root_element))
 
-            position_provider = self._get_element_position_provider(scroll_root_element)
+            position_provider = self._element_position_provider_from(
+                scroll_root_element
+            )
             position_provider.set_position(prev_frame.location)
             reg = Region.from_location_size(Point.zero(), prev_frame.inner_size)
             self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(original_fc)
         return original_fc
 
-    def _get_element_position_provider(self, scroll_root_element):
+    def _element_position_provider_from(self, scroll_root_element):
         # type: (EyesWebElement) -> PositionProvider
         position_provider = scroll_root_element.position_provider
         if not position_provider:
@@ -494,7 +426,7 @@ class Eyes(EyesBase):
         self.current_frame_position_provider = position_provider
         return position_provider
 
-    def _get_full_frame_or_element_region(self):
+    def _full_frame_or_element_region(self):
         if self._check_frame_or_element:
             fc = self._ensure_frame_visible()
             # FIXME - Scaling should be handled in a single place instead
@@ -520,65 +452,67 @@ class Eyes(EyesBase):
         self._target_element = None
         return result
 
-    @staticmethod
-    def _try_switch_to_frames(driver, switch_to, frames):
-        if driver.is_mobile_device():
-            return None
-        try:
-            switch_to.frames(frames)
-        except WebDriverException as e:
-            logger.warning(
-                "Failed to switch to original frame chain! {}".format(str(e))
-            )
-
     def _switch_to_parent_frame(self, frame_count):
         if frame_count > 0:
             self.driver.switch_to.parent_frame()
             return self._switch_to_parent_frame(frame_count - 1)
 
+    @contextlib.contextmanager
     def _switch_to_frame(self, check_settings):
-        # type: (SeleniumCheckSettings) -> int
-        if check_settings is None:
-            return 0
-
+        # type: (SeleniumCheckSettings) -> Generator
         switched_to_frame_count = 0
         frame_chain = check_settings.values.frame_chain
         for frame_locator in frame_chain:
-            if self._switch_to_frame_with_locator(frame_locator):
-                switched_to_frame_count += 1
-        return switched_to_frame_count
-
-    def _switch_to_frame_with_locator(self, frame_locator):
-        # type: (FrameLocator) -> bool
-        # We don't want to track frames here
-        switch_to = self.driver.switch_to
-        if frame_locator.frame_index:
-            switch_to.frame(frame_locator.frame_index)
-            self._update_frame_scroll_root(frame_locator)
-            return True
-        if frame_locator.frame_name_or_id:
-            switch_to.frame(frame_locator.frame_name_or_id)
-            self._update_frame_scroll_root(frame_locator)
-            return True
-        if frame_locator.frame_element:
-            switch_to.frame(frame_locator.frame_element)
-            self._update_frame_scroll_root(frame_locator)
-            return True
-        if frame_locator.frame_selector:
-            frame_element = self.driver.find_element_by_css_selector(
-                frame_locator.frame_selector
+            self.driver.switch_to.frame(frame_locator)
+            root_element = eyes_selenium_utils.scroll_root_element_from(
+                self.driver, frame_locator
             )
-            if frame_element:
-                switch_to.frame(frame_element)
-                self._update_frame_scroll_root(frame_locator)
-                return True
-        return False
+            cur_frame = self._driver.frame_chain.peek
+            cur_frame.scroll_root_element = root_element
+            self._try_hide_scrollbars(cur_frame)
+            switched_to_frame_count += 1
 
-    def _update_frame_scroll_root(self, frame_locator):
-        # type: (FrameLocator) -> None
-        root_element = self._get_scroll_root_element_from_(frame_locator)
-        frame = self.driver.frame_chain.peek
-        frame.scroll_root_element = root_element
+        yield
+
+        while switched_to_frame_count > 0:
+            self.driver.switch_to.parent_frame()
+            self.driver.switch_to.reset_scroll()
+            self._try_restore_scrollbars()
+            switched_to_frame_count -= 1
+
+    # def _switch_to_frame_with_locator(self, frame_locator):
+    #     # type: (FrameLocator) -> bool
+    #     # We don't want to track frames here
+    #     switch_to = self.driver.switch_to
+    #     if frame_locator.frame_index:
+    #         switch_to.frame(frame_locator.frame_index)
+    #         self._update_frame_scroll_root(frame_locator)
+    #         return True
+    #     if frame_locator.frame_name_or_id:
+    #         switch_to.frame(frame_locator.frame_name_or_id)
+    #         self._update_frame_scroll_root(frame_locator)
+    #         return True
+    #     if frame_locator.frame_element:
+    #         switch_to.frame(frame_locator.frame_element)
+    #         self._update_frame_scroll_root(frame_locator)
+    #         return True
+    #     if frame_locator.frame_selector:
+    #         frame_element = self.driver.find_element_by_css_selector(
+    #             frame_locator.frame_selector
+    #         )
+    #         if frame_element:
+    #             switch_to.frame(frame_element)
+    #             self._update_frame_scroll_root(frame_locator)
+    #             return True
+    #     return False
+
+    # def _update_frame_scroll_root(self, frame_locator):
+    #     # type: (FrameLocator) -> None
+    #     root_element = eyes_selenium_utils.scroll_root_element_from(
+    #         self.driver, frame_locator
+    #     )
+    #     frame = self.driver.frame_chain.peek
+    #     frame.scroll_root_element = root_element
 
     @property
     def scroll_root_element(self):
@@ -965,15 +899,15 @@ class Eyes(EyesBase):
             )
             return None
 
-    def _get_region(self, check_settings):
-        target_element = self._get_element(check_settings)
+    def _region_from(self, check_settings):
+        target_element = self._element_from(check_settings)
         target_region = check_settings.values.target_region
         if target_region:
             return target_region
         if target_element:
             return self._get_element_region(target_element)
 
-    def _get_element(self, check_settings):
+    def _element_from(self, check_settings):
         # type: (SeleniumCheckSettings) -> EyesWebElement
         target_element = check_settings.values.target_element
         target_selector = check_settings.values.target_selector
@@ -1055,7 +989,7 @@ class Eyes(EyesBase):
         elem_position_provider = self._element_position_provider
         if elem_position_provider is None:
             scroll_root_element = self.driver.find_element_by_tag_name("html")
-            elem_position_provider = self._get_element_position_provider(
+            elem_position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
         self._mark_element_for_layout_rca(elem_position_provider)
@@ -1154,7 +1088,9 @@ class Eyes(EyesBase):
                 scroll_root_element = self.driver.find_element_by_tag_name("html")
             else:
                 scroll_root_element = self.scroll_root_element
-            position_provider = self._get_element_position_provider(scroll_root_element)
+            position_provider = self._element_position_provider_from(
+                scroll_root_element
+            )
             position_provider.set_position(element_location)
 
     def get_current_frame_scroll_root_element(self):

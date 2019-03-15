@@ -404,3 +404,27 @@ def parse_location_string(position):
     if len(xy) != 2:
         raise EyesDriverOperationError("Could not get scroll position!")
     return Point(float(xy[0]), float(xy[1]))
+
+
+def scroll_root_element_from(driver, container=None):
+    def root_html():
+        return driver.find_element_by_tag_name("html")
+
+    scroll_root_element = None
+    if not driver.is_mobile_device():
+        if container is None:
+            scroll_root_element = root_html()
+        else:
+            if hasattr(container, "values"):
+                # check settings
+                container = container.values
+            scroll_root_element = container.scroll_root_element
+            if not scroll_root_element:
+                scroll_root_selector = container.scroll_root_selector
+                if scroll_root_selector:
+                    scroll_root_element = driver.find_element_by_css_selector(
+                        scroll_root_selector
+                    )
+                else:
+                    scroll_root_element = root_html()
+    return scroll_root_element

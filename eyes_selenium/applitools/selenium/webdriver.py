@@ -19,6 +19,8 @@ from applitools.common.utils import (
     general_utils,
     image_utils,
 )
+from applitools.common.utils.compat import basestring
+from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
 from .frames import Frame, FrameChain
@@ -33,16 +35,16 @@ if typing.TYPE_CHECKING:
 
 @attr.s
 class FrameResolver(object):
-    frame_ref = attr.ib()
-    driver = attr.ib()
+    _frame_ref = attr.ib()
+    _driver = attr.ib()
     eyes_webelement = attr.ib(init=False)
     webelement = attr.ib(init=False)
 
     def __attrs_post_init__(self):
         # Find the frame's location and add it to the current driver offset
-        frame_ref = self.frame_ref
-        driver = self.driver
-        if isinstance(frame_ref, str):
+        frame_ref = self._ref_if_locator(self._frame_ref)
+        driver = self._driver
+        if isinstance(frame_ref, basestring):
             frame_eyes_webelement = driver.find_element_by_name(frame_ref)
         elif isinstance(frame_ref, int):
             frame_elements_list = driver.find_elements_by_css_selector("frame, iframe")
@@ -55,6 +57,21 @@ class FrameResolver(object):
 
         self.eyes_webelement = frame_eyes_webelement
         self.webelement = frame_eyes_webelement.element
+
+    def _ref_if_locator(self, frame_ref):
+        if isinstance(frame_ref, FrameLocator):
+            frame_locator = frame_ref
+            if frame_locator.frame_index:
+                frame_ref = frame_locator.frame_index
+            if frame_locator.frame_name_or_id:
+                frame_ref = frame_locator.frame_name_or_id
+            if frame_locator.frame_element:
+                frame_ref = frame_locator.frame_element
+            if frame_locator.frame_selector:
+                frame_ref = self._driver.find_element_by_css_selector(
+                    frame_locator.frame_selector
+                )
+        return frame_ref
 
 
 class _EyesSwitchTo(object):
@@ -75,8 +92,8 @@ class _EyesSwitchTo(object):
         :param driver: EyesWebDriver instance.
         :param switch_to: Selenium switchTo object.
         """
-        self._switch_to = switch_to
-        self._driver = driver
+        self._switch_to = switch_to  # type: SwitchTo
+        self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
             driver, driver.eyes.get_current_frame_scroll_root_element()
         )
@@ -85,18 +102,26 @@ class _EyesSwitchTo(object):
     @contextlib.contextmanager
     def frame_and_back(self, frame_reference):
         # type: (FrameReference) -> Generator
-        self.frame(frame_reference)
-        yield
-        self.parent_frame()
+        cur_frame = None
+        if not self._driver.is_mobile_device():
+            self.frame(frame_reference)
+            cur_frame = self._driver.frame_chain.peek
+
+        yield cur_frame
+
+        if not self._driver.is_mobile_device():
+            self.parent_frame()
 
     @contextlib.contextmanager
     def frames_and_back(self, frame_chain):
         # type: (FrameChain) -> Generator
+        cur_frame = None
         origin_fc = self._driver.frame_chain.clone()
         if not self._driver.is_mobile_device():
             self.frames(frame_chain)
+            cur_frame = self._driver.frame_chain.peek
 
-        yield origin_fc
+        yield cur_frame
 
         if not self._driver.is_mobile_device():
             self.frames(origin_fc)
@@ -108,9 +133,9 @@ class _EyesSwitchTo(object):
 
         :param frame_reference: The reference to the frame.
         """
-        frame = FrameResolver(frame_reference, self._driver)
-        self.will_switch_to_frame(frame.eyes_webelement)
-        self._switch_to.frame(frame.webelement)
+        frame_res = FrameResolver(frame_reference, self._driver)
+        self.will_switch_to_frame(frame_res.eyes_webelement)
+        self._switch_to.frame(frame_res.webelement)
 
     def frames(self, frame_chain):
         # type: (FrameChain) -> None
@@ -146,6 +171,7 @@ class _EyesSwitchTo(object):
             frame = self._driver.frame_chain.pop()
             frame.return_to_original_overflow(self._driver)
             self.parent_frame_static(self._switch_to, self._driver.frame_chain)
+            return frame
 
     def window(self, window_name):
         # type: (Text) -> None

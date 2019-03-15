@@ -66,7 +66,7 @@ class EyesBaseAbstract(ABC):
         """
 
     @abc.abstractmethod
-    def get_screenshot(self, **kwargs):
+    def _get_screenshot(self, **kwargs):
         # type: (...) -> EyesScreenshot
         pass
 
@@ -816,7 +816,7 @@ class EyesBase(EyesBaseAbstract):
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
         # type: (Region, EyesScreenshot, CheckSettings) -> AppOutputWithScreenshot
         logger.info("getting screenshot...")
-        screenshot = self.get_screenshot()
+        screenshot = self._get_screenshot()
         logger.info("Done getting screenshot!")
         if not region.is_size_empty:
             screenshot = screenshot.sub_screenshot(region)
