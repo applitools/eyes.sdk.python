@@ -199,7 +199,7 @@ class _EyesSwitchTo(object):
         original_location = ScrollPositionProvider.get_current_position_static(
             self._driver, self._driver.find_element_by_tag_name("html")
         )
-        # self._scroll_position.set_position(content_location)
+        self._scroll_position.set_position(original_location)
         frame = Frame(
             target_frame,
             content_location,

@@ -57,7 +57,7 @@ class Frame(object):
         scroll_root = self.scroll_root_element
         if scroll_root is None:
             logger.debug("no scroll root element. selecting default.")
-            scroll_root = driver.finde_element_by_tag_name("html")
+            scroll_root = driver.find_element_by_tag_name("html")
         return scroll_root
 
     def hide_scrollbars(self, driver):

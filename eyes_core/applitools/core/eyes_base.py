@@ -560,11 +560,14 @@ class EyesBase(EyesBaseAbstract):
                         raise NewTestError(message, results)
                 else:
                     logger.info(
-                        "--- Failed test ended. See details at {}".format(results_url)
+                        "--- Failed test ended. \n\tSee details at {}".format(
+                            results_url
+                        )
                     )
                     if raise_ex:
                         raise DiffsFoundError(
-                            "Test '{}' of '{}' detected differences! See details at: {}".format(
+                            "Test '{}' of '{}' detected differences! "
+                            "\n\tSee details at: {}".format(
                                 self._session_start_info.scenario_id_or_name,
                                 self._session_start_info.app_id_or_name,
                                 results_url,
@@ -573,11 +576,11 @@ class EyesBase(EyesBaseAbstract):
                         )
             elif results.is_failed:
                 logger.info(
-                    "--- Failed test ended. See details at {}".format(results_url)
+                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
                 )
                 if raise_ex:
                     raise TestFailedError(
-                        "Test '{}' of '{}'. See details at: {}".format(
+                        "Test '{}' of '{}'. \n\tSee details at: {}".format(
                             self._session_start_info.scenario_id_or_name,
                             self._session_start_info.app_id_or_name,
                             results_url,
@@ -585,7 +588,7 @@ class EyesBase(EyesBaseAbstract):
                         results,
                     )
             # Test passed
-            logger.info("--- Test passed. See details at {}".format(results_url))
+            logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
 
             return results
         finally:

@@ -264,11 +264,11 @@ class Eyes(EyesBase):
             else:
                 logger.info(
                     "hiding scrollbars of element (1): {}".format(
-                        self._scroll_root_element
+                        self.scroll_root_element
                     )
                 )
                 self._original_overflow = eyes_selenium_utils.set_overflow(
-                    self.driver, "hidden", self._scroll_root_element
+                    self.driver, "hidden", self.scroll_root_element
                 )
             logger.info("done hiding scrollbars.")
             return True
@@ -282,11 +282,11 @@ class Eyes(EyesBase):
             else:
                 logger.info(
                     "returning overflow of element to its original value: {}".format(
-                        self._scroll_root_element
+                        self.scroll_root_element
                     )
                 )
                 eyes_selenium_utils.set_overflow(
-                    self.driver, self._original_overflow, self._scroll_root_element
+                    self.driver, self._original_overflow, self.scroll_root_element
                 )
             logger.info("done restoring scrollbars.")
             return True
@@ -309,6 +309,7 @@ class Eyes(EyesBase):
         self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
+        self._original_frame_chain = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_device():
             # hide scrollbar for main window
@@ -319,6 +320,9 @@ class Eyes(EyesBase):
                 result = self._check_result_flow(name, check_settings)
 
             # restore scrollbar of main window
+            self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+                self.driver, check_settings
+            )
             self._try_restore_scrollbars()
         else:
             result = self._check_result_flow(name, check_settings)
@@ -452,11 +456,6 @@ class Eyes(EyesBase):
         self._target_element = None
         return result
 
-    def _switch_to_parent_frame(self, frame_count):
-        if frame_count > 0:
-            self.driver.switch_to.parent_frame()
-            return self._switch_to_parent_frame(frame_count - 1)
-
     @contextlib.contextmanager
     def _switch_to_frame(self, check_settings):
         # type: (SeleniumCheckSettings) -> Generator
@@ -477,7 +476,6 @@ class Eyes(EyesBase):
         while switched_to_frame_count > 0:
             self.driver.switch_to.parent_frame()
             self.driver.switch_to.reset_scroll()
-            self._try_restore_scrollbars()
             switched_to_frame_count -= 1
 
     # def _switch_to_frame_with_locator(self, frame_locator):
@@ -952,10 +950,10 @@ class Eyes(EyesBase):
             stitch_content=self._stitch_content,
             force_fullpage=self.force_full_page_screenshot,
         )
+
         with self._driver.switch_to.frames_and_back(self._original_frame_chain):
-            position_provider = self.position_provider
-            if position_provider and not self.driver.is_mobile_device():
-                position_provider.push_state()
+            if self.position_provider and not self.driver.is_mobile_device():
+                self.position_provider.push_state()
             fc = self.driver.frame_chain.clone()
             if fc.size > 0:
                 original_frame_position = fc.default_content_scroll_position
@@ -980,6 +978,11 @@ class Eyes(EyesBase):
 
         else:
             raise EyesError("No proper ScreenshotType obtained")
+
+        with self._driver.switch_to.frames_and_back(self._original_frame_chain):
+            if self.position_provider and not self.driver.is_mobile_device():
+                self.position_provider.pop_state()
+
         return self._last_screenshot
 
     def _entire_element_screenshot(self, algo, original_frame_position):
@@ -1173,16 +1176,18 @@ class Eyes(EyesBase):
         return result
 
     def _check_region(self, name, check_settings):
-        location = self._target_element.location
-        size = self._target_element.size
-        rp = RegionProvider(
-            Region(
+        def get_region():
+            location = self._target_element.location
+            size = self._target_element.size
+            return Region(
                 location["x"],
                 location["y"],
                 size["width"],
                 size["height"],
                 coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
             )
+
+        result = self._check_window_base(
+            RegionProvider(get_region), name, False, check_settings
         )
-        result = self._check_window_base(rp, name, False, check_settings)
         return result
