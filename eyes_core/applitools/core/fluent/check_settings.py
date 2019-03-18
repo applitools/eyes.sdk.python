@@ -119,7 +119,7 @@ class CheckSettings(ABC):
 
     def timeout(self, timeout_ms):
         # type: (int)  -> T
-        self._timeout = timeout_ms
+        self._timeout = timeout_ms / 1000.0  # secs
         return self
 
     def update_target_region(self, region):
