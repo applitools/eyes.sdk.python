@@ -41,76 +41,84 @@ class FullPageCaptureAlgorithm(object):
         logger.info("get_stitched_region()")
         logger.info("PositionProvider: %s ; Region: %s" % (position_provider, region))
 
-        self.origin_provider.push_state()
-        self.origin_provider.set_position(
-            Point.zero()
-        )  # first scroll to 0,0 so CSS stitching works.
+        with self.origin_provider:
+            self.origin_provider.set_position(
+                Point.zero()
+            )  # first scroll to 0,0 so CSS stitching works.
 
-        # Saving the original position (in case we were already in the outermost frame).
-        position_provider.push_state()
-        logger.info("Getting top/left image...")
-        image = self.image_provider.get_image()
-        self.debug_screenshots_provider.save(image, "original")
-        pixel_ratio = self._get_pixel_ratio(image)
-        scaled_cut_provider = self.cut_provider.scale(pixel_ratio)
-        image = self._cut_if_needed(image, scaled_cut_provider)
-        region_in_screenshot = self._get_region_in_screenshot(
-            region, image, pixel_ratio
-        )
-        image = self._crop_if_needed(image, region_in_screenshot)
-        image = self._scale_if_needed(image, pixel_ratio)
-        if full_area is None or full_area.is_empty:
-            entire_size = self._get_entire_size(image, position_provider)
-            # Notice that this might still happen even if we used
-            # "getImagePart", since "entirePageSize" might be that of a frame
-            if image.width >= entire_size.width and image.height >= entire_size.height:
-                self.origin_provider.pop_state()
-                return image
+            # Saving the original position (in case we were already in the outermost frame).
+            with position_provider:
+                logger.info("Getting top/left image...")
+                image = self.image_provider.get_image()
+                self.debug_screenshots_provider.save(image, "original")
+                pixel_ratio = self._get_pixel_ratio(image)
+                scaled_cut_provider = self.cut_provider.scale(pixel_ratio)
+                image = self._cut_if_needed(image, scaled_cut_provider)
+                region_in_screenshot = self._get_region_in_screenshot(
+                    region, image, pixel_ratio
+                )
+                image = self._crop_if_needed(image, region_in_screenshot)
+                image = self._scale_if_needed(image, pixel_ratio)
+                if full_area is None or full_area.is_empty:
+                    entire_size = self._get_entire_size(image, position_provider)
+                    # Notice that this might still happen even if we used
+                    # "getImagePart", since "entirePageSize" might be that of a frame
+                    if (
+                        image.width >= entire_size.width
+                        and image.height >= entire_size.height
+                    ):
+                        return image
 
-            full_area = Region.from_location_size(Point.zero(), entire_size)
+                    full_area = Region.from_location_size(Point.zero(), entire_size)
 
-        image_parts = self._get_image_parts(full_area, image)
+                image_parts = self._get_image_parts(full_area, image)
 
-        stitched_image = self._create_stitched_image(full_area, image)
+                stitched_image = self._create_stitched_image(full_area, image)
 
-        # These will be used for storing the actual stitched size (it is
-        # sometimes less than the size extracted via "getEntireSize").
-        last_successful_location = Point.zero()
-        last_successful_part_size = RectangleSize.from_image(image)
+                # These will be used for storing the actual stitched size (it is
+                # sometimes less than the size extracted via "getEntireSize").
+                last_successful_location = Point.zero()
+                last_successful_part_size = RectangleSize.from_image(image)
 
-        # Take screenshot and stitch for each screenshot part
-        logger.debug("Getting the rest of the image parts...")
-        part_image = None
-        for part_region in image_parts:
-            logger.debug("Taking screenshot for %s" % part_region)
+                # Take screenshot and stitch for each screenshot part
+                logger.debug("Getting the rest of the image parts...")
+                part_image = None
+                for part_region in image_parts:
+                    logger.debug("Taking screenshot for %s" % part_region)
 
-            # Scroll to the part's top/left
-            origin_position = position_provider.set_position(part_region.location)
-            target_position = origin_position.offset(-full_area.left, -full_area.top)
-            logger.debug("Origin Position is set to %s" % origin_position)
-            logger.debug("Target Position is %s" % target_position)
+                    # Scroll to the part's top/left
+                    origin_position = position_provider.set_position(
+                        part_region.location
+                    )
+                    target_position = origin_position.offset(
+                        -full_area.left, -full_area.top
+                    )
+                    logger.debug("Origin Position is set to %s" % origin_position)
+                    logger.debug("Target Position is %s" % target_position)
 
-            # Actually taking the screenshot.
-            logger.debug("Getting image...")
-            part_image = self.image_provider.get_image()
-            self.debug_screenshots_provider.save(
-                part_image,
-                "original-scrolled-{}".format(position_provider.get_current_position()),
-            )
-            part_image = self._cut_if_needed(part_image, scaled_cut_provider)
-            part_image = self._crop_if_needed(part_image, region_in_screenshot)
-            part_image = self._scale_if_needed(part_image, pixel_ratio)
+                    # Actually taking the screenshot.
+                    logger.debug("Getting image...")
+                    part_image = self.image_provider.get_image()
+                    self.debug_screenshots_provider.save(
+                        part_image,
+                        "original-scrolled-{}".format(
+                            position_provider.get_current_position()
+                        ),
+                    )
+                    part_image = self._cut_if_needed(part_image, scaled_cut_provider)
+                    part_image = self._crop_if_needed(part_image, region_in_screenshot)
+                    part_image = self._scale_if_needed(part_image, pixel_ratio)
 
-            # Stitching the current part.
-            stitched_image.paste(part_image, box=(target_position.x, target_position.y))
-            last_successful_location = origin_position
+                    # Stitching the current part.
+                    stitched_image.paste(
+                        part_image, box=(target_position.x, target_position.y)
+                    )
+                    last_successful_location = origin_position
 
-        if part_image:
-            last_successful_part_size = RectangleSize.from_image(part_image)
-        logger.info("Stitching done!")
-        position_provider.pop_state()
-        self.origin_provider.pop_state()
+                if part_image:
+                    last_successful_part_size = RectangleSize.from_image(part_image)
 
+            logger.info("Stitching done!")
         # If the actual image size is smaller than the extracted size, we crop the image.
         stitched_image = self._crop_if_smaller(
             full_area,

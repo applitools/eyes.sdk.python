@@ -60,6 +60,14 @@ class PositionProvider(ABC):
         # type: () -> List[Point]
         return self._states
 
+    def __enter__(self):
+        self.push_state()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.pop_state()
+        return self
+
 
 class InvalidPositionProvider(PositionProvider):
     """
