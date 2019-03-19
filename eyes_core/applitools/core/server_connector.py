@@ -3,19 +3,23 @@ from __future__ import absolute_import
 import os
 import time
 import typing as tp
+from struct import pack
+from typing import Any
 
 import requests
-from requests.packages import urllib3
+from requests.packages import urllib3  # noqa
 
-from applitools.core.errors import EyesError
-
-from . import logger
-from .test_results import TestResults
-from .utils import general_utils
-from .utils.compat import gzip_compress, urljoin  # type: ignore
+from applitools.common import RunningSession, logger
+from applitools.common.errors import EyesError
+from applitools.common.match import MatchResult
+from applitools.common.match_window_data import MatchWindowData
+from applitools.common.metadata import SessionStartInfo
+from applitools.common.test_results import TestResults
+from applitools.common.utils import general_utils, gzip_compress, image_utils, urljoin
+from applitools.common.utils.general_utils import json_response_to_attrs_class
 
 if tp.TYPE_CHECKING:
-    from .utils.custom_types import RunningSession, SessionStartInfo, Num
+    from applitools.common.utils.custom_types import Num
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -102,32 +106,33 @@ class _Request(object):
         self._com = com
 
     def post(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.post, url_resource, **kwargs)
 
     def get(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.get, url_resource, **kwargs)
 
     def delete(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
         return func(requests.delete, url_resource, **kwargs)
 
 
-def create_request_factory(headers, server_url, api_session_running_url):
+def create_request_factory(headers, server_url):
     class RequestFactory(object):
         def __init__(self):
             self._com = None
 
         def create(self, api_key, server_url, timeout):
+            # server_url could be updated
             if self._com:
                 return self._com
 
             self._com = _RequestCommunicator(
-                timeout,
-                headers,
-                api_key,
-                endpoint_uri=urljoin(server_url, api_session_running_url),
+                timeout, headers, api_key, endpoint_uri=server_url
             )
             return _Request(self._com)
 
@@ -142,7 +147,16 @@ class ServerConnector(object):
     DEFAULT_TIMEOUT = 60 * 5  # Seconds
     DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
     DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
-    API_SESSIONS_RUNNING = "/api/sessions/running/"
+
+    API_SESSIONS = "api/sessions"
+    API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
+    RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
+
+    # Rendering Grid
+    RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
+    RESOURCES_SHA_256 = "/resources/sha256/"
+    RENDER_STATUS = "/render-status"
+    RENDER = "/render"
 
     _api_key = None
     _timeout = None
@@ -158,9 +172,7 @@ class ServerConnector(object):
         """
         self.server_url = server_url
         self._request_factory = create_request_factory(
-            headers=ServerConnector.DEFAULT_HEADERS,
-            server_url=server_url,
-            api_session_running_url=ServerConnector.API_SESSIONS_RUNNING,
+            headers=ServerConnector.DEFAULT_HEADERS, server_url=server_url
         )
 
     @property
@@ -179,7 +191,7 @@ class ServerConnector(object):
     @property
     def api_key(self):
         if self._api_key is None:
-            # if api_key is None the error will be raised in EyesBase._open_base
+            # if api_key is None the error will be raised in EyesBase.open_base
             self._api_key = os.environ.get("APPLITOOLS_API_KEY", None)
         return self._api_key
 
@@ -213,19 +225,15 @@ class ServerConnector(object):
         :return: Represents the current running session.
         """
         logger.debug("start_session called.")
-
-        data = '{"startInfo": %s}' % (general_utils.to_json(session_start_info))
+        data = session_start_info.to_json()
 
         self._request = self._request_factory.create(
             server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
         )
-        response = self._request.post(data=data)
-        parsed_response = response.json()
-        return dict(
-            session_id=parsed_response["id"],
-            session_url=parsed_response["url"],
-            is_new_session=(response.status_code == requests.codes.created),
-        )
+        response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
+        running_session = json_response_to_attrs_class(response.json(), RunningSession)
+        running_session.is_new_session = response.status_code == requests.codes.created
+        return running_session
 
     def stop_session(self, running_session, is_aborted, save):
         # type: (RunningSession, bool, bool) -> TestResults
@@ -244,55 +252,48 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._request.delete(
-            url_resource=running_session["session_id"],
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             long_query=True,
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
         )
-        pr = response.json()
-        logger.debug("stop_session(): parsed response: {}".format(pr))
+
+        test_results = json_response_to_attrs_class(response.json(), TestResults)
+        logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         # mark that session isn't started
         self._request = None
+        return test_results
 
-        return TestResults(
-            pr["steps"],
-            pr["matches"],
-            pr["mismatches"],
-            pr["missing"],
-            pr["exactMatches"],
-            pr["strictMatches"],
-            pr["contentMatches"],
-            pr["layoutMatches"],
-            pr["noneMatches"],
-            pr["status"],
-        )
-
-    def match_window(self, running_session, data):
-        # type: (RunningSession, bytes) -> bool
+    def match_window(self, running_session, match_data):
+        # type: (RunningSession, MatchWindowData) -> MatchResult
         """
         Matches the current window to the immediate expected window in the Eyes server.
         Notice that a window might be matched later at the end of the test, even if it
         was not immediately matched in this call.
 
         :param running_session: The current session that is running.
-        :param data: The data for the requests.post.
+        :param match_data: The data for the requests.post.
         :return: The parsed response.
         """
-        logger.debug("match_window called.")
+        logger.debug("_match_window called.")
 
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
             raise EyesError("Session not started")
 
+        data = self._prepare_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
-
+        # TODO: allow to send images as base64
         response = self._request.post(
-            url_resource=running_session["session_id"], data=data, headers=headers
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
+            data=data,
+            headers=headers,
         )
-        return response.json()["asExpected"]
+        match_result = json_response_to_attrs_class(response.json(), MatchResult)
+        return match_result
 
     def post_dom_snapshot(self, dom_json):
         # type: (tp.Text) -> tp.Optional[tp.Text]
@@ -310,9 +311,26 @@ class ServerConnector(object):
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
         response = self._request.post(
-            url_resource="data", data=dom_bytes, headers=headers
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
+            data=dom_bytes,
+            headers=headers,
         )
         dom_url = None
         if response.ok:
             dom_url = response.headers["Location"]
         return dom_url
+
+    @staticmethod
+    def _prepare_data(match_data):
+        # type: (MatchWindowData) -> bytes
+        screenshot64 = match_data.app_output.screenshot64
+        match_data.app_output.screenshot64 = None
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+
+        match_data_json_bytes = general_utils.to_json(match_data).encode(
+            "utf-8"
+        )  # type: bytes
+        match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
+        body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+        return body

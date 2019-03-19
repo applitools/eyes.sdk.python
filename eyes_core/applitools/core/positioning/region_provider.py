@@ -2,19 +2,20 @@ import typing as tp
 
 import attr
 
-from applitools.core.geometry import Region
-from applitools.core.utils import ABC
+from applitools.common.geometry import Region
+from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
-    from applitools.core.capture import EyesScreenshot
+    from applitools.common.capture import EyesScreenshot
 
-__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_INSTANCE")
+__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_PROVIDER")
 
 
 @attr.s
 class RegionProvider(ABC):
     """
-    Encapsulates a getRegion "callback" and how the region's coordinates should be used.
+    Encapsulates a get_region "callback" and how the region's coordinates should be
+    used.
     """
 
     _region = attr.ib()
@@ -24,7 +25,10 @@ class RegionProvider(ABC):
         """
         :return: A region with "as is" viewport coordinates.
         """
-        return self._region
+        if callable(self._region):
+            return self._region()
+        else:
+            return self._region
 
     def __str__(self):
         return str(self._region)
@@ -35,4 +39,4 @@ class NullRegionProvider(RegionProvider):
     _region = attr.ib(init=False, factory=Region.create_empty_region)
 
 
-NULL_REGION_INSTANCE = NullRegionProvider()
+NULL_REGION_PROVIDER = NullRegionProvider()

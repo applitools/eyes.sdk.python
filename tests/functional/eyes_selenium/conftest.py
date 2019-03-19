@@ -1,10 +1,11 @@
 import os
 
 import pytest
+from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.core import logger
+from applitools.common import logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 
@@ -45,9 +46,13 @@ def eyes_open(request, eyes, driver):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-
+    test_name_pattern = request.node.get_closest_marker("test_name_pattern")
+    test_name_pattern = (
+        test_name_pattern.args[-1] if test_name_pattern else {"from": "", "to": ""}
+    )
     # use camel case in method name for fit java sdk tests name
     test_name = request.function.__name__.title().replace("_", "")
+    test_name = test_name.replace(test_name_pattern["from"], test_name_pattern["to"])
 
     if eyes.force_full_page_screenshot:
         test_suite_name += " - ForceFPS"
@@ -75,13 +80,15 @@ def driver_for_class(request, driver):
     test_page_url = request.node.get_closest_marker("test_page_url").args[0]
     viewport_size = request.node.get_closest_marker("viewport_size").args[0]
 
-    driver = EyesWebDriver(driver, None)
+    driver = EyesWebDriver(driver, MagicMock(Eyes))
+    driver.quit = MagicMock()
     if viewport_size:
         eyes_selenium_utils.set_browser_size(driver, viewport_size)
     request.cls.driver = driver
 
     driver.get(test_page_url)
     yield
+    driver.quit()
 
 
 @pytest.yield_fixture(scope="function")

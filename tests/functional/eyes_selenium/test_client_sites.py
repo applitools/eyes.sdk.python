@@ -1,6 +1,7 @@
 import pytest
-from applitools.selenium import StitchMode, Target
 from selenium.webdriver.common.by import By
+
+from applitools.selenium import StitchMode, Target
 
 
 @pytest.mark.skip("Depending on Fluent API. Not implemented yet")

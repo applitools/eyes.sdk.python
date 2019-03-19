@@ -1,41 +1,41 @@
 import abc
-import typing as tp
+import typing
 
 import attr
 
-from applitools.core.geometry import Point
-from applitools.core.utils.compat import ABC
+from applitools.common.geometry import Point
+from applitools.common.utils import ABC
 
-if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import ViewPort
+if typing.TYPE_CHECKING:
+    from typing import List, Optional
+    from applitools.common import RectangleSize
 
-__all__ = ("PositionProvider", "InvalidPositionProvider", "PositionMemento")
+__all__ = ("PositionProvider", "InvalidPositionProvider")
 
 
 @attr.s
 class PositionProvider(ABC):
-    _states = attr.ib(init=False, factory=list)
+    _states = attr.ib(init=False, factory=list)  # type: List[Point]
 
     @abc.abstractmethod
     def get_current_position(self):
-        # type: () -> tp.Optional[Point]
+        # type: () -> Optional[Point]
         """
         :return: The current position, or `None` if position is not available.
         """
 
     @abc.abstractmethod
     def set_position(self, location):
-        # type: (Point) -> None
+        # type: (Point) -> Point
         """
         Go to the specified location.
 
         :param location: The position to set
         """
 
-    @property
     @abc.abstractmethod
     def get_entire_size(self):
-        # type: () -> ViewPort
+        # type: () -> RectangleSize
         """
         :return: The entire size of the container which the position is relative to.
         """
@@ -47,10 +47,26 @@ class PositionProvider(ABC):
         self._states.append(self.get_current_position())
 
     def pop_state(self):
+        # type: ()-> Point
         """
         Sets the position to be the last position added to the states list.
         """
-        self.set_position(self._states.pop())
+        state = self._states.pop()
+        self.set_position(state)
+        return state
+
+    @property
+    def states(self):
+        # type: () -> List[Point]
+        return self._states
+
+    def __enter__(self):
+        self.push_state()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.pop_state()
+        return self
 
 
 class InvalidPositionProvider(PositionProvider):
@@ -69,10 +85,3 @@ class InvalidPositionProvider(PositionProvider):
 
     def get_entire_size(self):
         raise NotImplementedError("This class does not implement methods!")
-
-
-class PositionMemento(ABC):
-    """
-    A base class for position related memento instances. This is intentionally
-    not an interface, since the mementos might vary in their interfaces.
-    """

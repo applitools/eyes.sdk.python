@@ -1,8 +1,10 @@
 # from applitools.core import Region, UnscaledFixedCutProvider
 from os import path
 
+import pytest
+from PIL import Image, ImageDraw
+
 from applitools.images import Region, Target
-from PIL import Image
 
 here = path.abspath(path.dirname(__file__))
 
@@ -17,24 +19,35 @@ def test_check_image_path_fluent(eyes):
     eyes.open("images", "TestCheckImage_Fluent")
     eyes.check(
         "TestCheckImage_Fluent",
-        Target().image(path.join(here, "resources/minions-800x500.jpg")),
+        Target.image(path.join(here, "resources/minions-800x500.jpg")),
     )
     eyes.close()
 
 
 def test_check_raw_image_fluent(eyes):
     eyes.open("images", "TestCheckImage_Fluent")
-    eyes.check("TestCheckImage_Fluent", Target().image(Image.new("RGBA", (600, 600))))
+    origin_image = Image.new("RGBA", (600, 600))
+    eyes.check("TestCheckImage_Fluent", Target.image(origin_image))
     eyes.close()
+
+
+def test_check_raw_image_fluent_must_fail(eyes):
+    eyes.open("images", "TestCheckImage_Fluent")
+    origin_image = Image.new("RGBA", (600, 600))
+    draw = ImageDraw.Draw(origin_image)
+    draw.rectangle(((0, 00), (500, 100)), fill="white")
+    eyes.check("TestCheckImage_Fluent", Target.image(origin_image))
+    with pytest.raises(Exception):
+        eyes.close()
 
 
 def test_check_image_with_ignore_region_fluent(eyes):
     eyes.open("images", "TestCheckImageWithIgnoreRegion_Fluent")
     eyes.check(
         "TestCheckImage_WithIgnoreRegion_Fluent",
-        Target()
-        .image(path.join(here, "resources/minions-800x500.jpg"))
-        .ignore(Region(10, 20, 30, 40)),
+        Target.image(path.join(here, "resources/minions-800x500.jpg")).ignore(
+            Region(10, 20, 30, 40)
+        ),
     )
     eyes.close()
 

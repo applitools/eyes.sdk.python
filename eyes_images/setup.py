@@ -23,7 +23,11 @@ def get_version(package_name):
     return version
 
 
-install_requires = ["eyes-core=={}".format(get_version("images")), "Pillow>=5.0.0"]
+install_requires = [
+    "eyes-common=={}".format(get_version("images")),
+    "eyes-core=={}".format(get_version("images")),
+    "Pillow >= 5.0.0,<7.0.0",
+]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):

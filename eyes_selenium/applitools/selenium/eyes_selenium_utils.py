@@ -7,11 +7,16 @@ from contextlib import contextmanager
 from appium.webdriver import Remote as AppiumWebDriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.core import EyesError, logger
+from applitools.common import Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
-    from applitools.core.utils.custom_types import AnyWebDriver, ViewPort
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        ViewPort,
+        AnyWebElement,
+    )
 
 __all__ = (
     "get_current_frame_content_entire_size",
@@ -24,6 +29,7 @@ __all__ = (
     "set_viewport_size",
     "hide_scrollbars",
     "set_overflow",
+    "parse_location_string",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -69,13 +75,19 @@ _JS_GET_CONTENT_ENTIRE_SIZE = """
     return [totalWidth, totalHeight];";
 """
 _JS_SET_OVERFLOW = """
-  return (function() {
-    var origOF = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = '{overflow}';
-    return origOF;
-  }());
+var origOF = arguments[0].style.overflow;
+arguments[0].style.overflow = '%s';
+return origOF;
+if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN')
+arguments[0].setAttribute('data-applitools-original-overflow',origOF);
+return origOF;
 """
-
+_JS_DATA_APPLITOOLS_SCROLL = (
+    "arguments[0].setAttribute('data-applitools-scroll', 'true');"
+)
+_JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
+    "arguments[0].setAttribute('data-applitools-original-overflow', '%s');"
+)
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
@@ -127,11 +139,20 @@ if( navigator.userAgent.match(/Android/i) ||
 
 def get_underlying_driver(driver):
     # type: (AnyWebDriver) -> tp.Union[WebDriver, AppiumWebDriver]
-    from ..selenium.webdriver import EyesWebDriver
+    from applitools.selenium.webdriver import EyesWebDriver
 
     if isinstance(driver, EyesWebDriver):
-        driver = driver.driver
+        driver = driver._driver
     return driver
+
+
+def get_underlying_webelement(element):
+    # type: (AnyWebElement) -> WebElement
+    from applitools.selenium.webelement import EyesWebElement
+
+    if isinstance(element, EyesWebElement):
+        element = element.element
+    return element
 
 
 def get_current_frame_content_entire_size(driver):
@@ -142,8 +163,8 @@ def get_current_frame_content_entire_size(driver):
     try:
         width, height = driver.execute_script(_JS_GET_CONTENT_ENTIRE_SIZE)
     except WebDriverException:
-        raise EyesError("Failed to extract entire size!")
-    return dict(width=width, height=height)
+        raise WebDriverException("Failed to extract entire size!")
+    return RectangleSize(width, height)
 
 
 def get_device_pixel_ratio(driver):
@@ -152,7 +173,7 @@ def get_device_pixel_ratio(driver):
 
 
 def get_viewport_size(driver):
-    # type: (AnyWebDriver) -> ViewPort
+    # type: (AnyWebDriver) -> RectangleSize
     """
     Tries to get the viewport size using Javascript. If fails, gets the entire browser window
     size!
@@ -162,14 +183,14 @@ def get_viewport_size(driver):
     # noinspection PyBroadException
     try:
         width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
-        return dict(width=width, height=height)
+        return RectangleSize(width=width, height=height)
     except WebDriverException:
-        logger.info("Failed to get viewport size. Only window size is available")
+        logger.warning("Failed to get viewport size. Only window size is available")
         return get_window_size(driver)
 
 
 def get_window_size(driver):
-    # type: (AnyWebDriver) -> ViewPort
+    # type: (AnyWebDriver) -> RectangleSize
     return driver.get_window_size()
 
 
@@ -218,7 +239,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 def set_viewport_size(driver, required_size):
     # type: (AnyWebDriver, ViewPort) -> None
 
-    logger.info("set_viewport_size({})".format(str(required_size)))
+    logger.debug("set_viewport_size_static({})".format(str(required_size)))
 
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -230,7 +251,7 @@ def set_viewport_size(driver, required_size):
         # set the viewport size as requested.
         driver.set_window_position(0, 0)
     except WebDriverException:
-        logger.info("Warning: Failed to move the browser window to (0,0)")
+        logger.warning("Failed to move the browser window to (0,0)")
     set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -295,16 +316,48 @@ def set_viewport_size(driver, required_size):
                 return None
         else:
             logger.info("Zoom workaround failed.")
-    raise EyesError("Failed to set the viewport size.")
+    raise WebDriverException("Failed to set the viewport size.")
 
 
-def hide_scrollbars(driver):
-    return set_overflow(driver, _OVERFLOW_HIDDEN)
+def hide_scrollbars(driver, root_element):
+    return set_overflow_and_add_attribute(driver, _OVERFLOW_HIDDEN, root_element)
 
 
-def set_overflow(driver, overflow):
+def return_to_original_overflow(driver, root_element, origin_overflow):
+    return set_overflow(driver, origin_overflow, root_element)
+
+
+def set_overflow(driver, overflow, root_element):
+    root_element = get_underlying_webelement(root_element)
     with timeout(0.1):
-        return driver.execute_script(_JS_SET_OVERFLOW.format(overflow=overflow))
+        try:
+            return driver.execute_script(
+                _JS_SET_OVERFLOW % (overflow, overflow), root_element
+            )
+        except WebDriverException as e:
+            logger.warning(
+                "Couldn't sent overflow {} to element {}".format(overflow, root_element)
+            )
+            logger.exception(e)
+
+
+def set_overflow_and_add_attribute(driver, overflow, root_element):
+    overflow = set_overflow(driver, overflow, root_element)
+    add_data_overflow_to_element(driver, root_element, overflow)
+    return overflow
+
+
+def add_data_overflow_to_element(driver, element, overflow):
+    if element is None:
+        element = driver.find_element_by_tag_name("html")
+    element = get_underlying_webelement(element)
+    return driver.execute_script(
+        _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW % overflow, element
+    )
+
+
+def add_data_scroll_to_element(driver, element):
+    return driver.execute_script(_JS_DATA_APPLITOOLS_SCROLL, element)
 
 
 @contextmanager
@@ -320,7 +373,6 @@ def is_landscape_orientation(driver):
             driver
         )  # type: tp.Union[AppiumWebDriver, WebDriver]
 
-        original_context = None
         try:
             # We must be in native context in order to ask for orientation,
             # because of an Appium bug.
@@ -338,8 +390,8 @@ def is_landscape_orientation(driver):
         try:
             orieintation = appium_driver.orientation
             return orieintation.lower() == "landscape"
-        except Exception:
-            logger.debug("WARNING: Couldn't get device orientation. Assuming Portrait.")
+        except WebDriverException:
+            logger.warning("Couldn't get device orientation. Assuming Portrait.")
         finally:
             if original_context is not None:
                 appium_driver.switch_to.context(original_context)
@@ -348,18 +400,18 @@ def is_landscape_orientation(driver):
 
 
 def get_viewport_size_or_display_size(driver):
-    logger.info("get_viewport_size_or_display_size()")
+    logger.debug("get_viewport_size_or_display_size()")
 
     try:
         return get_viewport_size(driver)
     except Exception as e:
-        logger.info(
+        logger.warning(
             "Failed to extract viewport size using Javascript: {}".format(str(e))
         )
     # If we failed to extract the viewport size using JS, will use the
     # window size instead.
 
-    logger.info("Using window size as viewport size.")
+    logger.debug("Using window size as viewport size.")
     window_size = get_window_size(driver)
     width = window_size["width"]
     height = window_size["height"]
@@ -369,5 +421,48 @@ def get_viewport_size_or_display_size(driver):
     except WebDriverException:
         # Not every WebDriver supports querying for orientation.
         pass
-    logger.info("Done! Size {:d} x {:d}".format(width, height))
-    return dict(width=width, height=height)
+    logger.debug("Done! Size {:d} x {:d}".format(width, height))
+    return RectangleSize(width=width, height=height)
+
+
+def parse_location_string(position):
+    # type: (str) -> Point
+    xy = position.split(";")
+    if len(xy) != 2:
+        raise WebDriverException("Could not get scroll position!")
+    return Point(float(xy[0]), float(xy[1]))
+
+
+def scroll_root_element_from(driver, container=None):
+    def root_html():
+        return driver.find_element_by_tag_name("html")
+
+    scroll_root_element = None
+    if not driver.is_mobile_device():
+        if container is None:
+            scroll_root_element = root_html()
+        else:
+            if hasattr(container, "values"):
+                # check settings
+                container = container.values
+            scroll_root_element = container.scroll_root_element
+            if not scroll_root_element:
+                scroll_root_selector = container.scroll_root_selector
+                if scroll_root_selector:
+                    scroll_root_element = driver.find_element_by_css_selector(
+                        scroll_root_selector
+                    )
+                else:
+                    scroll_root_element = root_html()
+    return scroll_root_element
+
+
+def current_frame_scroll_root_element(driver):
+    fc = driver.frame_chain.clone()
+    cur_frame = fc.peek
+    root_element = None
+    if cur_frame:
+        root_element = cur_frame.scroll_root_element
+    if root_element is None and not driver.is_mobile_device():
+        root_element = driver.find_element_by_tag_name("html")
+    return root_element

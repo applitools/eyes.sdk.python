@@ -23,9 +23,11 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
 
 
 @task(pre=[clean])
-def dist(c, core=None, selenium=None, images=None, prod=False):
+def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
     packages = list(
-        _packages_resolver(core, selenium, images, full_path=True, path_as_str=True)
+        _packages_resolver(
+            common, core, selenium, images, full_path=True, path_as_str=True
+        )
     )
     dest = "pypi" if prod else "test"
     for pack_path in packages:
@@ -35,7 +37,7 @@ def dist(c, core=None, selenium=None, images=None, prod=False):
 
 
 @task
-def install_requirements(c, dev=None, testing=None, lint=None):
+def install_requirements(c, dev=False, testing=False, lint=False):
     dev_requires = ["ipython", "ipdb", "bumpversion", "wheel", "twine", "pre-commit"]
     testing_requires = [
         "pytest==3.9.3",
@@ -58,19 +60,31 @@ def install_requirements(c, dev=None, testing=None, lint=None):
 
 
 def _packages_resolver(
-    core=None, selenium=None, images=None, full_path=False, path_as_str=False
+    common=False,
+    core=False,
+    selenium=False,
+    images=False,
+    full_path=False,
+    path_as_str=False,
 ):
     packages = []
-    core_pkg, selenium_pkg, images_pkg = "eyes_core", "eyes_selenium", "eyes_images"
-
+    common_pkg, core_pkg, selenium_pkg, images_pkg = (
+        "eyes_common",
+        "eyes_core",
+        "eyes_selenium",
+        "eyes_images",
+    )
+    if common:
+        packages.append(common_pkg)
     if core:
         packages.append(core_pkg)
     if selenium:
         packages.append(selenium_pkg)
     if images:
         packages.append(images_pkg)
+
     if not packages:
-        packages = [core_pkg, selenium_pkg, images_pkg]
+        packages = [common_pkg, core_pkg, selenium_pkg, images_pkg]
 
     for pack in packages:
         if full_path:
@@ -81,29 +95,32 @@ def _packages_resolver(
 
 
 @task
-def install_packages(c, core=None, selenium=None, images=None):
+def install_packages(
+    c, common=False, core=False, selenium=False, images=False, editable=False
+):
     packages = _packages_resolver(
-        core, selenium, images, full_path=True, path_as_str=True
+        common, core, selenium, images, full_path=True, path_as_str=True
     )
+    editable = "-e" if editable else ""
     for pack in packages:
-        c.run("pip install -U -e {}".format(pack), echo=True)
+        c.run("pip install -U {} {}".format(editable, pack), echo=True)
 
 
 @task
-def uninstall_packages(c, core=None, selenium=None, images=None):
-    packages = _packages_resolver(core, selenium, images)
+def uninstall_packages(c, common=False, core=False, selenium=False, images=False):
+    packages = _packages_resolver(common, core, selenium, images)
     c.run("pip uninstall {}".format(" ".join(packages)), echo=True)
 
 
 @task
-def pep_check(c, core=None, selenium=None, images=None):
-    for pack in _packages_resolver(core, selenium, images, full_path=True):
+def pep_check(c, common=False, core=False, selenium=False, images=False):
+    for pack in _packages_resolver(common, core, selenium, images, full_path=True):
         c.run("flake8 {}".format(pack), echo=True)
 
 
 @task
-def mypy_check(c, core=None, selenium=None, images=None):
-    for pack in _packages_resolver(core, selenium, images, full_path=True):
+def mypy_check(c, common=False, core=False, selenium=False, images=False):
+    for pack in _packages_resolver(common, core, selenium, images, full_path=True):
         c.run(
             "mypy --no-incremental --ignore-missing-imports {}/applitools".format(pack),
             echo=True,
@@ -111,7 +128,9 @@ def mypy_check(c, core=None, selenium=None, images=None):
 
 
 @task
-def test_run_packs(c, core=None, selenium=None, images=None, appium=None):
+def test_run_packs(
+    c, core=False, selenium=False, images=False, appium=False, common=False
+):
     if core:
         c.run("pytest tests/functional/eyes_core")
     elif selenium:
@@ -122,7 +141,7 @@ def test_run_packs(c, core=None, selenium=None, images=None, appium=None):
         c.run("pytest tests/functional/eyes_images")
     elif appium:
         c.run("pytest -n 3 --remote 1 tests/functional/eyes_selenium/test_appium.py")
-    # for pack in _packages_resolver(core, selenium, images):
+    # for pack in _packages_resolver(common, core, selenium, images):
     #     c.run('pytest tests/functional/{}'.format(pack), echo=True)
 
 

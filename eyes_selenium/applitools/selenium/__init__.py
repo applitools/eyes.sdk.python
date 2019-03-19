@@ -1,56 +1,27 @@
-from applitools.core import (  # noqa
+from applitools.common import (  # noqa
     BatchInfo,
-    ExactMatchSettings,
-    ImageMatchSettings,
-    Region,
-    TestResults,
     MatchLevel,
-    FailureReports,
-    TestResultsStatus,
-    TestResults,
-    logger,
+    Region,
     StdoutLogger,
+    logger,
 )
-from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
-from .positioning import StitchMode  # noqa
+from applitools.common.server import FailureReports  # noqa
+
 from .eyes import Eyes  # noqa
+from .fluent.target import Target  # noqa
+from .positioning import StitchMode  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
-from .target import (  # noqa
-    IgnoreRegionByElement,
-    IgnoreRegionBySelector,
-    FloatingBounds,
-    FloatingRegion,
-    FloatingRegionByElement,
-    FloatingRegionBySelector,
-    Target,
-)
-from .frames import Frame  # noqa
 
 __all__ = (
     # noqa
     "BatchInfo",
-    "ExactMatchSettings",
-    "ImageMatchSettings",
     "Region",
-    "TestResults",
     "MatchLevel",
-    "FailureReports",
-    "TestResultsStatus",
-    "TestResults",
     "logger",
     "StdoutLogger",
     "Eyes",
-    "EyesWebElement",
-    "EyesWebDriver",
-    "Frame",
-    "EyesWebDriverScreenshot",
     "StitchMode",
-    "dom_capture",
-    "IgnoreRegionByElement",
-    "IgnoreRegionBySelector",
-    "FloatingBounds",
-    "FloatingRegionByElement",
-    "FloatingRegionBySelector",
     "Target",
+    "FailureReports",
 )

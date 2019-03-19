@@ -1,7 +1,7 @@
-from applitools.core.utils import image_utils, argument_guard
-from applitools.core import EyesScreenshot, Region, Point, OutOfBoundsError
-from applitools.core.errors import CoordinatesTypeConversionError
-from applitools.core.metadata import CoordinatesType
+from applitools.common.capture import EyesScreenshot
+from applitools.common.errors import CoordinatesTypeConversionError, OutOfBoundsError
+from applitools.common.geometry import CoordinatesType, Point, Region
+from applitools.common.utils import argument_guard, image_utils
 
 
 class EyesImagesScreenshot(EyesScreenshot):
@@ -15,7 +15,7 @@ class EyesImagesScreenshot(EyesScreenshot):
     def __init__(self, image, location=None):
         super(EyesImagesScreenshot, self).__init__(image)
         if location is None:
-            location = Point.create_top_left()
+            location = Point.zero()
         argument_guard.is_a(location, Point)
         self._location = location
         self._bounds = Region.from_location_size(

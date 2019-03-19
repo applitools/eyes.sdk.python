@@ -1,5 +1,5 @@
-from .core import logger  # noqa
-from .core.errors import *  # noqa
+from .common import logger  # noqa
+from .common.errors import *  # noqa
 
 logger.deprecation(
     "Will be deprecated in version 4.0. Import from `applitools.core` or "

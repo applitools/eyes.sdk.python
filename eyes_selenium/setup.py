@@ -24,10 +24,14 @@ def get_version(package_name):
 
 
 install_requires = [
+    "eyes-common=={}".format(get_version("selenium")),
     "eyes-core=={}".format(get_version("selenium")),
-    "tinycss2>=0.6.1",
-    "selenium>=2.53.0",
-    "Pillow>=5.0.0",
+    "tinycss2==0.6.1",  # last version that supports python 2
+    "selenium>=2.53.0,<4",
+    "Pillow>=5.0,<7.0",  # 7 and above doesnt support python 2
+    # uses for check if the mobile platform is used in the test
+    "Appium-Python-Client>=0.31,<0.39",
+    "ua_parser==0.8",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues

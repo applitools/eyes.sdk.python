@@ -1,32 +1,27 @@
 from __future__ import absolute_import
 
 import time
-import typing as tp
-from struct import pack
+import typing
+from datetime import datetime
 
-# noinspection PyProtectedMember
-from . import logger
-from .errors import OutOfBoundsError
-from .geometry import Region
-from .utils import general_utils
+from applitools.common import MatchResult, RunningSession, logger
+from applitools.common.errors import OutOfBoundsError
+from applitools.common.geometry import Region
+from applitools.common.match import ImageMatchSettings
+from applitools.common.match_window_data import MatchWindowData, Options
+from applitools.common.utils import general_utils, image_utils
+from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
-if tp.TYPE_CHECKING:
+from .fluent import CheckSettings, GetRegion
+
+if typing.TYPE_CHECKING:
+    from typing import List, Text, Optional
+    from applitools.common.capture import EyesScreenshot
+    from applitools.common.utils.custom_types import Num, UserInputs
+    from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
-    from .utils.custom_types import (
-        Num,
-        RunningSession,
-        AppOutput,
-        UserInputs,
-        MatchResult,
-    )
-    from .server_connector import ServerConnector
-    from .match import ImageMatchSettings
-    from .capture import EyesScreenshot
 
 __all__ = ("MatchWindowTask",)
-
-
-# TODO: remove Eyes and Target dependencies from here
 
 
 class MatchWindowTask(object):
@@ -35,248 +30,284 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    MATCH_INTERVAL = 0.5
-
+    MATCH_INTERVAL = 0.5  # sec
     MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
-    def __init__(self, eyes, server_connector, running_session, default_retry_timeout):
-        # type: (EyesBase, ServerConnector, RunningSession, Num) -> None
+    def __init__(
+        self,
+        server_connector,  # type: ServerConnector
+        running_session,  # type: RunningSession
+        retry_timeout,  # type: Num
+        eyes,  # type: EyesBase
+        app_output_provider,  # type: AppOutputProvider
+    ):
+        # type: (...) -> None
         """
         Ctor.
 
-        :param eyes: The Eyes instance which created this task.
         :param server_connector: The agent connector to use for communication.
         :param running_session:  The current eyes session.
-        :param default_retry_timeout: The default match timeout. (milliseconds)
-        """
-        self._eyes = eyes
+        :param retry_timeout: The default match timeout. (milliseconds)
+        :param eyes: The Eyes instance which created this task.
+        :param app_output_provider: A callback for getting the application output
+                                    when performing match.
+       """
         self._server_connector = server_connector
         self._running_session = running_session
+        self._eyes = eyes
+        self._app_output_provider = app_output_provider
         self._default_retry_timeout = (
-            default_retry_timeout / 1000.0
+            retry_timeout / 1000.0
         )  # type: Num # since we want the time in seconds.
-        self._last_screenshot = None  # type: tp.Optional[EyesScreenshot]
 
-    @staticmethod
-    def _create_match_data_bytes(
-        app_output,  # type: AppOutput
-        user_inputs,  # type: UserInputs
-        tag,  # type: tp.Text
-        ignore_mismatch,  # type: bool
-        screenshot,  # type: EyesScreenshot
-        default_match_settings,  # type: ImageMatchSettings
-        target,
-        ignore=None,  # type: tp.Optional[tp.List]
-        floating=None,  # type: tp.Optional[tp.List]
-    ):
-        # type: (...) -> bytes
-        if ignore is None:
-            ignore = []
-        if floating is None:
-            floating = []
+        self._match_result = None  # type: MatchResult
+        self._last_screenshot = None  # type: Optional[EyesScreenshot]
 
-        match_data = {
-            "IgnoreMismatch": ignore_mismatch,
-            "Options": {
-                "Name": tag,
-                "UserInputs": user_inputs,
-                "ImageMatchSettings": {
-                    "MatchLevel": default_match_settings.match_level,
-                    "IgnoreCaret": target.values.ignore_caret,
-                    "Exact": default_match_settings.exact_settings,
-                    "Ignore": ignore,
-                    "Floating": floating,
-                },
-                "IgnoreMismatch": ignore_mismatch,
-                "Trim": {"Enabled": False},
-            },
-            "UserInputs": user_inputs,
-            "AppOutput": app_output,
-            "tag": tag,
-        }
-        match_data_json_bytes = general_utils.to_json(match_data).encode(
-            "utf-8"
-        )  # type: bytes
-        match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-        screenshot_bytes = screenshot.bytes  # type: bytes
-        body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
-        return body
+    @property
+    def last_screenshot(self):
+        return self._last_screenshot
 
-    @staticmethod
-    def _get_dynamic_regions(target, eyes_screenshot):
-        ignore = []  # type: tp.List[Region]
-        floating = []  # type: tp.List[Region]
-        if target is not None:
-            for region_wrapper in target.values.ignore_regions:
-                try:
-                    current_region = region_wrapper.get_region(eyes_screenshot)
-                    ignore.append(current_region)
-                except OutOfBoundsError as err:
-                    logger.info(
-                        "WARNING: Region specified by {} is out of bounds! {}".format(
-                            region_wrapper, err
-                        )
-                    )
-            for floating_wrapper in target.values.floating_regions:
-                try:
-                    current_floating = floating_wrapper.get_region(eyes_screenshot)
-                    floating.append(current_floating)
-                except OutOfBoundsError as err:
-                    logger.info(
-                        "WARNING: Floating region specified by {} is out of bounds! {}".format(
-                            floating_wrapper, err
-                        )
-                    )
-        return {"ignore": ignore, "floating": floating}
-
-    def _prepare_match_data_for_window(
-        self,
-        tag,  # type: tp.Text
-        user_inputs,  # type: UserInputs
-        default_match_settings,  # type: ImageMatchSettings
-        target,
-        ignore_mismatch=False,
-    ):
-        # type: (...) -> bytes
-        title = self._eyes._title
-        # TODO: Refactor this
-        if hasattr(self._eyes, "_hide_scrollbars_if_needed"):
-            with self._eyes._hide_scrollbars_if_needed():  # type: ignore
-                self._last_screenshot = self._eyes.get_screenshot(
-                    hide_scrollbars_called=True
-                )
-        else:
-            self._last_screenshot = self._eyes.get_screenshot()
-
-        dynamic_regions = MatchWindowTask._get_dynamic_regions(
-            target, self._last_screenshot
-        )
-        app_output = {"title": title, "screenshot64": None}  # type: AppOutput
-
-        if self._eyes.send_dom:
-            dom_json = self._eyes._try_capture_dom()
-            if dom_json:
-                dom_url = self._eyes._try_post_dom_snapshot(dom_json)
-                if dom_url is None:
-                    logger.warning("Failed to upload DOM. Skipping...")
-                else:
-                    app_output["DomUrl"] = dom_url
-
-        logger.debug("AppOutput: {}".format(app_output))
-        return self._create_match_data_bytes(
-            app_output,
-            user_inputs,
-            tag,
-            ignore_mismatch,
-            self._last_screenshot,
-            default_match_settings,
-            target,
-            dynamic_regions["ignore"],
-            dynamic_regions["floating"],
-        )
-
-    def _run_with_intervals(self, prepare_match_data_options, retry_timeout):
-        # type: (tp.Dict, Num) -> MatchResult
-        """
-        Includes retries in case the screenshot does not match.
-        """
-        logger.debug("Matching with intervals...")
-        # We intentionally take the first screenshot before starting the timer,
-        # to allow the page just a tad more time to stabilize.
-        prepare_match_data_options = prepare_match_data_options.copy()
-        prepare_match_data_options["ignore_mismatch"] = True
-        data = self._prepare_match_data_for_window(**prepare_match_data_options)
-
-        # Start the timer.
-        start = time.time()
-        logger.debug("First match attempt...")
-        as_expected = self._server_connector.match_window(self._running_session, data)
-        if as_expected:
-            return {"as_expected": True, "screenshot": self._last_screenshot}
-        retry = time.time() - start
-        logger.debug("Failed. Elapsed time: {0:.1f} seconds".format(retry))
-
-        while retry < retry_timeout:
-            logger.debug("Matching...")
-            time.sleep(self.MATCH_INTERVAL)
-
-            data = self._prepare_match_data_for_window(**prepare_match_data_options)
-            as_expected = self._server_connector.match_window(
-                self._running_session, data
-            )
-            if as_expected:
-                return {"as_expected": True, "screenshot": self._last_screenshot}
-            retry = time.time() - start
-            logger.debug("Elapsed time: {0:.1f} seconds".format(retry))
-
-        # One last try
-        logger.debug("One last matching attempt...")
-        prepare_match_data_options["ignore_mismatch"] = False
-        data = self._prepare_match_data_for_window(**prepare_match_data_options)
-        as_expected = self._server_connector.match_window(self._running_session, data)
-        return {"as_expected": as_expected, "screenshot": self._last_screenshot}
+    @property
+    def last_screenshot_bounds(self):
+        return self._last_screenshot_bounds
 
     def match_window(
         self,
-        retry_timeout,  # type: Num
-        tag,  # type: str
-        user_inputs,  # UserInputs
-        default_match_settings,  # type: ImageMatchSettings
-        target,
-        ignore_mismatch,
-        run_once_after_wait=False,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        should_run_once_on_timeout,  # type: bool
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout,  # type: int
     ):
-        # type: (...) -> MatchResult
-        """
-        Performs a match for the window.
+        if retry_timeout is None or retry_timeout < 0:
+            retry_timeout = self._default_retry_timeout
+        logger.info("retry_timeout = {} sec".format(retry_timeout))
 
-        :param retry_timeout: Amount of time until it retries.
-        :param tag: The name of the tag (optional).
-        :param user_inputs: The user input.
-        :param default_match_settings: The default match settings for the session.
-        :param target: The target of the check_window call.
-        :param ignore_mismatch: True if the server should ignore a negative result
-                                for the visual validation.
-        :param run_once_after_wait: Whether or not to run again after waiting.
-        :return: The result of the run.
-        """
-        prepare_match_data_options = dict(
-            tag=tag,
-            user_inputs=user_inputs,
-            default_match_settings=default_match_settings,
-            target=target,
+        screenshot = self._take_screenshot(
+            user_inputs,
+            region,
+            tag,
+            should_run_once_on_timeout,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout,
+        )
+        if ignore_mismatch:
+            return self._match_result
+        self._update_last_screenshot(screenshot)
+        self._update_bounds(region)
+        return self._match_result
+
+    def perform_match(
+        self,
+        user_inputs,  # type: UserInputs
+        app_output_width_screenshot,  # type: AppOutputWithScreenshot
+        name,  # type: Text
+        ignore_mismatch,  # type: bool
+        image_match_settings,  # type: ImageMatchSettings
+    ):
+        screenshot = app_output_width_screenshot.screenshot
+        app_output = app_output_width_screenshot.app_output
+        app_output.screenshot64 = image_utils.get_base64(screenshot.image)
+
+        match_window_data = MatchWindowData(
             ignore_mismatch=ignore_mismatch,
+            user_inputs=user_inputs,
+            options=Options(
+                name=name,
+                user_inputs=user_inputs,
+                ignore_mismatch=ignore_mismatch,
+                ignore_match=False,
+                force_mismatch=False,
+                force_match=False,
+                image_match_settings=image_match_settings,
+            ),
+            app_output=app_output,
+            tag=name,
+        )
+        return self._server_connector.match_window(
+            self._running_session, match_window_data
         )
 
-        if 0 < retry_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
-            raise ValueError(
-                "Match timeout must be at least 60ms, got {} instead.".format(
-                    retry_timeout
+    def _create_image_match_settings(self, check_settings, screenshot):
+        # type: (CheckSettings, EyesScreenshot) -> ImageMatchSettings
+        default = general_utils.use_default_if_none_factory(
+            self._eyes.default_match_settings, check_settings.values
+        )
+        match_level = default("match_level")
+        ignore_caret = default("ignore_caret")
+        send_dom = default("send_dom")
+        use_dom = default("use_dom")
+        enable_patterns = default("enable_patterns")
+
+        image_match_settings = ImageMatchSettings(
+            match_level=match_level,
+            exact=None,
+            ignore_caret=ignore_caret,
+            send_dom=send_dom,
+            use_dom=use_dom,
+            enable_patterns=enable_patterns,
+        )
+        self._collect_simple_regions(check_settings, image_match_settings, screenshot)
+        self._collect_float_regions(check_settings, image_match_settings, screenshot)
+        return image_match_settings
+
+    def _collect_simple_regions(self, check_settings, image_match_settings, screenshot):
+        # type: (CheckSettings, ImageMatchSettings, EyesScreenshot) -> None
+
+        image_match_settings.ignore = self._collect_regions(
+            check_settings.values.ignore_regions, screenshot
+        )
+        image_match_settings.layout = self._collect_regions(
+            check_settings.values.layout_regions, screenshot
+        )
+        image_match_settings.strict = self._collect_regions(
+            check_settings.values.strict_regions, screenshot
+        )
+        image_match_settings.content = self._collect_regions(
+            check_settings.values.content_regions, screenshot
+        )
+
+    def _collect_float_regions(self, check_settings, image_match_settings, screenshot):
+        # type: (CheckSettings, ImageMatchSettings, EyesScreenshot) -> None
+        image_match_settings.floating = self._collect_regions(
+            check_settings.values.floating_regions, screenshot
+        )
+
+    def _collect_regions(self, region_providers, screenshot):
+        # type: (List[GetRegion], EyesScreenshot) -> List[Region]
+        eyes = self._eyes
+        collected = []  # type: List[Region]
+        for provider in region_providers:
+            try:
+                regions = provider.get_regions(eyes, screenshot)
+                collected.extend(regions)
+            except OutOfBoundsError:
+                logger.warning("Region was out of bounds")
+        return collected
+
+    def _update_last_screenshot(self, screenshot):
+        if screenshot:
+            self._last_screenshot = screenshot
+
+    def _update_bounds(self, region):
+        if region.is_size_empty:
+            if self._last_screenshot:
+                self._last_screenshot_bounds = Region(
+                    0,
+                    0,
+                    self._last_screenshot.image.width,
+                    self._last_screenshot.image.height,
                 )
-            )
-        if retry_timeout < 0:
-            retry_timeout = self._default_retry_timeout
+            else:
+                # We set an "infinite" image size since we don't know what the
+                # screenshot size is...
+                self._last_screenshot_bounds = Region(0, 0, float("inf"), float("inf"))
         else:
-            retry_timeout /= 1000.0
+            self._last_screenshot_bounds = region
 
-        logger.debug("Match timeout set to: {0} seconds".format(retry_timeout))
-        start = time.time()
-        if run_once_after_wait or retry_timeout == 0:
-            logger.debug("Matching once...")
-            # If the load time is 0, the sleep would immediately return anyway.
-            time.sleep(retry_timeout)
-            data = self._prepare_match_data_for_window(**prepare_match_data_options)
-            as_expected = self._server_connector.match_window(
-                self._running_session, data
+    def _take_screenshot(
+        self,
+        user_inputs,
+        region,
+        tag,
+        should_run_once_on_timeout,
+        ignore_mismatch,
+        check_settings,
+        retry_timeout,
+    ):
+        time_start = datetime.now()
+        if retry_timeout == 0 or should_run_once_on_timeout:
+            if should_run_once_on_timeout:
+                time.sleep(retry_timeout)
+
+            screenshot = self._try_take_screenshot(
+                user_inputs, region, tag, ignore_mismatch, check_settings
             )
-            result = {
-                "as_expected": as_expected,
-                "screenshot": self._last_screenshot,
-            }  # type: MatchResult
         else:
-            result = self._run_with_intervals(prepare_match_data_options, retry_timeout)
+            screenshot = self._retry_taking_screenshot(
+                user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
+            )
+        time_end = datetime.now()
+        summary = time_end - time_start
+        logger.info("Completed in {} ms".format(summary.microseconds))
+        return screenshot
 
-        logger.debug("Match result: {0}".format(result["as_expected"]))
-        elapsed_time = time.time() - start
-        logger.debug("_run(): Completed in {0:.1f} seconds".format(elapsed_time))
-        return result
+    def _try_take_screenshot(
+        self, user_inputs, region, tag, ignore_mismatch, check_settings
+    ):
+        app_output = self._app_output_provider.get_app_output(
+            region, self._last_screenshot, check_settings
+        )
+        screenshot = app_output.screenshot
+        match_settings = self._create_image_match_settings(check_settings, screenshot)
+        self._match_result = self.perform_match(
+            user_inputs, app_output, tag, ignore_mismatch, match_settings
+        )
+        return screenshot
+
+    def _retry_taking_screenshot(
+        self, user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
+    ):
+        start = datetime.now()  # Start the retry timer.
+        retry = (datetime.now() - start).seconds
+
+        # The match retry loop.
+        screenshot = self._taking_screenshot_loop(
+            user_inputs,
+            region,
+            tag,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout,
+            retry,
+            start,
+        )
+        # If we're here because we haven't found a match yet, try once more
+        if not self._match_result.as_expected:
+            return self._try_take_screenshot(
+                user_inputs, region, tag, ignore_mismatch, check_settings
+            )
+        return screenshot
+
+    def _taking_screenshot_loop(
+        self,
+        user_inputs,
+        region,
+        tag,
+        ignore_mismatch,
+        check_settings,
+        retry_timeout,
+        retry,
+        start,
+        screenshot=None,
+    ):
+        if retry >= retry_timeout:
+            return screenshot
+
+        time.sleep(self.MATCH_INTERVAL)
+
+        new_screenshot = self._try_take_screenshot(
+            user_inputs,
+            region,
+            tag,
+            ignore_mismatch=True,
+            check_settings=check_settings,
+        )
+        if self._match_result.as_expected:
+            return new_screenshot
+
+        retry = (start - datetime.now()).seconds
+        return self._taking_screenshot_loop(
+            user_inputs,
+            region,
+            tag,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout,
+            retry,
+            start,
+            new_screenshot,
+        )
