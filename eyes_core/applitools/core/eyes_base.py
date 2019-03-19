@@ -954,3 +954,4 @@ class EyesBase(EyesBaseAbstract):
             except Exception as e:
                 logger.warning("Viewport has not been setup. {}".format(e))
                 self._is_viewport_size_set = False
+                raise e

@@ -37,6 +37,7 @@ class TestFailedError(Exception):
     def __init__(self, message, test_results=None):
         self.message = message
         self.test_results = test_results
+        super(TestFailedError, self).__init__(message)
 
     def __str__(self):
         return "%s , %s" % (self.message, self.test_results)
