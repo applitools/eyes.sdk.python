@@ -428,3 +428,14 @@ def scroll_root_element_from(driver, container=None):
                 else:
                     scroll_root_element = root_html()
     return scroll_root_element
+
+
+def current_frame_scroll_root_element(driver):
+    fc = driver.frame_chain.clone()
+    cur_frame = fc.peek
+    root_element = None
+    if cur_frame:
+        root_element = cur_frame.scroll_root_element
+    if root_element is None and not driver.is_mobile_device():
+        root_element = driver.find_element_by_tag_name("html")
+    return root_element

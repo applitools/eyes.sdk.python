@@ -95,7 +95,7 @@ class _EyesSwitchTo(object):
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
-            driver, driver.eyes.get_current_frame_scroll_root_element()
+            driver, eyes_selenium_utils.current_frame_scroll_root_element(driver)
         )
         general_utils.create_proxy_interface(self, switch_to, self._READONLY_PROPERTIES)
 
@@ -196,10 +196,11 @@ class _EyesSwitchTo(object):
         frame_inner_size = size_and_borders.size
 
         content_location = Point(pl["x"] + borders["left"], pl["y"] + borders["top"])
-        original_location = ScrollPositionProvider.get_current_position_static(
+        sp = ScrollPositionProvider(
             self._driver, self._driver.find_element_by_tag_name("html")
         )
-        self._scroll_position.set_position(original_location)
+        original_location = sp.get_current_position()
+        sp.set_position(original_location)
         frame = Frame(
             target_frame,
             content_location,
@@ -221,7 +222,9 @@ class _EyesSwitchTo(object):
 
     def frames_do_scroll(self, frame_chain):
         self.default_content()
-        root_element = self._driver.eyes.get_current_frame_scroll_root_element()
+        root_element = eyes_selenium_utils.current_frame_scroll_root_element(
+            self._driver
+        )
         scroll_provider = ScrollPositionProvider(self._driver, root_element)
         for frame in frame_chain:
             logger.info("Scrolling by parent scroll position...")

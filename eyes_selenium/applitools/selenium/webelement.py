@@ -108,6 +108,7 @@ class EyesWebElement(object):
 
         # setting from outside
         self.position_provider = None
+        self._original_overflow = None
         # Replacing implementation of the underlying driver with ours. We'll put the original
         # methods back before destruction.
         self._original_methods = {}  # type: tp.Dict[tp.Text, tp.Callable]
@@ -226,7 +227,10 @@ class EyesWebElement(object):
         self._element.send_keys(*value)
 
     def set_overflow(self, overflow):
-        return eyes_selenium_utils.set_overflow(self._driver, overflow, self._element)
+        self._original_overflow = eyes_selenium_utils.set_overflow(
+            self._driver, overflow, self._element
+        )
+        return self._original_overflow
 
     def hide_scrollbars(self):
         # type: () -> tp.Text
@@ -237,6 +241,9 @@ class EyesWebElement(object):
         """
         logger.debug("EyesWebElement.HideScrollbars()")
         return self.set_overflow("hidden")
+
+    def restore_scrollbars(self):
+        return self.set_overflow(self._original_overflow)
 
     def get_computed_style(self, prop_style):
         script = self._JS_GET_COMPUTED_STYLE_FORMATTED_STR % prop_style
