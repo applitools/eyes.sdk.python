@@ -226,12 +226,6 @@ class EyesWebElement(object):
         self._driver.eyes.add_text_trigger_by_element(self, text)
         self._element.send_keys(*value)
 
-    def set_overflow(self, overflow):
-        self._original_overflow = eyes_selenium_utils.set_overflow(
-            self._driver, overflow, self._element
-        )
-        return self._original_overflow
-
     def hide_scrollbars(self):
         # type: () -> tp.Text
         """
@@ -240,10 +234,15 @@ class EyesWebElement(object):
         :return: The previous value of the overflow property (could be None).
         """
         logger.debug("EyesWebElement.HideScrollbars()")
-        return self.set_overflow("hidden")
+        self._original_overflow = eyes_selenium_utils.hide_scrollbars(
+            self.driver, self.element
+        )
+        return self._original_overflow
 
     def return_to_original_overflow(self):
-        return self.set_overflow(self._original_overflow)
+        return eyes_selenium_utils.return_to_original_overflow(
+            self.driver, self.element, self._original_overflow
+        )
 
     def get_computed_style(self, prop_style):
         script = self._JS_GET_COMPUTED_STYLE_FORMATTED_STR % prop_style

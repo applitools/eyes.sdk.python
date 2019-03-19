@@ -83,6 +83,12 @@ if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN')
 arguments[0].setAttribute('data-applitools-original-overflow',origOF);
 return origOF;
 """
+_JS_DATA_APPLITOOLS_SCROLL = (
+    "arguments[0].setAttribute('data-applitools-scroll', 'true');"
+)
+_JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
+    "arguments[0].setAttribute('data-applitools-original-overflow', '%s');"
+)
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
@@ -315,7 +321,11 @@ def set_viewport_size(driver, required_size):
 
 
 def hide_scrollbars(driver, root_element):
-    return set_overflow(driver, _OVERFLOW_HIDDEN, root_element)
+    return set_overflow_and_add_attribute(driver, _OVERFLOW_HIDDEN, root_element)
+
+
+def return_to_original_overflow(driver, root_element, origin_overflow):
+    return set_overflow(driver, origin_overflow, root_element)
 
 
 def set_overflow(driver, overflow, root_element):
@@ -330,6 +340,25 @@ def set_overflow(driver, overflow, root_element):
                 "Couldn't sent overflow {} to element {}".format(overflow, root_element)
             )
             logger.exception(e)
+
+
+def set_overflow_and_add_attribute(driver, overflow, root_element):
+    overflow = set_overflow(driver, overflow, root_element)
+    add_data_overflow_to_element(driver, root_element, overflow)
+    return overflow
+
+
+def add_data_overflow_to_element(driver, element, overflow):
+    if element is None:
+        element = driver.find_element_by_tag_name("html")
+    element = get_underlying_webelement(element)
+    return driver.execute_script(
+        _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW % overflow, element
+    )
+
+
+def add_data_scroll_to_element(driver, element):
+    return driver.execute_script(_JS_DATA_APPLITOOLS_SCROLL, element)
 
 
 @contextmanager

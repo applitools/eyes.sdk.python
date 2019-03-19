@@ -72,11 +72,13 @@ def test_directly_set_viewport_size(eyes, driver):
     eyes.set_viewport_size_static(driver, required_viewport)
     driver = eyes.open(driver, "Python SDK", "TestViewPort-DirectlySetViewportt")
     assert required_viewport == eyes.get_viewport_size_static(driver)
+    eyes.close()
 
 
 @pytest.mark.platform("Linux")
 @pytest.mark.eyes(hide_scrollbars=True)
 def test_check_window_with_send_dom(eyes, driver):
+    eyes.hide_scrollbars = True
     eyes.open(
         driver,
         "Eyes Selenium SDK - Fluent API",
@@ -85,9 +87,8 @@ def test_check_window_with_send_dom(eyes, driver):
     )
     driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     driver.find_element_by_tag_name("input").send_keys("My Input")
-    eyes.check_window(
-        "Fluent - Window with Ignore region",
-        target=Target.window().send_dom().use_dom(),
+    eyes.check(
+        "Fluent - Window with Ignore region", Target.window().send_dom().use_dom()
     )
     assert "data-applitools-scroll" in driver.page_source
     assert "data-applitools-original-overflow" in driver.page_source

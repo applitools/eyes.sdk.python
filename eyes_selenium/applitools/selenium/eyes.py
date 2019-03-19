@@ -266,8 +266,8 @@ class Eyes(EyesBase):
                         self.scroll_root_element
                     )
                 )
-                self._original_overflow = eyes_selenium_utils.set_overflow(
-                    self.driver, "hidden", self.scroll_root_element
+                self._original_overflow = eyes_selenium_utils.hide_scrollbars(
+                    self.driver, self.scroll_root_element
                 )
             logger.info("done hiding scrollbars.")
             return True
@@ -284,8 +284,8 @@ class Eyes(EyesBase):
                         self.scroll_root_element
                     )
                 )
-                eyes_selenium_utils.set_overflow(
-                    self.driver, self._original_overflow, self.scroll_root_element
+                eyes_selenium_utils.return_to_original_overflow(
+                    self.driver, self.scroll_root_element, self._original_overflow
                 )
             logger.info("done restoring scrollbars.")
             return True

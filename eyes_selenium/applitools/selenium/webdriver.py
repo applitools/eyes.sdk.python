@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import contextlib
-import time
 import typing
 
 import attr
@@ -640,38 +639,6 @@ class EyesWebDriver(object):
             "height": self.extract_full_page_height(),
         }
 
-    def set_overflow(self, overflow, stabilization_time=None):
-        # type: (Text, Optional[int]) -> Text
-        """
-        Sets the overflow of the current context's document element.
-
-        :param overflow: The overflow value to set. If the given value is None,
-                         then overflow will be set to undefined.
-        :param stabilization_time: The time to wait for the page to stabilize
-                after overflow is set. If the value is None,
-                then no waiting will take place. (Milliseconds)
-        :return: The previous overflow value.
-        """
-        logger.debug("Setting overflow: %s" % overflow)
-        if overflow is None:
-            script = (
-                "var origOverflow = document.documentElement.style.overflow; "
-                "document.documentElement.style.overflow = undefined; "
-                "return origOverflow;"
-            )
-        else:
-            script = (
-                "var origOverflow = document.documentElement.style.overflow; "
-                'document.documentElement.style.overflow = "{0}"; '
-                "return origOverflow;".format(overflow)
-            )
-        # noinspection PyUnresolvedReferences
-        original_overflow = self._driver.execute_script(script)
-        logger.debug("Original overflow: %s" % original_overflow)
-        if stabilization_time is not None:
-            time.sleep(stabilization_time / 1000)
-        return original_overflow
-
     def wait_for_page_load(self, timeout=3, throw_on_timeout=False):
         # type: (int, bool) -> None
         """
@@ -690,18 +657,6 @@ class EyesWebDriver(object):
             logger.debug("Page load timeout reached!")
             if throw_on_timeout:
                 raise
-
-    def hide_scrollbars(self):
-        # type: () -> Text
-        """
-        Hides the scrollbars of the current context's document element.
-
-        :return: The previous value of the overflow property (could be None).
-        """
-        logger.debug("HideScrollbars() called. Waiting for page load...")
-        self.wait_for_page_load()
-        logger.debug("About to hide scrollbars")
-        return self.set_overflow("hidden")
 
     @property
     def frame_chain(self):

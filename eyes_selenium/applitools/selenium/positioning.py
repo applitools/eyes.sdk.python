@@ -42,6 +42,7 @@ class SeleniumPositionProvider(PositionProvider):
         self._scroll_root_element = eyes_selenium_utils.get_underlying_webelement(
             scroll_root_element
         )
+        self._data_attribute_added = False
         logger.info("Creating {}".format(self.__class__.__name__))
 
     def _execute_script(self, script):
@@ -61,6 +62,17 @@ class SeleniumPositionProvider(PositionProvider):
             )
         return RectangleSize(width=width, height=height)
 
+    def _add_data_attribute_to_element(self):
+        if not self._data_attribute_added:
+            if hasattr(self, "_element"):
+                element = self._element
+            elif self._scroll_root_element:
+                element = self._scroll_root_element
+            else:
+                element = self._driver.find_element_by_tag_name("html")
+            element = eyes_selenium_utils.get_underlying_webelement(element)
+            eyes_selenium_utils.add_data_scroll_to_element(self._driver, element)
+
 
 class ScrollPositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
@@ -72,9 +84,11 @@ class ScrollPositionProvider(SeleniumPositionProvider):
             "return (arguments[0].scrollLeft+';'+arguments["
             "0].scrollTop);" % (location.x, location.y)
         )
-        return eyes_selenium_utils.parse_location_string(
+        position = eyes_selenium_utils.parse_location_string(
             self._execute_script(scroll_command)
         )
+        self._add_data_attribute_to_element()
+        return position
 
     @staticmethod
     def get_current_position_static(driver, scroll_root_element):
@@ -141,6 +155,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         )
         self._set_transform(transform_list)
         self._last_set_position = location.clone()
+        self._add_data_attribute_to_element()
         return self._last_set_position
 
     def push_state(self):
@@ -176,6 +191,7 @@ class ElementPositionProvider(SeleniumPositionProvider):
         logger.info("Scrolling element to {}".format(location))
         result = self._element.scroll_to(location)
         logger.info("Done scrolling element!")
+        self._add_data_attribute_to_element()
         return result
 
     def get_entire_size(self):
