@@ -56,3 +56,8 @@ def is_valid_state(is_valid, message):
 def is_a(param, klass):
     if not isinstance(param, klass):
         raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))
+
+
+def is_a_in(params, klass):
+    for param in params:
+        is_a(param, klass)

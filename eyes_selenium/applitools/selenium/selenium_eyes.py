@@ -14,6 +14,7 @@ from applitools.common import (
     Region,
     logger,
 )
+from applitools.common.config import SeleniumConfiguration, StitchMode
 from applitools.common.geometry import EMPTY_REGION, Point
 from applitools.common.utils import image_utils
 from applitools.core import (
@@ -35,7 +36,6 @@ from applitools.selenium.capture.full_page_capture_algorithm import (
     FullPageCaptureAlgorithm,
 )
 from applitools.selenium.capture.image_providers import get_image_provider
-from applitools.selenium.configuration import SeleniumConfiguration
 from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.region_compensation import (
     RegionPositionCompensation,
@@ -51,7 +51,6 @@ from .positioning import (
     CSSTranslatePositionProvider,
     ElementPositionProvider,
     ScrollPositionProvider,
-    StitchMode,
 )
 from .useragent import BrowserNames, UserAgent
 from .webdriver import EyesWebDriver

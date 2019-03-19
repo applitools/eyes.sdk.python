@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import typing
 
+from applitools.common.config import SeleniumConfiguration
 from applitools.common.visualgridclient.services import EyesRunner, VisualGridRunner
-from applitools.selenium.configuration import SeleniumConfiguration
 from applitools.selenium.rendering import VisualGridEyes
 from applitools.selenium.selenium_eyes import SeleniumEyes
 

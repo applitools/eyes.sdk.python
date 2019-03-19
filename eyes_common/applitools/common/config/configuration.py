@@ -6,10 +6,10 @@ from typing import Optional, Text
 
 import attr
 
-from .geometry import RectangleSize
-from .server import SessionType
-from .utils import general_utils
-from .utils.converters import isoformat
+from applitools.common.geometry import RectangleSize
+from applitools.common.server import SessionType
+from applitools.common.utils import general_utils
+from applitools.common.utils.converters import isoformat
 
 __all__ = ("BatchInfo", "Branch", "Configuration")
 

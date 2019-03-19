@@ -17,15 +17,6 @@ if typing.TYPE_CHECKING:
     from . import EyesWebDriver
 
 
-class StitchMode(object):
-    """
-    The type of methods for stitching full-page screenshots.
-    """
-
-    Scroll = "Scroll"
-    CSS = "CSS"
-
-
 class SeleniumPositionProvider(PositionProvider):
     """ Encapsulates page/element positioning """
 

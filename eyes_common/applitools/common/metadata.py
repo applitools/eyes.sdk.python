@@ -2,7 +2,7 @@ import typing
 
 import attr
 
-from .configuration import BatchInfo, Branch
+from .config import BatchInfo, Branch
 from .match import ImageMatchSettings, MatchLevel
 from .server import SessionType
 from .utils import general_utils
