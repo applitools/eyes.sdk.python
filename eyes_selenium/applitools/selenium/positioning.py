@@ -5,11 +5,12 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import EyesDriverOperationError, EyesError, Point, logger
+from applitools.common import EyesError, Point, logger
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionProvider
 
 from . import eyes_selenium_utils
+from .errors import EyesDriverOperationException
 
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, List, Union
@@ -34,6 +35,19 @@ class SeleniumPositionProvider(PositionProvider):
     var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);
     return [width, height];
     """
+    _JS_GET_CONTENT_ENTIRE_SIZE = """
+        var scrollWidth = document.documentElement.scrollWidth;
+        var bodyScrollWidth = document.body.scrollWidth;
+        var totalWidth = Math.max(scrollWidth, bodyScrollWidth);
+        var clientHeight = document.documentElement.clientHeight;
+        var bodyClientHeight = document.body.clientHeight;
+        var scrollHeight = document.documentElement.scrollHeight;
+        var bodyScrollHeight = document.body.scrollHeight;
+        var maxDocElementHeight = Math.max(clientHeight, scrollHeight);
+        var maxBodyHeight = Math.max(bodyClientHeight, bodyScrollHeight);
+        var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight);
+        return [totalWidth, totalHeight];";
+    """
 
     def __init__(self, driver, scroll_root_element):
         # type: (EyesWebDriver, AnyWebElement) -> None
@@ -43,7 +57,17 @@ class SeleniumPositionProvider(PositionProvider):
             scroll_root_element
         )
         self._data_attribute_added = False
-        logger.info("Creating {}".format(self.__class__.__name__))
+        logger.debug("Creating {}".format(self.__class__.__name__))
+
+    def __enter__(self):
+        if self._driver.is_mobile_device():
+            return self
+        return super(SeleniumPositionProvider, self).__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._driver.is_mobile_device():
+            return self
+        return super(SeleniumPositionProvider, self).__exit__(exc_type, exc_val, exc_tb)
 
     def _execute_script(self, script):
         # type: (Text) -> Union[List[int], Text]
@@ -55,9 +79,14 @@ class SeleniumPositionProvider(PositionProvider):
         :return: The entire size of the container which the position is relative to.
         """
         try:
-            width, height = self._execute_script(self._JS_GET_ENTIRE_PAGE_SIZE)
+            if self._driver.is_mobile_device():
+                width, height = self._driver.execute_script(
+                    self._JS_GET_CONTENT_ENTIRE_SIZE
+                )
+            else:
+                width, height = self._execute_script(self._JS_GET_ENTIRE_PAGE_SIZE)
         except WebDriverException as e:
-            raise EyesDriverOperationError(
+            raise EyesDriverOperationException(
                 "Failed to extract entire size! \n{}".format(e)
             )
         return RectangleSize(width=width, height=height)
@@ -75,15 +104,26 @@ class SeleniumPositionProvider(PositionProvider):
 
 
 class ScrollPositionProvider(SeleniumPositionProvider):
+    _JS_GET_CURRENT_SCROLL_POSITION = """
+var doc = document.documentElement;
+var x = window.scrollX || ((window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0));
+var y = window.scrollY || ((window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0));
+return [x, y]"""
+
     def set_position(self, location):
         logger.debug(
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
-        scroll_command = (
-            "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
-            "return (arguments[0].scrollLeft+';'+arguments["
-            "0].scrollTop);" % (location.x, location.y)
-        )
+        if self._driver.is_mobile_device():
+            scroll_command = "window.scrollTo({0}, {1})".format(location.x, location.y)
+            self._driver.execute_script(scroll_command)
+            return location
+        else:
+            scroll_command = (
+                "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
+                "return (arguments[0].scrollLeft+';'+arguments["
+                "0].scrollTop);" % (location.x, location.y)
+            )
         position = eyes_selenium_utils.parse_location_string(
             self._execute_script(scroll_command)
         )
@@ -103,6 +143,11 @@ class ScrollPositionProvider(SeleniumPositionProvider):
         """
         The scroll position of the current frame.
         """
+        if self._driver.is_mobile_device():
+            x, y = self._execute_script(self._JS_GET_CURRENT_SCROLL_POSITION)
+            if x is None or y is None:
+                raise EyesError("Got None as scroll position! ({},{})".format(x, y))
+            return Point(x, y)
         return self.get_current_position_static(self._driver, self._scroll_root_element)
 
 
@@ -183,14 +228,14 @@ class ElementPositionProvider(SeleniumPositionProvider):
         position = Point(
             self._element.get_scroll_left(), self._element.get_scroll_top()
         )
-        logger.info("Current position: {}".format(position))
+        logger.debug("Current position: {}".format(position))
         return position
 
     def set_position(self, location):
         # type: (Point) -> Point
-        logger.info("Scrolling element to {}".format(location))
+        logger.debug("Scrolling element to {}".format(location))
         result = self._element.scroll_to(location)
-        logger.info("Done scrolling element!")
+        logger.debug("Done scrolling element!")
         self._add_data_attribute_to_element()
         return result
 
@@ -201,8 +246,8 @@ class ElementPositionProvider(SeleniumPositionProvider):
                 "height": self._element.get_scroll_height(),
             }
         except WebDriverException as e:
-            raise EyesDriverOperationError(
+            raise EyesDriverOperationException(
                 "Failed to extract entire size! \n {}".format(e)
             )
-        logger.info("ElementPositionProvider - Entire size: {}".format(size))
+        logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)

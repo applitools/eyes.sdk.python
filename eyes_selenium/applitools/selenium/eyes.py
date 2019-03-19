@@ -2,7 +2,6 @@ import contextlib
 import typing
 from time import sleep
 
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from applitools.common import (
@@ -14,7 +13,6 @@ from applitools.common import (
     Region,
     logger,
 )
-from applitools.common.errors import EyesDriverOperationError
 from applitools.common.geometry import EMPTY_REGION, Point
 from applitools.common.utils import image_utils
 from applitools.core import (
@@ -46,6 +44,7 @@ from applitools.selenium.region_compensation import (
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
+from .errors import EyesDriverOperationException
 from .fluent import Target
 from .frames import FrameChain
 from .positioning import (
@@ -131,6 +130,21 @@ class Eyes(EyesBase):
     def original_frame_chain(self):
         # type: () -> FrameChain
         return self._original_frame_chain
+
+    @property
+    def send_dom(self):
+        # type: () -> bool
+        if not self.driver.is_mobile_device():
+            return super(Eyes, self).send_dom
+        return False
+
+    @property
+    def stitch_content(self):
+        return self._stitch_content
+
+    @property
+    def device_pixel_ratio(self):
+        return self._device_pixel_ratio
 
     @property
     def wait_before_screenshots(self):
@@ -222,8 +236,8 @@ class Eyes(EyesBase):
             self._driver = driver
         else:
             if not isinstance(driver, RemoteWebDriver):
-                logger.info(
-                    "WARNING: driver is not a RemoteWebDriver (class: {0})".format(
+                logger.warning(
+                    "driver is not a RemoteWebDriver (class: {0})".format(
                         driver.__class__
                     )
                 )
@@ -261,7 +275,7 @@ class Eyes(EyesBase):
             if frame:
                 frame.hide_scrollbars(self.driver)
             else:
-                logger.info(
+                logger.debug(
                     "hiding scrollbars of element (1): {}".format(
                         self.scroll_root_element
                     )
@@ -269,7 +283,7 @@ class Eyes(EyesBase):
                 self._original_overflow = eyes_selenium_utils.hide_scrollbars(
                     self.driver, self.scroll_root_element
                 )
-            logger.info("done hiding scrollbars.")
+            logger.debug("done hiding scrollbars.")
             return True
         return False
 
@@ -279,7 +293,7 @@ class Eyes(EyesBase):
             if frame:
                 frame.return_to_original_overflow(self.driver)
             else:
-                logger.info(
+                logger.debug(
                     "returning overflow of element to its original value: {}".format(
                         self.scroll_root_element
                     )
@@ -287,12 +301,15 @@ class Eyes(EyesBase):
                 eyes_selenium_utils.return_to_original_overflow(
                     self.driver, self.scroll_root_element, self._original_overflow
                 )
-            logger.info("done restoring scrollbars.")
+            logger.debug("done restoring scrollbars.")
             return True
         return False
 
-    def check(self, name, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> MatchResult
+    def check(self, name, check_settings=None):
+        # type: (Text, Optional[SeleniumCheckSettings]) -> MatchResult
+        if check_settings is None:
+            check_settings = Target.window()
+
         if name:
             check_settings = check_settings.with_name(name)
         else:
@@ -329,14 +346,14 @@ class Eyes(EyesBase):
         self._stitch_content = False
         self._scroll_root_element = None
         self._position_provider = None
-        logger.info("check - done!")
+        logger.debug("check - done!")
         return result
 
     def _check_result_flow(self, name, check_settings):
         target_region = check_settings.values.target_region
         result = None
         if target_region:
-            logger.info("have target region")
+            logger.debug("have target region")
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
@@ -345,7 +362,7 @@ class Eyes(EyesBase):
         elif check_settings:
             target_element = self._element_from(check_settings)
             if target_element:
-                logger.info("have target element")
+                logger.debug("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
                     result = self._check_element(name, check_settings)
@@ -353,13 +370,13 @@ class Eyes(EyesBase):
                     result = self._check_region(name, check_settings)
                 self._target_element = None
             elif len(check_settings.values.frame_chain) > 0:
-                logger.info("have frame chain")
+                logger.debug("have frame chain")
                 if self._stitch_content:
                     result = self._check_full_frame_or_element(name, check_settings)
                 else:
                     result = self._check_frame_fluent(name, check_settings)
             else:
-                logger.info("default case")
+                logger.debug("default case")
                 if not self.driver.is_mobile_device():
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
@@ -386,7 +403,7 @@ class Eyes(EyesBase):
         return resutl
 
     def _ensure_frame_visible(self):
-        logger.info("scroll_root_element_: []".format(self._scroll_root_element))
+        logger.debug("scroll_root_element_: []".format(self._scroll_root_element))
         original_fc = self.driver.frame_chain.clone()
         fc = self.driver.frame_chain.clone()
         self.driver.execute_script("window.scrollTo(0,0);")
@@ -500,7 +517,7 @@ class Eyes(EyesBase):
                               milliseconds).
         :return: None
         """
-        logger.info("check_window('%s')" % tag)
+        logger.debug("check_window('%s')" % tag)
         if target:
             logger.deprecation(
                 "Use fluent interface with check_window is deprecated. "
@@ -527,7 +544,7 @@ class Eyes(EyesBase):
                               (milliseconds).
         :return: None
         """
-        logger.info("check_region([%s], '%s')" % (region, tag))
+        logger.debug("check_region([%s], '%s')" % (region, tag))
         if region.is_empty:
             raise EyesError("region cannot be empty!")
         if target or stitch_content:
@@ -555,7 +572,7 @@ class Eyes(EyesBase):
         :param target: The target for the check_window call
         :return: None
         """
-        logger.info("check_region_by_element('%s')" % tag)
+        logger.debug("check_region_by_element('%s')" % tag)
         if target or stitch_content:
             logger.deprecation(
                 "Use fluent interface with check_region_by_element is deprecated. "
@@ -630,7 +647,7 @@ class Eyes(EyesBase):
                 "Use fluent interface with check_region_by_element is deprecated. "
                 "Use `eyes.check()` instead"
             )
-        logger.info("check_region_in_frame_by_selector('%s')" % tag)
+        logger.debug("check_region_in_frame_by_selector('%s')" % tag)
         return self.check(
             tag,
             Target.region((by, value), frame_reference)
@@ -664,7 +681,7 @@ class Eyes(EyesBase):
         cursor = control.middle_offset
         trigger = MouseTrigger(action, control, cursor)
         self._user_inputs.append(trigger)
-        logger.info("add_mouse_trigger: Added %s" % trigger)
+        logger.debug("add_mouse_trigger: Added %s" % trigger)
 
     def add_text_trigger_by_element(self, element, text):
         # type: (AnyWebElement, Text) -> None
@@ -691,7 +708,7 @@ class Eyes(EyesBase):
             return
         trigger = TextTrigger(control, text)
         self._user_inputs.append(trigger)
-        logger.info("add_text_trigger: Added %s" % trigger)
+        logger.debug("add_text_trigger: Added %s" % trigger)
 
     def _get_viewport_size(self):
         size = self.viewport_size
@@ -782,7 +799,7 @@ class Eyes(EyesBase):
         # type: () -> Optional[Text]
         try:
             user_agent = self._driver.execute_script("return navigator.userAgent")
-        except WebDriverException:
+        except EyesDriverOperationException:
             user_agent = None
         if user_agent:
             return "useragent:%s" % user_agent
@@ -797,7 +814,7 @@ class Eyes(EyesBase):
             logger.debug("Device pixel ratio was already changed")
             return self._scale_provider
 
-        logger.info("Trying to extract device pixel ratio...")
+        logger.debug("Trying to extract device pixel ratio...")
         try:
             device_pixel_ratio = eyes_selenium_utils.get_device_pixel_ratio(
                 self._driver
@@ -809,13 +826,13 @@ class Eyes(EyesBase):
             device_pixel_ratio = self._DEFAULT_DEVICE_PIXEL_RATIO
         logger.info("Device pixel ratio: {}".format(device_pixel_ratio))
 
-        logger.info("Setting scale provider...")
+        logger.debug("Setting scale provider...")
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
                 viewport_size=self.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
-                is_mobile_device=self.driver.is_mobile_device(),
+                is_mobile_device=False,  # TODO: fix scaling for mobile
             )  # type: ScaleProvider
         except Exception:
             # This can happen in Appium for example.
@@ -881,7 +898,7 @@ class Eyes(EyesBase):
                     "var activeElement = document.activeElement; activeElement "
                     "&& activeElement.blur(); return activeElement;"
                 )
-            except WebDriverException as e:
+            except EyesDriverOperationException as e:
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
@@ -991,7 +1008,7 @@ class Eyes(EyesBase):
                 location = ScrollPositionProvider.get_current_position_static(
                     self.driver, self.scroll_root_element
                 )
-            except EyesDriverOperationError as e:
+            except EyesDriverOperationException as e:
                 logger.warning(str(e))
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)

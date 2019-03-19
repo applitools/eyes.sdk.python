@@ -1,6 +1,8 @@
 import abc
 import typing
 
+import attr
+
 from .geometry import CoordinatesType, Region
 from .utils import ABC, argument_guard
 
@@ -11,14 +13,13 @@ if typing.TYPE_CHECKING:
 __all__ = ("EyesScreenshot",)
 
 
+@attr.s
 class EyesScreenshot(ABC):
     """
      Base class for handling screenshots.
      """
 
-    def __init__(self, image):
-        # type: (Image) -> None
-        self._image = image  # type: Image
+    _image = attr.ib()  # type: Image
 
     @property
     def image(self):

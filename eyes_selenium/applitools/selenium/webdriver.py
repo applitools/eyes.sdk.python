@@ -4,7 +4,6 @@ import contextlib
 import typing
 
 import attr
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -22,6 +21,7 @@ from applitools.common.utils.compat import basestring
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
+from .errors import EyesDriverOperationException
 from .frames import Frame, FrameChain
 from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
@@ -152,7 +152,7 @@ class _EyesSwitchTo(object):
             )
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
-        logger.info("Done switching into nested frame")
+        logger.debug("Done switching into nested frame")
 
     def default_content(self):
         # type: () -> None
@@ -213,7 +213,7 @@ class _EyesSwitchTo(object):
         # type: (SwitchTo, FrameChain) -> None
         try:
             switch_to.parent_frame()
-        except WebDriverException:
+        except EyesDriverOperationException:
             switch_to.default_content()
             for frame in frame_chain_parent:
                 switch_to.frame(frame.reference)
@@ -225,15 +225,15 @@ class _EyesSwitchTo(object):
         )
         scroll_provider = ScrollPositionProvider(self._driver, root_element)
         for frame in frame_chain:
-            logger.info("Scrolling by parent scroll position...")
+            logger.debug("Scrolling by parent scroll position...")
             frame_location = frame.location
             scroll_provider.set_position(frame_location)
-            logger.info("Done! Switching to frame...")
+            logger.debug("Done! Switching to frame...")
             self.frame(frame.reference)
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
-            logger.info("Done")
-        logger.info("Done switching into nested frames!")
+            logger.debug("Done")
+        logger.debug("Done switching into nested frames!")
         return self._driver
 
     def reset_scroll(self):

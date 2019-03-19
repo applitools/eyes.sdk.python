@@ -44,7 +44,7 @@ class Frame(object):
         root_element = eyes_selenium_utils.get_underlying_webelement(
             self._scroll_root_element(driver)
         )
-        logger.info(
+        logger.debug(
             "returning overflow of element to its original value: {}".format(
                 root_element
             )

@@ -6,7 +6,6 @@ __all__ = (
     "NewTestError",
     "DiffsFoundError",
     "CoordinatesTypeConversionError",
-    "EyesDriverOperationError",
 )
 
 
@@ -59,9 +58,3 @@ class CoordinatesTypeConversionError(EyesError):
     def __init__(self, from_, to, test_results=None):
         message = "Cannot convert from {} to {}".format(from_, to)
         super(CoordinatesTypeConversionError, self).__init__(message, test_results)
-
-
-class EyesDriverOperationError(EyesError):
-    """
-    Encapsulates an error when trying to perform an action using WebDriver.
-    """

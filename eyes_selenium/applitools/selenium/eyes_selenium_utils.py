@@ -10,7 +10,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger
-from applitools.common.errors import EyesDriverOperationError
+
+from .errors import EyesDriverOperationException
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
@@ -164,7 +165,7 @@ def get_current_frame_content_entire_size(driver):
     try:
         width, height = driver.execute_script(_JS_GET_CONTENT_ENTIRE_SIZE)
     except WebDriverException:
-        raise EyesDriverOperationError("Failed to extract entire size!")
+        raise EyesDriverOperationException("Failed to extract entire size!")
     return RectangleSize(width, height)
 
 
@@ -240,7 +241,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 def set_viewport_size(driver, required_size):
     # type: (AnyWebDriver, ViewPort) -> None
 
-    logger.info("set_viewport_size_static({})".format(str(required_size)))
+    logger.debug("set_viewport_size_static({})".format(str(required_size)))
 
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -252,7 +253,7 @@ def set_viewport_size(driver, required_size):
         # set the viewport size as requested.
         driver.set_window_position(0, 0)
     except WebDriverException:
-        logger.info("Warning: Failed to move the browser window to (0,0)")
+        logger.warning("Failed to move the browser window to (0,0)")
     set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -317,7 +318,7 @@ def set_viewport_size(driver, required_size):
                 return None
         else:
             logger.info("Zoom workaround failed.")
-    raise EyesDriverOperationError("Failed to set the viewport size.")
+    raise EyesDriverOperationException("Failed to set the viewport size.")
 
 
 def hide_scrollbars(driver, root_element):
@@ -374,7 +375,6 @@ def is_landscape_orientation(driver):
             driver
         )  # type: tp.Union[AppiumWebDriver, WebDriver]
 
-        original_context = None
         try:
             # We must be in native context in order to ask for orientation,
             # because of an Appium bug.
@@ -402,7 +402,7 @@ def is_landscape_orientation(driver):
 
 
 def get_viewport_size_or_display_size(driver):
-    logger.info("get_viewport_size_or_display_size()")
+    logger.debug("get_viewport_size_or_display_size()")
 
     try:
         return get_viewport_size(driver)
@@ -413,7 +413,7 @@ def get_viewport_size_or_display_size(driver):
     # If we failed to extract the viewport size using JS, will use the
     # window size instead.
 
-    logger.info("Using window size as viewport size.")
+    logger.debug("Using window size as viewport size.")
     window_size = get_window_size(driver)
     width = window_size["width"]
     height = window_size["height"]
@@ -423,7 +423,7 @@ def get_viewport_size_or_display_size(driver):
     except WebDriverException:
         # Not every WebDriver supports querying for orientation.
         pass
-    logger.info("Done! Size {:d} x {:d}".format(width, height))
+    logger.debug("Done! Size {:d} x {:d}".format(width, height))
     return RectangleSize(width=width, height=height)
 
 
@@ -431,7 +431,7 @@ def parse_location_string(position):
     # type: (str) -> Point
     xy = position.split(";")
     if len(xy) != 2:
-        raise EyesDriverOperationError("Could not get scroll position!")
+        raise EyesDriverOperationException("Could not get scroll position!")
     return Point(float(xy[0]), float(xy[1]))
 
 

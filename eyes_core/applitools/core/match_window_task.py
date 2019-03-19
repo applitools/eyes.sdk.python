@@ -83,7 +83,7 @@ class MatchWindowTask(object):
     ):
         if retry_timeout is None or retry_timeout < 0:
             retry_timeout = self._default_retry_timeout
-        logger.info("retry_timeout = {}".format(retry_timeout))
+        logger.info("retry_timeout = {} sec".format(retry_timeout))
 
         screenshot = self._take_screenshot(
             user_inputs,

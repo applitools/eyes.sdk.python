@@ -62,7 +62,8 @@ class FullPageCaptureAlgorithm(object):
                 if full_area is None or full_area.is_empty:
                     entire_size = self._get_entire_size(image, position_provider)
                     # Notice that this might still happen even if we used
-                    # "getImagePart", since "entirePageSize" might be that of a frame
+                    # "get_image_part", since "entire_page_size" might be that of a
+                    # frame
                     if (
                         image.width >= entire_size.width
                         and image.height >= entire_size.height
@@ -74,9 +75,8 @@ class FullPageCaptureAlgorithm(object):
                 image_parts = self._get_image_parts(full_area, image)
 
                 stitched_image = self._create_stitched_image(full_area, image)
-
                 # These will be used for storing the actual stitched size (it is
-                # sometimes less than the size extracted via "getEntireSize").
+                # sometimes less than the size extracted via "get_entire_size").
                 last_successful_location = Point.zero()
                 last_successful_part_size = RectangleSize.from_image(image)
 

@@ -4,7 +4,6 @@ import typing
 from enum import Enum
 
 import attr
-from selenium.common.exceptions import WebDriverException
 
 from applitools.common import (
     CoordinatesType,
@@ -19,10 +18,10 @@ from applitools.common import (
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
 from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.errors import EyesDriverOperationException
 from applitools.selenium.positioning import ScrollPositionProvider
 
 if typing.TYPE_CHECKING:
-    from typing import Optional
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
 
@@ -32,7 +31,18 @@ class ScreenshotType(Enum):
     ENTIRE_FRAME = "ENTIRE_FRAME"
 
 
+@attr.s
 class EyesWebDriverScreenshot(EyesScreenshot):
+
+    _driver = attr.ib()
+    _image = attr.ib()
+    _screenshot_type = attr.ib()
+    _frame_location_in_screenshot = attr.ib()
+    _current_frame_scroll_position = attr.ib(default=None)
+    frame_window = attr.ib(default=None)
+    region_window = attr.ib(default=Region(0, 0, 0, 0))
+    _frame_chain = attr.ib(init=False)
+
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
@@ -48,72 +58,57 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_entire_frame(cls, driver, image, entire_frame_size):
         # type: (EyesWebDriver, Image.Image, RectangleSize) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.ENTIRE_FRAME, Point.zero())
-        instance._current_frame_scroll_position = Point(0, 0)  # type: ignore
-        instance._frame_location_in_screenshot = Point(0, 0)  # type: ignore
-        instance.frame_window = Region.from_location_size(  # type: ignore
-            Point(0, 0), entire_frame_size
+        return cls(
+            driver,
+            image,
+            ScreenshotType.ENTIRE_FRAME,
+            frame_location_in_screenshot=Point(0, 0),
+            current_frame_scroll_position=Point(0, 0),
+            frame_window=Region.from_location_size(Point(0, 0), entire_frame_size),
         )
-        return instance
 
     @classmethod
     def from_screenshot(cls, driver, image, screenshot_region):
         # type: (EyesWebDriver, Image.Image, Region) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.ENTIRE_FRAME, Point.zero())
-        # The frame comprises the entire screenshot.
-        instance._screenshot_type = ScreenshotType.ENTIRE_FRAME
-        instance.frame_window = Region.from_location_size(  # type: ignore
-            Point.zero(), screenshot_region.size
+        return cls(
+            driver,
+            image,
+            ScreenshotType.ENTIRE_FRAME,
+            Point.zero(),
+            frame_window=Region.from_location_size(
+                Point.zero(), screenshot_region.size
+            ),
+            region_window=Region.from_region(screenshot_region),
         )
-        instance.region_window = Region.from_region(screenshot_region)  # type: ignore
-        return instance
 
-    def __init__(self, driver, image, screenshot_type, frame_location_in_screenshot):
-        # type: (EyesWebDriver, Image.Image, Optional[ScreenshotType], Optional[Point]) -> None
-        """
-        Initializes a Screenshot instance. Either screenshot or screenshot64 must NOT be None.
-        Should not be used directly. Use create_from_image/create_from_base64 instead.
-
-        :param driver: EyesWebDriver instance which handles the session from
-         which the screenshot was retrieved.
-        :param image: image instance. If screenshot64 is None,
-         this variable must NOT be none.
-        :param screenshot_type: possible VIEWPORT OR ENTIRE_FRAME
-        :param frame_location_in_screenshot: The location of the frame relative
-         to the top,left of the screenshot.
-        :raise EyesError: If the screenshots are None.
-        """
-        # initializing of screenshot
-        super(EyesWebDriverScreenshot, self).__init__(image=image)
-        # For future adaptation
-        # TODO: Refactor initialization!
-        self._driver = driver
-
-        self._screenshot_type = self.update_screenshot_type(screenshot_type, image)
-        cur_frame_position_provider = driver.eyes.current_frame_position_provider
+    def __attrs_post_init__(self):
+        self._frame_chain = self._driver.frame_chain.clone()
+        self._screenshot_type = self.update_screenshot_type(
+            self._screenshot_type, self._image
+        )
+        cur_frame_position_provider = self._driver.eyes.current_frame_position_provider
         if cur_frame_position_provider:
             position_provider = cur_frame_position_provider
         else:
-            position_provider = driver.eyes.position_provider
+            position_provider = self._driver.eyes.position_provider
 
-        self._frame_chain = driver.frame_chain.clone()
-        frame_size = self.get_frame_size(position_provider)
-        self._current_frame_scroll_position = self.get_updated_scroll_position(
-            position_provider
-        )
+        if self._current_frame_scroll_position is None:
+            self._current_frame_scroll_position = self.get_updated_scroll_position(
+                position_provider
+            )
         self._frame_location_in_screenshot = self.get_updated_frame_location_in_screenshot(
-            frame_location_in_screenshot
+            self._frame_location_in_screenshot
         )
         logger.debug("Calculating frame window...")
-        self.frame_window = Region.from_location_size(
-            self._frame_location_in_screenshot, frame_size
-        )
-        self.frame_window.intersect(
-            Region(0, 0, width=image.width, height=image.height)
-        )
-        self.region_window = Region(0, 0, 0, 0)
 
-        # self._validate_frame_window()
+        if self.frame_window is None:
+            frame_size = self.get_frame_size(position_provider)
+            self.frame_window = Region.from_location_size(
+                self._frame_location_in_screenshot, frame_size
+            )
+            self.frame_window.intersect(
+                Region(0, 0, width=self.image.width, height=self.image.height)
+            )
 
     def _validate_frame_window(self):
         if self.frame_window.width <= 0 or self.frame_window.height <= 0:
@@ -133,7 +128,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             sp = position_provider.get_current_position()
             if not sp:
                 sp = Point.zero()
-        except WebDriverException:
+        except EyesDriverOperationException:
             sp = Point.zero()
 
         return sp
@@ -141,10 +136,10 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     def update_screenshot_type(self, screenshot_type, image):
         if screenshot_type is None:
             viewport_size = self._driver.eyes.viewport_size
-            scale_viewport = self._driver.eyes._stitch_content
+            scale_viewport = self._driver.eyes.stitch_content
 
             if scale_viewport:
-                pixel_ratio = self._driver.eyes._device_pixel_ratio
+                pixel_ratio = self._driver.eyes.device_pixel_ratio
                 viewport_size = viewport_size.scale(pixel_ratio)
             if (
                 image.width <= viewport_size["width"]
@@ -168,7 +163,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             # we'll use the viewport size as the frame's size.
             try:
                 frame_size = position_provider.get_entire_size()
-            except WebDriverException:
+            except EyesDriverOperationException:
                 # For Appium, we can't get the "entire page size",
                 # so we use the viewport size.
                 frame_size = self._driver.get_default_content_viewport_size()
