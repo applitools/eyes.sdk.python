@@ -9,6 +9,7 @@ from applitools.common import (
     BatchInfo,
     EyesError,
     ImageMatchSettings,
+    MatchLevel,
     MatchWindowData,
     Options,
     RunningSession,
@@ -18,6 +19,7 @@ from applitools.common import (
 from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.general_utils import json_response_to_attrs_class
+from applitools.common.visualgridclient.model import RenderingInfo
 from applitools.core import ServerConnector
 
 API_KEY = "TEST API KEY"
@@ -39,6 +41,7 @@ RENDERING_INFO_DATA = {
     "AccessToken": RENDER_INFO_AT,
     "ResultsUrl": RUNNING_SESSION_DATA_URL + "?accessKey=" + API_KEY,
 }
+RENDERING_OBJ = json_response_to_attrs_class(RENDERING_INFO_DATA, RenderingInfo)
 
 
 @pytest.fixture(scope="function")
@@ -142,7 +145,7 @@ SESSION_START_INFO_OBJ = SessionStartInfo(
     baseline_env_name="Baseline env name",
     environment_name="Env name",
     environment=AppEnvironment(),
-    default_match_settings=ImageMatchSettings(match_level="STRICT"),
+    default_match_settings=ImageMatchSettings(match_level=MatchLevel.STRICT),
     branch_name="branch Name",
     parent_branch_name="parentBranchName",
     baseline_branch_name="baselineBranchName",
@@ -300,3 +303,9 @@ def test_request_with_changed_values(configured_connector):
     assert mocked_post.call_args[1]["timeout"] == new_timeout
     assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
     assert new_server_url in mocked_post.call_args[0][0]
+
+
+def test_get_rendering_info(started_connector):
+    with patch("requests.get", side_effect=mocked_requests_get):
+        render_info = started_connector.get_render_info()
+    assert render_info == RENDERING_OBJ

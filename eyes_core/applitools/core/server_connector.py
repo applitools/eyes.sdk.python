@@ -4,7 +4,7 @@ import os
 import time
 import typing as tp
 from struct import pack
-from typing import Any
+from typing import Any, Optional
 
 import requests
 from requests.packages import urllib3  # noqa
@@ -17,6 +17,11 @@ from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.utils import general_utils, gzip_compress, image_utils, urljoin
 from applitools.common.utils.general_utils import json_response_to_attrs_class
+from applitools.common.visualgridclient.model import (
+    RenderingInfo,
+    RenderRequest,
+    RunningRender,
+)
 
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num
@@ -171,6 +176,7 @@ class ServerConnector(object):
         :param server_url: The url of the Applitools server.
         """
         self.server_url = server_url
+        self._render_info = None  # type: Optional[RenderingInfo]
         self._request_factory = create_request_factory(
             headers=ServerConnector.DEFAULT_HEADERS, server_url=server_url
         )
@@ -319,6 +325,56 @@ class ServerConnector(object):
         if response.ok:
             dom_url = response.headers["Location"]
         return dom_url
+
+    def get_render_info(self):
+        # type: () -> tp.Optional[RenderingInfo]
+        logger.debug("get_render_info called.")
+
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
+
+        if not response.ok:
+            return None
+
+        self._render_info = json_response_to_attrs_class(response.json(), RenderingInfo)
+        return self._render_info
+
+    def render(self, *render_requests):
+        # type: (*RenderRequest) -> tp.List[RunningRender]
+        logger.debug("render called with {}".format(render_requests))
+        if self._render_info is None:
+            raise RuntimeError("get_render_info must be called first")
+
+        url = urljoin(self._render_info.service_url, self.RENDER)
+        # if len(render_requests) > 1:
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        response = self._request.post(
+            url, headers=headers, params={"render-id": render_requests}
+        )
+        if response.ok or response.status_code == 404:
+            d = response.json()
+            return d
+        raise EyesError(
+            "ServerConnector.render - unexpected status ({})".format(
+                response.status_code
+            )
+        )
+
+    def render_check_resource(self, running_render, check_resource):
+        pass
+
+    def render_put_resource(self, running_render, resource, listener):
+        pass
+
+    def render_status(self, running_render):
+        pass
 
     @staticmethod
     def _prepare_data(match_data):

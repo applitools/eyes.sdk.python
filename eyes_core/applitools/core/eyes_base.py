@@ -23,6 +23,7 @@ from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard
+from applitools.common.visualgridclient.model import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import NullCutProvider
 from applitools.core.debug import (
@@ -139,7 +140,7 @@ class EyesBase(EyesBaseAbstract):
     _dom_url = None  # type: Optional[Text]
     _position_provider = None  # type: Optional[PositionProvider]
     _is_viewport_size_set = False
-
+    _render_info = None  # type: Optional[RenderingInfo]
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -504,6 +505,12 @@ class EyesBase(EyesBaseAbstract):
         Returns whether the session is currently running.
         """
         return self._is_open
+
+    def get_rendering_info(self):
+        # type: () -> RenderingInfo
+        if self._render_info is None:
+            self._render_info = self._server_connector.get_render_info()
+        return self._render_info
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]

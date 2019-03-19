@@ -29,7 +29,7 @@ from .webelement import EyesWebElement
 if typing.TYPE_CHECKING:
     from typing import Generator, Text, Optional, List, Dict, Any
     from applitools.common.utils.custom_types import ViewPort, FrameReference
-    from .eyes import Eyes
+    from .selenium_eyes import SeleniumEyes
 
 
 @attr.s
@@ -282,12 +282,12 @@ class EyesWebDriver(object):
     _MIN_SCREENSHOT_PART_HEIGHT = 10
 
     def __init__(self, driver, eyes):
-        # type: (WebDriver, Eyes) -> None
+        # type: (WebDriver, SeleniumEyes) -> None
         """
         Ctor.
 
         :param driver: remote WebDriver instance.
-        :param eyes: A Eyes sdk instance.
+        :param eyes: A SeleniumEyes sdk instance.
         :param stitch_mode: How to stitch a page (default is with scrolling).
         """
         self._driver = driver
@@ -322,7 +322,7 @@ class EyesWebDriver(object):
 
     @property
     def eyes(self):
-        # type: () -> Eyes
+        # type: () -> SeleniumEyes
         return self._eyes
 
     def get_display_rotation(self):
