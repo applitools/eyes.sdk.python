@@ -459,6 +459,8 @@ class Eyes(EyesBase):
     def _switch_to_frame(self, check_settings):
         # type: (SeleniumCheckSettings) -> Generator
         switched_to_frame_count = 0
+        # TODO: refactor frames storing
+        frames = {}
         frame_chain = check_settings.values.frame_chain
         for frame_locator in frame_chain:
             self.driver.switch_to.frame(frame_locator)
@@ -468,48 +470,18 @@ class Eyes(EyesBase):
             cur_frame = self._driver.frame_chain.peek
             cur_frame.scroll_root_element = root_element
             self._try_hide_scrollbars(cur_frame)
+            frames[switched_to_frame_count] = cur_frame
             switched_to_frame_count += 1
 
         yield
 
         while switched_to_frame_count > 0:
+            cur_frame = frames.get(switched_to_frame_count - 1)
+            if cur_frame:
+                self._try_restore_scrollbars(cur_frame)
             self.driver.switch_to.parent_frame()
             self.driver.switch_to.reset_scroll()
             switched_to_frame_count -= 1
-
-    # def _switch_to_frame_with_locator(self, frame_locator):
-    #     # type: (FrameLocator) -> bool
-    #     # We don't want to track frames here
-    #     switch_to = self.driver.switch_to
-    #     if frame_locator.frame_index:
-    #         switch_to.frame(frame_locator.frame_index)
-    #         self._update_frame_scroll_root(frame_locator)
-    #         return True
-    #     if frame_locator.frame_name_or_id:
-    #         switch_to.frame(frame_locator.frame_name_or_id)
-    #         self._update_frame_scroll_root(frame_locator)
-    #         return True
-    #     if frame_locator.frame_element:
-    #         switch_to.frame(frame_locator.frame_element)
-    #         self._update_frame_scroll_root(frame_locator)
-    #         return True
-    #     if frame_locator.frame_selector:
-    #         frame_element = self.driver.find_element_by_css_selector(
-    #             frame_locator.frame_selector
-    #         )
-    #         if frame_element:
-    #             switch_to.frame(frame_element)
-    #             self._update_frame_scroll_root(frame_locator)
-    #             return True
-    #     return False
-
-    # def _update_frame_scroll_root(self, frame_locator):
-    #     # type: (FrameLocator) -> None
-    #     root_element = eyes_selenium_utils.scroll_root_element_from(
-    #         self.driver, frame_locator
-    #     )
-    #     frame = self.driver.frame_chain.peek
-    #     frame.scroll_root_element = root_element
 
     @property
     def scroll_root_element(self):
@@ -1121,7 +1093,7 @@ class Eyes(EyesBase):
                 raise e
             finally:
                 if self.hide_scrollbars:
-                    element.restore_scrollbars()
+                    element.return_to_original_overflow()
                 self._check_frame_or_element = False
                 self._region_to_check = None
                 self._element_position_provider = None

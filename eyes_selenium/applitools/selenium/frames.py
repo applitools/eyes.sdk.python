@@ -64,12 +64,12 @@ class Frame(object):
         scroll_root_element = eyes_selenium_utils.get_underlying_webelement(
             self._scroll_root_element(driver)
         )
-        original_overflow = driver.execute_script(
+        self.original_overflow = driver.execute_script(
             "var origOF = arguments[0].style.overflow; arguments["
             "0].style.overflow='hidden'; return origOF;",
             scroll_root_element,
         )
-        return original_overflow
+        return self.original_overflow
 
 
 @attr.s(slots=True, init=False, cmp=False)

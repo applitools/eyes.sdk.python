@@ -46,7 +46,7 @@ class CheckSettings(ABC):
     """
 
     _target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
-    _timeout = attr.ib(init=False, default=-1)  # type: int
+    _timeout = attr.ib(init=False, default=-1)  # type: float  # seconds
 
     _ignore_caret = attr.ib(init=False, default=False)  # type: bool
     _stitch_content = attr.ib(init=False, default=False)  # type: bool

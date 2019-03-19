@@ -364,10 +364,10 @@ class EyesBase(EyesBaseAbstract):
     def match_timeout(self, match_timeout):
         # type: (int) -> None
         """
-        Sets the default timeout for check_XXXX operations. (milliseconds)
+        Sets the default timeout for check operations. (milliseconds)
         """
         if 0 < match_timeout < MatchWindowTask.MINIMUM_MATCH_TIMEOUT:
-            raise ValueError("Match timeout must be at least 60ms.")
+            raise ValueError("Match timeout must be at least 60 ms.")
         self._config.match_timeout = match_timeout
 
     @property

@@ -169,7 +169,6 @@ class _EyesSwitchTo(object):
         """
         if len(self._driver.frame_chain) > 0:
             frame = self._driver.frame_chain.pop()
-            frame.return_to_original_overflow(self._driver)
             self.parent_frame_static(self._switch_to, self._driver.frame_chain)
             return frame
 

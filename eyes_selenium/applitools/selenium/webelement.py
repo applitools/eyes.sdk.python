@@ -242,7 +242,7 @@ class EyesWebElement(object):
         logger.debug("EyesWebElement.HideScrollbars()")
         return self.set_overflow("hidden")
 
-    def restore_scrollbars(self):
+    def return_to_original_overflow(self):
         return self.set_overflow(self._original_overflow)
 
     def get_computed_style(self, prop_style):
