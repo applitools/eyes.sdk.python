@@ -714,7 +714,7 @@ class EyesBase(EyesBaseAbstract):
                     if self.viewport_size:
                         self._ensure_running_session()
                 except Exception as e:
-                    logger.debug(str(e))
+                    logger.exception(e)
                     retry += 1
                     continue
 
@@ -722,7 +722,7 @@ class EyesBase(EyesBaseAbstract):
                 self._after_open()
                 return None
             except EyesError as e:
-                logger.debug(str(e))
+                logger.exception(e)
                 logger.close()
                 raise e
 

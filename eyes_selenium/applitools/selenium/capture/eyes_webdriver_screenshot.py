@@ -4,6 +4,7 @@ import typing
 from enum import Enum
 
 import attr
+from selenium.common.exceptions import WebDriverException
 
 from applitools.common import (
     CoordinatesType,
@@ -18,7 +19,6 @@ from applitools.common import (
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
 from applitools.selenium import eyes_selenium_utils
-from applitools.selenium.errors import EyesDriverOperationException
 from applitools.selenium.positioning import ScrollPositionProvider
 
 if typing.TYPE_CHECKING:
@@ -128,7 +128,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             sp = position_provider.get_current_position()
             if not sp:
                 sp = Point.zero()
-        except EyesDriverOperationException:
+        except WebDriverException:
             sp = Point.zero()
 
         return sp
@@ -163,7 +163,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             # we'll use the viewport size as the frame's size.
             try:
                 frame_size = position_provider.get_entire_size()
-            except EyesDriverOperationException:
+            except WebDriverException:
                 # For Appium, we can't get the "entire page size",
                 # so we use the viewport size.
                 frame_size = self._driver.get_default_content_viewport_size()

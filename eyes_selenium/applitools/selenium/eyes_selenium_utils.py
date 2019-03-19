@@ -11,8 +11,6 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger
 
-from .errors import EyesDriverOperationException
-
 if tp.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
@@ -165,7 +163,7 @@ def get_current_frame_content_entire_size(driver):
     try:
         width, height = driver.execute_script(_JS_GET_CONTENT_ENTIRE_SIZE)
     except WebDriverException:
-        raise EyesDriverOperationException("Failed to extract entire size!")
+        raise WebDriverException("Failed to extract entire size!")
     return RectangleSize(width, height)
 
 
@@ -318,7 +316,7 @@ def set_viewport_size(driver, required_size):
                 return None
         else:
             logger.info("Zoom workaround failed.")
-    raise EyesDriverOperationException("Failed to set the viewport size.")
+    raise WebDriverException("Failed to set the viewport size.")
 
 
 def hide_scrollbars(driver, root_element):
@@ -431,7 +429,7 @@ def parse_location_string(position):
     # type: (str) -> Point
     xy = position.split(";")
     if len(xy) != 2:
-        raise EyesDriverOperationException("Could not get scroll position!")
+        raise WebDriverException("Could not get scroll position!")
     return Point(float(xy[0]), float(xy[1]))
 
 

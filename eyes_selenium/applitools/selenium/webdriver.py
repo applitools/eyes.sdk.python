@@ -4,6 +4,7 @@ import contextlib
 import typing
 
 import attr
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -21,7 +22,6 @@ from applitools.common.utils.compat import basestring
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
-from .errors import EyesDriverOperationException
 from .frames import Frame, FrameChain
 from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
@@ -213,7 +213,7 @@ class _EyesSwitchTo(object):
         # type: (SwitchTo, FrameChain) -> None
         try:
             switch_to.parent_frame()
-        except EyesDriverOperationException:
+        except WebDriverException:
             switch_to.default_content()
             for frame in frame_chain_parent:
                 switch_to.frame(frame.reference)

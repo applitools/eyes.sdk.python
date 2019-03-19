@@ -2,6 +2,7 @@ import contextlib
 import typing
 from time import sleep
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from applitools.common import (
@@ -44,7 +45,6 @@ from applitools.selenium.region_compensation import (
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
-from .errors import EyesDriverOperationException
 from .fluent import Target
 from .frames import FrameChain
 from .positioning import (
@@ -799,7 +799,7 @@ class Eyes(EyesBase):
         # type: () -> Optional[Text]
         try:
             user_agent = self._driver.execute_script("return navigator.userAgent")
-        except EyesDriverOperationException:
+        except WebDriverException:
             user_agent = None
         if user_agent:
             return "useragent:%s" % user_agent
@@ -898,7 +898,7 @@ class Eyes(EyesBase):
                     "var activeElement = document.activeElement; activeElement "
                     "&& activeElement.blur(); return activeElement;"
                 )
-            except EyesDriverOperationException as e:
+            except WebDriverException as e:
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
@@ -1008,7 +1008,7 @@ class Eyes(EyesBase):
                 location = ScrollPositionProvider.get_current_position_static(
                     self.driver, self.scroll_root_element
                 )
-            except EyesDriverOperationException as e:
+            except WebDriverException as e:
                 logger.warning(str(e))
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)

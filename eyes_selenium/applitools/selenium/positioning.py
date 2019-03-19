@@ -10,7 +10,6 @@ from applitools.common.geometry import RectangleSize
 from applitools.core import PositionProvider
 
 from . import eyes_selenium_utils
-from .errors import EyesDriverOperationException
 
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, List, Union
@@ -86,9 +85,7 @@ class SeleniumPositionProvider(PositionProvider):
             else:
                 width, height = self._execute_script(self._JS_GET_ENTIRE_PAGE_SIZE)
         except WebDriverException as e:
-            raise EyesDriverOperationException(
-                "Failed to extract entire size! \n{}".format(e)
-            )
+            raise WebDriverException("Failed to extract entire size! \n{}".format(e))
         return RectangleSize(width=width, height=height)
 
     def _add_data_attribute_to_element(self):
@@ -246,8 +243,6 @@ class ElementPositionProvider(SeleniumPositionProvider):
                 "height": self._element.get_scroll_height(),
             }
         except WebDriverException as e:
-            raise EyesDriverOperationException(
-                "Failed to extract entire size! \n {}".format(e)
-            )
+            raise WebDriverException("Failed to extract entire size! \n {}".format(e))
         logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
