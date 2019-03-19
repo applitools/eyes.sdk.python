@@ -2,7 +2,7 @@ import typing
 
 import attr
 
-from applitools.common import logger
+from applitools.common import FloatingBounds, logger
 from applitools.common.geometry import Region
 from applitools.common.match import MatchLevel
 from applitools.common.utils import ABC
@@ -19,7 +19,8 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
 
     T = typing.TypeVar("T", bound="CheckSettings")
-    ACCEPTING_VALUE = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
+    REGION_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
+    FLOATING_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
     GR = typing.TypeVar("GR", bound=GetRegion)
     FR = typing.TypeVar("FR", bound=GetFloatingRegion)
 
@@ -127,7 +128,7 @@ class CheckSettings(ABC):
         self._target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (*ACCEPTING_VALUE)  -> T
+        # type: (*REGION_VALUES)  -> T
         """ Adds one or more ignore regions. """
         self._ignore_regions = self.__regions(regions, method_name="ignore_regions")
         return self
@@ -135,31 +136,65 @@ class CheckSettings(ABC):
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (*ACCEPTING_VALUE)  -> T
+        # type: (*REGION_VALUES)  -> T
         """ Adds one or more layout regions. """
         self._layout_regions = self.__regions(regions, method_name="layout_regions")
         return self
 
     def strict_regions(self, *regions):
-        # type: (*ACCEPTING_VALUE)  -> T
+        # type: (*REGION_VALUES)  -> T
         """ Adds one or more strict regions. """
         self._strict_regions = self.__regions(regions, method_name="strict_regions")
         return self
 
     def content_regions(self, *regions):
-        # type: (*ACCEPTING_VALUE)  -> T
+        # type: (*REGION_VALUES)  -> T
         """ Adds one or more content regions. """
         self._content_regions = self.__regions(regions, method_name="content_regions")
         return self
 
-    def floating_regions(self, *args):
-        # type: (*ACCEPTING_VALUE)  -> T
-        """ Adds a floating region. Details in :py:func:`_floating_provider_from` """
-        region_or_container = self._floating_provider_from(*args)
+    def floating_region(
+        self,
+        arg1,  # type: Union[REGION_VALUES, int]
+        arg2,  # type: Union[REGION_VALUES, int]
+        arg3=None,  # type: Optional[int]
+        arg4=None,  # type: Optional[int]
+        arg5=None,  # type: Optional[int]
+    ):
+        # type: (...) -> T
+        """
+        Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "
+                "max_left_offset, max_right_offset] are required parameters.
+
+        :param arg1: max_offset | Region
+        :param arg2: Region     | max_up_offset
+        :param arg3: None       | max_down_offset
+        :param arg4: None       | max_left_offset
+        :param arg5: None       | max_right_offset
+        """
+        if isinstance(arg1, int):
+            max_offset = arg1
+            region = arg2
+            bounds = FloatingBounds(
+                max_up_offset=max_offset,
+                max_down_offset=max_offset,
+                max_left_offset=max_offset,
+                max_right_offset=max_offset,
+            )
+        else:
+            region = arg1
+            bounds = FloatingBounds(
+                max_up_offset=arg2,
+                max_down_offset=arg3,
+                max_left_offset=arg4,
+                max_right_offset=arg5,
+            )
+        logger.info("Adding Region {} with FloatingBounds {}".format(region, bounds))
+        region_or_container = self._floating_provider_from(region, bounds)
         self._floating_regions.append(region_or_container)
         return self
 
-    floating = floating_regions
+    floating = floating_region
 
     def send_dom(self, send=True):
         # type: (bool) -> T
@@ -200,13 +235,8 @@ class CheckSettings(ABC):
             return IgnoreRegionByRectangle(region)
         raise TypeError("Unknown region type.")
 
-    def _floating_provider_from(self, *args, **kwargs):
-        region_or_container = args[0]
-        bounds = kwargs.pop("bounds", None)
-        if bounds:
-            if isinstance(region_or_container, Region):
-                logger.debug("floating: FloatingRegionByRectangle")
-                return FloatingRegionByRectangle(
-                    Region.from_region(region_or_container), bounds
-                )
+    def _floating_provider_from(self, region, bounds):
+        if isinstance(region, Region):
+            logger.debug("floating: FloatingRegionByRectangle")
+            return FloatingRegionByRectangle(Region.from_region(region), bounds)
         raise TypeError("Unknown region type.")

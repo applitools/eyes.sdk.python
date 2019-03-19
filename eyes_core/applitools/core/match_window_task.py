@@ -173,7 +173,7 @@ class MatchWindowTask(object):
     def _collect_float_regions(self, check_settings, image_match_settings, screenshot):
         # type: (CheckSettings, ImageMatchSettings, EyesScreenshot) -> None
         image_match_settings.floating = self._collect_regions(
-            check_settings.values.floating_regions, screenshot
+            check_settings.values.floating_region, screenshot
         )
 
     def _collect_regions(self, region_providers, screenshot):
