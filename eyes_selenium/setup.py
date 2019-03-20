@@ -63,10 +63,13 @@ setup(
     ],
     keywords="applitools eyes eyes_selenium",
     install_requires=install_requires,
-    package_data={"": ["README.rst", "LICENSE"], "selenium": ["py.typed"]},
+    package_data={
+        "": ["README.rst", "LICENSE"],
+        "applitools.selenium": ["py.typed", "resources/*.js"],
+    },
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master"
-        "/eyes_selenium/applitools/selenium",
+        "/eyes_selenium",
     },
 )

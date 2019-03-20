@@ -57,10 +57,10 @@ setup(
     ],
     keywords="applitools eyes eyes_common",
     install_requires=install_requires,
-    package_data={"": ["README.rst", "LICENSE"], "common": ["py.typed"]},
+    package_data={"": ["README.rst", "LICENSE"], "applitools.common": ["py.typed"]},
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master/"
-        "eyes_common/applitools/common",
+        "eyes_common/",
     },
 )
