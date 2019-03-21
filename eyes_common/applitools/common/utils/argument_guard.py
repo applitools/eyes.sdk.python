@@ -58,6 +58,11 @@ def is_a(param, klass):
         raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))
 
 
-def is_a_in(params, klass):
+def is_in(param, klass):
+    for kls in klass:
+        is_a(param, kls)
+
+
+def are_(params, klass):
     for param in params:
         is_a(param, klass)

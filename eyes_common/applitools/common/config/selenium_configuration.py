@@ -3,7 +3,11 @@ from typing import List
 import attr
 
 from applitools.common.utils import argument_guard
-from applitools.common.visualgridclient.model import EmulationDevice, RenderBrowserInfo
+from applitools.common.visualgridclient.model import (
+    EmulationDevice,
+    EmulationInfo,
+    RenderBrowserInfo,
+)
 
 from .configuration import Configuration
 from .misc import BrowserType, StitchMode
@@ -30,7 +34,7 @@ class SeleniumConfiguration(Configuration):
 
     # TODO: add browser and browsers with width and height
     def add_browsers(self, *browsers_info):
-        argument_guard.is_a_in(browsers_info, RenderBrowserInfo)
+        argument_guard.are_(browsers_info, RenderBrowserInfo)
         self._browsers_info.extend(browsers_info)
         return self
 
@@ -41,7 +45,7 @@ class SeleniumConfiguration(Configuration):
 
     # TODO: add add_device_emulation with baseline_env_name and width,height init
     def add_device_emulation(self, emulation_device):
-        argument_guard.is_a(emulation_device, EmulationDevice)
+        argument_guard.is_in(emulation_device, [EmulationDevice, EmulationInfo])
         browser_info = RenderBrowserInfo(
             emulation_device, baseline_env_name=self.baseline_env_name
         )
