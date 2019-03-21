@@ -1,6 +1,8 @@
 import typing
 
-from applitools.common import EyesError, RectangleSize, Region, logger
+import attr
+
+from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.metadata import AppEnvironment
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 
@@ -15,12 +17,22 @@ if typing.TYPE_CHECKING:
 
 
 class Eyes(EyesBase):
-    def __init__(self, server_url=None):
-        # type: (Text) -> None
-        super(Eyes, self).__init__(server_url)
-        self._raw_title = None  # type: Optional[Text]
-        self._screenshot = None  # type: Optional[EyesImagesScreenshot]
-        self._inferred = None  # type: Optional[Text]
+    DELEGATE_TO_CONFIG = list(attr.fields_dict(Configuration).keys())
+
+    _raw_title = None  # type: Optional[Text]
+    _screenshot = None  # type: Optional[EyesImagesScreenshot]
+    _inferred = None  # type: Optional[Text]
+    _config = Configuration()
+
+    def __getattr__(self, name):
+        if name in self.DELEGATE_TO_CONFIG:
+            return getattr(self._config, name)
+
+    def __setattr__(self, name, value):
+        if name in self.DELEGATE_TO_CONFIG:
+            setattr(self._config, name, value)
+        else:
+            super(Eyes, self).__setattr__(name, value)
 
     @property
     def full_agent_id(self):
@@ -147,8 +159,8 @@ class Eyes(EyesBase):
     def _environment(self):
         # type: () -> AppEnvironment
         app_env = AppEnvironment(
-            os=self.host_os,
-            hosting_app=self._config.host_app,
+            os=self.configuration.host_os,
+            hosting_app=self.configuration.host_app,
             display_size=self.viewport_size,
             inferred=self._inferred,
         )

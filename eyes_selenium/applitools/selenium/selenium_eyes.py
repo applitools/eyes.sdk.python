@@ -84,6 +84,22 @@ class SeleniumEyes(EyesBase):
     _UNKNOWN_DEVICE_PIXEL_RATIO = 0
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
 
+    _region_to_check = None  # type: Optional[Region]
+    _driver = None  # type: Optional[AnyWebDriver]
+    _match_window_task = None  # type: Optional[MatchWindowTask]
+    _screenshot_type = None  # type: Optional[str]  # ScreenshotType
+    _element_position_provider = None  # type: Optional[ElementPositionProvider]
+    current_frame_position_provider = None  # type: Optional[PositionProvider]
+    _check_frame_or_element = None  # type: bool
+    _original_frame_chain = None  # type: Optional[FrameChain]
+    _scroll_root_element = None
+    _effective_viewport = None  # type: Optional[Region]
+    _target_element = None
+    _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
+    _user_agent = None  # type: Optional[UserAgent]
+    _image_provider = None  # type: Optional[ImageProvider]
+    _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
+
     @staticmethod
     def set_viewport_size_static(driver, size=None, viewportsize=None):
         # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
@@ -99,43 +115,20 @@ class SeleniumEyes(EyesBase):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
-    def __init__(self, server_url=None):
-        super(SeleniumEyes, self).__init__(server_url)
+    def __init__(self, config):
+        # type: (SeleniumConfiguration) -> None
+        super(SeleniumEyes, self).__init__()
 
-        self._driver = None  # type: Optional[AnyWebDriver]
-        self._match_window_task = None  # type: Optional[MatchWindowTask]
-        self._screenshot_type = None  # type: Optional[str]  # ScreenshotType
+        self._config = config
+        self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
-        self._element_position_provider = (
-            None
-        )  # type: Optional[ElementPositionProvider]
-        self.current_frame_position_provider = None  # type: Optional[PositionProvider]
-        self._original_frame_chain = None  # type: Optional[FrameChain]
-        self._scroll_root_element = None
-        self._image_location = None
-        self._check_frame_or_element = None  # type: bool
-        self._effective_viewport = None  # type: Optional[Region]
-        self._target_element = None
-        self._screenshot_factory = (
-            None
-        )  # type: Optional[EyesWebDriverScreenshotFactory]
-        self._user_agent = None  # type: Optional[UserAgent]
-        self._image_provider = None  # type: Optional[ImageProvider]
-        self._region_position_compensation = (
-            None
-        )  # type: Optional[RegionPositionCompensation]
+
+        self._stitch_content = False  # type: bool
 
     @property
     def original_frame_chain(self):
         # type: () -> FrameChain
         return self._original_frame_chain
-
-    @property
-    def send_dom(self):
-        # type: () -> bool
-        if not self.driver.is_mobile_device():
-            return super(SeleniumEyes, self).send_dom
-        return False
 
     @property
     def stitch_content(self):
@@ -146,75 +139,14 @@ class SeleniumEyes(EyesBase):
         return self._device_pixel_ratio
 
     @property
-    def wait_before_screenshots(self):
-        return self._config.wait_before_screenshots
-
-    @wait_before_screenshots.setter
-    def wait_before_screenshots(self, value):
-        self._config.wait_before_screenshots = value
-
-    @property
     def _seconds_to_wait_screenshot(self):
-        return self.wait_before_screenshots / 1000.0
-
-    @property
-    def hide_scrollbars(self):
-        # type: () -> Text
-        """
-        Gets the stitch mode.
-
-        :return: The stitch mode.
-        """
-        return self._config.hide_scrollbars
-
-    @hide_scrollbars.setter
-    def hide_scrollbars(self, hide):
-        # type: (bool) -> None
-        self._config.hide_scrollbars = hide
+        return self.configuration.wait_before_screenshots / 1000.0
 
     @property
     def should_scrollbars_be_hidden(self):
-        return self.hide_scrollbars or (
-            self.stitch_mode == StitchMode.CSS and self._stitch_content
+        return self.configuration.hide_scrollbars or (
+            self.configuration.stitch_mode == StitchMode.CSS and self._stitch_content
         )
-
-    @property
-    def force_full_page_screenshot(self):
-        # type: () -> bool
-        """
-        Gets the stitch mode.
-
-        :return: The stitch mode.
-        """
-        return self._config.force_full_page_screenshot
-
-    @force_full_page_screenshot.setter
-    def force_full_page_screenshot(self, force):
-        # type: (bool) -> None
-        self._config.force_full_page_screenshot = force
-
-    @property
-    def stitch_mode(self):
-        # type: () -> Text
-        """
-        Gets the stitch mode.
-
-        :return: The stitch mode.
-        """
-        return self._config.stitch_mode
-
-    @stitch_mode.setter
-    def stitch_mode(self, stitch_mode):
-        # type: (Text) -> None
-        """
-        Sets the stitch property - default is by scrolling.
-
-        :param stitch_mode: The stitch mode to set - either scrolling or css.
-        """
-        self._config.stitch_mode = stitch_mode
-        if stitch_mode == StitchMode.CSS:
-            self._config.hide_scrollbars = True
-            self._config.send_dom = True
 
     @property
     def base_agent_id(self):
@@ -242,14 +174,11 @@ class SeleniumEyes(EyesBase):
                 )
             self._driver = EyesWebDriver(driver, self)
 
-    def open(self, driver, app_name, test_name, viewport_size=None):
-        # type: (AnyWebDriver, Text, Text, Optional[ViewPort]) -> EyesWebDriver
+    def open(self, driver):
+        # type: (AnyWebDriver) -> EyesWebDriver
         if self.is_disabled:
             logger.debug("open(): ignored (disabled)")
             return driver
-        self._config.app_name = app_name
-        self._config.test_name = test_name
-        self._config.viewport_size = viewport_size
 
         self._init_driver(driver)
         self._screenshot_factory = EyesWebDriverScreenshotFactory(self.driver)
@@ -605,7 +534,7 @@ class SeleniumEyes(EyesBase):
         logger.debug("calling 'check_region_by_selector'...")
         # hack: prevent stale element exception by saving viewport value
         # before catching element
-        self.check_region_by_element(
+        return self.check_region_by_element(
             self._driver.find_element(by, value),
             tag,
             match_timeout,
@@ -640,7 +569,7 @@ class SeleniumEyes(EyesBase):
         # TODO: remove this disable
         if self.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
-            return
+            return MatchResult()
         if target or stitch_content:
             logger.deprecation(
                 "Use fluent interface with check_region_by_element is deprecated. "
@@ -716,8 +645,10 @@ class SeleniumEyes(EyesBase):
         return size
 
     def _ensure_viewport_size(self):
-        if self._config.viewport_size is None:
-            self._config.viewport_size = self.driver.get_default_content_viewport_size()
+        if self.configuration.viewport_size is None:
+            self.configuration.viewport_size = (
+                self.driver.get_default_content_viewport_size()
+            )
 
     def _set_viewport_size(self, size):
         """
@@ -746,12 +677,12 @@ class SeleniumEyes(EyesBase):
         self.viewport_size = RectangleSize(size["width"], size["height"])
 
     def _ensure_configuration(self):
-        if self._config is None:
-            self._config = SeleniumConfiguration()
+        if self.configuration is None:
+            self.configuration = SeleniumConfiguration()
 
     @property
     def _environment(self):
-        os = self.host_os
+        os = self.configuration.host_os
         # If no host OS was set, check for mobile OS.
         if os is None:
             logger.info("No OS set, checking for mobile OS...")
@@ -775,7 +706,7 @@ class SeleniumEyes(EyesBase):
                 logger.info("No mobile OS detected.")
         app_env = AppEnvironment(
             os,
-            hosting_app=self._config.host_app,
+            hosting_app=self.configuration.host_app,
             display_size=self.viewport_size,
             inferred=self._inferred_environment,
         )
@@ -879,19 +810,19 @@ class SeleniumEyes(EyesBase):
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
-            self.wait_before_screenshots,
+            self.configuration.wait_before_screenshots,
             self._debug_screenshot_provider,
             self._screenshot_factory,
             origin_provider,
             scale_provider,
             self._cut_provider,
-            self.stitching_overlap,
+            self.configuration.stitching_overlap,
             self._image_provider,
             self._region_position_compensation,
         )
 
     def _try_hide_caret(self):
-        if self._config.hide_caret:
+        if self.configuration.hide_caret:
             try:
                 self.driver.execute_script(
                     "var activeElement = document.activeElement; activeElement "
@@ -911,7 +842,7 @@ class SeleniumEyes(EyesBase):
 
         if self._check_frame_or_element:
             self._last_screenshot = self._entire_element_screenshot(scale_provider)
-        elif self.force_full_page_screenshot or self._stitch_content:
+        elif self.configuration.force_full_page_screenshot or self._stitch_content:
             self._last_screenshot = self._full_page_screenshot(scale_provider)
         else:
             self._last_screenshot = self._viewport_screenshot(scale_provider)
@@ -1049,7 +980,7 @@ class SeleniumEyes(EyesBase):
             position_provider.set_position(element_location)
 
     def _create_position_provider(self, scroll_root_element):
-        stitch_mode = self.stitch_mode
+        stitch_mode = self.configuration.stitch_mode
         logger.info(
             "initializing position provider. stitch_mode: {}".format(stitch_mode)
         )

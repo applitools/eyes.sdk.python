@@ -31,7 +31,6 @@ class MatchWindowTask(object):
     """
 
     MATCH_INTERVAL = 0.5  # sec
-    MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 
     def __init__(
         self,
@@ -134,7 +133,7 @@ class MatchWindowTask(object):
     def _create_image_match_settings(self, check_settings, screenshot):
         # type: (CheckSettings, EyesScreenshot) -> ImageMatchSettings
         default = general_utils.use_default_if_none_factory(
-            self._eyes.default_match_settings, check_settings.values
+            self._eyes.configuration.default_match_settings, check_settings.values
         )
         match_level = default("match_level")
         ignore_caret = default("ignore_caret")
