@@ -59,8 +59,8 @@ def is_a(param, klass):
 
 
 def is_in(param, klass):
-    for kls in klass:
-        is_a(param, kls)
+    if not any(isinstance(param, kls) for kls in klass):
+        raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))
 
 
 def are_(params, klass):
