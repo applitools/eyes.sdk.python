@@ -886,7 +886,7 @@ class SeleniumEyes(EyesBase):
             self._region_to_check, None, elem_position_provider
         )
         return EyesWebDriverScreenshot.create_entire_frame(
-            self._driver, image, RectangleSize.from_image(image)
+            self._driver, image, RectangleSize.from_(image)
         )
 
     def _full_page_screenshot(self, scale_provider):

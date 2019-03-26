@@ -238,5 +238,5 @@ class CheckSettings(ABC):
     def _floating_provider_from(self, region, bounds):
         if isinstance(region, Region):
             logger.debug("floating: FloatingRegionByRectangle")
-            return FloatingRegionByRectangle(Region.from_region(region), bounds)
+            return FloatingRegionByRectangle(Region.from_(region), bounds)
         raise TypeError("Unknown region type.")

@@ -99,7 +99,7 @@ class Eyes(EyesBase):
 
         image = check_settings.values.image
         if self.viewport_size is None:
-            self.viewport_size = RectangleSize.from_image(image)  # type: RectangleSize
+            self.viewport_size = RectangleSize.from_(image)  # type: RectangleSize
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 

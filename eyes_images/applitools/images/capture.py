@@ -18,7 +18,7 @@ class EyesImagesScreenshot(EyesScreenshot):
             location = Point.zero()
         argument_guard.is_a(location, Point)
         self._location = location
-        self._bounds = Region.from_location_size(
+        self._bounds = Region.from_(
             location, dict(width=self._image.width, height=self._image.height)
         )
 
@@ -104,7 +104,7 @@ class EyesImagesScreenshot(EyesScreenshot):
         argument_guard.not_none(coordinates_type)
 
         if region.is_size_empty:
-            return Region.from_region(region)
+            return Region.from_(region)
 
         intersected_region = self.convert_region_location(
             region, region.coordinates_type, self.CONTEXT_RELATIVE

@@ -264,7 +264,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         argument_guard.not_none(from_)
         argument_guard.not_none(to)
 
-        result = Point.from_location(location)
+        result = Point.from_(location)
         if from_ == to:
             return result
 

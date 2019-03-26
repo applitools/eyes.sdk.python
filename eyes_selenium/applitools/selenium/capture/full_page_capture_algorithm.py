@@ -78,7 +78,7 @@ class FullPageCaptureAlgorithm(object):
                 # These will be used for storing the actual stitched size (it is
                 # sometimes less than the size extracted via "get_entire_size").
                 last_successful_location = Point.zero()
-                last_successful_part_size = RectangleSize.from_image(image)
+                last_successful_part_size = RectangleSize.from_(image)
 
                 # Take screenshot and stitch for each screenshot part
                 logger.debug("Getting the rest of the image parts...")
@@ -116,7 +116,7 @@ class FullPageCaptureAlgorithm(object):
                     last_successful_location = origin_position
 
                 if part_image:
-                    last_successful_part_size = RectangleSize.from_image(part_image)
+                    last_successful_part_size = RectangleSize.from_(part_image)
 
             logger.info("Stitching done!")
         # If the actual image size is smaller than the extracted size, we crop the image.

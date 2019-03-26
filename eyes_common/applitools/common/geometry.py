@@ -10,9 +10,10 @@ from .utils import argument_guard
 from .utils.converters import round_converter
 
 if typing.TYPE_CHECKING:
-    from typing import List, Dict, Union
-    from .utils.custom_types import ViewPort
     from PIL.Image import Image
+    from typing import List, Dict, Union, Optional
+    from .utils.custom_types import ViewPort
+    from .visualgridclient.model import EmulationDevice
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
 
@@ -51,22 +52,19 @@ class RectangleSize(DictAccessMixin):
     width = attr.ib()  # type: int
     height = attr.ib()  # type:int
 
-    @classmethod
-    def from_image(cls, image):
-        # type: (Image) -> RectangleSize
-        return cls(width=image.width, height=image.height)
-
-    @classmethod
-    def from_dict(cls, dict_or_rect):
-        # type: (Union[Dict,RectangleSize]) -> RectangleSize
-        return cls(width=dict_or_rect["width"], height=dict_or_rect["height"])
-
     def scale(self, ratio):
         # type: (float) -> RectangleSize
         return RectangleSize(round(self.width * ratio), round(self.height * ratio))
 
     def __eq__(self, other):
         return self.width == other["width"] and self.height == other["height"]
+
+    @classmethod
+    def from_(cls, obj):
+        # type: (Union[dict, Image, EmulationDevice, RectangleSize]) -> RectangleSize
+        if isinstance(obj, dict):
+            return cls(width=obj["width"], height=obj["height"])
+        return cls(width=obj.width, height=obj.height)
 
 
 @attr.s(slots=True)
@@ -98,8 +96,9 @@ class Point(DictAccessMixin):
         return cls(0, 0)
 
     @classmethod
-    def from_location(cls, location):
-        return cls(location["x"], location["y"])
+    def from_(cls, obj):
+        # type: (Union[dict, Point]) -> Point
+        return cls(obj["x"], obj["y"])
 
     def length(self):
         # type: () -> float
@@ -240,25 +239,21 @@ class Region(DictAccessMixin):
         return cls(0, 0, 0, 0)
 
     @classmethod
-    def from_region(cls, region):
-        # type: (Region) -> Region
-        return cls(
-            region.left,
-            region.top,
-            region.width,
-            region.height,
-            region.coordinates_type,
-        )
+    def from_(cls, obj, size=None):
+        # type: (Union[Image,Region, dict], Optional[dict]) -> Region
+        if size:
+            return cls(obj["x"], obj["y"], size["width"], size["height"])
+        elif isinstance(obj, Region):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
+        elif isinstance(obj, Image):
+            return cls(0, 0, obj.width, obj.height)
+        else:
+            raise ValueError("Wrong parameters passed")
 
     @classmethod
     def from_location_size(cls, location, size):
         # type: (Point, Union[Dict,RectangleSize]) -> Region
         return cls(location["x"], location["y"], size["width"], size["height"])
-
-    @classmethod
-    def from_image(cls, image):
-        # type: (Image) -> Region
-        return cls(0, 0, image.width, image.height)
 
     @property
     def x(self):
