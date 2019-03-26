@@ -330,9 +330,9 @@ class ServerConnector(object):
         # type: () -> tp.Optional[RenderingInfo]
         logger.debug("get_render_info called.")
 
-        if not self.is_session_started:
-            raise EyesError("Session not started")
-
+        self._request = self._request_factory.create(
+            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
+        )
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
