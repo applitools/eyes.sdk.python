@@ -51,12 +51,15 @@ class MatchWindowData(object):
     but MUST NOT be null.
     :param app_output: The appOutput for the current matchWindow call.
     :param tag: The tag of the window to be matched.
-    :param ignore_mismatch:
-    :param options:
+    :param ignore_mismatch: A flag indicating whether the server should ignore the image in case of a mismatch.
+    :param options: A set of match options for the server.
+    :param agent_setup: An object representing the configuration used to create the image.
     """
 
+    #  TODO Remove redundancy: userInputs and ignoreMismatch should only be inside Options. (requires server version update).
     ignore_mismatch = attr.ib()  # type: bool
     user_inputs = attr.ib()  # type: UserInputs
     app_output = attr.ib(type=AppOutput)  # type: AppOutput
     tag = attr.ib()  # type: Text
     options = attr.ib()  # type: Options
+    agent_setup = attr.ib()  # type: Text

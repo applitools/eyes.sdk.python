@@ -44,28 +44,9 @@ RENDERING_INFO_DATA = {
 RENDERING_OBJ = json_response_to_attrs_class(RENDERING_INFO_DATA, RenderingInfo)
 
 
-@pytest.fixture(scope="function")
-def connector():
-    # type: () -> ServerConnector
-    return ServerConnector(CUSTOM_EYES_SERVER)
-
-
-@pytest.fixture(scope="function")
-def configured_connector():
-    # type: () -> ServerConnector
-    connector = ServerConnector(CUSTOM_EYES_SERVER)
-    connector.api_key = os.environ["APPLITOOLS_API_KEY"]
-    return connector
-
-
-@pytest.fixture(scope="function")
-def started_connector(configured_connector):
-    configured_connector._request = configured_connector._request_factory.create(
-        server_url=configured_connector.server_url,
-        api_key=configured_connector.api_key,
-        timeout=configured_connector.timeout,
-    )
-    return configured_connector
+@pytest.fixture
+def custom_eyes_server():
+    return CUSTOM_EYES_SERVER
 
 
 class MockResponse(object):

@@ -5,6 +5,8 @@ from itertools import chain
 
 import pytest
 
+from common_fixtures import *  # noqa
+
 try:
     from typing import Text, Optional, Generator, Iterable
 except ImportError:

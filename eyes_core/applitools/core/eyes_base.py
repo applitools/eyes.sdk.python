@@ -266,6 +266,10 @@ class EyesBase(_EyesBaseAbstract):
             return self.base_agent_id
         return "{0} [{1}]".format(self.configuration.agent_id, self.base_agent_id)
 
+    @property
+    def agent_setup(self):
+        return None
+
     def add_property(self, name, value):
         # type: (Text, Text) -> None
         """

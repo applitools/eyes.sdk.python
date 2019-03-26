@@ -149,28 +149,24 @@ class TestFluentAPI(TestSetup):
             Target.window().ignore("#overflowing-div"),
         )
 
-    #
     def test_check_window_with_floating_by_selector_fluent(self):
         self.eyes.check(
             "Fluent - Window with floating region by selector",
             Target.window().floating("#overflowing-div", 3, 3, 20, 30),
         )
 
-    #
     def test_check_window_with_floating_by_region_fluent(self):
         self.eyes.check(
             "Fluent - Window with floating region by selector",
             Target.window().floating(Region(10, 10, 10, 10), 3, 3, 20, 30),
         )
 
-    #
     def test_check_element_fully_fluent(self):
         element = self.driver.find_element_by_css_selector("#overflowing-div-image")
         self.eyes.check(
             "Fluent - Region by element - fully", Target.region(element).fully()
         )
 
-    #
     def test_check_element_with_ignore_region_by_element_fluent(self):
         element = self.driver.find_element_by_id("overflowing-div-image")
         ignore_element = self.driver.find_element_by_id("overflowing-div")
