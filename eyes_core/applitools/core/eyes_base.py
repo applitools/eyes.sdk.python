@@ -63,7 +63,7 @@ class _EyesBaseAbstract(ABC):
         """
 
     @abc.abstractmethod
-    def _get_screenshot(self, **kwargs):
+    def _get_screenshot(self):
         # type: (...) -> EyesScreenshot
         pass
 
@@ -290,11 +290,17 @@ class EyesBase(_EyesBaseAbstract):
         """
         return self._is_open
 
-    def get_rendering_info(self):
-        # type: () -> RenderingInfo
+    @property
+    def render_info(self):
         if self._render_info is None:
             self._render_info = self._server_connector.get_render_info()
         return self._render_info
+
+    @render_info.setter
+    def render_info(self, value):
+        argument_guard.is_a(value, RenderingInfo)
+        self._render_info = value
+        self._server_connector._render_info = value
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]

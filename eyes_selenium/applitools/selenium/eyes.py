@@ -49,7 +49,7 @@ class Eyes(object):
         else:
             self._runner = runner
             if isinstance(runner, VisualGridRunner):
-                self._visual_grid_eyes = VisualGridRunner(runner, self._config)
+                self._visual_grid_eyes = VisualGridEyes(runner, self._config)
                 self._is_visual_grid_eyes = True
             else:
                 # runner is SeleniumRunner

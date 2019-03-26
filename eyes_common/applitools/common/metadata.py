@@ -41,7 +41,12 @@ class AppEnvironment(object):
     os = attr.ib(default=None)
     hosting_app = attr.ib(default=None)
     display_size = attr.ib(default=None)
-    device_info = attr.ib(default=None)
+    device_info = attr.ib(
+        default=None,
+        converter=lambda v: "Desktop"
+        if v is None
+        else "{} (Chrome emulation)".format(v),
+    )
     os_info = attr.ib(default=None)
     hosting_app_info = attr.ib(default=None)
     inferred = attr.ib(default=None)

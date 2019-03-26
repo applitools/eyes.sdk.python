@@ -3,10 +3,11 @@ from abc import abstractmethod
 
 import attr
 
-from applitools.common import AppOutput, EyesScreenshot, Region
+from applitools.common import AppOutput, EyesScreenshot, Point, Region
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
+    from typing import Optional
     from applitools.core import EyesBase
     from applitools.core.fluent import CheckSettings
 
@@ -16,7 +17,8 @@ if typing.TYPE_CHECKING:
 @attr.s
 class AppOutputWithScreenshot(object):
     app_output = attr.ib(type=AppOutput)  # type: AppOutput
-    screenshot = attr.ib()  # type: EyesScreenshot
+    screenshot = attr.ib()  # type: Optional[EyesScreenshot]
+    location = attr.ib(default=None)  # type: Optional[Point]
 
 
 @attr.s
