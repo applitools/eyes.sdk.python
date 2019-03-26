@@ -21,17 +21,17 @@ __all__ = (
 )
 
 
-class GetFloatingRegion(ABC):
-    @abc.abstractmethod
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
-        pass
-
-
 class GetRegion(ABC):
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[Region]
+        pass
+
+
+class GetFloatingRegion(GetRegion):
+    @abc.abstractmethod
+    def get_regions(self, eyes, screenshot):
+        # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
         pass
 
 
