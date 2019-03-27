@@ -8,7 +8,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Region, logger
 from applitools.common.utils.compat import basestring
-from applitools.core.fluent import CheckSettings
+from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
@@ -21,6 +21,7 @@ from .selector import SelectorByElement, SelectorByLocator
 
 if typing.TYPE_CHECKING:
     from typing import List
+    from applitools.common.visualgridclient.model import VisualGridSelector
     from applitools.common.utils.custom_types import FrameReference
 
 
@@ -35,16 +36,24 @@ class FrameLocator(object):
 
 
 @attr.s
-class SeleniumCheckSettingsValues(object):
-    _check_settings_values = attr.ib()
+class SeleniumCheckSettingsValues(CheckSettingsValues):
+    # hide_caret = attr.ib(init=False, default=None)
+    scroll_root_element = attr.ib(init=False, default=None)
+    scroll_root_selector = attr.ib(init=False, default=None)
+    target_selector = attr.ib(init=False, default=None)
+    target_element = attr.ib(init=False, default=None)
+    frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
-    def __getattr__(self, attr_name):
-        return getattr(self._check_settings_values, attr_name)
+    # for Rendering Grid
+    BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
+    region = attr.ib(default=None)
+    selector = attr.ib(default=None)  # type: VisualGridSelector
+    script_hooks = attr.ib(factory=dict)
 
     @property
     def target_provider(self):
-        target_selector = self._check_settings_values.target_selector
-        target_element = self._check_settings_values.target_element
+        target_selector = self.target_selector
+        target_element = self.target_element
         if target_selector:
             return SelectorByLocator(target_selector)
         elif target_element:
@@ -52,10 +61,10 @@ class SeleniumCheckSettingsValues(object):
 
     @property
     def size_mode(self):
-        target_region = self._check_settings_values.target_region
-        target_element = self._check_settings_values.target_element
-        stitch_content = self._check_settings_values.stitch_content
-        target_selector = self._check_settings_values.target_selector
+        target_region = self.target_region
+        target_element = self.target_element
+        stitch_content = self.stitch_content
+        target_selector = self.target_selector
         if not target_region and not target_element and not target_selector:
             if stitch_content:
                 return "full-page"
@@ -85,15 +94,10 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
+    values = attr.ib(init=False, default=SeleniumCheckSettingsValues())
+
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)
-
-    # _hide_caret = attr.ib(init=False, default=None)
-    _scroll_root_element = attr.ib(init=False, default=None)
-    _scroll_root_selector = attr.ib(init=False, default=None)
-    _target_selector = attr.ib(init=False, default=None)
-    _target_element = attr.ib(init=False, default=None)
-    _frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     def __attrs_post_init__(self):
         if self._region:
@@ -101,21 +105,16 @@ class SeleniumCheckSettings(CheckSettings):
         if self._frame:
             self.frame(self._frame)
 
-    @property
-    def values(self):
-        val = super(SeleniumCheckSettings, self).values
-        return SeleniumCheckSettingsValues(val)
-
     def region(self, region):
         if isinstance(region, Region):
             self.update_target_region(region)
         elif is_list_or_tuple(region):
             by, value = region
-            self._target_selector = _css_selector_from_(by, value)
+            self.values.target_selector = _css_selector_from_(by, value)
         elif isinstance(region, basestring):
-            self._target_selector = region
+            self.values.target_selector = region
         elif is_webelement(region):
-            self._target_element = region
+            self.values.target_element = region
         else:
             raise TypeError("region method called with argument of unknown type!")
         return self
@@ -131,7 +130,7 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_element = frame
         else:
             raise TypeError("frame method called with argument of unknown type!")
-        self._frame_chain.append(fl)
+        self.values.frame_chain.append(fl)
         return self
 
     def _region_provider_from(self, region, method_name):
@@ -151,16 +150,16 @@ class SeleniumCheckSettings(CheckSettings):
         )
 
     def _set_scroll_root_selector(self, selector):
-        if len(self._frame_chain) == 0:
-            self._scroll_root_selector = selector
+        if len(self.values.frame_chain) == 0:
+            self.values.scroll_root_selector = selector
         else:
-            self._frame_chain[-1].scroll_root_selector = selector
+            self.values.frame_chain[-1].scroll_root_selector = selector
 
     def _set_scroll_root_element(self, element):
-        if len(self._frame_chain) == 0:
-            self._scroll_root_element = element
+        if len(self.values.frame_chain) == 0:
+            self.values.scroll_root_element = element
         else:
-            self._frame_chain[-1].scroll_root_element = element
+            self.values.frame_chain[-1].scroll_root_element = element
 
     def scroll_root_element(self, element_or_selector):
         if isinstance(element_or_selector, basestring):
