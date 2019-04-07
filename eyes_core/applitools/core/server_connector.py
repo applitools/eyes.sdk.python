@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
+import json
 import os
 import time
-import typing as tp
+import typing
 from struct import pack
-from typing import Any, Optional
 
 import requests
+from requests import Response
 from requests.packages import urllib3  # noqa
 
 from applitools.common import RunningSession, logger
@@ -15,15 +16,24 @@ from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
-from applitools.common.utils import general_utils, gzip_compress, image_utils, urljoin
+from applitools.common.utils import (
+    argument_guard,
+    general_utils,
+    gzip_compress,
+    image_utils,
+    urljoin,
+)
 from applitools.common.utils.general_utils import json_response_to_attrs_class
-from applitools.common.visualgridclient.model import (
+from applitools.common.visual_grid import (
     RenderingInfo,
     RenderRequest,
+    RenderStatusResults,
     RunningRender,
+    VGResource,
 )
 
-if tp.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
+    from typing import Text, List, Any, Optional, Dict, Tuple
     from applitools.common.utils.custom_types import Num
 
 # Prints out all data sent/received through 'requests'
@@ -43,7 +53,7 @@ class _RequestCommunicator(object):
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
 
     def __init__(self, timeout, headers, api_key, endpoint_uri):
-        # type: (int, tp.Dict, tp.Text, tp.Text) -> None
+        # type: (int, Dict, Text, Text) -> None
         self.timeout = timeout
         self.headers = headers.copy()
         self.api_key = api_key
@@ -54,8 +64,9 @@ class _RequestCommunicator(object):
             # makes URL relative
             url_resource = url_resource.lstrip("/")
         url_resource = urljoin(self.endpoint_uri, url_resource)
-
-        params = dict(apiKey=self.api_key)
+        params = {}
+        if self.api_key:
+            params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
         headers = kwargs.get("headers", self.headers)
         timeout = kwargs.get("timeout", self.timeout)
@@ -68,7 +79,10 @@ class _RequestCommunicator(object):
             headers=headers,
             timeout=timeout,
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            logger.exception(e)
         return response
 
     def long_request(self, method, url_resource, **kwargs):
@@ -115,6 +129,11 @@ class _Request(object):
         func = self._com.long_request if long_query else self._com.request
         return func(requests.post, url_resource, **kwargs)
 
+    def put(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
+        func = self._com.long_request if long_query else self._com.request
+        return func(requests.put, url_resource, **kwargs)
+
     def get(self, url_resource=None, long_query=False, **kwargs):
         # type: (str, bool, **Any) -> requests.Response
         func = self._com.long_request if long_query else self._com.request
@@ -133,12 +152,10 @@ def create_request_factory(headers, server_url):
 
         def create(self, api_key, server_url, timeout):
             # server_url could be updated
-            if self._com:
-                return self._com
-
-            self._com = _RequestCommunicator(
-                timeout, headers, api_key, endpoint_uri=server_url
-            )
+            if not self._com:
+                self._com = _RequestCommunicator(
+                    timeout, headers, api_key, endpoint_uri=server_url
+                )
             return _Request(self._com)
 
     return RequestFactory()
@@ -165,11 +182,11 @@ class ServerConnector(object):
 
     _api_key = None
     _timeout = None
-    _server_url = None  # type: tp.Optional[tp.Text]
-    _request = None  # type: tp.Optional[_Request]
+    _server_url = None  # type: Optional[Text]
+    _request = None  # type: Optional[_Request]
 
     def __init__(self, server_url):
-        # type: (tp.Optional[tp.Text]) -> None
+        # type: (Optional[Text]) -> None
         """
         Ctor.
 
@@ -183,12 +200,12 @@ class ServerConnector(object):
 
     @property
     def server_url(self):
-        # type: () -> tp.Text
+        # type: () -> Text
         return self._server_url
 
     @server_url.setter
     def server_url(self, server_url):
-        # type: (tp.Text) -> None
+        # type: (Text) -> None
         if server_url is None:
             self._server_url = self.DEFAULT_SERVER_URL
         else:
@@ -302,7 +319,7 @@ class ServerConnector(object):
         return match_result
 
     def post_dom_snapshot(self, dom_json):
-        # type: (tp.Text) -> tp.Optional[tp.Text]
+        # type: (Text) -> Optional[Text]
         """
         Upload the DOM of the tested page.
         Return an URL of uploaded resource which should be posted to :py:   `AppOutput`.
@@ -326,8 +343,8 @@ class ServerConnector(object):
             dom_url = response.headers["Location"]
         return dom_url
 
-    def get_render_info(self):
-        # type: () -> tp.Optional[RenderingInfo]
+    def render_info(self):
+        # type: () -> Optional[RenderingInfo]
         logger.debug("get_render_info called.")
 
         self._request = self._request_factory.create(
@@ -344,7 +361,7 @@ class ServerConnector(object):
         return self._render_info
 
     def render(self, *render_requests):
-        # type: (*RenderRequest) -> tp.List[RunningRender]
+        # type: (*RenderRequest) -> List[RunningRender]
         logger.debug("render called with {}".format(render_requests))
         if self._render_info is None:
             raise RuntimeError("get_render_info must be called first")
@@ -354,35 +371,65 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
-
+        # breakpoint()
+        self._request = self._request_factory.create(
+            server_url=self.server_url, api_key=None, timeout=self.timeout
+        )
+        data = general_utils.to_json(render_requests)
         response = self._request.post(
-            url, headers=headers, params={"render-id": render_requests}
+            url,
+            headers=headers,
+            data=data
+            # params={"render-id": render_requests}
         )
         if response.ok or response.status_code == 404:
-            d = response.json()
-            return d
+            return json_response_to_attrs_class(response.json(), RunningRender)
         raise EyesError(
-            "ServerConnector.render - unexpected status ({})".format(
-                response.status_code
+            "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
+                response.status_code, response.content
             )
         )
 
-    def render_check_resource(self, running_render, check_resource):
-        pass
+    def render_put_resource(self, running_render, resource):
+        # type: (RunningRender, VGResource) -> bool
+        argument_guard.not_none(running_render)
+        argument_guard.not_none(resource)
 
-    def render_put_resource(self, running_render, resource, listener):
-        pass
+        content = resource.content
+        argument_guard.not_none(content)
+        logger.debug(
+            "resource hash: {} url: {} render id: {}"
+            "".format(resource.hash, resource.url, running_render.render_id)
+        )
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = resource.content_type
+        headers["X-Auth-Token"] = self._render_info.access_token
 
-    def render_status(self, running_render):
-        pass
+        url = urljoin(
+            self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
+        )
+        response = self._request.put(
+            url,
+            headers=headers,
+            # data=resource.content.encode("utf-8"),
+            data=resource.content,
+            params={"render-id": running_render.render_id},
+        )
+        logger.debug("ServerConnector.put_resource - request succeeded")
+        if not response.ok:
+            return False
+        return True
 
     @staticmethod
     def _prepare_data(match_data):
         # type: (MatchWindowData) -> bytes
         screenshot64 = match_data.app_output.screenshot64
-        match_data.app_output.screenshot64 = None
-        image = image_utils.image_from_base64(screenshot64)
-        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+        if screenshot64:
+            match_data.app_output.screenshot64 = None
+            image = image_utils.image_from_base64(screenshot64)
+            screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+        else:
+            screenshot_bytes = b""
 
         match_data_json_bytes = general_utils.to_json(match_data).encode(
             "utf-8"
@@ -390,3 +437,44 @@ class ServerConnector(object):
         match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
         body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
         return body
+
+    def download_resource(self, url):
+        # type: (Text) -> Response
+        logger.debug("Fetching {}...".format(url))
+        self._request = self._request_factory.create(
+            server_url=self.server_url, api_key=None, timeout=self.timeout
+        )
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Accept-Encoding"] = "identity"
+        response = self._request.get(url, headers=headers)
+        return response
+
+    def render_status_by_id(self, render_id):
+        argument_guard.not_none(render_id)
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
+        response = self._request.post(
+            url, headers=headers, data=json.dumps([render_id])
+        )
+        if not response.ok:
+            raise EyesError(
+                "Error getting server status, {} {}".format(
+                    response.status_code, response.content
+                )
+            )
+        return json_response_to_attrs_class(response.json(), RenderStatusResults)
+
+    def render_status_by_ids(self, render_ids):
+        # type: (Tuple[Text]) -> List[RenderStatusResults]
+        argument_guard.not_none(render_ids)
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
+        response = self._request.put(
+            url, headers=headers, params={"name": "render-id", "data[]": render_ids}
+        )
+        return json_response_to_attrs_class(response.json(), RenderStatusResults)

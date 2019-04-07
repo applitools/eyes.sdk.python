@@ -3,12 +3,11 @@ import typing
 import attr
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
-from applitools.common.metadata import AppEnvironment
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
+from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
-from .fluent import ImagesCheckSettings, Target
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
@@ -66,12 +65,12 @@ class Eyes(EyesBase):
         pass
 
     def _get_viewport_size(self):
-        # type: () -> ViewPort
+        # type: () -> RectangleSize
         return self._config.viewport_size
 
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self._config.viewport_size = size
+        self._config.viewport_size = size  # type: ignore
 
     def _ensure_viewport_size(self):
         pass
@@ -154,14 +153,3 @@ class Eyes(EyesBase):
         self._screenshot = None
         self._raw_title = None
         return match_result.as_expected
-
-    @property
-    def _environment(self):
-        # type: () -> AppEnvironment
-        app_env = AppEnvironment(
-            os=self.configuration.host_os,
-            hosting_app=self.configuration.host_app,
-            display_size=self.viewport_size,
-            inferred=self._inferred,
-        )
-        return app_env

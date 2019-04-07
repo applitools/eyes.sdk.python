@@ -2,8 +2,10 @@ from typing import List
 
 import attr
 
+from applitools.common.geometry import RectangleSize
 from applitools.common.utils import argument_guard
-from applitools.common.visualgridclient.model import (
+from applitools.common.utils.compat import basestring
+from applitools.common.visual_grid import (
     EmulationDevice,
     EmulationInfo,
     RenderBrowserInfo,
@@ -38,16 +40,27 @@ class SeleniumConfiguration(Configuration):
         self._browsers_info.extend(browsers_info)
         return self
 
-    def add_browser(self, browser_info):
-        argument_guard.is_a(browser_info, RenderBrowserInfo)
-        self._browsers_info.append(browser_info)
+    def add_browser(self, arg1, arg2=None, arg3=None, arg4=None):
+        if isinstance(arg1, RenderBrowserInfo):
+            self._browsers_info.append(arg1)
+        elif (
+            isinstance(arg1, int)
+            and isinstance(arg2, int)
+            and isinstance(arg3, BrowserType)
+            and isinstance(arg4, basestring)
+        ):
+            self._browsers_info.append(
+                RenderBrowserInfo(RectangleSize(arg1, arg2), arg3, arg4)
+            )
+        else:
+            raise ValueError("Unsupported parameters")
         return self
 
     # TODO: add add_device_emulation with baseline_env_name and width,height init
     def add_device_emulation(self, emulation_device):
         argument_guard.is_in(emulation_device, [EmulationDevice, EmulationInfo])
         browser_info = RenderBrowserInfo(
-            emulation_device, baseline_env_name=self.baseline_env_name
+            emulation_info=emulation_device, baseline_env_name=self.baseline_env_name
         )
         self._browsers_info.append(browser_info)
         return self

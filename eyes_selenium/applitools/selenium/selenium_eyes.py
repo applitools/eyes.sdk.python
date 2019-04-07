@@ -126,6 +126,10 @@ class SeleniumEyes(EyesBase):
         self._stitch_content = False  # type: bool
 
     @property
+    def configuration(self):
+        return self._config.configuration
+
+    @property
     def original_frame_chain(self):
         # type: () -> FrameChain
         return self._original_frame_chain

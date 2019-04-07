@@ -7,8 +7,7 @@ import attr
 from applitools.core.fluent import GetSelector
 
 if typing.TYPE_CHECKING:
-    from applitools.selenium import eyes_selenium_utils
-    from applitools.selenium.selenium_eyes import SeleniumEyes
+    from applitools.selenium import Eyes, eyes_selenium_utils
     from applitools.common.utils.custom_types import AnyWebElement
 
 __all__ = ("SelectorByElement", "SelectorByLocator")
@@ -21,7 +20,7 @@ class SelectorByElement(GetSelector):
     _sel = attr.ib()  # type: AnyWebElement
 
     def get_selector(self, eyes):
-        # type: (SeleniumEyes) -> Text
+        # type: (Eyes) -> Text
         random_id = uuid.uuid4().hex
         element = eyes_selenium_utils.get_underlying_webelement(self._sel)
         eyes.driver.execute_script(
@@ -38,6 +37,6 @@ class SelectorByLocator(GetSelector):
     _sel = attr.ib()  # type: Text
 
     def get_selector(self, eyes):
-        # type: (SeleniumEyes) -> Text
+        # type: (Eyes) -> Text
         element = eyes.driver.find_element(self._element)
         return SelectorByElement(element).get_selector(eyes)

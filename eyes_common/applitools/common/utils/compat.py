@@ -18,12 +18,23 @@ __all__ = (
     "gzip_compress",
     "range",
     "basestring",
+    "urlencode",
+    "parse_qs",
+    "urlsplit",
+    "urlunsplit",
 )
 
 PY3 = sys.version_info >= (3,)
 
 if PY3:
-    from urllib.parse import urlparse, urljoin  # noqa
+    from urllib.parse import (
+        urlparse,
+        urljoin,
+        urlencode,
+        parse_qs,
+        urlsplit,
+        urlunsplit,
+    )  # noqa
     from gzip import compress as gzip_compress  # noqa
     from queue import Queue  # noqa
 
@@ -31,7 +42,14 @@ if PY3:
     ABC = abc.ABC
     range = range  # type: ignore
 else:
-    from urlparse import urlparse, urljoin  # noqa
+    from urlparse import (
+        urlparse,
+        urljoin,
+        urlencode,
+        parse_qs,
+        urlsplit,
+        urlunsplit,
+    )  # noqa
     from Queue import Queue  # noqa
 
     basestring = basestring

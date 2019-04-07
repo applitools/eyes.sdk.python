@@ -23,7 +23,7 @@ class EyesImagesScreenshot(EyesScreenshot):
         )
 
     def sub_screenshot(self, region, throw_if_clipped=False):
-        # type: (Region, bool) -> Region
+        # type: (Region, bool) -> EyesImagesScreenshot
         argument_guard.not_none(region)
 
         # We want to get the sub-screenshot in as-is coordinates type.

@@ -47,7 +47,7 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
-@attr.s(slots=True, cmp=False)
+@attr.s(slots=True, cmp=False, hash=True)
 class RectangleSize(DictAccessMixin):
     width = attr.ib()  # type: int
     height = attr.ib()  # type:int

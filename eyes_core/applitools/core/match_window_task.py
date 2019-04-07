@@ -10,24 +10,27 @@ from applitools.common.geometry import Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.utils import general_utils, image_utils
-from applitools.common.visualgridclient.model import VisualGridSelector
+from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
-from .fluent import CheckSettings, GetRegion
+from .fluent import CheckSettings, GetFloatingRegion, GetRegion
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Optional
-    from applitools.common.capture import EyesScreenshot
+    from typing import List, Text, Optional, Union
+    from applitools.common import FloatingMatchSettings, EyesScreenshot
     from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
+
+    GET_REGION = Union[GetRegion, GetFloatingRegion]
+    REGION = Union[Region, FloatingMatchSettings]
 
 __all__ = ("MatchWindowTask",)
 
 
 def _collect_regions(region_providers, screenshot, eyes):
-    # type: (List[GetRegion], EyesScreenshot, EyesBase) -> List[Region]
-    collected = []  # type: List[Region]
+    # type: (List[GET_REGION], EyesScreenshot, EyesBase) -> List[REGION]
+    collected = []  # type: List[REGION]
     for provider in region_providers:
         try:
             regions = provider.get_regions(eyes, screenshot)
@@ -50,19 +53,19 @@ def collect_regions_from_screenshot(
 ):
     # type: (CheckSettings, ImageMatchSettings, EyesScreenshot, EyesBase) -> ImageMatchSettings
 
-    image_match_settings.ignore = _collect_regions(
+    image_match_settings.ignore = _collect_regions(  # type: ignore
         check_settings.values.ignore_regions, screenshot, eyes
     )
-    image_match_settings.layout = _collect_regions(
+    image_match_settings.layout = _collect_regions(  # type: ignore
         check_settings.values.layout_regions, screenshot, eyes
     )
-    image_match_settings.strict = _collect_regions(
+    image_match_settings.strict = _collect_regions(  # type: ignore
         check_settings.values.strict_regions, screenshot, eyes
     )
-    image_match_settings.content = _collect_regions(
+    image_match_settings.content = _collect_regions(  # type: ignore
         check_settings.values.content_regions, screenshot, eyes
     )
-    image_match_settings.floating = _collect_regions(
+    image_match_settings.floating = _collect_regions(  # type: ignore
         check_settings.values.floating_regions, screenshot, eyes
     )
     return image_match_settings
@@ -144,7 +147,7 @@ class MatchWindowTask(object):
         should_run_once_on_timeout,  # type: bool
         ignore_mismatch,  # type: bool
         check_settings,  # type: CheckSettings
-        retry_timeout,  # type: int
+        retry_timeout,  # type: Num
     ):
         if retry_timeout is None or retry_timeout < 0:
             retry_timeout = self._default_retry_timeout
@@ -209,7 +212,8 @@ class MatchWindowTask(object):
     ):
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
-        app_output.screenshot64 = image_utils.get_base64(screenshot.image)
+        if screenshot:
+            app_output.screenshot64 = image_utils.get_base64(screenshot.image)
 
         match_window_data = MatchWindowData(
             ignore_mismatch=ignore_mismatch,
@@ -247,7 +251,7 @@ class MatchWindowTask(object):
             else:
                 # We set an "infinite" image size since we don't know what the
                 # screenshot size is...
-                self._last_screenshot_bounds = Region(0, 0, float("inf"), float("inf"))
+                self._last_screenshot_bounds = Region(0, 0, 999999999999, 999999999999)
         else:
             self._last_screenshot_bounds = region
 

@@ -5,7 +5,6 @@ import attr
 from applitools.common import FloatingBounds, logger
 from applitools.common.geometry import Region
 from applitools.common.match import MatchLevel
-from applitools.common.utils import ABC
 
 from .region import (
     FloatingRegionByRectangle,
@@ -16,9 +15,9 @@ from .region import (
 
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, List, Union, Tuple
-    from applitools.common.utils.custom_types import AnyWebElement
+    from applitools.common.utils.custom_types import AnyWebElement, Num
 
-    T = typing.TypeVar("T", bound="CheckSettings")
+    CHECK_SETTINGS_TYPE = typing.TypeVar("CHECK_SETTINGS_TYPE", bound="CheckSettings")
     REGION_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
     FLOATING_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
     GR = typing.TypeVar("GR", bound=GetRegion)
@@ -34,7 +33,7 @@ class CheckSettingsValues(object):
     """
 
     target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
-    timeout = attr.ib(init=False, default=-1)  # type: float  # seconds
+    timeout = attr.ib(init=False, default=-1)  # type: Num  # seconds
 
     ignore_caret = attr.ib(init=False, default=False)  # type: bool
     stitch_content = attr.ib(init=False, default=False)  # type: bool
@@ -54,7 +53,7 @@ class CheckSettingsValues(object):
 
 
 @attr.s
-class CheckSettings(ABC):
+class CheckSettings(object):
     """
     The Match settings object to use in the various Eyes.Check methods.
     """
@@ -62,57 +61,57 @@ class CheckSettings(ABC):
     values = attr.ib(init=False, default=CheckSettingsValues())
 
     def layout(self):
-        # type: ()  -> T
+        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
         return self
 
     def exact(self):
-        # type: ()  -> T
+        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
 
         """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
         self.values.match_level = MatchLevel.EXACT
         return self
 
     def strict(self):
-        # type: ()  -> T
+        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
         return self
 
     def content(self):
-        # type: ()  -> T
+        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
         return self
 
     def match_level(self, match_level):
-        # type: (MatchLevel)  -> T
+        # type: (CHECK_SETTINGS_TYPE, MatchLevel)  -> CHECK_SETTINGS_TYPE
         self.values.match_level = match_level
         return self
 
     def ignore_caret(self, ignore=True):
-        # type: (bool)  -> T
+        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
         self.values.ignore_caret = ignore
         return self
 
     def fully(self, fully=True):
-        # type: (bool)  -> T
+        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
         self.values.stitch_content = fully
         return self
 
     def with_name(self, name):
-        # type: (Text)  -> T
+        # type: (CHECK_SETTINGS_TYPE, Text)  -> CHECK_SETTINGS_TYPE
         self.values.name = name
         return self
 
     def stitch_content(self, stitch_content=True):
-        # type: (bool)  -> T
+        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
         self.values.stitch_content = stitch_content
         return self
 
     def timeout(self, timeout_ms):
-        # type: (int)  -> T
+        # type: (CHECK_SETTINGS_TYPE, int)  -> CHECK_SETTINGS_TYPE
         self.values.timeout = timeout_ms / 1000.0  # secs
         return self
 
@@ -121,7 +120,7 @@ class CheckSettings(ABC):
         self.values.target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> T
+        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
@@ -131,7 +130,7 @@ class CheckSettings(ABC):
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> T
+        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
         """ Adds one or more layout regions. """
         self.values.layout_regions = self.__regions(
             regions, method_name="layout_regions"
@@ -139,7 +138,7 @@ class CheckSettings(ABC):
         return self
 
     def strict_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> T
+        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
         """ Adds one or more strict regions. """
         self.values.strict_regions = self.__regions(
             regions, method_name="strict_regions"
@@ -147,7 +146,7 @@ class CheckSettings(ABC):
         return self
 
     def content_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> T
+        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
         """ Adds one or more content regions. """
         self.values.content_regions = self.__regions(
             regions, method_name="content_regions"
@@ -155,14 +154,14 @@ class CheckSettings(ABC):
         return self
 
     def floating_region(
-        self,
+        self,  # type: CHECK_SETTINGS_TYPE
         arg1,  # type: Union[REGION_VALUES, int]
         arg2,  # type: Union[REGION_VALUES, int]
         arg3=None,  # type: Optional[int]
         arg4=None,  # type: Optional[int]
         arg5=None,  # type: Optional[int]
     ):
-        # type: (...) -> T
+        # type: (...) -> CHECK_SETTINGS_TYPE
         """
         Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "
                 "max_left_offset, max_right_offset] are required parameters.
@@ -173,16 +172,22 @@ class CheckSettings(ABC):
         :param arg4: None       | max_left_offset
         :param arg5: None       | max_right_offset
         """
-        if isinstance(arg1, int):
-            max_offset = arg1
-            region = arg2
+        if isinstance(arg1, int) and isinstance(arg2, Region):
+            max_offset = arg1  # type: int
+            region = arg2  # type: Region
             bounds = FloatingBounds(
                 max_up_offset=max_offset,
                 max_down_offset=max_offset,
                 max_left_offset=max_offset,
                 max_right_offset=max_offset,
             )
-        else:
+        elif (
+            isinstance(arg1, Region)
+            and isinstance(arg2, int)
+            and isinstance(arg3, int)
+            and isinstance(arg4, int)
+            and isinstance(arg5, int)
+        ):
             region = arg1
             bounds = FloatingBounds(
                 max_up_offset=arg2,
@@ -190,6 +195,8 @@ class CheckSettings(ABC):
                 max_left_offset=arg4,
                 max_right_offset=arg5,
             )
+        else:
+            raise TypeError("Unsupported parameters")
         logger.info("Adding Region {} with FloatingBounds {}".format(region, bounds))
         region_or_container = self._floating_provider_from(region, bounds)
         self.values.floating_regions.append(region_or_container)
@@ -198,7 +205,7 @@ class CheckSettings(ABC):
     floating = floating_region
 
     def send_dom(self, send=True):
-        # type: (bool) -> T
+        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
         """
          Defines whether to send the document DOM or not.
         """
@@ -206,7 +213,7 @@ class CheckSettings(ABC):
         return self
 
     def use_dom(self, use=True):
-        # type: (bool) -> T
+        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
         """
          Defines useDom for enabling the match algorithm to use dom.
         """
@@ -214,7 +221,7 @@ class CheckSettings(ABC):
         return self
 
     def enable_patterns(self, enable=True):
-        # type: (bool) -> T
+        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
         self.values.enable_patterns = enable
         return self
 

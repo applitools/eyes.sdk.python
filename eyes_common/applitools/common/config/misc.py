@@ -2,10 +2,11 @@ from enum import Enum
 
 
 class BrowserType(Enum):
-    CHROME = "CHROME"
-    FIREFOX = "FIREFOX"
-    IE = "IE"
-    EDGE = "EDGE"
+    CHROME = "chrome"
+    FIREFOX = "firefox"
+    IE_10 = "ie10"
+    IE_11 = "ie"
+    EDGE = "edge"
 
 
 class StitchMode(Enum):

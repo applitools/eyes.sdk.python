@@ -43,6 +43,11 @@ class BatchInfo(object):
         self.id = value
 
 
+def _to_rectangle(d):
+    # type: (dict) -> RectangleSize
+    return RectangleSize.from_(d)
+
+
 @attr.s
 class Configuration(object):
     DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
@@ -64,9 +69,8 @@ class Configuration(object):
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     viewport_size = attr.ib(
-        default=None,
-        converter=attr.converters.optional(lambda d: RectangleSize.from_(d)),
-    )  # type:Optional[RectangleSize]
+        default=None, converter=attr.converters.optional(_to_rectangle)
+    )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)
@@ -113,6 +117,10 @@ class Configuration(object):
 
     def clone(self):
         return copy(self)
+
+    @property
+    def short_description(self):
+        return "{} of {}".format(self.test_name, self.app_name)
 
 
 @attr.s

@@ -13,7 +13,7 @@ import attr
 
 from applitools.common import logger
 
-from .compat import iteritems, urlparse
+from .compat import iteritems, parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
 """
 General purpose utilities.
@@ -76,14 +76,16 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
             v = change_case_of_keys(v, to_camel, to_underscore)
         if v and isinstance(v, list):
             new_list = []
-            for region in v[:]:
-                if isinstance(region, dict):
-                    d = {}
-                    for k1, v1 in iteritems(region):
+            for obj in v[:]:
+                if isinstance(obj, dict):
+                    d2 = {}
+                    for k1, v1 in iteritems(obj):
                         if hasattr(v1, "value"):
                             v1 = v1.value
-                        d[k1] = v1
-            new_list.append(d)
+                        d2[k1] = v1
+                else:
+                    d2 = obj
+                new_list.append(d2)
             v = new_list
         # Enum
         if hasattr(v, "value"):
@@ -97,10 +99,22 @@ def to_json(obj, keys_to_camel_case=True):
     """
     Returns an object's json representation of attrs based classes.
     """
-    # TODO: Convert Enums to text
-    d = attr.asdict(obj, filter=lambda a, _: not a.name.startswith("_"))
-    if keys_to_camel_case:
-        d = change_case_of_keys(d, to_camel=True)
+
+    def make_dict(obj):
+        d = attr.asdict(obj, filter=lambda a, _: not a.name.startswith("_"))
+        if keys_to_camel_case:
+            d = change_case_of_keys(d, to_camel=True)
+        return d
+
+    if isinstance(obj, list) or isinstance(obj, tuple):
+        objs = obj
+        lst = []
+        for obj in objs:
+            d = make_dict(obj)
+            lst.append(d)
+        d = lst
+    else:
+        d = make_dict(obj)
     return json.dumps(d)
 
 
@@ -265,7 +279,7 @@ def retry(delays=(0, 1, 5), exception=Exception, report=lambda *args: None):
 
 def get_sha256_hash(content):
     m = hashlib.sha256()
-    m.update(content.encode("utf-8"))
+    m.update(content)
     return "".join(["%02x" % b for b in m.digest()])
 
 
@@ -278,7 +292,31 @@ def json_response_to_attrs_class(dct, cls):
     :param cls: class created by attrs
     :return: class instance
     """
-    fields = [f.name for f in attr.fields(cls)]
-    parsed_response = change_case_of_keys(dct, to_underscore=True)
-    params = {k: v for k, v in iteritems(parsed_response) if k in fields}
-    return cls(**params)
+
+    def make_obj(dct):
+        fields = [f.name for f in attr.fields(cls)]
+        parsed_response = change_case_of_keys(dct, to_underscore=True)
+        params = {k: v for k, v in iteritems(parsed_response) if k in fields}
+        return cls(**params)
+
+    if isinstance(dct, list) or isinstance(dct, tuple):
+        return [make_obj(d) for d in dct]
+    else:
+        return make_obj(dct)
+
+
+def set_query_parameter(url, param_name, param_value):
+    """Given a URL, set or replace a query parameter and return the
+    modified URL.
+
+    >>> set_query_parameter('http://example.com?foo=bar&biz=baz', 'foo', 'stuff')
+    'http://example.com?foo=stuff&biz=baz'
+
+    """
+    scheme, netloc, path, query_string, fragment = urlsplit(url)
+    query_params = parse_qs(query_string)
+
+    query_params[param_name] = [param_value]
+    new_query_string = urlencode(query_params, doseq=True)
+
+    return urlunsplit((scheme, netloc, path, new_query_string, fragment))

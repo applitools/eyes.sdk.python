@@ -32,12 +32,17 @@ install_requires = [
     # uses for check if the mobile platform is used in the test
     "Appium-Python-Client>=0.31,<0.39",
     "ua_parser==0.8",
+    "attrs >= 18,<19",
+    "transitions>=0.6,<0.7",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):
     # typing module was added as builtin in Python 3.5
     install_requires.append("typing >= 3.5.2")
+
+if sys.version_info < (3,):
+    install_requires.append("futures==3.2.0")
 
 setup(
     name="eyes_selenium",

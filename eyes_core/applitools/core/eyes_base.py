@@ -23,7 +23,7 @@ from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard
-from applitools.common.visualgridclient.model import RenderingInfo
+from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import NullCutProvider
 from applitools.core.debug import (
@@ -31,14 +31,14 @@ from applitools.core.debug import (
     NullDebugScreenshotProvider,
 )
 
-from .fluent import CheckSettings
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 
 if typing.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import ViewPort, UserInputs
+    from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
+    from applitools.core.fluent.check_settings import CHECK_SETTINGS_TYPE
     from applitools.common.capture import EyesScreenshot
     from typing import Optional, Text
 
@@ -88,17 +88,6 @@ class _EyesBaseAbstract(ABC):
         """
         Returns the title of the window of the AUT, or empty string
          if the title is not available.
-        """
-
-    @property
-    @abc.abstractmethod
-    def _environment(self):
-        # type: () -> AppEnvironment
-        """
-        Application environment is the environment (e.g., the host OS)
-        which runs the application under test.
-
-        :return: The current application environment.
         """
 
     @abc.abstractmethod
@@ -177,6 +166,24 @@ class EyesBase(_EyesBaseAbstract):
             )
         else:
             self._debug_screenshot_provider = NullDebugScreenshotProvider()
+
+    @property
+    def _environment(self):
+        # type: () -> AppEnvironment
+        """
+        Application environment is the environment (e.g., the host OS)
+        which runs the application under test.
+
+        :return: The current application environment.
+        """
+
+        app_env = AppEnvironment(
+            os=self.configuration.host_os,
+            hosting_app=self.configuration.host_app,
+            display_size=self.viewport_size,
+            inferred=self._inferred_environment,
+        )
+        return app_env
 
     @property
     def configuration(self):
@@ -289,18 +296,6 @@ class EyesBase(_EyesBaseAbstract):
         Returns whether the session is currently running.
         """
         return self._is_open
-
-    @property
-    def render_info(self):
-        if self._render_info is None:
-            self._render_info = self._server_connector.get_render_info()
-        return self._render_info
-
-    @render_info.setter
-    def render_info(self, value):
-        argument_guard.is_a(value, RenderingInfo)
-        self._render_info = value
-        self._server_connector._render_info = value
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -616,7 +611,7 @@ class EyesBase(_EyesBaseAbstract):
         )
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
-        # type: (Region, EyesScreenshot, CheckSettings) -> AppOutputWithScreenshot
+        # type: (Region, EyesScreenshot, CHECK_SETTINGS_TYPE) -> AppOutputWithScreenshot
         logger.info("getting screenshot...")
         screenshot = self._get_screenshot()
         logger.info("Done getting screenshot!")
@@ -655,7 +650,7 @@ class EyesBase(_EyesBaseAbstract):
     def _check_window_base(
         self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
-        # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
+        # type: (RegionProvider, Optional[Text], bool, CHECK_SETTINGS_TYPE) -> MatchResult
         if self.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             return MatchResult(as_expected=True)
@@ -706,9 +701,9 @@ class EyesBase(_EyesBaseAbstract):
             return None
 
     def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
-        # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
+        # type: (RegionProvider, Text, bool, CHECK_SETTINGS_TYPE) -> MatchResult
         # Update retry timeout if it wasn't specified.
-        retry_timeout = -1
+        retry_timeout = -1  # type: Num
         if check_settings:
             retry_timeout = check_settings.values.timeout
 

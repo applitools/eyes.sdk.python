@@ -9,6 +9,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Region, logger
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
+from applitools.selenium.fluent import SelectorByElement, SelectorByLocator
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
@@ -17,11 +18,10 @@ from .region import (
     IgnoreRegionByCssSelector,
     IgnoreRegionByElement,
 )
-from .selector import SelectorByElement, SelectorByLocator
 
 if typing.TYPE_CHECKING:
-    from typing import List
-    from applitools.common.visualgridclient.model import VisualGridSelector
+    from typing import List, Union, Text, Tuple
+    from applitools.common.visual_grid import VisualGridSelector
     from applitools.common.utils.custom_types import FrameReference
 
 
@@ -46,7 +46,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     # for Rendering Grid
     BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
-    region = attr.ib(default=None)
+    region = attr.ib(factory=list)
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)
 
@@ -106,6 +106,7 @@ class SeleniumCheckSettings(CheckSettings):
             self.frame(self._frame)
 
     def region(self, region):
+        # type: (Union[Region, Text, List, Tuple, WebElement, EyesWebElement]) -> CheckSettings
         if isinstance(region, Region):
             self.update_target_region(region)
         elif is_list_or_tuple(region):
