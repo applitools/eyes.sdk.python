@@ -7,13 +7,16 @@ from transitions import Machine
 from .vg_task import RenderTask, VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Dict
+    from typing import List, Optional, Dict, Any
+    from applitools.common.visual_grid import RenderStatusResults
     from applitools.common import (
         TestResults,
         SeleniumConfiguration,
         VisualGridSelector,
         RenderBrowserInfo,
     )
+    from applitools.selenium.fluent import SeleniumCheckSettings
+    from .visual_grid_runner import VisualGridRunner
     from .eyes_connector import EyesConnector
 
 NEW = "new"
@@ -60,11 +63,13 @@ class RunningTest(object):
     watch_open = {}
 
     def __attrs_post_init__(self):
+        # type: () -> None
         self._initialize_vars()
         self._initialize_state_machine()
         self.open()
 
     def _initialize_vars(self):
+        # type: () -> None
         self.open_queue = []  # type: List[VGTask]
         self.task_queue = []  # type: List[VGTask]
         self.render_queue = []  # type: List[RenderTask]
@@ -78,6 +83,7 @@ class RunningTest(object):
         self.pending_exceptions = []  # type: List[Exception]
 
     def _initialize_state_machine(self):
+        # type: () -> None
         machine = Machine(
             model=self,
             states=STATES,
@@ -90,6 +96,7 @@ class RunningTest(object):
 
     @property
     def queue(self):
+        # type: () -> List
         if self.state == NEW:
             return []
         elif self.state == NOT_RENDERED:
@@ -109,6 +116,7 @@ class RunningTest(object):
 
     @property
     def score(self):
+        # type: () -> int
         if self.state == NEW:
             return 0
         elif self.state == NOT_RENDERED:
@@ -123,12 +131,14 @@ class RunningTest(object):
             return 0
 
     def open(self):
+        # type: () -> None
         open_task = VGTask(
             "open {}".format(self.browser_info),
             lambda: self.eyes.open(self.configuration),
         )
 
         def on_task_succeeded(test_result):
+            # type: (Optional[Any]) -> None
             self.watch_open[open_task] = True
             if self.all_tasks_completed(self.watch_open):
                 self.becomes_opened()
@@ -139,8 +149,14 @@ class RunningTest(object):
         self.watch_open[open_task] = False
 
     def check(
-        self, tag, check_settings, script_result, visual_grid_manager, dom_url_mod=None
+        self,
+        tag,  # type: str
+        check_settings,  # type: SeleniumCheckSettings
+        script_result,  # type: str
+        visual_grid_manager,  # type: VisualGridRunner
+        dom_url_mod=None,  # type: Optional[Any]
     ):
+        # type: (...) -> None
         render_task = self._render_task(
             dom_url_mod, script_result, tag, visual_grid_manager
         )
@@ -151,6 +167,7 @@ class RunningTest(object):
         )
 
         def check_task_completed():
+            # type: () -> None
             self.watch_task[check_task] = True
             if self.task_lock.uuid == check_task.uuid:
                 self.task_lock = None
@@ -162,6 +179,7 @@ class RunningTest(object):
         self.watch_task[check_task] = False
 
     def _render_task(self, dom_url_mod, script_result, tag, visual_grid_manager):
+        # type: (Optional[Any], str, str, VisualGridRunner) -> RenderTask
         render_task = RenderTask(
             name="Render {} - {}".format(self.configuration.short_description, tag),
             script=script_result,
@@ -175,6 +193,7 @@ class RunningTest(object):
         self.becomes_not_rendered()
 
         def render_task_succeeded(render_status):
+            # type: (RenderStatusResults) -> None
             if render_status:
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
             self.watch_render[render_task] = True
@@ -188,6 +207,7 @@ class RunningTest(object):
         return render_task
 
     def close(self):
+        # type: () -> Optional[Any]
         if self.state == NEW:
             self.becomes_completed()
             return None
@@ -201,6 +221,7 @@ class RunningTest(object):
         close_task.on_task_error(lambda e: self.pending_exceptions.append(e))
 
         def on_task_completed():
+            # type: () -> None
             self.watch_close[close_task] = True
             if self.all_tasks_completed(self.watch_close):
                 self.becomes_completed()

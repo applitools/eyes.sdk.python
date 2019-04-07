@@ -26,6 +26,7 @@ __all__ = (
     "RenderBrowserInfo",
     "RenderInfo",
     "RGridDom",
+    "RunningRender",
     "VGResource",
     "RenderRequest",
     "RenderStatusResults",

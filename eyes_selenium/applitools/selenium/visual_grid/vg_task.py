@@ -20,6 +20,10 @@ from applitools.common.visual_grid import (
 from .eyes_connector import EyesConnector
 
 if typing.TYPE_CHECKING:
+    from typing import Any, List, Dict
+    from applitools.common.visual_grid import RenderStatusResults, RunningRender
+
+if typing.TYPE_CHECKING:
     from typing import Callable, Text
 
     from .running_test import RunningTest
@@ -51,6 +55,7 @@ class VGTask(object):
         return self
 
     def __call__(self):
+        # type: () -> None
         try:
             res = None
             if callable(self.func_to_run):
@@ -82,6 +87,7 @@ class RenderTask(VGTask):
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
+        # type: () -> None
         self.func_to_run = self.perform
         self.all_blobs = []
         self.request_resources = {}
@@ -89,6 +95,7 @@ class RenderTask(VGTask):
         self.result = None
 
     def perform(self):
+        # type: () -> RenderStatusResults
         requests = []
         rq = self.prepare_data_for_rg(self.script_data)
         requests.append(rq)
@@ -143,9 +150,11 @@ class RenderTask(VGTask):
         return self.result
 
     def _process_resources(self, running_render):
+        # type: (RunningRender) -> None
         lock = RLock()
 
         def get_resource(url):
+            # type: (str) -> VGResource
             with lock:
                 cached_resource = self.request_resources.get(url)
             if not cached_resource:
@@ -163,6 +172,7 @@ class RenderTask(VGTask):
 
     @property
     def script_data(self):
+        # type: () -> Dict[str, Any]
         return json.loads(self.script)
 
     def prepare_data_for_rg(self, data):
@@ -176,6 +186,7 @@ class RenderTask(VGTask):
             self.request_resources[resource.url] = resource
 
         def get_resource(link):
+            # type: (str) -> VGResource
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response)
 
@@ -213,6 +224,7 @@ class RenderTask(VGTask):
         )
 
     def poll_render_status(self, render_request):
+        # type: (RenderRequest) -> List[RenderStatusResults]
         iterations = 0
         statuses = []
         if not render_request.render_id:

@@ -1,7 +1,6 @@
 import typing
 
 from applitools.common import (
-    AppEnvironment,
     AppOutput,
     EyesError,
     RectangleSize,
@@ -13,7 +12,6 @@ from applitools.common.visual_grid import (
     EmulationDevice,
     RenderBrowserInfo,
     RenderRequest,
-    RenderStatusResults,
     RunningRender,
     VGResource,
 )
@@ -23,9 +21,14 @@ from applitools.selenium.__version__ import __version__
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Dict
-    from applitools.selenium.fluent import SeleniumCheckSettings
+    from typing import Text, List, Dict, Any, Optional
     from requests import Response
+    from applitools.common.metadata import AppEnvironment
+    from applitools.common.visual_grid import RenderingInfo
+    from applitools.common.match import MatchResult
+    from applitools.common.test_results import TestResults
+    from applitools.common.visual_grid import RenderStatusResults
+    from applitools.selenium.fluent import SeleniumCheckSettings
 
 
 class EyesConnector(EyesBase):
@@ -104,10 +107,12 @@ class EyesConnector(EyesBase):
         return None
 
     def _set_viewport_size(self, size):
+        # type: (RectangleSize) -> Optional[Any]
         return None
 
     @property
     def _inferred_environment(self):
+        # type: () -> str
         return "useragent: {}".format(self._browser_info.emulation_info)
 
     def _get_screenshot(self):
@@ -115,10 +120,12 @@ class EyesConnector(EyesBase):
 
     @property
     def _title(self):
+        # type: () -> Optional[Any]
         return None
 
     @property
     def _environment(self):
+        # type: () -> AppEnvironment
         app_env = AppEnvironment(
             os=self.configuration.host_os,
             hosting_app=self.configuration.host_app,
@@ -129,9 +136,11 @@ class EyesConnector(EyesBase):
         return app_env
 
     def render_info(self):
+        # type: () -> RenderingInfo
         return self._server_connector.render_info()
 
     def check(self, name, check_settings, check_task_uuid):
+        # type: (str, SeleniumCheckSettings, str) -> MatchResult
         self._current_uuid = check_task_uuid
         if name:
             check_settings = check_settings.with_name(name)
@@ -142,10 +151,12 @@ class EyesConnector(EyesBase):
         return check_result
 
     def close(self, throw_exception=True):
+        # type: (bool) -> TestResults
         self._current_uuid = None
         return super(EyesConnector, self).close(throw_exception)
 
     def render_status_for_task(self, uuid, status):
+        # type: (str, RenderStatusResults) -> None
         self._render_statuses[uuid] = status
 
     @property
@@ -158,10 +169,12 @@ class EyesConnector(EyesBase):
 
     @property
     def screenshot_url(self):
+        # type: () -> str
         return self.render_status.image_location
 
     @property
     def dom_url(self):
+        # type: () -> str
         return self.render_status.dom_location
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):

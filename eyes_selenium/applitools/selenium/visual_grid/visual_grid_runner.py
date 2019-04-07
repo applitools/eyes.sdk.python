@@ -20,6 +20,7 @@ if typing.TYPE_CHECKING:
 
 class VisualGridRunner(object):
     def __init__(self, concurrent_sessions=None):
+        # type: (Optional[int]) -> None
         self.concurrent_sessions = concurrent_sessions
         self.executor = ThreadPoolExecutor(max_workers=concurrent_sessions)
 
@@ -48,6 +49,7 @@ class VisualGridRunner(object):
         logger.info("opened")
 
     def run(self):
+        # type: () -> None
         logger.debug("run")
         while self.still_running:
             try:
@@ -59,6 +61,7 @@ class VisualGridRunner(object):
             task()
 
     def stop(self):
+        # type: () -> None
         logger.debug("stop")
         while sum(r.score for r in self.all_running_tests) > 0:
             sleep(0.5)
