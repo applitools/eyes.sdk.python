@@ -4,11 +4,11 @@ from time import sleep
 
 import attr
 
-from applitools.common import EyesError, TestResults, logger
+from applitools.common import EyesError, TestFailedError, TestResults, logger
 from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
-from applitools.selenium import resource
+from applitools.selenium import eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from .eyes_connector import EyesConnector
@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
     from typing import List, Text, Union, Optional
     from applitools.common.config import SeleniumConfiguration
     from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
-    from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
+    from applitools.selenium import Eyes, EyesWebDriver
 
 
 GET_ELEMENT_XPATH_JS = """
@@ -100,7 +100,10 @@ class VisualGridEyes(object):
 
         argument_guard.not_none(driver)
         self._init_driver(driver)
-
+        if self.configuration.viewport_size:
+            self._set_viewport_size(self.configuration.viewport_size)
+        else:
+            self.configuration.viewport_size = self._get_viewport_size()
         logger.info("getting all browsers info...")
         browsers_info = self.configuration.browsers_info
         logger.info("creating test descriptors for each browser info...")
@@ -229,72 +232,83 @@ class VisualGridEyes(object):
         element = eyes_selenium_utils.get_underlying_webelement(element)
         xpath = self.driver.execute_script(GET_ELEMENT_XPATH_JS, element)
         vgs = VisualGridSelector(xpath, "target")
-        check_settings.vg.selector = vgs
+        check_settings.values.selector = vgs
 
-    def get_region_xpaths(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
-        result = []
-        element_lists = self.collect_selenium_regions(check_settings)
-        for elem_list in element_lists:
-            xpaths = []
-            for elem_region in elem_list:
-                if elem_region.webelement is None:
-                    continue
-                # breakpoint()
-                xpath = self.driver.execute_script(
-                    GET_ELEMENT_XPATH_JS, elem_region.webelement
-                )
-                xpaths.append(xpath)
-            result.extend(xpaths)
-        return result
+    # def get_region_xpaths(self, check_settings):
+    #     # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
+    #     result = []
+    #     element_lists = self.collect_selenium_regions(check_settings)
+    #     for elem_list in element_lists:
+    #         xpaths = []
+    #         for elem_region in elem_list:
+    #             if elem_region.webelement is None:
+    #                 continue
+    #             # breakpoint()
+    #             xpath = self.driver.execute_script(
+    #                 GET_ELEMENT_XPATH_JS, elem_region.webelement
+    #             )
+    #             xpaths.append(xpath)
+    #         result.extend(xpaths)
+    #     return result
 
-    def collect_selenium_regions(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[List[WebElementRegion]]
-        ignore_elements = self.get_elements_from_regions(
-            check_settings.values.ignore_regions
-        )
-        layout_elements = self.get_elements_from_regions(
-            check_settings.values.layout_regions
-        )
-        strict_elements = self.get_elements_from_regions(
-            check_settings.values.strict_regions
-        )
-        content_elements = self.get_elements_from_regions(
-            check_settings.values.content_regions
-        )
-        floating_elements = self.get_elements_from_regions(
-            check_settings.values.floating_regions
-        )
-        element = check_settings.values.target_element
-        if element is None:
-            target_selector = check_settings.values.target_selector
-            if target_selector:
-                element = self.driver.find_element_by_css_selector(target_selector)
+    # def collect_selenium_regions(self, check_settings):
+    #     # type: (SeleniumCheckSettings) -> List[List[WebElementRegion]]
+    #     ignore_elements = self.get_elements_from_regions(
+    #         check_settings.values.ignore_regions
+    #     )
+    #     layout_elements = self.get_elements_from_regions(
+    #         check_settings.values.layout_regions
+    #     )
+    #     strict_elements = self.get_elements_from_regions(
+    #         check_settings.values.strict_regions
+    #     )
+    #     content_elements = self.get_elements_from_regions(
+    #         check_settings.values.content_regions
+    #     )
+    #     floating_elements = self.get_elements_from_regions(
+    #         check_settings.values.floating_regions
+    #     )
+    #     element = check_settings.values.target_element
+    #     if element is None:
+    #         target_selector = check_settings.values.target_selector
+    #         if target_selector:
+    #             element = self.driver.find_element_by_css_selector(target_selector)
+    #
+    #     targets = [WebElementRegion("target", element)]
+    #     return [
+    #         ignore_elements,
+    #         layout_elements,
+    #         strict_elements,
+    #         content_elements,
+    #         floating_elements,
+    #         targets,
+    #     ]
+    #
+    # def get_elements_from_regions(self, regions_provider):
+    #     # type:(List[GetRegion])->List[WebElementRegion]
+    #     elements = []
+    #     for rp in regions_provider:
+    #         webelements = rp.get_elements(self.driver)
+    #         for elem in webelements:
+    #             elements.append(WebElementRegion(elem, rp))
+    #     return elements
 
-        targets = [WebElementRegion("target", element)]
-        return [
-            ignore_elements,
-            layout_elements,
-            strict_elements,
-            content_elements,
-            floating_elements,
-            targets,
-        ]
+    # def add_open_task_to_all_running_test(self):
+    #     tasks = []
+    #     if not self.is_vgeyes_issued_open_tasks:
+    #         for r_test in self.test_list:
+    #             task = r_test.open()
+    #             tasks.append(task)
+    #         self.is_vgeyes_issued_open_tasks = True
+    #     return tasks
 
-    def get_elements_from_regions(self, regions_provider):
-        # type:(List[GetRegion])->List[WebElementRegion]
-        elements = []
-        for rp in regions_provider:
-            webelements = rp.get_elements(self.driver)
-            for elem in webelements:
-                elements.append(WebElementRegion(elem, rp))
-        return elements
+    def _get_viewport_size(self):
+        argument_guard.not_none(self.driver)
+        return eyes_selenium_utils.get_viewport_size(self.driver)
 
-    def add_open_task_to_all_running_test(self):
-        tasks = []
-        if not self.is_vgeyes_issued_open_tasks:
-            for r_test in self.test_list:
-                task = r_test.open()
-                tasks.append(task)
-            self.is_vgeyes_issued_open_tasks = True
-        return tasks
+    def _set_viewport_size(self, viewport_size):
+        try:
+            eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
+        except Exception as e:
+            logger.exception(e)
+            raise TestFailedError(str(e))
