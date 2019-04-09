@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.common import BrowserType, SeleniumConfiguration, BatchInfo
+from applitools.common import BatchInfo, BrowserType, SeleniumConfiguration
 from applitools.selenium import Target
 
 
@@ -33,6 +33,6 @@ def sel_config(request):
 def test_top_sites(eyes_vg, request):
     test_page_url = request.node.get_closest_marker("test_page_url").args[0]
     eyes_vg.check("Step1 - " + test_page_url, Target.window().send_dom(True))
-    # eyes_vg.check(
-    #     "Step2 - " + test_page_url, Target.window().fully(False).send_dom(True)
-    # )
+    eyes_vg.check(
+        "Step2 - " + test_page_url, Target.window().fully(False).send_dom(True)
+    )

@@ -149,6 +149,8 @@ class VisualGridEyes(object):
         try:
             for test in self.test_list:
                 test.check(name, check_settings, script_result, self.vg_manager)
+                if test.state == "new":
+                    test.becomes_not_rendered()
         except Exception as e:
             logger.exception(e)
             for test in self.test_list:
@@ -174,8 +176,9 @@ class VisualGridEyes(object):
         self.is_opened = False
         for test in self.test_list:
             if test.pending_exceptions:
-                exps = [str(exp) for exp in test.pending_exceptions]
-                raise "\n ".join(exps)
+                for exp in test.pending_exceptions:
+                    logger.exception(exp)
+                raise TestFailedError("During test execution above exception raised")
 
         # if throw_exception:
         #     for test in self.test_list:

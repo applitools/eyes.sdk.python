@@ -190,7 +190,6 @@ class RunningTest(object):
             eyes_connector=self.eyes,
             dom_url_mod=dom_url_mod,
         )
-        self.becomes_not_rendered()
 
         def render_task_succeeded(render_status):
             # type: (RenderStatusResults) -> None
