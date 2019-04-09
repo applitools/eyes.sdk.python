@@ -5,7 +5,8 @@ from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import logger
+from applitools.common import logger, BatchInfo
+from applitools.selenium.visual_grid import VisualGridRunner
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 
@@ -133,3 +134,40 @@ def driver(request, browser_config, webdriver_module):
         )
     finally:
         browser.quit()
+
+
+@pytest.fixture
+def vg_runner():
+    vg = VisualGridRunner(10)
+    vg.server_url = "https://eyes.applitools.com/"
+    return vg
+
+
+@pytest.fixture
+def batch_info():
+    batch_info = BatchInfo("hello world batch")
+    batch_info.id = "hw_VG_Batch_ID"
+    return batch_info
+
+
+@pytest.fixture
+def eyes_vg(vg_runner, sel_config, driver, request):
+    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
+    app_name = request.node.get_closest_marker("app_name").args[0]
+    test_name = request.node.get_closest_marker("test_name").args[0]
+    viewport_size = request.node.get_closest_marker("viewport_size")
+    if viewport_size:
+        viewport_size = viewport_size.args[0]
+    else:
+        viewport_size = None
+
+    eyes = Eyes(vg_runner)
+    eyes.configuration = sel_config
+
+    driver.get(test_page_url)
+    eyes.open(driver, app_name, test_name, viewport_size)
+    yield eyes
+    logger.debug("closing WebDriver for url {}".format(test_page_url))
+    # breakpoint()
+    eyes.close(True)
+    # TODO: print VG test results
