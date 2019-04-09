@@ -1,6 +1,7 @@
 import typing
 
 from applitools.common import (
+    AppEnvironment,
     AppOutput,
     EyesError,
     RectangleSize,
@@ -23,7 +24,6 @@ from applitools.selenium.capture import EyesWebDriverScreenshot
 if typing.TYPE_CHECKING:
     from typing import Text, List, Dict, Any, Optional
     from requests import Response
-    from applitools.common.metadata import AppEnvironment
     from applitools.common.visual_grid import RenderingInfo
     from applitools.common.match import MatchResult
     from applitools.common.test_results import TestResults

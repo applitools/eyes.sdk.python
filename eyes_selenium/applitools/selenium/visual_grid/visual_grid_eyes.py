@@ -171,7 +171,8 @@ class VisualGridEyes(object):
         self.is_opened = False
         for test in self.test_list:
             if test.pending_exceptions:
-                raise test.pending_exceptions
+                exps = [str(exp) for exp in test.pending_exceptions]
+                raise "\n ".join(exps)
 
         # if throw_exception:
         #     for test in self.test_list:

@@ -9,6 +9,7 @@ from requests import Response
 from applitools.common.config.misc import BrowserType
 from applitools.common.utils import general_utils
 from applitools.common.utils.compat import ABC, basestring, iteritems
+from applitools.common.utils.general_utils import underscore_to_camelcase
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional
@@ -192,21 +193,24 @@ class RGridDom(object):
     def content(self):
         resources = {}
         for url, res in iteritems(self._resources):
-            resources[url] = attr.asdict(
-                res, filter=lambda a, _: not a.name.startswith("_")
-            )
+            res = attr.asdict(res, filter=lambda a, _: not a.name.startswith("_"))
+            resources[url] = {underscore_to_camelcase(k): v for k, v in iteritems(res)}
         data = {"resources": resources, "domNodes": self._dom_nodes}
-        return json.dumps(data).encode("utf-8")
+        cont = json.dumps(data, sort_keys=True).encode("utf-8")
+        return cont
 
 
-@attr.s(slots=True, hash=True)
+@attr.s(slots=True)
 class VGResource(object):
     _url = attr.ib()
     content_type = attr.ib()
     _content = attr.ib(repr=False)  # type: bytes
     _msg = attr.ib(default=None)
-    hash = attr.ib(init=False, hash=False)
-    hash_format = attr.ib(init=False, hash=False, default="sha256")
+    hash = attr.ib(init=False)
+    hash_format = attr.ib(init=False, default="sha256")
+
+    def __hash__(self):
+        return self.hash
 
     @property
     def url(self):

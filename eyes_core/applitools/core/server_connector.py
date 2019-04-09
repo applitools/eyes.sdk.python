@@ -372,7 +372,7 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
         # breakpoint()
-        self._request = self._request_factory.create(
+        self._render_request = self._request_factory.create(
             server_url=self.server_url, api_key=None, timeout=self.timeout
         )
         data = general_utils.to_json(render_requests)
@@ -408,17 +408,21 @@ class ServerConnector(object):
         url = urljoin(
             self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
         )
-        response = self._request.put(
+        response = self._render_request.put(
             url,
             headers=headers,
             # data=resource.content.encode("utf-8"),
-            data=resource.content,
+            data=content,
             params={"render-id": running_render.render_id},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:
-            return False
-        return True
+            raise EyesError(
+                "Error putting resource: {}, {}".format(
+                    response.status_code, response.content
+                )
+            )
+        return resource.hash
 
     @staticmethod
     def _prepare_data(match_data):
@@ -440,13 +444,11 @@ class ServerConnector(object):
 
     def download_resource(self, url):
         # type: (Text) -> Response
+        # TODO: Fixme retry mech
         logger.debug("Fetching {}...".format(url))
-        self._request = self._request_factory.create(
-            server_url=self.server_url, api_key=None, timeout=self.timeout
-        )
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Accept-Encoding"] = "identity"
-        response = self._request.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=self.timeout)
         return response
 
     def render_status_by_id(self, render_id):
@@ -455,7 +457,7 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._request.post(
+        response = self._render_request.post(
             url, headers=headers, data=json.dumps([render_id])
         )
         if not response.ok:
@@ -474,7 +476,7 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = self._render_info.access_token
 
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._request.put(
+        response = self._render_request.put(
             url, headers=headers, params={"name": "render-id", "data[]": render_ids}
         )
         return json_response_to_attrs_class(response.json(), RenderStatusResults)

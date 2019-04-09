@@ -2,6 +2,7 @@ import json
 import time
 import typing
 import uuid
+from collections import OrderedDict
 from concurrent.futures.thread import ThreadPoolExecutor
 from threading import RLock
 
@@ -126,15 +127,11 @@ class RenderTask(VGTask):
 
             dom_resource = rq.dom.resource
 
-            cache_key = dom_resource.url
-            if self.dom_url_mod:
-                cache_key = set_query_parameter(cache_key, "modifier", self.dom_url_mod)
-
             if need_more_resources:
                 self._process_resources(running_render)
 
             if need_more_dom:
-                self.eyes_connector.render_put_resource(running_render, dom_resource)
+                self._process_dom(running_render, dom_resource)
 
             if not still_running:
                 break
@@ -149,6 +146,21 @@ class RenderTask(VGTask):
         self.result = statuses[0]
         return self.result
 
+    def _process_dom(self, running_render, dom_resource):
+        lock = RLock()
+
+        cache_key = dom_resource.url
+        if self.dom_url_mod:
+            cache_key = set_query_parameter(cache_key, "modifier", self.dom_url_mod)
+        with lock:
+            cached_dom = self.put_cache.get(cache_key)
+        if not cached_dom:
+            res_hash = self.eyes_connector.render_put_resource(
+                running_render, dom_resource
+            )
+            with lock:
+                self.put_cache[cache_key] = res_hash
+
     def _process_resources(self, running_render):
         # type: (RunningRender) -> None
         lock = RLock()
@@ -156,24 +168,26 @@ class RenderTask(VGTask):
         def get_resource(url):
             # type: (str) -> VGResource
             with lock:
-                cached_resource = self.request_resources.get(url)
+                cached_resource = self.put_cache.get(url)
             if not cached_resource:
                 response = self.eyes_connector.download_resource(url)
                 cached_resource = VGResource.from_response(url, response)
                 with lock:
-                    self.request_resources[url] = cached_resource
+                    self.put_cache[url] = cached_resource
             self.eyes_connector.render_put_resource(running_render, cached_resource)
             return cached_resource
 
-        with ThreadPoolExecutor() as executor:
-            futures = executor.map(get_resource, running_render.need_more_resources)
-            for i, resource in enumerate(futures):
-                logger.debug("Got {} - {}".format(i, resource))
+        for r_url in running_render.need_more_resources:
+            get_resource(r_url)
+        # with ThreadPoolExecutor() as executor:
+        #     futures = executor.map(get_resource, running_render.need_more_resources)
+        #     for i, resource in enumerate(futures):
+        #         logger.debug("Got {} - {}".format(i, resource))
 
     @property
     def script_data(self):
         # type: () -> Dict[str, Any]
-        return json.loads(self.script)
+        return json.loads(self.script, object_pairs_hook=OrderedDict)
 
     def prepare_data_for_rg(self, data):
         # type: (dict) -> RenderRequest
@@ -205,10 +219,8 @@ class RenderTask(VGTask):
             size_mode=self.running_test.browser_info.size_mode,
             emulation_info=self.running_test.browser_info.emulation_info,
         )
-        url = self.script_data["url"]
-        dom = RGridDom(
-            url=url, dom_nodes=self.script_data["cdt"], resources=self.request_resources
-        )
+        url = data["url"]
+        dom = RGridDom(url=url, dom_nodes=data["cdt"], resources=self.request_resources)
         return RenderRequest(
             webhook=self.rendering_info.results_url,
             url=url,

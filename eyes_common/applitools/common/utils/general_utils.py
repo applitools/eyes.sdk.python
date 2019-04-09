@@ -90,7 +90,7 @@ def change_case_of_keys(d, to_camel=False, to_underscore=False):
         # Enum
         if hasattr(v, "value"):
             v = v.value
-        new[func(k)] = v
+        new[func(k) if not k.startswith("http") else k] = v
     return new
 
 
@@ -115,7 +115,7 @@ def to_json(obj, keys_to_camel_case=True):
         d = lst
     else:
         d = make_dict(obj)
-    return json.dumps(d)
+    return json.dumps(d, sort_keys=True)
 
 
 def use_default_if_none_factory(default_obj, obj):
