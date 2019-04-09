@@ -320,14 +320,17 @@ def set_viewport_size(driver, required_size):
 
 
 def hide_scrollbars(driver, root_element):
+    # type: (EyesWebDriver, EyesWebElement) -> str
     return set_overflow_and_add_attribute(driver, _OVERFLOW_HIDDEN, root_element)
 
 
 def return_to_original_overflow(driver, root_element, origin_overflow):
+    # type: (EyesWebDriver, EyesWebElement, str) -> str
     return set_overflow(driver, origin_overflow, root_element)
 
 
 def set_overflow(driver, overflow, root_element):
+    # type: (EyesWebDriver, str, EyesWebElement) -> NoReturn
     root_element = get_underlying_webelement(root_element)
     with timeout(0.1):
         try:
@@ -342,12 +345,14 @@ def set_overflow(driver, overflow, root_element):
 
 
 def set_overflow_and_add_attribute(driver, overflow, root_element):
+    # type: (EyesWebDriver, str, EyesWebElement) -> str
     overflow = set_overflow(driver, overflow, root_element)
     add_data_overflow_to_element(driver, root_element, overflow)
     return overflow
 
 
 def add_data_overflow_to_element(driver, element, overflow):
+    # type: (EyesWebDriver, EyesWebElement, str) -> Optional[Any]
     if element is None:
         element = driver.find_element_by_tag_name("html")
     element = get_underlying_webelement(element)
@@ -357,11 +362,13 @@ def add_data_overflow_to_element(driver, element, overflow):
 
 
 def add_data_scroll_to_element(driver, element):
+    # type: (EyesWebDriver, WebElement) -> Optional[Any]
     return driver.execute_script(_JS_DATA_APPLITOOLS_SCROLL, element)
 
 
 @contextmanager
 def timeout(timeout):
+    # type: (float) -> Iterator
     time.sleep(timeout)
     yield
 
@@ -434,7 +441,9 @@ def parse_location_string(position):
 
 
 def scroll_root_element_from(driver, container=None):
+    # type: (EyesWebDriver, SeleniumCheckSettings) -> EyesWebElement
     def root_html():
+        # type: () -> EyesWebElement
         return driver.find_element_by_tag_name("html")
 
     scroll_root_element = None
@@ -458,6 +467,7 @@ def scroll_root_element_from(driver, container=None):
 
 
 def current_frame_scroll_root_element(driver):
+    # type: (EyesWebDriver) -> EyesWebElement
     fc = driver.frame_chain.clone()
     cur_frame = fc.peek
     root_element = None

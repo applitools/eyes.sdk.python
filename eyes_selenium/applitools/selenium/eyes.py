@@ -10,7 +10,7 @@ from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional
+    from typing import Text, Optional, Union, Callable, Any
     from selenium.webdriver.remote.webdriver import WebDriver
     from applitools.common.utils.custom_types import AnyWebDriver, ViewPort
     from .webdriver import EyesWebDriver
@@ -41,6 +41,7 @@ class Eyes(object):
     configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
 
     def __init__(self, runner=None):
+        # type: (Optional[Any]) -> None
         if runner is None:
             self._selenium_eyes = SeleniumEyes(self)
         elif isinstance(runner, VisualGridRunner):
@@ -52,6 +53,7 @@ class Eyes(object):
 
     @property
     def _current_eyes(self):
+        # type: () -> Union[SeleniumEyes, VisualGridEyes]
         if self._is_visual_grid_eyes:
             return self._visual_grid_eyes
         else:
@@ -70,7 +72,7 @@ class Eyes(object):
             viewport_size = SeleniumEyes.get_viewport_size_static(driver)
         self.configuration.app_name = app_name
         self.configuration.test_name = test_name
-        self.configuration.viewport_size = viewport_size
+        self.configuration.viewport_size = viewport_size  # type: ignore
 
         self._driver = driver
 
@@ -80,12 +82,15 @@ class Eyes(object):
             return self._selenium_eyes.open(driver)
 
     def __getattr__(self, name):
+        # type: (str) -> Union[Callable, bool]
         if name in self.DELEGATE_TO_CONFIG:
             return getattr(self.configuration, name)
         if name in self.EYES_COMMON:
             return getattr(self._current_eyes, name)
+        raise AttributeError
 
     def __setattr__(self, name, value):
+        # type: (str, Any) -> None
         if name in self.DELEGATE_TO_CONFIG:
             setattr(self.configuration, name, value)
 

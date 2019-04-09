@@ -29,6 +29,7 @@ class SafariScreenshotImageProvider(ImageProvider):
 
 class TakesScreenshotImageProvider(ImageProvider):
     def get_image(self):
+        # type: () -> Image
         logger.info("Getting screenshot as base64...")
         screenshot64 = self._eyes.driver.get_screenshot_as_base64()
         logger.info("Done getting base64! Creating BufferedImage...")

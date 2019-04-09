@@ -66,6 +66,7 @@ if typing.TYPE_CHECKING:
     )
     from applitools.core import MatchWindowTask
     from applitools.core.scaling import ScaleProvider
+    from .eyes import Eyes
     from .frames import Frame
 
 
@@ -116,7 +117,7 @@ class SeleniumEyes(EyesBase):
         return eyes_selenium_utils.get_viewport_size(driver)
 
     def __init__(self, config):
-        # type: (SeleniumConfiguration) -> None
+        # type: (Eyes) -> None
         super(SeleniumEyes, self).__init__()
 
         self._config = config
@@ -127,6 +128,7 @@ class SeleniumEyes(EyesBase):
 
     @property
     def configuration(self):
+        # type: () -> SeleniumConfiguration
         return self._config.configuration
 
     @property
@@ -136,10 +138,12 @@ class SeleniumEyes(EyesBase):
 
     @property
     def stitch_content(self):
+        # type: () -> bool
         return self._stitch_content
 
     @property
     def device_pixel_ratio(self):
+        # type: () -> int
         return self._device_pixel_ratio
 
     @property
@@ -148,12 +152,14 @@ class SeleniumEyes(EyesBase):
 
     @property
     def should_scrollbars_be_hidden(self):
+        # type: () -> bool
         return self.configuration.hide_scrollbars or (
             self.configuration.stitch_mode == StitchMode.CSS and self._stitch_content
         )
 
     @property
     def base_agent_id(self):
+        # type: () -> str
         return "eyes.selenium.python/{version}".format(version=__version__)
 
     @property
@@ -165,6 +171,7 @@ class SeleniumEyes(EyesBase):
         return self._driver
 
     def _init_driver(self, driver):
+        # type: (WebDriver) -> None
         if isinstance(driver, EyesWebDriver):
             # If the driver is an EyesWebDriver (as might be the case when tests are ran
             # consecutively using the same driver object)

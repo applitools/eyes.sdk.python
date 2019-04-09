@@ -19,7 +19,7 @@ from applitools.common import (
 from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.general_utils import json_response_to_attrs_class
-from applitools.common.visualgridclient.model import RenderingInfo
+from applitools.common.visual_grid import RenderingInfo
 from applitools.core import ServerConnector
 
 API_KEY = "TEST API KEY"

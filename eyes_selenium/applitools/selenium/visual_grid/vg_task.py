@@ -186,7 +186,7 @@ class RenderTask(VGTask):
             self.request_resources[resource.url] = resource
 
         def get_resource(link):
-            # type: (str) -> VGResource
+            # type: (Text) -> VGResource
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response)
 

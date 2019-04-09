@@ -50,11 +50,18 @@ class SeleniumPositionProvider(PositionProvider):
         logger.debug("Creating {}".format(self.__class__.__name__))
 
     def __enter__(self):
+        # type: () -> Union[CSSTranslatePositionProvider, ScrollPositionProvider]
         if self._driver.is_mobile_device():
             return self
         return super(SeleniumPositionProvider, self).__enter__()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type,  # type: Optional[Any]
+        exc_val,  # type: Optional[Any]
+        exc_tb,  # type: Optional[Any]
+    ):
+        # type: (...) -> Union[CSSTranslatePositionProvider, ScrollPositionProvider]
         if self._driver.is_mobile_device():
             return self
         return super(SeleniumPositionProvider, self).__exit__(exc_type, exc_val, exc_tb)
@@ -80,6 +87,7 @@ class SeleniumPositionProvider(PositionProvider):
         return RectangleSize(width=width, height=height)
 
     def _add_data_attribute_to_element(self):
+        # type: () -> None
         if not self._data_attribute_added:
             if hasattr(self, "_element"):
                 element = self._element
@@ -99,6 +107,7 @@ var y = window.scrollY || ((window.pageYOffset || doc.scrollTop) - (doc.clientTo
 return [x, y]"""
 
     def set_position(self, location):
+        # type: (Point) -> Point
         logger.debug(
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
@@ -120,6 +129,7 @@ return [x, y]"""
 
     @staticmethod
     def get_current_position_static(driver, scroll_root_element):
+        # type: (EyesWebDriver, WebElement) -> Point
         element = eyes_selenium_utils.get_underlying_webelement(scroll_root_element)
         xy = driver.execute_script(
             "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
@@ -145,15 +155,18 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
     _last_set_position = None  # cache
 
     def __init__(self, driver, scroll_root_element):
+        # type: (EyesWebDriver, EyesWebElement) -> None
         super(CSSTranslatePositionProvider, self).__init__(driver, scroll_root_element)
 
     def _set_transform(self, transform_list):
+        # type: (Dict[str, str]) -> None
         script = ""
         for key, value in transform_list.items():
             script += "document.documentElement.style['{}'] = '{}';".format(key, value)
         self._execute_script(script)
 
     def _get_current_transform(self):
+        # type: () -> Dict[str, str]
         script = "return {"
         for key in self._JS_TRANSFORM_KEYS:
             script += "'{0}': document.documentElement.style['{0}'],".format(key)
@@ -161,9 +174,11 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         return self._execute_script(script)
 
     def get_current_position(self):
+        # type: () -> Optional[Point]
         return self._last_set_position
 
     def _get_position_from_transform(self, transform):
+        # type: (str) -> Point
         data = re.match(
             r"^translate\(\s*(\-?)([\d, \.]+)px,\s*(\-?)([\d, \.]+)px\s*\)", transform
         )
@@ -181,6 +196,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         return Point(float(x), float(y))
 
     def set_position(self, location):
+        # type: (Point) -> Point
         translate_command = "translate(-{}px, -{}px)".format(location.x, location.y)
         logger.debug(translate_command)
         transform_list = dict(
@@ -192,6 +208,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         return self._last_set_position
 
     def push_state(self):
+        # type: () -> None
         """
         Adds the transform to the states list.
         """

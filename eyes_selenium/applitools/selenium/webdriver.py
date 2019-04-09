@@ -660,6 +660,7 @@ class EyesWebDriver(object):
 
     @property
     def frame_chain(self):
+        # type: () -> FrameChain
         """
         Gets the frame chain.
 

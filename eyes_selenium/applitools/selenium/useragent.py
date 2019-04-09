@@ -8,6 +8,7 @@ __all__ = ("parse_user_agent_string", "BrowserNames", "OSNames", "UserAgent")
 
 
 def parse_user_agent_string(ua_string):
+    # type: (str) -> UserAgent
     parsed = user_agent_parser.Parse(ua_string)
     ua = parsed["user_agent"]
     os = parsed["os"]

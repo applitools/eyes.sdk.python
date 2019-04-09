@@ -100,6 +100,7 @@ class SeleniumCheckSettings(CheckSettings):
     _frame = attr.ib(default=None)
 
     def __attrs_post_init__(self):
+        # type: () -> None
         if self._region:
             self.region(self._region)
         if self._frame:

@@ -82,6 +82,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         )
 
     def __attrs_post_init__(self):
+        # type: () -> None
         self._frame_chain = self._driver.frame_chain.clone()
         self._screenshot_type = self.update_screenshot_type(
             self._screenshot_type, self._image
@@ -111,10 +112,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             )
 
     def _validate_frame_window(self):
+        # type: () -> None
         if self.frame_window.width <= 0 or self.frame_window.height <= 0:
             raise EyesError("Got empty frame window for screenshot!")
 
     def get_updated_frame_location_in_screenshot(self, frame_location_in_screenshot):
+        # type: (Point) -> Point
         if self.frame_chain.size > 0:
             frame_location_in_screenshot = self.calc_frame_location_in_screenshot(
                 self._driver, self._frame_chain, self._screenshot_type
@@ -124,6 +127,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return frame_location_in_screenshot
 
     def get_updated_scroll_position(self, position_provider):
+        # type: (CSSTranslatePositionProvider) -> Point
         try:
             sp = position_provider.get_current_position()
             if not sp:
@@ -133,7 +137,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
         return sp
 
-    def update_screenshot_type(self, screenshot_type, image):
+    def update_screenshot_type(
+        self,
+        screenshot_type,  # type: Optional[ScreenshotType]
+        image,  # type: Union[Image, PngImageFile]
+    ):
+        # type: (...) -> ScreenshotType
         if screenshot_type is None:
             viewport_size = self._driver.eyes.viewport_size
             scale_viewport = self._driver.eyes.stitch_content
@@ -152,9 +161,11 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @property
     def image(self):
+        # type: () -> Union[Image, PngImageFile]
         return self._image
 
     def get_frame_size(self, position_provider):
+        # type: (CSSTranslatePositionProvider) -> RectangleSize
         if self._frame_chain:
             frame_size = self._frame_chain.peek.outer_size
         else:
@@ -220,6 +231,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @property
     def frame_chain(self):
+        # type: () -> FrameChain
         return self._frame_chain
 
     def location_in_screenshot(self, location, coordinates_type):
@@ -400,4 +412,5 @@ class EyesWebDriverScreenshotFactory(EyesScreenshotFactory):
     _driver = attr.ib()
 
     def make_screenshot(self, image):
+        # type: (Image) -> EyesWebDriverScreenshot
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)

@@ -12,6 +12,7 @@ from applitools.common.utils import general_utils
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
+    from typing import Dict
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common.geometry import Point
     from .webdriver import EyesWebDriver

@@ -77,18 +77,21 @@ class FrameChain(tp.Sequence[Frame]):
     _frames = attr.ib()
 
     def __init__(self, frame_chain=None):
+        # type: (Optional[FrameChain]) -> None
         self._frames = []
         if frame_chain is not None:
             assert isinstance(frame_chain, FrameChain), "Must be a FrameChain"
             self._frames = copy.copy(frame_chain._frames)
 
     def __iter__(self):
+        # type: () -> list_iterator
         return iter(self._frames)
 
     def __getitem__(self, item):
         return self._frames[item]
 
     def __len__(self):
+        # type: () -> int
         return len(self._frames)
 
     def __str__(self):
@@ -104,10 +107,12 @@ class FrameChain(tp.Sequence[Frame]):
         return True
 
     def clear(self):
+        # type: () -> None
         self._frames = []
 
     @property
     def size(self):
+        # type: () -> int
         return len(self)
 
     @property

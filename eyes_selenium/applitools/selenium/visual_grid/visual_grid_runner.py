@@ -8,8 +8,8 @@ from time import sleep
 from applitools.common import logger
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List
-    from applitools.common import RenderingInfo
+    from typing import Optional, List, Dict, Text
+    from applitools.common import RenderingInfo, VGResource
     from applitools.selenium.visual_grid import (
         RunningTest,
         VisualGridEyes,
@@ -25,7 +25,7 @@ class VisualGridRunner(object):
         self.executor = ThreadPoolExecutor(max_workers=concurrent_sessions)
 
         self._rendering_info = None  # type: Optional[RenderingInfo]
-        self.resource_cache = {}
+        self.resource_cache = {}  # type: Dict[Text, VGResource]
         self.put_cache = {}
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.test_result = None
@@ -57,7 +57,7 @@ class VisualGridRunner(object):
             except IndexError:
                 sleep(1)
                 continue
-
+            # TODO: add parallelism
             task()
 
     def stop(self):
