@@ -46,7 +46,6 @@ class ImageProvider(ABC):
     """
 
     def __init__(self, eyes):
-        # type: (EyesBase) -> None
         self._eyes = eyes
 
     @abstractmethod

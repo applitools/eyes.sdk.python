@@ -38,5 +38,5 @@ class SelectorByLocator(GetSelector):
 
     def get_selector(self, eyes):
         # type: (Eyes) -> Text
-        element = eyes.driver.find_element(self._element)
+        element = eyes.driver.find_element(self._sel)
         return SelectorByElement(element).get_selector(eyes)

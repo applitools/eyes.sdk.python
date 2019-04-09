@@ -84,7 +84,6 @@ class FrameChain(tp.Sequence[Frame]):
             self._frames = copy.copy(frame_chain._frames)
 
     def __iter__(self):
-        # type: () -> list_iterator
         return iter(self._frames)
 
     def __getitem__(self, item):

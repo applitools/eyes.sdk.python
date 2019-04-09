@@ -12,8 +12,8 @@ from .utils.converters import round_converter
 if typing.TYPE_CHECKING:
     from PIL.Image import Image
     from typing import List, Dict, Union, Optional
-    from .utils.custom_types import ViewPort
-    from .visualgridclient.model import EmulationDevice
+    from .utils.custom_types import ViewPort, Num
+    from .visual_grid import EmulationDevice
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
 
@@ -73,8 +73,8 @@ class Point(DictAccessMixin):
     A point with the coordinates (x,y).
     """
 
-    x = attr.ib(converter=round_converter)  # type: int
-    y = attr.ib(converter=round_converter)  # type: int
+    x = attr.ib(converter=round_converter)  # type: Num
+    y = attr.ib(converter=round_converter)  # type: Num
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)

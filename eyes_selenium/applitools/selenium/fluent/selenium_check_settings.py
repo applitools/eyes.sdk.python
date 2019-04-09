@@ -38,7 +38,7 @@ class FrameLocator(object):
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
-    scroll_root_element = attr.ib(init=False, default=None)
+    scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     scroll_root_selector = attr.ib(init=False, default=None)
     target_selector = attr.ib(init=False, default=None)
     target_element = attr.ib(init=False, default=None)

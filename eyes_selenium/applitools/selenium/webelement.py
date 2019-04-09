@@ -12,9 +12,10 @@ from applitools.common.utils import general_utils
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
-    from typing import Dict
+    from typing import Optional, Text
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common.geometry import Point
+    from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
 
@@ -108,8 +109,8 @@ class EyesWebElement(object):
         self._driver = driver  # type: EyesWebDriver
 
         # setting from outside
-        self.position_provider = None
-        self._original_overflow = None
+        self.position_provider = None  # type: Optional[SeleniumPositionProvider]
+        self._original_overflow = None  # type: Optional[Text]
         # Replacing implementation of the underlying driver with ours. We'll put the original
         # methods back before destruction.
         self._original_methods = {}  # type: tp.Dict[tp.Text, tp.Callable]
@@ -235,7 +236,7 @@ class EyesWebElement(object):
         :return: The previous value of the overflow property (could be None).
         """
         logger.debug("EyesWebElement.HideScrollbars()")
-        self._original_overflow = eyes_selenium_utils.hide_scrollbars(
+        self._original_overflow = eyes_selenium_utils.hide_scrollbars(  # type: ignore
             self.driver, self.element
         )
         return self._original_overflow

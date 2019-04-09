@@ -26,7 +26,7 @@ class VisualGridRunner(object):
 
         self._rendering_info = None  # type: Optional[RenderingInfo]
         self.resource_cache = {}  # type: Dict[Text, VGResource]
-        self.put_cache = {}
+        self.put_cache = {}  # type: Dict[Text, VGResource]
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.test_result = None
         self.still_running = True
@@ -34,7 +34,6 @@ class VisualGridRunner(object):
         thread.setName(self.__class__.__name__)
         thread.start()
         self.thread = thread
-        self.futures = []
 
     def render_info(self, eyes_connector):
         # type: (EyesConnector) -> RenderingInfo

@@ -52,6 +52,11 @@ class Eyes(object):
             raise ValueError("Wrong runner")
 
     @property
+    def driver(self):
+        # type: () -> EyesWebDriver
+        return self._current_eyes.driver
+
+    @property
     def _current_eyes(self):
         # type: () -> Union[SeleniumEyes, VisualGridEyes]
         if self._is_visual_grid_eyes:

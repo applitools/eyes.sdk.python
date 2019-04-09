@@ -6,6 +6,7 @@ from applitools.core.capture import ImageProvider
 from applitools.selenium.useragent import BrowserNames, UserAgent
 
 if typing.TYPE_CHECKING:
+    from PIL.Image import Image
     from applitools.selenium.selenium_eyes import SeleniumEyes
     from applitools.selenium.webdriver import EyesWebDriver
 
