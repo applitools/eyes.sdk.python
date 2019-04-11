@@ -77,10 +77,6 @@ class EyesConnector(EyesBase):
         # type: (*RenderRequest) -> List[RunningRender]
         return self._server_connector.render(*render_requests)
 
-    # def render_status_by_ids(self, *ids):
-    #     # type: (*Text) -> List[RenderStatusResults]
-    #     return self._server_connector.render_status_by_ids(ids)
-
     def render_status_by_id(self, render_id):
         # type: (Text) -> RenderStatusResults
         return self._server_connector.render_status_by_id(render_id)
@@ -113,7 +109,7 @@ class EyesConnector(EyesBase):
     @property
     def _inferred_environment(self):
         # type: () -> str
-        return "useragent: {}".format(self._browser_info.emulation_info)
+        return ""
 
     def _get_screenshot(self):
         return None
@@ -126,11 +122,12 @@ class EyesConnector(EyesBase):
     @property
     def _environment(self):
         # type: () -> AppEnvironment
+        status = list(self._render_statuses.values())[0]
         app_env = AppEnvironment(
             os=self.configuration.host_os,
             hosting_app=self.configuration.host_app,
-            display_size=self.viewport_size,
-            inferred=self._inferred_environment,
+            display_size=status.device_size,
+            inferred="useragent: {}".format(status.user_agent),
             device_info=self.device,
         )
         return app_env

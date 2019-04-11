@@ -18,12 +18,11 @@ from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.utils import (
     argument_guard,
-    general_utils,
     gzip_compress,
     image_utils,
+    json_utils,
     urljoin,
 )
-from applitools.common.utils.general_utils import json_response_to_attrs_class
 from applitools.common.visual_grid import (
     RenderingInfo,
     RenderRequest,
@@ -161,6 +160,24 @@ def create_request_factory(headers, server_url):
     return RequestFactory()
 
 
+def prepare_match_data(match_data):
+    # type: (MatchWindowData) -> bytes
+    screenshot64 = match_data.app_output.screenshot64
+    if screenshot64:
+        match_data.app_output.screenshot64 = None
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+    else:
+        screenshot_bytes = b""
+
+    match_data_json_bytes = json_utils.to_json(match_data).encode(
+        "utf-8"
+    )  # type: bytes
+    match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
+    body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+    return body
+
+
 class ServerConnector(object):
     """
     Provides an API for communication with the Applitools server.
@@ -248,13 +265,13 @@ class ServerConnector(object):
         :return: Represents the current running session.
         """
         logger.debug("start_session called.")
-        data = session_start_info.to_json()
+        data = json_utils.to_json(session_start_info)
 
         self._request = self._request_factory.create(
             server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
         )
         response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
-        running_session = json_response_to_attrs_class(response.json(), RunningSession)
+        running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
         return running_session
 
@@ -281,7 +298,7 @@ class ServerConnector(object):
             headers=ServerConnector.DEFAULT_HEADERS,
         )
 
-        test_results = json_response_to_attrs_class(response.json(), TestResults)
+        test_results = json_utils.attr_from_response(response, TestResults)
         logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         # mark that session isn't started
@@ -305,7 +322,7 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
-        data = self._prepare_data(match_data)
+        data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
@@ -315,7 +332,7 @@ class ServerConnector(object):
             data=data,
             headers=headers,
         )
-        match_result = json_response_to_attrs_class(response.json(), MatchResult)
+        match_result = json_utils.attr_from_response(response, MatchResult)
         return match_result
 
     def post_dom_snapshot(self, dom_json):
@@ -357,7 +374,7 @@ class ServerConnector(object):
         if not response.ok:
             return None
 
-        self._render_info = json_response_to_attrs_class(response.json(), RenderingInfo)
+        self._render_info = json_utils.attr_from_response(response, RenderingInfo)
         return self._render_info
 
     def render(self, *render_requests):
@@ -367,23 +384,18 @@ class ServerConnector(object):
             raise RuntimeError("get_render_info must be called first")
 
         url = urljoin(self._render_info.service_url, self.RENDER)
-        # if len(render_requests) > 1:
+
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
-        # breakpoint()
+
         self._render_request = self._request_factory.create(
             server_url=self.server_url, api_key=None, timeout=self.timeout
         )
-        data = general_utils.to_json(render_requests)
-        response = self._request.post(
-            url,
-            headers=headers,
-            data=data
-            # params={"render-id": render_requests}
-        )
+        data = json_utils.to_json(render_requests)
+        response = self._request.post(url, headers=headers, data=data)
         if response.ok or response.status_code == 404:
-            return json_response_to_attrs_class(response.json(), RunningRender)
+            return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
             "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
                 response.status_code, response.content
@@ -411,7 +423,6 @@ class ServerConnector(object):
         response = self._render_request.put(
             url,
             headers=headers,
-            # data=resource.content.encode("utf-8"),
             data=content,
             params={"render-id": running_render.render_id},
         )
@@ -423,24 +434,6 @@ class ServerConnector(object):
                 )
             )
         return resource.hash
-
-    @staticmethod
-    def _prepare_data(match_data):
-        # type: (MatchWindowData) -> bytes
-        screenshot64 = match_data.app_output.screenshot64
-        if screenshot64:
-            match_data.app_output.screenshot64 = None
-            image = image_utils.image_from_base64(screenshot64)
-            screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
-        else:
-            screenshot_bytes = b""
-
-        match_data_json_bytes = general_utils.to_json(match_data).encode(
-            "utf-8"
-        )  # type: bytes
-        match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-        body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
-        return body
 
     def download_resource(self, url):
         # type: (Text) -> Response
@@ -466,7 +459,7 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
-        return json_response_to_attrs_class(response.json(), RenderStatusResults)
+        return json_utils.attr_from_response(response, RenderStatusResults)
 
     def render_status_by_ids(self, render_ids):
         # type: (Tuple[Text]) -> List[RenderStatusResults]
@@ -479,4 +472,4 @@ class ServerConnector(object):
         response = self._render_request.put(
             url, headers=headers, params={"name": "render-id", "data[]": render_ids}
         )
-        return json_response_to_attrs_class(response.json(), RenderStatusResults)
+        return json_utils.attr_from_response(response, RenderStatusResults)

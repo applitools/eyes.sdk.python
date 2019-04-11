@@ -10,7 +10,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import general_utils
-from applitools.common.utils.converters import isoformat
+from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Branch", "Configuration")
 
@@ -24,13 +24,16 @@ class BatchInfo(object):
     """
 
     name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME")
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME"),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
     started_at = attr.ib(
-        factory=lambda: datetime.now(general_utils.UTC), converter=isoformat
+        factory=lambda: datetime.now(general_utils.UTC),
+        metadata={JsonInclude.THIS: True},
     )  # # type: Text
     id = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
+        metadata={JsonInclude.THIS: True},
     )  # type: Text
 
     @property

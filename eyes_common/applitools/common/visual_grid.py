@@ -6,15 +6,16 @@ from enum import Enum
 import attr
 from requests import Response
 
-from applitools.common.config.misc import BrowserType
-from applitools.common.utils import general_utils
-from applitools.common.utils.compat import ABC, basestring, iteritems
-from applitools.common.utils.general_utils import underscore_to_camelcase
+from .config.misc import BrowserType
+from .geometry import RectangleSize
+from .utils import general_utils, json_utils
+from .utils.compat import ABC, basestring
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional
-    from applitools.common.geometry import RectangleSize
     from applitools.selenium.visual_grid.vg_task import VGTask
+    from .geometry import Region
 
 __all__ = (
     "RenderStatus",
@@ -22,7 +23,7 @@ __all__ = (
     "ScreenOrientation",
     "VisualGridSelector",
     "DeviceName",
-    "EmulationInfo",
+    "ChromeEmulationInfo",
     "EmulationDevice",
     "RenderBrowserInfo",
     "RenderInfo",
@@ -101,26 +102,34 @@ class DeviceName(Enum):
 
 
 @attr.s(hash=True)
-class EmulationInfo(EmulationBaseInfo):
-    DeviceName = DeviceName
-    device_name = attr.ib()
-    screen_orientation = attr.ib()  # type: ScreenOrientation
+class ChromeEmulationInfo(EmulationBaseInfo):
+    # DeviceName = DeviceName
+    device_name = attr.ib(
+        converter=DeviceName, metadata={JsonInclude.NON_NONE: True}
+    )  # type: DeviceName
+    screen_orientation = attr.ib(
+        converter=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
+    )  # type: ScreenOrientation
 
 
 @attr.s(hash=True)
 class EmulationDevice(EmulationBaseInfo):
-    width = attr.ib()  # type: int
-    height = attr.ib()  # type: int
-    device_scale_factor = attr.ib()  # type: float
-    is_mobile = attr.ib()  # type: bool
-    screen_orientation = attr.ib()  # type: ScreenOrientation
+    width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
+    device_scale_factor = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: float
+    is_mobile = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
+    screen_orientation = attr.ib(
+        metadata={JsonInclude.THIS: True}
+    )  # type: ScreenOrientation
     device_name = attr.ib(init=False, default=None)  # type: DeviceName
 
 
 @attr.s(hash=True)
 class RenderBrowserInfo(object):
-    viewport_size = attr.ib(default=None)  # type: RectangleSize
-    browser_type = attr.ib(default=None)  # type: BrowserType
+    viewport_size = attr.ib(
+        default=None, converter=attr.converters.optional(RectangleSize.from_)
+    )  # type: RectangleSize
+    browser_type = attr.ib(default=BrowserType.CHROME)  # type: BrowserType
     baseline_env_name = attr.ib(default=None)  # type: basestring
     emulation_info = attr.ib(default=None, repr=False)  # type: EmulationBaseInfo
     # TODO: add initialization with width and height for viewport_size
@@ -144,40 +153,40 @@ class RenderBrowserInfo(object):
 
     @property
     def platform(self):
-        if self.browser_type:
-            if (
-                self.browser_type == BrowserType.CHROME
-                or self.browser_type == BrowserType.FIREFOX
-            ):
-                return "linux"
-            elif (
-                self.browser_type == BrowserType.IE
-                or self.browser_type == BrowserType.EDGE
-            ):
-                return "windows"
+        if self.browser_type in [BrowserType.IE10, BrowserType.IE11, BrowserType.EDGE]:
+            return "windows"
         return "linux"
 
 
 @attr.s
 class RenderInfo(object):
-    width = attr.ib()  # type: int
-    height = attr.ib()  # type: int
-    size_mode = attr.ib()  # type: basestring
-    # region = attr.ib(type=Region)  # type: Region
-    # selector = attr.ib(type=VisualGridSelector)  # type: VisualGridSelector
-    _emulation_info = attr.ib(type=EmulationBaseInfo)  # type: EmulationBaseInfo
+    width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
+    size_mode = attr.ib(
+        metadata={JsonInclude.NON_NONE: True, JsonInclude.NAME: "sizeMode"}
+    )  # type: basestring
+    region = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Region
+    selector = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: VisualGridSelector
+    emulation_info = attr.ib(
+        default=None,
+        metadata={JsonInclude.NON_NONE: True, JsonInclude.NAME: "emulationInfo"},
+    )  # type: EmulationBaseInfo
 
 
 @attr.s
 class RGridDom(object):
     CONTENT_TYPE = "x-applitools-html/cdt"
 
-    _dom_nodes = attr.ib(repr=False)  # type: List[dict]
-    _resources = attr.ib()  # type: Dict[Text, VGResource]
-    _url = attr.ib()
-    _msg = attr.ib(default=None)
-    hash = attr.ib(init=False)
-    hash_format = attr.ib(default="sha256")
+    dom_nodes = attr.ib(repr=False)  # type: List[dict]
+    resources = attr.ib()  # type: Dict[Text, VGResource]
+    url = attr.ib()
+    msg = attr.ib(default=None)
+    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    hash_format = attr.ib(default="sha256", metadata={JsonInclude.THIS: True})
 
     def __attrs_post_init__(self):
         # TODO: add proper hash
@@ -186,42 +195,31 @@ class RGridDom(object):
     @property
     def resource(self):
         return VGResource(
-            self._url, self.CONTENT_TYPE, self.content, "RGridDom {}".format(self._msg)
+            self.url, self.CONTENT_TYPE, self.content, "RGridDom {}".format(self.msg)
         )
 
     @property
     def content(self):
-        resources = {}
-        for url, res in iteritems(self._resources):
-            res = attr.asdict(res, filter=lambda a, _: not a.name.startswith("_"))
-            resources[url] = {underscore_to_camelcase(k): v for k, v in iteritems(res)}
-        data = {"resources": resources, "domNodes": self._dom_nodes}
-        cont = json.dumps(data, sort_keys=True).encode("utf-8")
-        return cont
+        data = {"resources": self.resources, "domNodes": self.dom_nodes}
+        return json_utils.to_json(data).encode("utf-8")
 
 
 @attr.s(slots=True)
 class VGResource(object):
-    _url = attr.ib()
-    content_type = attr.ib()
-    _content = attr.ib(repr=False)  # type: bytes
-    _msg = attr.ib(default=None)
-    hash = attr.ib(init=False)
-    hash_format = attr.ib(init=False, default="sha256")
+    url = attr.ib()
+    content_type = attr.ib(metadata={JsonInclude.THIS: True})
+    content = attr.ib(repr=False)  # type: bytes
+    msg = attr.ib(default=None)
+    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    hash_format = attr.ib(
+        init=False, default="sha256", metadata={JsonInclude.THIS: True}
+    )
 
     def __hash__(self):
         return self.hash
 
-    @property
-    def url(self):
-        return self._url
-
-    @property
-    def content(self):
-        return self._content
-
     def __attrs_post_init__(self):
-        self.hash = general_utils.get_sha256_hash(self._content)
+        self.hash = general_utils.get_sha256_hash(self.content)
 
     @classmethod
     def from_blob(cls, blob):
@@ -238,36 +236,42 @@ class VGResource(object):
 
 @attr.s
 class RenderRequest(object):
-    webhook = attr.ib()  # type: Text
-    url = attr.ib()  # type: dict
-    dom = attr.ib(repr=False)  # type: RGridDom
-    resources = attr.ib(repr=False)  # type: dict
-    render_info = attr.ib()  # type: RenderInfo
-    _platform = attr.ib()  # type: Text
-    _browser_name = attr.ib()  # type: BrowserType
-    script_hooks = attr.ib()  # type: Dict
-    selectors_to_find_regions_for = attr.ib()  # type: List
-    send_dom = attr.ib()  # type: bool
-    _task = attr.ib()  # type: Optional[VGTask]
-    render_id = attr.ib(default=None, repr=True)
-    browser = attr.ib(init=False)
+    webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
+    url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: dict
+    dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
+    resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
+    render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
+    platform = attr.ib()  # type: Text
+    browser_name = attr.ib()  # type: BrowserType
+    script_hooks = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Dict
+    selectors_to_find_regions_for = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}
+    )  # type: List
+    send_dom = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
+    render_id = attr.ib(default=None, repr=True, metadata={JsonInclude.NON_NONE: True})
+    task = attr.ib(default=None)  # type: Optional[VGTask]
+    browser = attr.ib(init=False, default=None, metadata={JsonInclude.NON_NONE: True})
 
     def __attrs_post_init__(self):
-        self.browser = {"name": self._browser_name, "platform": self._platform}
+        if self.browser_name is None:
+            return
+        self.browser = {"name": self.browser_name.value, "platform": self.platform}
 
 
 @attr.s(hash=True)
 class RunningRender(object):
     render_id = attr.ib(default=None)
     job_id = attr.ib(default=None)
-    render_status = attr.ib(default=None, converter=RenderStatus)  # type: RenderStatus
+    render_status = attr.ib(
+        default=None, converter=attr.converters.optional(RenderStatus)
+    )  # type: RenderStatus
     need_more_resources = attr.ib(default=None, hash=False)  # type: List[Text]
     need_more_dom = attr.ib(default=None, hash=False)  # type: bool
 
 
 @attr.s
 class RenderStatusResults(object):
-    status = attr.ib(default=None)
+    status = attr.ib(default=None, converter=attr.converters.optional(RenderStatus))
     dom_location = attr.ib(default=None)
     user_agent = attr.ib(default=None)
     image_location = attr.ib(default=None)

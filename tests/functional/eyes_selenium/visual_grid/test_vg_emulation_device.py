@@ -1,9 +1,9 @@
 import pytest
 
-from applitools.common import SeleniumConfiguration, logger
+from applitools.common import BrowserType, DeviceName, SeleniumConfiguration, logger
 from applitools.common.visual_grid import (
+    ChromeEmulationInfo,
     EmulationDevice,
-    EmulationInfo,
     ScreenOrientation,
 )
 from applitools.selenium import Target
@@ -20,20 +20,14 @@ def sel_config(request, batch_info):
     conf.app_name = "VG hello world"
     conf.batch = batch_info
     conf.baseline_env_name = "michael"
-    emulation_device = EmulationDevice(300, 400, 1.0, True, ScreenOrientation.LANDSCAPE)
-    conf.add_device_emulation(emulation_device)
-    emulation_info = EmulationInfo(
-        EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT
-    )
-    conf.add_device_emulation(emulation_info)
-    conf.add_device_emulation(
-        EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT)
-    )
-
-    conf.add_device_emulation(
-        EmulationInfo(EmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
-    )
-
+    conf.add_browser(800, 600, BrowserType.CHROME)
+    conf.add_browser(700, 500, BrowserType.CHROME)
+    conf.add_browser(1600, 1200, BrowserType.CHROME)
+    conf.add_browser(1280, 1024, BrowserType.CHROME)
+    conf.add_browser(1280, 1024, BrowserType.EDGE)
+    conf.add_device_emulation(DeviceName.iPhone_4)
+    conf.add_device_emulation(DeviceName.iPhone_X)
+    conf.add_device_emulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
     return conf
 
 

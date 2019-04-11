@@ -45,14 +45,14 @@ class VisualGridRunner(object):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
         self._rendering_info = eyes.rendering_info
-        logger.info("opened")
+        logger.debug("VisualGridRunner.open(%s)" % eyes)
 
     def run(self):
-        # type: () -> None
-        logger.debug("run")
+        logger.debug("VisualGridRunner.run()")
         while self.still_running:
             try:
                 task = self.task_queue.pop()
+                logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
                 sleep(1)
                 continue
@@ -61,7 +61,7 @@ class VisualGridRunner(object):
 
     def stop(self):
         # type: () -> None
-        logger.debug("stop")
+        logger.debug("VisualGridRunner.stop()")
         while sum(r.score for r in self.all_running_tests) > 0:
             sleep(0.5)
         self.still_running = False
@@ -89,7 +89,9 @@ class VisualGridRunner(object):
     @property
     def all_running_tests_by_score(self):
         # type: () -> List[RunningTest]
-        return sorted(self.all_running_tests, key=operator.attrgetter("score"))
+        return sorted(
+            self.all_running_tests, key=operator.attrgetter("score"), reverse=True
+        )
 
     @property
     def task_queue(self):

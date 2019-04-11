@@ -57,20 +57,22 @@ class VGTask(object):
 
     def __call__(self):
         # type: () -> None
+        logger.debug("%s called %s" % (self.__class__.__name__, self.name))
+        res = None
         try:
-            res = None
             if callable(self.func_to_run):
                 res = self.func_to_run()
             if callable(self.callback):
                 self.callback(res)
         except Exception as e:
-            logger.error("Failed to execute task!")
+            logger.error("Failed to execute task! \n\t %s" % self.name)
             logger.exception(e)
             if callable(self.error_callback):
                 self.error_callback(e)
         finally:
             if callable(self.complete_callback):
                 self.complete_callback()
+        return res
 
 
 @attr.s(hash=True)
@@ -137,7 +139,7 @@ class RenderTask(VGTask):
                 break
 
         statuses = self.poll_render_status(rq)
-        if statuses and statuses[0].status == "error":
+        if statuses and statuses[0].status == RenderStatus.ERROR:
             raise EyesError(
                 "Render failed for {} with the message: {}".format(
                     statuses[0].status, statuses[0].error
@@ -261,8 +263,8 @@ class RenderTask(VGTask):
                 if statuses or 0 < fails_count < 3:
                     break
             finished = statuses and (
-                statuses[0].status == "error"
-                or statuses[0].status == "rendered"
+                statuses[0].status == RenderStatus.ERROR
+                or statuses[0].status == RenderStatus.RENDERED
                 or iterations > self.MAX_ITERATIONS
                 or False
             )

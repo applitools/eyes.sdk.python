@@ -2,12 +2,13 @@ import typing
 
 import attr
 
-from applitools.common.app_output import AppOutput
-from applitools.common.match import ImageMatchSettings
+from .app_output import AppOutput
+from .match import ImageMatchSettings
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import Text
-    from applitools.common.utils.custom_types import UserInputs
+    from .utils.custom_types import UserInputs
 
 
 __all__ = ("MatchWindowData", "Options")
@@ -32,13 +33,15 @@ class Options(object):
     :ivar image_match_settings
     """
 
-    name = attr.ib()  # type: Text
-    user_inputs = attr.ib()  # type: UserInputs
-    ignore_mismatch = attr.ib()  # type: bool
-    ignore_match = attr.ib()  # type: bool
-    force_mismatch = attr.ib()  # type: bool
-    force_match = attr.ib()  # type: bool
-    image_match_settings = attr.ib(type=ImageMatchSettings)  # type: ImageMatchSettings
+    name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    user_inputs = attr.ib(metadata={JsonInclude.THIS: True})  # type: UserInputs
+    ignore_mismatch = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    ignore_match = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    force_mismatch = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    force_match = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    image_match_settings = attr.ib(
+        type=ImageMatchSettings, metadata={JsonInclude.THIS: True}
+    )  # type: ImageMatchSettings
 
 
 @attr.s
@@ -59,9 +62,11 @@ class MatchWindowData(object):
 
     # TODO Remove redundancy: user_inputs and ignore_mismatch should only be inside
     #  Options. (requires server version update).
-    ignore_mismatch = attr.ib()  # type: bool
-    user_inputs = attr.ib()  # type: UserInputs
-    app_output = attr.ib(type=AppOutput)  # type: AppOutput
-    tag = attr.ib()  # type: Text
-    options = attr.ib()  # type: Options
-    agent_setup = attr.ib()  # type: Text
+    ignore_mismatch = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    user_inputs = attr.ib(metadata={JsonInclude.THIS: True})  # type: UserInputs
+    app_output = attr.ib(
+        type=AppOutput, metadata={JsonInclude.THIS: True}
+    )  # type: AppOutput
+    tag = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    options = attr.ib(type=Options, metadata={JsonInclude.THIS: True})  # type: Options
+    agent_setup = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text

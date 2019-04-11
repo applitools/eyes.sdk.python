@@ -4,6 +4,7 @@ from enum import Enum
 import attr
 
 from .geometry import Region
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import Optional
@@ -48,14 +49,14 @@ class MatchResult(object):
 class FloatingMatchSettings(object):
     _region = attr.ib()  # type: Region
     _bounds = attr.ib()  # type: FloatingBounds
-    left = attr.ib(init=False)
-    top = attr.ib(init=False)
-    width = attr.ib(init=False)
-    height = attr.ib(init=False)
-    max_up_offset = attr.ib(init=False)
-    max_down_offset = attr.ib(init=False)
-    max_left_offset = attr.ib(init=False)
-    max_right_offset = attr.ib(init=False)
+    left = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    top = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    width = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    height = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    max_up_offset = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    max_down_offset = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    max_left_offset = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    max_right_offset = attr.ib(init=False, metadata={JsonInclude.THIS: True})
 
     def __attrs_post_init__(self):
         self.left = self._region.left
@@ -86,20 +87,32 @@ class ImageMatchSettings(object):
     Encapsulates match settings for the a session.
     """
 
-    match_level = attr.ib(default=MatchLevel.STRICT)  # type: MatchLevel
+    match_level = attr.ib(
+        default=MatchLevel.STRICT, metadata={JsonInclude.NON_NONE: True}
+    )  # type: MatchLevel
     exact = attr.ib(
-        default=None, type=ExactMatchSettings
+        default=None, type=ExactMatchSettings, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[ExactMatchSettings]
-    ignore_caret = attr.ib(default=None)
-    send_dom = attr.ib(default=False)
-    use_dom = attr.ib(default=False)
-    enable_patterns = attr.ib(default=False)
+    ignore_caret = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    send_dom = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
+    use_dom = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
+    enable_patterns = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
 
-    ignore = attr.ib(factory=list, type=typing.List[Region])
-    layout = attr.ib(factory=list, type=typing.List[Region])
-    strict = attr.ib(factory=list, type=typing.List[Region])
-    content = attr.ib(factory=list, type=typing.List[Region])
-    floating = attr.ib(factory=list, type=typing.List[Region])
+    ignore = attr.ib(
+        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+    )
+    layout = attr.ib(
+        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+    )
+    strict = attr.ib(
+        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+    )
+    content = attr.ib(
+        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+    )
+    floating = attr.ib(
+        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+    )
 
 
 @attr.s

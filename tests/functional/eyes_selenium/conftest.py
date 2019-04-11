@@ -5,10 +5,10 @@ from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import logger, BatchInfo
-from applitools.selenium.visual_grid import VisualGridRunner
+from applitools.common import BatchInfo, logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
+from applitools.selenium.visual_grid import VisualGridRunner
 
 
 def _setup_env_vars_for_session():
@@ -153,8 +153,12 @@ def batch_info():
 @pytest.fixture
 def eyes_vg(vg_runner, sel_config, driver, request):
     test_page_url = request.node.get_closest_marker("test_page_url").args[0]
-    app_name = request.node.get_closest_marker("app_name").args[0]
-    test_name = request.node.get_closest_marker("test_name").args[0]
+    app_name = request.node.get_closest_marker("app_name")
+    if app_name:
+        app_name = app_name.args[0]
+    test_name = request.node.get_closest_marker("test_name")
+    if test_name:
+        test_name = test_name.args[0]
     viewport_size = request.node.get_closest_marker("viewport_size")
     if viewport_size:
         viewport_size = viewport_size.args[0]
@@ -164,10 +168,13 @@ def eyes_vg(vg_runner, sel_config, driver, request):
     eyes = Eyes(vg_runner)
     eyes.configuration = sel_config
 
+    app_name = app_name or eyes.configuration.app_name
+    test_name = test_name or eyes.configuration.test_name
+    viewport_size = viewport_size or eyes.configuration.viewport_size
+
     driver.get(test_page_url)
     eyes.open(driver, app_name, test_name, viewport_size)
     yield eyes
     logger.debug("closing WebDriver for url {}".format(test_page_url))
-    # breakpoint()
     eyes.close(True)
     # TODO: print VG test results

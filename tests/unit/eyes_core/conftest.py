@@ -10,7 +10,7 @@ from applitools.common import (
     ImageMatchSettings,
     RunningSession,
 )
-from applitools.common.utils.general_utils import json_response_to_attrs_class
+from applitools.common.utils.json_utils import attr_from_response
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.images.capture import EyesImagesScreenshot
@@ -92,7 +92,5 @@ def running_session():
         "batchId": "other url",
         "baselineId": "other url",
     }
-    RUNNING_SESSION_OBJ = json_response_to_attrs_class(
-        RUNNING_SESSION_DATA, RunningSession
-    )
+    RUNNING_SESSION_OBJ = attr_from_response(RUNNING_SESSION_DATA, RunningSession)
     return RUNNING_SESSION_OBJ

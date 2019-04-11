@@ -8,6 +8,7 @@ import attr
 
 from .utils import argument_guard
 from .utils.converters import round_converter
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from PIL.Image import Image
@@ -49,8 +50,8 @@ class CoordinatesType(Enum):
 
 @attr.s(slots=True, cmp=False, hash=True)
 class RectangleSize(DictAccessMixin):
-    width = attr.ib()  # type: int
-    height = attr.ib()  # type:int
+    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
 
     def scale(self, ratio):
         # type: (float) -> RectangleSize
@@ -73,8 +74,12 @@ class Point(DictAccessMixin):
     A point with the coordinates (x,y).
     """
 
-    x = attr.ib(converter=round_converter)  # type: Num
-    y = attr.ib(converter=round_converter)  # type: Num
+    x = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
+    y = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -217,12 +222,20 @@ class Region(DictAccessMixin):
     A rectangle identified by left,top, width, height.
     """
 
-    left = attr.ib(converter=round_converter)  # type: int
-    top = attr.ib(converter=round_converter)  # type: int
-    width = attr.ib(converter=round_converter)  # type: int
-    height = attr.ib(converter=round_converter)  # type: int
+    left = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    top = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    width = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    height = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
     coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS
+        default=CoordinatesType.SCREENSHOT_AS_IS, metadata={JsonInclude.THIS: True}
     )  # type: CoordinatesType
 
     def __str__(self):

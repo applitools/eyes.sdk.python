@@ -5,6 +5,7 @@ from typing import List, Text
 import attr
 
 from .match import ImageMatchSettings
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     Image = typing.ByteString
@@ -26,10 +27,10 @@ class Annotations(object):
 
 @attr.s
 class AppOutput(object):
-    title = attr.ib()
-    screenshot64 = attr.ib(repr=False)
-    screenshot_url = attr.ib(default=None)
-    dom_url = attr.ib(default=None)
+    title = attr.ib(metadata={JsonInclude.THIS: True})
+    screenshot64 = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})
+    screenshot_url = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    dom_url = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
 
 
 @attr.s

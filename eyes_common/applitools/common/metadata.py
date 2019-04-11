@@ -5,9 +5,10 @@ import attr
 from .config import BatchInfo, Branch
 from .match import ImageMatchSettings, MatchLevel
 from .server import SessionType
-from .utils import general_utils
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
+    from applitools.common import DeviceName
     from typing import Optional, Text, List
     from .utils.custom_types import Num
     from .app_output import ExpectedAppOutput, ActualAppOutput
@@ -37,19 +38,21 @@ class RunningSession(object):
 
 
 def _to_device_info(v):
-    # type: (Text) -> Text
-    return "Desktop" if v is None else "{} (Chrome emulation)".format(v)
+    # type: (Optional[DeviceName]) -> Text
+    return "Desktop" if v is None else "{} (Chrome emulation)".format(v.value)
 
 
 @attr.s
 class AppEnvironment(object):
-    os = attr.ib(default=None)
-    hosting_app = attr.ib(default=None)
-    display_size = attr.ib(default=None)
-    device_info = attr.ib(default=None, converter=_to_device_info)
-    os_info = attr.ib(default=None)
-    hosting_app_info = attr.ib(default=None)
-    inferred = attr.ib(default=None)
+    os = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    hosting_app = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    display_size = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    device_info = attr.ib(
+        default=None, converter=_to_device_info, metadata={JsonInclude.NON_NONE: True}
+    )
+    os_info = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    hosting_app_info = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    inferred = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
 
     @classmethod
     def from_inferred(cls, inferred):
@@ -76,29 +79,35 @@ class StartInfo(object):
 
 @attr.s
 class SessionStartInfo(object):
-    agent_id = attr.ib()  # type: Text
-    session_type = attr.ib(type=SessionType)  # type: SessionType
-    app_id_or_name = attr.ib()  # type: Text
-    ver_id = attr.ib()  # type: Optional[Text]
-    scenario_id_or_name = attr.ib()  # type: Text
-    batch_info = attr.ib(type=BatchInfo)  # type: BatchInfo
-    baseline_env_name = attr.ib()  # type: Text
-    environment_name = attr.ib()  # type: Text
-    environment = attr.ib(type=AppEnvironment)  # type: AppEnvironment
+    JSON_NAME = "startInfo"
+    agent_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    session_type = attr.ib(
+        type=SessionType, metadata={JsonInclude.THIS: True}
+    )  # type: SessionType
+    app_id_or_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    ver_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[Text]
+    scenario_id_or_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    batch_info = attr.ib(
+        type=BatchInfo, metadata={JsonInclude.THIS: True}
+    )  # type: BatchInfo
+    baseline_env_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    environment_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    environment = attr.ib(
+        type=AppEnvironment, metadata={JsonInclude.THIS: True}
+    )  # type: AppEnvironment
     default_match_settings = attr.ib(
-        type=ImageMatchSettings
+        type=ImageMatchSettings, metadata={JsonInclude.THIS: True}
     )  # type: ImageMatchSettings
-    branch_name = attr.ib()  # type: Text
-    parent_branch_name = attr.ib()  # type: Text
-    baseline_branch_name = attr.ib()  # type: Text
-    compare_with_parent_branch = attr.ib()  # type: bool
-    ignore_baseline = attr.ib()  # type: bool
-    save_diffs = attr.ib()  # type: bool
-    render = attr.ib()  # type: bool
-    properties = attr.ib()  # type: list
-
-    def to_json(self):
-        return '{"startInfo": %s}' % (general_utils.to_json(self))
+    branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    parent_branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    baseline_branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    compare_with_parent_branch = attr.ib(
+        metadata={JsonInclude.THIS: True}
+    )  # type: bool
+    ignore_baseline = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    save_diffs = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    render = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
+    properties = attr.ib(metadata={JsonInclude.THIS: True})  # type: list
 
 
 @attr.s

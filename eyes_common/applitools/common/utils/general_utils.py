@@ -2,18 +2,14 @@ from __future__ import absolute_import
 
 import hashlib
 import itertools
-import json
-import re
 import time
 import types
 import typing
 from datetime import timedelta, tzinfo
 
-import attr
-
 from applitools.common import logger
 
-from .compat import iteritems, parse_qs, urlencode, urlparse, urlsplit, urlunsplit
+from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
 """
 General purpose utilities.
@@ -51,71 +47,6 @@ class _UtcTz(tzinfo):
 
 # Constant representing UTC
 UTC = _UtcTz()
-
-
-def underscore_to_camelcase(text):
-    return re.sub(r"(?!^)_([a-zA-Z])", lambda m: m.group(1).upper(), text)
-
-
-def camelcase_to_underscore(text):
-    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
-    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
-
-
-def change_case_of_keys(d, to_camel=False, to_underscore=False):
-    # type: (dict, bool, bool)->dict
-    if to_camel:
-        func = underscore_to_camelcase
-    elif to_underscore:
-        func = camelcase_to_underscore
-    else:
-        raise ValueError("One of options should be selected. [to_camel|to_underscore]")
-    new = {}
-    for k, v in iteritems(d):
-        if isinstance(v, dict):
-            v = change_case_of_keys(v, to_camel, to_underscore)
-        if v and isinstance(v, list):
-            new_list = []
-            for obj in v[:]:
-                if isinstance(obj, dict):
-                    d2 = {}
-                    for k1, v1 in iteritems(obj):
-                        if hasattr(v1, "value"):
-                            v1 = v1.value
-                        d2[k1] = v1
-                else:
-                    d2 = obj
-                new_list.append(d2)
-            v = new_list
-        # Enum
-        if hasattr(v, "value"):
-            v = v.value
-        new[func(k) if not k.startswith("http") else k] = v
-    return new
-
-
-def to_json(obj, keys_to_camel_case=True):
-    # type: (Any, bool) -> str
-    """
-    Returns an object's json representation of attrs based classes.
-    """
-
-    def make_dict(obj):
-        d = attr.asdict(obj, filter=lambda a, _: not a.name.startswith("_"))
-        if keys_to_camel_case:
-            d = change_case_of_keys(d, to_camel=True)
-        return d
-
-    if isinstance(obj, list) or isinstance(obj, tuple):
-        objs = obj
-        lst = []
-        for obj in objs:
-            d = make_dict(obj)
-            lst.append(d)
-        d = lst
-    else:
-        d = make_dict(obj)
-    return json.dumps(d, sort_keys=True)
 
 
 def use_default_if_none_factory(default_obj, obj):
@@ -281,28 +212,6 @@ def get_sha256_hash(content):
     m = hashlib.sha256()
     m.update(content)
     return "".join(["%02x" % b for b in m.digest()])
-
-
-def json_response_to_attrs_class(dct, cls):
-    """
-    Change case of `dct` keys to snake_case. Map existing keys in `dct` and `cls` and
-    initialize `cls` by `dct` data.
-
-    :param dct: dict with camelCase keys
-    :param cls: class created by attrs
-    :return: class instance
-    """
-
-    def make_obj(dct):
-        fields = [f.name for f in attr.fields(cls)]
-        parsed_response = change_case_of_keys(dct, to_underscore=True)
-        params = {k: v for k, v in iteritems(parsed_response) if k in fields}
-        return cls(**params)
-
-    if isinstance(dct, list) or isinstance(dct, tuple):
-        return [make_obj(d) for d in dct]
-    else:
-        return make_obj(dct)
 
 
 def set_query_parameter(url, param_name, param_value):
