@@ -56,7 +56,6 @@ class VisualGridEyes(object):
     server_url = None
     _api_key = None
     vg_manager = None  # type: VisualGridRunner
-
     url = None
     branch_name = None
     parent_branch_name = None
@@ -64,20 +63,8 @@ class VisualGridEyes(object):
     driver = None  # type: AnyWebDriver
     _config_provider = None
     rendering_info = None
-    vgeyes_connector = None
     test_list = []  # type: List[RunningTest]
     is_vgeyes_issued_open_tasks = False
-
-    @property
-    def api_key(self):
-        # type: () -> Text
-        if self._api_key is None:
-            self._api_key = os.environ.get("APPLITOOLS_API_KEY")
-        return self._api_key
-
-    @api_key.setter
-    def api_key(self, value):
-        self._api_key = value
 
     def __init__(self, runner, config):
         # type: (VisualGridRunner, Eyes)-> None
@@ -97,16 +84,15 @@ class VisualGridEyes(object):
         if self.is_disabled:
             return driver
         logger.open_()
-
         argument_guard.not_none(driver)
+        logger.debug("VisualGridEyes.open(%s)" % self.configuration)
+
         self._init_driver(driver)
         if self.configuration.viewport_size:
             self._set_viewport_size(self.configuration.viewport_size)
         else:
             self.configuration.viewport_size = self._get_viewport_size()
-        logger.info("getting all browsers info...")
         browsers_info = self.configuration.browsers_info
-        logger.info("creating test descriptors for each browser info...")
         for b_info in browsers_info:
             self.test_list.append(
                 RunningTest(
@@ -115,7 +101,7 @@ class VisualGridEyes(object):
             )
         self.is_opened = True
         self.vg_manager.open(self)
-        logger.info("opening {} tests...".format(len(self.test_list)))
+        logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
     def check(self, name, check_settings):
@@ -123,7 +109,7 @@ class VisualGridEyes(object):
         if self.is_disabled:
             return False
         argument_guard.is_a(check_settings, CheckSettings)
-
+        logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
         self._try_set_target_selector(check_settings)
 
         self.configuration.send_dom = check_settings.values.send_dom
@@ -138,7 +124,7 @@ class VisualGridEyes(object):
             "JSON.stringify).then(callback, function(err) {callback(err.stack || "
             "err.toString())})" % PROCESS_RESOURCES
         )
-
+        sleep(self.configuration.wait_before_screenshots / 1000.0)
         script_result = self.driver.execute_async_script(dom_capt_script)
         logger.info("check('{}', check_settings) - begin".format(name))
 
@@ -163,6 +149,8 @@ class VisualGridEyes(object):
             return False
         if not self.test_list:
             return False
+        logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
+
         for test in self.test_list:
             test.close()
 
@@ -185,7 +173,6 @@ class VisualGridEyes(object):
         #         if test.test_result.is_new:
         #             raise NewTestError()
 
-        # return self._close_and_return_results()
         results = [test.test_result for test in self.test_list]
         self.vg_manager.stop()
         if results:
@@ -198,28 +185,14 @@ class VisualGridEyes(object):
 
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector
-        vgeyes_connector = EyesConnector(b_info)
+        vgeyes_connector = EyesConnector(b_info, self.configuration.clone())
         if b_info.emulation_info:
             vgeyes_connector.device = b_info.emulation_info.device_name
 
-        vgeyes_connector.batch = self.configuration.batch
-        vgeyes_connector.branch_name = self.configuration.branch_name
-        vgeyes_connector.parent_branch_name = self.configuration.parent_branch_name
-        if self.server_connector:
-            vgeyes_connector._server_connector = self.server_connector
-
-        if self.server_url:
-            vgeyes_connector.server_url = self.server_url
-        if self.api_key:
-            vgeyes_connector.api_key = self.api_key
-        else:
-            raise EyesError("Missing API key")
-
         if self.rendering_info is None:
-            logger.debug("initializing rendering info...")
             self.rendering_info = vgeyes_connector.render_info()
-
-        self.vgeyes_connector = vgeyes_connector
+        if self.rendering_info:
+            vgeyes_connector._server_connector._render_info = self.rendering_info
         return vgeyes_connector
 
     def _try_set_target_selector(self, check_settings):

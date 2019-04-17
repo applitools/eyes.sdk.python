@@ -46,6 +46,14 @@ __all__ = ("EyesBase",)
 
 
 class _EyesBaseAbstract(ABC):
+    @property
+    @abc.abstractmethod
+    def configuration(self):
+        # type: () -> Configuration
+        """
+        Returns Eyes configuration
+        """
+
     @abc.abstractmethod
     def _try_capture_dom(self):
         # type: () -> Text
@@ -147,7 +155,7 @@ class EyesBase(_EyesBaseAbstract):
         interacts with the Eyes server.
         """
         self.is_disabled = False
-        self._server_connector = ServerConnector(None)  # type: ServerConnector
+        self._server_connector = ServerConnector()  # type: ServerConnector
         self._should_get_title = False  # type: bool
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
@@ -158,7 +166,8 @@ class EyesBase(_EyesBaseAbstract):
         """True if screenshots saving enabled."""
         return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
 
-    def set_debug_screenshot_provider_for_saving(self, save=True):
+    @is_debug_screenshot_provided.setter
+    def is_debug_screenshot_provided(self, save):
         prev = self._debug_screenshot_provider
         if save:
             self._debug_screenshot_provider = FileDebugScreenshotProvider(
@@ -193,47 +202,6 @@ class EyesBase(_EyesBaseAbstract):
     def configuration(self, value):
         # type:(Configuration) -> None
         self._config = value
-
-    @property
-    def api_key(self):
-        # type: () -> Text
-        """
-        Gets the Api key used for authenticating the user with Eyes.
-
-        :return: The Api key used for authenticating the user with Eyes.
-        """
-        return self._server_connector.api_key
-
-    @api_key.setter
-    def api_key(self, api_key):
-        # type: (Text) -> None
-        """
-        Sets the api key used for authenticating the user with Eyes.
-
-        :param api_key: The api key used for authenticating the user with Eyes.
-        """
-        self._server_connector.api_key = api_key  # type: ignore
-
-    @property
-    def server_url(self):
-        # type: () -> Text
-        """
-        Gets the URL of the Eyes server.
-
-        :return: The URL of the Eyes server, or None to use the default server.
-        """
-        return self._server_connector.server_url
-
-    @server_url.setter
-    def server_url(self, server_url):
-        # type: (Text) -> None
-        """
-        Sets the URL of the Eyes server.
-
-        :param server_url: The URL of the Eyes server, or None to use the default server.
-        :return: None
-        """
-        self._server_connector.server_url = server_url
 
     @property
     def scale_ratio(self):
@@ -441,6 +409,7 @@ class EyesBase(_EyesBaseAbstract):
 
         if self._server_connector is None:
             raise EyesError("Server connector not set.")
+        self._server_connector.update_config(self.configuration)
 
         # If there's no default application name, one must be provided for the current test.
         if self.configuration.app_name is None:
@@ -527,8 +496,8 @@ class EyesBase(_EyesBaseAbstract):
         logger.debug(
             "Eyes server URL is '{}'".format(self._server_connector.server_url)
         )
-        logger.info("Timeout = '{}'".format(self._server_connector.timeout))
-        logger.debug("match_timeout = '{}'".format(self.configuration.match_timeout))
+        logger.debug("Timeout = {} ms".format(self.configuration.timeout))
+        logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(
                 self.configuration.default_match_settings
@@ -539,7 +508,7 @@ class EyesBase(_EyesBaseAbstract):
         )
 
     def _validate_api_key(self):
-        if self.api_key is None:
+        if self.configuration.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
                 " API Key and use 'api_key' to set it."
@@ -547,7 +516,6 @@ class EyesBase(_EyesBaseAbstract):
 
     def _create_session_start_info(self):
         # type: () -> None
-        app_env = self._environment
         self._session_start_info = SessionStartInfo(
             agent_id=self.full_agent_id,
             session_type=self.configuration.session_type,
@@ -557,7 +525,7 @@ class EyesBase(_EyesBaseAbstract):
             batch_info=self.configuration.batch,
             baseline_env_name=self.configuration.baseline_env_name,
             environment_name=self.configuration.environment_name,
-            environment=app_env,
+            environment=self._environment,
             default_match_settings=self.configuration.default_match_settings,
             branch_name=self.configuration.branch_name,
             parent_branch_name=self.configuration.parent_branch_name,
@@ -719,7 +687,7 @@ class EyesBase(_EyesBaseAbstract):
                     default_match_settings.ignore_caret
                 )
         region = region_provider.get_region()
-        logger.info("params: ([{}], {}, {})".format(region, tag, retry_timeout))
+        logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout))
 
         result = self._match_window_task.match_window(
             self._user_inputs,

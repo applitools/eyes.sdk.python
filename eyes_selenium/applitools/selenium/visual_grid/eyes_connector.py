@@ -32,8 +32,8 @@ if typing.TYPE_CHECKING:
 
 
 class EyesConnector(EyesBase):
-    def __init__(self, browser_info):
-        # type: (RenderBrowserInfo) -> None
+    def __init__(self, browser_info, config):
+        # type: (RenderBrowserInfo,SeleniumConfiguration) -> None
         super(EyesConnector, self).__init__()
         self.device = None
         self.device_size = None
@@ -41,7 +41,8 @@ class EyesConnector(EyesBase):
         self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
-        self._config = SeleniumConfiguration()
+        self.configuration = config
+        self._server_connector.update_config(config)
 
     def open(self, config):
         # type: (SeleniumConfiguration) -> None
@@ -134,7 +135,9 @@ class EyesConnector(EyesBase):
 
     def render_info(self):
         # type: () -> RenderingInfo
-        return self._server_connector.render_info()
+        if self._render_info is None:
+            self._render_info = self._server_connector.render_info()
+        return self._render_info
 
     def check(self, name, check_settings, check_task_uuid):
         # type: (str, SeleniumCheckSettings, str) -> MatchResult

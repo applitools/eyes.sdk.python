@@ -151,7 +151,7 @@ class MatchWindowTask(object):
     ):
         if retry_timeout is None or retry_timeout < 0:
             retry_timeout = self._default_retry_timeout
-        logger.info("retry_timeout = {} sec".format(retry_timeout))
+        logger.debug("retry_timeout = {} sec".format(retry_timeout))
 
         screenshot = self._take_screenshot(
             user_inputs,
@@ -279,7 +279,11 @@ class MatchWindowTask(object):
             )
         time_end = datetime.now()
         summary = time_end - time_start
-        logger.info("Completed in {} ms".format(summary.microseconds))
+        logger.debug(
+            "MatchWindowTask._take_screenshot completed in {} ms".format(
+                summary.microseconds
+            )
+        )
         return screenshot
 
     def _try_take_screenshot(

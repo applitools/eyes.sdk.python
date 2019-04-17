@@ -21,12 +21,8 @@ from applitools.common.visual_grid import (
 from .eyes_connector import EyesConnector
 
 if typing.TYPE_CHECKING:
-    from typing import Any, List, Dict
+    from typing import Any, List, Dict, Callable, Text
     from applitools.common.visual_grid import RenderStatusResults, RunningRender
-
-if typing.TYPE_CHECKING:
-    from typing import Callable, Text
-
     from .running_test import RunningTest
 
 

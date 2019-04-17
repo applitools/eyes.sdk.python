@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import json
-import os
 import time
 import typing
 from struct import pack
@@ -23,6 +22,7 @@ from applitools.common.utils import (
     json_utils,
     urljoin,
 )
+from applitools.common.utils.general_utils import retry
 from applitools.common.visual_grid import (
     RenderingInfo,
     RenderRequest,
@@ -144,7 +144,7 @@ class _Request(object):
         return func(requests.delete, url_resource, **kwargs)
 
 
-def create_request_factory(headers, server_url):
+def create_request_factory(headers):
     class RequestFactory(object):
         def __init__(self):
             self._com = None
@@ -183,9 +183,7 @@ class ServerConnector(object):
     Provides an API for communication with the Applitools server.
     """
 
-    DEFAULT_TIMEOUT = 60 * 5  # Seconds
     DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
-    DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
     API_SESSIONS = "api/sessions"
     API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
@@ -197,57 +195,34 @@ class ServerConnector(object):
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
 
-    _api_key = None
-    _timeout = None
-    _server_url = None  # type: Optional[Text]
+    api_key = None
+    timeout = None
+    server_url = None  # type: Optional[Text]
     _request = None  # type: Optional[_Request]
+    _render_request = None  # type: Optional[_Request]
 
-    def __init__(self, server_url):
-        # type: (Optional[Text]) -> None
+    def __init__(self):
+        # type: () -> None
         """
         Ctor.
 
         :param server_url: The url of the Applitools server.
         """
-        self.server_url = server_url
         self._render_info = None  # type: Optional[RenderingInfo]
         self._request_factory = create_request_factory(
-            headers=ServerConnector.DEFAULT_HEADERS, server_url=server_url
+            headers=ServerConnector.DEFAULT_HEADERS
         )
 
-    @property
-    def server_url(self):
-        # type: () -> Text
-        return self._server_url
-
-    @server_url.setter
-    def server_url(self, server_url):
-        # type: (Text) -> None
-        if server_url is None:
-            self._server_url = self.DEFAULT_SERVER_URL
-        else:
-            self._server_url = server_url
-
-    @property
-    def api_key(self):
-        if self._api_key is None:
-            # if api_key is None the error will be raised in EyesBase.open_base
-            self._api_key = os.environ.get("APPLITOOLS_API_KEY", None)
-        return self._api_key
-
-    @api_key.setter
-    def api_key(self, api_key):
-        self._api_key = api_key
-
-    @property
-    def timeout(self):
-        if self._timeout is None:
-            self._timeout = self.DEFAULT_TIMEOUT
-        return self._timeout
-
-    @timeout.setter
-    def timeout(self, timeout):
-        self._timeout = timeout
+    def update_config(self, conf):
+        self.server_url = conf.server_url
+        self.api_key = conf.api_key
+        self.timeout = conf.timeout
+        self._request = self._request_factory.create(
+            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
+        )
+        self._render_request = self._request_factory.create(
+            server_url=self.server_url, api_key=None, timeout=self.timeout
+        )
 
     @property
     def is_session_started(self):
@@ -266,10 +241,6 @@ class ServerConnector(object):
         """
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
-
-        self._request = self._request_factory.create(
-            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
-        )
         response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
@@ -316,7 +287,7 @@ class ServerConnector(object):
         :param match_data: The data for the requests.post.
         :return: The parsed response.
         """
-        logger.debug("_match_window called.")
+        logger.debug("match_window called. {}".format(running_session))
 
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
@@ -362,11 +333,7 @@ class ServerConnector(object):
 
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
-        logger.debug("get_render_info called.")
-
-        self._request = self._request_factory.create(
-            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
-        )
+        logger.debug("render_info() called.")
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
@@ -381,7 +348,7 @@ class ServerConnector(object):
         # type: (*RenderRequest) -> List[RunningRender]
         logger.debug("render called with {}".format(render_requests))
         if self._render_info is None:
-            raise RuntimeError("get_render_info must be called first")
+            raise RuntimeError("render_info() must be called first")
 
         url = urljoin(self._render_info.service_url, self.RENDER)
 
@@ -389,11 +356,8 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
 
-        self._render_request = self._request_factory.create(
-            server_url=self.server_url, api_key=None, timeout=self.timeout
-        )
         data = json_utils.to_json(render_requests)
-        response = self._request.post(url, headers=headers, data=data)
+        response = self._render_request.post(url, headers=headers, data=data)
         if response.ok or response.status_code == 404:
             return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
@@ -435,6 +399,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
+    @retry()
     def download_resource(self, url):
         # type: (Text) -> Response
         # TODO: Fixme retry mech
@@ -442,6 +407,7 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Accept-Encoding"] = "identity"
         response = requests.get(url, headers=headers, timeout=self.timeout)
+        response.raise_for_status()
         return response
 
     def render_status_by_id(self, render_id):

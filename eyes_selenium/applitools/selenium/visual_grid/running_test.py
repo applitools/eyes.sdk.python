@@ -2,6 +2,7 @@ import typing
 
 import attr
 
+from applitools.common import Region, logger
 from transitions import Machine
 
 from .vg_task import RenderTask, VGTask
@@ -56,11 +57,6 @@ class RunningTest(object):
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     task_to_future_mapping = attr.ib(init=False, factory=dict, hash=False)
-
-    is_test_open = False
-    is_test_close = False
-    is_test_in_exception_mode = False
-    watch_open = {}
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -136,9 +132,11 @@ class RunningTest(object):
             "open {}".format(self.browser_info),
             lambda: self.eyes.open(self.configuration),
         )
+        logger.debug("RunningTest %s" % open_task.name)
 
         def on_task_succeeded(test_result):
             # type: (Optional[Any]) -> None
+            logger.debug("open_task_succeeded: task.uuid: {}".format(open_task.uuid))
             self.watch_open[open_task] = True
             if self.all_tasks_completed(self.watch_open):
                 self.becomes_opened()
@@ -168,8 +166,9 @@ class RunningTest(object):
 
         def check_task_completed():
             # type: () -> None
+            logger.debug("check_task_completed: task.uuid: {}".format(check_task.uuid))
             self.watch_task[check_task] = True
-            if self.task_lock.uuid == check_task.uuid:
+            if self.task_lock and self.task_lock.uuid == check_task.uuid:
                 self.task_lock = None
             if self.all_tasks_completed(self.watch_task):
                 self.becomes_tested()
@@ -181,7 +180,9 @@ class RunningTest(object):
     def _render_task(self, dom_url_mod, script_result, tag, visual_grid_manager):
         # type: (Optional[Any], str, str, VisualGridRunner) -> RenderTask
         render_task = RenderTask(
-            name="Render {} - {}".format(self.configuration.short_description, tag),
+            name="RunningTest.render {} - {}".format(
+                self.configuration.short_description, tag
+            ),
             script=script_result,
             running_test=self,
             resource_cache=visual_grid_manager.resource_cache,
@@ -190,9 +191,13 @@ class RunningTest(object):
             eyes_connector=self.eyes,
             dom_url_mod=dom_url_mod,
         )
+        logger.debug("RunningTest %s" % render_task.name)
 
         def render_task_succeeded(render_status):
             # type: (RenderStatusResults) -> None
+            logger.debug(
+                "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
+            )
             if render_status:
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
             self.watch_render[render_task] = True
@@ -214,6 +219,7 @@ class RunningTest(object):
         close_task = VGTask(
             "close {}".format(self.browser_info), lambda: self.eyes.close(False)
         )
+        logger.debug("RunningTest %s" % close_task.name)
         close_task.on_task_succeeded(
             lambda test_result: setattr(self, "test_result", test_result)
         )
@@ -221,6 +227,7 @@ class RunningTest(object):
 
         def on_task_completed():
             # type: () -> None
+            logger.debug("close_task_completed: task.uuid: {}".format(close_task.uuid))
             self.watch_close[close_task] = True
             if self.all_tasks_completed(self.watch_close):
                 self.becomes_completed()
