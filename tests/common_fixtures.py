@@ -1,11 +1,12 @@
 import pytest
-from PIL import Image
 
 __all__ = ("image",)
 
 
 @pytest.fixture
 def image():
+    from PIL import Image
+
     img = Image.new("RGB", (800, 600), "black")
     pixels = img.load()  # create the pixel map
 
