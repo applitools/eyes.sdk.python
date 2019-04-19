@@ -1,10 +1,8 @@
 import base64
-import json
 import typing
 from enum import Enum
 
 import attr
-from requests import Response
 
 from .config.misc import BrowserType
 from .geometry import RectangleSize
@@ -14,6 +12,7 @@ from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional
+    from requests import Response
     from applitools.selenium.visual_grid.vg_task import VGTask
     from .geometry import Region
 
@@ -190,18 +189,21 @@ class RGridDom(object):
 
     def __attrs_post_init__(self):
         # TODO: add proper hash
-        self.hash = general_utils.get_sha256_hash(self.content)
+        self.hash = general_utils.get_sha256_hash(self.content.encode("utf-8"))
 
     @property
     def resource(self):
         return VGResource(
-            self.url, self.CONTENT_TYPE, self.content, "RGridDom {}".format(self.msg)
+            self.url,
+            self.CONTENT_TYPE,
+            self.content.encode("utf-8"),
+            "RGridDom {}".format(self.msg),
         )
 
     @property
     def content(self):
         data = {"resources": self.resources, "domNodes": self.dom_nodes}
-        return json_utils.to_json(data).encode("utf-8")
+        return json_utils.to_json(data)
 
 
 @attr.s(slots=True)
@@ -243,12 +245,16 @@ class RenderRequest(object):
     render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
     platform = attr.ib()  # type: Text
     browser_name = attr.ib()  # type: BrowserType
-    script_hooks = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Dict
+    script_hooks = attr.ib(
+        default=dict, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Dict
     selectors_to_find_regions_for = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}
+        factory=list, metadata={JsonInclude.THIS: True}
     )  # type: List
-    send_dom = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
-    render_id = attr.ib(default=None, repr=True, metadata={JsonInclude.NON_NONE: True})
+    send_dom = attr.ib(
+        default=False, metadata={JsonInclude.NON_NONE: True}
+    )  # type: bool
+    render_id = attr.ib(default=None, repr=True, metadata={JsonInclude.THIS: True})
     task = attr.ib(default=None)  # type: Optional[VGTask]
     browser = attr.ib(init=False, default=None, metadata={JsonInclude.NON_NONE: True})
 
@@ -271,11 +277,25 @@ class RunningRender(object):
 
 @attr.s
 class RenderStatusResults(object):
-    status = attr.ib(default=None, converter=attr.converters.optional(RenderStatus))
+    status = attr.ib(
+        default=None,
+        type=RenderStatus,
+        converter=attr.converters.optional(RenderStatus),
+    )
     dom_location = attr.ib(default=None)
     user_agent = attr.ib(default=None)
     image_location = attr.ib(default=None)
     os = attr.ib(default=None)
-    error = attr.ib(default=None, converter=attr.converters.optional(RenderStatus))
+    error = attr.ib(
+        default=None,
+        type=RenderStatus,
+        converter=attr.converters.optional(RenderStatus),
+    )
     selector_regions = attr.ib(default=None)
-    device_size = attr.ib(default=None)
+    device_size = attr.ib(
+        default=None,
+        type=RectangleSize,
+        converter=attr.converters.optional(RectangleSize.from_),
+    )
+    retry_count = attr.ib(default=None)
+    render_id = attr.ib(default=None)

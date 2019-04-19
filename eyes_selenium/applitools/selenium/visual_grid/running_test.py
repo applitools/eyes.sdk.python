@@ -1,3 +1,4 @@
+import threading
 import typing
 
 import attr
@@ -5,16 +6,17 @@ import attr
 from applitools.common import Region, logger
 from transitions import Machine
 
-from .vg_task import RenderTask, VGTask
+from .render_task import RenderTask
+from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Dict, Any
-    from applitools.common.visual_grid import RenderStatusResults
+    from typing import List, Optional, Dict, Any, Text
     from applitools.common import (
         TestResults,
         SeleniumConfiguration,
         VisualGridSelector,
         RenderBrowserInfo,
+        RenderStatusResults,
     )
     from applitools.selenium.fluent import SeleniumCheckSettings
     from .visual_grid_runner import VisualGridRunner
@@ -39,7 +41,7 @@ TRANSITIONS = [
     },
     {
         "trigger": "becomes_completed",
-        "source": [NOT_RENDERED, RENDERED, OPENED, TESTED],
+        "source": [NEW, NOT_RENDERED, RENDERED, OPENED, TESTED],
         "dest": COMPLETED,
     },
 ]
@@ -100,10 +102,10 @@ class RunningTest(object):
         elif self.state == RENDERED:
             return self.open_queue
         elif self.state == OPENED:
-            if self.task_lock is None and self.task_queue:
+            if self.task_lock:
+                return []
+            elif self.task_queue:
                 self.task_lock = self.task_queue[-1]
-                return self.task_queue
-            else:
                 return self.task_queue
         elif self.state == TESTED:
             return self.close_queue
@@ -148,20 +150,31 @@ class RunningTest(object):
 
     def check(
         self,
-        tag,  # type: str
+        tag,  # type: Text
         check_settings,  # type: SeleniumCheckSettings
-        script_result,  # type: str
+        script_result,  # type: Text
         visual_grid_manager,  # type: VisualGridRunner
-        dom_url_mod=None,  # type: Optional[Any]
+        region_selectors,
+        size_mode,
+        region_to_check,
     ):
         # type: (...) -> None
+        logger.debug("RunningTest %s , %s" % (tag, check_settings))
         render_task = self._render_task(
-            dom_url_mod, script_result, tag, visual_grid_manager
+            script_result,
+            tag,
+            visual_grid_manager,
+            region_selectors,
+            size_mode,
+            region_to_check,
         )
 
+        def check_run():
+            logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
+            self.eyes.check(tag, check_settings, render_task.uuid)
+
         check_task = VGTask(
-            "perform check {} {}".format(tag, check_settings),
-            lambda: self.eyes.check(tag, check_settings, render_task.uuid),
+            "perform check {} {}".format(tag, check_settings), check_run
         )
 
         def check_task_completed():
@@ -177,8 +190,16 @@ class RunningTest(object):
         self.task_queue.insert(0, check_task)
         self.watch_task[check_task] = False
 
-    def _render_task(self, dom_url_mod, script_result, tag, visual_grid_manager):
-        # type: (Optional[Any], str, str, VisualGridRunner) -> RenderTask
+    def _render_task(
+        self,
+        script_result,
+        tag,
+        visual_grid_manager,
+        region_selectors,
+        size_mode,
+        region_to_check,
+    ):
+        # type: (Text,Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(
                 self.configuration.short_description, tag
@@ -189,7 +210,9 @@ class RunningTest(object):
             put_cache=visual_grid_manager.put_cache,
             rendering_info=visual_grid_manager.render_info(self.eyes),
             eyes_connector=self.eyes,
-            dom_url_mod=dom_url_mod,
+            region_selectors=region_selectors,
+            size_mode=size_mode,
+            region_to_check=region_to_check,
         )
         logger.debug("RunningTest %s" % render_task.name)
 

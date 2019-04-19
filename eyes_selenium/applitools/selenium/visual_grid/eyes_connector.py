@@ -79,7 +79,7 @@ class EyesConnector(EyesBase):
         return self._server_connector.render(*render_requests)
 
     def render_status_by_id(self, render_id):
-        # type: (Text) -> RenderStatusResults
+        # type: (Text) -> List[RenderStatusResults]
         return self._server_connector.render_status_by_id(render_id)
 
     def download_resource(self, url):
@@ -144,6 +144,8 @@ class EyesConnector(EyesBase):
         self._current_uuid = check_task_uuid
         if name:
             check_settings = check_settings.with_name(name)
+        logger.debug("EyesConnector.check({}, {})".format(name, check_task_uuid))
+
         check_result = self._check_window_base(
             NULL_REGION_PROVIDER, name, False, check_settings
         )
@@ -162,29 +164,23 @@ class EyesConnector(EyesBase):
     @property
     def render_status(self):
         # type: ()->RenderStatusResults
-        status = self._render_statuses[self._current_uuid]
+        status = self._render_statuses.get(self._current_uuid)
+        logger.debug("task.uuid: {}, status: {}".format(self._current_uuid, status))
         if not status:
-            raise EyesError("Got empty render status!")
+            raise EyesError(
+                "Got empty render status with key {}!".format(self._current_uuid)
+            )
         return status
-
-    @property
-    def screenshot_url(self):
-        # type: () -> str
-        return self.render_status.image_location
-
-    @property
-    def dom_url(self):
-        # type: () -> str
-        return self.render_status.dom_location
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
         # type: (Region, EyesWebDriverScreenshot, SeleniumCheckSettings) -> AppOutputWithScreenshot
         title = self._title
+        logger.debug("render_task.uuid: {}".format(self._current_uuid))
         app_output = AppOutput(
             title=title,
             screenshot64=None,
-            screenshot_url=self.screenshot_url,
-            dom_url=self.dom_url,
+            screenshot_url=self.render_status.image_location,
+            dom_url=self.render_status.dom_location,
         )
         result = AppOutputWithScreenshot(app_output, None)
         return result

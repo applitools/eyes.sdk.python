@@ -1,4 +1,3 @@
-import os
 import typing
 from time import sleep
 
@@ -53,18 +52,11 @@ class WebElementRegion(object):
 
 class VisualGridEyes(object):
     is_disabled = False
-    server_url = None
-    _api_key = None
     vg_manager = None  # type: VisualGridRunner
     url = None
-    branch_name = None
-    parent_branch_name = None
-    server_connector = None
-    driver = None  # type: AnyWebDriver
     _config_provider = None
     rendering_info = None
     test_list = []  # type: List[RunningTest]
-    is_vgeyes_issued_open_tasks = False
 
     def __init__(self, runner, config):
         # type: (VisualGridRunner, Eyes)-> None
@@ -129,12 +121,22 @@ class VisualGridEyes(object):
         logger.info("check('{}', check_settings) - begin".format(name))
 
         # region_xpaths = self.get_region_xpaths(check_settings)
+        region_xpaths = []
+        self.region_to_check = None
         # logger.info("region_xpaths: {}".format(region_xpaths))
 
         # open_tasks = self.add_open_task_to_all_running_test()
         try:
             for test in self.test_list:
-                test.check(name, check_settings, script_result, self.vg_manager)
+                test.check(
+                    tag=name,
+                    check_settings=check_settings,
+                    script_result=script_result,
+                    visual_grid_manager=self.vg_manager,
+                    region_selectors=region_xpaths,
+                    size_mode=size_mode,
+                    region_to_check=self.region_to_check,
+                )
                 if test.state == "new":
                     test.becomes_not_rendered()
         except Exception as e:
@@ -150,7 +152,6 @@ class VisualGridEyes(object):
         if not self.test_list:
             return False
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
-
         for test in self.test_list:
             test.close()
 
@@ -158,7 +159,7 @@ class VisualGridEyes(object):
             completed_states = [
                 test.state for test in self.test_list if test.state == "completed"
             ]
-            if completed_states:
+            if len(completed_states) == len(self.test_list):
                 break
             sleep(0.5)
         self.is_opened = False
@@ -166,13 +167,12 @@ class VisualGridEyes(object):
             if test.pending_exceptions:
                 for exp in test.pending_exceptions:
                     logger.exception(exp)
-                raise TestFailedError("During test execution above exception raised")
+                raise EyesError("During test execution above exception raised")
 
         # if throw_exception:
         #     for test in self.test_list:
         #         if test.test_result.is_new:
         #             raise NewTestError()
-
         results = [test.test_result for test in self.test_list]
         self.vg_manager.stop()
         if results:

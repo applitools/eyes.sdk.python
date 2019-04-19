@@ -69,7 +69,6 @@ class _RequestCommunicator(object):
         params.update(kwargs.get("params", {}))
         headers = kwargs.get("headers", self.headers)
         timeout = kwargs.get("timeout", self.timeout)
-
         response = method(
             url_resource,
             data=kwargs.get("data", None),
@@ -121,7 +120,7 @@ class _Request(object):
     """
 
     def __init__(self, com):
-        self._com = com
+        self._com = com  # type: _RequestCommunicator
 
     def post(self, url_resource=None, long_query=False, **kwargs):
         # type: (str, bool, **Any) -> requests.Response
@@ -169,10 +168,9 @@ def prepare_match_data(match_data):
         screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
     else:
         screenshot_bytes = b""
-
-    match_data_json_bytes = json_utils.to_json(match_data).encode(
-        "utf-8"
-    )  # type: bytes
+    match_data_json = json_utils.to_json(match_data)
+    logger.debug("MatchWindowData {}".format(match_data_json))
+    match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
     match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
     body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
     return body
@@ -337,10 +335,12 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
-
         if not response.ok:
-            return None
-
+            raise EyesError(
+                "Cannot get render info: \n Status: {}, Content: {}".format(
+                    response.status_code, response.content
+                )
+            )
         self._render_info = json_utils.attr_from_response(response, RenderingInfo)
         return self._render_info
 
@@ -406,7 +406,12 @@ class ServerConnector(object):
         logger.debug("Fetching {}...".format(url))
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Accept-Encoding"] = "identity"
-        response = requests.get(url, headers=headers, timeout=self.timeout)
+
+        response = requests.get(
+            url, headers=headers, timeout=self.timeout, verify=False
+        )
+        if response.status_code == 406:
+            response = requests.get(url, timeout=self.timeout, verify=False)
         response.raise_for_status()
         return response
 

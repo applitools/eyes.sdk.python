@@ -188,4 +188,5 @@ def move_js_resources_to(pack):
     node_modules = path.join(pack, "node_modules/@applitools")
     for pth in paths:
         from_ = path.join(node_modules, pth)
-        shutil.copy(from_, dst=node_resources)
+        name = path.basename(from_)
+        shutil.copy(from_, dst=path.join(node_resources, name))
