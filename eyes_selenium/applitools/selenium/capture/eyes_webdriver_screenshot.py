@@ -4,8 +4,6 @@ import typing
 from enum import Enum
 
 import attr
-from selenium.common.exceptions import WebDriverException
-
 from applitools.common import (
     CoordinatesType,
     CoordinatesTypeConversionError,
@@ -23,6 +21,7 @@ from applitools.selenium.positioning import (
     ScrollPositionProvider,
     SeleniumPositionProvider,
 )
+from selenium.common.exceptions import WebDriverException
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union
@@ -83,7 +82,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             frame_window=Region.from_location_size(
                 Point.zero(), screenshot_region.size
             ),
-            region_window=Region.from_region(screenshot_region),
+            region_window=Region.from_(screenshot_region),
         )
 
     def __attrs_post_init__(self):

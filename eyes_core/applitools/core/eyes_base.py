@@ -4,6 +4,7 @@ import abc
 import typing
 
 from applitools.common import (
+    AppOutput,
     BatchInfo,
     Configuration,
     RectangleSize,
@@ -11,7 +12,6 @@ from applitools.common import (
     RunningSession,
     logger,
 )
-from applitools.common.app_output import AppOutput
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
@@ -409,7 +409,6 @@ class EyesBase(_EyesBaseAbstract):
 
         if self._server_connector is None:
             raise EyesError("Server connector not set.")
-        self._server_connector.update_config(self.configuration)
 
         # If there's no default application name, one must be provided for the current test.
         if self.configuration.app_name is None:
@@ -549,6 +548,7 @@ class EyesBase(_EyesBaseAbstract):
         else:
             logger.info("Batch is {}".format(self.configuration.batch))
 
+        self._server_connector.update_config(self.configuration)
         self._create_session_start_info()
         # Actually start the session.
         self._running_session = self._server_connector.start_session(

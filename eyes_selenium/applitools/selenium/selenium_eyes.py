@@ -171,7 +171,7 @@ class SeleniumEyes(EyesBase):
         return self._driver
 
     def _init_driver(self, driver):
-        # type: (WebDriver) -> None
+        # type: (AnyWebDriver) -> None
         if isinstance(driver, EyesWebDriver):
             # If the driver is an EyesWebDriver (as might be the case when tests are ran
             # consecutively using the same driver object)
@@ -979,7 +979,7 @@ class SeleniumEyes(EyesBase):
         )
         if not element_bounds.contains(viewport_bounds):
             self._ensure_frame_visible()
-            element_location = Point.from_location(element.location)
+            element_location = Point.from_(element.location)
             if len(original_fc) > 0 and element is not original_fc.peek.reference:
                 switch_to.frames(original_fc)
                 scroll_root_element = self.driver.find_element_by_tag_name("html")
@@ -1014,7 +1014,7 @@ class SeleniumEyes(EyesBase):
                 self._check_frame_or_element = True
                 display_style = element.get_computed_style("display")
 
-                if self.hide_scrollbars:
+                if self.configuration.hide_scrollbars:
                     # FIXME bug if trying to hide
                     element.hide_scrollbars()
 
@@ -1050,7 +1050,7 @@ class SeleniumEyes(EyesBase):
                 logger.exception(e)
                 raise e
             finally:
-                if self.hide_scrollbars:
+                if self.configuration.hide_scrollbars:
                     element.return_to_original_overflow()
                 self._check_frame_or_element = False
                 self._region_to_check = None

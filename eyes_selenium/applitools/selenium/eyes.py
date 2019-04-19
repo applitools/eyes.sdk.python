@@ -30,6 +30,11 @@ class Eyes(object):
         "full_agent_id",
         "add_property",
         "clear_properties",
+        "check_region_in_frame_by_selector",
+        "check_window",
+        "check_region",
+        "check_region_by_element",
+        "check_region_by_selector",
     ]
     DELEGATE_TO_CONFIG = list(attr.fields_dict(SeleniumConfiguration).keys())
 
