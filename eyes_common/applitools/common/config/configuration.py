@@ -16,7 +16,6 @@ __all__ = ("BatchInfo", "Branch", "Configuration")
 
 MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 DEFAULT_TIMEOUT = 60 * 5  # Seconds
-ENV_API_KEY = os.environ.get("APPLITOOLS_API_KEY")
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
@@ -98,7 +97,7 @@ class Configuration(object):
     default_match_settings = attr.ib(default=ImageMatchSettings())
     hide_caret = attr.ib(init=False, default=None)
     stitching_overlap = attr.ib(init=False, default=50)
-    api_key = attr.ib(default=ENV_API_KEY)
+    api_key = attr.ib(factory=lambda: os.environ.get("APPLITOOLS_API_KEY", None))
     server_url = attr.ib(default=DEFAULT_SERVER_URL)
     timeout = attr.ib(default=DEFAULT_TIMEOUT)
 

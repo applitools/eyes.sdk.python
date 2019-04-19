@@ -1,8 +1,11 @@
 import os
 from typing import Optional, Text
 
+import mock
 import pytest
 from mock import MagicMock
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.remote.webdriver import WebDriver
 
 from applitools.common import (
     AppOutput,
@@ -10,10 +13,25 @@ from applitools.common import (
     ImageMatchSettings,
     RunningSession,
 )
-from applitools.common.utils.json_utils import attr_from_response
+from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.images.capture import EyesImagesScreenshot
+from applitools.selenium import EyesWebDriver
+
+
+@pytest.fixture
+def driver_mock():
+    driver = mock.Mock(EyesWebDriver)
+    driver._driver = mock.Mock(WebDriver)
+
+    desired_capabilities = {"platformName": ""}
+    driver.desired_capabilities = desired_capabilities
+    driver._driver.desired_capabilities = desired_capabilities
+
+    # need to configure below
+    driver._driver.execute_script = mock.Mock(side_effect=WebDriverException())
+    return driver
 
 
 @pytest.fixture
@@ -34,14 +52,17 @@ def configuration():
 @pytest.fixture(scope="function")
 def connector(custom_eyes_server):
     # type: (Optional[Text]) -> ServerConnector
-    return ServerConnector(custom_eyes_server)
+    connector = ServerConnector()
+    connector.server_url = custom_eyes_server
+    return connector
 
 
 @pytest.fixture(scope="function")
 def configured_connector(custom_eyes_server):
     # type: (Optional[Text]) -> ServerConnector
-    connector = ServerConnector(custom_eyes_server)
-    connector.api_key = os.environ["APPLITOOLS_API_KEY"]
+    connector = ServerConnector()
+    conf = Configuration(server_url=custom_eyes_server)
+    connector.update_config(conf)
     return connector
 
 
@@ -52,6 +73,7 @@ def started_connector(configured_connector):
         api_key=configured_connector.api_key,
         timeout=configured_connector.timeout,
     )
+    configured_connector._is_session_started = True
     return configured_connector
 
 
@@ -85,12 +107,12 @@ def app_output_provider(image, app_output_with_screenshot):
 
 @pytest.fixture
 def running_session():
-    RUNNING_SESSION_DATA = {
+    RUNNING_SESSION_DATA = """{
         "id": "some id",
         "sessionId": "some session id",
         "url": "http://some-session-url.com",
         "batchId": "other url",
-        "baselineId": "other url",
-    }
-    RUNNING_SESSION_OBJ = attr_from_response(RUNNING_SESSION_DATA, RunningSession)
+        "baselineId": "other url"
+    }"""
+    RUNNING_SESSION_OBJ = attr_from_json(RUNNING_SESSION_DATA, RunningSession)
     return RUNNING_SESSION_OBJ

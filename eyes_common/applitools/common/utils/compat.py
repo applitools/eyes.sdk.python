@@ -42,14 +42,8 @@ if PY3:
     ABC = abc.ABC
     range = range  # type: ignore
 else:
-    from urlparse import (
-        urlparse,
-        urljoin,
-        urlencode,
-        parse_qs,
-        urlsplit,
-        urlunsplit,
-    )  # noqa
+    from urlparse import urlparse, urljoin, parse_qs, urlsplit, urlunsplit  # noqa
+    from urllib import urlencode  # noqa
     from Queue import Queue  # noqa
 
     basestring = basestring

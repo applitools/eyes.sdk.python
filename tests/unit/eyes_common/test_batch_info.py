@@ -23,7 +23,7 @@ def test_create_batch_info(monkeypatch):
 
     assert bi.name == batch_name
     assert bi.id == uuid_value
-    assert bi.started_at == now.isoformat()
+    assert bi.started_at == now
 
 
 def test_set_env_params_in_batch_info():

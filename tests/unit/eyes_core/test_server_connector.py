@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any
 
 import pytest
 from mock import patch
@@ -17,6 +18,7 @@ from applitools.common import (
     SessionStartInfo,
     TestResults,
 )
+from applitools.common.config.configuration import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
@@ -189,7 +191,7 @@ STOP_SESSION_OBJ = attr_from_json(STOP_SESSION_DATA, TestResults)
 MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     ignore_mismatch=False,
     user_inputs=[],
-    app_output=AppOutput(title="Title", screenshot64="some image"),
+    app_output=AppOutput(title="Title", screenshot64=None, screenshot_url="http"),
     tag="Tag",
     options=Options(
         name="Opt name",
@@ -206,13 +208,16 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
 
 def test_set_get_server_url():
     # type: () -> None
-    connector = ServerConnector(CUSTOM_EYES_SERVER)
+    connector = ServerConnector()
+    connector.server_url = CUSTOM_EYES_SERVER
     assert connector.server_url == CUSTOM_EYES_SERVER
 
 
-def test_set_default_server_url_if_none_passed_as_url():
-    connector = ServerConnector(None)
-    assert connector.server_url == ServerConnector.DEFAULT_SERVER_URL
+def test_check_default_server_url_from_settings():
+    connector = ServerConnector()
+    conf = Configuration()
+    connector.update_config(conf)
+    assert connector.server_url == DEFAULT_SERVER_URL
 
 
 def test_set_get_api_key(connector):
@@ -221,9 +226,11 @@ def test_set_get_api_key(connector):
     assert connector.api_key == API_KEY
 
 
-def test_get_api_key_if_not_settled(connector):
-    # type: (ServerConnector) -> None
-    os.environ["APPLITOOLS_API_KEY"] = API_KEY
+def test_get_api_key_if_not_settled(connector, monkeypatch):
+    # type: (ServerConnector, Any) -> None
+    monkeypatch.setattr(os, "environ", {"APPLITOOLS_API_KEY": API_KEY})
+    conf = Configuration()
+    connector.update_config(conf)
     assert connector.api_key == API_KEY
 
 
@@ -283,24 +290,14 @@ def test_stop_session(started_connector):
     assert not started_connector.is_session_started
 
 
-def test_raise_error_when_session_was_not_run(configured_connector):
-    with pytest.raises(EyesError):
-        configured_connector.match_window(RUNNING_SESSION_OBJ, b"data")
-    with pytest.raises(EyesError):
-        configured_connector.post_dom_snapshot("{HTML: []")
-    with pytest.raises(EyesError):
-        configured_connector.stop_session(
-            RUNNING_SESSION_OBJ, is_aborted=False, save=False
-        )
-
-
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
-    configured_connector.timeout = new_timeout
-    configured_connector.api_key = new_api_key
-    configured_connector.server_url = new_server_url
+    conf = Configuration(
+        timeout=new_timeout, api_key=new_api_key, server_url=new_server_url
+    )
+    configured_connector.update_config(conf)
 
     with patch("requests.post") as mocked_post:
         with patch(

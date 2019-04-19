@@ -150,10 +150,9 @@ def create_request_factory(headers):
 
         def create(self, api_key, server_url, timeout):
             # server_url could be updated
-            if not self._com:
-                self._com = _RequestCommunicator(
-                    timeout, headers, api_key, endpoint_uri=server_url
-                )
+            self._com = _RequestCommunicator(
+                timeout, headers, api_key, endpoint_uri=server_url
+            )
             return _Request(self._com)
 
     return RequestFactory()
@@ -196,6 +195,7 @@ class ServerConnector(object):
     api_key = None
     timeout = None
     server_url = None  # type: Optional[Text]
+    _is_session_started = False
     _request = None  # type: Optional[_Request]
     _render_request = None  # type: Optional[_Request]
 
@@ -215,6 +215,7 @@ class ServerConnector(object):
         self.server_url = conf.server_url
         self.api_key = conf.api_key
         self.timeout = conf.timeout
+
         self._request = self._request_factory.create(
             server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
         )
@@ -224,7 +225,7 @@ class ServerConnector(object):
 
     @property
     def is_session_started(self):
-        return self._request is not None
+        return self._is_session_started
 
     # TODO: Add Proxy
     def start_session(self, session_start_info):
@@ -242,6 +243,7 @@ class ServerConnector(object):
         response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
+        self._is_session_started = True
         return running_session
 
     def stop_session(self, running_session, is_aborted, save):
@@ -271,7 +273,7 @@ class ServerConnector(object):
         logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         # mark that session isn't started
-        self._request = None
+        self._is_session_started = False
         return test_results
 
     def match_window(self, running_session, match_data):
@@ -348,7 +350,7 @@ class ServerConnector(object):
         # type: (*RenderRequest) -> List[RunningRender]
         logger.debug("render called with {}".format(render_requests))
         if self._render_info is None:
-            raise RuntimeError("render_info() must be called first")
+            raise EyesError("render_info must be fetched first")
 
         url = urljoin(self._render_info.service_url, self.RENDER)
 
@@ -370,6 +372,8 @@ class ServerConnector(object):
         # type: (RunningRender, VGResource) -> bool
         argument_guard.not_none(running_render)
         argument_guard.not_none(resource)
+        if self._render_info is None:
+            raise EyesError("render_info must be fetched first")
 
         content = resource.content
         argument_guard.not_none(content)
@@ -417,6 +421,9 @@ class ServerConnector(object):
 
     def render_status_by_id(self, render_id):
         argument_guard.not_none(render_id)
+        if self._render_info is None:
+            raise EyesError("render_info must be fetched first")
+
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
@@ -430,17 +437,4 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
-        return json_utils.attr_from_response(response, RenderStatusResults)
-
-    def render_status_by_ids(self, render_ids):
-        # type: (Tuple[Text]) -> List[RenderStatusResults]
-        argument_guard.not_none(render_ids)
-
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["X-Auth-Token"] = self._render_info.access_token
-
-        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._render_request.put(
-            url, headers=headers, params={"name": "render-id", "data[]": render_ids}
-        )
         return json_utils.attr_from_response(response, RenderStatusResults)
