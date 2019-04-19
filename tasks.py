@@ -32,7 +32,6 @@ def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
             common, core, selenium, images, full_path=True, path_as_str=True
         )
     )
-    retrieve_js(c)
     dest = "pypi" if prod else "test"
     for pack_path in packages:
         with c.cd(pack_path):
@@ -45,10 +44,10 @@ def install_requirements(c, dev=False, testing=False, lint=False):
     dev_requires = ["ipython", "ipdb", "bumpversion", "wheel", "twine", "pre-commit"]
     testing_requires = [
         "pytest==3.9.3",
-        "pytest-cov",
-        "pytest-xdist",
-        "virtualenv",
-        "pytest-virtualenv",
+        "pytest-cov==2.6.1",
+        "pytest-xdist==1.26.1",
+        "virtualenv==16.3.0",
+        "pytest-virtualenv==1.4.0",
         "mock",
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
