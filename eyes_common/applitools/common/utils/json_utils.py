@@ -60,7 +60,7 @@ def attr_from_json(content, cls):
 
 
 def attr_from_response(response, cls):
-    return attr_from_json(response.content, cls)
+    return attr_from_json(response.text, cls)
 
 
 class _CamelCasedDict(dict):

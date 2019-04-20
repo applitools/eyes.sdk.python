@@ -71,8 +71,12 @@ class MockResponse(object):
         return json.loads(self.json_data)
 
     @property
-    def content(self):
+    def text(self):
         return self.json_data
+
+    @property
+    def content(self):
+        return bytes(self.json_data)
 
     @property
     def ok(self):
