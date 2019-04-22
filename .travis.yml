@@ -1,10 +1,7 @@
 language: python
 addons:
-    apt:
-        sources:
-            - google-chrome
-        packages:
-            - google-chrome-stable
+    chrome: stable
+#    firefox: latest
 matrix:
     include:
         - python: 2.7
@@ -39,7 +36,7 @@ matrix:
               - TOX_ENV=lint
 install:
     - npm install -g webdriver-manager
-    - webdriver-manager update
+    - webdriver-manager update --versions.chrome=73.0.3683.68
     - pip install -U tox
 before_script:
     - export DISPLAY=:99.0
