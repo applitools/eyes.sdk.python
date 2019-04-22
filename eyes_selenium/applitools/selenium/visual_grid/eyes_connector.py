@@ -152,10 +152,10 @@ class EyesConnector(EyesBase):
         self._current_uuid = None
         return check_result
 
-    def close(self, throw_exception=True):
+    def close(self, raise_ex=True):
         # type: (bool) -> TestResults
         self._current_uuid = None
-        return super(EyesConnector, self).close(throw_exception)
+        return super(EyesConnector, self).close(raise_ex)
 
     def render_status_for_task(self, uuid, status):
         # type: (str, RenderStatusResults) -> None

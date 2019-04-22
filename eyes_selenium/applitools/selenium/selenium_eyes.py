@@ -285,6 +285,7 @@ class SeleniumEyes(EyesBase):
         self._stitch_content = False
         self._scroll_root_element = None
         self._position_provider = None
+        self._original_frame_chain = None
         logger.debug("check - done!")
         return result
 
@@ -812,9 +813,6 @@ class SeleniumEyes(EyesBase):
             target_element = EyesWebElement(target_element, self.driver)
         return target_element
 
-    def _mark_element_for_layout_rca(self, pos_provider):
-        logger.warning("Need to implement")
-
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
             self.driver
@@ -874,7 +872,6 @@ class SeleniumEyes(EyesBase):
             elem_position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
-        self._mark_element_for_layout_rca(elem_position_provider)
 
         # TODO: Should be moved in proper place???
         if self.driver.frame_chain:
@@ -918,7 +915,6 @@ class SeleniumEyes(EyesBase):
                 size_and_borders.size["width"],
                 size_and_borders.size["height"],
             )
-            self._mark_element_for_layout_rca(None)
 
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(region, None, self.position_provider)
@@ -1007,6 +1003,7 @@ class SeleniumEyes(EyesBase):
             self.driver
         )
         pos_provider = self._create_position_provider(scroll_root_element)
+        result = None
         with pos_provider:
             self._ensure_element_visible(element)
             pl = element.location

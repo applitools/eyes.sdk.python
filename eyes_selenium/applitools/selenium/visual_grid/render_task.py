@@ -45,7 +45,6 @@ class RenderTask(VGTask):
         self.all_blobs = []
         self.request_resources = {}
         self.resource_urls = []
-        self.result = None
 
     def perform(self):
         # type: () -> RenderStatusResults
@@ -103,8 +102,7 @@ class RenderTask(VGTask):
                     statuses[0].status, statuses[0].error
                 )
             )
-        self.result = statuses[0]
-        return self.result
+        return statuses[0]
 
     @property
     def script_data(self):

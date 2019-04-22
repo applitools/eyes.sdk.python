@@ -3,7 +3,14 @@ from time import sleep
 
 import attr
 
-from applitools.common import EyesError, TestFailedError, TestResults, logger
+from applitools.common import (
+    DiffsFoundError,
+    EyesError,
+    NewTestError,
+    TestFailedError,
+    TestResults,
+    logger,
+)
 from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
@@ -145,10 +152,11 @@ class VisualGridEyes(object):
                 test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
 
-    def close(self, throw_exception=True):
-        # type: (Optional[bool]) -> TestResults
+    def close(self, raise_ex=True):  # noqa
+        # type: (Optional[bool]) -> List[TestResults]
         if self.is_disabled:
-            return False
+            logger.debug("close(): ignored (disabled)")
+            return None
         if not self.test_list:
             return False
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
@@ -169,14 +177,28 @@ class VisualGridEyes(object):
                     logger.exception(exp)
                 raise EyesError("During test execution above exception raised")
 
-        # if throw_exception:
-        #     for test in self.test_list:
-        #         if test.test_result.is_new:
-        #             raise NewTestError()
-        results = [test.test_result for test in self.test_list]
         self.vg_manager.stop()
-        if results:
-            return results[0]
+        logger.close()
+
+        if raise_ex:
+            for test in self.test_list:
+                results = test.test_result
+                msg = "Test '{}' of '{}'. \n\tSee details at: {}".format(
+                    results.name, results.app_name, results.url
+                )
+                if results.is_unresolved and not results.is_new:
+                    raise DiffsFoundError(msg, results)
+                if results.is_new:
+                    raise NewTestError(msg, results)
+                if results.is_failed:
+                    raise TestFailedError(msg, results)
+
+        failed_results = [
+            test.test_result
+            for test in self.test_list
+            if test.test_result.is_unresolved or test.test_result.is_failed
+        ]
+        return failed_results
 
     def _init_driver(self, driver):
         # type: (AnyWebDriver)->None
