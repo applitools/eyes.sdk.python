@@ -25,11 +25,11 @@ class Eyes(EyesBase):
 
     def __getattr__(self, name):
         if name in self.DELEGATE_TO_CONFIG:
-            return getattr(self._config, name)
+            return getattr(self.configuration, name)
 
     def __setattr__(self, name, value):
         if name in self.DELEGATE_TO_CONFIG:
-            setattr(self._config, name, value)
+            setattr(self.configuration, name, value)
         else:
             super(Eyes, self).__setattr__(name, value)
 

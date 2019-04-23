@@ -121,7 +121,7 @@ class _EyesBaseAbstract(ABC):
 
 class EyesBase(_EyesBaseAbstract):
     MAX_ITERATION = 10
-    _config = None  # type: Optional[Configuration]
+    _config_provider = None
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
     _last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -196,12 +196,12 @@ class EyesBase(_EyesBaseAbstract):
 
     @property
     def configuration(self):
-        return self._config
+        return self._config_provider
 
     @configuration.setter
     def configuration(self, value):
         # type:(Configuration) -> None
-        self._config = value
+        self._config_provider = value
 
     @property
     def scale_ratio(self):

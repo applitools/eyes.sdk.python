@@ -78,6 +78,10 @@ class VisualGridEyes(object):
         # type: () -> SeleniumConfiguration
         return self._config_provider.configuration
 
+    @property
+    def _seconds_to_wait_screenshot(self):
+        return self.configuration.wait_before_screenshots / 1000.0
+
     def open(self, driver):
         # type: (AnyWebDriver) -> EyesWebDriver
         if self.is_disabled:
@@ -123,7 +127,7 @@ class VisualGridEyes(object):
             "JSON.stringify).then(callback, function(err) {callback(err.stack || "
             "err.toString())})" % PROCESS_RESOURCES
         )
-        sleep(self.configuration.wait_before_screenshots / 1000.0)
+        sleep(self._seconds_to_wait_screenshot)
         script_result = self.driver.execute_async_script(dom_capt_script)
         logger.info("check('{}', check_settings) - begin".format(name))
 

@@ -84,13 +84,10 @@ class SeleniumEyes(EyesBase):
 
     _UNKNOWN_DEVICE_PIXEL_RATIO = 0
     _DEFAULT_DEVICE_PIXEL_RATIO = 1
-
     _region_to_check = None  # type: Optional[Region]
     _driver = None  # type: Optional[AnyWebDriver]
     _match_window_task = None  # type: Optional[MatchWindowTask]
-    _screenshot_type = None  # type: Optional[str]  # ScreenshotType
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
-    current_frame_position_provider = None  # type: Optional[PositionProvider]
     _check_frame_or_element = None  # type: bool
     _original_frame_chain = None  # type: Optional[FrameChain]
     _scroll_root_element = None
@@ -100,6 +97,8 @@ class SeleniumEyes(EyesBase):
     _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
+
+    current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
     def set_viewport_size_static(driver, size=None, viewportsize=None):
@@ -120,7 +119,7 @@ class SeleniumEyes(EyesBase):
         # type: (Eyes) -> None
         super(SeleniumEyes, self).__init__()
 
-        self._config = config
+        self._config_provider = config
         self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
 
@@ -129,7 +128,7 @@ class SeleniumEyes(EyesBase):
     @property
     def configuration(self):
         # type: () -> SeleniumConfiguration
-        return self._config.configuration
+        return self._config_provider.configuration
 
     @property
     def original_frame_chain(self):
@@ -340,6 +339,7 @@ class SeleniumEyes(EyesBase):
             check_settings,
         )
         self._check_frame_or_element = False
+        self._region_to_check = None
         return resutl
 
     def _ensure_frame_visible(self):
@@ -687,10 +687,6 @@ class SeleniumEyes(EyesBase):
                 # Just in case the user catches this error
                 self.driver.switch_to.frames(original_frame)
         self.viewport_size = RectangleSize(size["width"], size["height"])
-
-    def _ensure_configuration(self):
-        if self.configuration is None:
-            self.configuration = SeleniumConfiguration()
 
     @property
     def _environment(self):

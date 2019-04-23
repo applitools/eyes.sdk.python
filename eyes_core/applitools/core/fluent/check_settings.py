@@ -112,7 +112,7 @@ class CheckSettings(object):
 
     def timeout(self, timeout_ms):
         # type: (CHECK_SETTINGS_TYPE, int)  -> CHECK_SETTINGS_TYPE
-        self.values.timeout = timeout_ms / 1000.0  # secs
+        self.values.timeout = timeout_ms
         return self
 
     def update_target_region(self, region):
