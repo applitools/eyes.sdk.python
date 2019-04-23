@@ -16,16 +16,17 @@ if typing.TYPE_CHECKING:
 
 
 class Eyes(EyesBase):
-    DELEGATE_TO_CONFIG = list(attr.fields_dict(Configuration).keys())
+    DELEGATE_TO_CONFIG = Configuration.all_fields()
 
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
-    _config = Configuration()
+    _config_provider = Configuration()
 
     def __getattr__(self, name):
         if name in self.DELEGATE_TO_CONFIG:
             return getattr(self.configuration, name)
+        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
         if name in self.DELEGATE_TO_CONFIG:
@@ -66,11 +67,11 @@ class Eyes(EyesBase):
 
     def _get_viewport_size(self):
         # type: () -> RectangleSize
-        return self._config.viewport_size
+        return self.configuration.viewport_size
 
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self._config.viewport_size = size  # type: ignore
+        self.configuration.viewport_size = size  # type: ignore
 
     def _ensure_viewport_size(self):
         pass

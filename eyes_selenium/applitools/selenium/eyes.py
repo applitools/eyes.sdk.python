@@ -36,7 +36,7 @@ class Eyes(object):
         "check_region_by_element",
         "check_region_by_selector",
     ]
-    DELEGATE_TO_CONFIG = list(attr.fields_dict(SeleniumConfiguration).keys())
+    DELEGATE_TO_CONFIG = SeleniumConfiguration.all_fields()
 
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
@@ -97,7 +97,7 @@ class Eyes(object):
             return getattr(self.configuration, name)
         if name in self.EYES_COMMON:
             return getattr(self._current_eyes, name)
-        raise AttributeError
+        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
         # type: (str, Any) -> None

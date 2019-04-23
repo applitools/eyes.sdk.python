@@ -66,3 +66,7 @@ class SeleniumConfiguration(Configuration):
             baseline_env_name=self.baseline_env_name,
         )
         return [browser_info]
+
+    @staticmethod
+    def all_fields():
+        return list(attr.fields_dict(SeleniumConfiguration).keys())
