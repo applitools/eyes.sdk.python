@@ -138,7 +138,8 @@ def test_run_packs(
         c.run("pytest tests/functional/eyes_core")
     elif selenium:
         c.run(
-            'pytest -n 2 --platform="Linux" --browser chrome --headless 1 tests/functional/eyes_selenium'
+            'pytest -n 2 --remote 1 --platform="Linux" --browser chrome --headless 1 '
+            "tests/functional/eyes_selenium"
         )
     elif images:
         c.run("pytest tests/functional/eyes_images")
