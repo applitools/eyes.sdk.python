@@ -80,7 +80,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
 def _css_selector_from_(by, value):
     if by == By.ID:
-        value = '[id="%s"]' % value
+        value = "#%s" % value
     elif by == By.TAG_NAME:
         value = value
     elif by == By.CLASS_NAME:
@@ -94,13 +94,14 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
-    values = attr.ib(init=False, default=SeleniumCheckSettingsValues())
+    values = attr.ib(init=False)
 
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)
 
     def __attrs_post_init__(self):
         # type: () -> None
+        self.values = SeleniumCheckSettingsValues()
         if self._region:
             self.region(self._region)
         if self._frame:

@@ -545,14 +545,14 @@ class SeleniumEyes(EyesBase):
         """
         logger.debug("calling 'check_region_by_selector'...")
         # hack: prevent stale element exception by saving viewport value
-        # before catching element
-        return self.check_region_by_element(
-            self._driver.find_element(by, value),
+        # before catching elemen
+        result = self.check(
             tag,
-            match_timeout,
-            target,
-            stitch_content,
+            Target.region([by, value])
+            .timeout(match_timeout)
+            .stitch_content(stitch_content),
         )
+        return result
 
     def check_region_in_frame_by_selector(
         self,

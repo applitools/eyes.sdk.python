@@ -58,7 +58,11 @@ class CheckSettings(object):
     The Match settings object to use in the various Eyes.Check methods.
     """
 
-    values = attr.ib(init=False, default=CheckSettingsValues())
+    values = attr.ib(init=False)
+
+    def __attrs_post_init__(self):
+        # type: () -> None
+        self.values = CheckSettingsValues()
 
     def layout(self):
         # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
