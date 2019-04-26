@@ -4,6 +4,7 @@ import typing
 from collections import OrderedDict
 
 import attr
+import tinycss2
 
 from applitools.common import (
     EyesError,
@@ -14,6 +15,7 @@ from applitools.common import (
     VGResource,
     logger,
 )
+from applitools.common.utils import urljoin
 
 from .vg_task import VGTask
 
@@ -117,22 +119,21 @@ class RenderTask(VGTask):
 
         for blob in blobs:
             resource = VGResource.from_blob(blob)
-            # if base_url == resource.url.rstrip("#"):
-            # skip urls that points to base url
-            # continue
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
+            if resource.content_type == "text/css":
+                urls_from_css = _get_urls_from_css_resource(resource, base_url)
+                resource_urls.extend(urls_from_css)
 
         def get_resource(link):
             # type: (Text) -> VGResource
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response)
 
-        for r_url in resource_urls:
+        for r_url in set(resource_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.request_resources.update(self.resource_cache)
 
-        # TODO: Add proper RenderInfo params
         r_info = RenderInfo(
             width=self.running_test.browser_info.width,
             height=self.running_test.browser_info.height,
@@ -141,10 +142,7 @@ class RenderTask(VGTask):
             emulation_info=self.running_test.browser_info.emulation_info,
         )
         dom = RGridDom(
-            url=base_url,
-            dom_nodes=data["cdt"],
-            resources=self.request_resources,
-            msg="buildAllRGDoms",
+            url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
         return RenderRequest(
             webhook=self.rendering_info.results_url,
@@ -195,3 +193,33 @@ class RenderTask(VGTask):
                 "Got error during rendering: \n\t{}".format(statuses[0].error)
             )
         return statuses
+
+
+def url_from_tags(base_url, tags):
+    for tag in tags:
+        if tag.type == "url":
+            logger.debug("The node has import")
+            try:
+                yield urljoin(base_url, tag.value)
+            except Exception:
+                logger.exception("Cannot make URL: {}, {}".format(base_url, tag.value))
+
+
+def _get_urls_from_css_resource(resource, base_url):
+    def is_import_node(n):
+        return n.type == "at-rule" and n.lower_at_keyword == "import"
+
+    try:
+        rules, encoding = tinycss2.parse_stylesheet_bytes(
+            css_bytes=resource.content, skip_comments=True, skip_whitespace=True
+        )
+    except Exception:
+        logger.exception("Failed to reed CSS string")
+        return []
+
+    urls = []
+    for rule in rules:
+        if is_import_node(rule):
+            urls.extend(list(url_from_tags(base_url, rule.prelude)))
+        urls.extend(list(url_from_tags(base_url, rule.content)))
+    return urls

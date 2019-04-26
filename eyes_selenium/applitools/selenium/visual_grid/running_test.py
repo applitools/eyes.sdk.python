@@ -1,4 +1,3 @@
-import threading
 import typing
 
 import attr
