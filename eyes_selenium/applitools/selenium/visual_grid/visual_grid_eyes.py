@@ -62,6 +62,7 @@ class VisualGridEyes(object):
     vg_manager = None  # type: VisualGridRunner
     url = None
     _config_provider = None
+    _is_opened = False
     rendering_info = None
     test_list = []  # type: List[RunningTest]
 
@@ -70,8 +71,11 @@ class VisualGridEyes(object):
         self._elements = []
         self._config_provider = config
         argument_guard.not_none(runner)
-        self.is_opened = False
         self.vg_manager = runner
+
+    @property
+    def is_opened(self):
+        return self._is_opened
 
     @property
     def configuration(self):
@@ -102,7 +106,7 @@ class VisualGridEyes(object):
                     self._create_vgeyes_connector(b_info), self.configuration, b_info
                 )
             )
-        self.is_opened = True
+        self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
@@ -160,9 +164,9 @@ class VisualGridEyes(object):
         # type: (Optional[bool]) -> List[TestResults]
         if self.is_disabled:
             logger.debug("close(): ignored (disabled)")
-            return None
+            return []
         if not self.test_list:
-            return False
+            return []
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         for test in self.test_list:
             test.close()
@@ -174,7 +178,7 @@ class VisualGridEyes(object):
             if len(completed_states) == len(self.test_list):
                 break
             sleep(0.5)
-        self.is_opened = False
+        self._is_opened = False
         for test in self.test_list:
             if test.pending_exceptions:
                 for exp in test.pending_exceptions:

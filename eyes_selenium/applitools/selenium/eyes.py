@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 import typing
 
-import attr
-
 from applitools.common.config import SeleniumConfiguration
 
 from .selenium_eyes import SeleniumEyes
@@ -18,23 +16,31 @@ if typing.TYPE_CHECKING:
 
 class Eyes(object):
     EYES_COMMON = [
-        "api_key",
-        "server_url",
-        "check",
+        "base_agent_id",
+        "is_debug_screenshot_provided",
         "abort_if_not_closed",
+        "original_frame_chain",
         "close",
         "viewport_size",
         "stitch_content",
+        "device_pixel_ratio",
         "scale_ratio",
         "position_provider",
         "full_agent_id",
+        "agent_setup",
         "add_property",
+        "is_opened",
         "clear_properties",
-        "check_region_in_frame_by_selector",
+        "check",
         "check_window",
         "check_region",
         "check_region_by_element",
         "check_region_by_selector",
+        "check_region_in_frame_by_selector",
+        "set_viewport_size_static",
+        "get_viewport_size_static",
+        "add_mouse_trigger_by_element",
+        "add_text_trigger_by_element",
     ]
     DELEGATE_TO_CONFIG = SeleniumConfiguration.all_fields()
 
@@ -47,6 +53,11 @@ class Eyes(object):
 
     def __init__(self, runner=None):
         # type: (Optional[Any]) -> None
+        # backward compatibility with settings server_url
+        if isinstance(runner, str):
+            self.configuration.server_url = runner
+            runner = None
+
         if runner is None:
             self._selenium_eyes = SeleniumEyes(self)
         elif isinstance(runner, VisualGridRunner):

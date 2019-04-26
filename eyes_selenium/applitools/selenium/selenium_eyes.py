@@ -545,7 +545,7 @@ class SeleniumEyes(EyesBase):
         """
         logger.debug("calling 'check_region_by_selector'...")
         # hack: prevent stale element exception by saving viewport value
-        # before catching elemen
+        # before catching element
         result = self.check(
             tag,
             Target.region([by, value])

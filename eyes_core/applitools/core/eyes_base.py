@@ -130,7 +130,7 @@ class EyesBase(_EyesBaseAbstract):
     _position_provider = None  # type: Optional[PositionProvider]
     _is_viewport_size_set = False  # type: bool
     _should_match_once_on_timeout = False  # type: bool
-    _is_open = False  # type: bool
+    _is_opened = False  # type: bool
     _render_info = None  # type: Optional[RenderingInfo]
     _render = False
     _cut_provider = None
@@ -258,12 +258,12 @@ class EyesBase(_EyesBaseAbstract):
         self.configuration.properties.clear()
 
     @property
-    def is_open(self):
+    def is_opened(self):
         # type: () -> bool
         """
         Returns whether the session is currently running.
         """
-        return self._is_open
+        return self._is_opened
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -278,10 +278,10 @@ class EyesBase(_EyesBaseAbstract):
             return None
         try:
             logger.debug("close({})".format(raise_ex))
-            if not self._is_open:
+            if not self._is_opened:
                 raise ValueError("Eyes not open")
 
-            self._is_open = False
+            self._is_opened = False
 
             self._reset_last_screenshot()
             self._init_providers(hard_reset=True)
@@ -476,7 +476,7 @@ class EyesBase(_EyesBaseAbstract):
                     retry += 1
                     continue
 
-                self._is_open = True
+                self._is_opened = True
                 self._after_open()
                 return None
             except EyesError as e:
@@ -487,7 +487,7 @@ class EyesBase(_EyesBaseAbstract):
         raise EyesError("eyes.open_base() failed")
 
     def _validate_session_open(self):
-        if self.is_open:
+        if self.is_opened:
             self.abort_if_not_closed()
             raise EyesError("A test is already running")
 

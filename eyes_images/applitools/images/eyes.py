@@ -134,7 +134,7 @@ class Eyes(EyesBase):
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
-        if not self.is_open:
+        if not self.is_opened:
             self.abort_if_not_closed()
             raise EyesError("you must call open() before checking")
 
