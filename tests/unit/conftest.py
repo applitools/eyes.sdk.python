@@ -16,12 +16,12 @@ from applitools.common import (
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
-from applitools.images.capture import EyesImagesScreenshot
-from applitools.selenium import EyesWebDriver
 
 
 @pytest.fixture
 def driver_mock():
+    from applitools.selenium import EyesWebDriver
+
     driver = mock.Mock(EyesWebDriver)
     driver._driver = mock.Mock(WebDriver)
 
@@ -79,6 +79,8 @@ def started_connector(configured_connector):
 
 @pytest.fixture
 def screenshot(image):
+    from applitools.images.capture import EyesImagesScreenshot
+
     return EyesImagesScreenshot(image)
 
 
