@@ -15,7 +15,7 @@ from applitools.common import (
     VGResource,
     logger,
 )
-from applitools.common.utils import urljoin
+from applitools.common.utils import urlparse
 
 from .vg_task import VGTask
 
@@ -122,7 +122,7 @@ class RenderTask(VGTask):
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
             if resource.content_type == "text/css":
-                urls_from_css = _get_urls_from_css_resource(resource, base_url)
+                urls_from_css = _get_urls_from_css_resource(resource)
                 resource_urls.extend(urls_from_css)
 
         def get_resource(link):
@@ -195,17 +195,18 @@ class RenderTask(VGTask):
         return statuses
 
 
-def url_from_tags(base_url, tags):
+def _url_from_tags(tags):
     for tag in tags:
         if tag.type == "url":
-            logger.debug("The node has import")
             try:
-                yield urljoin(base_url, tag.value)
-            except Exception:
-                logger.exception("Cannot make URL: {}, {}".format(base_url, tag.value))
+                url = urlparse(tag.value)
+                if url.scheme in ["http", "https"]:
+                    yield url.geturl()
+            except Exception as e:
+                logger.exception(e)
 
 
-def _get_urls_from_css_resource(resource, base_url):
+def _get_urls_from_css_resource(resource):
     def is_import_node(n):
         return n.type == "at-rule" and n.lower_at_keyword == "import"
 
@@ -220,6 +221,7 @@ def _get_urls_from_css_resource(resource, base_url):
     urls = []
     for rule in rules:
         if is_import_node(rule):
-            urls.extend(list(url_from_tags(base_url, rule.prelude)))
-        urls.extend(list(url_from_tags(base_url, rule.content)))
+            logger.debug("The node has import")
+            urls.extend(list(_url_from_tags(rule.prelude)))
+        urls.extend(list(_url_from_tags(rule.content)))
     return urls
