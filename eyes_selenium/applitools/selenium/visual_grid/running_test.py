@@ -2,7 +2,7 @@ import typing
 
 import attr
 
-from applitools.common import Region, logger
+from applitools.common import EyesError, Region, logger
 from transitions import Machine
 
 from .render_task import RenderTask
@@ -245,7 +245,10 @@ class RunningTest(object):
 
         def on_task_succeeded(test_result):
             logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
-            self.test_result = test_result
+            if test_result:
+                self.test_result = test_result
+            else:
+                self.pending_exceptions.append(EyesError("Test result is None"))
 
         def on_task_completed():
             # type: () -> None
