@@ -151,8 +151,7 @@ def batch_info():
 
 
 @pytest.fixture
-def eyes_vg(vg_runner, sel_config, driver, request):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
+def eyes_vg(vg_runner, sel_config, driver, request, test_page_url):
     app_name = request.node.get_closest_marker("app_name")
     if app_name:
         app_name = app_name.args[0]

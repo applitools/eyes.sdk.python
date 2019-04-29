@@ -11,15 +11,12 @@ from applitools.selenium import Target
 
 
 @pytest.fixture
-def sel_config(request):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
-
+def sel_config(test_page_url):
     conf = SeleniumConfiguration()
     conf.test_name = "Top 10 websites - {}".format(test_page_url)
     conf.app_name = "Top Ten Sites"
     conf.batch = BatchInfo("TTS - config batch")
     conf.branch_name = "TTS - config branch"
-    conf.baseline_env_name = "My Other Env Name"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)
     conf.add_browser(700, 500, BrowserType.IE10)
@@ -34,12 +31,21 @@ def sel_config(request):
     return conf
 
 
-# @pytest.mark.test_page_url("http://opzharp.ru/")
-# @pytest.mark.test_page_url("http://www.sage.co.uk/")
-@pytest.mark.test_page_url("http://allatra.tv/")
+@pytest.mark.parametrize(
+    "test_page_url",
+    [
+        "https://www.google.com/",
+        "http://allatra.tv/",
+        "http://opzharp.ru/",
+        "http://www.sage.co.uk/",
+        "https://www.wikipedia.org/",
+        "https://www.instagram.com/",
+        "https://youtube.com/",
+        "http://applitools-vg-test.surge.sh/test.html",
+    ],
+)
 @pytest.mark.viewport_size(dict(width=600, height=600))
-def test_top_sites(eyes_vg, request):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
+def test_top_sites(eyes_vg, test_page_url):
     eyes_vg.check("Step1 - " + test_page_url, Target.window().send_dom(True))
     eyes_vg.check(
         "Step2 - " + test_page_url, Target.window().fully(True).send_dom(True)
