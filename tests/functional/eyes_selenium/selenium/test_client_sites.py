@@ -44,7 +44,7 @@ def test_omnicomprgroup(eyes, driver):
     eyes.stitch_mode = StitchMode.CSS
     eyes.force_full_page_screenshot = True
     driver = eyes.open(
-        driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 400, "height": 600}
+        driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 600, "height": 800}
     )
     driver.get("https://www.omnicomprgroup.com/")
     eyes.check_window()

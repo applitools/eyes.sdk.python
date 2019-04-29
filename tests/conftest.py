@@ -166,6 +166,7 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
     if platform_name is None:
         sys2platform_name = {
             "linux": "Linux",
+            "linux2": "Linux",
             "darwin": "macOS 10.13",
             "win32": "Windows 10",
         }

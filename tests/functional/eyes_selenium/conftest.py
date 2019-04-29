@@ -95,28 +95,32 @@ def driver_for_class(request, driver):
 @pytest.yield_fixture(scope="function")
 def driver(request, browser_config, webdriver_module):
     test_name = request.node.name
-    build_tag = os.environ.get("BUILD_TAG", None)
-    tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
-    username = os.environ.get("SAUCE_USERNAME", None)
-    access_key = os.environ.get("SAUCE_ACCESS_KEY", None)
 
     force_remote = request.config.getoption("remote", default=False)
-    selenium_url = os.environ.get("SELENIUM_SERVER_URL", "http://127.0.0.1:4444/wd/hub")
-    if "ondemand.saucelabs.com" in selenium_url or force_remote:
-        selenium_url = "https://%s:%s@ondemand.saucelabs.com:443/wd/hub" % (
+    if force_remote:
+        build_tag = os.environ.get("BUILD_TAG", None)
+        tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
+        username = os.environ.get("SAUCE_USERNAME", None)
+        access_key = os.environ.get("SAUCE_ACCESS_KEY", None)
+        sauce_url = "https://%s:%s@ondemand.saucelabs.com:443/wd/hub" % (
             username,
             access_key,
         )
-    logger.debug("SELENIUM_URL={}".format(selenium_url))
+        selenium_url = os.environ.get("SELENIUM_SERVER_URL", sauce_url)
+        logger.debug("SELENIUM_URL={}".format(selenium_url))
 
-    desired_caps = browser_config.copy()
-    desired_caps["build"] = build_tag
-    desired_caps["tunnelIdentifier"] = tunnel_id
-    desired_caps["name"] = test_name
+        desired_caps = browser_config.copy()
+        desired_caps["build"] = build_tag
+        desired_caps["tunnelIdentifier"] = tunnel_id
+        desired_caps["name"] = test_name
 
-    browser = webdriver_module.Remote(
-        command_executor=selenium_url, desired_capabilities=desired_caps
-    )
+        browser = webdriver_module.Remote(
+            command_executor=selenium_url, desired_capabilities=desired_caps
+        )
+    else:
+        from webdriver_manager.chrome import ChromeDriverManager
+
+        browser = webdriver_module.Chrome(ChromeDriverManager().install())
     if browser is None:
         raise WebDriverException("Never created!")
 
