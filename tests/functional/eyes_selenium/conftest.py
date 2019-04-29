@@ -139,7 +139,6 @@ def driver(request, browser_config, webdriver_module):
 @pytest.fixture
 def vg_runner():
     vg = VisualGridRunner(10)
-    vg.server_url = "https://eyes.applitools.com/"
     return vg
 
 
@@ -165,6 +164,7 @@ def eyes_vg(vg_runner, sel_config, driver, request, test_page_url):
         viewport_size = None
 
     eyes = Eyes(vg_runner)
+    eyes.server_url = "https://eyes.applitools.com/"
     eyes.configuration = sel_config
 
     app_name = app_name or eyes.configuration.app_name
