@@ -437,4 +437,7 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
-        return json_utils.attr_from_response(response, RenderStatusResults)
+        results = json_utils.attr_from_response(response, RenderStatusResults)
+        if results[0] is None:
+            raise EyesError("Got status None")
+        return results

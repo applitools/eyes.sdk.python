@@ -2,6 +2,7 @@ import typing
 from time import sleep
 
 import attr
+from selenium.common.exceptions import WebDriverException
 
 from applitools.common import (
     DiffsFoundError,
@@ -111,6 +112,23 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
+    def get_script_result(self):
+        dom_capt_script = (
+            "var callback = arguments[arguments.length - 1]; return (%s)().then("
+            "JSON.stringify).then(callback, function(err) {callback(err.stack || "
+            "err.toString())})" % PROCESS_RESOURCES
+        )
+        for i in range(3):
+            sleep(self._seconds_to_wait_screenshot)
+            logger.debug("Capturing script_result ({} - try)".format(i))
+            try:
+                script_result = self.driver.execute_async_script(dom_capt_script)
+                break
+            except WebDriverException:
+                logger.exception("During querying of script result got error")
+                script_result = self.get_script_result()
+        return script_result
+
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> bool
         if self.is_disabled:
@@ -126,21 +144,13 @@ class VisualGridEyes(object):
             if self.configuration.force_full_page_screenshot:
                 check_settings.values.size_mode = "full-page"
 
-        dom_capt_script = (
-            "var callback = arguments[arguments.length - 1]; return (%s)().then("
-            "JSON.stringify).then(callback, function(err) {callback(err.stack || "
-            "err.toString())})" % PROCESS_RESOURCES
-        )
-        sleep(self._seconds_to_wait_screenshot)
-        script_result = self.driver.execute_async_script(dom_capt_script)
         logger.info("check('{}', check_settings) - begin".format(name))
 
         # region_xpaths = self.get_region_xpaths(check_settings)
         region_xpaths = []
         self.region_to_check = None
         # logger.info("region_xpaths: {}".format(region_xpaths))
-
-        # open_tasks = self.add_open_task_to_all_running_test()
+        script_result = self.get_script_result()
         try:
             for test in self.test_list:
                 test.check(
@@ -184,9 +194,11 @@ class VisualGridEyes(object):
 
         for test in self.test_list:
             if test.pending_exceptions:
-                for exp in test.pending_exceptions:
-                    logger.exception(exp)
-                raise EyesError("During test execution above exception raised")
+                raise EyesError(
+                    "During test execution above exception raised. \n {}".join(
+                        test.pending_exceptions
+                    )
+                )
 
         if raise_ex:
             for test in self.test_list:

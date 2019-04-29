@@ -119,6 +119,9 @@ class RenderTask(VGTask):
 
         for blob in blobs:
             resource = VGResource.from_blob(blob)
+            if resource.url.rstrip("#") == base_url:
+                continue
+
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
             if resource.content_type == "text/css":
@@ -220,8 +223,10 @@ def _get_urls_from_css_resource(resource):
 
     urls = []
     for rule in rules:
+        tags = rule.content
         if is_import_node(rule):
             logger.debug("The node has import")
-            urls.extend(list(_url_from_tags(rule.prelude)))
-        urls.extend(list(_url_from_tags(rule.content)))
+            tags = rule.prelude
+        if tags:
+            urls.extend(list(_url_from_tags(tags)))
     return urls

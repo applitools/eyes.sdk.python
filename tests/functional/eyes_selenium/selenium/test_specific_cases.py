@@ -38,7 +38,6 @@ def test_directly_set_viewport_size(eyes, driver):
 @pytest.mark.platform("Linux")
 @pytest.mark.eyes(hide_scrollbars=True)
 def test_check_window_with_send_dom(eyes, driver):
-    eyes.hide_scrollbars = True
     eyes.open(
         driver,
         "Eyes Selenium SDK - Fluent API",

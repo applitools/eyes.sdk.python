@@ -19,8 +19,8 @@ def sel_config(test_page_url):
     conf.branch_name = "TTS - config branch"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)
-    conf.add_browser(700, 500, BrowserType.IE_10)
-    conf.add_browser(700, 500, BrowserType.IE_11)
+    # conf.add_browser(700, 500, BrowserType.IE_10)
+    # conf.add_browser(700, 500, BrowserType.IE_11)
     conf.add_browser(1600, 1200, BrowserType.CHROME)
     conf.add_browser(1200, 800, BrowserType.EDGE)
     conf.add_browser(800, 600, BrowserType.CHROME)
@@ -34,14 +34,14 @@ def sel_config(test_page_url):
 @pytest.mark.parametrize(
     "test_page_url",
     [
-        "https://www.google.com/",
-        "http://allatra.tv/",
-        "http://opzharp.ru/",
-        "http://www.sage.co.uk/",
-        "https://www.wikipedia.org/",
-        "https://www.instagram.com/",
-        "https://youtube.com/",
-        "http://applitools-vg-test.surge.sh/test.html",
+        # "https://www.google.com/",
+        # "http://allatra.tv/",
+        # "http://opzharp.ru/",
+        # "http://www.sage.co.uk/",
+        # "https://www.wikipedia.org/",
+        # "https://www.instagram.com/",
+        # "https://youtube.com/",
+        "http://applitools-vg-test.surge.sh/test.html"
     ],
 )
 @pytest.mark.viewport_size(dict(width=600, height=600))

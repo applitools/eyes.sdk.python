@@ -179,5 +179,5 @@ def eyes_vg(vg_runner, sel_config, driver, request, test_page_url):
     eyes.open(driver, app_name, test_name, viewport_size)
     yield eyes
     logger.debug("closing WebDriver for url {}".format(test_page_url))
-    eyes.close(True)
+    eyes.close()
     # TODO: print VG test results
