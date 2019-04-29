@@ -587,9 +587,6 @@ class EyesBase(_EyesBaseAbstract):
             screenshot = screenshot.sub_screenshot(region)
             self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
 
-        # logger.info("getting screenshot url...")
-        # screenshot_url = self.get_screenshot_url()
-        # logger.info("Done getting screenshot_url!")
         title = self._title
         logger.info("Done getting title")
 
