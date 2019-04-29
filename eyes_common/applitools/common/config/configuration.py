@@ -12,7 +12,7 @@ from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import general_utils
 from applitools.common.utils.json_utils import JsonInclude
 
-__all__ = ("BatchInfo", "Branch", "Configuration")
+__all__ = ("BatchInfo", "Configuration")
 
 MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
 DEFAULT_TIMEOUT = 60 * 5  # Seconds
@@ -133,11 +133,3 @@ class Configuration(object):
     @staticmethod
     def all_fields():
         return list(attr.fields_dict(Configuration).keys())
-
-
-@attr.s
-class Branch(object):
-    id = attr.ib()
-    name = attr.ib()
-    is_deleted = attr.ib()
-    update_info = attr.ib()

@@ -2,7 +2,6 @@ from .app_output import AppOutput
 from .capture import EyesScreenshot
 from .config import (
     BatchInfo,
-    Branch,
     BrowserType,
     Configuration,
     SeleniumConfiguration,
@@ -28,13 +27,7 @@ from .match import (
     MatchResult,
 )
 from .match_window_data import MatchWindowData, Options
-from .metadata import (
-    AppEnvironment,
-    RunningSession,
-    SessionResults,
-    SessionStartInfo,
-    StartInfo,
-)
+from .metadata import AppEnvironment, RunningSession, SessionStartInfo
 from .server import FailureReports, SessionType
 from .test_results import TestResults
 from .visual_grid import (
