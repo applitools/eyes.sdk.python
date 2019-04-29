@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .geometry import Region
     from .utils.custom_types import UserInputs
 
-__all__ = ("AppOutput", "ExpectedAppOutput", "ActualAppOutput")
+__all__ = ("AppOutput",)
 
 
 @attr.s

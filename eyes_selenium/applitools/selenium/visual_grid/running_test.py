@@ -242,10 +242,10 @@ class RunningTest(object):
             "close {}".format(self.browser_info), lambda: self.eyes.close(False)
         )
         logger.debug("RunningTest %s" % close_task.name)
-        close_task.on_task_succeeded(
-            lambda test_result: setattr(self, "test_result", test_result)
-        )
-        close_task.on_task_error(lambda e: self.pending_exceptions.append(e))
+
+        def on_task_succeeded(test_result):
+            logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
+            self.test_result = test_result
 
         def on_task_completed():
             # type: () -> None
@@ -254,7 +254,9 @@ class RunningTest(object):
             if self.all_tasks_completed(self.watch_close):
                 self.becomes_completed()
 
+        close_task.on_task_succeeded(on_task_succeeded)
         close_task.on_task_completed(on_task_completed)
+        close_task.on_task_error(lambda e: self.pending_exceptions.append(e))
         self.close_queue.append(close_task)
         self.watch_close[close_task] = False
 
