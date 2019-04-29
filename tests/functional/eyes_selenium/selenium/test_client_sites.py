@@ -21,7 +21,7 @@ def test_wix_site(eyes, driver):
     driver.find_element(By.CSS_SELECTOR, "[data-hook=plus-button]").click()
     # just an example, where it make us some problems with scrolling to top of the frame.
     # eyes.check_region(By.CSS_SELECTOR, "[data-hook=plus-button]");
-    eyes.check("", Target.region(By.CSS_SELECTOR, "[data-hook=plus-button]"))
+    eyes.check("", Target.region([By.CSS_SELECTOR, "[data-hook=plus-button]"]))
     eyes.close()
 
 
@@ -44,7 +44,7 @@ def test_omnicomprgroup(eyes, driver):
     eyes.stitch_mode = StitchMode.CSS
     eyes.force_full_page_screenshot = True
     driver = eyes.open(
-        driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 600, "height": 800}
+        driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 800, "height": 600}
     )
     driver.get("https://www.omnicomprgroup.com/")
     eyes.check_window()

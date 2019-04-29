@@ -101,7 +101,7 @@ class Eyes(object):
         Takes a snapshot of the application under test and matches it with the expected output.
 
         :param tag: An optional tag to be associated with the snapshot.
-        :param match_timeout:  The amount of time to retry matching (milliseconds)
+        :param match_timeout:  The amount of time to retry matching (seconds)
         :return: The match results.
         """
         logger.debug("check_window('%s')" % tag)
@@ -124,7 +124,7 @@ class Eyes(object):
                        relative to the viewport of the current frame.
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
+                              (seconds).
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: The match results.
         """
@@ -150,7 +150,7 @@ class Eyes(object):
         :param region: Specifying the region to check inside the frame.
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
+                              (seconds).
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: None
         """
@@ -229,7 +229,7 @@ class Eyes(object):
         # type: (str, Any) -> None
         if name in self.DELEGATE_TO_CONFIG:
             setattr(self.configuration, name, value)
-
+            return
         if name in self.EYES_COMMON:
             setattr(self._current_eyes, name, value)
         else:

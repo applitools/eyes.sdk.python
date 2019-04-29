@@ -495,8 +495,8 @@ class EyesBase(_EyesBaseAbstract):
         logger.debug(
             "Eyes server URL is '{}'".format(self._server_connector.server_url)
         )
-        logger.debug("Timeout = {} ms".format(self.configuration.timeout))
-        logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
+        logger.debug("Timeout = {} sec".format(self.configuration.timeout))
+        logger.debug("match_timeout = {} sec".format(self.configuration.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(
                 self.configuration.default_match_settings

@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Optional, Text
 
 import attr
-
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
@@ -14,8 +13,8 @@ from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Configuration")
 
-MINIMUM_MATCH_TIMEOUT = 60  # Milliseconds
-DEFAULT_TIMEOUT = 60 * 5  # Seconds
+MINIMUM_MATCH_TIMEOUT = 0.6  # seconds
+DEFAULT_TIMEOUT = 60 * 5  # seconds
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
@@ -55,7 +54,7 @@ def _to_rectangle(d):
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
+    DEFAULT_MATCH_TIMEOUT = 2  # sec
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
@@ -105,7 +104,7 @@ class Configuration(object):
     def validate1(self, attribute, value):
         if 0 < value < MINIMUM_MATCH_TIMEOUT:
             raise ValueError(
-                "Match timeout must be at least {} ms.".format(MINIMUM_MATCH_TIMEOUT)
+                "Match timeout must be at least {} sec.".format(MINIMUM_MATCH_TIMEOUT)
             )
 
     @viewport_size.validator

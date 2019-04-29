@@ -111,9 +111,9 @@ class CheckSettings(object):
         self.values.stitch_content = stitch_content
         return self
 
-    def timeout(self, timeout_ms):
+    def timeout(self, timeout):
         # type: (CHECK_SETTINGS_TYPE, int)  -> CHECK_SETTINGS_TYPE
-        self.values.timeout = timeout_ms
+        self.values.timeout = timeout
         return self
 
     def update_target_region(self, region):
