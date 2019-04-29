@@ -179,14 +179,14 @@ class VisualGridEyes(object):
                 break
             sleep(0.5)
         self._is_opened = False
+        self.vg_manager.stop()
+        logger.close()
+
         for test in self.test_list:
             if test.pending_exceptions:
                 for exp in test.pending_exceptions:
                     logger.exception(exp)
                 raise EyesError("During test execution above exception raised")
-
-        self.vg_manager.stop()
-        logger.close()
 
         if raise_ex:
             for test in self.test_list:
