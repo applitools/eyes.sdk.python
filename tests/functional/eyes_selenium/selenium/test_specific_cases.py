@@ -5,7 +5,7 @@ from applitools.selenium import Region, Target
 
 @pytest.mark.platform("Linux")
 def test_quickstart_example(eyes, driver):
-    required_viewport = {"width": 450, "height": 300}
+    required_viewport = {"width": 1200, "height": 800}
     eyes.set_viewport_size_static(driver, required_viewport)
     eyes.open(
         driver=driver,
