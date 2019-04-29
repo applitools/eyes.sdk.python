@@ -8,7 +8,6 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from applitools.common import (
     AppEnvironment,
     CoordinatesType,
-    EyesError,
     MatchResult,
     RectangleSize,
     Region,
@@ -61,7 +60,6 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
-        FrameReference,
         AnyWebElement,
     )
     from applitools.core import MatchWindowTask
@@ -445,155 +443,6 @@ class SeleniumEyes(EyesBase):
         if self._scroll_root_element is None:
             self._scroll_root_element = self.driver.find_element_by_tag_name("html")
         return self._scroll_root_element
-
-    def check_window(self, tag=None, match_timeout=-1, target=None):
-        # type: (Optional[Text], int, Optional[SeleniumCheckSettings]) -> MatchResult
-        """
-        Takes a snapshot from the browser using the web driver and matches
-        it with the expected output.
-
-        :param tag: Description of the visual validation checkpoint.
-        :param match_timeout: Timeout for the visual validation checkpoint (
-                              milliseconds).
-        :return: None
-        """
-        logger.debug("check_window('%s')" % tag)
-        if target:
-            logger.deprecation(
-                "Use fluent interface with check_window is deprecated. "
-                "Use `eyes.check()` instead"
-            )
-        check_settings = target
-        if check_settings is None:
-            check_settings = Target.window()
-        return self.check(tag, check_settings.timeout(match_timeout))
-
-    def check_region(
-        self, region, tag=None, match_timeout=-1, target=None, stitch_content=False
-    ):
-        # type: (Region, Optional[Text], int, Optional[Target], bool) -> MatchResult
-        """
-        Takes a snapshot of the given region from the browser using the web driver
-        and matches it with the expected output. If the current context is a frame,
-        the region is offsetted relative to the frame.
-
-        :param region: The region which will be visually validated. The coordinates are
-                       relative to the viewport of the current frame.
-        :param tag: Description of the visual validation checkpoint.
-        :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
-        :return: None
-        """
-        logger.debug("check_region([%s], '%s')" % (region, tag))
-        if region.is_empty:
-            raise EyesError("region cannot be empty!")
-        if target or stitch_content:
-            logger.deprecation(
-                "Use fluent interface with check_region is deprecated. "
-                "Use `eyes.check()` instead"
-            )
-        return self.check(
-            tag,
-            Target.region(region).timeout(match_timeout).stitch_content(stitch_content),
-        )
-
-    def check_region_by_element(
-        self, element, tag=None, match_timeout=-1, target=None, stitch_content=False
-    ):
-        # type: (AnyWebElement, Optional[Text], int, Optional[Target], bool) -> MatchResult
-        """
-        Takes a snapshot of the region of the given element from the browser using
-        the web driver and matches it with the expected output.
-
-        :param element: The element which region will be visually validated.
-        :param tag: Description of the visual validation checkpoint.
-        :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
-        :param target: The target for the check_window call
-        :return: None
-        """
-        logger.debug("check_region_by_element('%s')" % tag)
-        if target or stitch_content:
-            logger.deprecation(
-                "Use fluent interface with check_region_by_element is deprecated. "
-                "Use `eyes.check()` instead"
-            )
-        result = self.check(
-            tag,
-            Target.region(element)
-            .timeout(match_timeout)
-            .stitch_content(stitch_content),
-        )
-        return result
-
-    def check_region_by_selector(
-        self, by, value, tag=None, match_timeout=-1, target=None, stitch_content=False
-    ):
-        # type: (Text, Text, Optional[Text], int, Optional[Target], bool) -> MatchResult
-        """
-        Takes a snapshot of the region of the element found by calling find_element
-        (by, value) and matches it with the expected output.
-
-        :param by: The way by which an element to be validated should be found
-                   (e.g., By.ID).
-        :param value: The value identifying the element using the "by" type.
-        :param tag: Description of the visual validation checkpoint.
-        :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
-        :param target: The target for the check_window call
-        :return: None
-        """
-        logger.debug("calling 'check_region_by_selector'...")
-        # hack: prevent stale element exception by saving viewport value
-        # before catching element
-        result = self.check(
-            tag,
-            Target.region([by, value])
-            .timeout(match_timeout)
-            .stitch_content(stitch_content),
-        )
-        return result
-
-    def check_region_in_frame_by_selector(
-        self,
-        frame_reference,  # type: FrameReference
-        by,  # type: Text
-        value,  # type: Text
-        tag=None,  # type: Optional[Text]
-        match_timeout=-1,  # type: int
-        target=None,  # type: Optional[Target]
-        stitch_content=False,  # type: bool
-    ):
-        # type: (...) -> MatchResult
-        """
-        Checks a region within a frame, and returns to the current frame.
-
-        :param frame_reference: A reference to the frame in which the region
-                                should be checked.
-        :param by: The way by which an element to be validated should be found (By.ID).
-        :param value: The value identifying the element using the "by" type.
-        :param tag: Description of the visual validation checkpoint.
-        :param match_timeout: Timeout for the visual validation checkpoint
-                              (milliseconds).
-        :param target: The target for the check_window call
-        :return: None
-        """
-        # TODO: remove this disable
-        if self.is_disabled:
-            logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
-            return MatchResult()
-        if target or stitch_content:
-            logger.deprecation(
-                "Use fluent interface with check_region_by_element is deprecated. "
-                "Use `eyes.check()` instead"
-            )
-        logger.debug("check_region_in_frame_by_selector('%s')" % tag)
-        return self.check(
-            tag,
-            Target.region((by, value), frame_reference)
-            .stitch_content(stitch_content)
-            .timeout(match_timeout),
-        )
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (Text, AnyWebElement) -> None

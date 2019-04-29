@@ -35,6 +35,7 @@ from .metadata import (
     SessionStartInfo,
     StartInfo,
 )
+from .server import FailureReports, SessionType
 from .test_results import TestResults
 from .visual_grid import (
     ChromeEmulationInfo,
@@ -65,5 +66,6 @@ __all__ = (
     + match_window_data.__all__  # noqa
     + test_results.__all__  # noqa
     + visual_grid.__all__  # noqa
+    + server.__all__  # noqa
     + ("logger", "StitchMode")  # noqa
 )

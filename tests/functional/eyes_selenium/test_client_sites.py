@@ -35,9 +35,7 @@ def test_w3schools_iframe(eyes, driver):
         viewport_size={"width": 800, "height": 600},
     )
     driver.get("https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_iframe")
-    eyes.check_region_in_frame_by_selector(
-        "iframeResult", By.TAG_NAME, "body", "Entire Frame", stitch_content=False
-    )
+    eyes.check("Entire Frame", Target.region((By.TAG_NAME, "body"), "iframeResult"))
     eyes.close()
 
 

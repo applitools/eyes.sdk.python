@@ -4,13 +4,22 @@ import typing
 
 from applitools.common.config import SeleniumConfiguration
 
+from .fluent import Target
 from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional, Union, Callable, Any
+    from typing import Text, Optional, Union, Callable, Any, List, Tuple
     from selenium.webdriver.remote.webdriver import WebDriver
-    from applitools.common.utils.custom_types import AnyWebDriver, ViewPort
+    from selenium.webdriver.remote.webelement import WebElement
+    from applitools.common import MatchResult, TestResults, Region, logger, SessionType
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        ViewPort,
+        FrameReference,
+    )
+    from .fluent import SeleniumCheckSettings
+    from .webelement import EyesWebElement
     from .webdriver import EyesWebDriver
 
 
@@ -31,12 +40,6 @@ class Eyes(object):
         "add_property",
         "is_opened",
         "clear_properties",
-        "check",
-        "check_window",
-        "check_region",
-        "check_region_by_element",
-        "check_region_by_selector",
-        "check_region_in_frame_by_selector",
         "set_viewport_size_static",
         "get_viewport_size_static",
         "add_mouse_trigger_by_element",
@@ -73,34 +76,146 @@ class Eyes(object):
         return self._current_eyes.driver
 
     @property
-    def _current_eyes(self):
-        # type: () -> Union[SeleniumEyes, VisualGridEyes]
-        if self._is_visual_grid_eyes:
-            return self._visual_grid_eyes
-        else:
-            return self._selenium_eyes
-
-    @property
     def send_dom(self):
         # type: () -> bool
         if not self._is_visual_grid_eyes:
             return self.configuration.send_dom
         return False
 
-    def open(self, driver, app_name, test_name, viewport_size=None):
-        # type: (AnyWebDriver, Text, Text, Optional[ViewPort]) -> EyesWebDriver
+    def check(self, name, check_settings):
+        # type: (Text, SeleniumCheckSettings) -> MatchResult
+        """
+        Takes a snapshot and matches it with the expected output.
+
+        :param name: The name of the tag.
+        :param check_settings: target which area of the window to check.
+        :return: The match results.
+        """
+        return self._current_eyes.check(name, check_settings)
+
+    def check_window(
+        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT
+    ):
+        # type: (Optional[Text], int) -> MatchResult
+        """
+        Takes a snapshot of the application under test and matches it with the expected output.
+
+        :param tag: An optional tag to be associated with the snapshot.
+        :param match_timeout:  The amount of time to retry matching (milliseconds)
+        :return: The match results.
+        """
+        logger.debug("check_window('%s')" % tag)
+        return self.check(tag, Target.window().timeout(match_timeout))
+
+    def check_region(
+        self,
+        region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
+        tag=None,  # type: Optional[Text]
+        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT,  # type: int
+        stitch_content=False,  # type: bool
+    ):
+        # type: (...) -> MatchResult
+        """
+        Takes a snapshot of the given region from the browser using the web driver
+        and matches it with the expected output. If the current context is a frame,
+        the region is offsetted relative to the frame.
+
+        :param region: The region which will be visually validated. The coordinates are
+                       relative to the viewport of the current frame.
+        :param tag: Description of the visual validation checkpoint.
+        :param match_timeout: Timeout for the visual validation checkpoint
+                              (milliseconds).
+        :param stitch_content: If `True`, stitch the internal content of the region
+        :return: The match results.
+        """
+        return self.check(
+            tag,
+            Target.region(region).timeout(match_timeout).stitch_content(stitch_content),
+        )
+
+    def check_region_in_frame(
+        self,
+        frame_reference,  # type: FrameReference
+        region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
+        tag=None,  # type: Optional[Text]
+        match_timeout=-1,  # type: int
+        stitch_content=False,  # type: bool
+    ):
+        # type: (...) -> MatchResult
+        """
+        Checks a region within a frame, and returns to the current frame.
+
+        :param frame_reference: A reference to the frame in which the region
+                                should be checked.
+        :param region: Specifying the region to check inside the frame.
+        :param tag: Description of the visual validation checkpoint.
+        :param match_timeout: Timeout for the visual validation checkpoint
+                              (milliseconds).
+        :param stitch_content: If `True`, stitch the internal content of the region
+        :return: None
+        """
+        # TODO: remove this disable
+        if self.is_disabled:
+            logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
+            return MatchResult()
+        logger.debug("check_region_in_frame_by_selector('%s')" % tag)
+        return self.check(
+            tag,
+            Target.region(region, frame_reference)
+            .stitch_content(stitch_content)
+            .timeout(match_timeout),
+        )
+
+    def open(
+        self,
+        driver,  # type: AnyWebDriver
+        app_name,  # type: Text
+        test_name,  # type: Text
+        viewport_size=None,  # type: Optional[ViewPort]
+        session_type=None,  # type: Optional[SessionType]
+    ):
+        # type: (...) -> EyesWebDriver
+        """
+        Starts a test.
+
+        :param driver: The driver that controls the browser hosting the application
+            under the test.
+        :param app_name: The name of the application under test.
+        :param test_name: The test name.
+        :param viewport_size: The client's viewport size (i.e.,
+            the visible part of the document's body) or None to allow any viewport size.
+        :param session_type: The type of test (e.g., Progression for timing tests)
+             or Sequential by default.
+        :return: An updated web driver
+        :raise EyesError: If the session was already open.
+        """
         if viewport_size is None:
             viewport_size = SeleniumEyes.get_viewport_size_static(driver)
         self.configuration.app_name = app_name
         self.configuration.test_name = test_name
         self.configuration.viewport_size = viewport_size  # type: ignore
+        self.configuration.session_type = session_type  # type: ignore
 
         self._driver = driver
+        return self._current_eyes.open(driver)
 
+    def close(self, raise_ex=True):
+        # type: (bool) -> Optional[TestResults]
+        """
+        Ends the test.
+
+        :param raise_ex: If true, an exception will be raised for failed/new tests.
+        :return: The test results.
+        """
+        return self._current_eyes.close(raise_ex)
+
+    @property
+    def _current_eyes(self):
+        # type: () -> Union[SeleniumEyes, VisualGridEyes]
         if self._is_visual_grid_eyes:
-            return self._visual_grid_eyes.open(driver)
+            return self._visual_grid_eyes
         else:
-            return self._selenium_eyes.open(driver)
+            return self._selenium_eyes
 
     def __getattr__(self, name):
         # type: (str) -> Union[Callable, bool]

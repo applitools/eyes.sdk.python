@@ -94,7 +94,7 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
-    values = attr.ib(init=False)
+    values = attr.ib(init=False)  # type: SeleniumCheckSettingsValues
 
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)

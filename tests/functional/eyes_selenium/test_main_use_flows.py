@@ -20,22 +20,21 @@ class TestClassicAPI(TestSetup):
         self.eyes.check_window(tag="Window")
 
     def test_check_region(self):
-        self.eyes.check_region_by_selector(
-            By.ID, "overflowing-div", tag="Region", stitch_content=True
+        self.eyes.check_region(
+            [By.ID, "overflowing-div"], tag="Region", stitch_content=True
         )
 
     def test_check_region_in_frame(self):
-        self.eyes.check_region_in_frame_by_selector(
+        self.eyes.check_region_in_frame(
             "frame1",
-            By.ID,
-            "inner-frame-div",
+            [By.ID, "inner-frame-div"],
             tag="Inner frame div",
             stitch_content=True,
         )
 
     def test_check_region2(self):
-        self.eyes.check_region_by_selector(
-            By.ID, "overflowing-div-image", tag="minions", stitch_content=True
+        self.eyes.check_region(
+            [By.ID, "overflowing-div-image"], tag="minions", stitch_content=True
         )
 
 
