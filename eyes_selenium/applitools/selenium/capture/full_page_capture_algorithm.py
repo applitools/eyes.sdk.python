@@ -11,7 +11,7 @@ from applitools.core.cut import NullCutProvider
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, List
     from applitools.core.scaling import ScaleProvider
     from applitools.core.debug import DebugScreenshotProvider
     from applitools.selenium.region_compensation import RegionPositionCompensation
@@ -172,7 +172,7 @@ class FullPageCaptureAlgorithm(object):
         return stitched_image
 
     def _get_entire_size(self, image, position_provider):
-        # type: (Image, CSSTranslatePositionProvider) -> RectangleSize
+        # type: (Image, PositionProvider) -> RectangleSize
         try:
             entire_size = position_provider.get_entire_size()
             logger.info("Entire size of region context: {}".format(entire_size))

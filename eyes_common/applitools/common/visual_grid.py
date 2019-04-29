@@ -13,6 +13,7 @@ from .utils.json_utils import JsonInclude
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional
     from requests import Response
+    from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
     from .geometry import Region
 
@@ -127,10 +128,12 @@ class EmulationDevice(EmulationBaseInfo):
 class RenderBrowserInfo(object):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
-    )  # type: RectangleSize
+    )  # type: Optional[RectangleSize]
     browser_type = attr.ib(default=BrowserType.CHROME)  # type: BrowserType
-    baseline_env_name = attr.ib(default=None)  # type: basestring
-    emulation_info = attr.ib(default=None, repr=False)  # type: EmulationBaseInfo
+    baseline_env_name = attr.ib(default=None)  # type: Optional[basestring]
+    emulation_info = attr.ib(
+        default=None, repr=False
+    )  # type: Optional[EmulationBaseInfo]
     # TODO: add initialization with width and height for viewport_size
 
     @property
@@ -159,21 +162,20 @@ class RenderBrowserInfo(object):
 
 @attr.s
 class RenderInfo(object):
-    width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
+    width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Num]
+    height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Num]
     size_mode = attr.ib(
-        metadata={JsonInclude.NON_NONE: True, JsonInclude.NAME: "sizeMode"}
-    )  # type: basestring
+        metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[basestring]
     region = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Region
+    )  # type: Optional[Region]
     selector = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: VisualGridSelector
+    )  # type: Optional[VisualGridSelector]
     emulation_info = attr.ib(
-        default=None,
-        metadata={JsonInclude.NON_NONE: True, JsonInclude.NAME: "emulationInfo"},
-    )  # type: EmulationBaseInfo
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[EmulationBaseInfo]
 
 
 @attr.s
@@ -182,10 +184,12 @@ class RGridDom(object):
 
     dom_nodes = attr.ib(repr=False)  # type: List[dict]
     resources = attr.ib()  # type: Dict[Text, VGResource]
-    url = attr.ib()
-    msg = attr.ib(default=None)
-    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})
-    hash_format = attr.ib(default="sha256", metadata={JsonInclude.THIS: True})
+    url = attr.ib()  # type: basestring
+    msg = attr.ib(default=None)  # type: basestring
+    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: basestring
+    hash_format = attr.ib(
+        default="sha256", metadata={JsonInclude.THIS: True}
+    )  # type: basestring
 
     def __attrs_post_init__(self):
         # TODO: add proper hash
@@ -208,14 +212,14 @@ class RGridDom(object):
 
 @attr.s(slots=True)
 class VGResource(object):
-    url = attr.ib()
-    content_type = attr.ib(metadata={JsonInclude.THIS: True})
+    url = attr.ib()  # type: Text
+    content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     content = attr.ib(repr=False)  # type: bytes
-    msg = attr.ib(default=None)
-    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})
+    msg = attr.ib(default=None)  # type: Optional[Text]
+    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: Text
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
-    )
+    )  # type: Text
 
     def __hash__(self):
         return self.hash
@@ -239,7 +243,7 @@ class VGResource(object):
 @attr.s
 class RenderRequest(object):
     webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: dict
+    url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
     render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo

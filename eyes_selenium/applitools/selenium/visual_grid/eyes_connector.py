@@ -173,7 +173,7 @@ class EyesConnector(EyesBase):
         return status
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
-        # type: (Region, EyesWebDriverScreenshot, SeleniumCheckSettings) -> AppOutputWithScreenshot
+        # type: (Region,EyesWebDriverScreenshot,SeleniumCheckSettings)->AppOutputWithScreenshot
         title = self._title
         logger.debug("render_task.uuid: {}".format(self._current_uuid))
         app_output = AppOutput(
