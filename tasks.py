@@ -135,21 +135,26 @@ def test_run_packs(
     c, core=False, selenium=False, images=False, appium=False, visualgrid=False
 ):
     if core:
-        c.run("pytest tests/functional/eyes_core")
+        c.run("pytest tests/functional/eyes_core", echo=True)
     elif selenium:
         c.run(
-            'pytest -n 3 --platform="Linux" --browser chrome --headless 1'
-            "tests/functional/eyes_selenium/selenium/"
+            "pytest -n 2 --headless 1 --browser chrome "
+            "tests/functional/eyes_selenium/selenium/",
+            echo=True,
         )
     elif visualgrid:
         c.run(
-            "pytest -n 2 --headless 1 --browser chrome "
-            "tests/functional/eyes_selenium/visual_grid/"
+            "pytest --headless 1 --browser chrome "
+            "tests/functional/eyes_selenium/visual_grid/",
+            echo=True,
         )
     elif images:
-        c.run("pytest tests/functional/eyes_images/")
+        c.run("pytest tests/functional/eyes_images/", echo=True)
     elif appium:
-        c.run("pytest -n 3 --remote 1 tests/functional/eyes_selenium/test_appium.py")
+        c.run(
+            "pytest -n 3 --remote 1 tests/functional/eyes_selenium/test_appium.py",
+            echo=True,
+        )
     # for pack in _packages_resolver(common, core, selenium, images):
     #     c.run('pytest tests/functional/{}'.format(pack), echo=True)
 
