@@ -192,4 +192,6 @@ def is_list_or_tuple(elm):
 
 
 def is_webelement(elm):
-    return isinstance(elm, WebElement) or isinstance(elm, EyesWebElement)
+    return isinstance(elm, WebElement) or isinstance(
+        getattr(elm, "_element", None), WebElement
+    )

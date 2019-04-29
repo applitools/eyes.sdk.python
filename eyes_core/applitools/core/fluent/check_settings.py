@@ -1,10 +1,7 @@
 import typing
 
 import attr
-
-from applitools.common import FloatingBounds, logger
-from applitools.common.geometry import Region
-from applitools.common.match import MatchLevel
+from applitools.common import FloatingBounds, MatchLevel, Region, logger
 
 from .region import (
     FloatingRegionByRectangle,
@@ -186,8 +183,7 @@ class CheckSettings(object):
                 max_right_offset=max_offset,
             )
         elif (
-            isinstance(arg1, Region)
-            and isinstance(arg2, int)
+            isinstance(arg2, int)
             and isinstance(arg3, int)
             and isinstance(arg4, int)
             and isinstance(arg5, int)
