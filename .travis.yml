@@ -33,6 +33,9 @@ matrix:
               - TOX_ENV=selenium-appium
         - python: 3.6
           env:
+              - TOX_ENV=visualgrid
+        - python: 3.6
+          env:
               - TOX_ENV=lint
 install:
     - npm install -g webdriver-manager
