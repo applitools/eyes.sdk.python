@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common.config import SeleniumConfiguration
+from applitools.common import SeleniumConfiguration, logger
 
 from .fluent import Target
 from .selenium_eyes import SeleniumEyes
@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
     from typing import Text, Optional, Union, Callable, Any, List, Tuple
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.common import MatchResult, TestResults, Region, logger, SessionType
+    from applitools.common import MatchResult, TestResults, Region, SessionType
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
