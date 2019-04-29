@@ -155,7 +155,11 @@ class RenderBrowserInfo(object):
 
     @property
     def platform(self):
-        if self.browser_type in [BrowserType.IE10, BrowserType.IE11, BrowserType.EDGE]:
+        if self.browser_type in [
+            BrowserType.IE_10,
+            BrowserType.IE_11,
+            BrowserType.EDGE,
+        ]:
             return "windows"
         return "linux"
 

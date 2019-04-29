@@ -4,8 +4,8 @@ from enum import Enum
 class BrowserType(Enum):
     CHROME = "chrome"
     FIREFOX = "firefox"
-    IE10 = "ie10"
-    IE11 = "ie"
+    IE_10 = "ie10"
+    IE_11 = "ie"
     EDGE = "edge"
 
 

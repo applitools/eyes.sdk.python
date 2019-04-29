@@ -19,8 +19,8 @@ def sel_config(test_page_url):
     conf.branch_name = "TTS - config branch"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)
-    conf.add_browser(700, 500, BrowserType.IE10)
-    conf.add_browser(700, 500, BrowserType.IE11)
+    conf.add_browser(700, 500, BrowserType.IE_10)
+    conf.add_browser(700, 500, BrowserType.IE_11)
     conf.add_browser(1600, 1200, BrowserType.CHROME)
     conf.add_browser(1200, 800, BrowserType.EDGE)
     conf.add_browser(800, 600, BrowserType.CHROME)
