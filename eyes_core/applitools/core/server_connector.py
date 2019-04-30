@@ -9,7 +9,7 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import RunningSession, logger
+from applitools.common import RenderStatus, RunningSession, logger
 from applitools.common.errors import EyesError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
@@ -439,5 +439,5 @@ class ServerConnector(object):
             )
         results = json_utils.attr_from_response(response, RenderStatusResults)
         if results[0] is None:
-            raise EyesError("Got status None")
+            raise [RenderStatusResults(status=RenderStatus.RENDERING)]
         return results
