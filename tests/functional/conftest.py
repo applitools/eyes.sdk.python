@@ -11,8 +11,9 @@ Example of usage:
     pytest --browser firefox --headless 1   # run all tests on your current platform with firefox browser in headless mode
 """
 import pytest
-from applitools.core import StdoutLogger, logger
-from applitools.core.utils import iteritems
+
+from applitools.common import StdoutLogger, logger
+from applitools.common.utils import iteritems
 
 logger.set_logger(StdoutLogger())
 
@@ -23,7 +24,6 @@ def eyes(request, eyes_class):
     # logger.set_logger(StdoutLogger())
     eyes = eyes_class()
     eyes.hide_scrollbars = True
-
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}

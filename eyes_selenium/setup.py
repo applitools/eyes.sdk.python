@@ -24,16 +24,25 @@ def get_version(package_name):
 
 
 install_requires = [
+    "eyes-common=={}".format(get_version("selenium")),
     "eyes-core=={}".format(get_version("selenium")),
-    "tinycss2>=0.6.1",
-    "selenium>=2.53.0",
-    "Pillow>=5.0.0",
+    "tinycss2==0.6.1",  # last version that supports python 2
+    "selenium>=2.53.0,<4",
+    "Pillow>=5.0,<7.0",  # 7 and above doesnt support python 2
+    # uses for check if the mobile platform is used in the test
+    "Appium-Python-Client>=0.31,<0.39",
+    "ua_parser==0.8",
+    "attrs >= 18,<19",
+    "transitions>=0.6,<0.7",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):
     # typing module was added as builtin in Python 3.5
     install_requires.append("typing >= 3.5.2")
+
+if sys.version_info < (3,):
+    install_requires.append("futures==3.2.0")
 
 setup(
     name="eyes_selenium",
@@ -43,9 +52,9 @@ setup(
     license="Apache License, Version 2.0",
     author="Applitools Team",
     author_email="team@applitools.com",
-    description="Applitools Python SDK. Core package",
+    description="Applitools Python SDK. Selenium package",
     long_description=read("README.rst"),
-    long_description_content_type="text/rst",
+    long_description_content_type="text/x-rst",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
@@ -54,15 +63,20 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Software Development :: Testing",
     ],
     keywords="applitools eyes eyes_selenium",
     install_requires=install_requires,
-    package_data={"": ["README.rst", "LICENSE"], "selenium": ["py.typed"]},
+    package_data={
+        "": ["README.rst", "LICENSE"],
+        "applitools.selenium": ["py.typed", "resources/*.js"],
+    },
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master"
-        "/eyes_selenium/applitools/selenium",
+        "/eyes_selenium",
     },
 )

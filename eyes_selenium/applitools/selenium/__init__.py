@@ -1,54 +1,37 @@
-from applitools.core import (  # noqa
+from applitools.common import (  # noqa
     BatchInfo,
-    ExactMatchSettings,
-    ImageMatchSettings,
-    Region,
-    TestResults,
     MatchLevel,
-    FailureReports,
-    TestResultsStatus,
-    TestResults,
+    Region,
+    StdoutLogger,
+    StitchMode,
     logger,
+    SeleniumConfiguration as Configuration,
+    BrowserType,
+    DeviceName,
+    ScreenOrientation,
 )
-from .capture import EyesWebDriverScreenshot, dom_capture  # noqa
-from .positioning import StitchMode  # noqa
+from applitools.common.server import FailureReports  # noqa
+
 from .eyes import Eyes  # noqa
+from .fluent.target import Target  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
-from .target import (  # noqa
-    IgnoreRegionByElement,
-    IgnoreRegionBySelector,
-    FloatingBounds,
-    FloatingRegion,
-    FloatingRegionByElement,
-    FloatingRegionBySelector,
-    Target,
-)
-from .frames import Frame  # noqa
+from .visual_grid import VisualGridRunner
 
 __all__ = (
     # noqa
     "BatchInfo",
-    "ExactMatchSettings",
-    "ImageMatchSettings",
     "Region",
-    "TestResults",
     "MatchLevel",
-    "FailureReports",
-    "TestResultsStatus",
-    "TestResults",
     "logger",
+    "StdoutLogger",
     "Eyes",
-    "EyesWebElement",
-    "EyesWebDriver",
-    "Frame",
-    "EyesWebDriverScreenshot",
-    "StitchMode",
-    "dom_capture",
-    "IgnoreRegionByElement",
-    "IgnoreRegionBySelector",
-    "FloatingBounds",
-    "FloatingRegionByElement",
-    "FloatingRegionBySelector",
     "Target",
+    "FailureReports",
+    "StitchMode",
+    "VisualGridRunner",
+    "BrowserType",
+    "DeviceName",
+    "Configuration",
+    "ScreenOrientation",
 )

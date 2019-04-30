@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from applitools.images import Eyes
 from applitools.images.__version__ import __version__
 

@@ -1,29 +1,6 @@
-from applitools.core import (
-    BatchInfo,
-    ExactMatchSettings,
-    ImageMatchSettings,
-    Region,
-    TestResults,
-    MatchLevel,
-    FailureReports,
-    TestResultsStatus,
-    logger,
-)
-from .eyes import Eyes
-from .target import Target, FloatingBounds, FloatingRegion
+from applitools.common import BatchInfo, MatchLevel, Region, logger
+from applitools.images.fluent import Target
 
-__all__ = (
-    "Eyes",
-    "Target",
-    "BatchInfo",
-    "ExactMatchSettings",
-    "ImageMatchSettings",
-    "FloatingBounds",
-    "FloatingRegion",
-    "Region",
-    "TestResults",
-    "MatchLevel",
-    "FailureReports",
-    "TestResultsStatus",
-    "logger",
-)
+from .eyes import Eyes
+
+__all__ = ("Eyes", "BatchInfo", "Region", "MatchLevel", "logger", "Target")
