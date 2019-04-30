@@ -96,11 +96,17 @@ class VisualGridEyes(object):
         logger.debug("VisualGridEyes.open(%s)" % self.configuration)
 
         self._init_driver(driver)
+        browsers_info = self.configuration.browsers_info
+
         if self.configuration.viewport_size:
             self._set_viewport_size(self.configuration.viewport_size)
+        elif browsers_info:
+            viewports = [bi.viewportsize for bi in browsers_info]
+            if viewports:
+                self.configuration.viewport_size = viewports[0]
         else:
             self.configuration.viewport_size = self._get_viewport_size()
-        browsers_info = self.configuration.browsers_info
+
         for b_info in browsers_info:
             self.test_list.append(
                 RunningTest(
