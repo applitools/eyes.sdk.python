@@ -5,15 +5,17 @@ from datetime import datetime
 from typing import Optional, Text
 
 import attr
+from applitools.common.geometry import RectangleSize
+from applitools.common.match import ImageMatchSettings, MatchLevel
+from applitools.common.server import FailureReports, SessionType
+from applitools.common.utils import general_utils
+from applitools.common.utils.json_utils import JsonInclude
 
-from .geometry import RectangleSize
-from .server import SessionType
-from .utils import general_utils
-from .utils.converters import isoformat
+__all__ = ("BatchInfo", "Configuration")
 
-__all__ = ("BatchInfo", "Branch", "Configuration")
-
-DEFAULT_VALUES = {"batch_name"}
+MINIMUM_MATCH_TIMEOUT = 0.6  # seconds
+DEFAULT_TIMEOUT = 60 * 5  # seconds
+DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
 @attr.s
@@ -23,13 +25,16 @@ class BatchInfo(object):
     """
 
     name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME")
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME"),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
     started_at = attr.ib(
-        factory=lambda: datetime.now(general_utils.UTC), converter=isoformat
+        factory=lambda: datetime.now(general_utils.UTC),
+        metadata={JsonInclude.THIS: True},
     )  # # type: Text
     id = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
+        metadata={JsonInclude.THIS: True},
     )  # type: Text
 
     @property
@@ -42,9 +47,14 @@ class BatchInfo(object):
         self.id = value
 
 
+def _to_rectangle(d):
+    # type: (dict) -> RectangleSize
+    return RectangleSize.from_(d)
+
+
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT = 2000  # Milliseconds
+    DEFAULT_MATCH_TIMEOUT = 2  # sec
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
@@ -62,7 +72,9 @@ class Configuration(object):
     save_diffs = attr.ib(default=None)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
-    _viewport_size = attr.ib(default=None)  # type: Optional[RectangleSize]
+    viewport_size = attr.ib(
+        default=None, converter=attr.converters.optional(_to_rectangle)
+    )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
     ignore_caret = attr.ib(default=False)
@@ -72,24 +84,39 @@ class Configuration(object):
     properties = attr.ib(factory=list)
     hide_scrollbars = attr.ib(default=False)
     match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT)
+    match_level = attr.ib(default=MatchLevel.STRICT)  # TODO add converter to enum
     is_disabled = attr.ib(default=False)
     save_new_tests = attr.ib(default=True)
     save_failed_tests = attr.ib(default=False)
     fail_on_new_test = attr.ib(default=False)
+    failure_reports = attr.ib(default=FailureReports.ON_CLOSE)
     send_dom = attr.ib(default=False)
     use_dom = attr.ib(default=False)
     enable_patterns = attr.ib(default=False)
+    default_match_settings = attr.ib(default=ImageMatchSettings())
     hide_caret = attr.ib(init=False, default=None)
     stitching_overlap = attr.ib(init=False, default=50)
+    api_key = attr.ib(factory=lambda: os.environ.get("APPLITOOLS_API_KEY", None))
+    server_url = attr.ib(default=DEFAULT_SERVER_URL)
+    timeout = attr.ib(default=DEFAULT_TIMEOUT)
 
-    @property
-    def viewport_size(self):
-        return self._viewport_size
+    @match_timeout.validator
+    def validate1(self, attribute, value):
+        if 0 < value < MINIMUM_MATCH_TIMEOUT:
+            raise ValueError(
+                "Match timeout must be at least {} sec.".format(MINIMUM_MATCH_TIMEOUT)
+            )
 
-    @viewport_size.setter
-    def viewport_size(self, value):
-        if value:
-            self._viewport_size = RectangleSize.from_dict(value)
+    @viewport_size.validator
+    def validate2(self, attribute, value):
+        if value is None:
+            return None
+        if not isinstance(value, RectangleSize) or not (
+            isinstance(value, dict)
+            and "width" in value.keys()
+            and "height" in value.keys()
+        ):
+            raise ValueError("Wrong viewport type settled")
 
     @property
     def is_dom_send(self):
@@ -98,10 +125,10 @@ class Configuration(object):
     def clone(self):
         return copy(self)
 
+    @property
+    def short_description(self):
+        return "{} of {}".format(self.test_name, self.app_name)
 
-@attr.s
-class Branch(object):
-    id = attr.ib()
-    name = attr.ib()
-    is_deleted = attr.ib()
-    update_info = attr.ib()
+    @staticmethod
+    def all_fields():
+        return list(attr.fields_dict(Configuration).keys())

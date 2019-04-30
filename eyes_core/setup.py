@@ -59,10 +59,10 @@ setup(
     ],
     keywords="applitools eyes eyes_core",
     install_requires=install_requires,
-    package_data={"": ["README.rst", "LICENSE"], "core": ["py.typed"]},
+    package_data={"": ["README.rst", "LICENSE"], "applitools.core": ["py.typed"]},
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master/"
-        "eyes_core/applitools/core",
+        "eyes_core/",
     },
 )

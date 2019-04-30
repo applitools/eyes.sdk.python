@@ -1,12 +1,13 @@
 import typing
 
-from applitools.common import EyesError, RectangleSize, Region, logger
-from applitools.common.metadata import AppEnvironment
+import attr
+
+from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
+from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
-from .fluent import ImagesCheckSettings, Target
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
@@ -15,12 +16,23 @@ if typing.TYPE_CHECKING:
 
 
 class Eyes(EyesBase):
-    def __init__(self, server_url=None):
-        # type: (Text) -> None
-        super(Eyes, self).__init__(server_url)
-        self._raw_title = None  # type: Optional[Text]
-        self._screenshot = None  # type: Optional[EyesImagesScreenshot]
-        self._inferred = None  # type: Optional[Text]
+    DELEGATE_TO_CONFIG = Configuration.all_fields()
+
+    _raw_title = None  # type: Optional[Text]
+    _screenshot = None  # type: Optional[EyesImagesScreenshot]
+    _inferred = None  # type: Optional[Text]
+    _config_provider = Configuration()
+
+    def __getattr__(self, name):
+        if name in self.DELEGATE_TO_CONFIG:
+            return getattr(self.configuration, name)
+        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
+
+    def __setattr__(self, name, value):
+        if name in self.DELEGATE_TO_CONFIG:
+            setattr(self.configuration, name, value)
+        else:
+            super(Eyes, self).__setattr__(name, value)
 
     @property
     def full_agent_id(self):
@@ -54,12 +66,12 @@ class Eyes(EyesBase):
         pass
 
     def _get_viewport_size(self):
-        # type: () -> ViewPort
-        return self._config.viewport_size
+        # type: () -> RectangleSize
+        return self.configuration.viewport_size
 
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self._config.viewport_size = size
+        self.configuration.viewport_size = size  # type: ignore
 
     def _ensure_viewport_size(self):
         pass
@@ -87,7 +99,7 @@ class Eyes(EyesBase):
 
         image = check_settings.values.image
         if self.viewport_size is None:
-            self.viewport_size = RectangleSize.from_image(image)  # type: RectangleSize
+            self.viewport_size = RectangleSize.from_(image)  # type: RectangleSize
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
@@ -122,7 +134,7 @@ class Eyes(EyesBase):
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
-        if not self.is_open:
+        if not self.is_opened:
             self.abort_if_not_closed()
             raise EyesError("you must call open() before checking")
 
@@ -142,14 +154,3 @@ class Eyes(EyesBase):
         self._screenshot = None
         self._raw_title = None
         return match_result.as_expected
-
-    @property
-    def _environment(self):
-        # type: () -> AppEnvironment
-        app_env = AppEnvironment(
-            os=self.host_os,
-            hosting_app=self._config.host_app,
-            display_size=self.viewport_size,
-            inferred=self._inferred,
-        )
-        return app_env

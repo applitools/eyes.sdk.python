@@ -8,11 +8,13 @@ import attr
 
 from .utils import argument_guard
 from .utils.converters import round_converter
+from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List, Dict, Union
-    from .utils.custom_types import ViewPort
     from PIL.Image import Image
+    from typing import List, Dict, Union, Optional
+    from .utils.custom_types import ViewPort, Num
+    from .visual_grid import EmulationDevice
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
 
@@ -46,20 +48,10 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
-@attr.s(slots=True, cmp=False)
+@attr.s(slots=True, cmp=False, hash=True)
 class RectangleSize(DictAccessMixin):
-    width = attr.ib()  # type: int
-    height = attr.ib()  # type:int
-
-    @classmethod
-    def from_image(cls, image):
-        # type: (Image) -> RectangleSize
-        return cls(width=image.width, height=image.height)
-
-    @classmethod
-    def from_dict(cls, dict_or_rect):
-        # type: (Union[Dict,RectangleSize]) -> RectangleSize
-        return cls(width=dict_or_rect["width"], height=dict_or_rect["height"])
+    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
 
     def scale(self, ratio):
         # type: (float) -> RectangleSize
@@ -68,6 +60,13 @@ class RectangleSize(DictAccessMixin):
     def __eq__(self, other):
         return self.width == other["width"] and self.height == other["height"]
 
+    @classmethod
+    def from_(cls, obj):
+        # type: (Union[dict, Image, EmulationDevice, RectangleSize]) -> RectangleSize
+        if isinstance(obj, dict):
+            return cls(width=obj["width"], height=obj["height"])
+        return cls(width=obj.width, height=obj.height)
+
 
 @attr.s(slots=True)
 class Point(DictAccessMixin):
@@ -75,8 +74,12 @@ class Point(DictAccessMixin):
     A point with the coordinates (x,y).
     """
 
-    x = attr.ib(converter=round_converter)  # type: int
-    y = attr.ib(converter=round_converter)  # type: int
+    x = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
+    y = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -98,18 +101,19 @@ class Point(DictAccessMixin):
         return cls(0, 0)
 
     @classmethod
-    def from_location(cls, location):
-        return cls(location["x"], location["y"])
+    def from_(cls, obj):
+        # type: (Union[dict, Point]) -> Point
+        return cls(obj["x"], obj["y"])
 
     def length(self):
-        # type: () -> float
+        # type: () -> Num
         """
         Returns the distance from (0, 0).
         """
         return math.sqrt(self.x ** 2 + self.y ** 2)
 
     def distance_to(self, p):
-        # type: (Point) -> float
+        # type: (Point) -> Num
         """
         Calculate the distance between two points.
 
@@ -136,7 +140,7 @@ class Point(DictAccessMixin):
         return Point(self.x, self.y)
 
     def move_to(self, x, y):
-        # type: (int, int) -> None
+        # type: (Num, Num) -> None
         """
         Moves the point to new x, y.
 
@@ -147,7 +151,7 @@ class Point(DictAccessMixin):
         self.y = y
 
     def offset(self, dx, dy):
-        # type: (int, int) -> Point
+        # type: (Num, Num) -> Point
         """
         Move to new (x+dx,y+dy).
 
@@ -164,13 +168,13 @@ class Point(DictAccessMixin):
         return self
 
     def offset_negative(self, dx, dy):
-        # type: (int, int) -> Point
+        # type: (Num, Num) -> Point
         self.x -= dx
         self.y -= dy
         return self
 
     def rotate(self, rad):
-        # type: (int) -> Point
+        # type: (Num) -> Point
         """
         Rotate counter-clockwise around the origin by rad radians.
 
@@ -188,7 +192,7 @@ class Point(DictAccessMixin):
         return Point(x, y)
 
     def rotate_about(self, p, theta):
-        # type: (Point, int) -> Point
+        # type: (Point, Num) -> Point
         """
         Rotate counter-clockwise around a point, by theta degrees.
 
@@ -207,6 +211,7 @@ class Point(DictAccessMixin):
         return result
 
     def scale(self, scale_ratio):
+        # type: (Num) -> Point
         return Point(
             int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio))
         )
@@ -218,12 +223,20 @@ class Region(DictAccessMixin):
     A rectangle identified by left,top, width, height.
     """
 
-    left = attr.ib(converter=round_converter)  # type: int
-    top = attr.ib(converter=round_converter)  # type: int
-    width = attr.ib(converter=round_converter)  # type: int
-    height = attr.ib(converter=round_converter)  # type: int
+    left = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
+    top = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
+    width = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
+    height = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: Num
     coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS
+        default=CoordinatesType.SCREENSHOT_AS_IS, metadata={JsonInclude.THIS: True}
     )  # type: CoordinatesType
 
     def __str__(self):
@@ -240,25 +253,21 @@ class Region(DictAccessMixin):
         return cls(0, 0, 0, 0)
 
     @classmethod
-    def from_region(cls, region):
-        # type: (Region) -> Region
-        return cls(
-            region.left,
-            region.top,
-            region.width,
-            region.height,
-            region.coordinates_type,
-        )
+    def from_(cls, obj, size=None):
+        # type: (Union[Image,Region, dict], Optional[dict]) -> Region
+        if size:
+            return cls(obj["x"], obj["y"], size["width"], size["height"])
+        elif isinstance(obj, Region):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
+        elif isinstance(obj, Image):
+            return cls(0, 0, obj.width, obj.height)
+        else:
+            raise ValueError("Wrong parameters passed")
 
     @classmethod
     def from_location_size(cls, location, size):
         # type: (Point, Union[Dict,RectangleSize]) -> Region
         return cls(location["x"], location["y"], size["width"], size["height"])
-
-    @classmethod
-    def from_image(cls, image):
-        # type: (Image) -> Region
-        return cls(0, 0, image.width, image.height)
 
     @property
     def x(self):
@@ -270,12 +279,12 @@ class Region(DictAccessMixin):
 
     @property
     def right(self):
-        # type: () -> int
+        # type: () -> Num
         return self.left + self.width
 
     @property
     def bottom(self):
-        # type: () -> int
+        # type: () -> Num
         return self.top + self.height
 
     @property
@@ -462,6 +471,7 @@ class Region(DictAccessMixin):
         return Point(int(round(self.width / 2)), int(round(self.height / 2)))
 
     def offset(self, dx, dy):
+        # type: (Num, Num) -> Region
         location = self.location.offset(dx, dy)
         return Region(
             left=location.x,
@@ -471,6 +481,7 @@ class Region(DictAccessMixin):
         )
 
     def scale(self, scale_ratio):
+        # type: (Num) -> Region
         return Region(
             left=int(math.ceil(self.left * scale_ratio)),
             top=int(math.ceil(self.top * scale_ratio)),

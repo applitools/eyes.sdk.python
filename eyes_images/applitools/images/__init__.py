@@ -1,6 +1,6 @@
 from applitools.common import BatchInfo, MatchLevel, Region, logger
+from applitools.images.fluent import Target
 
 from .eyes import Eyes
-from .fluent import Target
 
-__all__ = ("Eyes", "Target", "BatchInfo", "Region", "MatchLevel", "logger")
+__all__ = ("Eyes", "BatchInfo", "Region", "MatchLevel", "logger", "Target")

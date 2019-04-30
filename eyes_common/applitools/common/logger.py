@@ -13,7 +13,7 @@ from logging import Logger
 
 _DEFAULT_EYES_LOGGER_NAME = "eyes"
 _DEFAULT_EYES_FORMATTER = logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    "%(asctime)s [%(levelname)s] %(threadName)-9s) %(name)s: %(message)s"
 )
 _DEFAULT_LOGGER_LEVEL = int(os.environ.get("LOGGER_LEVEL", logging.INFO))
 _DEBUG_SCREENSHOT_PREFIX = os.environ.get("DEBUG_SCREENSHOT_PREFIX", "screenshot_")

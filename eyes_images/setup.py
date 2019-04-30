@@ -58,10 +58,10 @@ setup(
     ],
     keywords="applitools eyes eyes_images",
     install_requires=install_requires,
-    package_data={"": ["README.rst", "LICENSE"], "images": ["py.typed"]},
+    package_data={"": ["README.rst", "LICENSE"], "applitools.images": ["py.typed"]},
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master/"
-        "eyes_images/applitools/images",
+        "eyes_images/",
     },
 )

@@ -118,7 +118,7 @@ def save_image(image, filename):
 
 
 def crop_image(image, region_to_crop):
-    image_region = Region.from_image(image)
+    image_region = Region.from_(image)
     image_region.intersect(region_to_crop)
     if image_region.is_size_empty:
         logger.warning(

@@ -35,6 +35,7 @@ class Target(BackwardTarget, CheckTarget):
 
     @staticmethod
     def window():
+        # type: () -> SeleniumCheckSettings
         return SeleniumCheckSettings()
 
     @staticmethod

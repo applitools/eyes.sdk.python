@@ -9,6 +9,7 @@ from applitools.common.utils import ABC
 from applitools.selenium.useragent import BrowserNames, OSNames
 
 if typing.TYPE_CHECKING:
+    from applitools.common import Region
     from .webdriver import EyesWebDriver
     from .eyes import Eyes
     from .useragent import UserAgent
@@ -39,6 +40,7 @@ class RegionPositionCompensation(ABC):
 
 class NullRegionPositionCompensation(RegionPositionCompensation):
     def compensate_region_position(self, region, pixel_ratio):
+        # type: (Region, float) -> Region
         return region
 
 

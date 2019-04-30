@@ -1,5 +1,7 @@
 from enum import Enum
 
+__all__ = ("SessionType", "FailureReports")
+
 
 class SessionType(Enum):
     # default type of sessions.

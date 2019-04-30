@@ -3,13 +3,13 @@ from applitools.common import (  # noqa
     MatchLevel,
     Region,
     StdoutLogger,
+    StitchMode,
     logger,
 )
 from applitools.common.server import FailureReports  # noqa
 
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
-from .positioning import StitchMode  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
 
@@ -21,7 +21,7 @@ __all__ = (
     "logger",
     "StdoutLogger",
     "Eyes",
-    "StitchMode",
     "Target",
     "FailureReports",
+    "StitchMode",
 )

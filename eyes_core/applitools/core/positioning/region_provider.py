@@ -8,8 +8,6 @@ from applitools.common.utils import ABC
 if tp.TYPE_CHECKING:
     from applitools.common.capture import EyesScreenshot
 
-__all__ = ("RegionProvider", "NullRegionProvider", "NULL_REGION_PROVIDER")
-
 
 @attr.s
 class RegionProvider(ABC):
