@@ -437,7 +437,4 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
-        results = json_utils.attr_from_response(response, RenderStatusResults)
-        if results[0] is None:
-            raise [RenderStatusResults(status=RenderStatus.RENDERING)]
-        return results
+        return json_utils.attr_from_response(response, RenderStatusResults)

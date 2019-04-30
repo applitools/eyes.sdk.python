@@ -185,11 +185,15 @@ class RenderTask(VGTask):
                     time.sleep(0.5)
                 if statuses or 0 < fails_count < 3:
                     break
-            finished = statuses and (
-                statuses[0].status == RenderStatus.ERROR
-                or statuses[0].status == RenderStatus.RENDERED
-                or iterations > self.MAX_ITERATIONS
-                or False
+            finished = (
+                statuses
+                and statuses[0] is not None
+                and (
+                    statuses[0].status == RenderStatus.ERROR
+                    or statuses[0].status == RenderStatus.RENDERED
+                    or iterations > self.MAX_ITERATIONS
+                    or False
+                )
             )
         if statuses[0].status == RenderStatus.ERROR:
             raise EyesError(
