@@ -1,7 +1,5 @@
 import typing
 
-import attr
-
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 from applitools.images.fluent import ImagesCheckSettings, Target
@@ -98,8 +96,8 @@ class Eyes(EyesBase):
             name = check_settings.values.name
 
         image = check_settings.values.image
-        if self.viewport_size is None:
-            self.viewport_size = RectangleSize.from_(image)  # type: RectangleSize
+        if self.configuration.viewport_size is None:
+            self.configuration.viewport_size = RectangleSize.from_(image)
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
@@ -142,7 +140,7 @@ class Eyes(EyesBase):
         # TODO: Add cut provider
 
         self._screenshot = EyesImagesScreenshot(image)
-        if not self.viewport_size:
+        if not self.configuration.viewport_size:
             self._set_viewport_size(
                 RectangleSize(width=image.width, height=image.height)
             )

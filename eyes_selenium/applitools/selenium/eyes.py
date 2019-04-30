@@ -3,14 +3,15 @@ from __future__ import absolute_import
 import typing
 
 from applitools.common import SeleniumConfiguration, logger
+from applitools.common.utils import argument_guard
 
 from .fluent import Target
 from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
+from .webdriver import EyesWebDriver
 
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, Union, Callable, Any, List, Tuple
-    from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common import MatchResult, TestResults, Region, SessionType
     from applitools.common.utils.custom_types import (
@@ -20,7 +21,6 @@ if typing.TYPE_CHECKING:
     )
     from .fluent import SeleniumCheckSettings
     from .webelement import EyesWebElement
-    from .webdriver import EyesWebDriver
 
 
 class Eyes(object):
@@ -35,6 +35,7 @@ class Eyes(object):
         "device_pixel_ratio",
         "scale_ratio",
         "position_provider",
+        "_original_frame_chain",
         "full_agent_id",
         "agent_setup",
         "add_property",
@@ -44,6 +45,7 @@ class Eyes(object):
         "get_viewport_size_static",
         "add_mouse_trigger_by_element",
         "add_text_trigger_by_element",
+        "current_frame_position_provider",
     ]
     DELEGATE_TO_CONFIG = SeleniumConfiguration.all_fields()
 
@@ -51,8 +53,21 @@ class Eyes(object):
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
-    _driver = None  # type: Optional[WebDriver]
-    configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+    _driver = None  # type: Optional[EyesWebDriver]
+    _configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+
+    @property
+    def configuration(self):
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, new_conf):
+        argument_guard.is_a(new_conf, SeleniumConfiguration)
+        if self._configuration.api_key and not new_conf.api_key:
+            new_conf.api_key = self._configuration.api_key
+        if self._configuration.server_url and not new_conf.server_url:
+            new_conf.server_url = self._configuration.server_url
+        self._configuration = new_conf
 
     def __init__(self, runner=None):
         # type: (Optional[Any]) -> None
@@ -73,7 +88,7 @@ class Eyes(object):
     @property
     def driver(self):
         # type: () -> EyesWebDriver
-        return self._current_eyes.driver
+        return self._driver
 
     @property
     def send_dom(self):
@@ -169,8 +184,8 @@ class Eyes(object):
     def open(
         self,
         driver,  # type: AnyWebDriver
-        app_name,  # type: Text
-        test_name,  # type: Text
+        app_name=None,  # type: Optional[Text]
+        test_name=None,  # type: Optional[Text]
         viewport_size=None,  # type: Optional[ViewPort]
         session_type=None,  # type: Optional[SessionType]
     ):
@@ -189,15 +204,17 @@ class Eyes(object):
         :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
-        if viewport_size is None:
-            viewport_size = SeleniumEyes.get_viewport_size_static(driver)
-        self.configuration.app_name = app_name
-        self.configuration.test_name = test_name
-        self.configuration.viewport_size = viewport_size  # type: ignore
-        self.configuration.session_type = session_type  # type: ignore
+        if app_name:
+            self.configuration.app_name = app_name
+        if test_name:
+            self.configuration.test_name = test_name
+        if viewport_size:
+            self.configuration.viewport_size = viewport_size  # type: ignore
+        if session_type:
+            self.configuration.session_type = session_type  # type: ignore
 
-        self._driver = driver
-        return self._current_eyes.open(driver)
+        self._init_driver(driver)
+        return self._current_eyes.open(self.driver)
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -208,6 +225,15 @@ class Eyes(object):
         :return: The test results.
         """
         return self._current_eyes.close(raise_ex)
+
+    def _init_driver(self, driver):
+        # type: (AnyWebDriver) -> None
+        if isinstance(driver, EyesWebDriver):
+            # If the driver is an EyesWebDriver (as might be the case when tests are ran
+            # consecutively using the same driver object)
+            self._driver = driver
+        else:
+            self._driver = EyesWebDriver(driver, self)
 
     @property
     def _current_eyes(self):

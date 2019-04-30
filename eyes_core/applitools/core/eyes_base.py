@@ -189,7 +189,7 @@ class EyesBase(_EyesBaseAbstract):
         app_env = AppEnvironment(
             os=self.configuration.host_os,
             hosting_app=self.configuration.host_app,
-            display_size=self.viewport_size,
+            display_size=self.configuration.viewport_size,
             inferred=self._inferred_environment,
         )
         return app_env
@@ -467,9 +467,8 @@ class EyesBase(_EyesBaseAbstract):
                 self._is_viewport_size_set = False
 
                 self._before_open()
-                self.viewport_size = self.configuration.viewport_size
                 try:
-                    if self.viewport_size:
+                    if self.configuration.viewport_size:
                         self._ensure_running_session()
                 except Exception as e:
                     logger.exception(e)

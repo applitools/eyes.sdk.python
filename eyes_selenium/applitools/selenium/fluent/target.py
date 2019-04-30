@@ -8,27 +8,7 @@ from .selenium_check_settings import SeleniumCheckSettings
 __all__ = ("Target",)
 
 
-class BackwardTarget(object):
-    """
-    Use for emulate behavior of old Target class
-    """
-
-    @staticmethod
-    def ignore(*regions):
-        logger.deprecation(
-            "Use new interface e.g. Target.window(), Target.region(), Target.frame()"
-        )
-        return Target.window().ignore_regions(*regions)
-
-    @staticmethod
-    def floating(*regions):
-        logger.deprecation(
-            "Use new interface e.g. Target.window(), Target.region(), Target.frame()"
-        )
-        return Target.window().floating_region(*regions)
-
-
-class Target(BackwardTarget, CheckTarget):
+class Target(CheckTarget):
     """
     Target for an eyes.check_window/region.
     """

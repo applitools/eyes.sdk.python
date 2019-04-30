@@ -18,7 +18,7 @@ __all__ = ("SeleniumConfiguration",)
 
 @attr.s
 class SeleniumConfiguration(Configuration):
-    DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100
+    DEFAULT_WAIT_BEFORE_SCREENSHOTS = 1  # sec
 
     force_full_page_screenshot = attr.ib(default=False)  # type: bool
     wait_before_screenshots = attr.ib(

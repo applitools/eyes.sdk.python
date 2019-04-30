@@ -2,7 +2,7 @@ import typing
 
 import attr
 
-from applitools.common import EyesError, Region, logger
+from applitools.common import Region, logger
 from transitions import Machine
 
 from .render_task import RenderTask
@@ -135,15 +135,21 @@ class RunningTest(object):
         )
         logger.debug("RunningTest %s" % open_task.name)
 
-        def on_task_succeeded(test_result):
+        def open_task_succeeded(test_result):
             # type: (Optional[Any]) -> None
             logger.debug("open_task_succeeded: task.uuid: {}".format(open_task.uuid))
             self.watch_open[open_task] = True
             if self.all_tasks_completed(self.watch_open):
                 self.becomes_opened()
 
-        open_task.on_task_succeeded(on_task_succeeded)
-        open_task.on_task_error(lambda e: self.pending_exceptions.append(e))
+        def open_task_error(e):
+            logger.debug(
+                "render_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
+            )
+            self.pending_exceptions.append(e)
+
+        open_task.on_task_succeeded(open_task_succeeded)
+        open_task.on_task_error(open_task_error)
         self.open_queue.append(open_task)
         self.watch_open[open_task] = False
 
@@ -226,8 +232,14 @@ class RunningTest(object):
             if self.all_tasks_completed(self.watch_render):
                 self.becomes_rendered()
 
+        def render_task_error(e):
+            logger.debug(
+                "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
+            )
+            self.pending_exceptions.append(e)
+
         render_task.on_task_succeeded(render_task_succeeded)
-        render_task.on_task_error(lambda e: self.becomes_completed())
+        render_task.on_task_error(render_task_error)
         self.render_queue.append(render_task)
         self.watch_render[render_task] = False
         return render_task
@@ -243,23 +255,26 @@ class RunningTest(object):
         )
         logger.debug("RunningTest %s" % close_task.name)
 
-        def on_task_succeeded(test_result):
+        def close_task_succeeded(test_result):
             logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
-            if test_result:
-                self.test_result = test_result
-            else:
-                self.pending_exceptions.append(EyesError("Test result is None"))
+            self.test_result = test_result
 
-        def on_task_completed():
+        def close_task_completed():
             # type: () -> None
             logger.debug("close_task_completed: task.uuid: {}".format(close_task.uuid))
             self.watch_close[close_task] = True
             if self.all_tasks_completed(self.watch_close):
                 self.becomes_completed()
 
-        close_task.on_task_succeeded(on_task_succeeded)
-        close_task.on_task_completed(on_task_completed)
-        close_task.on_task_error(lambda e: self.pending_exceptions.append(e))
+        def close_task_error(e):
+            logger.debug(
+                "close_task_error: task.uuid: {}\n{}".format(close_task.uuid, str(e))
+            )
+            self.pending_exceptions.append(e)
+
+        close_task.on_task_succeeded(close_task_succeeded)
+        close_task.on_task_completed(close_task_completed)
+        close_task.on_task_error(close_task_error)
         self.close_queue.append(close_task)
         self.watch_close[close_task] = False
 

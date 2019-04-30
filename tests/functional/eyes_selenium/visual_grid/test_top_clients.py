@@ -1,18 +1,18 @@
 import pytest
 
-from applitools.common import (
+from applitools.selenium import (
+    Target,
     BatchInfo,
     BrowserType,
     DeviceName,
     ScreenOrientation,
-    SeleniumConfiguration,
+    Configuration,
 )
-from applitools.selenium import Target
 
 
 @pytest.fixture
 def sel_config(test_page_url):
-    conf = SeleniumConfiguration()
+    conf = Configuration()
     conf.test_name = "Top 10 websites - {}".format(test_page_url)
     conf.app_name = "Top Ten Sites"
     conf.batch = BatchInfo("TTS - config batch")
@@ -41,7 +41,8 @@ def sel_config(test_page_url):
         # "https://www.wikipedia.org/",
         # "https://www.instagram.com/",
         # "https://youtube.com/",
-        "http://applitools-vg-test.surge.sh/test.html"
+        # "http://applitools-vg-test.surge.sh/test.html"
+        "https://demo.applitools.com"
     ],
 )
 @pytest.mark.viewport_size(dict(width=600, height=600))

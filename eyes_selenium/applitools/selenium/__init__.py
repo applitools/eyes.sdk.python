@@ -5,9 +5,10 @@ from applitools.common import (  # noqa
     StdoutLogger,
     StitchMode,
     logger,
-    SeleniumConfiguration,
+    SeleniumConfiguration as Configuration,
     BrowserType,
     DeviceName,
+    ScreenOrientation,
 )
 from applitools.common.server import FailureReports  # noqa
 
@@ -31,5 +32,6 @@ __all__ = (
     "VisualGridRunner",
     "BrowserType",
     "DeviceName",
-    "SeleniumConfiguration",
+    "Configuration",
+    "ScreenOrientation",
 )
