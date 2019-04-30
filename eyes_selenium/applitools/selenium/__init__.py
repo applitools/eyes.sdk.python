@@ -5,6 +5,9 @@ from applitools.common import (  # noqa
     StdoutLogger,
     StitchMode,
     logger,
+    SeleniumConfiguration,
+    BrowserType,
+    DeviceName,
 )
 from applitools.common.server import FailureReports  # noqa
 
@@ -12,6 +15,7 @@ from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
+from .visual_grid import VisualGridRunner
 
 __all__ = (
     # noqa
@@ -24,4 +28,8 @@ __all__ = (
     "Target",
     "FailureReports",
     "StitchMode",
+    "VisualGridRunner",
+    "BrowserType",
+    "DeviceName",
+    "SeleniumConfiguration",
 )
