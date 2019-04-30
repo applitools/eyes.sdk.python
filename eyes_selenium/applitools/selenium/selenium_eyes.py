@@ -144,10 +144,6 @@ class SeleniumEyes(EyesBase):
         return self._device_pixel_ratio
 
     @property
-    def _seconds_to_wait_screenshot(self):
-        return self.configuration.wait_before_screenshots / 1000.0
-
-    @property
     def should_scrollbars_be_hidden(self):
         # type: () -> bool
         return self.configuration.hide_scrollbars or (
@@ -167,28 +163,12 @@ class SeleniumEyes(EyesBase):
         """
         return self._driver
 
-    def _init_driver(self, driver):
-        # type: (AnyWebDriver) -> None
-        if isinstance(driver, EyesWebDriver):
-            # If the driver is an EyesWebDriver (as might be the case when tests are ran
-            # consecutively using the same driver object)
-            self._driver = driver
-        else:
-            if not isinstance(driver, RemoteWebDriver):
-                logger.warning(
-                    "driver is not a RemoteWebDriver (class: {0})".format(
-                        driver.__class__
-                    )
-                )
-            self._driver = EyesWebDriver(driver, self)
-
     def open(self, driver):
         # type: (AnyWebDriver) -> EyesWebDriver
         if self.is_disabled:
             logger.debug("open(): ignored (disabled)")
             return driver
-
-        self._init_driver(driver)
+        self._driver = driver
         self._screenshot_factory = EyesWebDriverScreenshotFactory(self.driver)
         self._ensure_viewport_size()
 
@@ -500,7 +480,7 @@ class SeleniumEyes(EyesBase):
         logger.debug("add_text_trigger: Added %s" % trigger)
 
     def _get_viewport_size(self):
-        size = self.viewport_size
+        size = self.configuration.viewport_size
         if size is None:
             size = self.get_viewport_size_static(self._driver)
         return size
@@ -535,7 +515,7 @@ class SeleniumEyes(EyesBase):
             finally:
                 # Just in case the user catches this error
                 self.driver.switch_to.frames(original_frame)
-        self.viewport_size = RectangleSize(size["width"], size["height"])
+        self.configuration.viewport_size = RectangleSize(size["width"], size["height"])
 
     @property
     def _environment(self):
@@ -564,7 +544,7 @@ class SeleniumEyes(EyesBase):
         app_env = AppEnvironment(
             os,
             hosting_app=self.configuration.host_app,
-            display_size=self.viewport_size,
+            display_size=self.configuration.viewport_size,
             inferred=self._inferred_environment,
         )
         return app_env
@@ -617,7 +597,7 @@ class SeleniumEyes(EyesBase):
         try:
             scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self.viewport_size,
+                viewport_size=self.configuration.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
                 is_mobile_device=False,  # TODO: fix scaling for mobile
             )  # type: ScaleProvider
@@ -773,7 +753,7 @@ class SeleniumEyes(EyesBase):
         logger.info("Viewport screenshot requested")
         self._ensure_element_visible(self._target_element)
 
-        sleep(self._seconds_to_wait_screenshot)
+        sleep(self.configuration.wait_before_screenshots)
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
         scale_provider.update_scale_ratio(image.width)
