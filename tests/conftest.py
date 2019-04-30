@@ -5,6 +5,8 @@ from itertools import chain
 
 import pytest
 
+from common_fixtures import *  # noqa
+
 try:
     from typing import Text, Optional, Generator, Iterable
 except ImportError:
@@ -104,12 +106,12 @@ SUPPORTED_PLATFORMS = [
         extra=None,
     ),
     Platform(
-        name="iPhone",
-        version="10.0",
+        name="iOS",
+        version="11.3",
         browsers=[],
         extra={
-            "appiumVersion": "1.7.2",
-            "deviceName": "Iphone Emulator",
+            "appiumVersion": "1.9.1",
+            "deviceName": "Iphone Simulator",
             "deviceOrientation": "portrait",
             "browserName": "Safari",
         },
@@ -132,13 +134,18 @@ SUPPORTED_PLATFORMS = [
     #     "browserName":       "Chrome",
     #     "newCommandTimeout": 60 * 5
     # }),
-    # Platform(name='Android', version='8.0', browsers=[], extra={
-    #     "appiumVersion":     "1.9.1",
-    #     "deviceName":        "Samsung S9+",
-    #     "deviceOrientation": "portrait",
-    #     "browserName":       "Chrome",
-    #     "newCommandTimeout": 60 * 5
-    # })
+    # Platform(
+    #     name="Android",
+    #     version="9",
+    #     browsers=[],
+    #     extra={
+    #         "appiumVersion": "1.9.1",
+    #         "deviceName": "Samsung S9+",
+    #         "deviceOrientation": "portrait",
+    #         "browserName": "Chrome",
+    #         "newCommandTimeout": 60 * 5,
+    #     },
+    # ),
 ]
 SUPPORTED_PLATFORMS_DICT = {
     platform.full_name: platform for platform in SUPPORTED_PLATFORMS
@@ -159,6 +166,7 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
     if platform_name is None:
         sys2platform_name = {
             "linux": "Linux",
+            "linux2": "Linux",
             "darwin": "macOS 10.13",
             "win32": "Windows 10",
         }

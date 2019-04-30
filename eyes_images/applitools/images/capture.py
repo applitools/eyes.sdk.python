@@ -1,7 +1,7 @@
-from applitools.core.utils import image_utils, argument_guard
-from applitools.core import EyesScreenshot, Region, Point, OutOfBoundsError
-from applitools.core.errors import CoordinatesTypeConversionError
-from applitools.core.metadata import CoordinatesType
+from applitools.common.capture import EyesScreenshot
+from applitools.common.errors import CoordinatesTypeConversionError, OutOfBoundsError
+from applitools.common.geometry import CoordinatesType, Point, Region
+from applitools.common.utils import argument_guard, image_utils
 
 
 class EyesImagesScreenshot(EyesScreenshot):
@@ -15,15 +15,15 @@ class EyesImagesScreenshot(EyesScreenshot):
     def __init__(self, image, location=None):
         super(EyesImagesScreenshot, self).__init__(image)
         if location is None:
-            location = Point.create_top_left()
+            location = Point.zero()
         argument_guard.is_a(location, Point)
         self._location = location
-        self._bounds = Region.from_location_size(
+        self._bounds = Region.from_(
             location, dict(width=self._image.width, height=self._image.height)
         )
 
     def sub_screenshot(self, region, throw_if_clipped=False):
-        # type: (Region, bool) -> Region
+        # type: (Region, bool) -> EyesImagesScreenshot
         argument_guard.not_none(region)
 
         # We want to get the sub-screenshot in as-is coordinates type.
@@ -104,7 +104,7 @@ class EyesImagesScreenshot(EyesScreenshot):
         argument_guard.not_none(coordinates_type)
 
         if region.is_size_empty:
-            return Region.from_region(region)
+            return Region.from_(region)
 
         intersected_region = self.convert_region_location(
             region, region.coordinates_type, self.CONTEXT_RELATIVE

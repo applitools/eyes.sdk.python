@@ -1,19 +1,39 @@
 from __future__ import absolute_import
 
-import os
+import json
 import time
-import typing as tp
+import typing
+from struct import pack
 
 import requests
-from requests.packages import urllib3
+from requests import Response
+from requests.packages import urllib3  # noqa
 
-from . import logger
-from .test_results import TestResults
-from .utils import general_utils
-from .utils.compat import gzip_compress, urljoin  # type: ignore
+from applitools.common import RenderStatus, RunningSession, logger
+from applitools.common.errors import EyesError
+from applitools.common.match import MatchResult
+from applitools.common.match_window_data import MatchWindowData
+from applitools.common.metadata import SessionStartInfo
+from applitools.common.test_results import TestResults
+from applitools.common.utils import (
+    argument_guard,
+    gzip_compress,
+    image_utils,
+    json_utils,
+    urljoin,
+)
+from applitools.common.utils.general_utils import retry
+from applitools.common.visual_grid import (
+    RenderingInfo,
+    RenderRequest,
+    RenderStatusResults,
+    RunningRender,
+    VGResource,
+)
 
-if tp.TYPE_CHECKING:
-    from .utils.custom_types import RunningSession, SessionStartInfo, Num
+if typing.TYPE_CHECKING:
+    from typing import Text, List, Any, Optional, Dict, Tuple
+    from applitools.common.utils.custom_types import Num
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -26,36 +46,29 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
 __all__ = ("ServerConnector",)
 
 
-class _RequestsCommunicator(object):
+class _RequestCommunicator(object):
     LONG_REQUEST_DELAY = 2  # seconds
     MAX_LONG_REQUEST_DELAY = 10  # seconds
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
 
-    api_key = None
-    timeout = None
-    server_url = None  # type: tp.Optional[tp.Text]
-
-    def __init__(self, timeout, headers, api_session_running):
-        # type: (int, tp.Dict, tp.Text) -> None
+    def __init__(self, timeout, headers, api_key, endpoint_uri):
+        # type: (int, Dict, Text, Text) -> None
         self.timeout = timeout
         self.headers = headers.copy()
-        self.api_session_running = api_session_running
+        self.api_key = api_key
+        self.endpoint_uri = endpoint_uri
 
-    @property
-    def endpoint_uri(self):
-        return urljoin(self.server_url, self.api_session_running)
-
-    def _request(self, method, url_resource, **kwargs):
+    def request(self, method, url_resource, **kwargs):
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
         url_resource = urljoin(self.endpoint_uri, url_resource)
-
-        params = dict(apiKey=self.api_key)
+        params = {}
+        if self.api_key:
+            params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
         headers = kwargs.get("headers", self.headers)
         timeout = kwargs.get("timeout", self.timeout)
-
         response = method(
             url_resource,
             data=kwargs.get("data", None),
@@ -64,10 +77,13 @@ class _RequestsCommunicator(object):
             headers=headers,
             timeout=timeout,
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            logger.exception(e)
         return response
 
-    def _long_request(self, method, url_resource, **kwargs):
+    def long_request(self, method, url_resource, **kwargs):
         headers = kwargs["headers"].copy()
         headers["Eyes-Expect"] = "202-accepted"
         for delay in self.request_delay():
@@ -76,18 +92,12 @@ class _RequestsCommunicator(object):
                 "%a, %d %b %Y %H:%M:%S GMT", time.gmtime()
             )
             kwargs["headers"] = headers
-            response = self._request(method, url_resource, **kwargs)
+            response = self.request(method, url_resource, **kwargs)
             if response.status_code != 202:
                 return response
             logger.debug("Still running... Retrying in {}s".format(delay))
         else:
             raise requests.Timeout("Couldn't process request")
-
-    def post(self, url_resource=None, **kwargs):
-        return self._request(requests.post, url_resource, **kwargs)
-
-    def long_delete(self, url_resource=None, **kwargs):
-        return self._long_request(requests.delete, url_resource, **kwargs)
 
     @staticmethod
     def request_delay(
@@ -95,7 +105,7 @@ class _RequestsCommunicator(object):
         step_factor=LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR,
         max_delay=MAX_LONG_REQUEST_DELAY,
     ):
-        delay = _RequestsCommunicator.LONG_REQUEST_DELAY  # type: Num
+        delay = _RequestCommunicator.LONG_REQUEST_DELAY  # type: Num
         while True:
             yield delay
             time.sleep(first_delay)
@@ -104,63 +114,118 @@ class _RequestsCommunicator(object):
                 raise StopIteration
 
 
+class _Request(object):
+    """
+    Class for fetching data from
+    """
+
+    def __init__(self, com):
+        self._com = com  # type: _RequestCommunicator
+
+    def post(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
+        func = self._com.long_request if long_query else self._com.request
+        return func(requests.post, url_resource, **kwargs)
+
+    def put(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
+        func = self._com.long_request if long_query else self._com.request
+        return func(requests.put, url_resource, **kwargs)
+
+    def get(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
+        func = self._com.long_request if long_query else self._com.request
+        return func(requests.get, url_resource, **kwargs)
+
+    def delete(self, url_resource=None, long_query=False, **kwargs):
+        # type: (str, bool, **Any) -> requests.Response
+        func = self._com.long_request if long_query else self._com.request
+        return func(requests.delete, url_resource, **kwargs)
+
+
+def create_request_factory(headers):
+    class RequestFactory(object):
+        def __init__(self):
+            self._com = None
+
+        def create(self, api_key, server_url, timeout):
+            # server_url could be updated
+            self._com = _RequestCommunicator(
+                timeout, headers, api_key, endpoint_uri=server_url
+            )
+            return _Request(self._com)
+
+    return RequestFactory()
+
+
+def prepare_match_data(match_data):
+    # type: (MatchWindowData) -> bytes
+    screenshot64 = match_data.app_output.screenshot64
+    if screenshot64:
+        match_data.app_output.screenshot64 = None
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+    else:
+        screenshot_bytes = b""
+    match_data_json = json_utils.to_json(match_data)
+    logger.debug("MatchWindowData {}".format(match_data_json))
+    match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
+    match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
+    body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+    return body
+
+
 class ServerConnector(object):
     """
     Provides an API for communication with the Applitools server.
     """
 
-    DEFAULT_TIMEOUT = 60 * 5  # Seconds
     DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
-    DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
-    API_SESSIONS_RUNNING = "/api/sessions/running/"
 
-    def __init__(self, server_url):
-        # type: (tp.Optional[tp.Text]) -> None
+    API_SESSIONS = "api/sessions"
+    API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
+    RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
+
+    # Rendering Grid
+    RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
+    RESOURCES_SHA_256 = "/resources/sha256/"
+    RENDER_STATUS = "/render-status"
+    RENDER = "/render"
+
+    api_key = None
+    timeout = None
+    server_url = None  # type: Optional[Text]
+    _is_session_started = False
+    _request = None  # type: Optional[_Request]
+    _render_request = None  # type: Optional[_Request]
+
+    def __init__(self):
+        # type: () -> None
         """
         Ctor.
 
         :param server_url: The url of the Applitools server.
         """
-        self._request = _RequestsCommunicator(
-            timeout=ServerConnector.DEFAULT_TIMEOUT,
-            headers=ServerConnector.DEFAULT_HEADERS,
-            api_session_running=ServerConnector.API_SESSIONS_RUNNING,
+        self._render_info = None  # type: Optional[RenderingInfo]
+        self._request_factory = create_request_factory(
+            headers=ServerConnector.DEFAULT_HEADERS
         )
-        self.server_url = server_url
+
+    def update_config(self, conf):
+        self.server_url = conf.server_url
+        self.api_key = conf.api_key
+        self.timeout = conf.timeout
+
+        self._request = self._request_factory.create(
+            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
+        )
+        self._render_request = self._request_factory.create(
+            server_url=self.server_url, api_key=None, timeout=self.timeout
+        )
 
     @property
-    def server_url(self):
-        # type: () -> tp.Text
-        return self._request.server_url
-
-    @server_url.setter
-    def server_url(self, server_url):
-        # type: (tp.Text) -> None
-        if server_url is None:
-            self._request.server_url = self.DEFAULT_SERVER_URL
-        else:
-            self._request.server_url = server_url
-
-    @property
-    def api_key(self):
-        if self._request.api_key is None:
-            # if api_key is None the error will be raised in EyesBase._open_base
-            self._request.api_key = os.environ.get("APPLITOOLS_API_KEY", None)
-        return self._request.api_key
-
-    @api_key.setter
-    def api_key(self, api_key):
-        self._request.api_key = api_key
-
-    @property
-    def timeout(self):
-        if self._request.timeout is None:
-            self._request.timeout = self.DEFAULT_TIMEOUT
-        return self._request.timeout
-
-    @timeout.setter
-    def timeout(self, timeout):
-        self._request.timeout = timeout
+    def is_session_started(self):
+        return self._is_session_started
 
     # TODO: Add Proxy
     def start_session(self, session_start_info):
@@ -173,14 +238,13 @@ class ServerConnector(object):
         :param session_start_info: The start params for the session.
         :return: Represents the current running session.
         """
-        data = '{"startInfo": %s}' % (general_utils.to_json(session_start_info))
-        response = self._request.post(data=data)
-        parsed_response = response.json()
-        return dict(
-            session_id=parsed_response["id"],
-            session_url=parsed_response["url"],
-            is_new_session=(response.status_code == requests.codes.created),
-        )
+        logger.debug("start_session called.")
+        data = json_utils.to_json(session_start_info)
+        response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
+        running_session = json_utils.attr_from_response(response, RunningSession)
+        running_session.is_new_session = response.status_code == requests.codes.created
+        self._is_session_started = True
+        return running_session
 
     def stop_session(self, running_session, is_aborted, save):
         # type: (RunningSession, bool, bool) -> TestResults
@@ -192,60 +256,185 @@ class ServerConnector(object):
         :param save: Whether the session should be automatically saved if it is not aborted.
         :return: Test results of the stopped session.
         """
-        logger.debug("Stop session called..")
-        params = {"aborted": is_aborted, "updateBaseline": save, "apiKey": self.api_key}
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        response = self._request.long_delete(
-            url_resource=running_session["session_id"], params=params, headers=headers
-        )
-        pr = response.json()
-        logger.debug("stop_session(): parsed response: {}".format(pr))
-        return TestResults(
-            pr["steps"],
-            pr["matches"],
-            pr["mismatches"],
-            pr["missing"],
-            pr["exactMatches"],
-            pr["strictMatches"],
-            pr["contentMatches"],
-            pr["layoutMatches"],
-            pr["noneMatches"],
-            pr["status"],
+        logger.debug("stop_session called.")
+
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+
+        params = {"aborted": is_aborted, "updateBaseline": save}
+        response = self._request.delete(
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
+            long_query=True,
+            params=params,
+            headers=ServerConnector.DEFAULT_HEADERS,
         )
 
-    def match_window(self, running_session, data):
-        # type: (RunningSession, bytes) -> bool
+        test_results = json_utils.attr_from_response(response, TestResults)
+        logger.debug("stop_session(): parsed response: {}".format(test_results))
+
+        # mark that session isn't started
+        self._is_session_started = False
+        return test_results
+
+    def match_window(self, running_session, match_data):
+        # type: (RunningSession, MatchWindowData) -> MatchResult
         """
         Matches the current window to the immediate expected window in the Eyes server.
         Notice that a window might be matched later at the end of the test, even if it
         was not immediately matched in this call.
 
         :param running_session: The current session that is running.
-        :param data: The data for the requests.post.
+        :param match_data: The data for the requests.post.
         :return: The parsed response.
         """
+        logger.debug("match_window called. {}".format(running_session))
+
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+
+        data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
+        # TODO: allow to send images as base64
         response = self._request.post(
-            url_resource=running_session["session_id"], data=data, headers=headers
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
+            data=data,
+            headers=headers,
         )
-        return response.json()["asExpected"]
+        match_result = json_utils.attr_from_response(response, MatchResult)
+        return match_result
 
     def post_dom_snapshot(self, dom_json):
-        # type: (tp.Text) -> tp.Optional[tp.Text]
+        # type: (Text) -> Optional[Text]
         """
         Upload the DOM of the tested page.
         Return an URL of uploaded resource which should be posted to :py:   `AppOutput`.
         """
+        logger.debug("post_dom_snapshot called.")
+
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
+
         response = self._request.post(
-            url_resource="data", data=dom_bytes, headers=headers
+            url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
+            data=dom_bytes,
+            headers=headers,
         )
         dom_url = None
         if response.ok:
             dom_url = response.headers["Location"]
         return dom_url
+
+    def render_info(self):
+        # type: () -> Optional[RenderingInfo]
+        logger.debug("render_info() called.")
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
+        if not response.ok:
+            raise EyesError(
+                "Cannot get render info: \n Status: {}, Content: {}".format(
+                    response.status_code, response.content
+                )
+            )
+        self._render_info = json_utils.attr_from_response(response, RenderingInfo)
+        return self._render_info
+
+    def render(self, *render_requests):
+        # type: (*RenderRequest) -> List[RunningRender]
+        logger.debug("render called with {}".format(render_requests))
+        if self._render_info is None:
+            raise EyesError("render_info must be fetched first")
+
+        url = urljoin(self._render_info.service_url, self.RENDER)
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        data = json_utils.to_json(render_requests)
+        response = self._render_request.post(url, headers=headers, data=data)
+        if response.ok or response.status_code == 404:
+            return json_utils.attr_from_response(response, RunningRender)
+        raise EyesError(
+            "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
+                response.status_code, response.content
+            )
+        )
+
+    def render_put_resource(self, running_render, resource):
+        # type: (RunningRender, VGResource) -> bool
+        argument_guard.not_none(running_render)
+        argument_guard.not_none(resource)
+        if self._render_info is None:
+            raise EyesError("render_info must be fetched first")
+
+        content = resource.content
+        argument_guard.not_none(content)
+        logger.debug(
+            "resource hash: {} url: {} render id: {}"
+            "".format(resource.hash, resource.url, running_render.render_id)
+        )
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = resource.content_type
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        url = urljoin(
+            self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
+        )
+        response = self._render_request.put(
+            url,
+            headers=headers,
+            data=content,
+            params={"render-id": running_render.render_id},
+        )
+        logger.debug("ServerConnector.put_resource - request succeeded")
+        if not response.ok:
+            raise EyesError(
+                "Error putting resource: {}, {}".format(
+                    response.status_code, response.content
+                )
+            )
+        return resource.hash
+
+    @retry()
+    def download_resource(self, url):
+        # type: (Text) -> Response
+        # TODO: Fixme retry mech
+        logger.debug("Fetching {}...".format(url))
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Accept-Encoding"] = "identity"
+
+        response = requests.get(
+            url, headers=headers, timeout=self.timeout, verify=False
+        )
+        if response.status_code == 406:
+            response = requests.get(url, timeout=self.timeout, verify=False)
+        response.raise_for_status()
+        return response
+
+    def render_status_by_id(self, render_id):
+        argument_guard.not_none(render_id)
+        if self._render_info is None:
+            raise EyesError("render_info must be fetched first")
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
+        response = self._render_request.post(
+            url, headers=headers, data=json.dumps([render_id])
+        )
+        if not response.ok:
+            raise EyesError(
+                "Error getting server status, {} {}".format(
+                    response.status_code, response.content
+                )
+            )
+        return json_utils.attr_from_response(response, RenderStatusResults)
