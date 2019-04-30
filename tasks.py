@@ -35,7 +35,7 @@ def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
     dest = "pypi" if prod else "test"
     for pack_path in packages:
         with c.cd(pack_path):
-            c.run("python setup.py build bdist_wheel", echo=True)
+            c.run("python setup.py sdist", echo=True)
             c.run("twine upload -r {dest} dist/*".format(dest=dest), echo=True)
 
 
