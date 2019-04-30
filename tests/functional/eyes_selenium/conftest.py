@@ -5,9 +5,10 @@ from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import logger
+from applitools.common import BatchInfo, logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
+from applitools.selenium.visual_grid import VisualGridRunner
 
 
 def _setup_env_vars_for_session():
@@ -94,28 +95,32 @@ def driver_for_class(request, driver):
 @pytest.yield_fixture(scope="function")
 def driver(request, browser_config, webdriver_module):
     test_name = request.node.name
-    build_tag = os.environ.get("BUILD_TAG", None)
-    tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
-    username = os.environ.get("SAUCE_USERNAME", None)
-    access_key = os.environ.get("SAUCE_ACCESS_KEY", None)
 
     force_remote = request.config.getoption("remote", default=False)
-    selenium_url = os.environ.get("SELENIUM_SERVER_URL", "http://127.0.0.1:4444/wd/hub")
-    if "ondemand.saucelabs.com" in selenium_url or force_remote:
-        selenium_url = "https://%s:%s@ondemand.saucelabs.com:443/wd/hub" % (
+    if force_remote:
+        build_tag = os.environ.get("BUILD_TAG", None)
+        tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
+        username = os.environ.get("SAUCE_USERNAME", None)
+        access_key = os.environ.get("SAUCE_ACCESS_KEY", None)
+        sauce_url = "https://%s:%s@ondemand.saucelabs.com:443/wd/hub" % (
             username,
             access_key,
         )
-    logger.debug("SELENIUM_URL={}".format(selenium_url))
+        selenium_url = os.environ.get("SELENIUM_SERVER_URL", sauce_url)
+        logger.debug("SELENIUM_URL={}".format(selenium_url))
 
-    desired_caps = browser_config.copy()
-    desired_caps["build"] = build_tag
-    desired_caps["tunnelIdentifier"] = tunnel_id
-    desired_caps["name"] = test_name
+        desired_caps = browser_config.copy()
+        desired_caps["build"] = build_tag
+        desired_caps["tunnelIdentifier"] = tunnel_id
+        desired_caps["name"] = test_name
 
-    browser = webdriver_module.Remote(
-        command_executor=selenium_url, desired_capabilities=desired_caps
-    )
+        browser = webdriver_module.Remote(
+            command_executor=selenium_url, desired_capabilities=desired_caps
+        )
+    else:
+        from webdriver_manager.chrome import ChromeDriverManager
+
+        browser = webdriver_module.Chrome(ChromeDriverManager().install())
     if browser is None:
         raise WebDriverException("Never created!")
 
@@ -133,3 +138,46 @@ def driver(request, browser_config, webdriver_module):
         )
     finally:
         browser.quit()
+
+
+@pytest.fixture
+def vg_runner():
+    vg = VisualGridRunner(10)
+    return vg
+
+
+@pytest.fixture
+def batch_info():
+    batch_info = BatchInfo("hello world batch")
+    batch_info.id = "hw_VG_Batch_ID"
+    return batch_info
+
+
+@pytest.fixture
+def eyes_vg(vg_runner, sel_config, driver, request, test_page_url):
+    app_name = request.node.get_closest_marker("app_name")
+    if app_name:
+        app_name = app_name.args[0]
+    test_name = request.node.get_closest_marker("test_name")
+    if test_name:
+        test_name = test_name.args[0]
+    viewport_size = request.node.get_closest_marker("viewport_size")
+    if viewport_size:
+        viewport_size = viewport_size.args[0]
+    else:
+        viewport_size = None
+
+    eyes = Eyes(vg_runner)
+    eyes.server_url = "https://eyes.applitools.com/"
+    eyes.configuration = sel_config
+
+    app_name = app_name or eyes.configuration.app_name
+    test_name = test_name or eyes.configuration.test_name
+    viewport_size = viewport_size or eyes.configuration.viewport_size
+
+    driver.get(test_page_url)
+    eyes.open(driver, app_name, test_name, viewport_size)
+    yield eyes
+    logger.debug("closing WebDriver for url {}".format(test_page_url))
+    eyes.close()
+    # TODO: print VG test results

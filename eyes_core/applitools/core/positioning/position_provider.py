@@ -10,8 +10,6 @@ if typing.TYPE_CHECKING:
     from typing import List, Optional
     from applitools.common import RectangleSize
 
-__all__ = ("PositionProvider", "InvalidPositionProvider")
-
 
 @attr.s
 class PositionProvider(ABC):

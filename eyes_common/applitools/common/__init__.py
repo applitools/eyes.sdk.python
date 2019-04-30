@@ -1,25 +1,55 @@
-from .app_output import *  # noqa
-from .capture import *  # noqa
-from .configuration import *  # noqa
-from .errors import *  # noqa
-from .geometry import *  # noqa
-from .logger import *  # noqa
-from .match import *  # noqa
-from .match_window_data import *  # noqa
-from .metadata import *  # noqa
-from .test_results import *  # noqa
-
-
-class StitchMode(object):
-    """For backward compatibility for eyes.selenium"""
-
-    Scroll = "Scroll"
-    CSS = "CSS"
-
+from .app_output import AppOutput
+from .capture import EyesScreenshot
+from .config import (
+    BatchInfo,
+    BrowserType,
+    Configuration,
+    SeleniumConfiguration,
+    StitchMode,
+)
+from .errors import (
+    CoordinatesTypeConversionError,
+    DiffsFoundError,
+    EyesError,
+    EyesIllegalArgument,
+    NewTestError,
+    OutOfBoundsError,
+    TestFailedError,
+)
+from .geometry import EMPTY_REGION, CoordinatesType, Point, RectangleSize, Region
+from .logger import FileLogger, NullLogger, StdoutLogger
+from .match import (
+    ExactMatchSettings,
+    FloatingBounds,
+    FloatingMatchSettings,
+    ImageMatchSettings,
+    MatchLevel,
+    MatchResult,
+)
+from .match_window_data import MatchWindowData, Options
+from .metadata import AppEnvironment, RunningSession, SessionStartInfo
+from .server import FailureReports, SessionType
+from .test_results import TestResults
+from .visual_grid import (
+    ChromeEmulationInfo,
+    DeviceName,
+    EmulationDevice,
+    RenderBrowserInfo,
+    RenderInfo,
+    RenderingInfo,
+    RenderRequest,
+    RenderStatus,
+    RenderStatusResults,
+    RGridDom,
+    RunningRender,
+    ScreenOrientation,
+    VGResource,
+    VisualGridSelector,
+)
 
 __all__ = (
     logger.__all__  # noqa
-    + configuration.__all__  # noqa
+    + config.__all__  # noqa
     + errors.__all__  # noqa
     + geometry.__all__  # noqa
     + match.__all__  # noqa
@@ -28,5 +58,7 @@ __all__ = (
     + capture.__all__  # noqa
     + match_window_data.__all__  # noqa
     + test_results.__all__  # noqa
+    + visual_grid.__all__  # noqa
+    + server.__all__  # noqa
     + ("logger", "StitchMode")  # noqa
 )

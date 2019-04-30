@@ -11,7 +11,7 @@ from applitools.core.cut import NullCutProvider
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, List
     from applitools.core.scaling import ScaleProvider
     from applitools.core.debug import DebugScreenshotProvider
     from applitools.selenium.region_compensation import RegionPositionCompensation
@@ -78,7 +78,7 @@ class FullPageCaptureAlgorithm(object):
                 # These will be used for storing the actual stitched size (it is
                 # sometimes less than the size extracted via "get_entire_size").
                 last_successful_location = Point.zero()
-                last_successful_part_size = RectangleSize.from_image(image)
+                last_successful_part_size = RectangleSize.from_(image)
 
                 # Take screenshot and stitch for each screenshot part
                 logger.debug("Getting the rest of the image parts...")
@@ -116,7 +116,7 @@ class FullPageCaptureAlgorithm(object):
                     last_successful_location = origin_position
 
                 if part_image:
-                    last_successful_part_size = RectangleSize.from_image(part_image)
+                    last_successful_part_size = RectangleSize.from_(part_image)
 
             logger.info("Stitching done!")
         # If the actual image size is smaller than the extracted size, we crop the image.
@@ -137,6 +137,7 @@ class FullPageCaptureAlgorithm(object):
         last_successful_part_size,
         stitched_image,
     ):
+        # type: (Region, Point, RectangleSize, Image) -> Image
         act_image_width = last_successful_location.x + last_successful_part_size.width
         act_image_height = last_successful_location.y + last_successful_part_size.height
         logger.info("Extracted entire size: {}".format(full_area.size))
@@ -162,6 +163,7 @@ class FullPageCaptureAlgorithm(object):
         return stitched_image
 
     def _create_stitched_image(self, full_area, image):
+        # type: (Region, Image) -> Image
         logger.debug("Creating stitchedImage container.")
         # Starting with element region size part of the screenshot. Use it as a size template.
         stitched_image = Image.new("RGBA", (full_area.width, full_area.height))
@@ -170,6 +172,7 @@ class FullPageCaptureAlgorithm(object):
         return stitched_image
 
     def _get_entire_size(self, image, position_provider):
+        # type: (Image, PositionProvider) -> RectangleSize
         try:
             entire_size = position_provider.get_entire_size()
             logger.info("Entire size of region context: {}".format(entire_size))
@@ -184,29 +187,34 @@ class FullPageCaptureAlgorithm(object):
         return entire_size
 
     def _scale_if_needed(self, image, pixel_ratio):
+        # type: (Image, float) -> Image
         if pixel_ratio != 1.0:
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
             self.debug_screenshots_provider.save(image, "scalled")
         return image
 
     def _crop_if_needed(self, image, region_in_screenshot):
+        # type: (Image, Region) -> Image
         if not region_in_screenshot.is_size_empty:
             image = image_utils.get_image_part(image, region_in_screenshot)
             self.debug_screenshots_provider.save(image, "cropper")
         return image
 
     def _cut_if_needed(self, image, scaled_cut_provider):
+        # type: (Image, NullCutProvider) -> Image
         if not isinstance(scaled_cut_provider, NullCutProvider):
             image = scaled_cut_provider.cut(image)
             self.debug_screenshots_provider.save(image, "original-cut")
         return image
 
     def _get_pixel_ratio(self, image):
+        # type: (Image) -> float
         self.scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / self.scale_provider.scale_ratio
         return pixel_ratio
 
     def _get_image_parts(self, full_area, image):
+        # type: (Region, Image) -> List[Region]
         # The screenshot part is a bit smaller than the screenshot size,
         # in order to eliminate duplicate bottom scroll bars, as well as fixed
         # position footers.
@@ -225,6 +233,7 @@ class FullPageCaptureAlgorithm(object):
         return image_parts
 
     def _get_region_in_screenshot(self, region, image, pixel_ratio):
+        # type: (Region, Image, float) -> Region
         if region.is_size_empty:
             return region
         logger.info("Creating screenshot object...")

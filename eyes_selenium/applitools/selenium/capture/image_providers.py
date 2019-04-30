@@ -6,12 +6,13 @@ from applitools.core.capture import ImageProvider
 from applitools.selenium.useragent import BrowserNames, UserAgent
 
 if typing.TYPE_CHECKING:
-    from applitools.selenium import Eyes
+    from PIL.Image import Image
+    from applitools.selenium.selenium_eyes import SeleniumEyes
     from applitools.selenium.webdriver import EyesWebDriver
 
 
 def get_image_provider(ua, eyes):
-    # type: (UserAgent, Eyes) -> ImageProvider
+    # type: (UserAgent, SeleniumEyes) -> ImageProvider
     if ua:
         if ua.browser == BrowserNames.Firefox:
             if ua.browser_major_version >= 48:
@@ -29,6 +30,7 @@ class SafariScreenshotImageProvider(ImageProvider):
 
 class TakesScreenshotImageProvider(ImageProvider):
     def get_image(self):
+        # type: () -> Image
         logger.info("Getting screenshot as base64...")
         screenshot64 = self._eyes.driver.get_screenshot_as_base64()
         logger.info("Done getting base64! Creating BufferedImage...")
