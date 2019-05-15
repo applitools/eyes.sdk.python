@@ -88,30 +88,30 @@ class ImageMatchSettings(object):
     """
 
     match_level = attr.ib(
-        default=MatchLevel.STRICT, metadata={JsonInclude.NON_NONE: True}
+        default=MatchLevel.STRICT, metadata={JsonInclude.THIS: True}
     )  # type: MatchLevel
     exact = attr.ib(
-        default=None, type=ExactMatchSettings, metadata={JsonInclude.NON_NONE: True}
+        default=None, type=ExactMatchSettings, metadata={JsonInclude.THIS: True}
     )  # type: Optional[ExactMatchSettings]
-    ignore_caret = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    send_dom = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
-    use_dom = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
-    enable_patterns = attr.ib(default=False, metadata={JsonInclude.NON_NONE: True})
+    ignore_caret = attr.ib(default=False, metadata={JsonInclude.THIS: True})
+    send_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})
+    use_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})
+    enable_patterns = attr.ib(default=False, metadata={JsonInclude.THIS: True})
 
     ignore = attr.ib(
-        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+        factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
     )
     layout = attr.ib(
-        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+        factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
     )
     strict = attr.ib(
-        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+        factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
     )
     content = attr.ib(
-        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+        factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
     )
     floating = attr.ib(
-        factory=list, type=typing.List[Region], metadata={JsonInclude.NON_NONE: True}
+        factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
     )
 
 
