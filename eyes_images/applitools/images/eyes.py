@@ -19,7 +19,6 @@ class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
-    _config_provider = Configuration()
 
     def __getattr__(self, name):
         if name in self.DELEGATE_TO_CONFIG:

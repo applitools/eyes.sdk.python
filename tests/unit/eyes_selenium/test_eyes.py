@@ -1,6 +1,6 @@
 import pytest
-from applitools.common import MatchLevel, StitchMode
 
+from applitools.common import MatchLevel, StitchMode
 from applitools.core import NullScaleProvider
 from applitools.selenium import Eyes
 from applitools.selenium.visual_grid import VisualGridRunner
@@ -46,3 +46,16 @@ def test_stitch_mode(eyes):
     eyes.stitch_mode = StitchMode.CSS
     assert eyes.stitch_mode == StitchMode.CSS
     assert eyes.configuration.stitch_mode == StitchMode.CSS
+
+
+def test_config_overwriting(eyes):
+    eyes.host_app = "Host1"
+    eyes2 = Eyes()
+    eyes2.host_app = "Host2"
+    assert eyes.host_app != eyes2.host_app
+    assert eyes.configuration.host_app != eyes2.configuration.host_app
+
+    eyes.configuration.host_app = "Other Host1"
+    eyes2.configuration.host_app = "Other Host2"
+    assert eyes.host_app != eyes2.host_app
+    assert eyes.configuration.host_app != eyes2.configuration.host_app
