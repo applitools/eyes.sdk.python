@@ -8,9 +8,16 @@ from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from typing import Optional
-    from applitools.core.fluent import CheckSettings
+    from applitools.core import CheckSettings
 
     T = typing.TypeVar("T", bound=CheckSettings)
+
+__all__ = (
+    "AppOutputWithScreenshot",
+    "AppOutputProvider",
+    "EyesScreenshotFactory",
+    "ImageProvider",
+)
 
 
 @attr.s
