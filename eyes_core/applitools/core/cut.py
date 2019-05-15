@@ -6,6 +6,8 @@ import attr
 from applitools.common import Region
 from applitools.common.utils import ABC, image_utils
 
+__all__ = ("FixedCutProvider", "UnscaledFixedCutProvider", "NullCutProvider")
+
 
 @attr.s
 class CutProvider(ABC):

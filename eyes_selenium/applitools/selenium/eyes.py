@@ -54,7 +54,6 @@ class Eyes(object):
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
-    _configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
 
     @property
     def configuration(self):
@@ -71,6 +70,8 @@ class Eyes(object):
 
     def __init__(self, runner=None):
         # type: (Optional[Any]) -> None
+        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+
         # backward compatibility with settings server_url
         if isinstance(runner, str):
             self.configuration.server_url = runner
@@ -170,7 +171,7 @@ class Eyes(object):
         :return: None
         """
         # TODO: remove this disable
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
             return MatchResult()
         logger.debug("check_region_in_frame_by_selector('%s')" % tag)
@@ -225,6 +226,10 @@ class Eyes(object):
         :return: The test results.
         """
         return self._current_eyes.close(raise_ex)
+
+    def close_async(self):
+        if self._is_visual_grid_eyes:
+            self._current_eyes.close_async()
 
     def _init_driver(self, driver):
         # type: (AnyWebDriver) -> None

@@ -3,10 +3,10 @@ import uuid
 
 import attr
 
-from applitools.common import logger
+from applitools.common import TestResults, logger
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Text
+    from typing import Callable, Text, Optional
 
 
 @attr.s(hash=True)
@@ -35,7 +35,7 @@ class VGTask(object):
         return self
 
     def __call__(self):
-        # type: () -> None
+        # type: () -> Optional[TestResults]
         logger.debug("%s called %s" % (self.__class__.__name__, self.name))
         res = None
         try:

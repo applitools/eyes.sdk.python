@@ -22,7 +22,7 @@ from applitools.common.match import MatchResult
 from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
-from applitools.common.utils import ABC, argument_guard
+from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import NullCutProvider
@@ -38,7 +38,7 @@ from .server_connector import ServerConnector
 
 if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
-    from applitools.core.fluent.check_settings import CHECK_SETTINGS_TYPE
+    from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
     from typing import Optional, Text
 
@@ -121,7 +121,6 @@ class _EyesBaseAbstract(ABC):
 
 class EyesBase(_EyesBaseAbstract):
     MAX_ITERATION = 10
-    _config_provider = None
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
     _last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -134,6 +133,8 @@ class EyesBase(_EyesBaseAbstract):
     _render_info = None  # type: Optional[RenderingInfo]
     _render = False
     _cut_provider = None
+    _should_get_title = False  # type: bool
+
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -154,9 +155,8 @@ class EyesBase(_EyesBaseAbstract):
         Creates a new (possibly disabled) Eyes instance that
         interacts with the Eyes server.
         """
-        self.is_disabled = False
+        self._config_provider = Configuration()
         self._server_connector = ServerConnector()  # type: ServerConnector
-        self._should_get_title = False  # type: bool
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
 
@@ -273,7 +273,7 @@ class EyesBase(_EyesBaseAbstract):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("close(): ignored (disabled)")
             return None
         try:
@@ -360,7 +360,7 @@ class EyesBase(_EyesBaseAbstract):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("abort_if_not_closed(): ignored (disabled)")
             return
         try:
@@ -403,7 +403,7 @@ class EyesBase(_EyesBaseAbstract):
         :raise EyesError: If the session was already open.
         """
         logger.open_()
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
 
@@ -451,7 +451,7 @@ class EyesBase(_EyesBaseAbstract):
             self._cut_provider = NullCutProvider()
 
     def _open_base(self):
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
         logger.open_()
@@ -578,7 +578,7 @@ class EyesBase(_EyesBaseAbstract):
         )
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
-        # type: (Region, EyesScreenshot, CHECK_SETTINGS_TYPE) -> AppOutputWithScreenshot
+        # type: (Region, EyesScreenshot, CheckSettings) -> AppOutputWithScreenshot
         logger.info("getting screenshot...")
         screenshot = self._get_screenshot()
         logger.info("Done getting screenshot!")
@@ -614,8 +614,8 @@ class EyesBase(_EyesBaseAbstract):
     def _check_window_base(
         self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
-        # type: (RegionProvider, Optional[Text], bool, CHECK_SETTINGS_TYPE) -> MatchResult
-        if self.is_disabled:
+        # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
+        if self.configuration.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             return MatchResult(as_expected=True)
 
@@ -665,23 +665,31 @@ class EyesBase(_EyesBaseAbstract):
             return None
 
     def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
-        # type: (RegionProvider, Text, bool, CHECK_SETTINGS_TYPE) -> MatchResult
+        # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout = -1  # type: Num
         if check_settings:
             retry_timeout = check_settings.values.timeout
 
-        default_match_settings = self.configuration.default_match_settings
+        get_config_value = general_utils.use_default_if_none_factory(
+            self.configuration.default_match_settings, self.configuration
+        )
         # Set defaults if necessary
-        if check_settings:
-            if check_settings.values.match_level is None:
-                check_settings = check_settings.match_level(
-                    default_match_settings.match_level
-                )
-            if check_settings.values.ignore_caret is None:
-                check_settings = check_settings.ignore_caret(
-                    default_match_settings.ignore_caret
-                )
+        if check_settings.values.match_level is None:
+            check_settings = check_settings.match_level(get_config_value("match_level"))
+        if check_settings.values.ignore_caret is None:
+            check_settings = check_settings.ignore_caret(
+                get_config_value("ignore_caret")
+            )
+        if check_settings.values.send_dom is None:
+            check_settings = check_settings.ignore_caret(get_config_value("send_dom"))
+        if check_settings.values.use_dom is None:
+            check_settings = check_settings.ignore_caret(get_config_value("use_dom"))
+        if check_settings.values.enable_patterns is None:
+            check_settings = check_settings.ignore_caret(
+                get_config_value("enable_patterns")
+            )
+
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout))
 
