@@ -1,5 +1,5 @@
 import pytest
-from applitools.common import MatchLevel
+from applitools.common import MatchLevel, StitchMode
 
 from applitools.core import NullScaleProvider
 from applitools.selenium import Eyes
@@ -35,3 +35,9 @@ def test_match_level(eyes):
     assert eyes.match_level == MatchLevel.EXACT
     eyes.match_level = MatchLevel.LAYOUT
     assert eyes.match_level == MatchLevel.LAYOUT
+
+
+def test_stitch_mode(eyes):
+    assert eyes.stitch_mode == StitchMode.Scroll
+    eyes.stitch_mode = StitchMode.CSS
+    assert eyes.stitch_mode == StitchMode.CSS
