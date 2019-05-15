@@ -25,8 +25,9 @@ def test_set_get_scale_ratio(eyes):
     eyes.scale_ratio = 2.0
     assert eyes.scale_ratio == 2.0
 
-    eyes.scale_ratio = None
-    assert eyes.scale_ratio == NullScaleProvider.UNKNOWN_SCALE_RATIO
+    if not eyes._is_visual_grid_eyes:
+        eyes.scale_ratio = None
+        assert eyes.scale_ratio == NullScaleProvider.UNKNOWN_SCALE_RATIO
 
 
 def test_match_level(eyes):
