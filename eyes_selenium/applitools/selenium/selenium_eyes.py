@@ -35,7 +35,6 @@ from applitools.selenium.capture.full_page_capture_algorithm import (
     FullPageCaptureAlgorithm,
 )
 from applitools.selenium.capture.image_providers import get_image_provider
-from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
@@ -64,8 +63,9 @@ if typing.TYPE_CHECKING:
     )
     from applitools.core import MatchWindowTask
     from applitools.core.scaling import ScaleProvider
-    from .eyes import Eyes
+    from .eyes import EyesWebElement
     from .frames import Frame
+    from .fluent import SeleniumCheckSettings
 
 
 class ScreenshotType(object):
