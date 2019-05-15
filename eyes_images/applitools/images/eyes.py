@@ -19,7 +19,6 @@ class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
-    _config_provider = Configuration()
 
     def __getattr__(self, name):
         if name in self.DELEGATE_TO_CONFIG:
@@ -88,7 +87,7 @@ class Eyes(EyesBase):
 
     def check(self, name, check_settings):
         # type: (Text, ImagesCheckSettings) -> bool
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             return False
         if name:
             check_settings = check_settings.with_name(name)
@@ -103,7 +102,7 @@ class Eyes(EyesBase):
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
         # type: (Union[Image.Image, Text], Optional[Text], bool) -> Optional[bool]
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             return None
         logger.info(
             "check_image(Image {}, tag {}, ignore_mismatch {}".format(
@@ -116,7 +115,7 @@ class Eyes(EyesBase):
 
     def check_region(self, image, region, tag=None, ignore_mismatch=False):
         # type: (Image.Image, Region, Optional[Text], bool) -> Optional[bool]
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             return None
         logger.info(
             "check_region(Image {}, region {}, tag {}, ignore_mismatch {}".format(

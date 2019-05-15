@@ -14,7 +14,6 @@ if typing.TYPE_CHECKING:
     from typing import Text, Optional, List, Union, Tuple
     from applitools.common.utils.custom_types import AnyWebElement, Num
 
-    CHECK_SETTINGS_TYPE = typing.TypeVar("CHECK_SETTINGS_TYPE", bound="CheckSettings")
     REGION_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
     FLOATING_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
     GR = typing.TypeVar("GR", bound=GetRegion)
@@ -62,57 +61,57 @@ class CheckSettings(object):
         self.values = CheckSettingsValues()
 
     def layout(self):
-        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
+        # type: ()  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
         return self
 
     def exact(self):
-        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
+        # type: ()  -> CheckSettings
 
         """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
         self.values.match_level = MatchLevel.EXACT
         return self
 
     def strict(self):
-        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
+        # type: ()  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
         return self
 
     def content(self):
-        # type: (CHECK_SETTINGS_TYPE)  -> CHECK_SETTINGS_TYPE
+        # type: ()  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
         return self
 
     def match_level(self, match_level):
-        # type: (CHECK_SETTINGS_TYPE, MatchLevel)  -> CHECK_SETTINGS_TYPE
+        # type: (MatchLevel)  -> CheckSettings
         self.values.match_level = match_level
         return self
 
     def ignore_caret(self, ignore=True):
-        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
+        # type: (bool)  -> CheckSettings
         self.values.ignore_caret = ignore
         return self
 
     def fully(self, fully=True):
-        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
+        # type: (bool)  -> CheckSettings
         self.values.stitch_content = fully
         return self
 
     def with_name(self, name):
-        # type: (CHECK_SETTINGS_TYPE, Text)  -> CHECK_SETTINGS_TYPE
+        # type: (Text)  -> CheckSettings
         self.values.name = name
         return self
 
     def stitch_content(self, stitch_content=True):
-        # type: (CHECK_SETTINGS_TYPE, bool)  -> CHECK_SETTINGS_TYPE
+        # type: (bool)  -> CheckSettings
         self.values.stitch_content = stitch_content
         return self
 
     def timeout(self, timeout):
-        # type: (CHECK_SETTINGS_TYPE, int)  -> CHECK_SETTINGS_TYPE
+        # type: (int)  -> CheckSettings
         self.values.timeout = timeout
         return self
 
@@ -121,7 +120,7 @@ class CheckSettings(object):
         self.values.target_region = region
 
     def ignore_regions(self, *regions):
-        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
@@ -131,7 +130,7 @@ class CheckSettings(object):
     ignore = ignore_regions
 
     def layout_regions(self, *regions):
-        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more layout regions. """
         self.values.layout_regions = self.__regions(
             regions, method_name="layout_regions"
@@ -139,7 +138,7 @@ class CheckSettings(object):
         return self
 
     def strict_regions(self, *regions):
-        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more strict regions. """
         self.values.strict_regions = self.__regions(
             regions, method_name="strict_regions"
@@ -147,7 +146,7 @@ class CheckSettings(object):
         return self
 
     def content_regions(self, *regions):
-        # type: (CHECK_SETTINGS_TYPE, *REGION_VALUES)  -> CHECK_SETTINGS_TYPE
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more content regions. """
         self.values.content_regions = self.__regions(
             regions, method_name="content_regions"
@@ -155,14 +154,14 @@ class CheckSettings(object):
         return self
 
     def floating_region(
-        self,  # type: CHECK_SETTINGS_TYPE
+        self,
         arg1,  # type: Union[REGION_VALUES, int]
         arg2,  # type: Union[REGION_VALUES, int]
         arg3=None,  # type: Optional[int]
         arg4=None,  # type: Optional[int]
         arg5=None,  # type: Optional[int]
     ):
-        # type: (...) -> CHECK_SETTINGS_TYPE
+        # type: (...) -> CheckSettings
         """
         Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "
                 "max_left_offset, max_right_offset] are required parameters.
@@ -205,7 +204,7 @@ class CheckSettings(object):
     floating = floating_region
 
     def send_dom(self, send=True):
-        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
+        # type: (bool) -> CheckSettings
         """
          Defines whether to send the document DOM or not.
         """
@@ -213,7 +212,7 @@ class CheckSettings(object):
         return self
 
     def use_dom(self, use=True):
-        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
+        # type: (bool) -> CheckSettings
         """
          Defines useDom for enabling the match algorithm to use dom.
         """
@@ -221,7 +220,7 @@ class CheckSettings(object):
         return self
 
     def enable_patterns(self, enable=True):
-        # type: (CHECK_SETTINGS_TYPE, bool) -> CHECK_SETTINGS_TYPE
+        # type: (bool) -> CheckSettings
         self.values.enable_patterns = enable
         return self
 
