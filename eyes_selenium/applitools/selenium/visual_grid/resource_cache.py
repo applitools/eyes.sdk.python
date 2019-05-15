@@ -1,3 +1,4 @@
+import sys
 import threading
 import typing
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -20,7 +21,10 @@ lock = threading.RLock()
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __init__(self):
         self.cache_map = {}
-        self.executor = ThreadPoolExecutor(thread_name_prefix="ResourceCache-Executor")
+        kwargs = {}
+        if sys.version_info >= (3, 6):
+            kwargs["thread_name_prefix"] = "ResourceCache-Executor"
+        self.executor = ThreadPoolExecutor(**kwargs)
 
     def __str__(self):
         return str(self.cache_map)[:25]
