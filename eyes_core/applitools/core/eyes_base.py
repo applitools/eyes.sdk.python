@@ -121,7 +121,6 @@ class _EyesBaseAbstract(ABC):
 
 class EyesBase(_EyesBaseAbstract):
     MAX_ITERATION = 10
-    _config_provider = None
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
     _last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -134,6 +133,8 @@ class EyesBase(_EyesBaseAbstract):
     _render_info = None  # type: Optional[RenderingInfo]
     _render = False
     _cut_provider = None
+    _should_get_title = False  # type: bool
+
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -154,9 +155,8 @@ class EyesBase(_EyesBaseAbstract):
         Creates a new (possibly disabled) Eyes instance that
         interacts with the Eyes server.
         """
-        self.is_disabled = False
+        self._config_provider = Configuration()
         self._server_connector = ServerConnector()  # type: ServerConnector
-        self._should_get_title = False  # type: bool
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
 
