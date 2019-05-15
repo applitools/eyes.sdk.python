@@ -171,7 +171,7 @@ class Eyes(object):
         :return: None
         """
         # TODO: remove this disable
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
             return MatchResult()
         logger.debug("check_region_in_frame_by_selector('%s')" % tag)
@@ -226,6 +226,10 @@ class Eyes(object):
         :return: The test results.
         """
         return self._current_eyes.close(raise_ex)
+
+    def close_async(self):
+        if self._is_visual_grid_eyes:
+            self._current_eyes.close_async()
 
     def _init_driver(self, driver):
         # type: (AnyWebDriver) -> None

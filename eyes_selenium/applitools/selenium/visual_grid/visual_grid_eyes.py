@@ -64,7 +64,6 @@ class WebElementRegion(object):
 
 
 class VisualGridEyes(object):
-    is_disabled = False
     vg_manager = None  # type: VisualGridRunner
     _config_provider = None
     _is_opened = False
@@ -94,7 +93,7 @@ class VisualGridEyes(object):
 
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             return driver
         logger.open_()
         argument_guard.not_none(driver)
@@ -142,7 +141,7 @@ class VisualGridEyes(object):
 
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> bool
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             return False
         argument_guard.is_a(check_settings, CheckSettings)
         logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
@@ -181,16 +180,19 @@ class VisualGridEyes(object):
                 test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
 
+    def close_async(self):
+        for test in self.test_list:
+            test.close()
+
     def close(self, raise_ex=True):  # noqa
         # type: (Optional[bool]) -> List[TestResults]
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("close(): ignored (disabled)")
             return []
         if not self.test_list:
             return []
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
-        for test in self.test_list:
-            test.close()
+        self.close_async()
 
         while True:
             completed_states = [

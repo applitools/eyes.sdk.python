@@ -164,7 +164,7 @@ class SeleniumEyes(EyesBase):
 
     def open(self, driver):
         # type: (AnyWebDriver) -> EyesWebDriver
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("open(): ignored (disabled)")
             return driver
         self._driver = driver
@@ -431,7 +431,7 @@ class SeleniumEyes(EyesBase):
         :param action: Mouse action (click, double click etc.)
         :param element: The element on which the action was performed.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("add_mouse_trigger: Ignoring %s (disabled)" % action)
             return
         # Triggers are activated on the last checked window.
@@ -459,7 +459,7 @@ class SeleniumEyes(EyesBase):
         :param element: The element to which the text was sent.
         :param text: The trigger's text.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("add_text_trigger: Ignoring '%s' (disabled)" % text)
             return
         # Triggers are activated on the last checked window.

@@ -273,7 +273,7 @@ class EyesBase(_EyesBaseAbstract):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("close(): ignored (disabled)")
             return None
         try:
@@ -360,7 +360,7 @@ class EyesBase(_EyesBaseAbstract):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("abort_if_not_closed(): ignored (disabled)")
             return
         try:
@@ -403,7 +403,7 @@ class EyesBase(_EyesBaseAbstract):
         :raise EyesError: If the session was already open.
         """
         logger.open_()
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
 
@@ -451,7 +451,7 @@ class EyesBase(_EyesBaseAbstract):
             self._cut_provider = NullCutProvider()
 
     def _open_base(self):
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
         logger.open_()
@@ -615,7 +615,7 @@ class EyesBase(_EyesBaseAbstract):
         self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
         # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
-        if self.is_disabled:
+        if self.configuration.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             return MatchResult(as_expected=True)
 
