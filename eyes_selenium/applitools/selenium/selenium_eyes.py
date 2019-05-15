@@ -21,13 +21,13 @@ from applitools.core import (
     ContextBasedScaleProvider,
     EyesBase,
     FixedScaleProvider,
+    ImageProvider,
     MouseTrigger,
     NullScaleProvider,
     PositionProvider,
     RegionProvider,
     TextTrigger,
 )
-from applitools.core.capture import ImageProvider
 from applitools.selenium.capture.eyes_webdriver_screenshot import (
     EyesWebDriverScreenshotFactory,
 )
@@ -61,11 +61,10 @@ if typing.TYPE_CHECKING:
         ViewPort,
         AnyWebElement,
     )
-    from applitools.core import MatchWindowTask
-    from applitools.core.scaling import ScaleProvider
-    from .eyes import EyesWebElement
+    from applitools.core import MatchWindowTask, ScaleProvider
     from .frames import Frame
     from .fluent import SeleniumCheckSettings
+    from .eyes import Eyes
 
 
 class ScreenshotType(object):
