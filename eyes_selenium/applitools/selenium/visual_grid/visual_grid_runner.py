@@ -1,13 +1,20 @@
-import sys
 import concurrent
 import itertools
 import operator
+import sys
 import threading
 import typing
 from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
-from applitools.common import logger
+from applitools.common import (
+    DiffsFoundError,
+    EyesError,
+    NewTestError,
+    TestFailedError,
+    TestResultSummary,
+    logger,
+)
 from applitools.selenium.visual_grid.resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
@@ -87,18 +94,49 @@ class VisualGridRunner(object):
         self.executor.shutdown()
         self.thread.join()
 
-    # def get_all_test_results(self):
-    #     # type: () -> List[TestResults]
-    #     while not any(e.is_opened for e in self.all_eyes):
-    #         sleep(0.5)
-    #     return list(
-    #         itertools.chain.from_iterable(
-    #             test.test_result
-    #             for e in self.all_eyes
-    #             for test in e.test_list
-    #             if e.test_list
-    #         )
-    #     )
+    def process_test_list(self, test_list, raise_ex):
+        while True:
+            completed_states = [
+                test.state for test in test_list if test.state == "completed"
+            ]
+            if len(completed_states) == len(test_list):
+                break
+            sleep(0.5)
+        self.stop()
+        logger.close()
+
+        for test in test_list:
+            if test.pending_exceptions:
+                raise EyesError(
+                    "During test execution above exception raised. \n {}".join(
+                        test.pending_exceptions
+                    )
+                )
+        if raise_ex:
+            for test in test_list:
+                results = test.test_result
+                msg = "Test '{}' of '{}'. \n\tSee details at: {}".format(
+                    results.name, results.app_name, results.url
+                )
+                if results.is_unresolved and not results.is_new:
+                    raise DiffsFoundError(msg, results)
+                if results.is_new:
+                    raise NewTestError(msg, results)
+                if results.is_failed:
+                    raise TestFailedError(msg, results)
+        return test_list
+
+    def get_all_test_results(self, raise_ex=True):
+        # type: (bool) -> TestResultSummary
+        while not any(e.is_opened for e in self.all_eyes):
+            sleep(0.5)
+        test_list = self.process_test_list(
+            [test for e in self.all_eyes for test in e.test_list], raise_ex
+        )
+        for e in self.all_eyes:
+            e._is_opened = False
+        exceptions = [exp for t in test_list for exp in t.pending_exceptions]
+        return TestResultSummary([t.test_result for t in test_list], len(exceptions))
 
     @property
     def all_running_tests(self):

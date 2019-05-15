@@ -69,14 +69,14 @@ class VisualGridEyes(object):
     _is_opened = False
     _driver = None
     rendering_info = None
-    test_list = []  # type: List[RunningTest]
 
     def __init__(self, runner, config):
         # type: (VisualGridRunner, Eyes)-> None
-        self._elements = []
         self._config_provider = config
+        self._elements = []
         argument_guard.not_none(runner)
         self.vg_manager = runner
+        self.test_list = []  # type: List[RunningTest]
 
     @property
     def is_opened(self):
@@ -185,56 +185,21 @@ class VisualGridEyes(object):
             test.close()
 
     def close(self, raise_ex=True):  # noqa
-        # type: (Optional[bool]) -> List[TestResults]
+        # type: (Optional[bool]) -> Optional[TestResults]
         if self.configuration.is_disabled:
             logger.debug("close(): ignored (disabled)")
-            return []
+            return TestResults()
         if not self.test_list:
-            return []
+            return TestResults()
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
-
-        while True:
-            completed_states = [
-                test.state for test in self.test_list if test.state == "completed"
-            ]
-            if len(completed_states) == len(self.test_list):
-                break
-            sleep(0.5)
+        self.vg_manager.process_test_list(self.test_list, raise_ex)
         self._is_opened = False
-        self.vg_manager.stop()
-        logger.close()
 
-        for test in self.test_list:
-            if test.pending_exceptions:
-                raise EyesError(
-                    "During test execution above exception raised. \n {}".join(
-                        test.pending_exceptions
-                    )
-                )
-
-        if raise_ex:
-            for test in self.test_list:
-                results = test.test_result
-                msg = "Test '{}' of '{}'. \n\tSee details at: {}".format(
-                    results.name, results.app_name, results.url
-                )
-                if results.is_unresolved and not results.is_new:
-                    raise DiffsFoundError(msg, results)
-                if results.is_new:
-                    raise NewTestError(msg, results)
-                if results.is_failed:
-                    raise TestFailedError(msg, results)
-
-        failed_results = [
-            test.test_result
-            for test in self.test_list
-            if test.test_result.is_unresolved or test.test_result.is_failed
-        ]
-        return failed_results
-
-    def get_all_test_results(self):
-        return [test.test_result for test in self.test_list]
+        test_results = [t.test_result for t in self.test_list if t.test_result]
+        if not test_results:
+            return TestResults()
+        return test_results[0]
 
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector

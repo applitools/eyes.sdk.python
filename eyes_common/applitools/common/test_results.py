@@ -9,13 +9,13 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Any, Dict, Optional
+    from typing import Text, Any, Dict, Optional, List
 
     # TODO: Implement objects
     SessionUrls = Dict[Any, Any]
     StepInfo = Dict[Any, Any]
 
-__all__ = ("TestResults",)
+__all__ = ("TestResults", "TestResultSummary")
 
 
 class TestResultsStatus(Enum):
@@ -98,3 +98,30 @@ class TestResults(object):
         origin_str = super(TestResults, self).__str__()
         preamble = "New test" if self.is_new else "Existing test"
         return "{} [{}]".format(preamble, origin_str)
+
+
+@attr.s
+class TestResultSummary(object):
+    all_results = attr.ib()  # type: List[TestResults]
+    exceptions = attr.ib(default=0)
+
+    passed = attr.ib(init=False, default=0)
+    unresolved = attr.ib(init=False, default=0)
+    failed = attr.ib(init=False, default=0)
+    mismatches = attr.ib(init=False, default=0)
+    missing = attr.ib(init=False, default=0)
+    matches = attr.ib(init=False, default=0)
+
+    def __attrs_post_init__(self):
+        for result in self.all_results:
+            if result is None:
+                continue
+            if result.is_failed:
+                self.failed += 1
+            elif result.is_passed:
+                self.passed += 1
+            elif result.is_unresolved:
+                self.unresolved += 1
+            self.matches += result.matches
+            self.missing += result.missing
+            self.mismatches += result.mismatches
