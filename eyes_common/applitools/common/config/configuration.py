@@ -84,7 +84,7 @@ class Configuration(object):
     properties = attr.ib(factory=list)
     hide_scrollbars = attr.ib(default=False)
     match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT)
-    match_level = attr.ib(default=MatchLevel.STRICT)  # TODO add converter to enum
+    match_level = attr.ib(default=MatchLevel.STRICT, converter=MatchLevel)
     is_disabled = attr.ib(default=False)
     save_new_tests = attr.ib(default=True)
     save_failed_tests = attr.ib(default=False)

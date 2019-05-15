@@ -1,3 +1,4 @@
+import sys
 import concurrent
 import itertools
 import operator
@@ -24,9 +25,11 @@ class VisualGridRunner(object):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
         self.concurrent_sessions = concurrent_sessions
-        self.executor = ThreadPoolExecutor(
-            max_workers=concurrent_sessions, thread_name_prefix="VGR-Executor"
-        )
+        kwargs = {}
+        if sys.version_info >= (3, 6):
+            kwargs["thread_name_prefix"] = "VGR-Executor"
+
+        self.executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
         self._rendering_info = None  # type: Optional[RenderingInfo]
         self.resource_cache = ResourceCache()
         self.put_cache = ResourceCache()

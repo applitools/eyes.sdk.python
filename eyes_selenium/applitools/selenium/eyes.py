@@ -54,7 +54,6 @@ class Eyes(object):
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
-    _configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
 
     @property
     def configuration(self):
@@ -71,6 +70,8 @@ class Eyes(object):
 
     def __init__(self, runner=None):
         # type: (Optional[Any]) -> None
+        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+
         # backward compatibility with settings server_url
         if isinstance(runner, str):
             self.configuration.server_url = runner

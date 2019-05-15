@@ -9,7 +9,7 @@ from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import general_utils, image_utils
+from applitools.common.utils import image_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
@@ -67,28 +67,6 @@ def collect_regions_from_screenshot(
     )
     image_match_settings.floating = _collect_regions(  # type: ignore
         check_settings.values.floating_regions, screenshot, eyes
-    )
-    return image_match_settings
-
-
-def create_image_match_settings(check_settings, eyes):
-    # type: (CheckSettings, EyesBase) -> ImageMatchSettings
-    default = general_utils.use_default_if_none_factory(
-        eyes.configuration.default_match_settings, check_settings.values
-    )
-    match_level = default("match_level")
-    ignore_caret = default("ignore_caret")
-    send_dom = default("send_dom")
-    use_dom = default("use_dom")
-    enable_patterns = default("enable_patterns")
-
-    image_match_settings = ImageMatchSettings(
-        match_level=match_level,
-        exact=None,
-        ignore_caret=ignore_caret,
-        send_dom=send_dom,
-        use_dom=use_dom,
-        enable_patterns=enable_patterns,
     )
     return image_match_settings
 
@@ -292,12 +270,19 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        match_settings = create_image_match_settings(check_settings, self._eyes)
+        image_match_settings = ImageMatchSettings(
+            match_level=check_settings.values.match_level,
+            exact=None,
+            ignore_caret=check_settings.values.ignore_caret,
+            send_dom=check_settings.values.send_dom,
+            use_dom=check_settings.values.use_dom,
+            enable_patterns=check_settings.values.enable_patterns,
+        )
         self._match_result = self.perform_match(
             app_output,
             tag,
             ignore_mismatch,
-            match_settings,
+            image_match_settings,
             self._eyes,
             user_inputs,
             check_settings=check_settings,
