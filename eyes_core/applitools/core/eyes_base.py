@@ -22,7 +22,7 @@ from applitools.common.match import MatchResult
 from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
-from applitools.common.utils import ABC, argument_guard
+from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import NullCutProvider
@@ -671,17 +671,25 @@ class EyesBase(_EyesBaseAbstract):
         if check_settings:
             retry_timeout = check_settings.values.timeout
 
-        default_match_settings = self.configuration.default_match_settings
+        get_config_value = general_utils.use_default_if_none_factory(
+            self.configuration.default_match_settings, self.configuration
+        )
         # Set defaults if necessary
-        if check_settings:
-            if check_settings.values.match_level is None:
-                check_settings = check_settings.match_level(
-                    default_match_settings.match_level
-                )
-            if check_settings.values.ignore_caret is None:
-                check_settings = check_settings.ignore_caret(
-                    default_match_settings.ignore_caret
-                )
+        if check_settings.values.match_level is None:
+            check_settings = check_settings.match_level(get_config_value("match_level"))
+        if check_settings.values.ignore_caret is None:
+            check_settings = check_settings.ignore_caret(
+                get_config_value("ignore_caret")
+            )
+        if check_settings.values.send_dom is None:
+            check_settings = check_settings.ignore_caret(get_config_value("send_dom"))
+        if check_settings.values.use_dom is None:
+            check_settings = check_settings.ignore_caret(get_config_value("use_dom"))
+        if check_settings.values.enable_patterns is None:
+            check_settings = check_settings.ignore_caret(
+                get_config_value("enable_patterns")
+            )
+
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout))
 

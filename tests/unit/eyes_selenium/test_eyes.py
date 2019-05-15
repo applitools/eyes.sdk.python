@@ -33,11 +33,15 @@ def test_match_level(eyes):
     assert eyes.match_level == MatchLevel.STRICT
     eyes.match_level = MatchLevel.EXACT
     assert eyes.match_level == MatchLevel.EXACT
+    assert eyes.configuration.match_level == MatchLevel.EXACT
     eyes.match_level = MatchLevel.LAYOUT
     assert eyes.match_level == MatchLevel.LAYOUT
+    assert eyes.configuration.match_level == MatchLevel.LAYOUT
 
 
 def test_stitch_mode(eyes):
     assert eyes.stitch_mode == StitchMode.Scroll
+    assert eyes.configuration.stitch_mode == StitchMode.Scroll
     eyes.stitch_mode = StitchMode.CSS
     assert eyes.stitch_mode == StitchMode.CSS
+    assert eyes.configuration.stitch_mode == StitchMode.CSS
