@@ -47,13 +47,13 @@ __all__ = ("ServerConnector",)
 
 
 class _RequestCommunicator(object):
-    LONG_REQUEST_DELAY = 2  # seconds
-    MAX_LONG_REQUEST_DELAY = 10  # seconds
+    LONG_REQUEST_DELAY_SEC = 2
+    MAX_LONG_REQUEST_DELAY_SEC = 10
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
 
-    def __init__(self, timeout, headers, api_key, endpoint_uri):
+    def __init__(self, timeout_sec, headers, api_key, endpoint_uri):
         # type: (int, Dict, Text, Text) -> None
-        self.timeout = timeout
+        self.timeout_sec = timeout_sec
         self.headers = headers.copy()
         self.api_key = api_key
         self.endpoint_uri = endpoint_uri
@@ -68,7 +68,7 @@ class _RequestCommunicator(object):
             params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
         headers = kwargs.get("headers", self.headers)
-        timeout = kwargs.get("timeout", self.timeout)
+        timeout = kwargs.get("timeout", self.timeout_sec)
         response = method(
             url_resource,
             data=kwargs.get("data", None),
@@ -101,11 +101,11 @@ class _RequestCommunicator(object):
 
     @staticmethod
     def request_delay(
-        first_delay=LONG_REQUEST_DELAY,
+        first_delay=LONG_REQUEST_DELAY_SEC,
         step_factor=LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR,
-        max_delay=MAX_LONG_REQUEST_DELAY,
+        max_delay=MAX_LONG_REQUEST_DELAY_SEC,
     ):
-        delay = _RequestCommunicator.LONG_REQUEST_DELAY  # type: Num
+        delay = _RequestCommunicator.LONG_REQUEST_DELAY_SEC  # type: Num
         while True:
             yield delay
             time.sleep(first_delay)
@@ -148,10 +148,10 @@ def create_request_factory(headers):
         def __init__(self):
             self._com = None
 
-        def create(self, api_key, server_url, timeout):
+        def create(self, api_key, server_url, timeout_sec):
             # server_url could be updated
             self._com = _RequestCommunicator(
-                timeout, headers, api_key, endpoint_uri=server_url
+                timeout_sec, headers, api_key, endpoint_uri=server_url
             )
             return _Request(self._com)
 
@@ -193,7 +193,7 @@ class ServerConnector(object):
     RENDER = "/render"
 
     api_key = None
-    timeout = None
+    timeout_sec = None
     server_url = None  # type: Optional[Text]
     _is_session_started = False
     _request = None  # type: Optional[_Request]
@@ -214,13 +214,15 @@ class ServerConnector(object):
     def update_config(self, conf):
         self.server_url = conf.server_url
         self.api_key = conf.api_key
-        self.timeout = conf.timeout
+        self.timeout_sec = conf.timeout / 1000.0
 
         self._request = self._request_factory.create(
-            server_url=self.server_url, api_key=self.api_key, timeout=self.timeout
+            server_url=self.server_url,
+            api_key=self.api_key,
+            timeout_sec=self.timeout_sec,
         )
         self._render_request = self._request_factory.create(
-            server_url=self.server_url, api_key=None, timeout=self.timeout
+            server_url=self.server_url, api_key=None, timeout_sec=self.timeout_sec
         )
 
     @property
@@ -412,10 +414,10 @@ class ServerConnector(object):
         headers["Accept-Encoding"] = "identity"
 
         response = requests.get(
-            url, headers=headers, timeout=self.timeout, verify=False
+            url, headers=headers, timeout=self.timeout_sec, verify=False
         )
         if response.status_code == 406:
-            response = requests.get(url, timeout=self.timeout, verify=False)
+            response = requests.get(url, timeout=self.timeout_sec, verify=False)
         response.raise_for_status()
         return response
 
