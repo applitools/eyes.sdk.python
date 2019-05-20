@@ -129,7 +129,7 @@ class VisualGridEyes(object):
             "err.toString())})" % PROCESS_RESOURCES
         )
         for i in range(3):
-            sleep(self.configuration.wait_before_screenshots)
+            sleep(self.configuration.wait_before_screenshots / 1000.0)
             logger.debug("Capturing script_result ({} - try)".format(i))
             try:
                 script_result = self.driver.execute_async_script(dom_capt_script)

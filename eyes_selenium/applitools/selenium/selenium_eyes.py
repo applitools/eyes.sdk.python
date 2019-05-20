@@ -752,7 +752,7 @@ class SeleniumEyes(EyesBase):
         logger.info("Viewport screenshot requested")
         self._ensure_element_visible(self._target_element)
 
-        sleep(self.configuration.wait_before_screenshots)
+        sleep(self.configuration.wait_before_screenshots / 1000.0)
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
         scale_provider.update_scale_ratio(image.width)

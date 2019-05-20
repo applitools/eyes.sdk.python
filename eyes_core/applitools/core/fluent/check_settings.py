@@ -29,7 +29,7 @@ class CheckSettingsValues(object):
     """
 
     target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
-    timeout = attr.ib(init=False, default=-1)  # type: Num  # seconds
+    timeout = attr.ib(init=False, default=-1)  # type: Num  # milliseconds
 
     ignore_caret = attr.ib(init=False, default=False)  # type: bool
     stitch_content = attr.ib(init=False, default=False)  # type: bool

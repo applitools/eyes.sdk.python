@@ -240,8 +240,8 @@ def test_get_api_key_if_not_settled(connector, monkeypatch):
 
 def test_set_get_timeout(connector):
     # type: (ServerConnector) -> None
-    connector.timeout = 100
-    assert connector.timeout == 100
+    connector.timeout_sec = 100
+    assert connector.timeout_sec == 100
 
 
 def test_is_session_started_True(started_connector):
@@ -296,6 +296,7 @@ def test_stop_session(started_connector):
 
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
+    new_timeout_sec = new_timeout / 1000.0
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
     conf = Configuration(
@@ -310,7 +311,7 @@ def test_request_with_changed_values(configured_connector):
         ):
             configured_connector.start_session(SESSION_START_INFO_OBJ)
 
-    assert mocked_post.call_args[1]["timeout"] == new_timeout
+    assert mocked_post.call_args[1]["timeout"] == new_timeout_sec
     assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
     assert new_server_url in mocked_post.call_args[0][0]
 

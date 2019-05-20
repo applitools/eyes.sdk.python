@@ -77,13 +77,13 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    MATCH_INTERVAL = 0.5  # sec
+    MATCH_INTERVAL_SEC = 0.5
 
     def __init__(
         self,
         server_connector,  # type: ServerConnector
         running_session,  # type: RunningSession
-        retry_timeout,  # type: Num
+        retry_timeout_ms,  # type: Num
         eyes,  # type: EyesBase
         app_output_provider=None,  # type: Optional[AppOutputProvider]
     ):
@@ -93,7 +93,7 @@ class MatchWindowTask(object):
 
         :param server_connector: The agent connector to use for communication.
         :param running_session:  The current eyes session.
-        :param retry_timeout: The default match timeout. (milliseconds)
+        :param retry_timeout_ms: The default match timeout. (milliseconds)
         :param eyes: The Eyes instance which created this task.
         :param app_output_provider: A callback for getting the application output
                                     when performing match.
@@ -102,9 +102,7 @@ class MatchWindowTask(object):
         self._running_session = running_session
         self._eyes = eyes
         self._app_output_provider = app_output_provider
-        self._default_retry_timeout = (
-            retry_timeout / 1000.0
-        )  # type: Num # since we want the time in seconds.
+        self._default_retry_timeout_ms = retry_timeout_ms  # type: Num
 
         self._match_result = None  # type: MatchResult
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -125,12 +123,13 @@ class MatchWindowTask(object):
         should_run_once_on_timeout,  # type: bool
         ignore_mismatch,  # type: bool
         check_settings,  # type: CheckSettings
-        retry_timeout,  # type: Num
+        retry_timeout_ms,  # type: Num
     ):
-        if retry_timeout is None or retry_timeout < 0:
-            retry_timeout = self._default_retry_timeout
-        logger.debug("retry_timeout = {} sec".format(retry_timeout))
+        if retry_timeout_ms is None or retry_timeout_ms < 0:
+            retry_timeout_ms = self._default_retry_timeout_ms
+        logger.debug("retry_timeout = {} ms".format(retry_timeout_ms))
 
+        retry_timeout_sec = retry_timeout_ms / 1000.0
         screenshot = self._take_screenshot(
             user_inputs,
             region,
@@ -138,7 +137,7 @@ class MatchWindowTask(object):
             should_run_once_on_timeout,
             ignore_mismatch,
             check_settings,
-            retry_timeout,
+            retry_timeout_sec,
         )
         if ignore_mismatch:
             return self._match_result
@@ -241,26 +240,29 @@ class MatchWindowTask(object):
         should_run_once_on_timeout,
         ignore_mismatch,
         check_settings,
-        retry_timeout,
+        retry_timeout_sec,
     ):
         time_start = datetime.now()
-        if retry_timeout == 0 or should_run_once_on_timeout:
+        if retry_timeout_sec == 0 or should_run_once_on_timeout:
             if should_run_once_on_timeout:
-                time.sleep(retry_timeout)
+                time.sleep(retry_timeout_sec)
 
             screenshot = self._try_take_screenshot(
                 user_inputs, region, tag, ignore_mismatch, check_settings
             )
         else:
             screenshot = self._retry_taking_screenshot(
-                user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
+                user_inputs,
+                region,
+                tag,
+                ignore_mismatch,
+                check_settings,
+                retry_timeout_sec,
             )
         time_end = datetime.now()
-        summary = time_end - time_start
+        summary_ms = (time_end - time_start).seconds * 1000
         logger.debug(
-            "MatchWindowTask._take_screenshot completed in {} ms".format(
-                summary.microseconds
-            )
+            "MatchWindowTask._take_screenshot completed in {} ms".format(summary_ms)
         )
         return screenshot
 
@@ -290,7 +292,13 @@ class MatchWindowTask(object):
         return app_output.screenshot
 
     def _retry_taking_screenshot(
-        self, user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
+        self,
+        user_inputs,
+        region,
+        tag,
+        ignore_mismatch,
+        check_settings,
+        retry_timeout_sec,
     ):
         start = datetime.now()  # Start the retry timer.
         retry = (datetime.now() - start).seconds
@@ -302,7 +310,7 @@ class MatchWindowTask(object):
             tag,
             ignore_mismatch,
             check_settings,
-            retry_timeout,
+            retry_timeout_sec,
             retry,
             start,
         )
@@ -320,15 +328,15 @@ class MatchWindowTask(object):
         tag,
         ignore_mismatch,
         check_settings,
-        retry_timeout,
-        retry,
+        retry_timeout_sec,
+        retry_sec,
         start,
         screenshot=None,
     ):
-        if retry >= retry_timeout:
+        if retry_sec >= retry_timeout_sec:
             return screenshot
 
-        time.sleep(self.MATCH_INTERVAL)
+        time.sleep(self.MATCH_INTERVAL_SEC)
 
         new_screenshot = self._try_take_screenshot(
             user_inputs,
@@ -340,15 +348,15 @@ class MatchWindowTask(object):
         if self._match_result.as_expected:
             return new_screenshot
 
-        retry = (start - datetime.now()).seconds
+        retry_sec = (start - datetime.now()).seconds
         return self._taking_screenshot_loop(
             user_inputs,
             region,
             tag,
             ignore_mismatch,
             check_settings,
-            retry_timeout,
-            retry,
+            retry_timeout_sec,
+            retry_sec,
             start,
             new_screenshot,
         )

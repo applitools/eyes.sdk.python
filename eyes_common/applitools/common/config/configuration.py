@@ -13,8 +13,8 @@ from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Configuration")
 
-MINIMUM_MATCH_TIMEOUT = 0.6  # seconds
-DEFAULT_TIMEOUT = 60 * 5  # seconds
+MINIMUM_MATCH_TIMEOUT_MS = 600
+DEFAULT_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
@@ -54,7 +54,7 @@ def _to_rectangle(d):
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT = 2  # sec
+    DEFAULT_MATCH_TIMEOUT_MS = 2000
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
@@ -83,7 +83,7 @@ class Configuration(object):
     host_os = attr.ib(default=None)
     properties = attr.ib(factory=list)
     hide_scrollbars = attr.ib(default=False)
-    match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT)
+    match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT_MS)  # ms
     match_level = attr.ib(default=MatchLevel.STRICT, converter=MatchLevel)
     is_disabled = attr.ib(default=False)
     save_new_tests = attr.ib(default=True)
@@ -96,15 +96,16 @@ class Configuration(object):
     default_match_settings = attr.ib(default=ImageMatchSettings())
     hide_caret = attr.ib(init=False, default=None)
     stitching_overlap = attr.ib(init=False, default=50)
+
     api_key = attr.ib(factory=lambda: os.environ.get("APPLITOOLS_API_KEY", None))
     server_url = attr.ib(default=DEFAULT_SERVER_URL)
-    timeout = attr.ib(default=DEFAULT_TIMEOUT)
+    timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # ms
 
     @match_timeout.validator
     def validate1(self, attribute, value):
-        if 0 < value < MINIMUM_MATCH_TIMEOUT:
+        if 0 < value < MINIMUM_MATCH_TIMEOUT_MS:
             raise ValueError(
-                "Match timeout must be at least {} sec.".format(MINIMUM_MATCH_TIMEOUT)
+                "Match timeout must be at least {} ms.".format(MINIMUM_MATCH_TIMEOUT_MS)
             )
 
     @viewport_size.validator
