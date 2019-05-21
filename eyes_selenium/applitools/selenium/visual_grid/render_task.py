@@ -39,6 +39,7 @@ class RenderTask(VGTask):
     region_selectors = attr.ib(hash=False, factory=list)
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)
+    agent_id = attr.ib(hash=False, default=None)
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
@@ -149,6 +150,7 @@ class RenderTask(VGTask):
         )
         return RenderRequest(
             webhook=self.rendering_info.results_url,
+            agent_id=self.agent_id,
             url=base_url,
             dom=dom,
             resources=self.request_resources,
