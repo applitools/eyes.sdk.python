@@ -1,5 +1,5 @@
 Eyes Selenium Python SDK
-=============
+========================
 
 Applitools Eyes SDK For Selenium Python WebDriver
 
