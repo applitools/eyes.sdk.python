@@ -96,7 +96,7 @@ _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
-_SLEEP = 1  # sec
+_SLEEP_SEC = 1
 _RETRIES = 3
 
 
@@ -216,7 +216,7 @@ def set_browser_size(driver, required_size):
     while True:
         logger.info("Trying to set browser size to: " + str(required_size))
         set_window_size(driver, required_size)
-        time.sleep(_SLEEP)
+        time.sleep(_SLEEP_SEC)
         current_size = get_window_size(driver)
         logger.info("Current browser size: " + str(required_size))
 

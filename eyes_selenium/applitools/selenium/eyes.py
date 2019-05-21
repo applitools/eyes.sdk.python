@@ -110,14 +110,14 @@ class Eyes(object):
         return self._current_eyes.check(name, check_settings)
 
     def check_window(
-        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT
+        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS
     ):
         # type: (Optional[Text], int) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected output.
 
         :param tag: An optional tag to be associated with the snapshot.
-        :param match_timeout:  The amount of time to retry matching (seconds)
+        :param match_timeout:  The amount of time to retry matching (milliseconds)
         :return: The match results.
         """
         logger.debug("check_window('%s')" % tag)
@@ -127,7 +127,7 @@ class Eyes(object):
         self,
         region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
         tag=None,  # type: Optional[Text]
-        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT,  # type: int
+        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS,  # type: int
         stitch_content=False,  # type: bool
     ):
         # type: (...) -> MatchResult
@@ -140,7 +140,7 @@ class Eyes(object):
                        relative to the viewport of the current frame.
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint
-                              (seconds).
+                              (milliseconds).
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: The match results.
         """
@@ -166,7 +166,7 @@ class Eyes(object):
         :param region: Specifying the region to check inside the frame.
         :param tag: Description of the visual validation checkpoint.
         :param match_timeout: Timeout for the visual validation checkpoint
-                              (seconds).
+                              (milliseconds).
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: None
         """

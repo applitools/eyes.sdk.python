@@ -1,19 +1,19 @@
-Eyes Core Python SDK
-=============
+Eyes Common Python SDK
+======================
 
-Applitools Eyes Core SDK For Python
+Applitools Eyes Common SDK For Python
 
 
 Installation
 ------------
 
-Install the eyes-core SDK.
+Install the eyes-common SDK.
 
 ::
 
-    pip install eyes-core
+    pip install eyes-common
 
 Usage
 -----
 
-It could be used to create own Appltiools SDK
+It could be used to create own Applitools SDK

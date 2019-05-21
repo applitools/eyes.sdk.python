@@ -1,5 +1,5 @@
 Eyes Images Python SDK
-=============
+======================
 
 Applitools Eyes Images SDK For Python
 
@@ -16,4 +16,4 @@ Install the eyes-images SDK.
 Usage
 -----
 
-It could be used to create own Appltiools SDK
+It could be used to create own Applitools SDK
