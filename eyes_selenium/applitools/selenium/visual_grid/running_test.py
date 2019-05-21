@@ -218,6 +218,7 @@ class RunningTest(object):
             region_selectors=region_selectors,
             size_mode=size_mode,
             region_to_check=region_to_check,
+            agent_id=self.eyes.base_agent_id,
         )
         logger.debug("RunningTest %s" % render_task.name)
 

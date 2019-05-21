@@ -247,6 +247,7 @@ class VGResource(object):
 @attr.s
 class RenderRequest(object):
     webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
+    agent_id = attr.ib(metadata={JsonInclude.THIS: True})
     url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict

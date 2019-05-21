@@ -494,8 +494,8 @@ class EyesBase(_EyesBaseAbstract):
         logger.debug(
             "Eyes server URL is '{}'".format(self._server_connector.server_url)
         )
-        logger.debug("Timeout = {} sec".format(self.configuration.timeout))
-        logger.debug("match_timeout = {} sec".format(self.configuration.match_timeout))
+        logger.debug("Timeout = {} ms".format(self.configuration.timeout))
+        logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(
                 self.configuration.default_match_settings
@@ -667,9 +667,9 @@ class EyesBase(_EyesBaseAbstract):
     def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
         # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
-        retry_timeout = -1  # type: Num
+        retry_timeout_ms = -1  # type: Num
         if check_settings:
-            retry_timeout = check_settings.values.timeout
+            retry_timeout_ms = check_settings.values.timeout
 
         get_config_value = general_utils.use_default_if_none_factory(
             self.configuration.default_match_settings, self.configuration
@@ -691,7 +691,7 @@ class EyesBase(_EyesBaseAbstract):
             )
 
         region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout))
+        logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout_ms))
 
         result = self._match_window_task.match_window(
             self._user_inputs,
@@ -700,7 +700,7 @@ class EyesBase(_EyesBaseAbstract):
             self._should_match_once_on_timeout,
             ignore_mismatch,
             check_settings,
-            retry_timeout,
+            retry_timeout_ms,
         )
         return result
 

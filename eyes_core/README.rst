@@ -1,5 +1,5 @@
 Eyes Core Python SDK
-=============
+====================
 
 Applitools Eyes Core SDK For Python
 
@@ -16,4 +16,4 @@ Install the eyes-core SDK.
 Usage
 -----
 
-It could be used to create own Appltiools SDK
+It could be used to create own Applitools SDK
