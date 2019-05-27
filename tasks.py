@@ -201,6 +201,7 @@ def move_js_resources_to(pack):
     paths = [
         "dom-capture/dist/captureDom.js",
         "dom-snapshot/dist/processPage.js",
+        "dom-snapshot/dist/processPageAndPoll.js",
         "dom-snapshot/dist/processPageAndSerialize.js",
     ]
     node_resources = path.join(pack, "applitools/selenium/resources/")

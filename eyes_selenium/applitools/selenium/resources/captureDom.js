@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@7.0.8
+// @applitools/dom-snapshot@7.0.10
 function __captureDom() {
   var captureDom = (function () {
   'use strict';
