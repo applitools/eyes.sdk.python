@@ -1,9 +1,25 @@
 import pytest
+from mock import patch
 
 from applitools.common import MatchLevel, StitchMode
 from applitools.core import NullScaleProvider
 from applitools.selenium import Eyes
 from applitools.selenium.visual_grid import VisualGridRunner
+
+
+def get_start_session_info_from_open(eyes, driver):
+    eyes.api_key = "Some API KEY"
+    eyes._is_viewport_size_set = True
+
+    with patch(
+        "applitools.core.server_connector.ServerConnector.start_session"
+    ) as start_session:
+        with patch(
+            "applitools.core.eyes_base.EyesBase._EyesBase__ensure_viewport_size"
+        ):
+            eyes.open(driver, "TestApp", "TestName")
+    session_start_info = start_session.call_args_list[0][0][0]
+    return session_start_info
 
 
 def pytest_generate_tests(metafunc):
@@ -59,3 +75,33 @@ def test_config_overwriting(eyes):
     eyes2.configuration.host_app = "Other Host2"
     assert eyes.host_app != eyes2.host_app
     assert eyes.configuration.host_app != eyes2.configuration.host_app
+
+
+def test_baseline_name(eyes, driver_mock):
+    eyes.baseline_branch_name = "Baseline"
+    assert eyes.baseline_branch_name == "Baseline"
+    assert eyes.configuration.baseline_branch_name == "Baseline"
+
+    if not eyes._visual_grid_eyes:
+        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        assert session_info.baseline_branch_name == "Baseline"
+
+
+def test_branch_name(eyes, driver_mock):
+    eyes.branch_name = "Branch"
+    assert eyes.branch_name == "Branch"
+    assert eyes.configuration.branch_name == "Branch"
+
+    if not eyes._visual_grid_eyes:
+        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        assert session_info.branch_name == "Branch"
+
+
+def test_baseline_env_name(eyes, driver_mock):
+    eyes.baseline_env_name = "Baseline Env"
+    assert eyes.baseline_env_name == "Baseline Env"
+    assert eyes.configuration.baseline_env_name == "Baseline Env"
+
+    if not eyes._visual_grid_eyes:
+        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        assert session_info.baseline_env_name == "Baseline Env"
