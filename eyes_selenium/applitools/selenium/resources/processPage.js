@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@1.1.5
+// @applitools/dom-snapshot@1.2.4
 function __processPage() {
   var processPage = (function () {
   'use strict';
@@ -17,6 +17,10 @@ function __processPage() {
       srcEl.getAttribute('src'),
     );
 
+    const hrefUrls = [...doc.querySelectorAll('image')]
+      .map(hrefEl => hrefEl.getAttribute('href') || hrefEl.getAttribute('xlink:href'))
+      .filter(Boolean);
+
     const cssUrls = [...doc.querySelectorAll('link[rel="stylesheet"]')].map(link =>
       link.getAttribute('href'),
     );
@@ -25,7 +29,7 @@ function __processPage() {
       videoEl.getAttribute('poster'),
     );
 
-    return [...srcsetUrls, ...srcUrls, ...cssUrls, ...videoPosterUrls];
+    return [...srcsetUrls, ...srcUrls, ...hrefUrls, ...cssUrls, ...videoPosterUrls];
   }
 
   var extractLinks_1 = extractLinks;
@@ -64,21 +68,20 @@ function __processPage() {
     }
 
     function elementNodeFactory(domNodes, elementNode) {
-      let node;
+      let node, manualChildNodeIndexes;
       const {nodeType} = elementNode;
       if ([NODE_TYPES.ELEMENT, NODE_TYPES.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
         if (elementNode.nodeName !== 'SCRIPT') {
           if (
             elementNode.nodeName === 'STYLE' &&
-            !elementNode.textContent &&
             elementNode.sheet &&
             elementNode.sheet.cssRules.length
           ) {
-            elementNode.appendChild(
-              docNode.createTextNode(
-                [...elementNode.sheet.cssRules].map(rule => rule.cssText).join(''),
-              ),
-            );
+            domNodes.push({
+              nodeType: NODE_TYPES.TEXT,
+              nodeValue: [...elementNode.sheet.cssRules].map(rule => rule.cssText).join(''),
+            });
+            manualChildNodeIndexes = [domNodes.length - 1];
           }
 
           node = {
@@ -90,16 +93,24 @@ function __processPage() {
 
               if (/^blob:/.test(value)) {
                 value = value.replace(/^blob:/, '');
+              } else if (
+                elementNode.nodeName === 'IFRAME' &&
+                name === 'src' &&
+                !elementNode.contentDocument &&
+                !value.match(/^\s*data:/)
+              ) {
+                value = '';
               }
-
               return {
                 name,
                 value,
               };
             }),
-            childNodeIndexes: elementNode.childNodes.length
-              ? childrenFactory(domNodes, elementNode.childNodes)
-              : [],
+            childNodeIndexes:
+              manualChildNodeIndexes ||
+              (elementNode.childNodes.length
+                ? childrenFactory(domNodes, elementNode.childNodes)
+                : []),
           };
 
           if (elementNode.shadowRoot) {
