@@ -30,7 +30,7 @@ class RenderTask(VGTask):
     MAX_FAILS_COUNT = 5
     MAX_ITERATIONS = 100
 
-    script = attr.ib(repr=False)
+    script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     running_test = attr.ib()  # type: RunningTest
     resource_cache = attr.ib(hash=False, repr=False)
     put_cache = attr.ib(hash=False, repr=False)
@@ -39,7 +39,7 @@ class RenderTask(VGTask):
     region_selectors = attr.ib(hash=False, factory=list)
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)
-    agent_id = attr.ib(hash=False, default=None)
+    agent_id = attr.ib(default=None)
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
@@ -59,7 +59,7 @@ class RenderTask(VGTask):
             return resource
 
         requests = []
-        rq = self.prepare_data_for_rg(self.script_data)
+        rq = self.prepare_data_for_rg(self.script)
         requests.append(rq)
         fetch_fails = 0
         render_requests = None
@@ -106,11 +106,6 @@ class RenderTask(VGTask):
                 )
             )
         return statuses[0]
-
-    @property
-    def script_data(self):
-        # type: () -> Dict[str, Any]
-        return json.loads(self.script, object_pairs_hook=OrderedDict)
 
     def prepare_data_for_rg(self, data):
         # type: (Dict) -> RenderRequest

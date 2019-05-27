@@ -157,7 +157,7 @@ class RunningTest(object):
         self,
         tag,  # type: Text
         check_settings,  # type: SeleniumCheckSettings
-        script_result,  # type: Text
+        script_result,  # type: Dict[str, Any]
         visual_grid_manager,  # type: VisualGridRunner
         region_selectors,
         size_mode,
@@ -204,7 +204,7 @@ class RunningTest(object):
         size_mode,
         region_to_check,
     ):
-        # type: (Text,Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
+        # type: (Dict[str, Any],Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(
                 self.configuration.short_description, tag

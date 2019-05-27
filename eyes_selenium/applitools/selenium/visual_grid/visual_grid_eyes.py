@@ -1,18 +1,12 @@
+import json
+import threading
 import typing
+from collections import OrderedDict
 from itertools import chain
-from time import sleep
 
 import attr
-from selenium.common.exceptions import WebDriverException
 
-from applitools.common import (
-    DiffsFoundError,
-    EyesError,
-    NewTestError,
-    TestFailedError,
-    TestResults,
-    logger,
-)
+from applitools.common import EyesError, TestFailedError, TestResults, logger
 from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
@@ -24,9 +18,9 @@ from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Union, Optional
+    from typing import List, Text, Union, Optional, Dict
     from applitools.common.config import SeleniumConfiguration
-    from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
+    from applitools.common.utils.custom_types import AnyWebElement
     from applitools.selenium import Eyes, EyesWebDriver
 
 
@@ -50,7 +44,8 @@ el = parent;
 return '/' + xpath;"""
 
 
-PROCESS_RESOURCES = resource.get_resource("processPageAndSerialize.js")
+PROCESS_RESOURCES = resource.get_resource("processPageAndPoll.js")
+DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
 @attr.s
@@ -69,6 +64,7 @@ class VisualGridEyes(object):
     _is_opened = False
     _driver = None
     rendering_info = None
+    is_check_timer_timeout = False
 
     def __init__(self, runner, config):
         # type: (VisualGridRunner, Eyes)-> None
@@ -122,21 +118,39 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
+    def _start_timer(self):
+        def set_timer():
+            self.is_check_timer_timeout = True
+
+        timer = threading.Timer(DOM_EXTRACTION_TIMEOUT, set_timer)
+        timer.daemon = True
+        timer.setName("VG_StopWatch")
+        timer.start()
+        return timer
+
     def get_script_result(self):
-        dom_capt_script = (
-            "var callback = arguments[arguments.length - 1]; return (%s)().then("
-            "JSON.stringify).then(callback, function(err) {callback(err.stack || "
-            "err.toString())})" % PROCESS_RESOURCES
-        )
-        for i in range(3):
-            sleep(self.configuration.wait_before_screenshots / 1000.0)
-            logger.debug("Capturing script_result ({} - try)".format(i))
-            try:
-                script_result = self.driver.execute_async_script(dom_capt_script)
+        # type: () -> Dict
+        script_response = {}
+        status = None
+        timer = self._start_timer()
+        while True:
+            if status == "SUCCESS" or self.is_check_timer_timeout:
+                self.is_check_timer_timeout = False
                 break
-            except WebDriverException:
-                logger.exception("During querying of script result got error")
-                script_result = self.get_script_result()
+            script_result_string = self.driver.execute_script(
+                PROCESS_RESOURCES + "return __processPageAndPoll();"
+            )
+            try:
+                script_response = json.loads(
+                    script_result_string, object_pairs_hook=OrderedDict
+                )
+                status = script_response.get("status")
+            except Exception as e:
+                logger.exception(e)
+        timer.cancel()
+        script_result = script_response.get("value")
+        if script_result is None or status == "ERROR":
+            raise EyesError("Failed to capture script_result")
         return script_result
 
     def check(self, name, check_settings):

@@ -229,7 +229,9 @@ class Eyes(object):
 
     def close_async(self):
         if self._is_visual_grid_eyes:
-            self._current_eyes.close_async()
+            self._visual_grid_eyes.close_async()
+        else:
+            self._selenium_eyes.close(False)
 
     def _init_driver(self, driver):
         # type: (AnyWebDriver) -> None
