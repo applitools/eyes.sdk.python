@@ -6,15 +6,15 @@ from __future__ import absolute_import
 import base64
 import io
 import math
-import typing as tp
 
 from PIL import Image
 
 from applitools.common import logger
+from applitools.common.geometry import Region
 from applitools.common.errors import EyesError
 
-if tp.TYPE_CHECKING:
-    from applitools.common.geometry import Region
+from . import argument_guard
+
 
 __all__ = (
     "image_from_file",
@@ -118,6 +118,9 @@ def save_image(image, filename):
 
 
 def crop_image(image, region_to_crop):
+    argument_guard.is_a(image, Image.Image)
+    argument_guard.is_a(region_to_crop, Region)
+
     image_region = Region.from_(image)
     image_region.intersect(region_to_crop)
     if image_region.is_size_empty:
@@ -130,7 +133,7 @@ def crop_image(image, region_to_crop):
     if image_region != region_to_crop:
         logger.warning("requested cropped area overflows image boundaries.")
 
-    cropped_image = image.cut(
+    cropped_image = image.crop(
         box=(
             image_region.left,
             image_region.top,
