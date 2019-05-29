@@ -5,7 +5,7 @@ from datetime import datetime
 
 import attr
 
-from applitools.common.utils import iteritems
+from .compat import iteritems
 
 
 def to_json(val):
