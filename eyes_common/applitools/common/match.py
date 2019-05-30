@@ -97,6 +97,7 @@ class ImageMatchSettings(object):
     send_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})
     use_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})
     enable_patterns = attr.ib(default=False, metadata={JsonInclude.THIS: True})
+    ignore_displacement = attr.ib(default=False, metadata={JsonInclude.THIS: True})
 
     ignore = attr.ib(
         factory=list, type=typing.List[Region], metadata={JsonInclude.THIS: True}
