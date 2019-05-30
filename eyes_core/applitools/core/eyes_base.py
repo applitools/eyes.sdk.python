@@ -703,6 +703,10 @@ class EyesBase(_EyesBaseAbstract):
             check_settings = check_settings.ignore_caret(
                 get_config_value("enable_patterns")
             )
+        if check_settings.values.ignore_displacement is None:
+            check_settings = check_settings.ignore_displacement(
+                self.configuration.default_match_settings.ignore_displacement
+            )
 
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout_ms))

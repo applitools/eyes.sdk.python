@@ -279,6 +279,7 @@ class MatchWindowTask(object):
             send_dom=check_settings.values.send_dom,
             use_dom=check_settings.values.use_dom,
             enable_patterns=check_settings.values.enable_patterns,
+            ignore_displacement=check_settings.values.ignore_displacement,
         )
         self._match_result = self.perform_match(
             app_output,
