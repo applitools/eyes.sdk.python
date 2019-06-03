@@ -110,7 +110,7 @@ class SeleniumCheckSettings(CheckSettings):
     def region(self, region):
         # type: (Union[Region, Text, List, Tuple, WebElement, EyesWebElement]) -> CheckSettings
         if isinstance(region, Region):
-            self.update_target_region(region)
+            self.values.target_region = region
         elif is_list_or_tuple(region):
             by, value = region
             self.values.target_selector = _css_selector_from_(by, value)
@@ -168,7 +168,7 @@ class SeleniumCheckSettings(CheckSettings):
         if isinstance(element_or_selector, basestring):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
-            self._set_scrool_root_element(element_or_selector)
+            self._set_scroll_root_element(element_or_selector)
 
     def _floating_provider_from(self, region, bounds):
         if is_webelement(region):

@@ -47,11 +47,6 @@ class BatchInfo(object):
         self.id = value
 
 
-def _to_rectangle(d):
-    # type: (dict) -> RectangleSize
-    return RectangleSize.from_(d)
-
-
 @attr.s
 class Configuration(object):
     DEFAULT_MATCH_TIMEOUT_MS = 2000
@@ -73,7 +68,7 @@ class Configuration(object):
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     viewport_size = attr.ib(
-        default=None, converter=attr.converters.optional(_to_rectangle)
+        default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]

@@ -117,10 +117,6 @@ class CheckSettings(object):
         self.values.timeout = timeout
         return self
 
-    def update_target_region(self, region):
-        # type: (Region)  -> None
-        self.values.target_region = region
-
     def ignore_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more ignore regions. """
