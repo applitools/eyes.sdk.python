@@ -1,13 +1,16 @@
+import json
+
 import pytest
 from mock import patch
 
-from applitools.common import MatchLevel, StitchMode
+from applitools.common import MatchLevel, StitchMode, BatchInfo
+from applitools.common.utils import json_utils
 from applitools.core import NullScaleProvider
 from applitools.selenium import Eyes
 from applitools.selenium.visual_grid import VisualGridRunner
 
 
-def get_start_session_info_from_open(eyes, driver):
+def open_and_get_start_session_info(eyes, driver):
     eyes.api_key = "Some API KEY"
     eyes._is_viewport_size_set = True
 
@@ -83,7 +86,7 @@ def test_baseline_name(eyes, driver_mock):
     assert eyes.configuration.baseline_branch_name == "Baseline"
 
     if not eyes._visual_grid_eyes:
-        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        session_info = open_and_get_start_session_info(eyes, driver_mock)
         assert session_info.baseline_branch_name == "Baseline"
 
 
@@ -93,7 +96,7 @@ def test_branch_name(eyes, driver_mock):
     assert eyes.configuration.branch_name == "Branch"
 
     if not eyes._visual_grid_eyes:
-        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        session_info = open_and_get_start_session_info(eyes, driver_mock)
         assert session_info.branch_name == "Branch"
 
 
@@ -103,5 +106,16 @@ def test_baseline_env_name(eyes, driver_mock):
     assert eyes.configuration.baseline_env_name == "Baseline Env"
 
     if not eyes._visual_grid_eyes:
-        session_info = get_start_session_info_from_open(eyes, driver_mock)
+        session_info = open_and_get_start_session_info(eyes, driver_mock)
         assert session_info.baseline_env_name == "Baseline Env"
+
+
+def test_batch_info_sequence_name(eyes, driver_mock):
+    eyes.batch = BatchInfo("Batch Info")
+    eyes.batch.sequence_name = "Sequence"
+
+    if not eyes._visual_grid_eyes:
+        session_info = open_and_get_start_session_info(eyes, driver_mock)
+        info_json = json_utils.to_json(session_info)
+        batch_info = json.loads(info_json)["startInfo"]["batchInfo"]
+        assert batch_info["batchSequenceName"] == "Sequence"

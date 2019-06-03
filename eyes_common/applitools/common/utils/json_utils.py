@@ -63,9 +63,21 @@ def attr_from_response(response, cls):
     return attr_from_json(response.text, cls)
 
 
+# Uses for replacing of regular attr.name to specified in metadata
+REPLACE_TO_DICT = dict()
+
+
 class _CamelCasedDict(dict):
     def __setitem__(self, key, value):
-        key = underscore_to_camelcase(key)
+        if key in REPLACE_TO_DICT:
+            # use key specified in metadata
+            old_key = key
+            key = REPLACE_TO_DICT[old_key]
+            del REPLACE_TO_DICT[old_key]
+        else:
+            # convert key into camel case format
+            key = underscore_to_camelcase(key)
+        # process Enum's
         if hasattr(value, "value"):
             value = value.value
         super(_CamelCasedDict, self).__setitem__(key, value)
@@ -78,7 +90,11 @@ def _filter(attr_, value):
         if value is None:
             return False
         return True
-    if attr_.metadata.get(JsonInclude.THIS) or attr_.metadata.get(JsonInclude.NAME):
+    if attr_.metadata.get(JsonInclude.THIS):
+        return True
+    if attr_.metadata.get(JsonInclude.NAME):
+        # set key from metadata which would be used by default
+        REPLACE_TO_DICT[attr_.name] = attr_.metadata[JsonInclude.NAME]
         return True
     return False
 
