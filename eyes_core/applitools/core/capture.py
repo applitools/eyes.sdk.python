@@ -8,7 +8,7 @@ from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from typing import Optional
-    from applitools.core import CheckSettings
+    from applitools.core import CheckSettings, EyesBase
 
     T = typing.TypeVar("T", bound=CheckSettings)
 
@@ -46,13 +46,13 @@ class EyesScreenshotFactory(ABC):
         pass
 
 
+@attr.s
 class ImageProvider(ABC):
     """
     Encapsulates image retrieval.
     """
 
-    def __init__(self, eyes):
-        self._eyes = eyes
+    _eyes = attr.ib()  # type: EyesBase
 
     @abstractmethod
     def get_image(self):

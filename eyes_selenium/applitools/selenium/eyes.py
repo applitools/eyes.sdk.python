@@ -29,7 +29,6 @@ class Eyes(object):
         "is_debug_screenshot_provided",
         "abort_if_not_closed",
         "original_frame_chain",
-        "close",
         "viewport_size",
         "stitch_content",
         "device_pixel_ratio",

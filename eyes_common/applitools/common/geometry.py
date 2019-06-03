@@ -5,13 +5,13 @@ import typing
 from enum import Enum
 
 import attr
+from PIL import Image
 
 from .utils import argument_guard
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from PIL.Image import Image
     from typing import List, Dict, Union, Optional
     from .utils.custom_types import ViewPort, Num
     from .visual_grid import EmulationDevice
@@ -62,7 +62,7 @@ class RectangleSize(DictAccessMixin):
 
     @classmethod
     def from_(cls, obj):
-        # type: (Union[dict, Image, EmulationDevice, RectangleSize]) -> RectangleSize
+        # type: (Union[dict, Image.Image, EmulationDevice, RectangleSize]) -> RectangleSize
         if isinstance(obj, dict):
             return cls(width=obj["width"], height=obj["height"])
         return cls(width=obj.width, height=obj.height)
@@ -254,12 +254,12 @@ class Region(DictAccessMixin):
 
     @classmethod
     def from_(cls, obj, size=None):
-        # type: (Union[Image,Region, dict], Optional[dict]) -> Region
+        # type: (Union[Image.Image,Region, dict], Optional[dict]) -> Region
         if size:
             return cls(obj["x"], obj["y"], size["width"], size["height"])
         elif isinstance(obj, Region):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
-        elif isinstance(obj, Image):
+        elif isinstance(obj, Image.Image):
             return cls(0, 0, obj.width, obj.height)
         else:
             raise ValueError("Wrong parameters passed")

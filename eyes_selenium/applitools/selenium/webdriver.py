@@ -12,13 +12,9 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from applitools.common import RectangleSize, logger
 from applitools.common.geometry import Point
-from applitools.common.utils import (
-    argument_guard,
-    cached_property,
-    general_utils,
-    image_utils,
-)
+from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
+from applitools.common.utils.general_utils import proxy_to
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
@@ -73,14 +69,13 @@ class FrameResolver(object):
         return frame_ref
 
 
+@proxy_to("_switch_to", ["alert", "active_element"])
 class _EyesSwitchTo(object):
     """
     Wraps :py:class:`selenium.webdriver.remote.switch_to.SwitchTo` object, so we can
     keep track of  switching between frames. It names EyesTargetLocator in other SDK's
     """
 
-    # TODO: Make more similar to EyesTargetLocator
-    _READONLY_PROPERTIES = ["alert", "active_element"]
     PARENT_FRAME = 1
 
     def __init__(self, driver, switch_to):
@@ -96,7 +91,6 @@ class _EyesSwitchTo(object):
         self._scroll_position = ScrollPositionProvider(
             driver, eyes_selenium_utils.current_frame_scroll_root_element(driver)
         )
-        general_utils.create_proxy_interface(self, switch_to, self._READONLY_PROPERTIES)
 
     @contextlib.contextmanager
     def frame_and_back(self, frame_reference):
@@ -241,15 +235,9 @@ class _EyesSwitchTo(object):
             self._scroll_position.pop_state()
 
 
-class EyesWebDriver(object):
-    """
-    A wrapper for selenium web driver which creates wrapped elements,
-    and notifies us about events / actions.
-    """
-
-    # Properties require special handling since even testing if they're
-    # callable "activates" them, which makes copying them automatically a problem.
-    _READONLY_PROPERTIES = [
+@proxy_to(
+    "_driver",
+    [
         "application_cache",
         "current_url",
         "current_window_handle",
@@ -271,9 +259,19 @@ class EyesWebDriver(object):
         "w3c",
         "contexts",
         "current_package",
-    ]
-    _READONLY_PROPERTIES += ["battery_info", "location"]  # Appium specific
-    _SETTABLE_PROPERTIES = ["orientation", "file_detector"]
+        "battery_info",
+        "location",
+        "battery_info",
+        "location",
+        "orientation",
+        "file_detector",
+    ],
+)
+class EyesWebDriver(object):
+    """
+    A wrapper for selenium web driver which creates wrapped elements,
+    and notifies us about events / actions.
+    """
 
     # This should pretty much cover all scroll bars
     # (and some fixed position footer elements :) ).
@@ -298,27 +296,6 @@ class EyesWebDriver(object):
         self._default_content_viewport_size = None  # type: Optional[ViewPort]
 
         self.driver_takes_screenshot = driver.capabilities.get("takesScreenshot", False)
-
-        # Creating the rest of the driver interface by simply forwarding it to the
-        # underlying driver.
-        general_utils.create_proxy_interface(
-            self, driver, self._READONLY_PROPERTIES + self._SETTABLE_PROPERTIES
-        )
-
-        for attr_name in self._READONLY_PROPERTIES:
-            if not hasattr(self.__class__, attr_name):
-                setattr(
-                    self.__class__,
-                    attr_name,
-                    general_utils.create_proxy_property(attr_name, "_driver"),
-                )
-        for attr_name in self._SETTABLE_PROPERTIES:
-            if not hasattr(self.__class__, attr_name):
-                setattr(
-                    self.__class__,
-                    attr_name,
-                    general_utils.create_proxy_property(attr_name, "_driver", True),
-                )
 
     @property
     def eyes(self):

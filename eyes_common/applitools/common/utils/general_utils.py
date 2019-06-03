@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import hashlib
 import itertools
 import time
-import types
 import typing
 from datetime import timedelta, tzinfo
 
@@ -17,13 +16,7 @@ General purpose utilities.
 
 
 if typing.TYPE_CHECKING:
-    from typing import Union, Callable, Any, Dict, List
-    from selenium.webdriver.remote.webdriver import WebDriver
-    from selenium.webdriver.remote.webelement import WebElement
-    from selenium.webdriver.remote.switch_to import SwitchTo
-
-    from applitools.selenium.webdriver import EyesWebDriver, _EyesSwitchTo
-    from applitools.selenium.webelement import EyesWebElement
+    from typing import Callable, Any, List, Text
 
     T = typing.TypeVar("T")
 
@@ -57,82 +50,6 @@ def use_default_if_none_factory(default_obj, obj):
         return val
 
     return default
-
-
-def create_proxy_property(property_name, target_name, is_settable=False):
-    # type: (str, str, bool) -> property
-    """
-    Returns a property object which forwards "name" to target.
-
-    :param property_name: The name of the property.
-    :param target_name: The target to forward to.
-    """
-
-    # noinspection PyUnusedLocal
-    def _proxy_get(self):
-        # type: (Any) -> Dict[str, float]
-        return getattr(getattr(self, target_name), property_name)
-
-    # noinspection PyUnusedLocal
-    def _proxy_set(self, val):
-        return setattr(getattr(self, target_name), property_name, val)
-
-    if not is_settable:
-        return property(_proxy_get)
-    else:
-        return property(_proxy_get, _proxy_set)
-
-
-def create_forwarded_method(
-    from_,  # type: Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-    to,  # type: Union[WebDriver, WebElement, SwitchTo]
-    func_name,  # type: str
-):
-    # type: (...) -> Callable
-    """
-    Returns a method(!) to be set on 'from_', which activates 'func_name' on 'to'.
-
-    :param from_: Source.
-    :param to: Destination.
-    :param func_name: The name of function to activate.
-    :return: Relevant method.
-    """
-
-    # noinspection PyUnusedLocal
-    def forwarded_method(self_, *args, **kwargs):
-        # type: (EyesWebDriver, *Any, **Any) -> Callable
-        return getattr(to, func_name)(*args, **kwargs)
-
-    return types.MethodType(forwarded_method, from_)
-
-
-def create_proxy_interface(
-    from_,  # type: Union[EyesWebDriver, EyesWebElement, _EyesSwitchTo]
-    to,  # type: Union[WebDriver, WebElement, SwitchTo]
-    ignore_list=None,  # type: List[str]
-    override_existing=False,  # type: bool
-):
-    # type: (...) -> None
-    """
-    Copies the public interface of the destination object, excluding names in the
-    ignore_list, and creates an identical interface in 'eyes_core',
-    which forwards calls to dst.
-
-    :param from_: Source.
-    :param to: Destination.
-    :param ignore_list: List of names to ignore while copying.
-    :param override_existing: If False, attributes already existing in 'eyes_core'
-                              will not be overridden.
-    """
-    if not ignore_list:
-        ignore_list = []
-    for attr_name in dir(to):
-        if not attr_name.startswith("_") and attr_name not in ignore_list:
-            if callable(getattr(to, attr_name)):
-                if override_existing or not hasattr(from_, attr_name):
-                    setattr(
-                        from_, attr_name, create_forwarded_method(from_, to, attr_name)
-                    )
 
 
 def cached_property(f):
@@ -229,3 +146,35 @@ def set_query_parameter(url, param_name, param_value):
     new_query_string = urlencode(query_params, doseq=True)
 
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
+
+
+def proxy_to(proxy_obj_name, fields):
+    # type: (Text, List[Text]) -> Callable
+    """
+    Adds to decorated class __getter__ and __setter__ methods that allow to access
+    attributes from proxy_object in the parent class
+
+    :param proxy_obj_name: The name of the proxy object that has decorated class.
+    :param fields:
+        Fields which should be accessible in parent object from the proxy object.
+    """
+
+    def __getattr__(self, name):
+        if name in fields:
+            proxy_obj = getattr(self, proxy_obj_name)
+            return getattr(proxy_obj, name)
+        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
+
+    def __setattr__(self, key, value):
+        if key in fields:
+            proxy_obj = getattr(self, proxy_obj_name)
+            setattr(proxy_obj, key, value)
+        else:
+            super(self.__class__, self).__setattr__(key, value)
+
+    def dec(cls):
+        cls.__getattr__ = __getattr__
+        cls.__setattr__ = __setattr__
+        return cls
+
+    return dec

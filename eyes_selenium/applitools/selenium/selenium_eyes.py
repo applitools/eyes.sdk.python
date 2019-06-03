@@ -151,7 +151,7 @@ class SeleniumEyes(EyesBase):
 
     @property
     def base_agent_id(self):
-        # type: () -> str
+        # type: () -> Text
         return "eyes.selenium.python/{version}".format(version=__version__)
 
     @property
@@ -574,7 +574,7 @@ class SeleniumEyes(EyesBase):
     def _update_scaling_params(self):
         # type: () -> Optional[ScaleProvider]
         if (
-            self._device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO
+            self.device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO
             or not isinstance(self._scale_provider, NullScaleProvider)
         ):
             logger.debug("Device pixel ratio was already changed")
@@ -592,6 +592,7 @@ class SeleniumEyes(EyesBase):
             device_pixel_ratio = self._DEFAULT_DEVICE_PIXEL_RATIO
         logger.info("Device pixel ratio: {}".format(device_pixel_ratio))
 
+        self._device_pixel_ratio = device_pixel_ratio
         logger.debug("Setting scale provider...")
         try:
             scale_provider = ContextBasedScaleProvider(

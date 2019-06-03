@@ -1,6 +1,7 @@
 import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
+from applitools.common.utils.general_utils import proxy_to
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 from applitools.images.fluent import ImagesCheckSettings, Target
 
@@ -13,23 +14,11 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort
 
 
+@proxy_to("configuration", Configuration.all_fields())
 class Eyes(EyesBase):
-    DELEGATE_TO_CONFIG = Configuration.all_fields()
-
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
-
-    def __getattr__(self, name):
-        if name in self.DELEGATE_TO_CONFIG:
-            return getattr(self.configuration, name)
-        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
-
-    def __setattr__(self, name, value):
-        if name in self.DELEGATE_TO_CONFIG:
-            setattr(self.configuration, name, value)
-        else:
-            super(Eyes, self).__setattr__(name, value)
 
     @property
     def full_agent_id(self):
