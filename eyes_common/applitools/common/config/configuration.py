@@ -8,7 +8,7 @@ import attr
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
-from applitools.common.utils import general_utils
+from applitools.common.utils import general_utils, argument_guard
 from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Configuration")
@@ -28,6 +28,10 @@ class BatchInfo(object):
         factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME"),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
+    sequence_name = attr.ib(
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_SEQUENCE"),
+        metadata={JsonInclude.NAME: "batchSequenceName"},
+    )  # type: Optional[Text]
     started_at = attr.ib(
         factory=lambda: datetime.now(general_utils.UTC),
         metadata={JsonInclude.THIS: True},
@@ -45,6 +49,11 @@ class BatchInfo(object):
     @id_.setter
     def id_(self, value):
         self.id = value
+
+    def with_batch_id(self, id):
+        argument_guard.not_none(id)
+        self.id = id
+        return self
 
 
 @attr.s
