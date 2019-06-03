@@ -31,14 +31,16 @@ class CheckSettingsValues(object):
     target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
     timeout = attr.ib(init=False, default=-1)  # type: Num  # milliseconds
 
-    ignore_caret = attr.ib(init=False, default=False)  # type: bool
-    stitch_content = attr.ib(init=False, default=False)  # type: bool
+    ignore_caret = attr.ib(init=False, default=None)  # type: bool
+    stitch_content = attr.ib(init=False, default=None)  # type: bool
     match_level = attr.ib(init=False, default=None)  # type: Optional[MatchLevel]
     name = attr.ib(init=False, default=None)  # type: Optional[Text]
 
-    send_dom = attr.ib(init=False, default=False)  # type: bool
-    use_dom = attr.ib(init=False, default=False)
-    enable_patterns = attr.ib(init=False, default=False)
+    send_dom = attr.ib(init=False, default=None)  # type: bool
+    use_dom = attr.ib(init=False, default=None)
+    enable_patterns = attr.ib(init=False, default=None)
+    ignore_displacement = attr.ib(init=False, default=None)
+
     ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     strict_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
@@ -114,10 +116,6 @@ class CheckSettings(object):
         # type: (int)  -> CheckSettings
         self.values.timeout = timeout
         return self
-
-    def update_target_region(self, region):
-        # type: (Region)  -> None
-        self.values.target_region = region
 
     def ignore_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
@@ -222,6 +220,11 @@ class CheckSettings(object):
     def enable_patterns(self, enable=True):
         # type: (bool) -> CheckSettings
         self.values.enable_patterns = enable
+        return self
+
+    def ignore_displacement(self, should_ignore=True):
+        # type: (bool) -> CheckSettings
+        self.values.ignore_displacement = should_ignore
         return self
 
     def __regions(self, regions, method_name):

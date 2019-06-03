@@ -161,6 +161,20 @@ class EyesBase(_EyesBaseAbstract):
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
 
     @property
+    def is_cut_provider_explicitly_set(self):
+        return self._cut_provider and not (
+            isinstance(self._cut_provider, NullCutProvider)
+        )
+
+    @property
+    def debug_screenshot_provider(self):
+        return self._debug_screenshot_provider
+
+    @property
+    def cut_provider(self):
+        return self._cut_provider
+
+    @property
     def is_debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
@@ -688,6 +702,10 @@ class EyesBase(_EyesBaseAbstract):
         if check_settings.values.enable_patterns is None:
             check_settings = check_settings.ignore_caret(
                 get_config_value("enable_patterns")
+            )
+        if check_settings.values.ignore_displacement is None:
+            check_settings = check_settings.ignore_displacement(
+                self.configuration.default_match_settings.ignore_displacement
             )
 
         region = region_provider.get_region()

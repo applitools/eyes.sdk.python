@@ -44,5 +44,5 @@ class Target(CheckTarget):
     def region(image_or_path, rect):  # type: ignore
         # type: (Union[Image.Image, Text], Region) -> ImagesCheckSettings
         check_settings = Target.image(image_or_path)
-        check_settings.update_target_region(rect)
+        check_settings.values.target_region = rect
         return check_settings

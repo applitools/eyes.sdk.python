@@ -30,14 +30,21 @@ def parse_user_agent_string(ua_string):
     )
 
 
+def to_float(val):
+    try:
+        return float(val)
+    except TypeError:
+        return -1
+
+
 @attr.s
 class UserAgent(object):
     os = attr.ib()
-    os_major_version = attr.ib()
-    os_minor_version = attr.ib()
+    os_major_version = attr.ib(converter=to_float)
+    os_minor_version = attr.ib(converter=to_float)
     browser = attr.ib()
-    browser_major_version = attr.ib()
-    browser_minor_version = attr.ib()
+    browser_major_version = attr.ib(converter=to_float)
+    browser_minor_version = attr.ib(converter=to_float)
 
 
 class BrowserNames(Enum):

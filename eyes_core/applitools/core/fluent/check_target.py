@@ -15,5 +15,5 @@ class CheckTarget(ABC):
     def region(rect):
         # type: (Region) -> CheckSettings
         cs = CheckSettings()
-        cs.update_target_region(rect)
+        cs.values.target_region = rect
         return cs

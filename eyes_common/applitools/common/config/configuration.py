@@ -8,7 +8,7 @@ import attr
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
-from applitools.common.utils import general_utils
+from applitools.common.utils import general_utils, argument_guard
 from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Configuration")
@@ -28,6 +28,10 @@ class BatchInfo(object):
         factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME"),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
+    sequence_name = attr.ib(
+        factory=lambda: os.environ.get("APPLITOOLS_BATCH_SEQUENCE"),
+        metadata={JsonInclude.NAME: "batchSequenceName"},
+    )  # type: Optional[Text]
     started_at = attr.ib(
         factory=lambda: datetime.now(general_utils.UTC),
         metadata={JsonInclude.THIS: True},
@@ -46,10 +50,10 @@ class BatchInfo(object):
     def id_(self, value):
         self.id = value
 
-
-def _to_rectangle(d):
-    # type: (dict) -> RectangleSize
-    return RectangleSize.from_(d)
+    def with_batch_id(self, id):
+        argument_guard.not_none(id)
+        self.id = id
+        return self
 
 
 @attr.s
@@ -73,7 +77,7 @@ class Configuration(object):
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     viewport_size = attr.ib(
-        default=None, converter=attr.converters.optional(_to_rectangle)
+        default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
