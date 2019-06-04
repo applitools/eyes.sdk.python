@@ -94,7 +94,7 @@ class Configuration(object):
     save_failed_tests = attr.ib(default=False)
     fail_on_new_test = attr.ib(default=False)
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)
-    send_dom = attr.ib(default=False)
+    send_dom = attr.ib(default=True)
     use_dom = attr.ib(default=False)
     enable_patterns = attr.ib(default=False)
     default_match_settings = attr.ib(default=ImageMatchSettings())
