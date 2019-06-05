@@ -28,6 +28,12 @@ def test_create_batch_info(monkeypatch):
     assert bi.sequence_name == "sequence name"
 
 
+def test_batch_info_with_date():
+    now = datetime.now()
+    bi = BatchInfo(None, now)
+    assert bi.started_at == now
+
+
 def test_create_batch_with_batch_id():
     bi = BatchInfo("My name").with_batch_id("custom id")
     assert bi.id == "custom id"
@@ -47,14 +53,3 @@ def test_set_env_params_in_batch_info():
     assert bi.name == "name"
     assert bi.id == "id"
     assert bi.sequence_name == "sequence name"
-
-
-def test_get_set_id_in_batch_info():
-    bi = BatchInfo()
-    bi.id = "id_1"
-    assert bi.id == "id_1"
-
-    # backward compatibility
-    bi.id_ = "id_2"
-    assert bi.id == "id_2"
-    assert bi.id_ == "id_2"
