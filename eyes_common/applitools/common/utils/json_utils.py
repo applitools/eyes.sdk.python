@@ -101,7 +101,7 @@ def _filter(attr_, value):
 
 def to_serializable(val):
     if isinstance(val, datetime):
-        return val.isoformat() + "Z"
+        return val.strftime("%Y-%m-%dT%H:%M:%SZ")
     elif isinstance(val, enum.Enum):
         return val.value
     elif attr.has(val.__class__):
