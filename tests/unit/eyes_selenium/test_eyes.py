@@ -1,4 +1,5 @@
 import json
+import datetime
 
 import pytest
 from mock import patch
@@ -110,12 +111,16 @@ def test_baseline_env_name(eyes, driver_mock):
         assert session_info.baseline_env_name == "Baseline Env"
 
 
-def test_batch_info_sequence_name(eyes, driver_mock):
-    eyes.batch = BatchInfo("Batch Info")
+def test_batch_info_serializing(eyes, driver_mock):
+    date = datetime.datetime.strptime("2019-06-04T10:27:15Z", "%Y-%m-%dT%H:%M:%SZ")
+    eyes.batch = BatchInfo("Batch Info", date)
     eyes.batch.sequence_name = "Sequence"
 
     if not eyes._visual_grid_eyes:
         session_info = open_and_get_start_session_info(eyes, driver_mock)
         info_json = json_utils.to_json(session_info)
         batch_info = json.loads(info_json)["startInfo"]["batchInfo"]
+
+        assert batch_info["name"] == "Batch Info"
         assert batch_info["batchSequenceName"] == "Sequence"
+        assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
