@@ -25,7 +25,11 @@ from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
-from applitools.core.cut import NullCutProvider
+from applitools.core.cut import (
+    NullCutProvider,
+    FixedCutProvider,
+    UnscaledFixedCutProvider,
+)
 from applitools.core.debug import (
     FileDebugScreenshotProvider,
     NullDebugScreenshotProvider,
@@ -173,6 +177,13 @@ class EyesBase(_EyesBaseAbstract):
     @property
     def cut_provider(self):
         return self._cut_provider
+
+    @cut_provider.setter
+    def cut_provider(self, provider):
+        argument_guard.is_in(
+            provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
+        )
+        self._cut_provider = provider
 
     @property
     def is_debug_screenshot_provided(self):
