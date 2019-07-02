@@ -44,7 +44,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
     from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
-    from typing import Optional, Text
+    from typing import Optional, Text, Union
 
 __all__ = ("EyesBase",)
 
@@ -176,10 +176,12 @@ class EyesBase(_EyesBaseAbstract):
 
     @property
     def cut_provider(self):
+        # type: () -> Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         return self._cut_provider
 
     @cut_provider.setter
     def cut_provider(self, provider):
+        # type: (Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]) -> None
         argument_guard.is_in(
             provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         )
@@ -193,6 +195,7 @@ class EyesBase(_EyesBaseAbstract):
 
     @is_debug_screenshot_provided.setter
     def is_debug_screenshot_provided(self, save):
+        # type: (bool) -> None
         prev = self._debug_screenshot_provider
         if save:
             self._debug_screenshot_provider = FileDebugScreenshotProvider(
