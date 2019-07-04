@@ -595,7 +595,7 @@ class SeleniumEyes(EyesBase):
         self._device_pixel_ratio = device_pixel_ratio
         logger.debug("Setting scale provider...")
         try:
-            scale_provider = ContextBasedScaleProvider(
+            self._scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
                 viewport_size=self.configuration.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
@@ -605,9 +605,9 @@ class SeleniumEyes(EyesBase):
             # This can happen in Appium for example.
             logger.info("Failed to set ContextBasedScaleProvider.")
             logger.info("Using FixedScaleProvider instead...")
-            scale_provider = FixedScaleProvider(1 / device_pixel_ratio)
+            self._scale_provider = FixedScaleProvider(1 / device_pixel_ratio)
         logger.info("Done!")
-        return scale_provider
+        return self._scale_provider
 
     def _try_capture_dom(self):
         try:
