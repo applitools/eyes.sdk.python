@@ -54,18 +54,22 @@ class FirefoxRegionPositionCompensation(RegionPositionCompensation):
             and self._useragent.os_major_version <= 7
         ):
             logger.info("compensating by {} pixels".format(pixel_ratio))
+            return region.offset(0, pixel_ratio)
 
         if pixel_ratio == 1.0:
             return region
 
+        if self._useragent.browser_major_version > 60:
+            return region
+
         driver = self._eyes.driver  # type: EyesWebDriver
         fc = driver.frame_chain
-        logger.info("frame_chain size: " + fc.size)
+        logger.info("frame_chain size: {}".format(fc.size))
         if fc.size > 0:
             return region
 
         region = region.offset(0, -math.ceil(pixel_ratio / 2))
-        if region.width <= 0 and region.height <= 0:
+        if region.width <= 0 or region.height <= 0:
             return EMPTY_REGION
 
         return region
