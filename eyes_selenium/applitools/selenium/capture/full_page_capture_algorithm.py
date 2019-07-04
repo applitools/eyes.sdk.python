@@ -33,6 +33,11 @@ class FullPageCaptureAlgorithm(object):
     image_provider = attr.ib()  # type: ImageProvider
     region_position_compensation = attr.ib()  # type: RegionPositionCompensation
 
+    def __attrs_post_init__(self):
+        self._debug_msg = lambda name: "{}_{}".format(
+            self.region_position_compensation._useragent.browser, name
+        )
+
     def get_stitched_region(self, region, full_area, position_provider):
         # type: (Region, Optional[Region], Optional[PositionProvider]) -> Image.Image
         argument_guard.not_none(region)
@@ -50,7 +55,7 @@ class FullPageCaptureAlgorithm(object):
             with position_provider:
                 logger.info("Getting top/left image...")
                 image = self.image_provider.get_image()
-                self.debug_screenshot_provider.save(image, "original")
+                self.debug_screenshot_provider.save(image, self._debug_msg("original"))
                 pixel_ratio = self._get_pixel_ratio(image)
                 scaled_cut_provider = self.cut_provider.scale(pixel_ratio)
                 image = self._cut_if_needed(image, scaled_cut_provider)
@@ -101,8 +106,10 @@ class FullPageCaptureAlgorithm(object):
                     part_image = self.image_provider.get_image()
                     self.debug_screenshot_provider.save(
                         part_image,
-                        "original-scrolled-{}".format(
-                            position_provider.get_current_position()
+                        self._debug_msg(
+                            "original-scrolled-{}".format(
+                                position_provider.get_current_position()
+                            )
                         ),
                     )
                     part_image = self._cut_if_needed(part_image, scaled_cut_provider)
@@ -127,7 +134,7 @@ class FullPageCaptureAlgorithm(object):
             stitched_image,
         )
 
-        self.debug_screenshot_provider.save(stitched_image, "stitched")
+        self.debug_screenshot_provider.save(stitched_image, self._debug_msg("stitched"))
         return stitched_image
 
     def _crop_if_smaller(
@@ -144,7 +151,9 @@ class FullPageCaptureAlgorithm(object):
         logger.info(
             "Actual stitched size: {} x {}".format(act_image_width, act_image_height)
         )
-        self.debug_screenshot_provider.save(stitched_image, "_stitched_before_trim")
+        self.debug_screenshot_provider.save(
+            stitched_image, self._debug_msg("_stitched_before_trim")
+        )
         if (
             act_image_width < stitched_image.width
             or act_image_height < stitched_image.height
@@ -190,21 +199,21 @@ class FullPageCaptureAlgorithm(object):
         # type: (Image, float) -> Image
         if pixel_ratio != 1.0:
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
-            self.debug_screenshot_provider.save(image, "scalled")
+            self.debug_screenshot_provider.save(image, self._debug_msg("scalled"))
         return image
 
     def _crop_if_needed(self, image, region_in_screenshot):
         # type: (Image, Region) -> Image
         if not region_in_screenshot.is_size_empty:
             image = image_utils.get_image_part(image, region_in_screenshot)
-            self.debug_screenshot_provider.save(image, "cropper")
+            self.debug_screenshot_provider.save(image, self._debug_msg("cropper"))
         return image
 
     def _cut_if_needed(self, image, scaled_cut_provider):
         # type: (Image, NullCutProvider) -> Image
         if not isinstance(scaled_cut_provider, NullCutProvider):
             image = scaled_cut_provider.cut(image)
-            self.debug_screenshot_provider.save(image, "original-cut")
+            self.debug_screenshot_provider.save(image, self._debug_msg("original-cut"))
         return image
 
     def _get_pixel_ratio(self, image):
