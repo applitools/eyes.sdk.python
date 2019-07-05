@@ -133,18 +133,17 @@ def driver(request, browser_config, webdriver_module):
             command_executor=selenium_url, desired_capabilities=desired_caps
         )
     else:
+        # Use local browser. Use ENV variable for driver binary or install if no one.
         driver_manager, webdriver_class, options = BROWSERS_WEBDRIVERS.get(
             browser_config["browserName"]
         )
-
+        executable_path = os.environ.get("{}_PATH".format(driver_manager.__name__))
         if options:
             headless = request.config.getoption("headless")
             options = options()
             options.headless = bool(headless)
         if driver_manager:
-            browser = webdriver_class(
-                executable_path=driver_manager().install(), options=options
-            )
+            browser = webdriver_class(executable_path=executable_path, options=options)
         else:
             browser = webdriver_class()
 

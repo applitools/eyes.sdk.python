@@ -1,3 +1,4 @@
+import os
 import shutil
 from os import path
 
@@ -157,17 +158,28 @@ def move_js_resources_to(pack):
 @task
 def run_selenium_tests(c, remote=False, headless=False, platform=None):
     sel_tests = "tests/functional/eyes_selenium/selenium/"
-    parallels = 2 if remote else 1
     pattern = (
-        "pytest -n {n} --headless {headless} --remote {remote} --platform '{platform}' "
-        "--browser '%s' {tests}"
+        "pytest {proc_num} --headless {headless} {"
+        "remote} "
+        "--platform '{platform}' "
+        "--browser '%(browser)s' {tests}"
     ).format(
-        n=parallels,
+        proc_num="-n 2" if remote else "",
         headless=headless,
-        remote=remote,
+        remote="--remote 1" if remote else "",
         platform=platform,
         tests=sel_tests,
     )
+
+    if not remote:
+        # Global installation of drivers for Firefox and Chrome cause only those two
+        # available on Linux
+        from webdriver_manager.chrome import ChromeDriverManager
+        from webdriver_manager.firefox import GeckoDriverManager
+
+        os.environ["ChromeDriverManager_PATH"] = ChromeDriverManager().install()
+        os.environ["GeckoDriverManager_PATH"] = GeckoDriverManager().install()
+
     browsers = ["firefox", "chrome"]
     if platform.lower().startswith("mac"):
         browsers.append("safari")
@@ -175,5 +187,6 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
         browsers.append("internet explorer")
         browsers.append("MicrosoftEdge")
 
-    command = "&".join([pattern % browser for browser in browsers])
+    # use Unix background task execution for run tests in parallel
+    command = "&".join([pattern % dict(browser=browser) for browser in browsers])
     c.run(command, echo=True)
