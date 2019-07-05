@@ -1,12 +1,13 @@
 import pytest
-from appium import webdriver
+from appium import webdriver as appium_webdriver
+from selenium import webdriver as selenium_webdriver
 
 from applitools.selenium import StitchMode
 
 
 @pytest.fixture
 def webdriver_module():
-    return webdriver
+    return appium_webdriver
 
 
 @pytest.mark.platform("Android")
@@ -55,5 +56,20 @@ def test_ios_native(eyes, driver):
     ids=lambda o: "with FSP" if o["force_full_page_screenshot"] else "no FSP",
 )
 def test_final_application(eyes_open):
+    eyes, driver = eyes_open
+    eyes.check_window("Home")
+
+
+@pytest.mark.platform("Android", "iOS")
+@pytest.mark.test_page_url("https://applitools.com/helloworld")
+@pytest.mark.parametrize(
+    "eyes",
+    [{"webdriver_module": appium_webdriver}, {"webdriver_module": selenium_webdriver}],
+    indirect=True,
+    ids=lambda o: "with Appium"
+    if o["webdriver_module"].__name__.startswith("appium.")
+    else "with Selenium",
+)
+def test_selenium_and_appium_work(eyes_open):
     eyes, driver = eyes_open
     eyes.check_window("Home")
