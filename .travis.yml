@@ -28,12 +28,12 @@ matrix:
         - python: 3.6
           env:
               - TOX_ENV=selenium-on-linux
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-windows-remote
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-macos-remote
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium-on-windows-remote
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium-on-macos-remote
         - python: 3.6
           env:
               - TOX_ENV=selenium-appium-remote
