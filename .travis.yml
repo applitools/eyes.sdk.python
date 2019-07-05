@@ -2,8 +2,14 @@ language: python
 addons:
     chrome: stable
     firefox: latest
+    apt:
+        packages:
+            - chromium-chromedriver
 matrix:
     include:
+        - python: 3.6
+          env:
+              - TOX_ENV=lint
         - python: 2.7
           env:
               - TOX_ENV=unit
@@ -28,28 +34,36 @@ matrix:
         - python: 3.6
           env:
               - TOX_ENV=selenium-on-linux
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=selenium-on-windows-remote
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=selenium-on-macos-remote
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium-on-windows-remote
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium-on-macos-remote
         - python: 3.6
           env:
               - TOX_ENV=selenium-appium-remote
         - python: 3.6
           env:
               - TOX_ENV=visualgrid
-        - python: 3.6
-          env:
-              - TOX_ENV=lint
+
+before_install:
+    # Set up geckodriver
+    - wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
+    - sudo tar -xzf geckodriver-v0.24.0-linux64.tar.gz -C /usr/bin/
+    - export MOZ_HEADLESS=1
+    # Set up chromedriver
+    - sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 install:
-    - pip install -U tox
+    - pip install -U tox webdriver_manager
 before_script:
+    # Run GUI apps in headless mode
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     - sleep 10 # give webdriver some time to start
     - export APPLITOOLS_BATCH_ID=`uuidgen -t`
 script:
+    - which chromedriver
+    - which geckodriver
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV

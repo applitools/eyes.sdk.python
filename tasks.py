@@ -157,12 +157,13 @@ def move_js_resources_to(pack):
 
 @task
 def run_selenium_tests(c, remote=False, headless=False, platform=None):
-    sel_tests = "tests/functional/eyes_selenium/selenium/"
+    sel_tests = "tests/functional/eyes_selenium/selenium"
     pattern = (
         "pytest {proc_num} --headless {headless} {"
         "remote} "
         "--platform '{platform}' "
-        "--browser '%(browser)s' {tests}"
+        "--browser '%(browser)s' {tests} "
+        "--ignore={tests}/test_client_sites.py"
     ).format(
         proc_num="-n 2" if remote else "",
         headless=headless,
@@ -170,16 +171,6 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
         platform=platform,
         tests=sel_tests,
     )
-
-    if not remote:
-        # Global installation of drivers for Firefox and Chrome cause only those two
-        # available on Linux
-        from webdriver_manager.chrome import ChromeDriverManager
-        from webdriver_manager.firefox import GeckoDriverManager
-
-        os.environ["ChromeDriverManager_PATH"] = ChromeDriverManager().install()
-        os.environ["GeckoDriverManager_PATH"] = GeckoDriverManager().install()
-
     browsers = ["firefox", "chrome"]
     if platform.lower().startswith("mac"):
         browsers.append("safari")
