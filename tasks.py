@@ -132,67 +132,6 @@ def mypy_check(c, common=False, core=False, selenium=False, images=False):
 
 
 @task
-def test_run_packs(
-    c, core=False, selenium=False, images=False, appium=False, visualgrid=False
-):
-    if core:
-        c.run("pytest tests/functional/eyes_core", echo=True)
-    elif selenium:
-        c.run(
-            "python -c 'from webdriver_manager.chrome import ChromeDriverManager;"
-            "from webdriver_manager.firefox import GeckoDriverManager;"
-            "ChromeDriverManager().install();GeckoDriverManager().install()'"
-        )
-        c.run(
-            "pytest --headless 1 --browser chrome "
-            "tests/functional/eyes_selenium/selenium/ & "
-            "pytest --headless 1 --browser firefox "
-            "tests/functional/eyes_selenium/selenium/",
-            echo=True,
-        )
-    elif visualgrid:
-        c.run(
-            "python -c 'from webdriver_manager.chrome import ChromeDriverManager;"
-            "ChromeDriverManager().install()'"
-        )
-        c.run(
-            "pytest --headless 1 --browser chrome "
-            "tests/functional/eyes_selenium/visual_grid/",
-            echo=True,
-        )
-    elif images:
-        c.run("pytest tests/functional/eyes_images/", echo=True)
-    elif appium:
-        c.run(
-            "pytest -n 3 --remote 1 tests/functional/eyes_selenium/test_appium.py",
-            echo=True,
-        )
-    # for pack in _packages_resolver(common, core, selenium, images):
-    #     c.run('pytest tests/functional/{}'.format(pack), echo=True)
-
-
-@task
-def test_run_unit(c):
-    c.run("pytest tests/unit")
-
-
-@task
-def test_run_integration(c):
-    c.run("pytest -n 3 tests/test_integration.py")
-
-
-@task
-def install_precommit_hook(c):
-    c.run("pip install pre-commit")
-    c.run("pre-commit install")
-
-
-@task
-def remove_precommit_hook(c):
-    c.run("pre-commit uninstall")
-
-
-@task
 def retrieve_js(c):
     for pack in _packages_resolver(selenium=True, full_path=True):
         with c.cd(pack):
@@ -213,3 +152,28 @@ def move_js_resources_to(pack):
         from_ = path.join(node_modules, pth)
         name = path.basename(from_)
         shutil.copy(from_, dst=path.join(node_resources, name))
+
+
+@task
+def run_selenium_tests(c, remote=False, headless=False, platform=None):
+    sel_tests = "tests/functional/eyes_selenium/selenium/"
+    parallels = 2 if remote else 1
+    pattern = (
+        "pytest -n {n} --headless {headless} --remote {remote} --platform '{platform}' "
+        "--browser '%s' {tests}"
+    ).format(
+        n=parallels,
+        headless=headless,
+        remote=remote,
+        platform=platform,
+        tests=sel_tests,
+    )
+    browsers = ["firefox", "chrome"]
+    if platform.lower().startswith("mac"):
+        browsers.append("safari")
+    elif platform.lower().startswith("windows"):
+        browsers.append("internet explorer")
+        browsers.append("MicrosoftEdge")
+
+    command = "&".join([pattern % browser for browser in browsers])
+    c.run(command, echo=True)
