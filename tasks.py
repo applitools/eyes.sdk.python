@@ -140,10 +140,13 @@ def test_run_packs(
     elif selenium:
         c.run(
             "python -c 'from webdriver_manager.chrome import ChromeDriverManager;"
-            "ChromeDriverManager().install()'"
+            "from webdriver_manager.firefox import GeckoDriverManager;"
+            "ChromeDriverManager().install();GeckoDriverManager().install()'"
         )
         c.run(
-            "pytest -n 2 --headless 1 --browser chrome "
+            "pytest --headless 1 --browser chrome "
+            "tests/functional/eyes_selenium/selenium/ & "
+            "pytest --headless 1 --browser firefox "
             "tests/functional/eyes_selenium/selenium/",
             echo=True,
         )

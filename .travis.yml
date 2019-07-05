@@ -1,7 +1,7 @@
 language: python
 addons:
     chrome: stable
-#    firefox: latest
+    firefox: latest
 matrix:
     include:
         - python: 2.7
