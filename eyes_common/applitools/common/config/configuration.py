@@ -26,7 +26,7 @@ class BatchInfo(object):
     """
 
     name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_NAME"),
+        factory=lambda: os.getenv("APPLITOOLS_BATCH_NAME"),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
     started_at = attr.ib(
@@ -35,12 +35,12 @@ class BatchInfo(object):
     )  # type: Union[datetime, Text]
     sequence_name = attr.ib(
         init=False,
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_SEQUENCE"),
+        factory=lambda: os.getenv("APPLITOOLS_BATCH_SEQUENCE"),
         metadata={JsonInclude.NAME: "batchSequenceName"},
     )  # type: Optional[Text]
     id = attr.ib(
         init=False,
-        factory=lambda: os.environ.get("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
+        factory=lambda: os.getenv("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
         metadata={JsonInclude.THIS: True},
     )  # type: Text
 
@@ -56,13 +56,13 @@ class Configuration(object):
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BRANCH", None)
+        factory=lambda: os.getenv("APPLITOOLS_BRANCH", None)
     )  # type: Optional[Text]
     parent_branch_name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_PARENT_BRANCH", None)
+        factory=lambda: os.getenv("APPLITOOLS_PARENT_BRANCH", None)
     )  # type: Optional[Text]
     baseline_branch_name = attr.ib(
-        factory=lambda: os.environ.get("APPLITOOLS_BASELINE_BRANCH", None)
+        factory=lambda: os.getenv("APPLITOOLS_BASELINE_BRANCH", None)
     )  # type: Optional[Text]
     agent_id = attr.ib(default=None)  # type: Optional[Text]
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
@@ -95,7 +95,7 @@ class Configuration(object):
     hide_caret = attr.ib(init=False, default=None)
     stitching_overlap = attr.ib(init=False, default=50)
 
-    api_key = attr.ib(factory=lambda: os.environ.get("APPLITOOLS_API_KEY", None))
+    api_key = attr.ib(factory=lambda: os.getenv("APPLITOOLS_API_KEY", None))
     server_url = attr.ib(default=DEFAULT_SERVER_URL)
     timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # ms
 

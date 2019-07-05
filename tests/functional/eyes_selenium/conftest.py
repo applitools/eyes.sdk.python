@@ -27,7 +27,7 @@ BROWSERS_WEBDRIVERS = {
 
 
 def _setup_env_vars_for_session():
-    python_version = os.environ.get("TRAVIS_PYTHON_VERSION", None)
+    python_version = os.getenv("TRAVIS_PYTHON_VERSION", None)
     if not python_version:
         import platform
 
@@ -118,15 +118,15 @@ def driver(request, browser_config, webdriver_module):
 
     if force_remote:
         sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.environ.get("SAUCE_USERNAME", None),
-            password=os.environ.get("SAUCE_ACCESS_KEY", None),
+            username=os.getenv("SAUCE_USERNAME", None),
+            password=os.getenv("SAUCE_ACCESS_KEY", None),
         )
-        selenium_url = os.environ.get("SELENIUM_SERVER_URL", sauce_url)
+        selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
         logger.debug("SELENIUM_URL={}".format(selenium_url))
 
         desired_caps = browser_config.copy()
-        desired_caps["build"] = os.environ.get("BUILD_TAG", None)
-        desired_caps["tunnelIdentifier"] = os.environ.get("TUNNEL_IDENTIFIER", None)
+        desired_caps["build"] = os.getenv("BUILD_TAG", None)
+        desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
         desired_caps["name"] = test_name
 
         browser = webdriver_module.Remote(
@@ -134,15 +134,18 @@ def driver(request, browser_config, webdriver_module):
         )
     else:
         # Use local browser. Use ENV variable for driver binary or install if no one.
-        driver_manager, webdriver_class, options = BROWSERS_WEBDRIVERS.get(
+        driver_manager_class, webdriver_class, options = BROWSERS_WEBDRIVERS.get(
             browser_config["browserName"]
         )
-        executable_path = os.environ.get("{}_PATH".format(driver_manager.__name__))
+        executable_path = os.getenv(
+            "{}_PATH".format(driver_manager_class.__name__),
+            driver_manager_class().install(),
+        )
         if options:
             headless = request.config.getoption("headless")
             options = options()
             options.headless = bool(headless)
-        if driver_manager:
+        if driver_manager_class:
             browser = webdriver_class(executable_path=executable_path, options=options)
         else:
             browser = webdriver_class()
