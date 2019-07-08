@@ -137,17 +137,14 @@ def driver(request, browser_config, webdriver_module):
         driver_manager_class, webdriver_class, options = BROWSERS_WEBDRIVERS.get(
             browser_config["browserName"]
         )
-        # executable_path = os.getenv(
-        #     "{}_PATH".format(driver_manager_class.__name__),
-        #     driver_manager_class().install(),
-        # )
-        executable_path = None
         if options:
             headless = request.config.getoption("headless")
             options = options()
             options.headless = bool(headless)
         if driver_manager_class:
-            browser = webdriver_class(options=options)
+            browser = webdriver_class(
+                executable_path=driver_manager_class().install(), options=options
+            )
         else:
             browser = webdriver_class()
 

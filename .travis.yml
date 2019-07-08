@@ -44,41 +44,22 @@ jobs:
           addons:
               chrome: stable
               firefox: latest
-              apt:
-                  packages:
-                      - chromium-chromedriver
-          before_install:
-              # Set up geckodriver
-              - wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
-              - sudo tar -xzf geckodriver-v0.24.0-linux64.tar.gz -C /usr/bin/
-              - export MOZ_HEADLESS=1
-              # Set up chromedriver
-              - sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
-              - which chromedriver
-              - which geckodriver
           env:
               - TOX_ENV=selenium-on-linux
         - python: 3.6
           env:
               - TOX_ENV=images
         - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-windows-remote
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-macos-remote
-        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium-on-windows-remote
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium-on-macos-remote
+#        - python: 3.6
           env:
               - TOX_ENV=selenium-appium-remote
         - python: 3.6
           addons:
               chrome: stable
-              firefox: latest
-              apt:
-                  packages:
-                      - chromium-chromedriver
-          before_script:
-              - sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
-              - which chromedriver
           env:
               - TOX_ENV=visualgrid
