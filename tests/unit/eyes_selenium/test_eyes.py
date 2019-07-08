@@ -124,3 +124,7 @@ def test_batch_info_serializing(eyes, driver_mock):
         assert batch_info["name"] == "Batch Info"
         assert batch_info["batchSequenceName"] == "Sequence"
         assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
+
+
+def test_eyes_abort(eyes):
+    eyes.abort()

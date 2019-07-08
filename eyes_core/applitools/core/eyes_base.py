@@ -369,19 +369,19 @@ class EyesBase(_EyesBaseAbstract):
             self._running_session = None
             logger.close()
 
-    def abort_if_not_closed(self):
+    def abort(self):
         # type: () -> None
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
         if self.configuration.is_disabled:
-            logger.debug("abort_if_not_closed(): ignored (disabled)")
+            logger.debug("abort(): ignored (disabled)")
             return
         try:
             self._reset_last_screenshot()
 
             if self._running_session:
-                logger.debug("abort_if_not_closed(): Aborting session...")
+                logger.debug("abort(): Aborting session...")
                 try:
                     self._server_connector.stop_session(
                         self._running_session, True, False
@@ -394,6 +394,10 @@ class EyesBase(_EyesBaseAbstract):
                     self._running_session = None
         finally:
             logger.close()
+
+    def abort_if_not_closed(self):
+        logger.deprecation("Use `abort()` instead")
+        self.abort()
 
     def open_base(
         self,
@@ -501,7 +505,7 @@ class EyesBase(_EyesBaseAbstract):
 
     def _validate_session_open(self):
         if self.is_opened:
-            self.abort_if_not_closed()
+            self.abort()
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
