@@ -12,7 +12,7 @@ def eyes_class():
 
 
 def _setup_env_vars_for_session():
-    python_version = os.environ.get("TRAVIS_PYTHON_VERSION", None)
+    python_version = os.getenv("TRAVIS_PYTHON_VERSION", None)
     if not python_version:
         import platform
 
