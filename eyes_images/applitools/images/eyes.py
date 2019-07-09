@@ -121,7 +121,7 @@ class Eyes(EyesBase):
         self._raw_title = name if name else ""
 
         if not self.is_opened:
-            self.abort_if_not_closed()
+            self.abort()
             raise EyesError("you must call open() before checking")
 
         image = check_settings.values.image  # type: Image.Image
