@@ -15,7 +15,7 @@ def sel_config(test_page_url):
     conf = Configuration()
     conf.test_name = "Top 10 websites - {}".format(test_page_url)
     conf.app_name = "Top Ten Sites"
-    conf.batch = BatchInfo("TTS - config batch")
+    conf.batch = BatchInfo("Python VisualGrid")
     conf.branch_name = "TTS - config branch"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)

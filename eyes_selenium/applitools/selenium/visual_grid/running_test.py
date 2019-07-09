@@ -280,8 +280,7 @@ class RunningTest(object):
         self.watch_close[close_task] = False
 
     def abort(self):
-        if self.state not in [COMPLETED, TESTED]:
-            self.becomes_completed()
+        self.eyes.abort()
 
     def all_tasks_completed(self, watch):
         # type: (Dict) -> bool

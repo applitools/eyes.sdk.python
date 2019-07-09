@@ -216,8 +216,14 @@ class VisualGridEyes(object):
         return test_results[0]
 
     def abort(self):
-        for running_test in self.test_list:
-            running_test.abort()
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        if self.configuration.is_disabled:
+            logger.debug("abort(): ignored (disabled)")
+            return
+        for test in self.test_list:
+            test.abort()
 
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")
