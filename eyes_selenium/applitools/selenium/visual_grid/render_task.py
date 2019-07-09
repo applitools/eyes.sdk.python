@@ -1,7 +1,5 @@
-import json
 import time
 import typing
-from collections import OrderedDict
 
 import attr
 import tinycss2

@@ -478,7 +478,6 @@ class EyesBase(_EyesBaseAbstract):
         retry = 0
         while retry < self.MAX_ITERATION:
             try:
-                self._validate_api_key()
                 self._validate_session_open()
                 self._init_providers()
 
@@ -522,13 +521,6 @@ class EyesBase(_EyesBaseAbstract):
         logger.debug(
             "FailureReports = '{}' ".format(self.configuration.failure_reports)
         )
-
-    def _validate_api_key(self):
-        if self.configuration.api_key is None:
-            raise EyesError(
-                "API key not set! Log in to https://applitools.com to obtain your"
-                " API Key and use 'api_key' to set it."
-            )
 
     def _create_session_start_info(self):
         # type: () -> None
