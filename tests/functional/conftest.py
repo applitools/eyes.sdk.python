@@ -40,4 +40,4 @@ def eyes(request, eyes_class):
         setattr(eyes, key, val)
 
     yield eyes
-    eyes.abort_if_not_closed()
+    eyes.abort()

@@ -27,7 +27,7 @@ class Eyes(object):
     EYES_COMMON = [
         "base_agent_id",
         "is_debug_screenshot_provided",
-        "abort_if_not_closed",
+        "abort",
         "original_frame_chain",
         "viewport_size",
         "stitch_content",

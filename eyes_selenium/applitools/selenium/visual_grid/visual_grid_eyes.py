@@ -215,6 +215,20 @@ class VisualGridEyes(object):
             return TestResults()
         return test_results[0]
 
+    def abort(self):
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        if self.configuration.is_disabled:
+            logger.debug("abort(): ignored (disabled)")
+            return
+        for test in self.test_list:
+            test.abort()
+
+    def abort_if_not_closed(self):
+        logger.deprecation("Use `abort()` instead")
+        self.abort()
+
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector
         vgeyes_connector = EyesConnector(b_info, self.configuration.clone())
