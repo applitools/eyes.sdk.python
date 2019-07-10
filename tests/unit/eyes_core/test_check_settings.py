@@ -19,3 +19,5 @@ def test_set_get_enable_patterns():
 def test_set_get_ignore_displacement():
     cs = CheckSettings().ignore_displacement(True)
     assert cs.values.ignore_displacement
+    cs = cs.layout().ignore_displacement(False)
+    assert not cs.values.ignore_displacement
