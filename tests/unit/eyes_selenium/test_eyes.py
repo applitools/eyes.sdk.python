@@ -4,10 +4,10 @@ import datetime
 import pytest
 from mock import patch
 
-from applitools.common import MatchLevel, StitchMode, BatchInfo
+from applitools.common import MatchLevel, StitchMode, BatchInfo, EyesError
 from applitools.common.utils import json_utils
 from applitools.core import NullScaleProvider
-from applitools.selenium import Eyes
+from applitools.selenium import Eyes, Target
 from applitools.selenium.visual_grid import VisualGridRunner
 
 
@@ -128,3 +128,8 @@ def test_batch_info_serializing(eyes, driver_mock):
 
 def test_eyes_abort(eyes):
     eyes.abort()
+
+
+def test_check_without_open_call(eyes):
+    with pytest.raises(EyesError):
+        eyes.check("Test", Target.window())
