@@ -81,12 +81,12 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 def _css_selector_from_(by, value):
     if by == By.ID:
         value = "#%s" % value
-    elif by == By.TAG_NAME:
-        value = value
     elif by == By.CLASS_NAME:
         value = ".%s" % value
     elif by == By.NAME:
         value = '[name="%s"]' % value
+    elif by in [By.XPATH, By.CSS_SELECTOR, By.TAG_NAME]:
+        value = value
     else:
         raise TypeError("By {} is not supported".format(by))
     return value
@@ -192,6 +192,8 @@ def is_list_or_tuple(elm):
 
 
 def is_webelement(elm):
-    return isinstance(elm, WebElement) or isinstance(
-        getattr(elm, "_element", None), WebElement
+    return (
+        isinstance(elm, EyesWebElement)
+        or isinstance(elm, WebElement)
+        or isinstance(getattr(elm, "_element", None), WebElement)
     )
