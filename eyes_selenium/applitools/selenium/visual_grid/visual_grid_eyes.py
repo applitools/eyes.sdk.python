@@ -61,7 +61,6 @@ class WebElementRegion(object):
 class VisualGridEyes(object):
     vg_manager = None  # type: VisualGridRunner
     _config_provider = None
-    _is_opened = False
     _driver = None
     rendering_info = None
     is_check_timer_timeout = False
@@ -73,10 +72,6 @@ class VisualGridEyes(object):
         argument_guard.not_none(runner)
         self.vg_manager = runner
         self.test_list = []  # type: List[RunningTest]
-
-    @property
-    def is_opened(self):
-        return self._is_opened
 
     @property
     def driver(self):
@@ -113,7 +108,6 @@ class VisualGridEyes(object):
                     self._create_vgeyes_connector(b_info), self.configuration, b_info
                 )
             )
-        self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
@@ -208,7 +202,6 @@ class VisualGridEyes(object):
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
         self.vg_manager.process_test_list(self.test_list, raise_ex)
-        self._is_opened = False
 
         test_results = [t.test_result for t in self.test_list if t.test_result]
         if not test_results:
