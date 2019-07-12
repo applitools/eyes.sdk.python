@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import SeleniumConfiguration, logger
+from applitools.common import SeleniumConfiguration, logger, EyesError
 from applitools.common.utils import argument_guard
 
 from .fluent import Target
@@ -27,18 +27,18 @@ class Eyes(object):
     EYES_COMMON = [
         "base_agent_id",
         "is_debug_screenshot_provided",
-        "abort_if_not_closed",
+        "abort",
         "original_frame_chain",
         "viewport_size",
         "stitch_content",
         "device_pixel_ratio",
         "scale_ratio",
         "position_provider",
+        "cut_provider",
         "_original_frame_chain",
         "full_agent_id",
         "agent_setup",
         "add_property",
-        "is_opened",
         "clear_properties",
         "set_viewport_size_static",
         "get_viewport_size_static",
@@ -53,6 +53,11 @@ class Eyes(object):
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
+    _is_opened = False
+
+    @property
+    def is_opened(self):
+        return self._is_opened
 
     @property
     def configuration(self):
@@ -106,6 +111,11 @@ class Eyes(object):
         :param check_settings: target which area of the window to check.
         :return: The match results.
         """
+        if self.configuration.is_disabled:
+            return MatchResult()
+        if not self.is_opened:
+            self.abort()
+            raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)
 
     def check_window(
@@ -214,7 +224,9 @@ class Eyes(object):
             self.configuration.session_type = session_type  # type: ignore
 
         self._init_driver(driver)
-        return self._current_eyes.open(self.driver)
+        result = self._current_eyes.open(self.driver)
+        self._is_opened = True
+        return result
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -224,7 +236,9 @@ class Eyes(object):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
-        return self._current_eyes.close(raise_ex)
+        result = self._current_eyes.close(raise_ex)
+        self._is_opened = False
+        return result
 
     def close_async(self):
         if self._is_visual_grid_eyes:

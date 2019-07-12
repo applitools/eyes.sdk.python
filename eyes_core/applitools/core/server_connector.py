@@ -211,9 +211,17 @@ class ServerConnector(object):
             headers=ServerConnector.DEFAULT_HEADERS
         )
 
+    def _validate_api_key(self):
+        if self.api_key is None:
+            raise EyesError(
+                "API key not set! Log in to https://applitools.com to obtain your"
+                " API Key and use 'api_key' to set it."
+            )
+
     def update_config(self, conf):
         self.server_url = conf.server_url
         self.api_key = conf.api_key
+        self._validate_api_key()
         self.timeout_sec = conf.timeout / 1000.0
 
         self._request = self._request_factory.create(

@@ -1,18 +1,33 @@
 import os
+import typing
 
 import pytest
 from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import IEDriverManager, EdgeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 
 from applitools.common import BatchInfo, logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
 
+if typing.TYPE_CHECKING:
+    from _pytest.fixtures import SubRequest
+
+BROWSERS_WEBDRIVERS = {
+    "firefox": (GeckoDriverManager, webdriver.Firefox, webdriver.FirefoxOptions),
+    "chrome": (ChromeDriverManager, webdriver.Chrome, webdriver.ChromeOptions),
+    "internet explorer": (IEDriverManager, webdriver.Ie, webdriver.IeOptions),
+    "MicrosoftEdge": (EdgeDriverManager, webdriver.Edge, None),
+    "safari": (None, webdriver.Safari, None),
+}
+
 
 def _setup_env_vars_for_session():
-    python_version = os.environ.get("TRAVIS_PYTHON_VERSION", None)
+    python_version = os.getenv("TRAVIS_PYTHON_VERSION", None)
     if not python_version:
         import platform
 
@@ -94,33 +109,45 @@ def driver_for_class(request, driver):
 
 @pytest.yield_fixture(scope="function")
 def driver(request, browser_config, webdriver_module):
+    # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
 
     force_remote = request.config.getoption("remote", default=False)
+    if "appiumVersion" in browser_config:
+        force_remote = True
+
     if force_remote:
-        build_tag = os.environ.get("BUILD_TAG", None)
-        tunnel_id = os.environ.get("TUNNEL_IDENTIFIER", None)
-        username = os.environ.get("SAUCE_USERNAME", None)
-        access_key = os.environ.get("SAUCE_ACCESS_KEY", None)
-        sauce_url = "https://%s:%s@ondemand.saucelabs.com:443/wd/hub" % (
-            username,
-            access_key,
+        sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+            username=os.getenv("SAUCE_USERNAME", None),
+            password=os.getenv("SAUCE_ACCESS_KEY", None),
         )
-        selenium_url = os.environ.get("SELENIUM_SERVER_URL", sauce_url)
+        selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
         logger.debug("SELENIUM_URL={}".format(selenium_url))
 
         desired_caps = browser_config.copy()
-        desired_caps["build"] = build_tag
-        desired_caps["tunnelIdentifier"] = tunnel_id
+        desired_caps["build"] = os.getenv("BUILD_TAG", None)
+        desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
         desired_caps["name"] = test_name
 
         browser = webdriver_module.Remote(
             command_executor=selenium_url, desired_capabilities=desired_caps
         )
     else:
-        from webdriver_manager.chrome import ChromeDriverManager
+        # Use local browser. Use ENV variable for driver binary or install if no one.
+        driver_manager_class, webdriver_class, options = BROWSERS_WEBDRIVERS.get(
+            browser_config["browserName"]
+        )
+        if options:
+            headless = request.config.getoption("headless")
+            options = options()
+            options.headless = bool(headless)
+        if driver_manager_class:
+            browser = webdriver_class(
+                executable_path=driver_manager_class().install(), options=options
+            )
+        else:
+            browser = webdriver_class()
 
-        browser = webdriver_module.Chrome(ChromeDriverManager().install())
     if browser is None:
         raise WebDriverException("Never created!")
 

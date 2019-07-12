@@ -186,7 +186,7 @@ def _setup_env_vars_for_session():
 
     # setup environment variables once per test run if not settled up
     # needed for multi thread run
-    os.environ["APPLITOOLS_BATCH_ID"] = os.environ.get(
+    os.environ["APPLITOOLS_BATCH_ID"] = os.getenv(
         "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
     )
 

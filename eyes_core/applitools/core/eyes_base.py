@@ -25,7 +25,11 @@ from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
-from applitools.core.cut import NullCutProvider
+from applitools.core.cut import (
+    NullCutProvider,
+    FixedCutProvider,
+    UnscaledFixedCutProvider,
+)
 from applitools.core.debug import (
     FileDebugScreenshotProvider,
     NullDebugScreenshotProvider,
@@ -40,7 +44,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
     from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
-    from typing import Optional, Text
+    from typing import Optional, Text, Union
 
 __all__ = ("EyesBase",)
 
@@ -172,7 +176,16 @@ class EyesBase(_EyesBaseAbstract):
 
     @property
     def cut_provider(self):
+        # type: () -> Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         return self._cut_provider
+
+    @cut_provider.setter
+    def cut_provider(self, provider):
+        # type: (Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]) -> None
+        argument_guard.is_in(
+            provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
+        )
+        self._cut_provider = provider
 
     @property
     def is_debug_screenshot_provided(self):
@@ -182,6 +195,7 @@ class EyesBase(_EyesBaseAbstract):
 
     @is_debug_screenshot_provided.setter
     def is_debug_screenshot_provided(self, save):
+        # type: (bool) -> None
         prev = self._debug_screenshot_provider
         if save:
             self._debug_screenshot_provider = FileDebugScreenshotProvider(
@@ -293,7 +307,7 @@ class EyesBase(_EyesBaseAbstract):
         try:
             logger.debug("close({})".format(raise_ex))
             if not self._is_opened:
-                raise ValueError("Eyes not open")
+                raise EyesError("Eyes not open")
 
             self._is_opened = False
 
@@ -325,7 +339,7 @@ class EyesBase(_EyesBaseAbstract):
                 if results.is_new:
                     instructions = "Please approve the new baseline at " + results_url
                     logger.info("--- New test ended. " + instructions)
-                    if raise_ex:
+                    if raise_ex or self.configuration.fail_on_new_test:
                         message = "'%s' of '%s'. %s" % (
                             self._session_start_info.scenario_id_or_name,
                             self._session_start_info.app_id_or_name,
@@ -369,19 +383,19 @@ class EyesBase(_EyesBaseAbstract):
             self._running_session = None
             logger.close()
 
-    def abort_if_not_closed(self):
+    def abort(self):
         # type: () -> None
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
         if self.configuration.is_disabled:
-            logger.debug("abort_if_not_closed(): ignored (disabled)")
+            logger.debug("abort(): ignored (disabled)")
             return
         try:
             self._reset_last_screenshot()
 
             if self._running_session:
-                logger.debug("abort_if_not_closed(): Aborting session...")
+                logger.debug("abort(): Aborting session...")
                 try:
                     self._server_connector.stop_session(
                         self._running_session, True, False
@@ -394,6 +408,10 @@ class EyesBase(_EyesBaseAbstract):
                     self._running_session = None
         finally:
             logger.close()
+
+    def abort_if_not_closed(self):
+        logger.deprecation("Use `abort()` instead")
+        self.abort()
 
     def open_base(
         self,
@@ -474,7 +492,6 @@ class EyesBase(_EyesBaseAbstract):
         retry = 0
         while retry < self.MAX_ITERATION:
             try:
-                self._validate_api_key()
                 self._validate_session_open()
                 self._init_providers()
 
@@ -501,7 +518,7 @@ class EyesBase(_EyesBaseAbstract):
 
     def _validate_session_open(self):
         if self.is_opened:
-            self.abort_if_not_closed()
+            self.abort()
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
@@ -518,13 +535,6 @@ class EyesBase(_EyesBaseAbstract):
         logger.debug(
             "FailureReports = '{}' ".format(self.configuration.failure_reports)
         )
-
-    def _validate_api_key(self):
-        if self.configuration.api_key is None:
-            raise EyesError(
-                "API key not set! Log in to https://applitools.com to obtain your"
-                " API Key and use 'api_key' to set it."
-            )
 
     def _create_session_start_info(self):
         # type: () -> None
