@@ -41,6 +41,7 @@ class RenderStatus(Enum):
     RENDERED = "rendered"
     ERROR = "error"
     NEED_MORE_DOM = "need-more-dom"
+    INTERNAL_FAILURE = "internal failure"
 
 
 @attr.s(frozen=True)
