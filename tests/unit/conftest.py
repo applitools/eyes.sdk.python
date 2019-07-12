@@ -11,6 +11,11 @@ from applitools.common import (
     Configuration,
     ImageMatchSettings,
     RunningSession,
+    SessionStartInfo,
+    SessionType,
+    BatchInfo,
+    AppEnvironment,
+    MatchLevel,
 )
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
@@ -73,6 +78,7 @@ def started_connector(configured_connector):
         timeout_sec=configured_connector.timeout_sec,
     )
     configured_connector._is_session_started = True
+
     return configured_connector
 
 
@@ -93,7 +99,7 @@ def app_output_with_screenshot(app_output, screenshot):
     return AppOutputWithScreenshot(app_output, screenshot)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def image_match_settings():
     return ImageMatchSettings()
 
@@ -106,7 +112,7 @@ def app_output_provider(image, app_output_with_screenshot):
     return apo
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def running_session():
     RUNNING_SESSION_DATA = """{
         "id": "some id",
@@ -117,3 +123,27 @@ def running_session():
     }"""
     RUNNING_SESSION_OBJ = attr_from_json(RUNNING_SESSION_DATA, RunningSession)
     return RUNNING_SESSION_OBJ
+
+
+@pytest.fixture(scope="function")
+def session_start_info():
+    return SessionStartInfo(
+        agent_id="eyes.core.python/3.15.4",
+        session_type=SessionType.SEQUENTIAL,
+        app_id_or_name="TestApp",
+        ver_id=None,
+        scenario_id_or_name="TestName",
+        batch_info=BatchInfo(),
+        baseline_env_name="Baseline env name",
+        environment_name="Env name",
+        environment=AppEnvironment(),
+        default_match_settings=ImageMatchSettings(match_level=MatchLevel.STRICT),
+        branch_name="branch Name",
+        parent_branch_name="parentBranchName",
+        baseline_branch_name="baselineBranchName",
+        compare_with_parent_branch=False,
+        ignore_baseline=False,
+        save_diffs=True,
+        render=False,
+        properties=[],
+    )

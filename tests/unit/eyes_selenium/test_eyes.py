@@ -141,10 +141,10 @@ def test_get_set_cut_provider(eyes):
         assert isinstance(eyes.cut_provider, UnscaledFixedCutProvider)
 
 
-def test_eyes_abort(eyes):
-    eyes.abort()
-
-
 def test_check_without_open_call(eyes):
     with pytest.raises(EyesError):
         eyes.check("Test", Target.window())
+
+
+def test_eyes_base_abort(eyes):
+    eyes.abort()
