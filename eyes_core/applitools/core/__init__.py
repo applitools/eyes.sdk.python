@@ -23,6 +23,7 @@ from .positioning import (
     NullRegionProvider,
     PositionProvider,
     RegionProvider,
+    PositionMomento,
 )
 from .scaling import (
     ContextBasedScaleProvider,
@@ -43,8 +44,12 @@ __all__ = (
     "ScaleProvider",
     "EyesBase",
     "PositionProvider",
+    "PositionMomento",
     "InvalidPositionProvider",
     "RegionProvider",
+    "FixedCutProvider",
+    "NullCutProvider",
+    "UnscaledFixedCutProvider",
     "NullRegionProvider",
     "NULL_REGION_PROVIDER",
     "CheckSettings",

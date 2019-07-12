@@ -49,3 +49,40 @@ def test_omnicomprgroup(eyes, driver):
     driver.get("https://www.omnicomprgroup.com/")
     eyes.check_window()
     eyes.close()
+
+
+@pytest.mark.platform("Linux")
+def test_nationalgeographic(eyes, driver):
+    eyes.stitch_mode = StitchMode.CSS
+    eyes.force_full_page_screenshot = True
+    driver = eyes.open(
+        driver,
+        "Python SDK",
+        "TestNationalgeographic_FPS",
+        {"width": 800, "height": 600},
+    )
+    driver.get(
+        "https://www.nationalgeographic.com/photography/proof/2016/05/omar-diop-refugee-mbororo-portraits/?disableAds=true"
+    )
+    eyes.check_window()
+    eyes.close()
+
+
+@pytest.mark.platform("Linux")
+def test_zachs_app(eyes, driver):
+    driver.get("https://www.goodrx.com/xarelto/what-is")
+    eyes.stitch_mode = StitchMode.CSS
+    eyes.send_dom = False
+    eyes.open(
+        driver,
+        app_name="Zachs Python app",
+        test_name="I_29263 FF CSS transition FULLY",
+        viewport_size={"width": 800, "height": 600},
+    )
+    proscons_ele = driver.find_element_by_xpath('//*[@id="pros-cons"]/..')
+    eyes.check("pros-cons", Target.region(proscons_ele).fully())
+
+    warnings_ele = driver.find_element_by_xpath('//*[@id="warnings"]/..')
+    eyes.check("warnings", Target.region(warnings_ele).fully())
+
+    eyes.close()

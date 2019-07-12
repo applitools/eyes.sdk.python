@@ -11,6 +11,11 @@ from applitools.common import (  # noqa
     ScreenOrientation,
 )
 from applitools.common.server import FailureReports  # noqa
+from applitools.core.cut import (
+    NullCutProvider,
+    FixedCutProvider,
+    UnscaledFixedCutProvider,
+)  # noqa
 
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
@@ -34,4 +39,7 @@ __all__ = (
     "DeviceName",
     "Configuration",
     "ScreenOrientation",
+    "FixedCutProvider",
+    "NullCutProvider",
+    "UnscaledFixedCutProvider",
 )

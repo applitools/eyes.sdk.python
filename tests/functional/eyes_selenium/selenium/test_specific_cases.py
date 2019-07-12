@@ -52,3 +52,10 @@ def test_check_window_with_send_dom(eyes, driver):
     assert "data-applitools-scroll" in driver.page_source
     assert "data-applitools-original-overflow" in driver.page_source
     eyes.close()
+
+
+def test_abort_eyes(eyes, driver):
+    driver.get("https://demo.applitools.com")
+    eyes.open(driver, "Python VisualGrid", "TestAbortSeleniumEyes")
+    eyes.check_window()
+    eyes.abort()

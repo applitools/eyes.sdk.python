@@ -4,10 +4,14 @@ import datetime
 import pytest
 from mock import patch
 
-from applitools.common import MatchLevel, StitchMode, BatchInfo
+from applitools.common import MatchLevel, StitchMode, BatchInfo, EyesError
 from applitools.common.utils import json_utils
-from applitools.core import NullScaleProvider
-from applitools.selenium import Eyes
+from applitools.core import (
+    NullScaleProvider,
+    FixedCutProvider,
+    UnscaledFixedCutProvider,
+)
+from applitools.selenium import Eyes, Target
 from applitools.selenium.visual_grid import VisualGridRunner
 
 
@@ -124,3 +128,23 @@ def test_batch_info_serializing(eyes, driver_mock):
         assert batch_info["name"] == "Batch Info"
         assert batch_info["batchSequenceName"] == "Sequence"
         assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
+
+
+def test_get_set_cut_provider(eyes):
+    if not eyes._visual_grid_eyes:
+        eyes.cut_provider = FixedCutProvider(20, 0, 0, 0)
+        assert isinstance(eyes._current_eyes._cut_provider, FixedCutProvider)
+        assert isinstance(eyes.cut_provider, FixedCutProvider)
+
+        eyes.cut_provider = UnscaledFixedCutProvider(10, 0, 5, 0)
+        assert isinstance(eyes._current_eyes._cut_provider, UnscaledFixedCutProvider)
+        assert isinstance(eyes.cut_provider, UnscaledFixedCutProvider)
+
+
+def test_check_without_open_call(eyes):
+    with pytest.raises(EyesError):
+        eyes.check("Test", Target.window())
+
+
+def test_eyes_base_abort(eyes):
+    eyes.abort()

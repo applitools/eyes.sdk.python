@@ -279,6 +279,9 @@ class RunningTest(object):
         self.close_queue.append(close_task)
         self.watch_close[close_task] = False
 
+    def abort(self):
+        self.eyes.abort()
+
     def all_tasks_completed(self, watch):
         # type: (Dict) -> bool
         if self.state == "completed":

@@ -2,7 +2,12 @@ import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.utils.general_utils import proxy_to
-from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
+from applitools.core import (
+    NULL_REGION_PROVIDER,
+    EyesBase,
+    RegionProvider,
+    NullCutProvider,
+)
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
@@ -121,11 +126,15 @@ class Eyes(EyesBase):
         self._raw_title = name if name else ""
 
         if not self.is_opened:
-            self.abort_if_not_closed()
+            self.abort()
             raise EyesError("you must call open() before checking")
 
         image = check_settings.values.image  # type: Image.Image
-        # TODO: Add cut provider
+
+        if not isinstance(self.cut_provider, NullCutProvider):
+            logger.debug("cutting...")
+            image = self.cut_provider.cut(image)
+            self.debug_screenshot_provider.save(image, "cut")
 
         self._screenshot = EyesImagesScreenshot(image)
         if not self.configuration.viewport_size:
