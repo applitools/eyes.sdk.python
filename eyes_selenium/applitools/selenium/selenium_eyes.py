@@ -27,6 +27,7 @@ from applitools.core import (
     PositionProvider,
     RegionProvider,
     TextTrigger,
+    NullCutProvider,
 )
 from applitools.selenium.capture.eyes_webdriver_screenshot import (
     EyesWebDriverScreenshotFactory,
@@ -756,10 +757,18 @@ class SeleniumEyes(EyesBase):
         sleep(self.configuration.wait_before_screenshots / 1000.0)
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
+
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
+            logger.info("Scalling")
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
+            self._debug_screenshot_provider.save(image, "scaled")
+
+        if not isinstance(self.cut_provider, NullCutProvider):
+            logger.info("Cutting")
+            image = self.cut_provider.cut(image)
+            self._debug_screenshot_provider.save(image, "cutted")
 
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
