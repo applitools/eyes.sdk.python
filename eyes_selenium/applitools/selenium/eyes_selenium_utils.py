@@ -101,6 +101,10 @@ _RETRIES = 3
 
 
 def is_mobile_platform(driver):
+    # type: (AnyWebDriver) -> bool
+    """
+    Returns whether the platform running is a mobile browser or app.
+    """
     driver = get_underlying_driver(driver)
     if isinstance(driver, AppiumWebDriver):
         return True
@@ -110,43 +114,27 @@ def is_mobile_platform(driver):
 def is_mobile_web(driver):
     # type: (AnyWebDriver) -> bool
     """
-    Returns whether the platform running is a mobile device or not.
-
-    :return: True if the platform running the test is a mobile platform. False otherwise.
-    """
-    is_mobile_script = """
-if( navigator.userAgent.match(/Android/i) ||
-    navigator.userAgent.match(/iPhone/i) ||
-    navigator.userAgent.match(/iPad/i)   ||
-    navigator.userAgent.match(/iPod/i) ) {
-    return true;
-} else {
-    return false;
-}
+    Returns whether the platform running is a mobile browser.
     """
     # if driver is selenium based
     platform_name = driver.desired_capabilities.get("platformName", "").lower()
-    # platformName sometime have different names
+    browser_name = driver.desired_capabilities.get("browserName", "").lower()
     is_mobile = "android" in platform_name or "ios" in platform_name
-    if not is_mobile:
-        try:
-            is_mobile = driver.execute_script(is_mobile_script)
-        except WebDriverException as e:
-            logger.warning(
-                "Got error during checking if current platform is mobile web. "
-                "\n\t {}".format(str(e))
-            )
-            is_mobile = False
-    return is_mobile
+    if is_mobile and browser_name:
+        return True
+    return False
 
 
 def is_mobile_app(driver):
-    # TODO: check with hybrid mobile apps
+    # type: (AnyWebDriver) -> bool
+    """
+    Returns whether the platform running is a mobile app.
+    """
     platform_name = driver.desired_capabilities.get("platformName", "").lower()
-    # platformName sometime have different names
-    is_mobile = "android" in platform_name or "ios" in platform_name
+    browser_name = driver.desired_capabilities.get("browserName", "").lower()
     app = driver.desired_capabilities.get("app", None)
-    if is_mobile and app:
+    is_mobile = "android" in platform_name or "ios" in platform_name
+    if is_mobile and app and not browser_name:
         return True
     return False
 
