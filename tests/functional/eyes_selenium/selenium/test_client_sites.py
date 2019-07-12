@@ -52,6 +52,23 @@ def test_omnicomprgroup(eyes, driver):
 
 
 @pytest.mark.platform("Linux")
+def test_nationalgeographic(eyes, driver):
+    eyes.stitch_mode = StitchMode.CSS
+    eyes.force_full_page_screenshot = True
+    driver = eyes.open(
+        driver,
+        "Python SDK",
+        "TestNationalgeographic_FPS",
+        {"width": 800, "height": 600},
+    )
+    driver.get(
+        "https://www.nationalgeographic.com/photography/proof/2016/05/omar-diop-refugee-mbororo-portraits/?disableAds=true"
+    )
+    eyes.check_window()
+    eyes.close()
+
+
+@pytest.mark.platform("Linux")
 def test_zachs_app(eyes, driver):
     driver.get("https://www.goodrx.com/xarelto/what-is")
     eyes.stitch_mode = StitchMode.CSS
