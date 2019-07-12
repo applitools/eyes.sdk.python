@@ -34,6 +34,7 @@ class Eyes(object):
         "device_pixel_ratio",
         "scale_ratio",
         "position_provider",
+        "cut_provider",
         "_original_frame_chain",
         "full_agent_id",
         "agent_setup",

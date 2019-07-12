@@ -50,7 +50,7 @@ class SeleniumPositionProvider(PositionProvider):
 
     def __enter__(self):
         # type: () -> SeleniumPositionProvider
-        if self._driver.is_mobile_device():
+        if self._driver.is_mobile_app:
             return self
         return super(SeleniumPositionProvider, self).__enter__()
 
@@ -61,7 +61,7 @@ class SeleniumPositionProvider(PositionProvider):
         exc_tb,  # type: Optional[Any]
     ):
         # type: (...) -> Union[CSSTranslatePositionProvider, ScrollPositionProvider]
-        if self._driver.is_mobile_device():
+        if self._driver.is_mobile_app:
             return self
         return super(SeleniumPositionProvider, self).__exit__(exc_type, exc_val, exc_tb)
 
@@ -71,7 +71,7 @@ class SeleniumPositionProvider(PositionProvider):
         :return: The entire size of the container which the position is relative to.
         """
         try:
-            if self._driver.is_mobile_device():
+            if self._driver.is_mobile_app:
                 width, height = self._driver.execute_script(
                     self._JS_GET_CONTENT_ENTIRE_SIZE
                 )
@@ -108,7 +108,7 @@ return [x, y]"""
         logger.debug(
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
-        if self._driver.is_mobile_device():
+        if self._driver.is_mobile_web:
             scroll_command = "window.scrollTo({0}, {1})".format(location.x, location.y)
             self._driver.execute_script(scroll_command)
             self._last_set_position = location
@@ -139,7 +139,7 @@ return [x, y]"""
         """
         The scroll position of the current frame.
         """
-        if self._driver.is_mobile_device():
+        if self._driver.is_mobile_web:
             x, y = self._driver.execute_script(
                 self._JS_GET_CURRENT_SCROLL_POSITION, self._scroll_root_element
             )

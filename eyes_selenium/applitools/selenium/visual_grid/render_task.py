@@ -19,7 +19,7 @@ from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
     from typing import Callable, Dict, Any, Text, List
-    from applitools.common.visual_grid import RenderStatusResults
+    from applitools.common import RenderStatusResults, Region
     from applitools.selenium.visual_grid import RunningTest, EyesConnector
 
 
@@ -36,7 +36,7 @@ class RenderTask(VGTask):
     rendering_info = attr.ib()
     region_selectors = attr.ib(hash=False, factory=list)
     size_mode = attr.ib(default=None)
-    region_to_check = attr.ib(hash=False, default=None)
+    region_to_check = attr.ib(hash=False, default=None)  # type: Region
     agent_id = attr.ib(default=None)
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
