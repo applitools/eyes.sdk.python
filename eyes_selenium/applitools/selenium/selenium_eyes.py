@@ -243,7 +243,7 @@ class SeleniumEyes(EyesBase):
         )
         self._original_frame_chain = self.driver.frame_chain.clone()
 
-        if not self.driver.is_mobile_web:
+        if not self.driver.is_mobile_platform:
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
@@ -525,7 +525,7 @@ class SeleniumEyes(EyesBase):
             logger.info("No OS set, checking for mobile OS...")
             # Since in Python Appium driver is the same for Android and iOS,
             # we need to use the desired capabilities to figure this out.
-            if self._driver.is_mobile_platform:
+            if eyes_selenium_utils.is_mobile_platform(self._driver):
                 platform_name = self._driver.platform_name
                 logger.info(platform_name + " detected")
                 platform_version = self._driver.platform_version
