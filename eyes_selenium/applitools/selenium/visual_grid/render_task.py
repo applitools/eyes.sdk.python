@@ -19,7 +19,7 @@ from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
     from typing import Callable, Dict, Any, Text, List
-    from applitools.common.visual_grid import RenderStatusResults
+    from applitools.common import RenderStatusResults, Region
     from applitools.selenium.visual_grid import RunningTest, EyesConnector
 
 
