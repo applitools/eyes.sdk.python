@@ -27,6 +27,7 @@ from applitools.core import (
     PositionProvider,
     RegionProvider,
     TextTrigger,
+    NullCutProvider,
 )
 from applitools.selenium.capture.eyes_webdriver_screenshot import (
     EyesWebDriverScreenshotFactory,
@@ -242,7 +243,7 @@ class SeleniumEyes(EyesBase):
         )
         self._original_frame_chain = self.driver.frame_chain.clone()
 
-        if not self.driver.is_mobile_device():
+        if not self.driver.is_mobile_platform:
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
@@ -293,7 +294,7 @@ class SeleniumEyes(EyesBase):
                     result = self._check_frame_fluent(name, check_settings)
             else:
                 logger.debug("default case")
-                if not self.driver.is_mobile_device():
+                if not self.driver.is_mobile_platform:
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
@@ -498,7 +499,7 @@ class SeleniumEyes(EyesBase):
         #     logger.info("Ignored (viewport size given explicitly)")
         #     return None
 
-        if not self.driver.is_mobile_device():
+        if not self.driver.is_mobile_platform:
             original_frame = self.driver.frame_chain.clone()
             self.driver.switch_to.default_content()
 
@@ -524,7 +525,7 @@ class SeleniumEyes(EyesBase):
             logger.info("No OS set, checking for mobile OS...")
             # Since in Python Appium driver is the same for Android and iOS,
             # we need to use the desired capabilities to figure this out.
-            if eyes_selenium_utils.is_mobile_device(self._driver):
+            if eyes_selenium_utils.is_mobile_platform(self._driver):
                 platform_name = self._driver.platform_name
                 logger.info(platform_name + " detected")
                 platform_version = self._driver.platform_version
@@ -667,7 +668,7 @@ class SeleniumEyes(EyesBase):
 
     def _get_screenshot(self):
         with self._driver.switch_to.frames_and_back(self._original_frame_chain):
-            if self.position_provider and not self.driver.is_mobile_device():
+            if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.push_state()
 
         self._try_hide_caret()
@@ -682,7 +683,7 @@ class SeleniumEyes(EyesBase):
             self._last_screenshot = self._viewport_screenshot(scale_provider)
 
         with self._driver.switch_to.frames_and_back(self._original_frame_chain):
-            if self.position_provider and not self.driver.is_mobile_device():
+            if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.pop_state()
 
         return self._last_screenshot
@@ -756,10 +757,18 @@ class SeleniumEyes(EyesBase):
         sleep(self.configuration.wait_before_screenshots / 1000.0)
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
+
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
+            logger.info("Scalling")
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
+            self._debug_screenshot_provider.save(image, "scaled")
+
+        if not isinstance(self.cut_provider, NullCutProvider):
+            logger.info("Cutting")
+            image = self.cut_provider.cut(image)
+            self._debug_screenshot_provider.save(image, "cutted")
 
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
@@ -781,7 +790,7 @@ class SeleniumEyes(EyesBase):
         if self._target_element is None:
             # No element? we must be checking the window.
             return None
-        if self.driver.is_mobile_device():
+        if self.driver.is_mobile_platform:
             logger.debug("NATIVE context identified, skipping 'ensure element visible'")
             return None
 

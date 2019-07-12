@@ -96,13 +96,13 @@ class _EyesSwitchTo(object):
     def frame_and_back(self, frame_reference):
         # type: (FrameReference) -> Generator
         cur_frame = None
-        if not self._driver.is_mobile_device():
+        if not self._driver.is_mobile_app:
             self.frame(frame_reference)
             cur_frame = self._driver.frame_chain.peek
 
         yield cur_frame
 
-        if not self._driver.is_mobile_device():
+        if not self._driver.is_mobile_app:
             self.parent_frame()
 
     @contextlib.contextmanager
@@ -110,13 +110,13 @@ class _EyesSwitchTo(object):
         # type: (FrameChain) -> Generator
         cur_frame = None
         origin_fc = self._driver.frame_chain.clone()
-        if not self._driver.is_mobile_device():
+        if not self._driver.is_mobile_app:
             self.frames(frame_chain)
             cur_frame = self._driver.frame_chain.peek
 
         yield cur_frame
 
-        if not self._driver.is_mobile_device():
+        if not self._driver.is_mobile_app:
             self.frames(origin_fc)
 
     def frame(self, frame_reference):
@@ -324,6 +324,11 @@ class EyesWebDriver(object):
         return self._driver.desired_capabilities.get("platformVersion", None)
 
     def is_mobile_device(self):
+        logger.deprecation("Use `is_mobile_platform` property instead")
+        return self.is_mobile_platform
+
+    @property
+    def is_mobile_platform(self):
         # type: () -> bool
         """
         Returns whether the platform running is a mobile device or not.
@@ -331,7 +336,15 @@ class EyesWebDriver(object):
         :return: True if the platform running the test is a mobile platform.
                  False otherwise.
         """
-        return eyes_selenium_utils.is_mobile_device(self._driver)
+        return eyes_selenium_utils.is_mobile_platform(self._driver)
+
+    @property
+    def is_mobile_web(self):
+        return eyes_selenium_utils.is_mobile_web(self._driver)
+
+    @property
+    def is_mobile_app(self):
+        return eyes_selenium_utils.is_mobile_app(self._driver)
 
     def get(self, url):
         # type: (Text) -> Optional[Any]
