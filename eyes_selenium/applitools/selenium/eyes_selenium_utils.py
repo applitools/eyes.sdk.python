@@ -100,14 +100,21 @@ _SLEEP_SEC = 1
 _RETRIES = 3
 
 
-def is_mobile_device(driver):
+def is_mobile_platform(driver):
+    driver = get_underlying_driver(driver)
+    if isinstance(driver, AppiumWebDriver):
+        return True
+    return is_mobile_web(driver) or is_mobile_app(driver)
+
+
+def is_mobile_web(driver):
     # type: (AnyWebDriver) -> bool
     """
     Returns whether the platform running is a mobile device or not.
 
     :return: True if the platform running the test is a mobile platform. False otherwise.
     """
-    is_mobile = """
+    is_mobile_script = """
 if( navigator.userAgent.match(/Android/i) ||
     navigator.userAgent.match(/iPhone/i) ||
     navigator.userAgent.match(/iPad/i)   ||
@@ -117,29 +124,31 @@ if( navigator.userAgent.match(/Android/i) ||
     return false;
 }
     """
-    # TODO: Implement proper UserAgent handling
-    driver = get_underlying_driver(driver)
-    if isinstance(driver, AppiumWebDriver):
-        return True
-
     # if driver is selenium based
     platform_name = driver.desired_capabilities.get("platformName", "").lower()
     # platformName sometime have different names
-    is_mobile_platform = "android" in platform_name or "ios" in platform_name
-    if not is_mobile_platform:
+    is_mobile = "android" in platform_name or "ios" in platform_name
+    if not is_mobile:
         try:
-            is_mobile_platform = driver.execute_script(is_mobile)
+            is_mobile = driver.execute_script(is_mobile_script)
         except WebDriverException as e:
             logger.warning(
-                "Got error during checking if current platform is mobile. "
+                "Got error during checking if current platform is mobile web. "
                 "\n\t {}".format(str(e))
             )
-            if "Method is not implemented" in str(e):
-                # potentially mobile app
-                is_mobile_platform = True
-            else:
-                is_mobile_platform = False
-    return is_mobile_platform
+            is_mobile = False
+    return is_mobile
+
+
+def is_mobile_app(driver):
+    # TODO: check with hybrid mobile apps
+    platform_name = driver.desired_capabilities.get("platformName", "").lower()
+    # platformName sometime have different names
+    is_mobile = "android" in platform_name or "ios" in platform_name
+    app = driver.desired_capabilities.get("app", None)
+    if is_mobile and app:
+        return True
+    return False
 
 
 def get_underlying_driver(driver):
@@ -210,7 +219,7 @@ def set_browser_size(driver, required_size):
     retries_left = _RETRIES
 
     # set browser size for mobile devices isn't working
-    if is_mobile_device(driver):
+    if is_mobile_web(driver):
         return True
 
     while True:
@@ -380,7 +389,7 @@ def timeout(timeout):
 
 
 def is_landscape_orientation(driver):
-    if is_mobile_device(driver):
+    if is_mobile_web(driver):
         # could be AppiumRemoteWebDriver
         appium_driver = get_underlying_driver(
             driver
@@ -453,7 +462,7 @@ def scroll_root_element_from(driver, container=None):
         return driver.find_element_by_tag_name("html")
 
     scroll_root_element = None
-    if not driver.is_mobile_device():
+    if not driver.is_mobile_app:
         if container is None:
             scroll_root_element = root_html()
         else:
@@ -479,6 +488,6 @@ def current_frame_scroll_root_element(driver):
     root_element = None
     if cur_frame:
         root_element = cur_frame.scroll_root_element
-    if root_element is None and not driver.is_mobile_device():
+    if root_element is None and not driver.is_mobile_app:
         root_element = driver.find_element_by_tag_name("html")
     return root_element

@@ -79,7 +79,7 @@ def test_selenium_and_appium_work(eyes_open):
 
 
 @pytest.mark.platform("iOS")
-@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+@pytest.mark.test_page_url("https://www.goodrx.com/")
 @pytest.mark.parametrize(
     "eyes",
     [
