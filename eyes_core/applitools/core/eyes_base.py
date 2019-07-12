@@ -307,7 +307,7 @@ class EyesBase(_EyesBaseAbstract):
         try:
             logger.debug("close({})".format(raise_ex))
             if not self._is_opened:
-                raise ValueError("Eyes not open")
+                raise EyesError("Eyes not open")
 
             self._is_opened = False
 
