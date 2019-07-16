@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import math
 import typing as tp
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
@@ -146,6 +147,14 @@ class EyesWebElement(object):
     @property
     def location(self):
         return self._element.location
+
+    @property
+    def is_attached_to_page(self):
+        try:
+            self.location
+            return True
+        except WebDriverException:
+            return False
 
     @property
     def size(self):
