@@ -62,11 +62,13 @@ class CheckSettings(object):
         # type: () -> None
         self.values = CheckSettingsValues()
 
-    def layout(self):
-        # type: ()  -> CheckSettings
+    def layout(self, *args):
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
-        return self
+        if not args:
+            return self
+        return self._layout_regions(*args)
 
     def exact(self):
         # type: ()  -> CheckSettings
@@ -75,17 +77,21 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.EXACT
         return self
 
-    def strict(self):
-        # type: ()  -> CheckSettings
+    def strict(self, *args):
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
-        return self
+        if not args:
+            return self
+        return self._strict_regions(*args)
 
-    def content(self):
-        # type: ()  -> CheckSettings
+    def content(self, *args):
+        # type: (*REGION_VALUES)  -> CheckSettings
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
-        return self
+        if not args:
+            return self
+        return self._content_regions(*args)
 
     def match_level(self, match_level):
         # type: (MatchLevel)  -> CheckSettings
@@ -127,7 +133,7 @@ class CheckSettings(object):
 
     ignore = ignore_regions
 
-    def layout_regions(self, *regions):
+    def _layout_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more layout regions. """
         self.values.layout_regions = self.__regions(
@@ -135,7 +141,7 @@ class CheckSettings(object):
         )
         return self
 
-    def strict_regions(self, *regions):
+    def _strict_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more strict regions. """
         self.values.strict_regions = self.__regions(
@@ -143,7 +149,7 @@ class CheckSettings(object):
         )
         return self
 
-    def content_regions(self, *regions):
+    def _content_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more content regions. """
         self.values.content_regions = self.__regions(
