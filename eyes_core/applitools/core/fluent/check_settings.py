@@ -7,7 +7,7 @@ from .region import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
-    IgnoreRegionByRectangle,
+    RegionByRectangle,
 )
 
 if typing.TYPE_CHECKING:
@@ -248,7 +248,7 @@ class CheckSettings(object):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
-            return IgnoreRegionByRectangle(region)
+            return RegionByRectangle(region)
         raise TypeError("Unknown region type.")
 
     def _floating_provider_from(self, region, bounds):

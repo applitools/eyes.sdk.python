@@ -2,9 +2,9 @@ from .region import (
     FloatingRegionBy,
     FloatingRegionByCssSelector,
     FloatingRegionByElement,
-    IgnoreRegionBy,
-    IgnoreRegionByCssSelector,
-    IgnoreRegionByElement,
+    RegionBy,
+    RegionByCssSelector,
+    RegionByElement,
 )
 from .selector import SelectorByElement, SelectorByLocator
 from .selenium_check_settings import FrameLocator, SeleniumCheckSettings
@@ -14,9 +14,9 @@ __all__ = (
     "Target",
     "SeleniumCheckSettings",
     "FrameLocator",
-    "IgnoreRegionBy",
-    "IgnoreRegionByElement",
-    "IgnoreRegionByCssSelector",
+    "RegionBy",
+    "RegionByElement",
+    "RegionByCssSelector",
     "FloatingRegionBy",
     "FloatingRegionByElement",
     "FloatingRegionByCssSelector",
