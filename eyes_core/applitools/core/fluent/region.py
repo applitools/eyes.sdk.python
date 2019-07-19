@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 __all__ = (
     "GetFloatingRegion",
     "GetRegion",
-    "IgnoreRegionByRectangle",
+    "RegionByRectangle",
     "FloatingRegionByRectangle",
 )
 
@@ -35,7 +35,7 @@ class GetFloatingRegion(GetRegion):
 
 
 @attr.s
-class IgnoreRegionByRectangle(GetRegion):
+class RegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Region
 
     def get_regions(self, eyes, screenshot):

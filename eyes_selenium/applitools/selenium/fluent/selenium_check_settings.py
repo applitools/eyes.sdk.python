@@ -15,8 +15,8 @@ from applitools.selenium.webelement import EyesWebElement
 from .region import (
     FloatingRegionByCssSelector,
     FloatingRegionByElement,
-    IgnoreRegionByCssSelector,
-    IgnoreRegionByElement,
+    RegionByCssSelector,
+    RegionByElement,
 )
 
 if typing.TYPE_CHECKING:
@@ -139,15 +139,15 @@ class SeleniumCheckSettings(CheckSettings):
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
             logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
-            return IgnoreRegionByCssSelector(region)
+            return RegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
             sel = _css_selector_from_(by, val)
             logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
-            return IgnoreRegionByCssSelector(sel)
+            return RegionByCssSelector(sel)
         elif is_webelement(region):
             logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
-            return IgnoreRegionByElement(region)
+            return RegionByElement(region)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name
         )
