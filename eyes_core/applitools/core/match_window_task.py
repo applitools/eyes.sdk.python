@@ -167,7 +167,7 @@ class MatchWindowTask(object):
                 image_match_settings, regions, region_selectors
             )
 
-        if check_settings.values.match_level is not None:
+        if check_settings and check_settings.values.match_level is not None:
             image_match_settings.match_level = check_settings.values.match_level
 
         user_inputs = user_inputs or []
