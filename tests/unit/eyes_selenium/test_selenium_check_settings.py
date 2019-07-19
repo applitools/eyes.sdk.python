@@ -30,6 +30,19 @@ def get_regions_from_(method_name, *args):
     return regions
 
 
+def test_check_region_and_frame_with_unsupported_input():
+    with pytest.raises(TypeError):
+        cs = get_cs_from_method("region", 12355)
+    with pytest.raises(TypeError):
+        cs = get_cs_from_method("frame", [By.XPATH, "some"])
+
+
+@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+def test_match_region_with_unsupported_input(method_name):
+    with pytest.raises(TypeError):
+        cs = get_cs_from_method(method_name, 1245)
+
+
 def test_check_frame(method_name="frame"):
     frame_reference = "frame-name-or-id"
     cs = get_cs_from_method(method_name, frame_reference)
