@@ -4,7 +4,7 @@ from .region import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
-    IgnoreRegionByRectangle,
+    RegionByRectangle,
 )
 from .selector import GetSelector
 
@@ -15,6 +15,6 @@ __all__ = (
     "GetRegion",
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
-    "IgnoreRegionByRectangle",
+    "RegionByRectangle",
     "GetSelector",
 )
