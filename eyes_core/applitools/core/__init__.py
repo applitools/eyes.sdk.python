@@ -14,7 +14,7 @@ from .fluent import (
     GetFloatingRegion,
     GetRegion,
     GetSelector,
-    IgnoreRegionByRectangle,
+    RegionByRectangle,
 )
 from .match_window_task import MatchWindowTask
 from .positioning import (
@@ -58,7 +58,7 @@ __all__ = (
     "GetRegion",
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
-    "IgnoreRegionByRectangle",
+    "RegionByRectangle",
     "GetSelector",
     "ServerConnector",
     "AppOutputWithScreenshot",
