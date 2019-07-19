@@ -6,6 +6,7 @@ from applitools.common import (
     FloatingMatchSettings,
     MatchWindowData,
     Region,
+    MatchLevel,
 )
 from applitools.core import CheckSettings, MatchWindowTask
 
@@ -41,6 +42,9 @@ def test_perform_match_with_no_regions(
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
         ims = match_window_data.options.image_match_settings
 
+    assert (
+        match_window_data.options.image_match_settings.match_level == MatchLevel.STRICT
+    )
     assert match_window_data.user_inputs == []
     assert ims.ignore == []
     assert ims.layout == []
@@ -55,8 +59,12 @@ def test_perform_match_collect_regions_from_screenshot(
     ignore_region = Region(5, 6, 7, 8)
     max_offset = 25
     floating_region = Region(0, 1, 2, 3)
+    content_region = Region(1, 2, 2, 1)
     check_settings = (
-        CheckSettings().ignore(ignore_region).floating(max_offset, floating_region)
+        CheckSettings()
+        .ignore(ignore_region)
+        .floating(max_offset, floating_region)
+        .content(content_region)
     )
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
@@ -70,6 +78,8 @@ def test_perform_match_collect_regions_from_screenshot(
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
         ims = match_window_data.options.image_match_settings
 
+    assert ims.content == [content_region]
+    assert ims.match_level == MatchLevel.CONTENT
     assert ims.ignore == [ignore_region]
 
     assert ims.floating == [
