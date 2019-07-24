@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Union, TYPE_CHECKING, Text
 
 import attr
 
@@ -12,6 +12,9 @@ from applitools.common.visual_grid import (
 
 from .configuration import Configuration
 from .misc import BrowserType, StitchMode
+
+if TYPE_CHECKING:
+    from applitools.common.visual_grid import DeviceName
 
 __all__ = ("SeleniumConfiguration",)
 
@@ -29,11 +32,17 @@ class SeleniumConfiguration(Configuration):
     hide_caret = attr.ib(default=False)  # type: bool
 
     # Rendering Configuration
-    is_throw_exception_on = False
-    is_rendering_config = False
+    is_throw_exception_on = False  # type: bool
+    is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
-    def add_browser(self, arg1, arg2=None, arg3=None):
+    def add_browser(
+        self,
+        arg1,  # type: Union[RenderBrowserInfo, int]
+        arg2=None,  # type: Optional[int]
+        arg3=None,  # type: Optional[BrowserType]
+    ):
+        # type: (...)->SeleniumConfiguration
         if isinstance(arg1, RenderBrowserInfo):
             self._browsers_info.append(arg1)
         elif (
@@ -51,6 +60,7 @@ class SeleniumConfiguration(Configuration):
         return self
 
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
+        # type: (DeviceName, ScreenOrientation) -> SeleniumConfiguration
         argument_guard.not_none(device_name)
         emu = ChromeEmulationInfo(device_name, orientation)
         self.add_browser(RenderBrowserInfo(emulation_info=emu))
@@ -58,6 +68,7 @@ class SeleniumConfiguration(Configuration):
 
     @property
     def browsers_info(self):
+        # type: () -> List[RenderBrowserInfo]
         if self._browsers_info:
             return self._browsers_info
         browser_info = RenderBrowserInfo(
@@ -69,4 +80,5 @@ class SeleniumConfiguration(Configuration):
 
     @staticmethod
     def all_fields():
+        # type: () -> List[Text]
         return list(attr.fields_dict(SeleniumConfiguration).keys())
