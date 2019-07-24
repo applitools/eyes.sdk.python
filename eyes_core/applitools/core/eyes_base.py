@@ -610,9 +610,6 @@ class EyesBase(_EyesBaseAbstract):
             screenshot = screenshot.sub_screenshot(region)
             self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
 
-        title = self._title
-        logger.info("Done getting title")
-
         if not self._dom_url and (
             self.configuration.send_dom or check_settings.values.send_dom
         ):
@@ -620,7 +617,9 @@ class EyesBase(_EyesBaseAbstract):
             self._dom_url = self._try_post_dom_snapshot(dom_json)
             logger.info("dom_url: {}".format(self._dom_url))
 
-        app_output = AppOutput(title=title, screenshot64=None, dom_url=self._dom_url)
+        app_output = AppOutput(
+            title=self._title, screenshot64=None, dom_url=self._dom_url
+        )
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done")
         return result

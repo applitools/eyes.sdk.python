@@ -1,5 +1,5 @@
-from . import argument_guard, image_utils  # noqa
-from .compat import (  # noqa
+from . import argument_guard, compat, image_utils  # noqa
+from .compat import (  # type: ignore # noqa
     ABC,
     gzip_compress,
     iteritems,

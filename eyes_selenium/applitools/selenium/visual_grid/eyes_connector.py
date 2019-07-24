@@ -117,8 +117,8 @@ class EyesConnector(EyesBase):
 
     @property
     def _title(self):
-        # type: () -> Optional[Any]
-        return None
+        # type: () -> Text
+        return ""
 
     @property
     def _environment(self):

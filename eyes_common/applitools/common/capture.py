@@ -23,6 +23,7 @@ class EyesScreenshot(ABC):
 
     @property
     def image(self):
+        # type: () -> Image
         return self._image
 
     @abc.abstractmethod

@@ -13,7 +13,7 @@ from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import List, Dict, Union, Optional
-    from .utils.custom_types import ViewPort, Num
+    from .utils.custom_types import ViewPort
     from .visual_grid import EmulationDevice
 
 __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
@@ -76,10 +76,10 @@ class Point(DictAccessMixin):
 
     x = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
     y = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -98,28 +98,13 @@ class Point(DictAccessMixin):
 
     @classmethod
     def zero(cls):
+        # type: () -> Point
         return cls(0, 0)
 
     @classmethod
     def from_(cls, obj):
         # type: (Union[dict, Point]) -> Point
         return cls(obj["x"], obj["y"])
-
-    def length(self):
-        # type: () -> Num
-        """
-        Returns the distance from (0, 0).
-        """
-        return math.sqrt(self.x ** 2 + self.y ** 2)
-
-    def distance_to(self, p):
-        # type: (Point) -> Num
-        """
-        Calculate the distance between two points.
-
-        :return: The distance to p.
-        """
-        return (self - p).length()
 
     def as_tuple(self):
         # type: () -> tuple
@@ -140,7 +125,7 @@ class Point(DictAccessMixin):
         return Point(self.x, self.y)
 
     def move_to(self, x, y):
-        # type: (Num, Num) -> None
+        # type: (int, int) -> None
         """
         Moves the point to new x, y.
 
@@ -151,7 +136,7 @@ class Point(DictAccessMixin):
         self.y = y
 
     def offset(self, dx, dy):
-        # type: (Num, Num) -> Point
+        # type: (int, int) -> Point
         """
         Move to new (x+dx,y+dy).
 
@@ -168,50 +153,13 @@ class Point(DictAccessMixin):
         return self
 
     def offset_negative(self, dx, dy):
-        # type: (Num, Num) -> Point
+        # type: (int, int) -> Point
         self.x -= dx
         self.y -= dy
         return self
 
-    def rotate(self, rad):
-        # type: (Num) -> Point
-        """
-        Rotate counter-clockwise around the origin by rad radians.
-
-        Positive y goes *up,* as in traditional mathematics.
-
-        Interestingly, you can use this in y-down computer graphics, if
-        you just remember that it turns clockwise, rather than
-        counter-clockwise.
-
-        :param rad: The radians to rotate the point.
-        :return: The new position is returned as a new Point.
-        """
-        s, c = [f(rad) for f in (math.sin, math.cos)]
-        x, y = (c * self.x - s * self.y, s * self.x + c * self.y)
-        return Point(x, y)
-
-    def rotate_about(self, p, theta):
-        # type: (Point, Num) -> Point
-        """
-        Rotate counter-clockwise around a point, by theta degrees.
-
-        Positive y goes *up,* as in traditional mathematics.
-
-        The new position is returned as a new Point.
-
-        :param p: A point to rotate around.
-        :param theta: Theta degrees to rotate around.
-        :return: The result of the rotation.
-        """
-        result = self.clone()
-        result.offset(-p.x, -p.y)
-        result.rotate(theta)
-        result.offset(p.x, p.y)
-        return result
-
     def scale(self, scale_ratio):
-        # type: (Num) -> Point
+        # type: (float) -> Point
         return Point(
             int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio))
         )
@@ -225,16 +173,16 @@ class Region(DictAccessMixin):
 
     left = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
     top = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
     width = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
     height = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: Num
+    )  # type: int
     coordinates_type = attr.ib(
         default=CoordinatesType.SCREENSHOT_AS_IS, metadata={JsonInclude.THIS: True}
     )  # type: CoordinatesType
@@ -271,20 +219,22 @@ class Region(DictAccessMixin):
 
     @property
     def x(self):
+        # type: () -> int
         return self.left
 
     @property
     def y(self):
+        # type: () -> int
         return self.top
 
     @property
     def right(self):
-        # type: () -> Num
+        # type: () -> int
         return self.left + self.width
 
     @property
     def bottom(self):
-        # type: () -> Num
+        # type: () -> int
         return self.top + self.height
 
     @property
@@ -471,7 +421,7 @@ class Region(DictAccessMixin):
         return Point(int(round(self.width / 2)), int(round(self.height / 2)))
 
     def offset(self, dx, dy):
-        # type: (Num, Num) -> Region
+        # type: (int, int) -> Region
         location = self.location.offset(dx, dy)
         return Region(
             left=location.x,
@@ -481,7 +431,7 @@ class Region(DictAccessMixin):
         )
 
     def scale(self, scale_ratio):
-        # type: (Num) -> Region
+        # type: (float) -> Region
         return Region(
             left=int(math.ceil(self.left * scale_ratio)),
             top=int(math.ceil(self.top * scale_ratio)),

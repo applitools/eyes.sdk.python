@@ -2,6 +2,7 @@ import enum
 import json
 import re
 from datetime import datetime
+from typing import Dict, Text
 
 import attr
 
@@ -64,7 +65,7 @@ def attr_from_response(response, cls):
 
 
 # Uses for replacing of regular attr.name to specified in metadata
-REPLACE_TO_DICT = dict()
+REPLACE_TO_DICT = dict()  # type: Dict[Text, Text]
 
 
 class _CamelCasedDict(dict):
