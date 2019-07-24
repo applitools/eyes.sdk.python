@@ -192,8 +192,8 @@ class ServerConnector(object):
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
 
-    api_key = None
-    timeout_sec = None
+    api_key = None  # type: Optional[Text]
+    timeout_sec = None  # type: Optional[float]
     server_url = None  # type: Optional[Text]
     _is_session_started = False
     _request = None  # type: Optional[_Request]
@@ -379,7 +379,7 @@ class ServerConnector(object):
         )
 
     def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> bool
+        # type: (RunningRender, VGResource) -> Text
         argument_guard.not_none(running_render)
         argument_guard.not_none(resource)
         if self._render_info is None:
@@ -430,6 +430,7 @@ class ServerConnector(object):
         return response
 
     def render_status_by_id(self, render_id):
+        # type: (Text) -> RenderStatusResults
         argument_guard.not_none(render_id)
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")

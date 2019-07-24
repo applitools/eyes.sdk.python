@@ -18,7 +18,9 @@ class ImagesCheckSettingsValues(CheckSettingsValues):
 
 @attr.s
 class ImagesCheckSettings(CheckSettings):
-    values = attr.ib(default=ImagesCheckSettingsValues())
+    values = attr.ib(
+        default=ImagesCheckSettingsValues()
+    )  # type: ImagesCheckSettingsValues
 
 
 class Target(CheckTarget):
@@ -41,7 +43,7 @@ class Target(CheckTarget):
         )
 
     @staticmethod
-    def region(image_or_path, rect):  # type: ignore
+    def region(image_or_path, rect):
         # type: (Union[Image.Image, Text], Region) -> ImagesCheckSettings
         check_settings = Target.image(image_or_path)
         check_settings.values.target_region = rect

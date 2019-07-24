@@ -38,9 +38,9 @@ class CheckSettingsValues(object):
     name = attr.ib(init=False, default=None)  # type: Optional[Text]
 
     send_dom = attr.ib(init=False, default=None)  # type: bool
-    use_dom = attr.ib(init=False, default=None)
-    enable_patterns = attr.ib(init=False, default=None)
-    ignore_displacement = attr.ib(init=False, default=None)
+    use_dom = attr.ib(init=False, default=None)  # type: bool
+    enable_patterns = attr.ib(init=False, default=None)  # type: bool
+    ignore_displacement = attr.ib(init=False, default=None)  # type: bool
 
     ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
@@ -57,11 +57,9 @@ class CheckSettings(object):
     The Match settings object to use in the various Eyes.Check methods.
     """
 
-    values = attr.ib(init=False)
-
-    def __attrs_post_init__(self):
-        # type: () -> None
-        self.values = CheckSettingsValues()
+    values = attr.ib(
+        init=False, factory=CheckSettingsValues
+    )  # type: CheckSettingsValues
 
     def layout(self, *args):
         # type: (*REGION_VALUES)  -> CheckSettings
@@ -179,7 +177,7 @@ class CheckSettings(object):
         """
         if isinstance(arg1, int) and isinstance(arg2, Region):
             max_offset = arg1  # type: int
-            region = arg2  # type: Region
+            region = arg2  # type: ignore
             bounds = FloatingBounds(
                 max_up_offset=max_offset,
                 max_down_offset=max_offset,
@@ -192,7 +190,7 @@ class CheckSettings(object):
             and isinstance(arg4, int)
             and isinstance(arg5, int)
         ):
-            region = arg1
+            region = arg1  # type: ignore
             bounds = FloatingBounds(
                 max_up_offset=arg2,
                 max_down_offset=arg3,

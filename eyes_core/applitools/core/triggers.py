@@ -7,6 +7,7 @@ import typing as tp
 from collections import OrderedDict
 
 from applitools.common.errors import EyesError
+from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
     from applitools.common.geometry import Point, Region
@@ -31,7 +32,11 @@ _TRIGGER_TYPE = {
 }
 
 
-class MouseTrigger(object):
+class ActionTrigger(ABC):
+    pass
+
+
+class MouseTrigger(ActionTrigger):
     """Encapsulates a mouse trigger."""
 
     def __init__(self, action, control, location):
@@ -66,7 +71,7 @@ class MouseTrigger(object):
         return "%s [%s] %s" % (self.action, self.control, self.location)
 
 
-class TextTrigger(object):
+class TextTrigger(ActionTrigger):
     """Encapsulates a text input by the user."""
 
     def __init__(self, control, text):

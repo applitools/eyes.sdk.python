@@ -124,7 +124,7 @@ class _EyesBaseAbstract(ABC):
 
 
 class EyesBase(_EyesBaseAbstract):
-    MAX_ITERATION = 10
+    _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
     _last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -490,7 +490,7 @@ class EyesBase(_EyesBaseAbstract):
         self._log_open_base()
 
         retry = 0
-        while retry < self.MAX_ITERATION:
+        while retry < self._MAX_ITERATIONS:
             try:
                 self._validate_session_open()
                 self._init_providers()
