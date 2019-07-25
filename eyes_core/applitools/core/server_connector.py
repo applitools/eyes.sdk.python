@@ -430,7 +430,7 @@ class ServerConnector(object):
         return response
 
     def render_status_by_id(self, render_id):
-        # type: (Text) -> RenderStatusResults
+        # type: (Text) -> List[RenderStatusResults]
         argument_guard.not_none(render_id)
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")

@@ -36,7 +36,9 @@ class VisualGridRunner(object):
         if sys.version_info >= (3, 6):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
-        self.executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
+        self.executor = ThreadPoolExecutor(  # type: ignore
+            max_workers=concurrent_sessions, **kwargs
+        )
         self._rendering_info = None  # type: Optional[RenderingInfo]
         self.resource_cache = ResourceCache()
         self.put_cache = ResourceCache()
@@ -80,7 +82,9 @@ class VisualGridRunner(object):
         while sum(r.score for r in self.all_running_tests) > 0:
             sleep(0.5)
         self.still_running = False
-        for future in concurrent.futures.as_completed(self.future_to_task):
+        for future in concurrent.futures.as_completed(  # type: ignore
+            self.future_to_task
+        ):
             task = self.future_to_task[future]
             try:
                 future.result()

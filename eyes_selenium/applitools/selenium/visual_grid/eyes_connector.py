@@ -71,7 +71,7 @@ class EyesConnector(EyesBase):
         return self._server_connector.download_resource(url)
 
     def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> bool
+        # type: (RunningRender, VGResource) -> Text
         return self._server_connector.render_put_resource(running_render, resource)
 
     def render(self, *render_requests):

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Text
+from typing import TYPE_CHECKING, Any
 
 import attr
 
@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 @attr.s
 class GetSelector(object):
-    _sel = attr.ib()  # type: Text
+    _sel = attr.ib()  # type: Any
 
     def get_selector(self, eyes):
-        # type: (EyesBase) -> Text
+        # type: (EyesBase) -> Any
         return self._sel

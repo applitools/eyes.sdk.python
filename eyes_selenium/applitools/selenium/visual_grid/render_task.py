@@ -3,7 +3,6 @@ import typing
 
 import attr
 import tinycss2
-
 from applitools.common import (
     EyesError,
     RenderInfo,
@@ -42,10 +41,10 @@ class RenderTask(VGTask):
 
     def __attrs_post_init__(self):
         # type: () -> None
-        self.func_to_run = self.perform
-        self.all_blobs = []
-        self.request_resources = {}
-        self.resource_urls = []
+        self.func_to_run = self.perform  # type: Callable
+        self.all_blobs = []  # type: List[VGResource]
+        self.request_resources = {}  # type: Dict[Text, VGResource]
+        self.resource_urls = []  # type: List[Text]
 
     def perform(self):
         # type: () -> RenderStatusResults
@@ -158,7 +157,7 @@ class RenderTask(VGTask):
     def poll_render_status(self, render_request):
         # type: (RenderRequest) -> List[RenderStatusResults]
         iterations = 0
-        statuses = []
+        statuses = []  # type: List[RenderStatusResults]
         if not render_request.render_id:
             raise EyesError("RenderStatus: Got empty renderId!")
         fails_count = 0
@@ -180,7 +179,7 @@ class RenderTask(VGTask):
                     time.sleep(0.5)
                 if statuses or 0 < fails_count < 3:
                     break
-            finished = (
+            finished = bool(
                 statuses
                 and statuses[0] is not None
                 and (
