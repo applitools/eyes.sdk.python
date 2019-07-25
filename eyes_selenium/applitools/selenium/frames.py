@@ -55,7 +55,7 @@ class Frame(object):
 
     def _scroll_root_element(self, driver):
         scroll_root = self.scroll_root_element
-        if scroll_root is None:
+        if scroll_root is None or not scroll_root.is_attached_to_page:
             logger.debug("no scroll root element. selecting default.")
             scroll_root = driver.find_element_by_tag_name("html")
         return scroll_root
