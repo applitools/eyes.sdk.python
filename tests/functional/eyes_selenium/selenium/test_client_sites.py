@@ -40,9 +40,8 @@ def test_w3schools_iframe(eyes, driver):
 
 
 @pytest.mark.platform("Linux")
+@pytest.mark.eyes(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 def test_omnicomprgroup(eyes, driver):
-    eyes.stitch_mode = StitchMode.CSS
-    eyes.force_full_page_screenshot = True
     driver = eyes.open(
         driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 800, "height": 600}
     )
@@ -52,9 +51,8 @@ def test_omnicomprgroup(eyes, driver):
 
 
 @pytest.mark.platform("Linux")
+@pytest.mark.eyes(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 def test_nationalgeographic(eyes, driver):
-    eyes.stitch_mode = StitchMode.CSS
-    eyes.force_full_page_screenshot = True
     driver = eyes.open(
         driver,
         "Python SDK",
@@ -69,10 +67,9 @@ def test_nationalgeographic(eyes, driver):
 
 
 @pytest.mark.platform("Linux")
+@pytest.mark.eyes(send_dom=False, stitch_mode=StitchMode.CSS)
 def test_zachs_app(eyes, driver):
     driver.get("https://www.goodrx.com/xarelto/what-is")
-    eyes.stitch_mode = StitchMode.CSS
-    eyes.send_dom = False
     eyes.open(
         driver,
         app_name="Zachs Python app",
@@ -85,4 +82,16 @@ def test_zachs_app(eyes, driver):
     warnings_ele = driver.find_element_by_xpath('//*[@id="warnings"]/..')
     eyes.check("warnings", Target.region(warnings_ele).fully())
 
+    eyes.close()
+
+
+@pytest.mark.eyes(
+    hide_scrollbars=True, stitch_mode=StitchMode.Scroll, wait_before_screenshots=1
+)
+def test_duo_v3_default(eyes, driver):
+    driver.get(
+        "http://front-end-testing.appspot.com/duo_v3_default/secondary_auth?user=noone@atest.com"
+    )
+    driver = eyes.open(driver, "region", "test region", {"width": 1000, "height": 800})
+    eyes.check("Frame", Target.frame(driver.find_element_by_id("duo_iframe")))
     eyes.close()

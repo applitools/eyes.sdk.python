@@ -14,9 +14,9 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (
-    "IgnoreRegionBy",
-    "IgnoreRegionByElement",
-    "IgnoreRegionByCssSelector",
+    "RegionBy",
+    "RegionByElement",
+    "RegionByCssSelector",
     "FloatingRegionBy",
     "FloatingRegionByElement",
     "FloatingRegionByCssSelector",
@@ -70,7 +70,7 @@ class GetSeleniumFloatingRegion(GetFloatingRegion):
 
 
 @attr.s
-class IgnoreRegionByElement(GetSeleniumRegion):
+class RegionByElement(GetSeleniumRegion):
     element = attr.ib()  # type: AnyWebElement
 
     def _element(self, driver):
@@ -78,7 +78,7 @@ class IgnoreRegionByElement(GetSeleniumRegion):
 
 
 @attr.s
-class IgnoreRegionBy(GetSeleniumRegion):
+class RegionBy(GetSeleniumRegion):
     """
     :param by: The "by" part of a selenium selector for an element which
                represents the ignore region
@@ -94,7 +94,7 @@ class IgnoreRegionBy(GetSeleniumRegion):
 
 
 @attr.s
-class IgnoreRegionByCssSelector(GetSeleniumRegion):
+class RegionByCssSelector(GetSeleniumRegion):
     """
     :ivar selector: The css selector for an element which represents the inner region.
     :ivar bounds: The outer rectangle bounding the inner region.
