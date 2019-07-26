@@ -153,7 +153,7 @@ class _EyesSwitchTo(object):
         """
         Switch to default content.
         """
-        self._driver.frame_chain.clear()
+        del self._driver.frame_chain[:]
         self._switch_to.default_content()
 
     def parent_frame(self):
@@ -170,7 +170,7 @@ class _EyesSwitchTo(object):
         """
         Switch to window.
         """
-        self._driver.frame_chain.clear()
+        del self._driver.frame_chain[:]
         self._switch_to.window(window_name)
 
     def will_switch_to_frame(self, target_frame):
@@ -355,7 +355,7 @@ class EyesWebDriver(object):
         :return: A driver that navigated to the given url.
         """
         # We're loading a new page, so the frame location resets
-        self._frame_chain.clear()
+        del self._frame_chain[:]
         return self._driver.get(url)
 
     def find_element(self, by=By.ID, value=None):

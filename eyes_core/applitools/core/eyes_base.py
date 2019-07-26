@@ -283,7 +283,7 @@ class EyesBase(_EyesBaseAbstract):
         self.configuration.properties.append({"name": name, "value": value})
 
     def clear_properties(self):
-        self.configuration.properties.clear()
+        del self.configuration.properties[:]
 
     @property
     def is_opened(self):
@@ -582,7 +582,7 @@ class EyesBase(_EyesBaseAbstract):
     def _reset_last_screenshot(self):
         # type: () -> None
         self._last_screenshot = None
-        self._user_inputs = []  # type: UserInputs
+        del self._user_inputs[:]
 
     def _ensure_running_session(self):
         if self._running_session:
