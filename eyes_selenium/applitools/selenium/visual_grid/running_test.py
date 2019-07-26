@@ -1,9 +1,9 @@
 import typing
 
 import attr
+from transitions import Machine
 
 from applitools.common import Region, logger
-from transitions import Machine
 
 from .render_task import RenderTask
 from .vg_task import VGTask

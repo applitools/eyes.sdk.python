@@ -6,7 +6,7 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.common import EyesError, Point, logger
 from applitools.common.geometry import RectangleSize
-from applitools.core import PositionProvider, PositionMomento
+from applitools.core import PositionMomento, PositionProvider
 
 from . import eyes_selenium_utils
 

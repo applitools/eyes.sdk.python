@@ -23,11 +23,11 @@ from applitools.core import (
     FixedScaleProvider,
     ImageProvider,
     MouseTrigger,
+    NullCutProvider,
     NullScaleProvider,
     PositionProvider,
     RegionProvider,
     TextTrigger,
-    NullCutProvider,
 )
 from applitools.selenium.capture.eyes_webdriver_screenshot import (
     EyesWebDriverScreenshotFactory,

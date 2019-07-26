@@ -2,11 +2,11 @@ import typing
 
 import attr
 
-from applitools.common import logger, Region
+from applitools.common import Region, logger
 from applitools.common.utils import image_utils
 from applitools.core.capture import ImageProvider
 from applitools.selenium.positioning import ScrollPositionProvider
-from applitools.selenium.useragent import BrowserNames, UserAgent, OSNames
+from applitools.selenium.useragent import BrowserNames, OSNames, UserAgent
 
 if typing.TYPE_CHECKING:
     from PIL.Image import Image

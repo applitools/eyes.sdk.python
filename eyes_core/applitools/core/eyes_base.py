@@ -26,8 +26,8 @@ from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
-    NullCutProvider,
     FixedCutProvider,
+    NullCutProvider,
     UnscaledFixedCutProvider,
 )
 from applitools.core.debug import (

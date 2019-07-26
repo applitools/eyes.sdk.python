@@ -1,8 +1,8 @@
 from applitools.common import BatchInfo, MatchLevel, Region, logger
 from applitools.core.cut import (
     FixedCutProvider,
-    UnscaledFixedCutProvider,
     NullCutProvider,
+    UnscaledFixedCutProvider,
 )
 from applitools.images.fluent import Target
 

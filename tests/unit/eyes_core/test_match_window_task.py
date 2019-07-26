@@ -1,14 +1,13 @@
 import pytest
-from mock import patch
-
 from applitools.common import (
     FloatingBounds,
     FloatingMatchSettings,
+    MatchLevel,
     MatchWindowData,
     Region,
-    MatchLevel,
 )
 from applitools.core import CheckSettings, MatchWindowTask
+from mock import patch
 
 
 @pytest.fixture

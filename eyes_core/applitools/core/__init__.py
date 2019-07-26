@@ -21,9 +21,9 @@ from .positioning import (
     NULL_REGION_PROVIDER,
     InvalidPositionProvider,
     NullRegionProvider,
+    PositionMomento,
     PositionProvider,
     RegionProvider,
-    PositionMomento,
 )
 from .scaling import (
     ContextBasedScaleProvider,

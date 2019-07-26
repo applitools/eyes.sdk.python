@@ -1,7 +1,6 @@
 from enum import Enum
 
 import attr
-
 from ua_parser import user_agent_parser
 
 __all__ = ("parse_user_agent_string", "BrowserNames", "OSNames", "UserAgent")
