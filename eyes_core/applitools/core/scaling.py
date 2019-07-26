@@ -1,8 +1,12 @@
 from __future__ import absolute_import
 
+from typing import TYPE_CHECKING
+
 from applitools.common import logger
 from applitools.common.utils import ABC
-from applitools.common.utils.custom_types import ViewPort
+
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import ViewPort
 
 __all__ = (
     "FixedScaleProvider",
