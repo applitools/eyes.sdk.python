@@ -5,8 +5,8 @@ from applitools.common.utils.general_utils import proxy_to
 from applitools.core import (
     NULL_REGION_PROVIDER,
     EyesBase,
-    RegionProvider,
     NullCutProvider,
+    RegionProvider,
 )
 from applitools.images.fluent import ImagesCheckSettings, Target
 

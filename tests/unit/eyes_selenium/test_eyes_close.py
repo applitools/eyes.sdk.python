@@ -1,16 +1,15 @@
 import os
 
 import pytest
-from mock import MagicMock
-
 from applitools.common import (
-    EyesError,
-    TestResults,
     DiffsFoundError,
+    EyesError,
     NewTestError,
     TestFailedError,
+    TestResults,
 )
 from applitools.selenium import Eyes
+from mock import MagicMock
 
 
 @pytest.fixture(scope="function")

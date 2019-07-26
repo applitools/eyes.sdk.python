@@ -4,6 +4,8 @@ import typing
 from enum import Enum
 
 import attr
+from selenium.common.exceptions import WebDriverException
+
 from applitools.common import (
     CoordinatesType,
     CoordinatesTypeConversionError,
@@ -21,7 +23,6 @@ from applitools.selenium.positioning import (
     ScrollPositionProvider,
     SeleniumPositionProvider,
 )
-from selenium.common.exceptions import WebDriverException
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union

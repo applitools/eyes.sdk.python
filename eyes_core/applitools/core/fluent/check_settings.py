@@ -1,6 +1,7 @@
 import typing
 
 import attr
+
 from applitools.common import FloatingBounds, MatchLevel, Region, logger
 
 from .region import (

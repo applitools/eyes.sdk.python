@@ -1,11 +1,11 @@
-import pytest
-from mock import MagicMock
+from appium.webdriver import WebElement as AppiumWebElement
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
-from appium.webdriver import WebElement as AppiumWebElement
 
-from applitools.selenium import Region, EyesWebElement
+import pytest
+from applitools.selenium import EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
+from mock import MagicMock
 
 
 def get_cs_from_method(method_name, *args):

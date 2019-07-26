@@ -1,27 +1,25 @@
-from applitools.common import (  # noqa
+from applitools.common import (
     BatchInfo,
-    MatchLevel,
-    Region,
-    StdoutLogger,
-    StitchMode,
-    logger,
-    SeleniumConfiguration as Configuration,
     BrowserType,
     DeviceName,
+    MatchLevel,
+    Region,
     ScreenOrientation,
 )
+from applitools.common import SeleniumConfiguration as Configuration  # noqa
+from applitools.common import StdoutLogger, StitchMode, logger
 from applitools.common.server import FailureReports  # noqa
-from applitools.core.cut import (
-    NullCutProvider,
+from applitools.core.cut import (  # noqa
     FixedCutProvider,
+    NullCutProvider,
     UnscaledFixedCutProvider,
-)  # noqa
+)
 
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
+from .visual_grid import VisualGridRunner
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
-from .visual_grid import VisualGridRunner
 
 __all__ = (
     # noqa

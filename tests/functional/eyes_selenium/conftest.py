@@ -1,18 +1,18 @@
 import os
 import typing
 
-import pytest
-from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import IEDriverManager, EdgeDriverManager
-from webdriver_manager.chrome import ChromeDriverManager
 
+import pytest
 from applitools.common import BatchInfo, logger
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
+from mock import MagicMock
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
 if typing.TYPE_CHECKING:
     from _pytest.fixtures import SubRequest

@@ -1,12 +1,11 @@
 import pytest
-
 from applitools.selenium import (
-    Target,
     BatchInfo,
     BrowserType,
+    Configuration,
     DeviceName,
     ScreenOrientation,
-    Configuration,
+    Target,
 )
 
 

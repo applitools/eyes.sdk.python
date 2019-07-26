@@ -10,11 +10,10 @@ import math
 from PIL import Image
 
 from applitools.common import logger
-from applitools.common.geometry import Region
 from applitools.common.errors import EyesError
+from applitools.common.geometry import Region
 
 from . import argument_guard
-
 
 __all__ = (
     "image_from_file",

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import SeleniumConfiguration, logger, EyesError
+from applitools.common import EyesError, SeleniumConfiguration, logger
 from applitools.common.utils import argument_guard
 
 from .fluent import Target
