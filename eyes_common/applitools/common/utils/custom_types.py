@@ -11,12 +11,12 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
 
-    ViewPort = tp.Union[tp.Dict[tp.Text, int], RectangleSize]
+    ViewPort = tp.Union[tp.Dict[tp.Text, int], RectangleSize]  # typedef
     Num = tp.Union[int, float]
 
-    AnyWebDriver = tp.Union[EyesWebDriver, WebDriver]
-    AnyWebElement = tp.Union[EyesWebElement, WebElement]
-    FrameReference = tp.Union[tp.Text, int, EyesWebElement, WebElement]
+    AnyWebDriver = tp.Union[EyesWebDriver, WebDriver]  # typedef
+    AnyWebElement = tp.Union[EyesWebElement, WebElement]  # typedef
+    FrameReference = tp.Union[tp.Text, int, EyesWebElement, WebElement]  # typedef
     # could contain MouseTrigger, TextTrigger
-    UserInputs = tp.List[ActionTrigger]
-    RegionOrElement = tp.Union[EyesWebElement, Region]
+    UserInputs = tp.List[ActionTrigger]  # typedef
+    RegionOrElement = tp.Union[EyesWebElement, Region]  # typedef
