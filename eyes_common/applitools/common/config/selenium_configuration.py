@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, Union
+from typing import TYPE_CHECKING, List, Text, overload
 
 import attr
 
@@ -36,12 +36,17 @@ class SeleniumConfiguration(Configuration):
     is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
-    def add_browser(
-        self,
-        arg1,  # type: Union[RenderBrowserInfo, int]
-        arg2=None,  # type: Optional[int]
-        arg3=None,  # type: Optional[BrowserType]
-    ):
+    @overload
+    def add_browser(self, render_info):
+        # type: (RenderBrowserInfo) -> SeleniumConfiguration
+        pass
+
+    @overload
+    def add_browser(self, width, height, browser_type):
+        # type: (int, int, BrowserType) -> SeleniumConfiguration
+        pass
+
+    def add_browser(self, arg1, arg2=None, arg3=None):
         # type: (...)->SeleniumConfiguration
         if isinstance(arg1, RenderBrowserInfo):
             self._browsers_info.append(arg1)
