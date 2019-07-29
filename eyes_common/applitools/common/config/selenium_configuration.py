@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, TYPE_CHECKING, Text
+from typing import TYPE_CHECKING, List, Optional, Text, Union
 
 import attr
 
@@ -21,7 +21,7 @@ __all__ = ("SeleniumConfiguration",)
 
 @attr.s
 class SeleniumConfiguration(Configuration):
-    DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # ms
+    DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 
     force_full_page_screenshot = attr.ib(default=False)  # type: bool
     wait_before_screenshots = attr.ib(

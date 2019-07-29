@@ -53,18 +53,21 @@ class Eyes(object):
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
-    _is_opened = False
+    _is_opened = False  # type: bool
 
     @property
     def is_opened(self):
+        # type: () -> bool
         return self._is_opened
 
     @property
     def configuration(self):
+        # type: () -> SeleniumConfiguration
         return self._configuration
 
     @configuration.setter
     def configuration(self, new_conf):
+        # type: (SeleniumConfiguration) -> None
         argument_guard.is_a(new_conf, SeleniumConfiguration)
         if self._configuration.api_key and not new_conf.api_key:
             new_conf.api_key = self._configuration.api_key
@@ -73,7 +76,7 @@ class Eyes(object):
         self._configuration = new_conf
 
     def __init__(self, runner=None):
-        # type: (Optional[Any]) -> None
+        # type: (Optional[Union[Text, VisualGridRunner]]) -> None
         self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
 
         # backward compatibility with settings server_url

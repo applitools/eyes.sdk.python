@@ -22,33 +22,33 @@ from .region import (
 if typing.TYPE_CHECKING:
     from typing import List, Union, Text, Tuple
     from applitools.common.visual_grid import VisualGridSelector
-    from applitools.common.utils.custom_types import FrameReference
+    from applitools.common.utils.custom_types import FrameReference, AnyWebElement
 
 
 @attr.s
 class FrameLocator(object):
-    frame_element = attr.ib(default=None)
-    frame_selector = attr.ib(default=None)
-    frame_name_or_id = attr.ib(default=None)
-    frame_index = attr.ib(default=None)
-    scroll_root_selector = attr.ib(default=None)
-    scroll_root_element = attr.ib(default=None)
+    frame_element = attr.ib(default=None)  # type: AnyWebElement
+    frame_selector = attr.ib(default=None)  # type: Text
+    frame_name_or_id = attr.ib(default=None)  # type: Text
+    frame_index = attr.ib(default=None)  # type: int
+    scroll_root_selector = attr.ib(default=None)  # type: Text
+    scroll_root_element = attr.ib(default=None)  # type: AnyWebElement
 
 
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
-    scroll_root_selector = attr.ib(init=False, default=None)
-    target_selector = attr.ib(init=False, default=None)
-    target_element = attr.ib(init=False, default=None)
+    scroll_root_selector = attr.ib(init=False, default=None)  # type: Text
+    target_selector = attr.ib(init=False, default=None)  # type: Text
+    target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     # for Rendering Grid
     BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
     region = attr.ib(factory=list)
     selector = attr.ib(default=None)  # type: VisualGridSelector
-    script_hooks = attr.ib(factory=dict)
+    script_hooks = attr.ib(factory=dict)  # type: dict
 
     @property
     def target_provider(self):

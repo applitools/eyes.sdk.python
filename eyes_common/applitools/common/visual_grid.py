@@ -309,7 +309,7 @@ class RenderStatusResults(object):
         type=RenderStatus,
         converter=attr.converters.optional(RenderStatus),
     )  # type: Optional[RenderStatus]
-    selector_regions = attr.ib(default=None)
+    selector_regions = attr.ib(default=None)  # type: List[Region]
     device_size = attr.ib(
         default=None,
         type=RectangleSize,

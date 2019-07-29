@@ -122,15 +122,13 @@ class CheckSettings(object):
         self.values.timeout = timeout
         return self
 
-    def ignore_regions(self, *regions):
+    def ignore(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
         )
         return self
-
-    ignore = ignore_regions
 
     def _layout_regions(self, *regions):
         # type: (*REGION_VALUES)  -> CheckSettings
@@ -156,7 +154,7 @@ class CheckSettings(object):
         )
         return self
 
-    def floating_region(
+    def floating(
         self,
         arg1,  # type: Union[REGION_VALUES, int]
         arg2,  # type: Union[REGION_VALUES, int]
@@ -203,8 +201,6 @@ class CheckSettings(object):
         region_or_container = self._floating_provider_from(region, bounds)
         self.values.floating_regions.append(region_or_container)
         return self
-
-    floating = floating_region
 
     def send_dom(self, send=True):
         # type: (bool) -> CheckSettings

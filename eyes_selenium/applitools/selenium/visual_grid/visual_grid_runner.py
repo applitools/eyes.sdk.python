@@ -31,26 +31,25 @@ if typing.TYPE_CHECKING:
 class VisualGridRunner(object):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
-        self.concurrent_sessions = concurrent_sessions
         kwargs = {}
         if sys.version_info >= (3, 6):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
-        self.executor = ThreadPoolExecutor(  # type: ignore
+        self.resource_cache = ResourceCache()  # type:ResourceCache
+        self.put_cache = ResourceCache()  # type:ResourceCache
+        self.all_eyes = []  # type: List[VisualGridEyes]
+        self.still_running = True  # type: bool
+
+        self._executor = ThreadPoolExecutor(  # type: ThreadPoolExecutor
             max_workers=concurrent_sessions, **kwargs
         )
         self._rendering_info = None  # type: Optional[RenderingInfo]
-        self.resource_cache = ResourceCache()
-        self.put_cache = ResourceCache()
-        self.all_eyes = []  # type: List[VisualGridEyes]
-        self.test_result = None
-        self.still_running = True
-        self.future_to_task = ResourceCache()
+        self._future_to_task = ResourceCache()  # type:ResourceCache
         thread = threading.Thread(target=self.run, args=())
         thread.setName(self.__class__.__name__)
         thread.daemon = True
         thread.start()
-        self.thread = thread
+        self._thread = thread
 
     def render_info(self, eyes_connector):
         # type: (EyesConnector) -> RenderingInfo
@@ -73,8 +72,8 @@ class VisualGridRunner(object):
             except IndexError:
                 sleep(1)
                 continue
-            future = self.executor.submit(lambda task: task(), task)
-            self.future_to_task[future] = task
+            future = self._executor.submit(lambda task: task(), task)
+            self._future_to_task[future] = task
 
     def stop(self):
         # type: () -> None
@@ -83,9 +82,9 @@ class VisualGridRunner(object):
             sleep(0.5)
         self.still_running = False
         for future in concurrent.futures.as_completed(  # type: ignore
-            self.future_to_task
+            self._future_to_task
         ):
-            task = self.future_to_task[future]
+            task = self._future_to_task[future]
             try:
                 future.result()
             except Exception as exc:
@@ -95,8 +94,8 @@ class VisualGridRunner(object):
 
         self.put_cache.executor.shutdown()
         self.resource_cache.executor.shutdown()
-        self.executor.shutdown()
-        self.thread.join()
+        self._executor.shutdown()
+        self._thread.join()
 
     def process_test_list(self, test_list, raise_ex):
         while True:

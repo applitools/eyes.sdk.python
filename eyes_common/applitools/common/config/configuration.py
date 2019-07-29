@@ -2,7 +2,7 @@ import os
 import uuid
 from copy import copy
 from datetime import datetime
-from typing import Optional, Text, Union, List, Dict
+from typing import Dict, List, Optional, Text, Union
 
 import attr
 
@@ -54,7 +54,7 @@ class BatchInfo(object):
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT_MS = 2000
+    DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
@@ -91,7 +91,7 @@ class Configuration(object):
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
     fail_on_new_test = attr.ib(default=False)  # type: bool
-    failure_reports = attr.ib(default=FailureReports.ON_CLOSE)
+    failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
     send_dom = attr.ib(default=True)  # type: bool
     use_dom = attr.ib(default=False)  # type: bool
     enable_patterns = attr.ib(default=False)  # type: bool
