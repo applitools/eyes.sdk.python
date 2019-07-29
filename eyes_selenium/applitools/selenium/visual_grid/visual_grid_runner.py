@@ -40,9 +40,7 @@ class VisualGridRunner(object):
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 
-        self._executor = ThreadPoolExecutor(  # type: ThreadPoolExecutor
-            max_workers=concurrent_sessions, **kwargs
-        )
+        self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
         self._rendering_info = None  # type: Optional[RenderingInfo]
         self._future_to_task = ResourceCache()  # type:ResourceCache
         thread = threading.Thread(target=self.run, args=())
@@ -81,9 +79,7 @@ class VisualGridRunner(object):
         while sum(r.score for r in self.all_running_tests) > 0:
             sleep(0.5)
         self.still_running = False
-        for future in concurrent.futures.as_completed(  # type: ignore
-            self._future_to_task
-        ):
+        for future in concurrent.futures.as_completed(self._future_to_task):
             task = self._future_to_task[future]
             try:
                 future.result()
