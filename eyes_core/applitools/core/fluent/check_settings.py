@@ -1,4 +1,4 @@
-import typing
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 
@@ -11,14 +11,8 @@ from .region import (
     RegionByRectangle,
 )
 
-if typing.TYPE_CHECKING:
-    from typing import Text, Optional, List, Union, Tuple
-    from applitools.common.utils.custom_types import AnyWebElement, Num
-
-    REGION_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
-    FLOATING_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
-    GR = typing.TypeVar("GR", bound=GetRegion)
-    FR = typing.TypeVar("FR", bound=GetFloatingRegion)
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import Num, REGION_VALUES
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 
@@ -154,14 +148,19 @@ class CheckSettings(object):
         )
         return self
 
+    @overload  # noqa
+    def floating(self, max_offset, region):
+        # type: (int, Region) -> CheckSettings
+        pass
+
+    @overload  # noqa
     def floating(
-        self,
-        arg1,  # type: Union[REGION_VALUES, int]
-        arg2,  # type: Union[REGION_VALUES, int]
-        arg3=None,  # type: Optional[int]
-        arg4=None,  # type: Optional[int]
-        arg5=None,  # type: Optional[int]
+        self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
     ):
+        # type: (Region, int, int, int, int) -> CheckSettings
+        pass
+
+    def floating(self, arg1, arg2, arg3=None, arg4=None, arg5=None):  # noqa
         # type: (...) -> CheckSettings
         """
         Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "

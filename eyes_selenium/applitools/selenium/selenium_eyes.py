@@ -310,7 +310,7 @@ class SeleniumEyes(EyesBase):
 
     def _check_full_frame_or_element(self, name, check_settings):
         self._check_frame_or_element = True
-        resutl = self._check_window_base(
+        result = self._check_window_base(
             RegionProvider(self._full_frame_or_element_region),
             name,
             False,
@@ -318,7 +318,7 @@ class SeleniumEyes(EyesBase):
         )
         self._check_frame_or_element = False
         self._region_to_check = None
-        return resutl
+        return result
 
     def _ensure_frame_visible(self):
         logger.debug("scroll_root_element_: []".format(self._scroll_root_element))

@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 
-import typing as tp
+from typing import TYPE_CHECKING, Dict, List, Text, Tuple, Union
 
-if tp.TYPE_CHECKING:
+if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
 
@@ -11,12 +11,22 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
 
-    ViewPort = tp.Union[tp.Dict[tp.Text, int], RectangleSize]  # typedef
-    Num = tp.Union[int, float]
+    ViewPort = Union[Dict[Text, int], RectangleSize]  # typedef
+    Num = Union[int, float]
 
-    AnyWebDriver = tp.Union[EyesWebDriver, WebDriver]  # typedef
-    AnyWebElement = tp.Union[EyesWebElement, WebElement]  # typedef
-    FrameReference = tp.Union[tp.Text, int, EyesWebElement, WebElement]  # typedef
+    AnyWebDriver = Union[EyesWebDriver, WebDriver]  # typedef
+    AnyWebElement = Union[EyesWebElement, WebElement]  # typedef
+
+    FrameNameOrId = Text  # typedef
+    FrameIndex = int  # typedef
+    FrameReference = Union[FrameNameOrId, FrameIndex, AnyWebElement]  # typedef
+
     # could contain MouseTrigger, TextTrigger
-    UserInputs = tp.List[ActionTrigger]  # typedef
-    RegionOrElement = tp.Union[EyesWebElement, Region]  # typedef
+    UserInputs = List[ActionTrigger]  # typedef
+    RegionOrElement = Union[EyesWebElement, Region]  # typedef
+
+    SeleniumBy = Text
+    BySelector = Union[List[SeleniumBy, Text], Tuple[SeleniumBy, Text]]  # typedef
+    CssSelector = Text  # typedef
+    REGION_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
+    FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef

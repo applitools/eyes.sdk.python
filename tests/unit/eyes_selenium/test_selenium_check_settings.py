@@ -48,6 +48,10 @@ def test_check_frame(method_name="frame"):
     cs = get_cs_from_method(method_name, frame_reference)
     assert cs.values.frame_chain[0].frame_name_or_id == frame_reference
 
+    frame_id = "#some"
+    cs = get_cs_from_method(method_name, frame_id)
+    assert cs.values.frame_chain[0].frame_name_or_id == frame_id
+
     frame_index = 3
     cs = get_cs_from_method(method_name, frame_index)
     assert cs.values.frame_chain[0].frame_index == frame_index
