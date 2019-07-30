@@ -100,7 +100,8 @@ class Eyes(object):
         """
         Gets device pixel ratio.
 
-        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't possible to extract it.
+        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't
+        possible to extract it.
         """
         if not self._is_visual_grid_eyes:
             return self._selenium_eyes.device_pixel_ratio
@@ -109,11 +110,6 @@ class Eyes(object):
     @property
     def scale_ratio(self):
         # type: () -> float
-        """
-        Gets device pixel ratio.
-
-        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't possible to extract it.
-        """
         if not self._is_visual_grid_eyes:
             return self._selenium_eyes.scale_ratio
         return 0

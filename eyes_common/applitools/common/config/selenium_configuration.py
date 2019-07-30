@@ -36,17 +36,17 @@ class SeleniumConfiguration(Configuration):
     is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
-    @overload
+    @overload  # noqa
     def add_browser(self, render_info):
         # type: (RenderBrowserInfo) -> SeleniumConfiguration
         pass
 
-    @overload
+    @overload  # noqa
     def add_browser(self, width, height, browser_type):
         # type: (int, int, BrowserType) -> SeleniumConfiguration
         pass
 
-    def add_browser(self, arg1, arg2=None, arg3=None):
+    def add_browser(self, arg1, arg2=None, arg3=None):  # noqa
         # type: (...)->SeleniumConfiguration
         if isinstance(arg1, RenderBrowserInfo):
             self._browsers_info.append(arg1)

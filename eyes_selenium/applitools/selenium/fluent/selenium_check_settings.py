@@ -45,8 +45,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     # for Rendering Grid
-    BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
-    region = attr.ib(factory=list)
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
 
