@@ -98,6 +98,21 @@ class SeleniumEyes(EyesBase):
 
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
+    @staticmethod
+    def set_viewport_size_static(driver, size=None, viewportsize=None):
+        # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
+        assert driver is not None
+        if size is None and viewportsize is None:
+            raise ValueError("set_viewport_size_static require `size` parameter")
+        if viewportsize:
+            logger.deprecation("Use `size` parameter instead")
+        eyes_selenium_utils.set_viewport_size(driver, size)
+
+    @staticmethod
+    def get_viewport_size_static(driver):
+        # type: (AnyWebDriver) -> ViewPort
+        return eyes_selenium_utils.get_viewport_size(driver)
+
     def __init__(self, config):
         # type: (Eyes) -> None
         super(SeleniumEyes, self).__init__()
