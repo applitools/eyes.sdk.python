@@ -98,41 +98,34 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
-    values = attr.ib(init=False)  # type: SeleniumCheckSettingsValues
+    values = attr.ib(
+        init=False, factory=SeleniumCheckSettingsValues
+    )  # type: SeleniumCheckSettingsValues
 
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)
 
-    def __attrs_post_init__(self):
-        # type: () -> None
-        self.values = SeleniumCheckSettingsValues()
-        if self._region:
-            self.region(self._region)
-        if self._frame:
-            self.frame(self._frame)
-
     @overload  # noqa
     def region(self, region):
-        # type: (Region) -> CheckSettings
+        # type: (Region) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def region(self, css_selector):
-        # type: (CssSelector) -> CheckSettings
+        # type: (CssSelector) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def region(self, element):
-        # type: (AnyWebElement) -> CheckSettings
+        # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def region(self, by_selector):
-        # type: (BySelector) -> CheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def region(self, region):  # noqa
-        # type: (Union[Region, Text, List, Tuple, WebElement, EyesWebElement]) -> CheckSettings
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
@@ -148,26 +141,25 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def frame(self, frame_name_or_id):
-        # type: (FrameNameOrId) -> CheckSettings
+        # type: (FrameNameOrId) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def frame(self, frame_element):
-        # type: (AnyWebElement) -> CheckSettings
+        # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def frame(self, frame_index):
-        # type: (FrameIndex) -> CheckSettings
+        # type: (FrameIndex) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def frame(self, frame_by_selector):
-        # type: (BySelector) -> CheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def frame(self, frame):  # noqa
-        # type: (FrameReference) -> CheckSettings
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame

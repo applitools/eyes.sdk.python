@@ -34,7 +34,7 @@ def test_check_region_and_frame_with_unsupported_input():
     with pytest.raises(TypeError):
         cs = get_cs_from_method("region", 12355)
     with pytest.raises(TypeError):
-        cs = get_cs_from_method("frame", [By.XPATH, "some"])
+        cs = get_cs_from_method("frame", set())
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import TYPE_CHECKING, Dict, List, Text, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Text, Tuple, Union
 
 if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -30,3 +30,7 @@ if TYPE_CHECKING:
     CssSelector = Text  # typedef
     REGION_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
     FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
+
+    # TODO: Implement objects
+    SessionUrls = Dict[Any, Any]  # typedef
+    StepInfo = Dict[Any, Any]  # typedef

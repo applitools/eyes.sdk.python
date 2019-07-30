@@ -46,18 +46,17 @@ class SeleniumConfiguration(Configuration):
         # type: (int, int, BrowserType) -> SeleniumConfiguration
         pass
 
-    def add_browser(self, arg1, arg2=None, arg3=None):  # noqa
-        # type: (...)->SeleniumConfiguration
-        if isinstance(arg1, RenderBrowserInfo):
-            self._browsers_info.append(arg1)
+    def add_browser(self, *args):  # noqa
+        if isinstance(args[0], RenderBrowserInfo):
+            self._browsers_info.append(args[0])
         elif (
-            isinstance(arg1, int)
-            and isinstance(arg2, int)
-            and isinstance(arg3, BrowserType)
+            isinstance(args[0], int)
+            and isinstance(args[1], int)
+            and isinstance(args[2], BrowserType)
         ):
             self._browsers_info.append(
                 RenderBrowserInfo(
-                    RectangleSize(arg1, arg2), arg3, self.baseline_env_name
+                    RectangleSize(args[0], args[1]), args[2], self.baseline_env_name
                 )
             )
         else:

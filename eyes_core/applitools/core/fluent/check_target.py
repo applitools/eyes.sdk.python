@@ -1,19 +1,18 @@
+from typing import Protocol
+
 from applitools.common.geometry import Region
-from applitools.common.utils import ABC
 from applitools.core.fluent.check_settings import CheckSettings
 
 _all_ = ("CheckTarget",)
 
 
-class CheckTarget(ABC):
+class CheckTarget(Protocol):
     @staticmethod
     def window():
         # type: () -> CheckSettings
-        return CheckSettings()
+        pass
 
     @staticmethod
-    def region(rect):
+    def region(region):
         # type: (Region) -> CheckSettings
-        cs = CheckSettings()
-        cs.values.target_region = rect
-        return cs
+        pass

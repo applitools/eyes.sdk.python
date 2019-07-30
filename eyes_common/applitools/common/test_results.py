@@ -9,11 +9,9 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Any, Dict, Optional, List
+    from typing import Text, Optional, List
+    from .utils.custom_types import SessionUrls, StepInfo
 
-    # TODO: Implement objects
-    SessionUrls = Dict[Any, Any]
-    StepInfo = Dict[Any, Any]
 
 __all__ = ("TestResults", "TestResultSummary")
 
