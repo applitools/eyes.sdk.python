@@ -98,21 +98,6 @@ class SeleniumEyes(EyesBase):
 
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
-    @staticmethod
-    def set_viewport_size_static(driver, size=None, viewportsize=None):
-        # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
-        assert driver is not None
-        if size is None and viewportsize is None:
-            raise ValueError("set_viewport_size_static require `size` parameter")
-        if viewportsize:
-            logger.deprecation("Use `size` parameter instead")
-        eyes_selenium_utils.set_viewport_size(driver, size)
-
-    @staticmethod
-    def get_viewport_size_static(driver):
-        # type: (AnyWebDriver) -> ViewPort
-        return eyes_selenium_utils.get_viewport_size(driver)
-
     def __init__(self, config):
         # type: (Eyes) -> None
         super(SeleniumEyes, self).__init__()
@@ -667,7 +652,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
-        with self._driver.switch_to.frames_and_back(self._original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.push_state()
 
@@ -682,7 +667,7 @@ class SeleniumEyes(EyesBase):
         else:
             self._last_screenshot = self._viewport_screenshot(scale_provider)
 
-        with self._driver.switch_to.frames_and_back(self._original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.pop_state()
 
@@ -732,7 +717,7 @@ class SeleniumEyes(EyesBase):
         else:
             original_frame_position = Point.zero()
 
-        with self.driver.switch_to.frames_and_back(self._original_frame_chain):
+        with self.driver.switch_to.frames_and_back(self.original_frame_chain):
             location = self.scroll_root_element.location
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
