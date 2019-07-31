@@ -1,6 +1,6 @@
-import pytest
 from selenium.webdriver.common.by import By
 
+import pytest
 from applitools.selenium import StitchMode, Target
 
 
@@ -93,5 +93,5 @@ def test_duo_v3_default(eyes, driver):
         "http://front-end-testing.appspot.com/duo_v3_default/secondary_auth?user=noone@atest.com"
     )
     driver = eyes.open(driver, "region", "test region", {"width": 1000, "height": 800})
-    eyes.check("Frame", Target.frame(driver.find_element_by_id("duo_iframe")))
+    eyes.check("Frame", Target.frame("duo_iframe"))
     eyes.close()
