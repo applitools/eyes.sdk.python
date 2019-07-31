@@ -9,11 +9,9 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Any, Dict, Optional, List
+    from typing import Text, Optional, List
+    from .utils.custom_types import SessionUrls, StepInfo
 
-    # TODO: Implement objects
-    SessionUrls = Dict[Any, Any]
-    StepInfo = Dict[Any, Any]
 
 __all__ = ("TestResults", "TestResultSummary")
 
@@ -71,7 +69,9 @@ class TestResults(object):
     api_urls = attr.ib(default=None, repr=False)  # type: SessionUrls
     steps_info = attr.ib(default=None, repr=False)  # type: StepInfo
     baseline_id = attr.ib(default=None, repr=False)  # type: Text
-    default_match_settings = attr.ib(default=None, repr=False, type=ImageMatchSettings)
+    default_match_settings = attr.ib(
+        default=None, repr=False, type=ImageMatchSettings
+    )  # type: ImageMatchSettings
 
     @property
     def is_passed(self):
@@ -103,14 +103,14 @@ class TestResults(object):
 @attr.s
 class TestResultSummary(object):
     all_results = attr.ib()  # type: List[TestResults]
-    exceptions = attr.ib(default=0)
+    exceptions = attr.ib(default=0)  # type: int
 
-    passed = attr.ib(init=False, default=0)
-    unresolved = attr.ib(init=False, default=0)
-    failed = attr.ib(init=False, default=0)
-    mismatches = attr.ib(init=False, default=0)
-    missing = attr.ib(init=False, default=0)
-    matches = attr.ib(init=False, default=0)
+    passed = attr.ib(init=False, default=0)  # type: int
+    unresolved = attr.ib(init=False, default=0)  # type: int
+    failed = attr.ib(init=False, default=0)  # type: int
+    mismatches = attr.ib(init=False, default=0)  # type: int
+    missing = attr.ib(init=False, default=0)  # type: int
+    matches = attr.ib(init=False, default=0)  # type: int
 
     def __attrs_post_init__(self):
         for result in self.all_results:

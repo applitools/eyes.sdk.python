@@ -46,9 +46,9 @@ class RenderStatus(Enum):
 
 @attr.s(frozen=True)
 class RenderingInfo(object):
-    service_url = attr.ib()
-    access_token = attr.ib(repr=False)
-    results_url = attr.ib()
+    service_url = attr.ib()  # type: Text
+    access_token = attr.ib(repr=False)  # type: Text
+    results_url = attr.ib()  # type: Text
 
 
 class ScreenOrientation(Enum):
@@ -63,8 +63,8 @@ class EmulationBaseInfo(ABC):
 
 @attr.s
 class VisualGridSelector(object):
-    selector = attr.ib()  # type: basestring
-    category = attr.ib()  # type: basestring
+    selector = attr.ib()  # type: Text
+    category = attr.ib()  # type: Text
 
 
 class DeviceName(Enum):
@@ -104,7 +104,6 @@ class DeviceName(Enum):
 
 @attr.s(hash=True)
 class ChromeEmulationInfo(EmulationBaseInfo):
-    # DeviceName = DeviceName
     device_name = attr.ib(
         converter=DeviceName, metadata={JsonInclude.NON_NONE: True}
     )  # type: DeviceName
@@ -129,9 +128,9 @@ class EmulationDevice(EmulationBaseInfo):
 class RenderBrowserInfo(object):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
-    )  # type: Optional[RectangleSize]
+    )  # type: Optional[RectangleSize]  # type: ignore
     browser_type = attr.ib(default=BrowserType.CHROME)  # type: BrowserType
-    baseline_env_name = attr.ib(default=None)  # type: Optional[basestring]
+    baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     emulation_info = attr.ib(
         default=None, repr=False
     )  # type: Optional[EmulationBaseInfo]
@@ -139,23 +138,27 @@ class RenderBrowserInfo(object):
 
     @property
     def width(self):
+        # type: () -> int
         if self.viewport_size:
             return self.viewport_size["width"]
         return 0
 
     @property
     def height(self):
+        # type: () -> int
         if self.viewport_size:
             return self.viewport_size["height"]
         return 0
 
     @property
     def size_mode(self):
+        # type: () -> Text
         # TODO: Add more size modes
         return "full-page"
 
     @property
     def platform(self):
+        # type: () -> Text
         if self.browser_type in [
             BrowserType.IE_10,
             BrowserType.IE_11,
@@ -169,9 +172,7 @@ class RenderBrowserInfo(object):
 class RenderInfo(object):
     width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Num]
     height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Num]
-    size_mode = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[basestring]
+    size_mode = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
     region = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Region]
@@ -185,16 +186,16 @@ class RenderInfo(object):
 
 @attr.s
 class RGridDom(object):
-    CONTENT_TYPE = "x-applitools-html/cdt"
+    CONTENT_TYPE = "x-applitools-html/cdt"  # type: Text
 
     dom_nodes = attr.ib(repr=False)  # type: List[dict]
     resources = attr.ib()  # type: Dict[Text, VGResource]
-    url = attr.ib()  # type: basestring
-    msg = attr.ib(default=None)  # type: basestring
-    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: basestring
+    url = attr.ib()  # type: Text
+    msg = attr.ib(default=None)  # type: Text
+    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: Text
     hash_format = attr.ib(
         default="sha256", metadata={JsonInclude.THIS: True}
-    )  # type: basestring
+    )  # type: Text
 
     def __attrs_post_init__(self):
         # TODO: add proper hash
@@ -202,6 +203,7 @@ class RGridDom(object):
 
     @property
     def resource(self):
+        # type: () -> VGResource
         return VGResource(
             self.url,
             self.CONTENT_TYPE,
@@ -211,6 +213,7 @@ class RGridDom(object):
 
     @property
     def content(self):
+        # type: () -> Text
         data = {"resources": self.resources, "domNodes": self.dom_nodes}
         return json_utils.to_json(data)
 
@@ -234,6 +237,7 @@ class VGResource(object):
 
     @classmethod
     def from_blob(cls, blob):
+        # type: (Dict) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         return cls(blob.get("url"), blob.get("type"), content)
 
@@ -248,7 +252,7 @@ class VGResource(object):
 @attr.s
 class RenderRequest(object):
     webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    agent_id = attr.ib(metadata={JsonInclude.THIS: True})
+    agent_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
@@ -264,9 +268,13 @@ class RenderRequest(object):
     send_dom = attr.ib(
         default=False, metadata={JsonInclude.NON_NONE: True}
     )  # type: bool
-    render_id = attr.ib(default=None, repr=True, metadata={JsonInclude.THIS: True})
+    render_id = attr.ib(
+        default=None, repr=True, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
     task = attr.ib(default=None)  # type: Optional[VGTask]
-    browser = attr.ib(init=False, default=None, metadata={JsonInclude.NON_NONE: True})
+    browser = attr.ib(
+        init=False, default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Dict]
 
     def __attrs_post_init__(self):
         if self.browser_name is None:
@@ -276,8 +284,8 @@ class RenderRequest(object):
 
 @attr.s(hash=True)
 class RunningRender(object):
-    render_id = attr.ib(default=None)
-    job_id = attr.ib(default=None)
+    render_id = attr.ib(default=None)  # type: Optional[Text]
+    job_id = attr.ib(default=None)  # type: Optional[Text]
     render_status = attr.ib(
         default=None, converter=attr.converters.optional(RenderStatus)
     )  # type: RenderStatus
@@ -291,21 +299,21 @@ class RenderStatusResults(object):
         default=None,
         type=RenderStatus,
         converter=attr.converters.optional(RenderStatus),
-    )
-    dom_location = attr.ib(default=None)
-    user_agent = attr.ib(default=None)
-    image_location = attr.ib(default=None)
-    os = attr.ib(default=None)
+    )  # type: Optional[RenderStatus]
+    dom_location = attr.ib(default=None)  # type: Optional[Text]
+    user_agent = attr.ib(default=None)  # type: Optional[Text]
+    image_location = attr.ib(default=None)  # type: Optional[Text]
+    os = attr.ib(default=None)  # type: Optional[Text]
     error = attr.ib(
         default=None,
         type=RenderStatus,
         converter=attr.converters.optional(RenderStatus),
-    )
-    selector_regions = attr.ib(default=None)
+    )  # type: Optional[RenderStatus]
+    selector_regions = attr.ib(default=None)  # type: List[Region]
     device_size = attr.ib(
         default=None,
         type=RectangleSize,
         converter=attr.converters.optional(RectangleSize.from_),
-    )
-    retry_count = attr.ib(default=None)
-    render_id = attr.ib(default=None)
+    )  # type: Optional[RectangleSize]
+    retry_count = attr.ib(default=None)  # type: Optional[int]
+    render_id = attr.ib(default=None)  # type: Optional[Text]

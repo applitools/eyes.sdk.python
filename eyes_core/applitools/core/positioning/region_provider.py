@@ -16,7 +16,7 @@ class RegionProvider(ABC):
     used.
     """
 
-    _region = attr.ib()
+    _region = attr.ib()  # type: Region
 
     def get_region(self, eyes_screenshot=None):
         # type: (tp.Optional[EyesScreenshot]) -> Region
@@ -34,7 +34,7 @@ class RegionProvider(ABC):
 
 @attr.s
 class NullRegionProvider(RegionProvider):
-    _region = attr.ib(init=False, factory=Region.create_empty_region)
+    _region = attr.ib(init=False, factory=Region.create_empty_region)  # type: Region
 
 
 NULL_REGION_PROVIDER = NullRegionProvider()

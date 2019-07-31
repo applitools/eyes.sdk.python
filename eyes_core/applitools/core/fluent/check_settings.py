@@ -1,4 +1,4 @@
-import typing
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
 
 import attr
 
@@ -11,14 +11,8 @@ from .region import (
     RegionByRectangle,
 )
 
-if typing.TYPE_CHECKING:
-    from typing import Text, Optional, List, Union, Tuple
-    from applitools.common.utils.custom_types import AnyWebElement, Num
-
-    REGION_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
-    FLOATING_VALUES = Union[Region, Text, AnyWebElement, Tuple[Text, Text]]
-    GR = typing.TypeVar("GR", bound=GetRegion)
-    FR = typing.TypeVar("FR", bound=GetFloatingRegion)
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import Num, REGION_VALUES
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 
@@ -38,9 +32,9 @@ class CheckSettingsValues(object):
     name = attr.ib(init=False, default=None)  # type: Optional[Text]
 
     send_dom = attr.ib(init=False, default=None)  # type: bool
-    use_dom = attr.ib(init=False, default=None)
-    enable_patterns = attr.ib(init=False, default=None)
-    ignore_displacement = attr.ib(init=False, default=None)
+    use_dom = attr.ib(init=False, default=None)  # type: bool
+    enable_patterns = attr.ib(init=False, default=None)  # type: bool
+    ignore_displacement = attr.ib(init=False, default=None)  # type: bool
 
     ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
@@ -51,122 +45,76 @@ class CheckSettingsValues(object):
     )  # type: List[GetFloatingRegion]
 
 
+Self = TypeVar("Self", bound="CheckSettings")  # typedef
+
+
 @attr.s
 class CheckSettings(object):
     """
     The Match settings object to use in the various Eyes.Check methods.
     """
 
-    values = attr.ib(init=False)
-
-    def __attrs_post_init__(self):
-        # type: () -> None
-        self.values = CheckSettingsValues()
+    values = attr.ib(
+        init=False, factory=CheckSettingsValues
+    )  # type: CheckSettingsValues
 
     def layout(self, *args):
-        # type: (*REGION_VALUES)  -> CheckSettings
+        # type: (Self, *REGION_VALUES)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
         if not args:
             return self
-        return self._layout_regions(*args)
+        self.values.layout_regions = self.__regions(args, method_name="layout_regions")
+        return self
 
     def exact(self):
-        # type: ()  -> CheckSettings
+        # type: (Self)  -> Self
 
         """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
         self.values.match_level = MatchLevel.EXACT
         return self
 
     def strict(self, *args):
-        # type: (*REGION_VALUES)  -> CheckSettings
+        # type: (Self, *REGION_VALUES)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
         if not args:
             return self
-        return self._strict_regions(*args)
+        self.values.strict_regions = self.__regions(args, method_name="strict_regions")
+        return self
 
     def content(self, *args):
-        # type: (*REGION_VALUES)  -> CheckSettings
+        # type: (Self, *REGION_VALUES)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
         if not args:
             return self
-        return self._content_regions(*args)
-
-    def match_level(self, match_level):
-        # type: (MatchLevel)  -> CheckSettings
-        self.values.match_level = match_level
+        self.values.content_regions = self.__regions(
+            args, method_name="content_regions"
+        )
         return self
 
-    def ignore_caret(self, ignore=True):
-        # type: (bool)  -> CheckSettings
-        self.values.ignore_caret = ignore
-        return self
-
-    def fully(self, fully=True):
-        # type: (bool)  -> CheckSettings
-        self.values.stitch_content = fully
-        return self
-
-    def with_name(self, name):
-        # type: (Text)  -> CheckSettings
-        self.values.name = name
-        return self
-
-    def stitch_content(self, stitch_content=True):
-        # type: (bool)  -> CheckSettings
-        self.values.stitch_content = stitch_content
-        return self
-
-    def timeout(self, timeout):
-        # type: (int)  -> CheckSettings
-        self.values.timeout = timeout
-        return self
-
-    def ignore_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> CheckSettings
+    def ignore(self, *regions):
+        # type: (Self, *REGION_VALUES)  -> Self
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
         )
         return self
 
-    ignore = ignore_regions
+    @overload  # noqa
+    def floating(self, max_offset, region):
+        # type: (Self, int, Region) -> Self
+        pass
 
-    def _layout_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> CheckSettings
-        """ Adds one or more layout regions. """
-        self.values.layout_regions = self.__regions(
-            regions, method_name="layout_regions"
-        )
-        return self
-
-    def _strict_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> CheckSettings
-        """ Adds one or more strict regions. """
-        self.values.strict_regions = self.__regions(
-            regions, method_name="strict_regions"
-        )
-        return self
-
-    def _content_regions(self, *regions):
-        # type: (*REGION_VALUES)  -> CheckSettings
-        """ Adds one or more content regions. """
-        self.values.content_regions = self.__regions(
-            regions, method_name="content_regions"
-        )
-        return self
-
-    def floating_region(
-        self,
-        arg1,  # type: Union[REGION_VALUES, int]
-        arg2,  # type: Union[REGION_VALUES, int]
-        arg3=None,  # type: Optional[int]
-        arg4=None,  # type: Optional[int]
-        arg5=None,  # type: Optional[int]
+    @overload  # noqa
+    def floating(
+        self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
     ):
-        # type: (...) -> CheckSettings
+        # type: (Self, Region, int, int, int, int) -> Self
+        pass
+
+    def floating(self, arg1, arg2, arg3=None, arg4=None, arg5=None):  # noqa
         """
         Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "
                 "max_left_offset, max_right_offset] are required parameters.
@@ -179,7 +127,7 @@ class CheckSettings(object):
         """
         if isinstance(arg1, int) and isinstance(arg2, Region):
             max_offset = arg1  # type: int
-            region = arg2  # type: Region
+            region = arg2  # type: ignore
             bounds = FloatingBounds(
                 max_up_offset=max_offset,
                 max_down_offset=max_offset,
@@ -192,7 +140,7 @@ class CheckSettings(object):
             and isinstance(arg4, int)
             and isinstance(arg5, int)
         ):
-            region = arg1
+            region = arg1  # type: ignore
             bounds = FloatingBounds(
                 max_up_offset=arg2,
                 max_down_offset=arg3,
@@ -206,10 +154,8 @@ class CheckSettings(object):
         self.values.floating_regions.append(region_or_container)
         return self
 
-    floating = floating_region
-
     def send_dom(self, send=True):
-        # type: (bool) -> CheckSettings
+        # type: (Self, bool) -> Self
         """
          Defines whether to send the document DOM or not.
         """
@@ -217,7 +163,7 @@ class CheckSettings(object):
         return self
 
     def use_dom(self, use=True):
-        # type: (bool) -> CheckSettings
+        # type: (Self, bool) -> Self
         """
          Defines useDom for enabling the match algorithm to use dom.
         """
@@ -225,13 +171,43 @@ class CheckSettings(object):
         return self
 
     def enable_patterns(self, enable=True):
-        # type: (bool) -> CheckSettings
+        # type: (Self, bool) -> Self
         self.values.enable_patterns = enable
         return self
 
     def ignore_displacement(self, should_ignore=True):
-        # type: (bool) -> CheckSettings
+        # type: (Self, bool) -> Self
         self.values.ignore_displacement = should_ignore
+        return self
+
+    def match_level(self, match_level):
+        # type: (Self, MatchLevel)  -> Self
+        self.values.match_level = match_level
+        return self
+
+    def ignore_caret(self, ignore=True):
+        # type: (Self, bool)  -> Self
+        self.values.ignore_caret = ignore
+        return self
+
+    def fully(self, fully=True):
+        # type: (Self, bool)  -> Self
+        self.values.stitch_content = fully
+        return self
+
+    def with_name(self, name):
+        # type: (Self, Text)  -> Self
+        self.values.name = name
+        return self
+
+    def stitch_content(self, stitch_content=True):
+        # type: (Self, bool)  -> Self
+        self.values.stitch_content = stitch_content
+        return self
+
+    def timeout(self, timeout):
+        # type: (Self, int)  -> Self
+        self.values.timeout = timeout
         return self
 
     def __regions(self, regions, method_name):

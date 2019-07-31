@@ -110,6 +110,8 @@ class RunningTest(object):
             return self.close_queue
         elif self.state == COMPLETED:
             return []
+        else:
+            raise TypeError("Unsupported state")
 
     @property
     def score(self):
@@ -126,6 +128,8 @@ class RunningTest(object):
             return len(self.close_queue)
         elif self.state == COMPLETED:
             return 0
+        else:
+            raise TypeError("Unsupported state")
 
     def open(self):
         # type: () -> None

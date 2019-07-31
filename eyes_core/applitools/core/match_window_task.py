@@ -109,10 +109,12 @@ class MatchWindowTask(object):
 
     @property
     def last_screenshot(self):
+        # type: () -> EyesScreenshot
         return self._last_screenshot
 
     @property
     def last_screenshot_bounds(self):
+        # type: () -> Region
         return self._last_screenshot_bounds
 
     def match_window(
@@ -125,11 +127,12 @@ class MatchWindowTask(object):
         check_settings,  # type: CheckSettings
         retry_timeout_ms,  # type: Num
     ):
+        # type: (...) -> MatchResult
         if retry_timeout_ms is None or retry_timeout_ms < 0:
             retry_timeout_ms = self._default_retry_timeout_ms
         logger.debug("retry_timeout = {} ms".format(retry_timeout_ms))
 
-        retry_timeout_sec = retry_timeout_ms / 1000.0
+        retry_timeout_sec = int(retry_timeout_ms / 1000)
         screenshot = self._take_screenshot(
             user_inputs,
             region,
@@ -157,6 +160,8 @@ class MatchWindowTask(object):
         region_selectors=None,  # type: Optional[List[VisualGridSelector]]
         check_settings=None,  # type: Optional[CheckSettings]
     ):
+        # type: (...) -> MatchResult
+
         screenshot = app_output.screenshot
         if check_settings and screenshot:
             image_match_settings = collect_regions_from_screenshot(
@@ -190,6 +195,8 @@ class MatchWindowTask(object):
         image_match_settings,  # type: ImageMatchSettings
         agent_setup,  # type: Text
     ):
+        # type: (...) -> MatchResult
+
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
         if screenshot:
@@ -216,10 +223,12 @@ class MatchWindowTask(object):
         )
 
     def _update_last_screenshot(self, screenshot):
+        # type: (EyesScreenshot) -> None
         if screenshot:
             self._last_screenshot = screenshot
 
     def _update_bounds(self, region):
+        # type: (Region) -> None
         if region.is_size_empty:
             if self._last_screenshot:
                 self._last_screenshot_bounds = Region(
@@ -237,14 +246,16 @@ class MatchWindowTask(object):
 
     def _take_screenshot(
         self,
-        user_inputs,
-        region,
-        tag,
-        should_run_once_on_timeout,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        should_run_once_on_timeout,  # type: bool
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout_sec,  # type: int
     ):
+        # type: (...) -> EyesScreenshot
+
         time_start = datetime.now()
         if retry_timeout_sec == 0 or should_run_once_on_timeout:
             if should_run_once_on_timeout:
@@ -270,8 +281,14 @@ class MatchWindowTask(object):
         return screenshot
 
     def _try_take_screenshot(
-        self, user_inputs, region, tag, ignore_mismatch, check_settings
+        self,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
     ):
+        # type: (...) -> EyesScreenshot
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
@@ -297,13 +314,15 @@ class MatchWindowTask(object):
 
     def _retry_taking_screenshot(
         self,
-        user_inputs,
-        region,
-        tag,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout_sec,  # type: int
     ):
+        # type: (...) -> EyesScreenshot
+
         start = datetime.now()  # Start the retry timer.
         retry = (datetime.now() - start).seconds
 
@@ -327,16 +346,18 @@ class MatchWindowTask(object):
 
     def _taking_screenshot_loop(
         self,
-        user_inputs,
-        region,
-        tag,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
-        retry_sec,
-        start,
-        screenshot=None,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout_sec,  # type: int
+        retry_sec,  # type: int
+        start,  # type: datetime
+        screenshot=None,  # type: Optional[EyesScreenshot]
     ):
+        # type: (...) -> Optional[EyesScreenshot]
+
         if retry_sec >= retry_timeout_sec:
             return screenshot
 

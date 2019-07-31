@@ -7,7 +7,7 @@ from applitools.common.geometry import Point
 from applitools.common.utils import ABC, iteritems
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import List, Optional, Any
     from applitools.common import RectangleSize
 
 
@@ -18,6 +18,7 @@ class PositionMomento(object):
     """
 
     def __init__(self, position, **kwargs):
+        # type: (PositionProvider, **Any) -> None
         self.position = position
         for name, val in iteritems(kwargs):
             setattr(self, name, val)
@@ -70,7 +71,7 @@ class PositionProvider(ABC):
 
     @property
     def states(self):
-        # type: () -> List[Point]
+        # type: () -> List[PositionMomento]
         return self._states
 
     def __enter__(self):

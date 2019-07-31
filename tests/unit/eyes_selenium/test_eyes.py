@@ -46,7 +46,10 @@ def eyes(request):
 
 def test_set_get_scale_ratio(eyes):
     eyes.scale_ratio = 2.0
-    assert eyes.scale_ratio == 2.0
+    if not eyes._is_visual_grid_eyes:
+        assert eyes.scale_ratio == 2.0
+    else:
+        assert eyes.scale_ratio == 0
 
     if not eyes._is_visual_grid_eyes:
         eyes.scale_ratio = None

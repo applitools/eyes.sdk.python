@@ -198,7 +198,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 driver
             )
         else:
-            current_fc = driver.eyes._original_frame_chain
+            current_fc = driver.eyes.original_frame_chain
             with driver.switch_to.frames_and_back(current_fc):
                 scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
                     driver

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import typing
+from typing import TYPE_CHECKING, List, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -19,36 +19,40 @@ from .region import (
     RegionByElement,
 )
 
-if typing.TYPE_CHECKING:
-    from typing import List, Union, Text, Tuple
+if TYPE_CHECKING:
     from applitools.common.visual_grid import VisualGridSelector
-    from applitools.common.utils.custom_types import FrameReference
+    from applitools.common.utils.custom_types import (
+        FrameReference,
+        AnyWebElement,
+        FrameNameOrId,
+        FrameIndex,
+        BySelector,
+        CssSelector,
+    )
 
 
 @attr.s
 class FrameLocator(object):
-    frame_element = attr.ib(default=None)
-    frame_selector = attr.ib(default=None)
-    frame_name_or_id = attr.ib(default=None)
-    frame_index = attr.ib(default=None)
-    scroll_root_selector = attr.ib(default=None)
-    scroll_root_element = attr.ib(default=None)
+    frame_element = attr.ib(default=None)  # type: AnyWebElement
+    frame_selector = attr.ib(default=None)  # type: CssSelector
+    frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
+    frame_index = attr.ib(default=None)  # type: FrameIndex
+    scroll_root_selector = attr.ib(default=None)  # type: CssSelector
+    scroll_root_element = attr.ib(default=None)  # type: AnyWebElement
 
 
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
-    scroll_root_selector = attr.ib(init=False, default=None)
-    target_selector = attr.ib(init=False, default=None)
-    target_element = attr.ib(init=False, default=None)
+    scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
+    target_selector = attr.ib(init=False, default=None)  # type: CssSelector
+    target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     # for Rendering Grid
-    BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
-    region = attr.ib(factory=list)
     selector = attr.ib(default=None)  # type: VisualGridSelector
-    script_hooks = attr.ib(factory=dict)
+    script_hooks = attr.ib(factory=dict)  # type: dict
 
     @property
     def target_provider(self):
@@ -94,21 +98,34 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
-    values = attr.ib(init=False)  # type: SeleniumCheckSettingsValues
+    values = attr.ib(
+        init=False, factory=SeleniumCheckSettingsValues
+    )  # type: SeleniumCheckSettingsValues
 
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)
 
-    def __attrs_post_init__(self):
-        # type: () -> None
-        self.values = SeleniumCheckSettingsValues()
-        if self._region:
-            self.region(self._region)
-        if self._frame:
-            self.frame(self._frame)
-
+    @overload  # noqa
     def region(self, region):
-        # type: (Union[Region, Text, List, Tuple, WebElement, EyesWebElement]) -> CheckSettings
+        # type: (Region) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, css_selector):
+        # type: (CssSelector) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, by_selector):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    def region(self, region):  # noqa
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
@@ -122,8 +139,27 @@ class SeleniumCheckSettings(CheckSettings):
             raise TypeError("region method called with argument of unknown type!")
         return self
 
-    def frame(self, frame):
-        # type: (FrameReference) -> CheckSettings
+    @overload  # noqa
+    def frame(self, frame_name_or_id):
+        # type: (FrameNameOrId) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, frame_element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, frame_index):
+        # type: (FrameIndex) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, frame_by_selector):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    def frame(self, frame):  # noqa
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame
@@ -131,6 +167,10 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
             fl.frame_element = frame
+        elif is_list_or_tuple(frame):
+            by, value = frame
+            selector = _css_selector_from_(by, value)
+            fl.frame_selector = selector
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
@@ -164,7 +204,17 @@ class SeleniumCheckSettings(CheckSettings):
         else:
             self.values.frame_chain[-1].scroll_root_element = element
 
-    def scroll_root_element(self, element_or_selector):
+    @overload  # noqa
+    def scroll_root_element(self, element):
+        # type: (AnyWebElement) -> None
+        pass
+
+    @overload  # noqa
+    def scroll_root_element(self, selector):
+        # type: (CssSelector) -> None
+        pass
+
+    def scroll_root_element(self, element_or_selector):  # noqa
         if isinstance(element_or_selector, basestring):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
