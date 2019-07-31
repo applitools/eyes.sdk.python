@@ -104,17 +104,17 @@ class CheckSettings(object):
 
     @overload  # noqa
     def floating(self, max_offset, region):
-        # type: (Self, int, Region) -> Self
+        # type: (Self, int, REGION_VALUES) -> Self
         pass
 
     @overload  # noqa
     def floating(
         self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
     ):
-        # type: (Self, Region, int, int, int, int) -> Self
+        # type: (Self, REGION_VALUES, int, int, int, int) -> Self
         pass
 
-    def floating(self, arg1, arg2, arg3=None, arg4=None, arg5=None):  # noqa
+    def floating(self, *args):  # noqa
         """
         Adds a floating region. Region and max_offset or [max_up_offset, max_down_offset, "
                 "max_left_offset, max_right_offset] are required parameters.
@@ -125,9 +125,9 @@ class CheckSettings(object):
         :param arg4: None       | max_left_offset
         :param arg5: None       | max_right_offset
         """
-        if isinstance(arg1, int) and isinstance(arg2, Region):
-            max_offset = arg1  # type: int
-            region = arg2  # type: ignore
+        if isinstance(args[0], int) and isinstance(args[1], Region):
+            max_offset = args[0]  # type: int
+            region = args[1]  # type: ignore
             bounds = FloatingBounds(
                 max_up_offset=max_offset,
                 max_down_offset=max_offset,
@@ -135,17 +135,17 @@ class CheckSettings(object):
                 max_right_offset=max_offset,
             )
         elif (
-            isinstance(arg2, int)
-            and isinstance(arg3, int)
-            and isinstance(arg4, int)
-            and isinstance(arg5, int)
+            isinstance(args[1], int)
+            and isinstance(args[2], int)
+            and isinstance(args[3], int)
+            and isinstance(args[4], int)
         ):
-            region = arg1  # type: ignore
+            region = args[0]  # type: ignore
             bounds = FloatingBounds(
-                max_up_offset=arg2,
-                max_down_offset=arg3,
-                max_left_offset=arg4,
-                max_right_offset=arg5,
+                max_up_offset=args[1],
+                max_down_offset=args[2],
+                max_left_offset=args[3],
+                max_right_offset=args[4],
             )
         else:
             raise TypeError("Unsupported parameters")
