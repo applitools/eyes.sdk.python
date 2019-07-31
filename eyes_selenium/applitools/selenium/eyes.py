@@ -42,6 +42,24 @@ class Eyes(object):
     _driver = None  # type: Optional[EyesWebDriver]
     _is_opened = False  # type: bool
 
+    def __init__(self, runner=None):
+        # type: (Optional[VisualGridRunner]) -> None
+        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+
+        # backward compatibility with settings server_url
+        if isinstance(runner, str):
+            self.configuration.server_url = runner
+            runner = None
+
+        if runner is None:
+            self._selenium_eyes = SeleniumEyes(self)
+        elif isinstance(runner, VisualGridRunner):
+            self._runner = runner
+            self._visual_grid_eyes = VisualGridEyes(runner, self)
+            self._is_visual_grid_eyes = True
+        else:
+            raise ValueError("Wrong runner")
+
     @property
     def is_opened(self):
         # type: () -> bool
@@ -250,24 +268,6 @@ class Eyes(object):
         """
         if not self._is_visual_grid_eyes:
             self._selenium_eyes.add_text_trigger_by_element(element, text)
-
-    def __init__(self, runner=None):
-        # type: (Optional[Union[Text, VisualGridRunner]]) -> None
-        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
-
-        # backward compatibility with settings server_url
-        if isinstance(runner, str):
-            self.configuration.server_url = runner
-            runner = None
-
-        if runner is None:
-            self._selenium_eyes = SeleniumEyes(self)
-        elif isinstance(runner, VisualGridRunner):
-            self._runner = runner
-            self._visual_grid_eyes = VisualGridEyes(runner, self)
-            self._is_visual_grid_eyes = True
-        else:
-            raise ValueError("Wrong runner")
 
     @property
     def driver(self):
