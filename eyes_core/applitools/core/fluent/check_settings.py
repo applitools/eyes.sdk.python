@@ -45,7 +45,7 @@ class CheckSettingsValues(object):
     )  # type: List[GetFloatingRegion]
 
 
-Self = TypeVar("Self", bound="CheckSettings")
+Self = TypeVar("Self", bound="CheckSettings")  # typedef
 
 
 @attr.s

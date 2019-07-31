@@ -1,12 +1,11 @@
-from typing import Protocol
-
 from applitools.common.geometry import Region
+from applitools.common.utils import ABC
 from applitools.core.fluent.check_settings import CheckSettings
 
 _all_ = ("CheckTarget",)
 
 
-class CheckTarget(Protocol):
+class CheckTarget(ABC):
     @staticmethod
     def window():
         # type: () -> CheckSettings

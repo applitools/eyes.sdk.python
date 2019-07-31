@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 __all__ = ("EyesScreenshot",)
 
-Self = TypeVar("Self", bound="EyesScreenshot")
+Self = TypeVar("Self", bound="EyesScreenshot")  # typedef
 
 
 @attr.s
