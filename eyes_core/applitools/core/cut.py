@@ -2,6 +2,7 @@ import math
 from abc import abstractmethod
 
 import attr
+from PIL.Image import Image
 
 from applitools.common import Region
 from applitools.common.utils import ABC, image_utils
@@ -11,12 +12,13 @@ __all__ = ("FixedCutProvider", "UnscaledFixedCutProvider", "NullCutProvider")
 
 @attr.s
 class CutProvider(ABC):
-    header = attr.ib()
-    footer = attr.ib()
-    left = attr.ib()
-    right = attr.ib()
+    header = attr.ib()  # type: int
+    footer = attr.ib()  # type: int
+    left = attr.ib()  # type: int
+    right = attr.ib()  # type: int
 
     def cut(self, image):
+        # type: (Image) -> Image
         if self.header == 0 and self.footer == 0 and self.right == 0 and self.left == 0:
             return image
 
@@ -36,6 +38,7 @@ class CutProvider(ABC):
 
 class FixedCutProvider(CutProvider):
     def scale(self, scale_ratio):
+        # type: (float) -> FixedCutProvider
         cut_provider = FixedCutProvider(
             math.ceil(self.header * scale_ratio),
             math.ceil(self.footer * scale_ratio),
@@ -47,6 +50,7 @@ class FixedCutProvider(CutProvider):
 
 class UnscaledFixedCutProvider(CutProvider):
     def scale(self, scale_ratio):
+        # type: (float) -> UnscaledFixedCutProvider
         if isinstance(self, NullCutProvider):
             return self
 

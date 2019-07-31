@@ -7,7 +7,7 @@ from .server import SessionType
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from applitools.common import DeviceName, BatchInfo
+    from applitools.common import DeviceName, BatchInfo, RenderingInfo, RectangleSize
     from typing import Optional, Text
 
 __all__ = ("RunningSession", "AppEnvironment", "SessionStartInfo")
@@ -24,7 +24,7 @@ class RunningSession(object):
     batch_id = attr.ib()  # type: Text
     baseline_id = attr.ib()  # type: Text
     url = attr.ib()  # type: Text
-    rendering_info = attr.ib(default=None)
+    rendering_info = attr.ib(default=None)  # type: Optional[RenderingInfo]
     is_new_session = attr.ib(default=False)  # type: bool
 
 
@@ -35,15 +35,27 @@ def _to_device_info(v):
 
 @attr.s
 class AppEnvironment(object):
-    os = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    hosting_app = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    display_size = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    os = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[Text]
+    hosting_app = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[Text]
+    display_size = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[RectangleSize]
     device_info = attr.ib(
         default=None, converter=_to_device_info, metadata={JsonInclude.NON_NONE: True}
-    )
-    os_info = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    hosting_app_info = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    inferred = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    )  # type:Optional[Text]
+    os_info = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[Text]
+    hosting_app_info = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[Text]
+    inferred = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type:Optional[Text]
 
     @classmethod
     def from_inferred(cls, inferred):

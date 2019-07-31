@@ -699,3 +699,11 @@ class EyesWebDriver(object):
 
     def set_window_position(self, x, y, windowHandle="current"):
         self._driver.set_window_position(x, y, windowHandle)
+
+    @property
+    def desired_capabilities(self):
+        # type: () -> Dict
+        """
+        returns the drivers current desired capabilities being used
+        """
+        return self._driver.desired_capabilities

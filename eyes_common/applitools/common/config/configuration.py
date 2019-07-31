@@ -2,7 +2,7 @@ import os
 import uuid
 from copy import copy
 from datetime import datetime
-from typing import Optional, Text, Union
+from typing import Dict, List, Optional, Text, Union
 
 import attr
 
@@ -40,19 +40,21 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     id = attr.ib(
         init=False,
+        converter=str,
         factory=lambda: os.getenv("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
         metadata={JsonInclude.THIS: True},
     )  # type: Text
 
     def with_batch_id(self, id):
+        # type: (Union[Text, int]) -> BatchInfo
         argument_guard.not_none(id)
-        self.id = id
+        self.id = str(id)
         return self
 
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT_MS = 2000
+    DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
 
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
@@ -75,39 +77,45 @@ class Configuration(object):
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
     ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
-    ignore_caret = attr.ib(default=False)
+    ignore_caret = attr.ib(default=False)  # type: bool
     compare_with_parent_branch = attr.ib(default=None)  # type: Optional[bool]
-    host_app = attr.ib(default=None)
-    host_os = attr.ib(default=None)
-    properties = attr.ib(factory=list)
-    hide_scrollbars = attr.ib(default=False)
-    match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT_MS)  # ms
-    match_level = attr.ib(default=MatchLevel.STRICT, converter=MatchLevel)
-    is_disabled = attr.ib(default=False)
-    save_new_tests = attr.ib(default=True)
-    save_failed_tests = attr.ib(default=False)
-    fail_on_new_test = attr.ib(default=False)
-    failure_reports = attr.ib(default=FailureReports.ON_CLOSE)
-    send_dom = attr.ib(default=True)
-    use_dom = attr.ib(default=False)
-    enable_patterns = attr.ib(default=False)
-    default_match_settings = attr.ib(default=ImageMatchSettings())
-    hide_caret = attr.ib(init=False, default=None)
-    stitching_overlap = attr.ib(init=False, default=50)
+    host_app = attr.ib(default=None)  # type: Optional[Text]
+    host_os = attr.ib(default=None)  # type: Optional[Text]
+    properties = attr.ib(factory=list)  # type: List[Dict[Text, Text]]
+    hide_scrollbars = attr.ib(default=False)  # type: bool
+    match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT_MS)  # type: int # ms
+    match_level = attr.ib(
+        default=MatchLevel.STRICT, converter=MatchLevel
+    )  # type: MatchLevel
+    is_disabled = attr.ib(default=False)  # type: bool
+    save_new_tests = attr.ib(default=True)  # type: bool
+    save_failed_tests = attr.ib(default=False)  # type: bool
+    fail_on_new_test = attr.ib(default=False)  # type: bool
+    failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
+    send_dom = attr.ib(default=True)  # type: bool
+    use_dom = attr.ib(default=False)  # type: bool
+    enable_patterns = attr.ib(default=False)  # type: bool
+    default_match_settings = attr.ib(
+        default=ImageMatchSettings()
+    )  # type: ImageMatchSettings
+    hide_caret = attr.ib(init=False, default=None)  # type: Optional[bool]
+    stitching_overlap = attr.ib(init=False, default=50)  # type: int
 
-    api_key = attr.ib(factory=lambda: os.getenv("APPLITOOLS_API_KEY", None))
-    server_url = attr.ib(default=DEFAULT_SERVER_URL)
-    timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # ms
+    api_key = attr.ib(
+        factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
+    )  # type: Optional[Text]
+    server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
+    timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
-    def validate1(self, attribute, value):
+    def _validate1(self, attribute, value):
         if 0 < value < MINIMUM_MATCH_TIMEOUT_MS:
             raise ValueError(
                 "Match timeout must be at least {} ms.".format(MINIMUM_MATCH_TIMEOUT_MS)
             )
 
     @viewport_size.validator
-    def validate2(self, attribute, value):
+    def _validate2(self, attribute, value):
         if value is None:
             return None
         if not isinstance(value, RectangleSize) or not (
@@ -119,15 +127,19 @@ class Configuration(object):
 
     @property
     def is_dom_send(self):
+        # type: () -> bool
         return self.send_dom
 
     def clone(self):
+        # type: () -> Configuration
         return copy(self)
 
     @property
     def short_description(self):
+        # type: () -> Text
         return "{} of {}".format(self.test_name, self.app_name)
 
     @staticmethod
     def all_fields():
+        # type: () -> List[Text]
         return list(attr.fields_dict(Configuration).keys())
