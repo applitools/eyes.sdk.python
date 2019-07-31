@@ -4,7 +4,7 @@ import contextlib
 import typing
 
 import attr
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -40,7 +40,10 @@ class FrameResolver(object):
         frame_ref = self._ref_if_locator(self._frame_ref)
         driver = self._driver
         if isinstance(frame_ref, basestring):
-            frame_eyes_webelement = driver.find_element_by_name(frame_ref)
+            try:
+                frame_eyes_webelement = driver.find_element_by_name(frame_ref)
+            except NoSuchElementException:
+                frame_eyes_webelement = driver.find_element_by_id(frame_ref)
         elif isinstance(frame_ref, int):
             frame_elements_list = driver.find_elements_by_css_selector("frame, iframe")
             frame_eyes_webelement = frame_elements_list[frame_ref]
