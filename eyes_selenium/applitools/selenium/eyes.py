@@ -365,7 +365,8 @@ class Eyes(object):
         logger.debug("check_region_in_frame_by_selector('%s')" % tag)
         return self.check(
             tag,
-            Target.region(region, frame_reference)
+            Target.region(region)
+            .frame(frame_reference)
             .stitch_content(stitch_content)
             .timeout(match_timeout),
         )
