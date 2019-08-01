@@ -51,7 +51,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.VIEWPORT, Point.ZERO())
+        instance = cls(driver, image, ScreenshotType.VIEWPORT, None)
         instance._validate_frame_window()
         return instance
 
@@ -86,7 +86,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     def __attrs_post_init__(self):
         # type: () -> None
-        self._frame_chain = self._driver.frame_chain.clone()
         self._screenshot_type = self.update_screenshot_type(
             self._screenshot_type, self._image
         )
@@ -96,38 +95,51 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         else:
             position_provider = self._driver.eyes.position_provider
 
-        if self._current_frame_scroll_position is None:
+        if not self._driver.is_mobile_app:
+            self._frame_chain = self._driver.frame_chain.clone()
+
             self._current_frame_scroll_position = self.get_updated_scroll_position(
                 position_provider
             )
-        self._frame_location_in_screenshot = self.get_updated_frame_location_in_screenshot(
-            self._frame_location_in_screenshot
-        )
-        logger.debug("Calculating frame window...")
-
-        if self.frame_window is None:
+            self.updated_frame_location_in_screenshot(
+                self._frame_location_in_screenshot
+            )
+            logger.debug("Calculating frame window...")
             frame_size = self.get_frame_size(position_provider)
             self.frame_window = Region.from_(
                 self._frame_location_in_screenshot, frame_size
             )
-            self.frame_window.intersect(
-                Region(0, 0, width=self.image.width, height=self.image.height)
+        else:
+            self.frame_chain = FrameChain()
+            self._current_frame_scroll_position = Point(0, 0)
+            self._frame_location_in_screenshot = Point(0, 0)
+            self.frame_window = Region.from_location_size(
+                self._frame_location_in_screenshot,
+                Region.from_location_size(
+                    self._frame_location_in_screenshot,
+                    dict(width=self.image.width, height=self.image.height),
+                ),
             )
+        self.frame_window.intersect(
+            Region(0, 0, width=self.image.width, height=self.image.height)
+        )
 
     def _validate_frame_window(self):
         # type: () -> None
         if self.frame_window.width <= 0 or self.frame_window.height <= 0:
             raise EyesError("Got empty frame window for screenshot!")
 
-    def get_updated_frame_location_in_screenshot(self, frame_location_in_screenshot):
-        # type: (Point) -> Point
-        if self.frame_chain.size > 0:
-            frame_location_in_screenshot = self.calc_frame_location_in_screenshot(
-                self._driver, self._frame_chain, self._screenshot_type
-            )
-        elif not frame_location_in_screenshot:
-            frame_location_in_screenshot = Point.ZERO()
-        return frame_location_in_screenshot
+    def updated_frame_location_in_screenshot(self, location):
+        # type: (Point) -> None
+        if location is None:
+            if self.frame_chain.size > 0:
+                self._frame_location_in_screenshot = self.calc_frame_location_in_screenshot(  # noqa
+                    self._driver, self._frame_chain, self._screenshot_type
+                )
+            else:
+                self._frame_location_in_screenshot = Point.ZERO()
+        else:
+            self._frame_location_in_screenshot = location
 
     def get_updated_scroll_position(self, position_provider):
         # type: (SeleniumPositionProvider) -> Point
