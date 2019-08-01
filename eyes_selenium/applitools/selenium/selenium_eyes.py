@@ -87,7 +87,7 @@ class SeleniumEyes(EyesBase):
     _match_window_task = None  # type: Optional[MatchWindowTask]
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
     _check_frame_or_element = None  # type: bool
-    _original_frame_chain = None  # type: Optional[FrameChain]
+    _original_fc = None  # type: Optional[FrameChain]
     _scroll_root_element = None
     _effective_viewport = None  # type: Optional[Region]
     _target_element = None
@@ -95,6 +95,7 @@ class SeleniumEyes(EyesBase):
     _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
+    _switched_to_frame_count = 0  # int
 
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
@@ -131,7 +132,7 @@ class SeleniumEyes(EyesBase):
     @property
     def original_frame_chain(self):
         # type: () -> FrameChain
-        return self._original_frame_chain
+        return self._original_fc
 
     @property
     def stitch_content(self):
@@ -241,7 +242,7 @@ class SeleniumEyes(EyesBase):
         self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
-        self._original_frame_chain = self.driver.frame_chain.clone()
+        self._original_fc = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_platform:
             # hide scrollbar for main window
@@ -262,14 +263,14 @@ class SeleniumEyes(EyesBase):
         self._stitch_content = False
         self._scroll_root_element = None
         self._position_provider = None
-        self._original_frame_chain = None
+        self._original_fc = None
         logger.debug("check - done!")
         return result
 
     def _check_result_flow(self, name, check_settings):
         target_region = check_settings.values.target_region
         result = None
-        if target_region:
+        if target_region and self._switched_to_frame_count == 0:
             logger.debug("have target region")
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
@@ -393,7 +394,7 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _switch_to_frame(self, check_settings):
         # type: (SeleniumCheckSettings) -> Generator
-        switched_to_frame_count = 0
+        self._switched_to_frame_count = 0
         # TODO: refactor frames storing
         frames = {}
         frame_chain = check_settings.values.frame_chain
@@ -405,18 +406,18 @@ class SeleniumEyes(EyesBase):
             cur_frame = self._driver.frame_chain.peek
             cur_frame.scroll_root_element = root_element
             self._try_hide_scrollbars(cur_frame)
-            frames[switched_to_frame_count] = cur_frame
-            switched_to_frame_count += 1
+            frames[self._switched_to_frame_count] = cur_frame
+            self._switched_to_frame_count += 1
 
         yield
 
-        while switched_to_frame_count > 0:
-            cur_frame = frames.get(switched_to_frame_count - 1)
+        while self._switched_to_frame_count > 0:
+            cur_frame = frames.get(self._switched_to_frame_count - 1)
             if cur_frame:
                 self._try_restore_scrollbars(cur_frame)
             self.driver.switch_to.parent_frame()
             self.driver.switch_to.reset_scroll()
-            switched_to_frame_count -= 1
+            self._switched_to_frame_count -= 1
 
     @property
     def scroll_root_element(self):

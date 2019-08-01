@@ -1,13 +1,13 @@
-import pytest
 from selenium.webdriver.common.by import By
 
+import pytest
 from applitools.common import CoordinatesType
 from applitools.selenium import Region, StitchMode, Target
 
 
 @pytest.mark.platform("Linux", "Windows", "macOS")
 @pytest.mark.usefixtures("eyes_for_class")
-@pytest.mark.viewport_size({"width": 800, "height": 600})
+@pytest.mark.viewport_size({"width": 700, "height": 460})
 @pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 class TestSetup(object):

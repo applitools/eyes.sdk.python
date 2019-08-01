@@ -97,7 +97,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
-
+            frame_size = self.get_frame_size(position_provider)
             self._current_frame_scroll_position = self.get_updated_scroll_position(
                 position_provider
             )
@@ -105,7 +105,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 self._frame_location_in_screenshot
             )
             logger.debug("Calculating frame window...")
-            frame_size = self.get_frame_size(position_provider)
             self.frame_window = Region.from_(
                 self._frame_location_in_screenshot, frame_size
             )
