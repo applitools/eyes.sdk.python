@@ -656,13 +656,22 @@ class SeleniumEyes(EyesBase):
             self._region_position_compensation,
         )
 
+    @contextlib.contextmanager
     def _try_hide_caret(self):
-        if self.configuration.hide_caret:
+        active_element = None
+        if self.configuration.hide_caret and not self.driver.is_mobile_app:
             try:
-                self.driver.execute_script(
+                active_element = self.driver.execute_script(
                     "var activeElement = document.activeElement; activeElement "
                     "&& activeElement.blur(); return activeElement;"
                 )
+            except WebDriverException as e:
+                logger.warning("Cannot hide caret! \n{}".format(e))
+        yield
+
+        if self.configuration.hide_caret and not self.driver.is_mobile_app:
+            try:
+                self.driver.execute_script("arguments[0].focus();", active_element)
             except WebDriverException as e:
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
@@ -671,16 +680,16 @@ class SeleniumEyes(EyesBase):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.push_state()
 
-        self._try_hide_caret()
+        with self._try_hide_caret():
 
-        scale_provider = self._update_scaling_params()
+            scale_provider = self._update_scaling_params()
 
-        if self._check_frame_or_element:
-            self._last_screenshot = self._entire_element_screenshot(scale_provider)
-        elif self.configuration.force_full_page_screenshot or self._stitch_content:
-            self._last_screenshot = self._full_page_screenshot(scale_provider)
-        else:
-            self._last_screenshot = self._viewport_screenshot(scale_provider)
+            if self._check_frame_or_element:
+                self._last_screenshot = self._entire_element_screenshot(scale_provider)
+            elif self.configuration.force_full_page_screenshot or self._stitch_content:
+                self._last_screenshot = self._full_page_screenshot(scale_provider)
+            else:
+                self._last_screenshot = self._viewport_screenshot(scale_provider)
 
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
@@ -752,25 +761,26 @@ class SeleniumEyes(EyesBase):
     def _viewport_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Viewport screenshot requested")
-        self._ensure_element_visible(self._target_element)
+        with self._ensure_element_visible(self._target_element):
+            sleep(self.configuration.wait_before_screenshots / 1000.0)
+            image = self._image_provider.get_image()
+            self._debug_screenshot_provider.save(image, "original")
 
-        sleep(self.configuration.wait_before_screenshots / 1000.0)
-        image = self._image_provider.get_image()
-        self._debug_screenshot_provider.save(image, "original")
+            scale_provider.update_scale_ratio(image.width)
+            pixel_ratio = 1 / scale_provider.scale_ratio
+            if pixel_ratio != 1.0:
+                logger.info("Scalling")
+                image = image_utils.scale_image(image, 1.0 / pixel_ratio)
+                self._debug_screenshot_provider.save(image, "scaled")
 
-        scale_provider.update_scale_ratio(image.width)
-        pixel_ratio = 1 / scale_provider.scale_ratio
-        if pixel_ratio != 1.0:
-            logger.info("Scalling")
-            image = image_utils.scale_image(image, 1.0 / pixel_ratio)
-            self._debug_screenshot_provider.save(image, "scaled")
+            if not isinstance(self.cut_provider, NullCutProvider):
+                logger.info("Cutting")
+                image = self.cut_provider.cut(image)
+                self._debug_screenshot_provider.save(image, "cutted")
 
-        if not isinstance(self.cut_provider, NullCutProvider):
-            logger.info("Cutting")
-            image = self.cut_provider.cut(image)
-            self._debug_screenshot_provider.save(image, "cutted")
+            screenshot = EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
-        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+        return screenshot
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
@@ -786,41 +796,40 @@ class SeleniumEyes(EyesBase):
         viewport_bounds = Region.from_(location, self._get_viewport_size())
         return viewport_bounds
 
+    @contextlib.contextmanager
     def _ensure_element_visible(self, element):
-        if self._target_element is None:
-            # No element? we must be checking the window.
-            return None
-        if self.driver.is_mobile_platform:
-            logger.debug("NATIVE context identified, skipping 'ensure element visible'")
-            return None
+        element_bounds = viewport_bounds = position_provider = None
+        if self._target_element and not self.driver.is_mobile_app:
+            original_fc = self.driver.frame_chain.clone()
+            switch_to = self.driver.switch_to
+            eyes_element = EyesWebElement(element, self.driver)
+            element_bounds = eyes_element.bounds
 
-        original_fc = self.driver.frame_chain.clone()
-        switch_to = self.driver.switch_to
-        eyes_element = EyesWebElement(element, self.driver)
-        element_bounds = eyes_element.bounds
+            current_frame_offset = original_fc.current_frame_offset
+            element_bounds = element_bounds.offset(current_frame_offset)
+            viewport_bounds = self._get_viewport_scroll_bounds()
+            logger.info(
+                "viewport_bounds: {}; element_bounds: {}".format(
+                    viewport_bounds, element_bounds
+                )
+            )
+            if not viewport_bounds.contains(element_bounds):
+                self._ensure_frame_visible()
+                element_location = Point.from_(element.location)
+                if len(original_fc) > 0 and element is not original_fc.peek.reference:
+                    switch_to.frames(original_fc)
+                    scroll_root_element = self.driver.find_element_by_tag_name("html")
+                else:
+                    scroll_root_element = self.scroll_root_element
+                position_provider = self._element_position_provider_from(
+                    scroll_root_element
+                )
+                position_provider.push_state()
+                position_provider.set_position(element_location)
 
-        current_frame_offset = original_fc.current_frame_offset
-        element_bounds = element_bounds.offset(
-            current_frame_offset.x, current_frame_offset.y
-        )
-        viewport_bounds = self._get_viewport_scroll_bounds()
-        logger.info(
-            "viewport_bounds: {}; element_bounds: {}".format(
-                viewport_bounds, element_bounds
-            )
-        )
-        if not element_bounds.contains(viewport_bounds):
-            self._ensure_frame_visible()
-            element_location = Point.from_(element.location)
-            if len(original_fc) > 0 and element is not original_fc.peek.reference:
-                switch_to.frames(original_fc)
-                scroll_root_element = self.driver.find_element_by_tag_name("html")
-            else:
-                scroll_root_element = self.scroll_root_element
-            position_provider = self._element_position_provider_from(
-                scroll_root_element
-            )
-            position_provider.set_position(element_location)
+        yield
+        if self._target_element and position_provider and not self.driver.is_mobile_app:
+            position_provider.pop_state()
 
     def _create_position_provider(self, scroll_root_element):
         stitch_mode = self.configuration.stitch_mode
