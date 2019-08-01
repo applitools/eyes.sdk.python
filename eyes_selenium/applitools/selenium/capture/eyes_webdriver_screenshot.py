@@ -110,18 +110,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             )
         else:
             self.frame_chain = FrameChain()
-            self._current_frame_scroll_position = Point(0, 0)
-            self._frame_location_in_screenshot = Point(0, 0)
-            self.frame_window = Region.from_location_size(
-                self._frame_location_in_screenshot,
-                Region.from_location_size(
-                    self._frame_location_in_screenshot,
-                    dict(width=self.image.width, height=self.image.height),
-                ),
+            self._current_frame_scroll_position = Point.ZERO()
+            self._frame_location_in_screenshot = Point.ZERO()
+            self.frame_window = Region.from_(
+                self._frame_location_in_screenshot, self.image
             )
-        self.frame_window.intersect(
-            Region(0, 0, width=self.image.width, height=self.image.height)
-        )
+        self.frame_window.intersect(Region.from_(self.image))
 
     def _validate_frame_window(self):
         # type: () -> None

@@ -90,7 +90,7 @@ class SeleniumEyes(EyesBase):
     _original_fc = None  # type: Optional[FrameChain]
     _scroll_root_element = None
     _effective_viewport = None  # type: Optional[Region]
-    _target_element = None
+    _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
     _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
@@ -799,7 +799,7 @@ class SeleniumEyes(EyesBase):
 
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):
-        element_bounds = viewport_bounds = position_provider = None
+        position_provider = None
         if self._target_element and not self.driver.is_mobile_app:
             original_fc = self.driver.frame_chain.clone()
             switch_to = self.driver.switch_to
@@ -807,6 +807,9 @@ class SeleniumEyes(EyesBase):
             element_bounds = eyes_element.bounds
 
             current_frame_offset = original_fc.current_frame_offset
+            element_bounds = element_bounds.offset(
+                current_frame_offset.x, current_frame_offset.y
+            )
             element_bounds = element_bounds.offset(current_frame_offset)
             viewport_bounds = self._get_viewport_scroll_bounds()
             logger.info(
@@ -851,66 +854,85 @@ class SeleniumEyes(EyesBase):
         pos_provider = self._create_position_provider(scroll_root_element)
         result = None
         with pos_provider:
-            self._ensure_element_visible(element)
-            pl = element.location
-            try:
-                self._check_frame_or_element = True
-                display_style = element.get_computed_style("display")
+            with self._ensure_element_visible(element):
+                pl = element.location
+                try:
+                    self._check_frame_or_element = True
+                    display_style = element.get_computed_style("display")
 
-                if self.configuration.hide_scrollbars:
-                    # FIXME bug if trying to hide
-                    element.hide_scrollbars()
+                    if self.configuration.hide_scrollbars:
+                        # FIXME bug if trying to hide
+                        element.hide_scrollbars()
 
-                size_and_borders = element.size_and_borders
-                border_widths = size_and_borders.borders
-                element_size = size_and_borders.size
-                if display_style != "inline" and (
-                    element_size["height"] <= self._effective_viewport["height"]
-                    and element_size["width"] <= self._effective_viewport["width"]
-                ):
-                    self._element_position_provider = ElementPositionProvider(
-                        self.driver, element
+                    size_and_borders = element.size_and_borders
+                    border_widths = size_and_borders.borders
+                    element_size = size_and_borders.size
+                    if display_style != "inline" and (
+                        element_size["height"] <= self._effective_viewport["height"]
+                        and element_size["width"] <= self._effective_viewport["width"]
+                    ):
+                        self._element_position_provider = ElementPositionProvider(
+                            self.driver, element
+                        )
+                    else:
+                        self._element_position_provider = None
+
+                    element_region = Region(
+                        pl["x"] + border_widths["left"],
+                        pl["y"] + border_widths["top"],
+                        element_size["width"],
+                        element_size["height"],
+                        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
                     )
-                else:
+                    self._region_to_check = element_region
+
+                    if not self._effective_viewport.is_size_empty:
+                        self._region_to_check.intersect(self._effective_viewport)
+
+                    result = self._check_window_base(
+                        NULL_REGION_PROVIDER, name, False, check_settings
+                    )
+                except Exception as e:
+                    logger.exception(e)
+                    raise e
+                finally:
+                    if self.configuration.hide_scrollbars:
+                        element.return_to_original_overflow()
+                    self._check_frame_or_element = False
+                    self._region_to_check = None
                     self._element_position_provider = None
-
-                element_region = Region(
-                    pl["x"] + border_widths["left"],
-                    pl["y"] + border_widths["top"],
-                    element_size["width"],
-                    element_size["height"],
-                    coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
-                )
-                self._region_to_check = element_region
-
-                if not self._effective_viewport.is_size_empty:
-                    self._region_to_check.intersect(self._effective_viewport)
-
-                result = self._check_window_base(
-                    NULL_REGION_PROVIDER, name, False, check_settings
-                )
-            except Exception as e:
-                logger.exception(e)
-                raise e
-            finally:
-                if self.configuration.hide_scrollbars:
-                    element.return_to_original_overflow()
-                self._check_frame_or_element = False
-                self._region_to_check = None
-                self._element_position_provider = None
         return result
 
     def _check_region(self, name, check_settings):
         def get_region():
-            location = self._target_element.location
-            size = self._target_element.size
-            return Region(
-                location["x"],
-                location["y"],
-                size["width"],
-                size["height"],
-                coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
-            )
+            rect = check_settings.values.target_region
+            if rect is None:
+                if self.driver.is_mobile_platform:
+                    bounds = self._target_element.rect
+                else:
+                    bounds = self._target_element.bounding_client_rect
+                region = Region(
+                    bounds["x"],
+                    bounds["y"],
+                    bounds["width"],
+                    bounds["height"],
+                    coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
+                )
+            else:
+                s = self._target_element.size_and_borders.size
+                b = self._target_element.size_and_borders.borders
+                p = Point.from_(self._target_element.location)
+                p = p.offset(b["left"], b["top"])
+                x = p.x + rect.left
+                y = p.y + rect.top
+                region = Region(
+                    x,
+                    y,
+                    min(p.x + s["width"], rect.right - x),
+                    min(p.y + s["height"], rect.bottom - y),
+                    coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
+                )
+            return region
 
         result = self._check_window_base(
             RegionProvider(get_region), name, False, check_settings

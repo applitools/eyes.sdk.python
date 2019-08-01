@@ -9,11 +9,11 @@ from applitools.selenium import Region, StitchMode, Target
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.viewport_size({"width": 700, "height": 460})
 @pytest.mark.eyes(stitch_mode=StitchMode.CSS)
-@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 class TestSetup(object):
     pass
 
 
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Classic API")
 class TestClassicAPI(TestSetup):
     def test_check_window(self):
@@ -39,6 +39,7 @@ class TestClassicAPI(TestSetup):
 
 
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API")
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 @pytest.mark.test_name_pattern({"from": "Fluent", "to": "_Fluent"})
 class TestFluentAPI(TestSetup):
     def test_check_window_with_ignore_region_fluent(self):
@@ -203,16 +204,15 @@ class TestFluentAPI(TestSetup):
 @pytest.mark.test_page_url(
     "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
 )
-@pytest.mark.skip("FIXME Failing")
 class TestSpecialCases(TestSetup):
     def test_check_region_in_a_very_big_frame(self):
-        self.eyes.check("map", Target.frame("frame1").region((By.TAG_NAME, "img")))
+        self.eyes.is_debug_screenshot_provided = True
+        self.eyes.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
     def test_check_region_in_a_very_big_frame_after_manual_switch_frame(self):
         with self.driver.switch_to.frame_and_back("frame1"):
             element = self.driver.find_element(By.CSS_SELECTOR, "img")
-            # TODO #112: fix bug execute_script method calling with EyesWebElement
             self.driver.execute_script(
                 "arguments[0].scrollIntoView(true);", element.element
             )
-            self.eyes.check("", Target.region((By.CSS_SELECTOR, "img")))
+            self.eyes.check("", Target.region([By.CSS_SELECTOR, "img"]))

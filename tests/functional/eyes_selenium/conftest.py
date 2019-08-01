@@ -66,10 +66,12 @@ def eyes_open(request, eyes, driver):
     if eyes.force_full_page_screenshot:
         test_suite_name += " - ForceFPS"
         test_name += "_FPS"
-    driver = eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
-    driver.get(test_page_url)
+    eyes_driver = eyes.open(
+        driver, test_suite_name, test_name, viewport_size=viewport_size
+    )
+    eyes_driver.get(test_page_url)
 
-    yield eyes, driver
+    yield eyes, eyes_driver
     results = eyes.close()
     print(results)
 

@@ -109,7 +109,9 @@ return [x, y]"""
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
         if self._driver.is_mobile_web:
-            scroll_command = "window.scrollTo({0}, {1})".format(location.x, location.y)
+            scroll_command = "window.scrollTo({0}, {1})".format(
+                location["x"], location["y"]
+            )
             self._driver.execute_script(scroll_command)
             self._last_set_position = location
             return self._last_set_position
@@ -117,7 +119,7 @@ return [x, y]"""
             scroll_command = (
                 "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
                 "return (arguments[0].scrollLeft+';'+arguments["
-                "0].scrollTop);" % (location.x, location.y)
+                "0].scrollTop);" % (location["x"], location["y"])
             )
         self._last_set_position = eyes_selenium_utils.parse_location_string(  # type: ignore
             self._driver.execute_script(scroll_command, self._scroll_root_element)
@@ -166,7 +168,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         self._driver.execute_script(
             (
                 "document.documentElement.style.transform='translate(-{:d}px,"
-                "-{:d}px';".format(location.x, location.y)
+                "-{:d}px';".format(location["x"], location["y"])
             ),
             self._scroll_root_element,
         )
