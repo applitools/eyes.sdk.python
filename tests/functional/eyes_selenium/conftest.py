@@ -27,14 +27,7 @@ BROWSERS_WEBDRIVERS = {
 
 
 def _setup_env_vars_for_session():
-    python_version = os.getenv("TRAVIS_PYTHON_VERSION", None)
-    if not python_version:
-        import platform
-
-        python_version = platform.python_version()
-    os.environ["APPLITOOLS_BATCH_NAME"] = "Python {} | Selenium SDK {}".format(
-        python_version, __version__
-    )
+    os.environ["APPLITOOLS_BATCH_NAME"] = "Python | Selenium SDK {}".format(__version__)
 
 
 def pytest_generate_tests(metafunc):
