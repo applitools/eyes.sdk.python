@@ -1,18 +1,17 @@
 from __future__ import absolute_import
 
 import math
-import typing
 from enum import Enum
+from typing import TYPE_CHECKING, Dict, List, Optional, Union, overload
 
 import attr
-from PIL import Image
+from PIL.Image import Image
 
 from .utils import argument_guard
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
-if typing.TYPE_CHECKING:
-    from typing import List, Dict, Union, Optional
+if TYPE_CHECKING:
     from .utils.custom_types import ViewPort
     from .visual_grid import EmulationDevice
 
@@ -62,7 +61,7 @@ class RectangleSize(DictAccessMixin):
 
     @classmethod
     def from_(cls, obj):
-        # type: (Union[dict, Image.Image, EmulationDevice, RectangleSize]) -> RectangleSize
+        # type: (Union[dict,Image,EmulationDevice,RectangleSize])->RectangleSize
         if isinstance(obj, dict):
             return cls(width=obj["width"], height=obj["height"])
         return cls(width=obj.width, height=obj.height)
@@ -194,22 +193,43 @@ class Region(DictAccessMixin):
     def create_empty_region(cls):
         return cls(0, 0, 0, 0)
 
-    @classmethod
-    def from_(cls, obj, size=None):
-        # type: (Union[Image.Image,Region, dict], Optional[dict]) -> Region
-        if size:
-            return cls(obj["x"], obj["y"], size["width"], size["height"])
-        elif isinstance(obj, Region):
+    @classmethod  # noqa
+    @overload
+    def from_(cls, location, image):
+        # type: (Union[Point, Dict], Image) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, location, size):
+        # type: (Union[Point, Dict], Union[Dict,RectangleSize]) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, image):
+        # type: (Image) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, region):
+        # type: (Region) -> Region
+        pass
+
+    @classmethod  # noqa
+    def from_(cls, obj, obj2=None):
+        if isinstance(obj, Region):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
-        elif isinstance(obj, Image.Image):
+        elif isinstance(obj, Image):
             return cls(0, 0, obj.width, obj.height)
+        elif isinstance(obj, Point) or isinstance(obj, dict) and obj2:
+            if isinstance(obj2, Image):
+                return cls(obj["x"], obj["y"], obj2.width, obj2.height)
+            else:
+                return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
         else:
             raise ValueError("Wrong parameters passed")
-
-    @classmethod
-    def from_location_size(cls, location, size):
-        # type: (Point, Union[Dict,RectangleSize]) -> Region
-        return cls(location["x"], location["y"], size["width"], size["height"])
 
     @property
     def x(self):
@@ -266,32 +286,6 @@ class Region(DictAccessMixin):
         :return: The new rectangle object.
         """
         return Region(self.left, self.top, self.width, self.height)
-
-    def is_same(self, other):
-        # type: (Region) -> bool
-        """
-        Checks whether the other rectangle has the same coordinates.
-
-        :param other: The other rectangle to check with.
-        :return: Whether or not the rectangles have same coordinates.
-        :rtype: bool
-        """
-        return (
-            self.left == other.left
-            and self.top == other.top
-            and self.width == other.width
-            and self.height == other.height
-        )
-
-    def is_same_size(self, other):
-        # type: (Region) -> bool
-        """
-        Checks whether the other rectangle is the same size.
-
-        :param other: The other rectangle to check with.
-        :return: Whether or not the rectangles are the same size.
-        """
-        return self.width == other.width and self.height == other.height
 
     def make_empty(self):
         """

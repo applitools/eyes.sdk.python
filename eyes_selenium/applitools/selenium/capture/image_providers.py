@@ -98,9 +98,7 @@ class SafariScreenshotImageProvider(ImageProvider):
                 loc = current_frame_chain.default_content_scroll_position
 
             loc = loc.scale(scale_ratio)
-            image = image_utils.crop_image(
-                image, Region.from_location_size(loc, viewport_size)
-            )
+            image = image_utils.crop_image(image, Region.from_(loc, viewport_size))
         return image
 
     def init_device_regions_table(self):

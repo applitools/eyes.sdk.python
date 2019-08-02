@@ -349,7 +349,7 @@ class SeleniumEyes(EyesBase):
                 scroll_root_element
             )
             position_provider.set_position(prev_frame.location)
-            reg = Region.from_location_size(Point.zero(), prev_frame.inner_size)
+            reg = Region.from_(Point.zero(), prev_frame.inner_size)
             self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(original_fc)
         return original_fc
@@ -783,7 +783,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning(str(e))
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)
-        viewport_bounds = Region.from_location_size(location, self._get_viewport_size())
+        viewport_bounds = Region.from_(location, self._get_viewport_size())
         return viewport_bounds
 
     def _ensure_element_visible(self, element):

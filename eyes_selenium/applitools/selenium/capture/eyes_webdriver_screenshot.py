@@ -69,7 +69,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             ScreenshotType.ENTIRE_FRAME,
             frame_location_in_screenshot=Point(0, 0),
             current_frame_scroll_position=Point(0, 0),
-            frame_window=Region.from_location_size(Point(0, 0), entire_frame_size),
+            frame_window=Region.from_(Point(0, 0), entire_frame_size),
         )
 
     @classmethod
@@ -80,9 +80,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             image,
             ScreenshotType.ENTIRE_FRAME,
             Point.zero(),
-            frame_window=Region.from_location_size(
-                Point.zero(), screenshot_region.size
-            ),
+            frame_window=Region.from_(Point.zero(), screenshot_region.size),
             region_window=Region.from_(screenshot_region),
         )
 
@@ -109,7 +107,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
         if self.frame_window is None:
             frame_size = self.get_frame_size(position_provider)
-            self.frame_window = Region.from_location_size(
+            self.frame_window = Region.from_(
                 self._frame_location_in_screenshot, frame_size
             )
             self.frame_window.intersect(

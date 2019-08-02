@@ -18,9 +18,7 @@ class EyesImagesScreenshot(EyesScreenshot):
             location = Point.zero()
         argument_guard.is_a(location, Point)
         self._location = location
-        self._bounds = Region.from_(
-            location, dict(width=self._image.width, height=self._image.height)
-        )
+        self._bounds = Region.from_(location, self.image)
 
     def sub_screenshot(self, region, throw_if_clipped=False):
         # type: (Region, bool) -> EyesImagesScreenshot
