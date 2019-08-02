@@ -19,6 +19,8 @@ __all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
 
 
 class DictAccessMixin(object):
+    """Make dict-like object from attrs class"""
+
     def __getitem__(self, item):
         if isinstance(item, int):
             item = self.__slots__[item]
@@ -36,9 +38,7 @@ def dx_and_dy(location_or_dx, dy):
 
 
 class CoordinatesType(Enum):
-    """
-     Encapsulates the type of coordinates used by the region provider.
-    """
+    """Encapsulates the type of coordinates used by the region provider."""
 
     # The coordinates should be used "as is" on the screenshot image.
     # Regardless of the current context.
@@ -59,35 +59,38 @@ class CoordinatesType(Enum):
 
 @attr.s(slots=True, cmp=False, hash=True)
 class RectangleSize(DictAccessMixin):
+    """Represents a 2D size"""
+
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
 
     def __str__(self):
-        return "RectangleSize({width}, {height)".format(
+        return "RectangleSize({width} x {height})".format(
             width=self.width, height=self.height
-        )
-
-    def scale(self, scale_ratio):
-        # type: (float) -> RectangleSize
-        """Get a rectangle which is a scaled version of the current ont.
-
-        Args:
-            scale_ratio: The ratio by which to scale the rectangle.
-
-        Returns:
-            A new rectangle which is a scaled version of the current rectangle.
-        """
-        return RectangleSize(
-            round(self.width * scale_ratio), round(self.height * scale_ratio)
         )
 
     def __eq__(self, other):
         # type: (Union[RectangleSize, Dict]) -> bool
         return self.width == other["width"] and self.height == other["height"]
 
+    def scale(self, scale_ratio):
+        # type: (float) -> RectangleSize
+        """Get a scaled version of the current size.
+
+        Args:
+            scale_ratio: The ratio by which to scale.
+
+        Returns:
+            A scaled version of the current size.
+        """
+        return RectangleSize(
+            round(self.width * scale_ratio), round(self.height * scale_ratio)
+        )
+
     @classmethod
     def from_(cls, obj):
         # type: (Union[dict,Image,EmulationDevice,RectangleSize])->RectangleSize
+        """Creates a new RectangleSize instance."""
         if isinstance(obj, dict):
             return cls(width=obj["width"], height=obj["height"])
         return cls(width=obj.width, height=obj.height)
@@ -105,7 +108,7 @@ class Point(DictAccessMixin):
     )  # type: int
 
     def __str__(self):
-        return "Point({x}, {y})".format(x=self.x, y=self.y)
+        return "Point({x} x {y})".format(x=self.x, y=self.y)
 
     def __add__(self, other):
         # type: (Point) -> Point
@@ -139,11 +142,7 @@ class Point(DictAccessMixin):
     @classmethod
     def from_(cls, obj):
         # type: (Union[dict, Point]) -> Point
-        """Creates Point from different objects
-
-        Returns:
-            New Point instance
-        """
+        """Creates a new Point instance."""
         return cls(obj["x"], obj["y"])
 
     def clone(self):
@@ -196,9 +195,7 @@ class Point(DictAccessMixin):
 
 @attr.s(slots=True)
 class Region(DictAccessMixin):
-    """
-    A rectangle identified by left,top, width, height.
-    """
+    """A rectangle identified by left,top, width, height."""
 
     left = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
@@ -217,7 +214,7 @@ class Region(DictAccessMixin):
     )  # type: CoordinatesType
 
     def __str__(self):
-        return "Region({left}, {top} {width} x {height} {type})".format(
+        return "Region({left}, {top}, {width} x {height}, {type})".format(
             left=self.left,
             top=self.top,
             width=self.width,
@@ -255,6 +252,8 @@ class Region(DictAccessMixin):
 
     @classmethod  # noqa
     def from_(cls, obj, obj2=None):
+        # type: (Union[Region,Image,Point,Dict],Union[Dict,RectangleSize,Image])->Region
+        """Creates a new Region instance."""
         if isinstance(obj, Region):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
         elif isinstance(obj, Image):
@@ -303,36 +302,35 @@ class Region(DictAccessMixin):
     @property
     def bottom_right(self):
         # type: () -> Point
-        """Return the bottom-right corner as a Point."""
+        """
+        Returns:
+            The bottom-right corner as a Point.
+        """
         return Point(self.right, self.bottom)
 
     @property
     def size(self):
         # type: () -> ViewPort
         """
-        :return: The size of the region.
+        Returns:
+            The size of the region.
         """
         return dict(width=self.width, height=self.height)
 
     def clone(self):
         # type: () -> Region
         """
-        Clone the rectangle.
-
-        :return: The new rectangle object.
+        Returns:
+            The cloned instance of Region.
         """
         return Region(self.left, self.top, self.width, self.height)
 
     def make_empty(self):
-        """
-        Sets the current instance as an empty instance
-        """
+        """Sets the current instance as an empty instance"""
         self.left = self.top = self.width = self.height = 0
 
     def clip_negative_location(self):
-        """
-        Sets the left/top values to 0 if the value is negative
-        """
+        """Sets the left/top values to 0 if the value is negative"""
         self.left = max(self.left, 0)
         self.top = max(self.top, 0)
 
@@ -340,26 +338,30 @@ class Region(DictAccessMixin):
     def is_size_empty(self):
         # type: () -> bool
         """
-        :return: true if the region's size is 0, false otherwise.
+        Returns:
+            true if the region's size is 0, false otherwise.
         """
         return self.width <= 0 or self.height <= 0
 
     @property
     def is_empty(self):
         # type: () -> bool
-        """
-        Checks whether the rectangle is empty.
+        """Checks whether the rectangle is empty.
 
-        :return: True if the rectangle is empty. Otherwise False.
+        Returns:
+            True if the rectangle is empty. Otherwise False.
         """
         return self.left == self.top == self.width == self.height == 0
 
     def contains(self, pt):
         # type: (Union[Point, Region]) -> bool
-        """
-        Return true if a point is inside the rectangle.
+        """Return true if a point is inside the rectangle.
 
-        :return: True if the point is inside the rectangle. Otherwise False.
+        Args:
+            pt: element for check
+
+        Returns:
+            True if the point is inside the rectangle. Otherwise False.
         """
         if isinstance(pt, Point):
             x, y = pt
@@ -380,8 +382,10 @@ class Region(DictAccessMixin):
 
     def overlaps(self, other):
         # type: (Region) -> bool
-        """
-        Return true if a rectangle overlaps this rectangle.
+        """Return true if a rectangle overlaps this rectangle.
+
+        Args:
+            other:
         """
         return (
             self.left <= other.left <= self.right
@@ -394,6 +398,10 @@ class Region(DictAccessMixin):
     def intersect(self, other):
         # type: (Region) -> None
         # If the regions don't overlap, the intersection is empty
+        """
+        Args:
+            other:
+        """
         if not self.overlaps(other):
             self.make_empty()
             return
@@ -409,8 +417,10 @@ class Region(DictAccessMixin):
 
     def get_sub_regions(self, max_sub_region_size):
         # type: (RectangleSize) -> List[Region]
-        """
-        Returns a list of Region objects which compose the current region.
+        """Returns a list of Region objects which compose the current region.
+
+        Args:
+            max_sub_region_size:
         """
         sub_regions = []
         current_top = self.top
@@ -476,6 +486,16 @@ class Region(DictAccessMixin):
 
     def scale(self, scale_ratio):
         # type: (float) -> Region
+        """Get a region which is a scaled version of the current region.
+        IMPORTANT: This also scales the LOCATION(!!) of the region (not just its
+        size).
+
+        Args:
+            scale_ratio: The ratio by which to scale the region.
+
+        Returns:
+            A new region which is a scaled version of the current region.
+        """
         return Region(
             left=int(math.ceil(self.left * scale_ratio)),
             top=int(math.ceil(self.top * scale_ratio)),
