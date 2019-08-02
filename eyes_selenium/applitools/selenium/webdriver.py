@@ -710,3 +710,21 @@ class EyesWebDriver(object):
         returns the drivers current desired capabilities being used
         """
         return self._driver.desired_capabilities
+
+    def close(self):
+        """
+        Closes the current window.
+
+        :Usage:
+            driver.close()
+        """
+        self._driver.close()
+
+    def quit(self):
+        """
+        Quits the driver and closes every associated window.
+
+        :Usage:
+            driver.quit()
+        """
+        self._driver.quit()
