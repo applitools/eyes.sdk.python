@@ -62,11 +62,27 @@ class RectangleSize(DictAccessMixin):
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
 
-    def scale(self, ratio):
+    def __str__(self):
+        return "RectangleSize({width}, {height)".format(
+            width=self.width, height=self.height
+        )
+
+    def scale(self, scale_ratio):
         # type: (float) -> RectangleSize
-        return RectangleSize(round(self.width * ratio), round(self.height * ratio))
+        """Get a rectangle which is a scaled version of the current ont.
+
+        Args:
+            scale_ratio: The ratio by which to scale the rectangle.
+
+        Returns:
+            A new rectangle which is a scaled version of the current rectangle.
+        """
+        return RectangleSize(
+            round(self.width * scale_ratio), round(self.height * scale_ratio)
+        )
 
     def __eq__(self, other):
+        # type: (Union[RectangleSize, Dict]) -> bool
         return self.width == other["width"] and self.height == other["height"]
 
     @classmethod
@@ -77,11 +93,9 @@ class RectangleSize(DictAccessMixin):
         return cls(width=obj.width, height=obj.height)
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, cmp=False)
 class Point(DictAccessMixin):
-    """
-    A point with the coordinates (x,y).
-    """
+    """A location in a two-dimensional plane."""
 
     x = attr.ib(
         converter=round_converter, metadata={JsonInclude.THIS: True}
@@ -90,20 +104,32 @@ class Point(DictAccessMixin):
         converter=round_converter, metadata={JsonInclude.THIS: True}
     )  # type: int
 
+    def __str__(self):
+        return "Point({x}, {y})".format(x=self.x, y=self.y)
+
     def __add__(self, other):
+        # type: (Point) -> Point
         return Point(self.x + other.x, self.y + other.y)
 
     def __iadd__(self, other):
+        # type: (Point) -> Point
         return Point(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
+        # type: (Point) -> Point
         return Point(self.x - other.x, self.y - other.y)
 
     def __mul__(self, scalar):
+        # type: (int) -> Point
         return Point(self.x * scalar, self.y * scalar)
 
     def __div__(self, scalar):
-        return Point(self.x / scalar, self.y / scalar)
+        # type: (int) -> Point
+        return Point(round_converter(self.x / scalar), round_converter(self.y / scalar))
+
+    def __eq__(self, other):
+        # type: (Union[RectangleSize, Dict]) -> bool
+        return self.x == other["x"] and self.y == other["y"]
 
     @classmethod  # noqa
     def ZERO(cls):
