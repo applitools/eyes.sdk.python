@@ -65,13 +65,13 @@ class EyesImagesScreenshot(EyesScreenshot):
 
         if from_ == self.SCREENSHOT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
-                result.offset(self._bounds.left, self._bounds.top)
+                result = result.offset(self._bounds.left, self._bounds.top)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
 
         elif from_ == self.SCREENSHOT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
-                result.offset(-self._bounds.left, -self._bounds.top)
+                result = result.offset(-self._bounds.left, -self._bounds.top)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
         else:

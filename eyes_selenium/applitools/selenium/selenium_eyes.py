@@ -800,7 +800,9 @@ class SeleniumEyes(EyesBase):
         element_bounds = eyes_element.bounds
 
         current_frame_offset = original_fc.current_frame_offset
-        element_bounds.offset(current_frame_offset.x, current_frame_offset.y)
+        element_bounds = element_bounds.offset(
+            current_frame_offset.x, current_frame_offset.y
+        )
         viewport_bounds = self._get_viewport_scroll_bounds()
         logger.info(
             "viewport_bounds: {}; element_bounds: {}".format(

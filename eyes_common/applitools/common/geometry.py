@@ -125,15 +125,14 @@ class Point(DictAccessMixin):
         return Point(self.x, self.y)
 
     def move_to(self, x, y):
-        # type: (int, int) -> None
+        # type: (int, int) -> Point
         """
         Moves the point to new x, y.
 
         :param x: Coordinate x.
         :param y: Coordinate y.
         """
-        self.x = x
-        self.y = y
+        return Point(x, y)
 
     def offset(self, dx, dy):
         # type: (int, int) -> Point
@@ -143,20 +142,15 @@ class Point(DictAccessMixin):
         :param dx: Offset to move coordinate x.
         :param dy: Offset to move coordinate y.
         """
-        self.x = self.x + dx
-        self.y = self.y + dy
-        return self
+        return Point(self.x + dx, self.y + dy)
 
     def offset_by_location(self, location):
         # type: (Point) -> Point
-        self.offset(location.x, location.y)
-        return self
+        return self.offset(location.x, location.y)
 
     def offset_negative(self, dx, dy):
         # type: (int, int) -> Point
-        self.x -= dx
-        self.y -= dy
-        return self
+        return Point(self.x - dx, self.y - dy)
 
     def scale(self, scale_ratio):
         # type: (float) -> Point
