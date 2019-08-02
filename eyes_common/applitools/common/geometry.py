@@ -113,14 +113,19 @@ class Point(DictAccessMixin):
     @classmethod
     def from_(cls, obj):
         # type: (Union[dict, Point]) -> Point
+        """Creates Point from different objects
+
+        Returns:
+            New Point instance
+        """
         return cls(obj["x"], obj["y"])
 
     def clone(self):
         # type: () -> Point
-        """
-        Return a full copy of this point.
+        """Make a full copy of this Point.
 
-        :return: Cloned point.
+        Returns:
+            New cloned Point instance
         """
         return Point(self.x, self.y)
 
@@ -143,13 +148,21 @@ class Point(DictAccessMixin):
             dy: The amount to offset the y-coordinate.
 
         Returns:
-            New instance of Point
+            A location translated by the specified amount.
         """
         dx, dy = dx_and_dy(location_or_dx, dy)
         return Point(self.x + dx, self.y + dy)
 
     def scale(self, scale_ratio):
         # type: (float) -> Point
+        """Get a scaled location.
+
+        Args:
+            scale_ratio: The ratio by which to scale the results.
+
+        Returns:
+            A scaled copy of the current location.
+        """
         return Point(
             int(math.ceil(self.x * scale_ratio)), int(math.ceil(self.y * scale_ratio))
         )
