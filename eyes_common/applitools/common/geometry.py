@@ -444,8 +444,28 @@ class Region(DictAccessMixin):
         # type: () -> Point
         return Point(int(round(self.width / 2)), int(round(self.height / 2)))
 
+    @overload  # noqa
+    def offset(self, location):
+        # type: (Point) -> Point
+        pass
+
+    @overload  # noqa
     def offset(self, dx, dy):
-        # type: (int, int) -> Region
+        # type: (int, int) -> Point
+        pass
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> Region
+        """Get an offset region.
+
+        Args:
+            location_or_dx: Full amount to offset or just x-coordinate
+            dy: The amount to offset the y-coordinate.
+
+        Returns:
+            A region with an offset location.
+        """
+        dx, dy = dx_and_dy(location_or_dx, dy)
         location = self.location.offset(dx, dy)
         return Region(
             left=location.x,
