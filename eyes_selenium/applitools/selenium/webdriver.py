@@ -699,3 +699,29 @@ class EyesWebDriver(object):
 
     def set_window_position(self, x, y, windowHandle="current"):
         self._driver.set_window_position(x, y, windowHandle)
+
+    @property
+    def desired_capabilities(self):
+        # type: () -> Dict
+        """
+        returns the drivers current desired capabilities being used
+        """
+        return self._driver.desired_capabilities
+
+    def close(self):
+        """
+        Closes the current window.
+
+        :Usage:
+            driver.close()
+        """
+        self._driver.close()
+
+    def quit(self):
+        """
+        Quits the driver and closes every associated window.
+
+        :Usage:
+            driver.quit()
+        """
+        self._driver.quit()
