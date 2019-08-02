@@ -51,7 +51,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.VIEWPORT, Point.zero())
+        instance = cls(driver, image, ScreenshotType.VIEWPORT, Point.ZERO())
         instance._validate_frame_window()
         return instance
 
@@ -69,7 +69,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             ScreenshotType.ENTIRE_FRAME,
             frame_location_in_screenshot=Point(0, 0),
             current_frame_scroll_position=Point(0, 0),
-            frame_window=Region.from_location_size(Point(0, 0), entire_frame_size),
+            frame_window=Region.from_(Point(0, 0), entire_frame_size),
         )
 
     @classmethod
@@ -79,10 +79,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            Point.zero(),
-            frame_window=Region.from_location_size(
-                Point.zero(), screenshot_region.size
-            ),
+            Point.ZERO(),
+            frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
             region_window=Region.from_(screenshot_region),
         )
 
@@ -109,7 +107,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
         if self.frame_window is None:
             frame_size = self.get_frame_size(position_provider)
-            self.frame_window = Region.from_location_size(
+            self.frame_window = Region.from_(
                 self._frame_location_in_screenshot, frame_size
             )
             self.frame_window.intersect(
@@ -128,7 +126,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 self._driver, self._frame_chain, self._screenshot_type
             )
         elif not frame_location_in_screenshot:
-            frame_location_in_screenshot = Point.zero()
+            frame_location_in_screenshot = Point.ZERO()
         return frame_location_in_screenshot
 
     def get_updated_scroll_position(self, position_provider):
@@ -136,9 +134,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         try:
             sp = position_provider.get_current_position()
             if not sp:
-                sp = Point.zero()
+                sp = Point.ZERO()
         except WebDriverException:
-            sp = Point.zero()
+            sp = Point.ZERO()
 
         return sp
 
