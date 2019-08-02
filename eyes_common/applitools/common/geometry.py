@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
 
 import attr
 from PIL.Image import Image
@@ -25,6 +25,14 @@ class DictAccessMixin(object):
         if item not in self.__slots__:
             raise KeyError
         return getattr(self, item)
+
+
+def dx_and_dy(location_or_dx, dy):
+    # type: (Union[Point, int], Optional[int]) -> Tuple[int,int]
+    dx = location_or_dx
+    if dy is None:
+        dx, dy = location_or_dx
+    return dx, dy
 
 
 class CoordinatesType(Enum):
@@ -116,33 +124,29 @@ class Point(DictAccessMixin):
         """
         return Point(self.x, self.y)
 
-    def move_to(self, x, y):
-        # type: (int, int) -> Point
-        """
-        Moves the point to new x, y.
+    @overload  # noqa
+    def offset(self, location):
+        # type: (Point) -> Point
+        pass
 
-        :param x: Coordinate x.
-        :param y: Coordinate y.
-        """
-        return Point(x, y)
-
+    @overload  # noqa
     def offset(self, dx, dy):
         # type: (int, int) -> Point
-        """
-        Move to new (x+dx,y+dy).
+        pass
 
-        :param dx: Offset to move coordinate x.
-        :param dy: Offset to move coordinate y.
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> Point
+        """Get a location translated by the specified amount.
+
+        Args:
+            location_or_dx: Full amount to offset or just x-coordinate
+            dy: The amount to offset the y-coordinate.
+
+        Returns:
+            New instance of Point
         """
+        dx, dy = dx_and_dy(location_or_dx, dy)
         return Point(self.x + dx, self.y + dy)
-
-    def offset_by_location(self, location):
-        # type: (Point) -> Point
-        return self.offset(location.x, location.y)
-
-    def offset_negative(self, dx, dy):
-        # type: (int, int) -> Point
-        return Point(self.x - dx, self.y - dy)
 
     def scale(self, scale_ratio):
         # type: (float) -> Point
