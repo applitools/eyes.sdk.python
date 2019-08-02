@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
     from .utils.custom_types import ViewPort
     from .visual_grid import EmulationDevice
 
-__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize", "EMPTY_REGION")
+__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
 
 
 class DictAccessMixin(object):
@@ -432,6 +432,3 @@ class Region(DictAccessMixin):
             width=int(math.ceil(self.width * scale_ratio)),
             height=int(math.ceil(self.height * scale_ratio)),
         )
-
-
-EMPTY_REGION = Region(0, 0, 0, 0)

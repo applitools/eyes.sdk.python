@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.config import SeleniumConfiguration, StitchMode
-from applitools.common.geometry import EMPTY_REGION, Point
+from applitools.common.geometry import Point
 from applitools.common.utils import image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -378,7 +378,7 @@ class SeleniumEyes(EyesBase):
             # TODO HERE
             logger.debug("replacing region_to_check")
             self._region_to_check = screenshot.frame_window
-        return EMPTY_REGION
+        return Region.create_empty_region()
 
     def _check_frame_fluent(self, name, check_settings):
         fc = self.driver.frame_chain.clone()
