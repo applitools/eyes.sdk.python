@@ -64,11 +64,10 @@ class TestFluentAPI(TestSetup):
     def test_check_frame_fully_fluent(self):
         self.eyes.check("Fluent - Full Frame", Target.frame("frame1").fully())
 
-    @pytest.mark.skip("FIXME Wrong baseline")
     def test_check_frame_fluent(self):
+        self.eyes.hide_scrollbars = False
         self.eyes.check("Fluent - Frame", Target.frame("frame1"))
 
-    @pytest.mark.skip("FIXME Wrong baseline")
     def test_check_frame_in_frame_fully_fluent(self):
         self.eyes.check(
             "Fluent - Full Frame in Frame",
@@ -89,7 +88,6 @@ class TestFluentAPI(TestSetup):
         )
         self.eyes.check("Fluent - Window (After)", Target.window().fully())
 
-    @pytest.mark.skip("FIXME Known issue. Issue with restoring position state")
     def test_check_region_in_frame2_fluent(self):
         self.eyes.check(
             "Fluent - Inner frame div 1",
@@ -130,12 +128,15 @@ class TestFluentAPI(TestSetup):
     def test_check_region_by_coordinate_in_frame_fluent(self):
         self.eyes.check(
             "Fluent - Inner frame coordinates",
-            Target.frame("frame1")
-            .region(Region(30, 40, 400, 1200, CoordinatesType.CONTEXT_RELATIVE))
-            .fully(),
+            Target.frame("frame1").region(Region(30, 40, 400, 1200)),
         )
 
-    @pytest.mark.skip("FIXME Wrong baseline")
+    def test_check_region_by_coordinate_in_frame_fully_fluent(self):
+        self.eyes.check(
+            "Fluent - Inner frame coordinates",
+            Target.frame("frame1").region(Region(30, 40, 400, 1200)).fully(),
+        )
+
     def test_check_frame_in_frame_fully_fluent2(self):
         self.eyes.check("Fluent - Window", Target.window().fully())
         self.eyes.check(
@@ -206,7 +207,6 @@ class TestFluentAPI(TestSetup):
 )
 class TestSpecialCases(TestSetup):
     def test_check_region_in_a_very_big_frame(self):
-        self.eyes.is_debug_screenshot_provided = True
         self.eyes.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
     def test_check_region_in_a_very_big_frame_after_manual_switch_frame(self):
