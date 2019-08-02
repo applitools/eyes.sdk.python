@@ -107,15 +107,6 @@ class Point(DictAccessMixin):
         # type: (Union[dict, Point]) -> Point
         return cls(obj["x"], obj["y"])
 
-    def as_tuple(self):
-        # type: () -> tuple
-        """
-        Return the point as a tuple.
-
-        :return: Point as tuple.
-        """
-        return self.x, self.y
-
     def clone(self):
         # type: () -> Point
         """
@@ -328,7 +319,7 @@ class Region(DictAccessMixin):
         :return: True if the point is inside the rectangle. Otherwise False.
         """
         if isinstance(pt, Point):
-            x, y = pt.as_tuple()
+            x, y = pt
             return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
         else:
             right = self.left + self.width
