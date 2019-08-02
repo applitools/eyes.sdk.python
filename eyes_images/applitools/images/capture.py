@@ -15,7 +15,7 @@ class EyesImagesScreenshot(EyesScreenshot):
     def __init__(self, image, location=None):
         super(EyesImagesScreenshot, self).__init__(image)
         if location is None:
-            location = Point.zero()
+            location = Point.ZERO()
         argument_guard.is_a(location, Point)
         self._location = location
         self._bounds = Region.from_(location, self.image)

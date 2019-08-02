@@ -95,8 +95,8 @@ class Point(DictAccessMixin):
     def __div__(self, scalar):
         return Point(self.x / scalar, self.y / scalar)
 
-    @classmethod
-    def zero(cls):
+    @classmethod  # noqa
+    def ZERO(cls):
         # type: () -> Point
         return cls(0, 0)
 
@@ -189,8 +189,8 @@ class Region(DictAccessMixin):
             type=self.coordinates_type.value,
         )
 
-    @classmethod
-    def create_empty_region(cls):
+    @classmethod  # noqa
+    def EMPTY(cls):
         return cls(0, 0, 0, 0)
 
     @classmethod  # noqa

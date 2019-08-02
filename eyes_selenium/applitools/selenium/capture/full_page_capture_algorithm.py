@@ -48,7 +48,7 @@ class FullPageCaptureAlgorithm(object):
 
         with self.origin_provider:
             self.origin_provider.set_position(
-                Point.zero()
+                Point.ZERO()
             )  # first scroll to 0,0 so CSS stitching works.
 
             # Saving the original position (in case we were already in the outermost frame).
@@ -75,14 +75,14 @@ class FullPageCaptureAlgorithm(object):
                     ):
                         return image
 
-                    full_area = Region.from_(Point.zero(), entire_size)
+                    full_area = Region.from_(Point.ZERO(), entire_size)
 
                 image_parts = self._get_image_parts(full_area, image)
 
                 stitched_image = self._create_stitched_image(full_area, image)
                 # These will be used for storing the actual stitched size (it is
                 # sometimes less than the size extracted via "get_entire_size").
-                last_successful_location = Point.zero()
+                last_successful_location = Point.ZERO()
                 last_successful_part_size = RectangleSize.from_(image)
 
                 # Take screenshot and stitch for each screenshot part

@@ -70,7 +70,7 @@ class FirefoxRegionPositionCompensation(RegionPositionCompensation):
 
         region = region.offset(0, -math.ceil(pixel_ratio / 2))
         if region.width <= 0 or region.height <= 0:
-            return Region.create_empty_region()
+            return Region.EMPTY()
 
         return region
 
@@ -80,7 +80,7 @@ class SafariRegionPositionCompensation(RegionPositionCompensation):
         if pixel_ratio == 1.0:
             return region
         if region.width <= 0 and region.height <= 0:
-            return Region.create_empty_region()
+            return Region.EMPTY()
         return region.offset(0, math.ceil(pixel_ratio))
 
 

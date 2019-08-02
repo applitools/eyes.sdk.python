@@ -349,7 +349,7 @@ class SeleniumEyes(EyesBase):
                 scroll_root_element
             )
             position_provider.set_position(prev_frame.location)
-            reg = Region.from_(Point.zero(), prev_frame.inner_size)
+            reg = Region.from_(Point.ZERO(), prev_frame.inner_size)
             self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(original_fc)
         return original_fc
@@ -378,7 +378,7 @@ class SeleniumEyes(EyesBase):
             # TODO HERE
             logger.debug("replacing region_to_check")
             self._region_to_check = screenshot.frame_window
-        return Region.create_empty_region()
+        return Region.EMPTY()
 
     def _check_frame_fluent(self, name, check_settings):
         fc = self.driver.frame_chain.clone()
@@ -730,7 +730,7 @@ class SeleniumEyes(EyesBase):
         if original_fc.size > 0:
             original_frame_position = original_fc.default_content_scroll_position
         else:
-            original_frame_position = Point.zero()
+            original_frame_position = Point.ZERO()
 
         with self.driver.switch_to.frames_and_back(self.original_frame_chain):
             location = self.scroll_root_element.location
