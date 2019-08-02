@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.config import SeleniumConfiguration, StitchMode
-from applitools.common.geometry import EMPTY_REGION, Point
+from applitools.common.geometry import Point
 from applitools.common.utils import image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -349,7 +349,7 @@ class SeleniumEyes(EyesBase):
                 scroll_root_element
             )
             position_provider.set_position(prev_frame.location)
-            reg = Region.from_location_size(Point.zero(), prev_frame.inner_size)
+            reg = Region.from_(Point.ZERO(), prev_frame.inner_size)
             self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(original_fc)
         return original_fc
@@ -378,7 +378,7 @@ class SeleniumEyes(EyesBase):
             # TODO HERE
             logger.debug("replacing region_to_check")
             self._region_to_check = screenshot.frame_window
-        return EMPTY_REGION
+        return Region.EMPTY()
 
     def _check_frame_fluent(self, name, check_settings):
         fc = self.driver.frame_chain.clone()
@@ -730,7 +730,7 @@ class SeleniumEyes(EyesBase):
         if original_fc.size > 0:
             original_frame_position = original_fc.default_content_scroll_position
         else:
-            original_frame_position = Point.zero()
+            original_frame_position = Point.ZERO()
 
         with self.driver.switch_to.frames_and_back(self.original_frame_chain):
             location = self.scroll_root_element.location
@@ -783,7 +783,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning(str(e))
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)
-        viewport_bounds = Region.from_location_size(location, self._get_viewport_size())
+        viewport_bounds = Region.from_(location, self._get_viewport_size())
         return viewport_bounds
 
     def _ensure_element_visible(self, element):
@@ -800,7 +800,9 @@ class SeleniumEyes(EyesBase):
         element_bounds = eyes_element.bounds
 
         current_frame_offset = original_fc.current_frame_offset
-        element_bounds.offset(current_frame_offset.x, current_frame_offset.y)
+        element_bounds = element_bounds.offset(
+            current_frame_offset.x, current_frame_offset.y
+        )
         viewport_bounds = self._get_viewport_scroll_bounds()
         logger.info(
             "viewport_bounds: {}; element_bounds: {}".format(

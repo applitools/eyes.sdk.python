@@ -95,7 +95,7 @@ class EyesScreenshot(ABC):
         argument_guard.not_none(region)
         argument_guard.is_a(region, Region)
         if region.is_size_empty:
-            return Region.create_empty_region()
+            return Region.EMPTY()
 
         argument_guard.not_none(from_)
         argument_guard.not_none(to)

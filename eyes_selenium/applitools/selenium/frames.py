@@ -136,9 +136,9 @@ class FrameChain(tp.Sequence[Frame]):
     @property
     def current_frame_offset(self):
         # type: () -> Point
-        location = Point.zero()
+        location = Point.ZERO()
         for frame in self:
-            location.offset_by_location(frame.location)
+            location.offset(frame.location)
         return location
 
     @property

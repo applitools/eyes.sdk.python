@@ -34,7 +34,7 @@ class RegionProvider(ABC):
 
 @attr.s
 class NullRegionProvider(RegionProvider):
-    _region = attr.ib(init=False, factory=Region.create_empty_region)  # type: Region
+    _region = attr.ib(init=False, factory=Region.EMPTY)  # type: Region
 
 
 NULL_REGION_PROVIDER = NullRegionProvider()
