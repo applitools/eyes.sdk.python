@@ -1,5 +1,4 @@
 import pytest
-
 from applitools.selenium import Region, Target
 
 
@@ -56,6 +55,6 @@ def test_check_window_with_send_dom(eyes, driver):
 
 def test_abort_eyes(eyes, driver):
     driver.get("https://demo.applitools.com")
-    eyes.open(driver, "Python VisualGrid", "TestAbortSeleniumEyes")
+    eyes.open(driver, "Python | VisualGrid", "TestAbortSeleniumEyes")
     eyes.check_window()
     eyes.abort()
