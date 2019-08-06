@@ -355,29 +355,29 @@ class Region(DictAccessMixin):
         """
         return self.left == self.top == self.width == self.height == 0
 
-    def contains(self, pt):
+    def contains(self, other):
         # type: (Union[Point, Region]) -> bool
         """Return true if a point is inside the rectangle.
 
         Args:
-            pt: element for check
+            other: element for check
 
         Returns:
             True if the point is inside the rectangle. Otherwise False.
         """
-        if isinstance(pt, Point):
-            x, y = pt
+        if isinstance(other, Point):
+            x, y = other
             return self.left <= x <= self.right and self.top <= y <= self.bottom  # noqa
         else:
             right = self.left + self.width
-            pt_right = pt.left + pt.width
+            pt_right = other.left + other.width
 
             bottom = self.top + self.height
-            pt_bottom = pt.top + pt.height
+            pt_bottom = other.top + other.height
 
             return (
-                self.top <= pt.top
-                and self.left <= pt.left
+                self.top <= other.top
+                and self.left <= other.left
                 and bottom >= pt_bottom
                 and right >= pt_right
             )
@@ -443,10 +443,10 @@ class Region(DictAccessMixin):
 
                 sub_regions.append(
                     Region(
-                        current_left,
-                        current_top,
-                        current_width,
-                        current_height,
+                        left=current_left,
+                        top=current_top,
+                        width=current_width,
+                        height=current_height,
                         coordinates_type=self.coordinates_type,
                     )
                 )

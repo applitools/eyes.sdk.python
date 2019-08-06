@@ -809,14 +809,10 @@ class SeleniumEyes(EyesBase):
         position_provider = None
         if self._target_element and not self.driver.is_mobile_app:
             original_fc = self.driver.frame_chain.clone()
-            switch_to = self.driver.switch_to
             eyes_element = EyesWebElement(element, self.driver)
             element_bounds = eyes_element.bounds
 
             current_frame_offset = original_fc.current_frame_offset
-            element_bounds = element_bounds.offset(
-                current_frame_offset.x, current_frame_offset.y
-            )
             element_bounds = element_bounds.offset(current_frame_offset)
             viewport_bounds = self._get_viewport_scroll_bounds()
             logger.info(
@@ -828,7 +824,7 @@ class SeleniumEyes(EyesBase):
                 self._ensure_frame_visible()
                 element_location = Point.from_(element.location)
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
-                    switch_to.frames(original_fc)
+                    self.driver.switch_to.frames(original_fc)
                     scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
                         self.driver, self._scroll_root_element
                     )

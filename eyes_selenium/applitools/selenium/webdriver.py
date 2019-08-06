@@ -186,23 +186,22 @@ class _EyesSwitchTo(object):
         :param target_frame: The element about to be switched to.
         """
         argument_guard.not_none(target_frame)
-        pl = target_frame.location
 
         size_and_borders = target_frame.size_and_borders
         borders = size_and_borders.borders
         frame_inner_size = size_and_borders.size
+        bounds = target_frame.bounding_client_rect
 
-        content_location = Point(pl["x"] + borders["left"], pl["y"] + borders["top"])
-        sp = ScrollPositionProvider(
-            self._driver, self._driver.find_element_by_tag_name("html")
+        content_location = Point(
+            bounds["x"] + borders["left"], bounds["y"] + borders["top"]
         )
-        original_location = sp.get_current_position()
-        sp.set_position(original_location)
+        original_location = target_frame.scroll_location
+
         frame = Frame(
-            target_frame,
-            content_location,
-            target_frame.size,
-            frame_inner_size,
+            reference=target_frame,
+            location=content_location,
+            outer_size=RectangleSize.from_(target_frame.size),
+            inner_size=RectangleSize.from_(frame_inner_size),
             parent_scroll_position=original_location,
         )
         self._driver.frame_chain.push(frame)

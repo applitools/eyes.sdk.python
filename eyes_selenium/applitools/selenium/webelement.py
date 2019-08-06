@@ -186,6 +186,12 @@ class EyesWebElement(object):
         return self._element.size
 
     @property
+    def scroll_location(self):
+        # type: () -> Point
+        pos = self.driver.execute_script(_JS_GET_SCROLL_POSITION, self.element)
+        return eyes_selenium_utils.parse_location_string(pos)
+
+    @property
     def id(self):
         return self._element.id
 
