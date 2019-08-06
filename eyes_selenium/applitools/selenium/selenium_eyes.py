@@ -312,7 +312,7 @@ class SeleniumEyes(EyesBase):
     def _check_full_frame_or_element(self, name, check_settings):
         self._check_frame_or_element = True
         result = self._check_window_base(
-            RegionProvider(self._full_frame_or_element_region),
+            RegionProvider(lambda: self._full_frame_or_element_region(check_settings)),
             name,
             False,
             check_settings,
@@ -365,7 +365,8 @@ class SeleniumEyes(EyesBase):
         self.current_frame_position_provider = position_provider
         return position_provider
 
-    def _full_frame_or_element_region(self):
+    def _full_frame_or_element_region(self, check_settings):
+        logger.debug("check_frame_or_element: {}".format(self._check_frame_or_element))
         if self._check_frame_or_element:
             fc = self._ensure_frame_visible()
             # FIXME - Scaling should be handled in a single place instead
@@ -379,7 +380,11 @@ class SeleniumEyes(EyesBase):
             # TODO HERE
             logger.debug("replacing region_to_check")
             self._region_to_check = screenshot.frame_window
-        return Region.EMPTY()
+
+        target_region = check_settings.values.target_region
+        if target_region is None:
+            target_region = Region.EMPTY()
+        return target_region
 
     def _check_frame_fluent(self, name, check_settings):
         fc = self.driver.frame_chain.clone()
@@ -685,9 +690,11 @@ class SeleniumEyes(EyesBase):
 
             scale_provider = self._update_scaling_params()
 
-            if self._check_frame_or_element:
+            if self._check_frame_or_element and not self.driver.is_mobile_app:
                 self._last_screenshot = self._entire_element_screenshot(scale_provider)
-            elif self.configuration.force_full_page_screenshot or self._stitch_content:
+            elif (
+                self.configuration.force_full_page_screenshot or self._stitch_content
+            ) and not self.driver.is_mobile_app:
                 self._last_screenshot = self._full_page_screenshot(scale_provider)
             else:
                 self._last_screenshot = self._viewport_screenshot(scale_provider)
