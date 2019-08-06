@@ -165,10 +165,11 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         logger.info(
             "CssTranslatePositionProvider - Setting position to: {}".format(location)
         )
+        negated_location = Point(-location.x, -location.y)
         self._driver.execute_script(
             (
-                "document.documentElement.style.transform='translate(-{:d}px,"
-                "-{:d}px';".format(location["x"], location["y"])
+                "arguments[0].style.transform='translate({:d}px,"
+                "{:d}px';".format(negated_location["x"], negated_location["y"])
             ),
             self._scroll_root_element,
         )

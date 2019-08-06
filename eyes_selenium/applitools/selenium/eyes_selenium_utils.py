@@ -469,13 +469,16 @@ def scroll_root_element_from(driver, container=None):
     return scroll_root_element
 
 
-def current_frame_scroll_root_element(driver):
-    # type: (EyesWebDriver) -> EyesWebElement
+def current_frame_scroll_root_element(driver, scroll_root_element=None):
+    # type: (EyesWebDriver, Optional[AnyWebElement]) -> EyesWebElement
     fc = driver.frame_chain.clone()
     cur_frame = fc.peek
     root_element = None
     if cur_frame:
         root_element = cur_frame.scroll_root_element
     if root_element is None and not driver.is_mobile_app:
-        root_element = driver.find_element_by_tag_name("html")
+        if scroll_root_element:
+            root_element = scroll_root_element
+        else:
+            root_element = driver.find_element_by_tag_name("html")
     return root_element

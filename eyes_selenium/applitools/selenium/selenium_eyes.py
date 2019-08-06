@@ -323,7 +323,7 @@ class SeleniumEyes(EyesBase):
 
     def _ensure_frame_visible(self):
         logger.debug("scroll_root_element_: []".format(self._scroll_root_element))
-        original_fc = self.driver.frame_chain.clone()
+        current_fc = self.driver.frame_chain.clone()
         fc = self.driver.frame_chain.clone()
         self.driver.execute_script("window.scrollTo(0,0);")
         origin_driver = eyes_selenium_utils.get_underlying_driver(self.driver)
@@ -332,16 +332,16 @@ class SeleniumEyes(EyesBase):
             logger.debug("fc count: {}".format(fc.size))
             self.driver.switch_to.parent_frame_static(origin_driver.switch_to, fc)
             self.driver.execute_script("window.scrollTo(0,0);")
-            prev_frame = fc.pop()
-            frame = fc.peek
+            child_frame = fc.pop()
+            parent_frame = fc.peek
             scroll_root_element = None
-            if fc.size == original_fc.size:
+            if fc.size == self._original_fc.size:
                 logger.debug("PositionProvider: {}".format(self.position_provider))
                 self.position_provider.push_state()
                 scroll_root_element = self._scroll_root_element
             else:
-                if frame:
-                    scroll_root_element = frame.scroll_root_element
+                if parent_frame:
+                    scroll_root_element = parent_frame.scroll_root_element
                 if not scroll_root_element:
                     scroll_root_element = self.driver.find_element_by_tag_name("html")
             logger.debug("scroll_root_element {}".format(scroll_root_element))
@@ -349,11 +349,11 @@ class SeleniumEyes(EyesBase):
             position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
-            position_provider.set_position(prev_frame.location)
-            reg = Region.from_(Point.ZERO(), prev_frame.inner_size)
+            position_provider.set_position(child_frame.location)
+            reg = Region.from_(Point.ZERO(), child_frame.inner_size)
             self._effective_viewport.intersect(reg)
-        self.driver.switch_to.frames(original_fc)
-        return original_fc
+        self.driver.switch_to.frames(current_fc)
+        return current_fc
 
     def _element_position_provider_from(self, scroll_root_element):
         # type: (EyesWebElement) -> PositionProvider
@@ -829,7 +829,9 @@ class SeleniumEyes(EyesBase):
                 element_location = Point.from_(element.location)
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
                     switch_to.frames(original_fc)
-                    scroll_root_element = self.driver.find_element_by_tag_name("html")
+                    scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
+                        self.driver, self._scroll_root_element
+                    )
                 else:
                     scroll_root_element = self.scroll_root_element
                 position_provider = self._element_position_provider_from(

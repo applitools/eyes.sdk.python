@@ -18,7 +18,7 @@ class PositionMomento(object):
     """
 
     def __init__(self, position, **kwargs):
-        # type: (PositionProvider, **Any) -> None
+        # type: (Point, **Any) -> None
         self.position = position
         for name, val in iteritems(kwargs):
             setattr(self, name, val)
