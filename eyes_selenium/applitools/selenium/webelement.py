@@ -7,7 +7,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
-from applitools.common.geometry import Point, Region
+from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import proxy_to
 
 from . import eyes_selenium_utils
@@ -163,7 +163,7 @@ class EyesWebElement(object):
             left, width = 0, max(0, width + left)
         if top < 0:
             top, height = 0, max(0, height + top)
-        return Region(left, top, width, height)
+        return Region(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE)
 
     @property
     def location(self):

@@ -323,7 +323,9 @@ class Region(DictAccessMixin):
         Returns:
             The cloned instance of Region.
         """
-        return Region(self.left, self.top, self.width, self.height)
+        return Region(
+            self.left, self.top, self.width, self.height, self.coordinates_type
+        )
 
     def make_empty(self):
         """Sets the current instance as an empty instance"""
@@ -440,7 +442,13 @@ class Region(DictAccessMixin):
                 current_width = current_right - current_left
 
                 sub_regions.append(
-                    Region(current_left, current_top, current_width, current_height)
+                    Region(
+                        current_left,
+                        current_top,
+                        current_width,
+                        current_height,
+                        coordinates_type=self.coordinates_type,
+                    )
                 )
 
                 current_left += max_sub_region_size["width"]
@@ -482,6 +490,7 @@ class Region(DictAccessMixin):
             top=location.y,
             width=self.size["width"],
             height=self.size["height"],
+            coordinates_type=self.coordinates_type,
         )
 
     def scale(self, scale_ratio):
@@ -501,4 +510,5 @@ class Region(DictAccessMixin):
             top=int(math.ceil(self.top * scale_ratio)),
             width=int(math.ceil(self.width * scale_ratio)),
             height=int(math.ceil(self.height * scale_ratio)),
+            coordinates_type=self.coordinates_typeF,
         )
