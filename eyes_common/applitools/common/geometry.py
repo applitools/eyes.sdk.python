@@ -464,12 +464,12 @@ class Region(DictAccessMixin):
 
     @overload  # noqa
     def offset(self, location):
-        # type: (Point) -> Point
+        # type: (Point) -> Region
         pass
 
     @overload  # noqa
     def offset(self, dx, dy):
-        # type: (int, int) -> Point
+        # type: (int, int) -> Region
         pass
 
     def offset(self, location_or_dx, dy=None):  # noqa
