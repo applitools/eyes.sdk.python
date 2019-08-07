@@ -510,5 +510,5 @@ class Region(DictAccessMixin):
             top=int(math.ceil(self.top * scale_ratio)),
             width=int(math.ceil(self.width * scale_ratio)),
             height=int(math.ceil(self.height * scale_ratio)),
-            coordinates_type=self.coordinates_typeF,
+            coordinates_type=self.coordinates_type,
         )

@@ -522,9 +522,7 @@ class EyesBase(_EyesBaseAbstract):
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
-        logger.debug(
-            "Eyes server URL is '{}'".format(self._server_connector.server_url)
-        )
+        logger.debug("Eyes server URL is '{}'".format(self.configuration.server_url))
         logger.debug("Timeout = {} ms".format(self.configuration.timeout))
         logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
         logger.debug(

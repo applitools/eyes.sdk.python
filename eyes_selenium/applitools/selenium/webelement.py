@@ -366,9 +366,10 @@ class EyesWebElement(object):
         )
 
     def __str__(self):
-        return "EyesWebElement: id {}, tag_name {}".format(
-            self._element.id, self._element.tag_name
-        )
+        tag_name = "None"
+        if self.is_attached_to_page:
+            tag_name = self._element.tag_name
+        return "EyesWebElement: id {}, tag_name {}".format(self._element.id, tag_name)
 
 
 class SizeAndBorders(object):

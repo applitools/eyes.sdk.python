@@ -96,6 +96,7 @@ class SeleniumEyes(EyesBase):
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
     _switched_to_frame_count = 0  # int
+    _full_region_to_check = None  # type: Optional[Region]
 
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
@@ -322,7 +323,7 @@ class SeleniumEyes(EyesBase):
         return result
 
     def _ensure_frame_visible(self):
-        logger.debug("scroll_root_element_: []".format(self._scroll_root_element))
+        logger.debug("scroll_root_element_: {}".format(self._scroll_root_element))
         current_fc = self.driver.frame_chain.clone()
         fc = self.driver.frame_chain.clone()
         self.driver.execute_script("window.scrollTo(0,0);")
@@ -380,6 +381,7 @@ class SeleniumEyes(EyesBase):
             # TODO HERE
             logger.debug("replacing region_to_check")
             self._region_to_check = screenshot.frame_window
+            self._full_region_to_check = Region.EMPTY()
 
         target_region = check_settings.values.target_region
         if target_region is None:
@@ -717,24 +719,24 @@ class SeleniumEyes(EyesBase):
             )
 
         # TODO: Should be moved in proper place???
-        if self.driver.frame_chain:
-            if (
-                self._user_agent.browser == BrowserNames.Firefox
-                and self._user_agent.browser_major_version < 60
-            ) or self._user_agent.browser in (
-                BrowserNames.Chrome,
-                BrowserNames.HeadlessChrome,
-                BrowserNames.Safari,
-                BrowserNames.Edge,
-                BrowserNames.IE,
-            ):
-                self._region_to_check.left += int(
-                    self._driver.frame_chain.peek.location.x
-                )
+        # if self.driver.frame_chain:
+        #     if (
+        #         self._user_agent.browser == BrowserNames.Firefox
+        #         and self._user_agent.browser_major_version < 60
+        #     ) or self._user_agent.browser in (
+        #         BrowserNames.Chrome,
+        #         BrowserNames.HeadlessChrome,
+        #         BrowserNames.Safari,
+        #         BrowserNames.Edge,
+        #         BrowserNames.IE,
+        #     ):
+        #         self._region_to_check.left += int(
+        #             self._driver.frame_chain.peek.location.x
+        #         )
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
-            self._region_to_check, None, elem_position_provider
+            self._region_to_check, self._full_region_to_check, elem_position_provider
         )
         return EyesWebDriverScreenshot.create_entire_frame(
             self._driver, image, RectangleSize.from_(image)
@@ -853,6 +855,8 @@ class SeleniumEyes(EyesBase):
     def _check_element(self, name, check_settings):
         element = self._target_element  # type: EyesWebElement
         self._region_to_check = None
+        self._full_region_to_check = None
+
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
             self.driver
         )
@@ -872,6 +876,8 @@ class SeleniumEyes(EyesBase):
                     size_and_borders = element.size_and_borders
                     border_widths = size_and_borders.borders
                     element_size = size_and_borders.size
+
+                    use_entire_size = False
                     if display_style != "inline" and (
                         element_size["height"] <= self._effective_viewport["height"]
                         and element_size["width"] <= self._effective_viewport["width"]
@@ -879,6 +885,7 @@ class SeleniumEyes(EyesBase):
                         self._element_position_provider = ElementPositionProvider(
                             self.driver, element
                         )
+                        use_entire_size = True
                     else:
                         self._element_position_provider = None
 
@@ -890,6 +897,19 @@ class SeleniumEyes(EyesBase):
                         coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
                     )
                     self._region_to_check = element_region
+
+                    if use_entire_size:
+                        self._full_region_to_check = Region.from_(
+                            element_region.location,
+                            self._element_position_provider.get_entire_size(),
+                        )
+                    else:
+                        self._full_region_to_check = Region(
+                            left=element_region.left,
+                            top=element_region.top,
+                            width=element_region.width,
+                            height=element_region.height,
+                        )
 
                     if not self._effective_viewport.is_size_empty:
                         self._region_to_check.intersect(self._effective_viewport)
