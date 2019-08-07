@@ -649,7 +649,7 @@ class SeleniumEyes(EyesBase):
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self.driver
+            self.driver, self._scroll_root_element
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
@@ -858,7 +858,7 @@ class SeleniumEyes(EyesBase):
         self._full_region_to_check = None
 
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self.driver
+            self.driver, self._scroll_root_element
         )
         pos_provider = self._create_position_provider(scroll_root_element)
         result = None
