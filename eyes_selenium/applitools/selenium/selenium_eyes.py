@@ -854,13 +854,15 @@ class SeleniumEyes(EyesBase):
 
     def _check_element(self, name, check_settings):
         element = self._target_element  # type: EyesWebElement
-        self._region_to_check = None
-        self._full_region_to_check = None
 
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
             self.driver, self._scroll_root_element
         )
         pos_provider = self._create_position_provider(scroll_root_element)
+
+        self._region_to_check = Region.EMPTY()
+        self._full_region_to_check = Region.EMPTY()
+
         result = None
         with pos_provider:
             with self._ensure_element_visible(element):
@@ -870,7 +872,6 @@ class SeleniumEyes(EyesBase):
                     display_style = element.get_computed_style("display")
 
                     if self.configuration.hide_scrollbars:
-                        # FIXME bug if trying to hide
                         element.hide_scrollbars()
 
                     size_and_borders = element.size_and_borders

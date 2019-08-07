@@ -259,7 +259,7 @@ class EyesWebElement(object):
 
         :return: The previous value of the overflow property (could be None).
         """
-        logger.debug("EyesWebElement.HideScrollbars()")
+        logger.debug("EyesWebElement.hide_scrollbars()")
         self._original_overflow = eyes_selenium_utils.hide_scrollbars(  # type: ignore
             self.driver, self.element
         )
@@ -378,3 +378,6 @@ class SizeAndBorders(object):
     def __init__(self, width, height, left, top, right, bottom):
         self.size = dict(width=width, height=height)
         self.borders = dict(left=left, top=top, right=right, bottom=bottom)
+
+    def __str__(self):
+        return "SizeAndBorders(size={}, borders={})".format(self.size, self.borders)
