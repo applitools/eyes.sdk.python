@@ -17,6 +17,7 @@ from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.utils import (
     argument_guard,
+    datetime_utils,
     gzip_compress,
     image_utils,
     json_utils,
@@ -85,15 +86,42 @@ class _RequestCommunicator(object):
 
     def long_request(self, method, url_resource, **kwargs):
         headers = kwargs["headers"].copy()
-        headers["Eyes-Expect"] = "202-accepted"
-        for delay in self.request_delay():
-            # Sending the current time of the request (in RFC 1123 format)
-            headers["Eyes-Date"] = time.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT", time.gmtime()
+        headers["Eyes-Expect"] = "202+location"
+        headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
+        kwargs["headers"] = headers
+        response = self.request(method, url_resource, **kwargs)
+        return self._long_request_check_status(response)
+
+    def _long_request_check_status(self, response):
+        if response.status_code == 200:
+            # request ends successful
+            return response
+        elif response.status_code == 202:
+            # long request here; calling received url to know that request was processed
+            url = response.headers["location"]
+            response = self._long_request_loop(url)
+            return self._long_request_check_status(response)
+        elif response.status_code == 201:
+            # delete url that was used before
+            url = response.headers["location"]
+            return self.request(
+                requests.delete,
+                url,
+                headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
-            kwargs["headers"] = headers
-            response = self.request(method, url_resource, **kwargs)
-            if response.status_code != 202:
+        elif response.status_code == 410:
+            raise EyesError("The server task has gone.")
+        else:
+            raise EyesError("Unknown error during long request: {}".format(response))
+
+    def _long_request_loop(self, url):
+        for delay in self.request_delay():
+            response = self.request(
+                requests.get,
+                url,
+                headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
+            )
+            if response.status_code != 200:
                 return response
             logger.debug("Still running... Retrying in {}s".format(delay))
         else:
