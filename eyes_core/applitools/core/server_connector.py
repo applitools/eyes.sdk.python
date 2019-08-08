@@ -99,12 +99,12 @@ class _RequestCommunicator(object):
             return response
         elif response.status_code == requests.codes.accepted:
             # long request here; calling received url to know that request was processed
-            url = response.headers["location"]
+            url = response.headers["Location"]
             response = self._long_request_loop(url)
             return self._long_request_check_status(response)
         elif response.status_code == requests.codes.created:
             # delete url that was used before
-            url = response.headers["location"]
+            url = response.headers["Location"]
             return self.request(
                 requests.delete,
                 url,
