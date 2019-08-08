@@ -93,15 +93,15 @@ class _RequestCommunicator(object):
         return self._long_request_check_status(response)
 
     def _long_request_check_status(self, response):
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             # request ends successful
             return response
-        elif response.status_code == 202:
+        elif response.status_code == requests.codes.accepted:
             # long request here; calling received url to know that request was processed
             url = response.headers["location"]
             response = self._long_request_loop(url)
             return self._long_request_check_status(response)
-        elif response.status_code == 201:
+        elif response.status_code == requests.codes.created:
             # delete url that was used before
             url = response.headers["location"]
             return self.request(
@@ -109,7 +109,7 @@ class _RequestCommunicator(object):
                 url,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
-        elif response.status_code == 410:
+        elif response.status_code == requests.codes.gone:
             raise EyesError("The server task has gone.")
         else:
             raise EyesError("Unknown error during long request: {}".format(response))
@@ -121,7 +121,7 @@ class _RequestCommunicator(object):
                 url,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
-            if response.status_code != 200:
+            if response.status_code != requests.codes.ok:
                 return response
             logger.debug("Still running... Retrying in {}s".format(delay))
         else:
@@ -367,7 +367,7 @@ class ServerConnector(object):
         response = self._com.request(
             requests.post, url, use_api_key=False, headers=headers, data=data
         )
-        if response.ok or response.status_code == 404:
+        if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
             "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
@@ -423,7 +423,7 @@ class ServerConnector(object):
         response = requests.get(
             url, headers=headers, timeout=self._com.timeout_sec, verify=False
         )
-        if response.status_code == 406:
+        if response.status_code == requests.codes.not_acceptable:
             response = requests.get(url, timeout=self._com.timeout_sec, verify=False)
         response.raise_for_status()
         return response
