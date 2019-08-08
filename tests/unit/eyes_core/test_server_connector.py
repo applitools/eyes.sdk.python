@@ -109,7 +109,7 @@ def mocked_requests_post(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == RUNNING_SESSION_URL:
-        return MockResponse(RUNNING_SESSION_DATA_RESPONSE, 200)
+        return MockResponse(RUNNING_SESSION_DATA_RESPONSE, 201)
     elif url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA_RESPONSE_ID):
         return MockResponse('{"asExpected": true}', 200)
     elif url == RUNNING_SESSION_DATA_URL:
@@ -303,12 +303,7 @@ def test_request_with_changed_values(configured_connector):
     )
     configured_connector.update_config(conf)
 
-    with patch(
-        "requests.post",
-        side_effect=lambda *args, **kwargs: MockResponse(
-            RUNNING_SESSION_DATA_RESPONSE, 200
-        ),
-    ) as mocked_post:
+    with patch("requests.post") as mocked_post:
         with patch(
             "applitools.core.server_connector.json_utils.attr_from_response",
             return_value=RUNNING_SESSION_OBJ,
