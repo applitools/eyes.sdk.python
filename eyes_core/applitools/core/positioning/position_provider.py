@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
     from applitools.common import RectangleSize
 
 
-class PositionMomento(object):
+class PositionMemento(object):
     """
     A base class for position related memento instances. This is intentionally
     not an interface, since the mementos might vary in their interfaces.
@@ -24,12 +24,12 @@ class PositionMomento(object):
             setattr(self, name, val)
 
     def __str__(self):
-        return "PositionMomento(position={}, ...)".format(self.position)
+        return "PositionMemento(position={}, ...)".format(self.position)
 
 
 @attr.s
 class PositionProvider(ABC):
-    _states = attr.ib(init=False, factory=list)  # type: List[PositionMomento]
+    _states = attr.ib(init=False, factory=list)  # type: List[PositionMemento]
     _last_set_position = attr.ib(init=False, default=None)  # type: Point
 
     @abc.abstractmethod
@@ -59,7 +59,7 @@ class PositionProvider(ABC):
         """
         Adds the current position to the states list.
         """
-        self._states.append(PositionMomento(self.get_current_position()))
+        self._states.append(PositionMemento(self.get_current_position()))
 
     def pop_state(self):
         """
@@ -71,7 +71,7 @@ class PositionProvider(ABC):
 
     @property
     def states(self):
-        # type: () -> List[PositionMomento]
+        # type: () -> List[PositionMemento]
         return self._states
 
     def __enter__(self):

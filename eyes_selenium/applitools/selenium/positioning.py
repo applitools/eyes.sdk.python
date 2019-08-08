@@ -6,7 +6,7 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.common import EyesError, Point, logger
 from applitools.common.geometry import RectangleSize
-from applitools.core import PositionMomento, PositionProvider
+from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
 
@@ -185,7 +185,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             "return arguments[0].style.transform;", self._scroll_root_element
         )
         self._states.append(
-            PositionMomento(position=self._last_set_position, transform=transform)
+            PositionMemento(position=self._last_set_position, transform=transform)
         )
 
     def pop_state(self):

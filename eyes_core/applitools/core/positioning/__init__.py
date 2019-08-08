@@ -1,6 +1,6 @@
 from .position_provider import (  # noqa: F401
     InvalidPositionProvider,
-    PositionMomento,
+    PositionMemento,
     PositionProvider,
 )
 from .region_provider import (  # noqa: F401
