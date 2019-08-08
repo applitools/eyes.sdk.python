@@ -3,8 +3,6 @@ import os
 from typing import Any
 
 import pytest
-from mock import patch
-
 from applitools.common import (
     AppEnvironment,
     AppOutput,
@@ -24,6 +22,7 @@ from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core import ServerConnector
+from mock import patch
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -110,7 +109,7 @@ def mocked_requests_post(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == RUNNING_SESSION_URL:
-        return MockResponse(RUNNING_SESSION_DATA_RESPONSE, 201)
+        return MockResponse(RUNNING_SESSION_DATA_RESPONSE, 200)
     elif url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA_RESPONSE_ID):
         return MockResponse('{"asExpected": true}', 200)
     elif url == RUNNING_SESSION_DATA_URL:
@@ -304,7 +303,12 @@ def test_request_with_changed_values(configured_connector):
     )
     configured_connector.update_config(conf)
 
-    with patch("requests.post") as mocked_post:
+    with patch(
+        "requests.post",
+        side_effect=lambda *args, **kwargs: MockResponse(
+            RUNNING_SESSION_DATA_RESPONSE, 200
+        ),
+    ) as mocked_post:
         with patch(
             "applitools.core.server_connector.json_utils.attr_from_response",
             return_value=RUNNING_SESSION_OBJ,
