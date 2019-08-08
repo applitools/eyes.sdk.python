@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import json
+import math
 import time
 import typing
 from struct import pack
@@ -50,9 +51,9 @@ __all__ = ("ServerConnector",)
 
 @attr.s
 class _RequestCommunicator(object):
-    LONG_REQUEST_DELAY_SEC = 2
-    MAX_LONG_REQUEST_DELAY_SEC = 10
-    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
+    LONG_REQUEST_DELAY_SEC = 2  # type: int
+    MAX_LONG_REQUEST_DELAY_SEC = 10  # type: int
+    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5  # type: float
 
     headers = attr.ib()  # type: Dict
     timeout_sec = attr.ib(default=None)  # type: int
@@ -114,32 +115,22 @@ class _RequestCommunicator(object):
         else:
             raise EyesError("Unknown error during long request: {}".format(response))
 
-    def _long_request_loop(self, url):
-        for delay in self.request_delay():
-            response = self.request(
-                requests.get,
-                url,
-                headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
-            )
-            if response.status_code != requests.codes.ok:
-                return response
-            logger.debug("Still running... Retrying in {}s".format(delay))
-        else:
-            raise requests.Timeout("Couldn't process request")
+    def _long_request_loop(self, url, delay=LONG_REQUEST_DELAY_SEC):
+        delay = min(
+            self.MAX_LONG_REQUEST_DELAY_SEC,
+            math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
+        )
+        logger.debug("Still running... Retrying in {}s".format(delay))
 
-    @staticmethod
-    def request_delay(
-        first_delay=LONG_REQUEST_DELAY_SEC,
-        step_factor=LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR,
-        max_delay=MAX_LONG_REQUEST_DELAY_SEC,
-    ):
-        delay = _RequestCommunicator.LONG_REQUEST_DELAY_SEC  # type: Num
-        while True:
-            yield delay
-            time.sleep(first_delay)
-            delay = delay * step_factor
-            if delay > max_delay:
-                raise StopIteration
+        time.sleep(delay)
+        response = self.request(
+            requests.get,
+            url,
+            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
+        )
+        if response.status_code != requests.codes.ok:
+            return response
+        return self._long_request_loop(url, delay)
 
 
 def prepare_match_data(match_data):
