@@ -19,6 +19,7 @@ from applitools.common import (
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
 from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.frames import FrameChain
 from applitools.selenium.positioning import (
     ScrollPositionProvider,
     SeleniumPositionProvider,
@@ -28,7 +29,6 @@ if typing.TYPE_CHECKING:
     from typing import Optional, Union
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
-    from applitools.selenium.frames import FrameChain
 
 
 class ScreenshotType(Enum):
@@ -109,7 +109,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 self._frame_location_in_screenshot, frame_size
             )
         else:
-            self.frame_chain = FrameChain()
+            self._frame_chain = FrameChain()
             self._current_frame_scroll_position = Point.ZERO()
             self._frame_location_in_screenshot = Point.ZERO()
             self.frame_window = Region.from_(
