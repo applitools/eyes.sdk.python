@@ -180,15 +180,15 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         return self._last_set_position
 
     def push_state(self):
+        # type: () -> PositionMemento
         """
         Adds the transform to the states list.
         """
-        transform = self._driver.execute_script(
+        state = super(CSSTranslatePositionProvider, self).push_state()
+        state.transform = self._driver.execute_script(
             "return arguments[0].style.transform;", self._scroll_root_element
         )
-        self._states.append(
-            PositionMemento(position=self._last_set_position, transform=transform)
-        )
+        return state
 
     def pop_state(self):
         state = self._states.pop()

@@ -57,6 +57,7 @@ class PositionProvider(ABC):
         """
 
     def push_state(self):
+        # type: () -> PositionMemento
         """
         Adds the current position to the states list.
         """
