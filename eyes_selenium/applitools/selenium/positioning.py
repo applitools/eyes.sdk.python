@@ -158,8 +158,6 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
 
     def get_current_position(self):
         # type: () -> Optional[Point]
-        if self._last_set_position is None:
-            self.set_position(Point.ZERO())
         return self._last_set_position
 
     def set_position(self, location):
