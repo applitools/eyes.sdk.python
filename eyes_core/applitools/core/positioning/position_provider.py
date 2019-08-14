@@ -31,6 +31,7 @@ class PositionMemento(object):
 class PositionProvider(ABC):
     _states = attr.ib(init=False, factory=list)  # type: List[PositionMemento]
     _last_set_position = attr.ib(init=False, default=None)  # type: Point
+    _state_index = -1
 
     @abc.abstractmethod
     def get_current_position(self):
@@ -60,12 +61,14 @@ class PositionProvider(ABC):
         Adds the current position to the states list.
         """
         self._states.append(PositionMemento(self.get_current_position()))
+        self._state_index += 1
 
     def pop_state(self):
         """
         Sets the position to be the last position added to the states list.
         """
         state = self._states.pop()
+        self._state_index -= 1
         self.set_position(state.position)
         self._last_set_position = state.position
 
@@ -73,6 +76,13 @@ class PositionProvider(ABC):
     def states(self):
         # type: () -> List[PositionMemento]
         return self._states
+
+    @property
+    def current_state(self):
+        # type: () -> PositionMemento
+        if self._state_index >= 0:
+            return self._states[self._state_index]
+        return PositionMemento(self.get_current_position())
 
     def __enter__(self):
         self.push_state()

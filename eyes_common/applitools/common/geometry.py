@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
 import attr
 from PIL.Image import Image
 
+from . import logger
 from .utils import argument_guard
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
@@ -263,8 +264,7 @@ class Region(DictAccessMixin):
                 return cls(obj["x"], obj["y"], obj2.width, obj2.height)
             else:
                 return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
-        else:
-            raise ValueError("Wrong parameters passed")
+        raise ValueError("Wrong parameters passed")
 
     @property
     def x(self):
@@ -417,43 +417,134 @@ class Region(DictAccessMixin):
         self.width = intersection_right - intersection_left
         self.height = intersection_bottom - intersection_top
 
-    def get_sub_regions(self, max_sub_region_size):
-        # type: (RectangleSize) -> List[Region]
-        """Returns a list of Region objects which compose the current region.
-
-        Args:
-            max_sub_region_size:
-        """
+    def get_sub_regions(
+        self,
+        max_sub_region_size,  # type: RectangleSize
+        logical_overlap,  # type: int
+        l2p_scale_ratio,  # type: float
+        physical_rect_in_screenshot,  # type: Region
+    ):
+        # type: (...) -> List[Region]
         sub_regions = []
-        current_top = self.top
-        while current_top < self.height:
 
-            current_bottom = current_top + max_sub_region_size["height"]
-            if current_bottom > self.height:
-                current_bottom = self.height
+        double_logical_overlap = logical_overlap * 2
+        physical_overlap = round(double_logical_overlap * l2p_scale_ratio)
 
-            current_left = self.left
-            while current_left < self.width:
-                current_right = current_left + max_sub_region_size["width"]
-                if current_right > self.width:
-                    current_right = self.width
+        need_v_scroll = self.height > physical_rect_in_screenshot.height
+        need_h_scroll = self.width > physical_rect_in_screenshot.width
 
-                current_height = current_bottom - current_top
-                current_width = current_right - current_left
+        scroll_y = current_top = 0
+        current_logical_height = max_sub_region_size.height
 
-                sub_regions.append(
-                    Region(
-                        left=current_left,
-                        top=current_top,
-                        width=current_width,
-                        height=current_height,
-                        coordinates_type=self.coordinates_type,
+        delta_y = current_logical_height - double_logical_overlap
+
+        is_top_edge = True
+        is_bottom_edge = False
+
+        scale_ratio_offset = round(l2p_scale_ratio - 1)
+
+        while not is_bottom_edge:
+            current_scroll_top = scroll_y + max_sub_region_size.height
+            if current_scroll_top >= self.height:
+                if not is_top_edge:
+                    scroll_y = self.height - current_logical_height
+                    current_logical_height = self.height - current_top
+                    current_top = (
+                        self.height
+                        - current_logical_height
+                        - double_logical_overlap
+                        - logical_overlap
+                        + scale_ratio_offset
                     )
+                else:
+                    current_logical_height = self.height - current_top
+                is_bottom_edge = True
+
+            scroll_x = current_left = 0
+            current_logical_width = max_sub_region_size.width
+
+            delta_x = current_logical_width - double_logical_overlap
+
+            is_left_edge = True
+            is_right_edge = False
+
+            while not is_right_edge:
+                current_scroll_right = scroll_x + max_sub_region_size.width
+                if current_scroll_right >= self.width:
+                    if not is_left_edge:
+                        scroll_x = self.width - current_logical_width
+                        current_logical_width = self.width - current_left
+                        current_left = (
+                            self.width
+                            - current_logical_width
+                            - double_logical_overlap
+                            - logical_overlap
+                            + scale_ratio_offset
+                        )
+                    else:
+                        current_logical_width = self.width - current_left
+                    is_right_edge = True
+
+                physical_crop_area = Region.from_(physical_rect_in_screenshot)
+                logical_crop_area = Region(
+                    0, 0, current_logical_width, current_logical_height
                 )
+                paste_point = Point(current_left, current_top)
 
-                current_left += max_sub_region_size["width"]
+                # handle horizontal
+                if is_right_edge:
+                    physical_width = round(current_logical_width * l2p_scale_ratio)
+                    physical_crop_area.left = (
+                        physical_rect_in_screenshot.right - physical_width
+                    )
+                    physical_crop_area.width = physical_width
 
-            current_top += max_sub_region_size["height"]
+                if not is_left_edge:
+                    logical_crop_area.left += logical_overlap
+                    logical_crop_area.width -= logical_overlap
+
+                if is_right_edge and not is_left_edge:
+                    physical_crop_area.left -= physical_overlap * 2
+                    physical_crop_area.width += physical_overlap * 2
+                    logical_crop_area.width += double_logical_overlap * 2
+
+                # handle vertical
+                if is_bottom_edge:
+                    physical_height = round(current_logical_height * l2p_scale_ratio)
+                    physical_crop_area.top = (
+                        physical_rect_in_screenshot.bottom - physical_height
+                    )
+                    physical_crop_area.height = physical_height
+                if not is_top_edge:
+                    logical_crop_area.top += logical_overlap
+                    logical_crop_area.height -= logical_overlap
+                if is_bottom_edge and not is_top_edge:
+                    physical_crop_area.top -= physical_overlap * 2
+                    physical_crop_area.height += physical_overlap * 2
+                    logical_crop_area.height += double_logical_overlap * 2
+
+                subregion = SubregionForStitching(
+                    Point(scroll_x, scroll_y),
+                    paste_point,
+                    physical_crop_area,
+                    logical_crop_area,
+                )
+                logger.info("adding subregion - {}".format(subregion))
+                sub_regions.append(subregion)
+
+                current_left += delta_x
+                scroll_x += delta_x
+
+                if need_h_scroll and is_left_edge:
+                    current_left += logical_overlap + scale_ratio_offset
+                is_left_edge = False
+
+            current_top += delta_y
+            scroll_y += delta_y
+
+            if need_v_scroll and is_top_edge:
+                current_top += logical_overlap + scale_ratio_offset
+            is_top_edge = False
 
         return sub_regions
 
@@ -512,3 +603,11 @@ class Region(DictAccessMixin):
             height=int(math.ceil(self.height * scale_ratio)),
             coordinates_type=self.coordinates_type,
         )
+
+
+@attr.s
+class SubregionForStitching(object):
+    scroll_to = attr.ib()
+    paste_physical_location = attr.ib()
+    physical_crop_area = attr.ib()
+    logical_crop_area = attr.ib()
