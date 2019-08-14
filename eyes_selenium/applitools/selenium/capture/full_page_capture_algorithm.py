@@ -58,7 +58,7 @@ class FullPageCaptureAlgorithm(object):
 
         # Saving the original position (in case we were already in the outermost frame).
         logger.info("Getting top/left image...")
-        original_stitched_state = position_provider.current_state
+        original_stitched_state = position_provider.push_state()
 
         initial_screenshot = self.image_provider.get_image()
         initial_size = RectangleSize.from_(initial_screenshot)
@@ -74,21 +74,23 @@ class FullPageCaptureAlgorithm(object):
         region_in_screenshot = self._get_region_in_screenshot(
             region, initial_screenshot, pixel_ratio
         )
-        initial_screenshot = self._crop_if_needed(
+        cropped_initial_screenshot = self._crop_if_needed(
             initial_screenshot, region_in_screenshot
         )
-        initial_screenshot = self._scale_if_needed(initial_screenshot, pixel_ratio)
+        scaled_initial_screenshot = self._scale_if_needed(
+            cropped_initial_screenshot, pixel_ratio
+        )
         if full_area is None or full_area.is_empty:
             entire_size = self._get_entire_size(initial_screenshot, position_provider)
             # Notice that this might still happen even if we used
             # "get_image_part", since "entire_page_size" might be that of a
             # frame
             if (
-                initial_screenshot.width >= entire_size.width
-                and initial_screenshot.height >= entire_size.height
+                scaled_initial_screenshot.width >= entire_size.width
+                and scaled_initial_screenshot.height >= entire_size.height
             ):
                 self.origin_provider.pop_state()
-                return initial_screenshot
+                return scaled_initial_screenshot
 
             full_area = Region.from_(Point.ZERO(), entire_size)
 
@@ -142,7 +144,10 @@ class FullPageCaptureAlgorithm(object):
             full_area, scaled_cropped_size, pixel_ratio, rect_in_screenshot
         )
 
-        stitched_image = self._create_stitched_image(full_area, initial_screenshot)
+        # Starting with element region size part of the screenshot. Use it as a size
+        # template.
+        stitched_image = Image.new("RGBA", (full_area.width, full_area.height))
+        # Take screenshot and stitch for each screenshot part.
         stitched_image = self._stitch_screenshot(
             original_stitched_state,
             position_provider,
@@ -151,6 +156,7 @@ class FullPageCaptureAlgorithm(object):
             self.scale_provider.scale_ratio,
             scaled_cut_provider,
         )
+        position_provider.pop_state()
         self.origin_provider.pop_state()
         return stitched_image
 
@@ -192,10 +198,10 @@ class FullPageCaptureAlgorithm(object):
             scaled_part_image = image_utils.scale_image(cropped_part, scale_ratio)
             scaled_cropped_part_image = image_utils.crop_image(scaled_part_image, r2)
 
-            self.debug_screenshot_provider.save(
-                part_image,
-                "partImage-{}_{}".format(origin_position.x, origin_position.y),
-            )
+            # self.debug_screenshot_provider.save(
+            #     part_image,
+            #     "partImage-{}_{}".format(origin_position.x, origin_position.y),
+            # )
             self.debug_screenshot_provider.save(
                 scaled_cropped_part_image,
                 "scaledCroppedPartImage-{}_{}".format(
@@ -207,7 +213,7 @@ class FullPageCaptureAlgorithm(object):
             stitched_image.paste(
                 scaled_cropped_part_image, box=(target_position.x, target_position.y)
             )
-        self.debug_screenshot_provider.save(stitched_image, "stitched")
+            self.debug_screenshot_provider.save(stitched_image, "stitched")
         return stitched_image
 
     def _crop_if_smaller(
@@ -242,15 +248,6 @@ class FullPageCaptureAlgorithm(object):
                 ),
             )
             logger.info("Done")
-        return stitched_image
-
-    def _create_stitched_image(self, full_area, image):
-        # type: (Region, Image) -> Image
-        logger.debug("Creating stitchedImage container.")
-        # Starting with element region size part of the screenshot. Use it as a size template.
-        stitched_image = Image.new("RGBA", (full_area.width, full_area.height))
-        # Starting with the screenshot we already captured at (0,0).
-        stitched_image.paste(image, box=(0, 0))
         return stitched_image
 
     def _get_entire_size(self, image, position_provider):

@@ -60,8 +60,10 @@ class PositionProvider(ABC):
         """
         Adds the current position to the states list.
         """
-        self._states.append(PositionMemento(self.get_current_position()))
+        state = PositionMemento(self.get_current_position())
+        self._states.append(state)
         self._state_index += 1
+        return state
 
     def pop_state(self):
         """
@@ -79,10 +81,10 @@ class PositionProvider(ABC):
 
     @property
     def current_state(self):
-        # type: () -> PositionMemento
+        # type: () -> Optional[PositionMemento]
         if self._state_index >= 0:
             return self._states[self._state_index]
-        return PositionMemento(self.get_current_position())
+        return None
 
     def __enter__(self):
         self.push_state()
