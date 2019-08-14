@@ -122,7 +122,8 @@ class FullPageCaptureAlgorithm(object):
             height=scaled_cropped_source_region["height"],
         )
 
-        # Getting the list of viewport regions composing the page (we'll take screenshot for each one).
+        # Getting the list of viewport regions composing the page
+        # (we'll take screenshot for each one).
         if region_in_screenshot.is_empty:
             x = max(0, full_area.left)
             y = max(0, full_area.top)

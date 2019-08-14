@@ -417,7 +417,7 @@ class Region(DictAccessMixin):
         self.width = intersection_right - intersection_left
         self.height = intersection_bottom - intersection_top
 
-    def get_sub_regions(
+    def get_sub_regions(  # noqa
         self,
         max_sub_region_size,  # type: RectangleSize
         logical_overlap,  # type: int
