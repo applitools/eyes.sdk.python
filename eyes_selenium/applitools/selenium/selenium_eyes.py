@@ -51,7 +51,7 @@ from .positioning import (
     ElementPositionProvider,
     ScrollPositionProvider,
 )
-from .useragent import BrowserNames, UserAgent
+from .useragent import UserAgent
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
@@ -62,7 +62,7 @@ if typing.TYPE_CHECKING:
         ViewPort,
         AnyWebElement,
     )
-    from applitools.core import MatchWindowTask, ScaleProvider
+    from applitools.core import MatchWindowTask, ScaleProvider, PositionMemento
     from .frames import Frame
     from .fluent import SeleniumCheckSettings
     from .eyes import Eyes
@@ -97,7 +97,7 @@ class SeleniumEyes(EyesBase):
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
     _switched_to_frame_count = 0  # int
     _full_region_to_check = None  # type: Optional[Region]
-
+    _position_memento = None  # type: Optional[PositionMemento]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
