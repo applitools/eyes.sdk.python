@@ -443,6 +443,22 @@ def parse_location_string(position):
     return Point(float(xy[0]), float(xy[1]))
 
 
+def get_current_position(driver, element):
+    # type: (AnyWebDriver, AnyWebElement) -> Point
+    element = get_underlying_webelement(element)
+    xy = driver.execute_script(
+        "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
+    )
+    return parse_location_string(xy)
+
+
+def get_entire_element_size(driver, element):
+    # type: (AnyWebDriver, AnyWebElement) -> RectangleSize
+    element = get_underlying_webelement(element)
+
+    pass
+
+
 def scroll_root_element_from(driver, container=None):
     # type: (EyesWebDriver, Union[SeleniumCheckSettings, FrameLocator]) -> EyesWebElement
     def root_html():

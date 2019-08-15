@@ -97,58 +97,31 @@ class SeleniumPositionProvider(PositionProvider):
 
 
 class ScrollPositionProvider(SeleniumPositionProvider):
-    _JS_GET_CURRENT_SCROLL_POSITION = """
-var doc = document.documentElement;
-var x = window.scrollX || ((window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0));
-var y = window.scrollY || ((window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0));
-return [x, y]"""
-
     def set_position(self, location):
         # type: (Point) -> Point
         logger.debug(
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
-        if self._driver.is_mobile_web:
-            scroll_command = "window.scrollTo({0}, {1})".format(
-                location["x"], location["y"]
-            )
-            self._driver.execute_script(scroll_command)
-            self._last_set_position = location
-            return self._last_set_position
-        else:
-            scroll_command = (
-                "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
-                "return (arguments[0].scrollLeft+';'+arguments["
-                "0].scrollTop);" % (location["x"], location["y"])
-            )
-        self._last_set_position = eyes_selenium_utils.parse_location_string(  # type: ignore
+
+        scroll_command = (
+            "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
+            "return (arguments[0].scrollLeft+';'+arguments["
+            "0].scrollTop);" % (location["x"], location["y"])
+        )
+        self._last_set_position = eyes_selenium_utils.parse_location_string(
             self._driver.execute_script(scroll_command, self._scroll_root_element)
         )
         self._add_data_attribute_to_element()
         return self._last_set_position
-
-    @staticmethod
-    def get_current_position_static(driver, scroll_root_element):
-        # type: (EyesWebDriver, AnyWebElement) -> Point
-        element = eyes_selenium_utils.get_underlying_webelement(scroll_root_element)
-        xy = driver.execute_script(
-            "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
-        )
-        return eyes_selenium_utils.parse_location_string(xy)
 
     def get_current_position(self):
         # type: () -> Point
         """
         The scroll position of the current frame.
         """
-        if self._driver.is_mobile_web:
-            x, y = self._driver.execute_script(
-                self._JS_GET_CURRENT_SCROLL_POSITION, self._scroll_root_element
-            )
-            if x is None or y is None:
-                raise EyesError("Got None as scroll position! ({},{})".format(x, y))
-            return Point(x, y)
-        return self.get_current_position_static(self._driver, self._scroll_root_element)
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
 
 
 class CSSTranslatePositionProvider(SeleniumPositionProvider):
@@ -158,7 +131,12 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
 
     def get_current_position(self):
         # type: () -> Optional[Point]
-        return self._last_set_position
+        if self._last_set_position:
+            return self._last_set_position
+
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
 
     def set_position(self, location):
         # type: (Point) -> Point

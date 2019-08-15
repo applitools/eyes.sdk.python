@@ -733,6 +733,7 @@ class SeleniumEyes(EyesBase):
         #         self._region_to_check.left += int(
         #             self._driver.frame_chain.peek.location.x
         #         )
+
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
@@ -796,7 +797,7 @@ class SeleniumEyes(EyesBase):
         switch_to = self.driver.switch_to
         with switch_to.frames_and_back(self.original_frame_chain):
             try:
-                location = ScrollPositionProvider.get_current_position_static(
+                location = eyes_selenium_utils.get_current_position(
                     self.driver, self.scroll_root_element
                 )
             except WebDriverException as e:

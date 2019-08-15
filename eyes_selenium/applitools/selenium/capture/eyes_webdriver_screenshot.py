@@ -20,15 +20,12 @@ from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.frames import FrameChain
-from applitools.selenium.positioning import (
-    ScrollPositionProvider,
-    SeleniumPositionProvider,
-)
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
+    from applitools.selenium.positioning import SeleniumPositionProvider
 
 
 class ScreenshotType(Enum):
@@ -190,9 +187,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
             driver
         )
-        return ScrollPositionProvider.get_current_position_static(
-            driver, scroll_root_element
-        )
+        return eyes_selenium_utils.get_current_position(driver, scroll_root_element)
 
     @staticmethod
     def get_default_content_scroll_position(current_frames, driver):
