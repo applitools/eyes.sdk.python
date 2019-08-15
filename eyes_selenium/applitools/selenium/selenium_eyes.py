@@ -263,6 +263,8 @@ class SeleniumEyes(EyesBase):
 
         self._stitch_content = False
         self._scroll_root_element = None
+        if self._position_memento:
+            self._position_provider.restore_state(self._position_memento)
         self._position_provider = None
         self._original_fc = None
         logger.debug("check - done!")
