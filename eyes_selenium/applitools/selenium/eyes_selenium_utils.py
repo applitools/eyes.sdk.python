@@ -12,7 +12,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
-    from typing import Text, Optional, Any, Iterator, Union
+    from typing import Text, Optional, Any, Union, Generator
+    from applitools.core import PositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
     from applitools.selenium.fluent import SeleniumCheckSettings, FrameLocator
@@ -371,7 +372,7 @@ def add_data_scroll_to_element(driver, element):
 
 @contextmanager
 def timeout(timeout):
-    # type: (Num) -> Iterator
+    # type: (Num) -> Generator
     time.sleep(timeout)
     yield
 
@@ -452,11 +453,12 @@ def get_current_position(driver, element):
     return parse_location_string(xy)
 
 
-def get_entire_element_size(driver, element):
-    # type: (AnyWebDriver, AnyWebElement) -> RectangleSize
-    element = get_underlying_webelement(element)
-
-    pass
+@contextmanager
+def get_and_restore_state(position_provider):
+    # type: (PositionProvider)-> Generator
+    state = position_provider.get_state()
+    yield state
+    position_provider.restore_state(state)
 
 
 def scroll_root_element_from(driver, container=None):

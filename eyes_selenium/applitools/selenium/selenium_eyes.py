@@ -338,7 +338,7 @@ class SeleniumEyes(EyesBase):
             scroll_root_element = None
             if fc.size == self._original_fc.size:
                 logger.debug("PositionProvider: {}".format(self.position_provider))
-                self.position_provider.push_state()
+                self._position_memento = self.position_provider.get_state()
                 scroll_root_element = self._scroll_root_element
             else:
                 if parent_frame:
@@ -686,7 +686,7 @@ class SeleniumEyes(EyesBase):
     def _get_screenshot(self):
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
-                self.position_provider.push_state()
+                state = self.position_provider.get_state()
 
         with self._try_hide_caret():
 
@@ -703,7 +703,7 @@ class SeleniumEyes(EyesBase):
 
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
-                self.position_provider.pop_state()
+                self.position_provider.restore_state(state)
 
         return self._last_screenshot
 
@@ -836,12 +836,12 @@ class SeleniumEyes(EyesBase):
                 position_provider = self._element_position_provider_from(
                     scroll_root_element
                 )
-                position_provider.push_state()
+                state = position_provider.get_state()
                 position_provider.set_position(element_location)
 
         yield
         if self._target_element and position_provider and not self.driver.is_mobile_app:
-            position_provider.pop_state()
+            position_provider.restore_state(state)
 
     def _create_position_provider(self, scroll_root_element):
         stitch_mode = self.configuration.stitch_mode
@@ -865,7 +865,7 @@ class SeleniumEyes(EyesBase):
         self._full_region_to_check = Region.EMPTY()
 
         result = None
-        with pos_provider:
+        with eyes_selenium_utils.get_and_restore_state(pos_provider):
             with self._ensure_element_visible(element):
                 pl = element.location
                 try:

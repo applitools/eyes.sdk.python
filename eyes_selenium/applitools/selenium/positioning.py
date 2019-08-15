@@ -48,22 +48,10 @@ class SeleniumPositionProvider(PositionProvider):
         self._data_attribute_added = False
         logger.debug("Creating {}".format(self.__class__.__name__))
 
-    def __enter__(self):
-        # type: () -> SeleniumPositionProvider
-        if self._driver.is_mobile_app:
-            return self
-        return super(SeleniumPositionProvider, self).__enter__()
-
-    def __exit__(
-        self,
-        exc_type,  # type: Optional[Any]
-        exc_val,  # type: Optional[Any]
-        exc_tb,  # type: Optional[Any]
-    ):
-        # type: (...) -> Union[CSSTranslatePositionProvider, ScrollPositionProvider]
-        if self._driver.is_mobile_app:
-            return self
-        return super(SeleniumPositionProvider, self).__exit__(exc_type, exc_val, exc_tb)
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return self._scroll_root_element == other._scroll_root_element
+        return False
 
     def get_entire_size(self):
         # type: () -> RectangleSize
@@ -155,19 +143,16 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         self._add_data_attribute_to_element()
         return self._last_set_position
 
-    def push_state(self):
+    def get_state(self):
         # type: () -> PositionMemento
-        """
-        Adds the transform to the states list.
-        """
-        state = super(CSSTranslatePositionProvider, self).push_state()
+        state = super(CSSTranslatePositionProvider, self).get_state()
         state.transform = self._driver.execute_script(
             "return arguments[0].style.transform;", self._scroll_root_element
         )
         return state
 
-    def pop_state(self):
-        state = self._states.pop()
+    def restore_state(self, state):
+        # type: (PositionMemento) -> None
         self._driver.execute_script(
             """\
             var originalTransform = arguments[0].style.transform;\

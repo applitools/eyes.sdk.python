@@ -49,7 +49,7 @@ class FullPageCaptureAlgorithm(object):
         logger.info("get_stitched_region()")
         logger.info("PositionProvider: %s ; Region: %s" % (position_provider, region))
 
-        self.origin_provider.push_state()
+        origin_state = self.origin_provider.get_state()
 
         if not self.origin_provider == position_provider:
             self.origin_provider.set_position(
@@ -58,7 +58,7 @@ class FullPageCaptureAlgorithm(object):
 
         # Saving the original position (in case we were already in the outermost frame).
         logger.info("Getting top/left image...")
-        original_stitched_state = position_provider.push_state()
+        original_stitched_state = position_provider.get_state()
 
         initial_screenshot = self.image_provider.get_image()
         initial_size = RectangleSize.from_(initial_screenshot)
@@ -89,7 +89,7 @@ class FullPageCaptureAlgorithm(object):
                 scaled_initial_screenshot.width >= entire_size.width
                 and scaled_initial_screenshot.height >= entire_size.height
             ):
-                self.origin_provider.pop_state()
+                self.origin_provider.restore_state(origin_state)
                 return scaled_initial_screenshot
 
             full_area = Region.from_(Point.ZERO(), entire_size)
@@ -156,8 +156,8 @@ class FullPageCaptureAlgorithm(object):
             self.scale_provider.scale_ratio,
             scaled_cut_provider,
         )
-        position_provider.pop_state()
-        self.origin_provider.pop_state()
+        position_provider.restore_state(original_stitched_state)
+        self.origin_provider.restore_state(origin_state)
         return stitched_image
 
     def _stitch_screenshot(

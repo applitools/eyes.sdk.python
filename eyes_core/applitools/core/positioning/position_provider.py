@@ -56,44 +56,31 @@ class PositionProvider(ABC):
         :return: The entire size of the container which the position is relative to.
         """
 
-    def push_state(self):
+    def get_state(self):
         # type: () -> PositionMemento
-        """
-        Adds the current position to the states list.
-        """
-        state = PositionMemento(self.get_current_position())
-        self._states.append(state)
-        self._state_index += 1
-        return state
+        """Get the current state of the position provider.
 
-    def pop_state(self):
+        This is different from :eyes_selenium_utils:`get_current_position()` in that the
+        state of the position provider
+        might include other model than just the coordinates. For example a CSS
+        translation based position provider (in WebDriver based SDKs), might
+        save the entire "transform" style value as its state.
+
+        Returns:
+            The current state of the position provider, which can later be
+            restored by  passing it as a parameter to :self:`restore_state`.
         """
-        Sets the position to be the last position added to the states list.
+        return PositionMemento(self.get_current_position())
+
+    def restore_state(self, state):
+        # type: (PositionMemento) -> None
+        """ Restores the state of the position provider to the state provided as a
+        parameter.
+
+        Args:
+            state: The state to restore to.
         """
-        state = self._states.pop()
-        self._state_index -= 1
         self.set_position(state.position)
-        self._last_set_position = state.position
-
-    @property
-    def states(self):
-        # type: () -> List[PositionMemento]
-        return self._states
-
-    @property
-    def current_state(self):
-        # type: () -> Optional[PositionMemento]
-        if self._state_index >= 0:
-            return self._states[self._state_index]
-        return None
-
-    def __enter__(self):
-        self.push_state()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.pop_state()
-        return self
 
 
 class InvalidPositionProvider(PositionProvider):
