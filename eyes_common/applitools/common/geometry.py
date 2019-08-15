@@ -112,15 +112,15 @@ class Point(DictAccessMixin):
         return "Point({x} x {y})".format(x=self.x, y=self.y)
 
     def __add__(self, other):
-        # type: (Point) -> Point
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __iadd__(self, other):
-        # type: (Point) -> Point
+        # type: (Union[Point, int, float]) -> Point
+        if isinstance(other, int) or isinstance(other, float):
+            return Point(self.x + round(other), self.y + round(other))
         return Point(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
-        # type: (Point) -> Point
+        # type: (Union[Point, int, float]) -> Point
+        if isinstance(other, int) or isinstance(other, float):
+            return Point(self.x - round(other), self.y - round(other))
         return Point(self.x - other.x, self.y - other.y)
 
     def __mul__(self, scalar):
