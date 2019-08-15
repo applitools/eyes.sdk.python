@@ -51,12 +51,12 @@ jobs:
           env:
               - TOX_ENV=images
         - python: 3.6
-#          env:
-#              - TOX_ENV=selenium-on-windows-remote
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=selenium-on-macos-remote
-#        - python: 3.6
+          env:
+              - TOX_ENV=selenium-on-windows-remote
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium-on-macos-remote
+        - python: 3.6
           env:
               - TOX_ENV=selenium-appium-remote
         - python: 3.6
