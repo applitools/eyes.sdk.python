@@ -487,7 +487,7 @@ def scroll_root_element_from(driver, container=None):
     return scroll_root_element
 
 
-def current_frame_scroll_root_element(driver, scroll_root_element=None):
+def curr_frame_scroll_root_element(driver, scroll_root_element=None):
     # type: (EyesWebDriver, Optional[AnyWebElement]) -> EyesWebElement
     fc = driver.frame_chain.clone()
     cur_frame = fc.peek

@@ -157,7 +157,7 @@ def get_full_window_dom(driver, return_as_dict=False):
         driver.execute_script(_CAPTURE_FRAME_SCRIPT, _ARGS_OBJ),
         object_pairs_hook=OrderedDict,
     )
-    current_root_element = eyes_selenium_utils.current_frame_scroll_root_element(driver)
+    current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
 
     with ScrollPositionProvider(driver, current_root_element):
         logger.debug("Traverse DOM Tree")

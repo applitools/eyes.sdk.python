@@ -93,7 +93,7 @@ class _EyesSwitchTo(object):
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
-            driver, eyes_selenium_utils.current_frame_scroll_root_element(driver)
+            driver, eyes_selenium_utils.curr_frame_scroll_root_element(driver)
         )
 
     @contextlib.contextmanager
@@ -220,9 +220,7 @@ class _EyesSwitchTo(object):
     @contextlib.contextmanager
     def frames_do_scroll(self, frame_chain):
         self.default_content()
-        root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self._driver
-        )
+        root_element = eyes_selenium_utils.curr_frame_scroll_root_element(self._driver)
         scroll_provider = ScrollPositionProvider(self._driver, root_element)
         self._position_memento = scroll_provider.get_state()
         for frame in frame_chain:
