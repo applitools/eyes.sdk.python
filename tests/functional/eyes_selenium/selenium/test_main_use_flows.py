@@ -202,6 +202,7 @@ class TestFluentAPIFrames(TestSetup):
         )
 
     def test_check_region_by_coordinate_in_frame_fluent(self):
+        self.eyes.hide_scrollbars = False
         self.eyes.check(
             "Fluent - Inner frame coordinates",
             Target.frame("frame1").region(Region(30, 40, 400, 1200)),

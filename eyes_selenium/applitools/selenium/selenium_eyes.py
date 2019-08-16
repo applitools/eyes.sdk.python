@@ -829,11 +829,13 @@ class SeleniumEyes(EyesBase):
                 self._ensure_frame_visible()
                 element_location = Point.from_(element.location)
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
+                    fc = original_fc
                     self.driver.switch_to.frames(original_fc)
-                    scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
+                    scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
                         self.driver, self._scroll_root_element
                     )
                 else:
+                    fc = self.driver.frame_chain.clone()
                     scroll_root_element = self.scroll_root_element
                 position_provider = self._element_position_provider_from(
                     scroll_root_element
@@ -843,6 +845,7 @@ class SeleniumEyes(EyesBase):
 
         yield
         if self._target_element and position_provider and not self.driver.is_mobile_app:
+            self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
 
     def _create_position_provider(self, scroll_root_element):
@@ -952,15 +955,12 @@ class SeleniumEyes(EyesBase):
                 b = self._target_element.size_and_borders.borders
                 p = Point.from_(self._target_element.location)
                 p = p.offset(b["left"], b["top"])
+
                 x = p.x + rect.left
                 y = p.y + rect.top
-                region = Region(
-                    x,
-                    y,
-                    min(p.x + s["width"], rect.right - x),
-                    min(p.y + s["height"], rect.bottom - y),
-                    coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
-                )
+                w = min(p.x + s["width"], rect.right) - x
+                h = min(p.y + s["height"], rect.bottom) - y
+                region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
             return region
 
         result = self._check_window_base(
