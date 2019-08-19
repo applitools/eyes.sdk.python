@@ -338,6 +338,6 @@ class FullPageCaptureAlgorithm(object):
         # Handling a specific case where the region is actually larger than
         # the screenshot (e.g., when body width/height are set to 100%, and
         # an internal div is set to value which is larger than the viewport).
-        region_in_screenshot.intersect(Region(0, 0, image.width, image.height))
+        region_in_screenshot.intersect(Region.from_(image))
         logger.info("Region after intersect: {}".format(region_in_screenshot))
         return region_in_screenshot

@@ -64,3 +64,4 @@ class OSNames(Enum):
     Macintosh = "Macintosh"
     ChromeOS = "ChromeOS"
     Android = "Android"
+    Linux = "Linux"
