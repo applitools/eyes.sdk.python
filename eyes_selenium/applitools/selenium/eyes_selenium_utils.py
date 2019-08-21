@@ -9,7 +9,8 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Point, RectangleSize, logger
+from applitools.common import Point, RectangleSize, Region, logger
+from applitools.common.utils import image_utils
 
 if tp.TYPE_CHECKING:
     from typing import Text, Optional, Any, Union, Generator, Dict
@@ -43,6 +44,7 @@ __all__ = (
     "get_cur_position_provider",
     "get_updated_scroll_position",
     "update_screenshot_type",
+    "cut_to_viewport_size_if_required",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -549,3 +551,24 @@ def update_screenshot_type(screenshot_type, image, driver):
         else:
             screenshot_type = ScreenshotType.ENTIRE_FRAME
     return screenshot_type
+
+
+def cut_to_viewport_size_if_required(driver, image):
+    # type: (AnyWebDriver, Image) -> Image
+    # Some browsers return always full page screenshot (IE).
+    # So we cut such images to viewport size
+    position_provider = get_cur_position_provider(driver)
+    curr_frame_scroll = get_updated_scroll_position(position_provider)
+    screenshot_type = update_screenshot_type(None, image, driver)
+    if screenshot_type != ScreenshotType.VIEWPORT:
+        viewport_size = driver.eyes.viewport_size
+        image = image_utils.crop_image(
+            image,
+            region_to_crop=Region(
+                top=curr_frame_scroll.x,
+                left=0,
+                height=viewport_size["height"],
+                width=viewport_size["width"],
+            ),
+        )
+    return image

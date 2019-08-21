@@ -3,7 +3,6 @@ import typing
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from applitools.common import (
     AppEnvironment,
@@ -98,6 +97,7 @@ class SeleniumEyes(EyesBase):
     _switched_to_frame_count = 0  # int
     _full_region_to_check = None  # type: Optional[Region]
     _position_memento = None  # type: Optional[PositionMemento]
+    _is_check_region = None  # type: Optional[bool]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
@@ -447,6 +447,8 @@ class SeleniumEyes(EyesBase):
         return result
 
     def _check_region(self, name, check_settings):
+        self._is_check_region = True
+
         def get_region():
             rect = check_settings.values.target_region
             if rect is None:
@@ -477,6 +479,7 @@ class SeleniumEyes(EyesBase):
         result = self._check_window_base(
             RegionProvider(get_region), name, False, check_settings
         )
+        self._is_check_region = False
         return result
 
     def _ensure_frame_visible(self):
@@ -896,9 +899,14 @@ class SeleniumEyes(EyesBase):
                 image = self.cut_provider.cut(image)
                 self._debug_screenshot_provider.save(image, "cutted")
 
-            screenshot = EyesWebDriverScreenshot.create_viewport(self._driver, image)
+            if not self._is_check_region and not self._driver.is_mobile_app:
+                # Some browsers return always full page screenshot (IE).
+                # So we cut such images to viewport size
+                image = eyes_selenium_utils.cut_to_viewport_size_if_required(
+                    self.driver, image
+                )
 
-        return screenshot
+        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
