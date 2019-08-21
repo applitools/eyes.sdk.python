@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import typing
-from enum import Enum
 
 import attr
 from selenium.common.exceptions import WebDriverException
@@ -19,6 +18,11 @@ from applitools.common import (
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.capture import EyesScreenshot, EyesScreenshotFactory
 from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.capture.screenshot_utils import (
+    ScreenshotType,
+    calc_frame_location_in_screenshot,
+    update_screenshot_type,
+)
 from applitools.selenium.frames import FrameChain
 
 if typing.TYPE_CHECKING:
@@ -26,11 +30,6 @@ if typing.TYPE_CHECKING:
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.positioning import SeleniumPositionProvider
-
-
-class ScreenshotType(Enum):
-    VIEWPORT = "VIEWPORT"
-    ENTIRE_FRAME = "ENTIRE_FRAME"
 
 
 @attr.s
@@ -83,7 +82,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     def __attrs_post_init__(self):
         # type: () -> None
-        self._screenshot_type = eyes_selenium_utils.update_screenshot_type(
+        self._screenshot_type = update_screenshot_type(
             self._screenshot_type, self._image, self._driver
         )
         position_provider = eyes_selenium_utils.get_cur_position_provider(self._driver)
@@ -119,7 +118,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         # type: (Point) -> None
         if location is None:
             if self.frame_chain.size > 0:
-                self._frame_location_in_screenshot = self.calc_frame_location_in_screenshot(  # noqa
+                self._frame_location_in_screenshot = calc_frame_location_in_screenshot(
                     self._driver, self._frame_chain, self._screenshot_type
                 )
             else:
@@ -147,51 +146,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 # so we use the viewport size.
                 frame_size = self._driver.get_default_content_viewport_size()
         return frame_size
-
-    @staticmethod
-    def _get_default_content_scroll_position(driver):
-        # type: (EyesWebDriver) -> Point
-        scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
-        return eyes_selenium_utils.get_current_position(driver, scroll_root_element)
-
-    @staticmethod
-    def get_default_content_scroll_position(current_frames, driver):
-        if current_frames.size == 0:
-            scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
-                driver
-            )
-        else:
-            current_fc = driver.eyes.original_frame_chain
-            with driver.switch_to.frames_and_back(current_fc):
-                scroll_position = EyesWebDriverScreenshot._get_default_content_scroll_position(
-                    driver
-                )
-        return scroll_position
-
-    @staticmethod
-    def calc_frame_location_in_screenshot(driver, frame_chain, screenshot_type):
-        window_scroll = EyesWebDriverScreenshot.get_default_content_scroll_position(
-            frame_chain, driver
-        )
-        logger.info("Getting first frame...")
-        first_frame = frame_chain[0]
-        location_in_screenshot = Point(first_frame.location.x, first_frame.location.y)
-        # We only need to consider the scroll of the default content if the screenshot is a
-        # viewport screenshot. If this is a full page screenshot, the frame location will not
-        # change anyway.
-        if screenshot_type == ScreenshotType.VIEWPORT:
-            location_in_screenshot = location_in_screenshot.offset(
-                -window_scroll.x, -window_scroll.y
-            )
-
-        # For inner frames we must calculate the scroll
-        inner_frames = frame_chain[1:]
-        for frame in inner_frames:
-            location_in_screenshot = location_in_screenshot.offset(
-                frame.location.x - frame.parent_scroll_position.x,
-                frame.location.y - frame.parent_scroll_position.y,
-            )
-        return location_in_screenshot
 
     @property
     def frame_chain(self):

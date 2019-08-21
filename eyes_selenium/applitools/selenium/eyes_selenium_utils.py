@@ -9,18 +9,16 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Point, RectangleSize, Region, logger
-from applitools.common.utils import image_utils
+from applitools.common import Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
     from typing import Text, Optional, Any, Union, Generator, Dict
-    from PIL.Image import Image
     from applitools.core import PositionProvider
+    from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
     from applitools.selenium.fluent import SeleniumCheckSettings, FrameLocator
-    from applitools.selenium.capture.eyes_webdriver_screenshot import ScreenshotType
 
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
@@ -43,8 +41,6 @@ __all__ = (
     "parse_location_string",
     "get_cur_position_provider",
     "get_updated_scroll_position",
-    "update_screenshot_type",
-    "cut_to_viewport_size_if_required",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -534,41 +530,17 @@ def get_updated_scroll_position(position_provider):
     return sp
 
 
-def update_screenshot_type(screenshot_type, image, driver):
-    # type: ( Optional[ScreenshotType], Image, EyesWebDriver) -> ScreenshotType
-    if screenshot_type is None:
-        viewport_size = driver.eyes.viewport_size
-        scale_viewport = driver.eyes.stitch_content
+def get_default_content_scroll_position(current_frames, driver):
+    # type: (FrameChain, EyesWebDriver) -> Point
+    if current_frames.size == 0:
 
-        if scale_viewport:
-            pixel_ratio = driver.eyes.device_pixel_ratio
-            viewport_size = viewport_size.scale(pixel_ratio)
-        if (
-            image.width <= viewport_size["width"]
-            and image.height <= viewport_size["height"]
-        ):
-            screenshot_type = ScreenshotType.VIEWPORT
-        else:
-            screenshot_type = ScreenshotType.ENTIRE_FRAME
-    return screenshot_type
-
-
-def cut_to_viewport_size_if_required(driver, image):
-    # type: (AnyWebDriver, Image) -> Image
-    # Some browsers return always full page screenshot (IE).
-    # So we cut such images to viewport size
-    position_provider = get_cur_position_provider(driver)
-    curr_frame_scroll = get_updated_scroll_position(position_provider)
-    screenshot_type = update_screenshot_type(None, image, driver)
-    if screenshot_type != ScreenshotType.VIEWPORT:
-        viewport_size = driver.eyes.viewport_size
-        image = image_utils.crop_image(
-            image,
-            region_to_crop=Region(
-                top=curr_frame_scroll.x,
-                left=0,
-                height=viewport_size["height"],
-                width=viewport_size["width"],
-            ),
+        scroll_position = get_current_position(
+            driver, curr_frame_scroll_root_element(driver)
         )
-    return image
+    else:
+        current_fc = driver.eyes.original_frame_chain
+        with driver.switch_to.frames_and_back(current_fc):
+            scroll_position = get_current_position(
+                driver, curr_frame_scroll_root_element(driver)
+            )
+    return scroll_position

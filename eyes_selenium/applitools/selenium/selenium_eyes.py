@@ -35,6 +35,9 @@ from applitools.selenium.capture.full_page_capture_algorithm import (
     FullPageCaptureAlgorithm,
 )
 from applitools.selenium.capture.image_providers import get_image_provider
+from applitools.selenium.capture.screenshot_utils import (
+    cut_to_viewport_size_if_required,
+)
 from applitools.selenium.region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
@@ -902,9 +905,7 @@ class SeleniumEyes(EyesBase):
             if not self._is_check_region and not self._driver.is_mobile_app:
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
-                image = eyes_selenium_utils.cut_to_viewport_size_if_required(
-                    self.driver, image
-                )
+                image = cut_to_viewport_size_if_required(self.driver, image)
 
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
