@@ -1,4 +1,5 @@
 import os
+import sys
 import typing
 
 from selenium import webdriver
@@ -27,7 +28,7 @@ BROWSERS_WEBDRIVERS = {
 
 
 def _setup_env_vars_for_session():
-    os.environ["APPLITOOLS_BATCH_NAME"] = "Python | Selenium SDK {}".format(__version__)
+    os.environ["APPLITOOLS_BATCH_NAME"] = "Py|Sel|{}".format(__version__)
 
 
 def pytest_generate_tests(metafunc):
@@ -63,6 +64,13 @@ def eyes_open(request, eyes, driver):
     test_name = request.function.__name__.title().replace("_", "")
     test_name = test_name.replace(test_name_pattern["from"], test_name_pattern["to"])
 
+    batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
+    eyes.configuration.batch = BatchInfo(
+        "{}|{}".format(
+            batch_name,
+            driver.desired_capabilities.get("platformName", sys.platform.capitalize()),
+        )
+    )
     if eyes.force_full_page_screenshot:
         test_suite_name += " - ForceFPS"
         test_name += "_FPS"
