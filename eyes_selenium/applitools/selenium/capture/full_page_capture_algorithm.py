@@ -51,7 +51,7 @@ class FullPageCaptureAlgorithm(object):
 
         origin_state = self.origin_provider.get_state()
 
-        if not self.origin_provider == position_provider:
+        if self.origin_provider != position_provider:
             self.origin_provider.set_position(
                 Point.ZERO()
             )  # first scroll to 0,0 so CSS stitching works.

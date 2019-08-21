@@ -1,8 +1,6 @@
 import abc
 import typing
 
-import attr
-
 from applitools.common.geometry import Point
 from applitools.common.utils import ABC, iteritems
 
@@ -27,12 +25,7 @@ class PositionMemento(object):
         return "PositionMemento(position={}, ...)".format(self.position)
 
 
-@attr.s
 class PositionProvider(ABC):
-    _states = attr.ib(init=False, factory=list)  # type: List[PositionMemento]
-    _last_set_position = attr.ib(init=False, default=None)  # type: Point
-    _state_index = -1
-
     @abc.abstractmethod
     def get_current_position(self):
         # type: () -> Optional[Point]

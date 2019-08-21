@@ -49,7 +49,7 @@ class SeleniumPositionProvider(PositionProvider):
         logger.debug("Creating {}".format(self.__class__.__name__))
 
     def __eq__(self, other):
-        if self.__class__ == other.__class__:
+        if self.__class__ is other.__class__:
             return self._scroll_root_element == other._scroll_root_element
         return False
 
@@ -115,6 +115,7 @@ class ScrollPositionProvider(SeleniumPositionProvider):
 class CSSTranslatePositionProvider(SeleniumPositionProvider):
     def __init__(self, driver, scroll_root_element):
         # type: (EyesWebDriver, AnyWebElement) -> None
+        self._last_set_position = None
         super(CSSTranslatePositionProvider, self).__init__(driver, scroll_root_element)
 
     def get_current_position(self):
@@ -162,7 +163,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             ),
             self._scroll_root_element,
         )
-        self._last_set_position = state.position
+        self._last_set_position = None
 
 
 class ElementPositionProvider(SeleniumPositionProvider):
@@ -181,10 +182,10 @@ class ElementPositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
         # type: (Point) -> Point
         logger.debug("Scrolling element to {}".format(location))
-        self._last_set_position = self._element.scroll_to(location)
+        position = self._element.scroll_to(location)
         logger.debug("Done scrolling element!")
         self._add_data_attribute_to_element()
-        return self._last_set_position
+        return position
 
     def get_entire_size(self):
         try:
