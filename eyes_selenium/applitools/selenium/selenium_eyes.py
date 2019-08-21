@@ -826,11 +826,13 @@ class SeleniumEyes(EyesBase):
             if self._check_frame_or_element and not self.driver.is_mobile_app:
                 self._last_screenshot = self._entire_element_screenshot(scale_provider)
             elif (
-                self.configuration.force_full_page_screenshot or self._stitch_content
+                self.configuration.force_full_page_screenshot
+                or self._stitch_content
+                or self._is_check_region
             ) and not self.driver.is_mobile_app:
                 self._last_screenshot = self._full_page_screenshot(scale_provider)
             else:
-                self._last_screenshot = self._viewport_screenshot(scale_provider)
+                self._last_screenshot = self._element_screenshot(scale_provider)
 
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
@@ -883,9 +885,9 @@ class SeleniumEyes(EyesBase):
             self._driver, image, original_frame_position
         )
 
-    def _viewport_screenshot(self, scale_provider):
+    def _element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
-        logger.info("Viewport screenshot requested")
+        logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
             sleep(self.configuration.wait_before_screenshots / 1000.0)
             image = self._image_provider.get_image()
@@ -906,7 +908,6 @@ class SeleniumEyes(EyesBase):
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
-
         return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
     def _get_viewport_scroll_bounds(self):
