@@ -22,7 +22,7 @@ from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.frames import FrameChain
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Union
+    from typing import Union
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.positioning import SeleniumPositionProvider
@@ -31,46 +31,6 @@ if typing.TYPE_CHECKING:
 class ScreenshotType(Enum):
     VIEWPORT = "VIEWPORT"
     ENTIRE_FRAME = "ENTIRE_FRAME"
-
-
-def get_cur_position_provider(driver):
-    # type: (EyesWebDriver) -> SeleniumPositionProvider
-    cur_frame_position_provider = driver.eyes.current_frame_position_provider
-    if cur_frame_position_provider:
-        return cur_frame_position_provider
-    else:
-        return driver.eyes.position_provider
-
-
-def get_updated_scroll_position(position_provider):
-    # type: (SeleniumPositionProvider) -> Point
-    try:
-        sp = position_provider.get_current_position()
-        if not sp:
-            sp = Point.ZERO()
-    except WebDriverException:
-        sp = Point.ZERO()
-
-    return sp
-
-
-def update_screenshot_type(screenshot_type, image, driver):
-    # type: ( Optional[ScreenshotType], Image, EyesWebDriver) -> ScreenshotType
-    if screenshot_type is None:
-        viewport_size = driver.eyes.viewport_size
-        scale_viewport = driver.eyes.stitch_content
-
-        if scale_viewport:
-            pixel_ratio = driver.eyes.device_pixel_ratio
-            viewport_size = viewport_size.scale(pixel_ratio)
-        if (
-            image.width <= viewport_size["width"]
-            and image.height <= viewport_size["height"]
-        ):
-            screenshot_type = ScreenshotType.VIEWPORT
-        else:
-            screenshot_type = ScreenshotType.ENTIRE_FRAME
-    return screenshot_type
 
 
 @attr.s
@@ -88,25 +48,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-
-        # Some browsers return always full page screenshot (IE).
-        # So we cut such images to viewport size
-        if not driver.is_mobile_app:
-            position_provider = get_cur_position_provider(driver)
-            curr_frame_scroll = get_updated_scroll_position(position_provider)
-            screenshot_type = update_screenshot_type(None, image, driver)
-            if screenshot_type != ScreenshotType.VIEWPORT:
-                viewport_size = driver.eyes.viewport_size
-                image = image_utils.crop_image(
-                    image,
-                    region_to_crop=Region(
-                        top=curr_frame_scroll.x,
-                        left=0,
-                        height=viewport_size["height"],
-                        width=viewport_size["width"],
-                    ),
-                )
-
         instance = cls(driver, image, ScreenshotType.VIEWPORT, None)
         instance._validate_frame_window()
         return instance
@@ -142,15 +83,15 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     def __attrs_post_init__(self):
         # type: () -> None
-        self._screenshot_type = update_screenshot_type(
+        self._screenshot_type = eyes_selenium_utils.update_screenshot_type(
             self._screenshot_type, self._image, self._driver
         )
-        position_provider = get_cur_position_provider(self._driver)
+        position_provider = eyes_selenium_utils.get_cur_position_provider(self._driver)
 
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
             frame_size = self.get_frame_size(position_provider)
-            self._current_frame_scroll_position = get_updated_scroll_position(
+            self._current_frame_scroll_position = eyes_selenium_utils.get_updated_scroll_position(
                 position_provider
             )
             self.updated_frame_location_in_screenshot(

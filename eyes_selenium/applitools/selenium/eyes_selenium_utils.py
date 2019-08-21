@@ -12,11 +12,15 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
-    from typing import Text, Optional, Any, Union, Generator
+    from typing import Text, Optional, Any, Union, Generator, Dict
+    from PIL.Image import Image
     from applitools.core import PositionProvider
+    from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
     from applitools.selenium.fluent import SeleniumCheckSettings, FrameLocator
+    from applitools.selenium.capture.eyes_webdriver_screenshot import ScreenshotType
+
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
@@ -36,6 +40,9 @@ __all__ = (
     "hide_scrollbars",
     "set_overflow",
     "parse_location_string",
+    "get_cur_position_provider",
+    "get_updated_scroll_position",
+    "update_screenshot_type",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -437,11 +444,13 @@ def get_viewport_size_or_display_size(driver):
 
 
 def parse_location_string(position):
-    # type: (Text) -> Point
+    # type: (Union[Text, Dict]) -> Point
+    if isinstance(position, dict):
+        return Point.from_(position)
     xy = position.split(";")
     if len(xy) != 2:
         raise WebDriverException("Could not get scroll position!")
-    return Point(float(xy[0]), float(xy[1]))
+    return Point(round(float(xy[0])), round(float(xy[1])))
 
 
 def get_current_position(driver, element):
@@ -500,3 +509,43 @@ def curr_frame_scroll_root_element(driver, scroll_root_element=None):
         else:
             root_element = driver.find_element_by_tag_name("html")
     return root_element
+
+
+def get_cur_position_provider(driver):
+    # type: (EyesWebDriver) -> SeleniumPositionProvider
+    cur_frame_position_provider = driver.eyes.current_frame_position_provider
+    if cur_frame_position_provider:
+        return cur_frame_position_provider
+    else:
+        return driver.eyes.position_provider
+
+
+def get_updated_scroll_position(position_provider):
+    # type: (SeleniumPositionProvider) -> Point
+    try:
+        sp = position_provider.get_current_position()
+        if not sp:
+            sp = Point.ZERO()
+    except WebDriverException:
+        sp = Point.ZERO()
+
+    return sp
+
+
+def update_screenshot_type(screenshot_type, image, driver):
+    # type: ( Optional[ScreenshotType], Image, EyesWebDriver) -> ScreenshotType
+    if screenshot_type is None:
+        viewport_size = driver.eyes.viewport_size
+        scale_viewport = driver.eyes.stitch_content
+
+        if scale_viewport:
+            pixel_ratio = driver.eyes.device_pixel_ratio
+            viewport_size = viewport_size.scale(pixel_ratio)
+        if (
+            image.width <= viewport_size["width"]
+            and image.height <= viewport_size["height"]
+        ):
+            screenshot_type = ScreenshotType.VIEWPORT
+        else:
+            screenshot_type = ScreenshotType.ENTIRE_FRAME
+    return screenshot_type
