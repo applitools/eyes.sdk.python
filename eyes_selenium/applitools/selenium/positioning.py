@@ -131,7 +131,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         logger.info(
             "CssTranslatePositionProvider - Setting position to: {}".format(location)
         )
-        negated_location = Point(-location.x, -location.y)
+        negated_location = -location
         self._driver.execute_script(
             (
                 "arguments[0].style.transform='translate({:d}px,"

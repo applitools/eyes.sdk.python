@@ -123,6 +123,10 @@ class Point(DictAccessMixin):
             return Point(self.x - round(other), self.y - round(other))
         return Point(self.x - other.x, self.y - other.y)
 
+    def __neg__(self):
+        # type: () -> Point
+        return Point(-self.x, -self.y)
+
     def __mul__(self, scalar):
         # type: (int) -> Point
         return Point(self.x * scalar, self.y * scalar)
