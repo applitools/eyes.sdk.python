@@ -215,12 +215,18 @@ class TestFluentAPIFrames(TestSetup):
             Target.frame("frame1").frame("frame1-1").fully(),
         )
 
+    def test_manual_switch_frame(self):
+        self.driver.switch_to.frame("frame1")
+        self.eyes.check("", Target.region("#inner-frame-div"))
+
 
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases")
 @pytest.mark.test_page_url(
     "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
 )
+@pytest.mark.skip("Knowing issue")
 class TestSpecialCases(TestSetup):
+    # TODO: Fix tests
     def test_check_region_in_a_very_big_frame(self):
         self.eyes.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
