@@ -224,9 +224,7 @@ class TestFluentAPIFrames(TestSetup):
 @pytest.mark.test_page_url(
     "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
 )
-@pytest.mark.skip("Knowing issue")
 class TestSpecialCases(TestSetup):
-    # TODO: Fix tests
     def test_check_region_in_a_very_big_frame(self):
         self.eyes.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
