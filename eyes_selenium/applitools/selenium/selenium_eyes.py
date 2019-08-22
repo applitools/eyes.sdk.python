@@ -826,9 +826,7 @@ class SeleniumEyes(EyesBase):
             if self._check_frame_or_element and not self.driver.is_mobile_app:
                 self._last_screenshot = self._entire_element_screenshot(scale_provider)
             elif (
-                self.configuration.force_full_page_screenshot
-                or self._stitch_content
-                or self._is_check_region
+                self.configuration.force_full_page_screenshot or self._stitch_content
             ) and not self.driver.is_mobile_app:
                 self._last_screenshot = self._full_page_screenshot(scale_provider)
             else:
@@ -881,34 +879,36 @@ class SeleniumEyes(EyesBase):
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(region, None, self.position_provider)
 
-        return EyesWebDriverScreenshot.create_full_page(
-            self._driver, image, original_frame_position
-        )
+            return EyesWebDriverScreenshot.create_full_page(
+                self._driver, image, original_frame_position
+            )
 
     def _element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
             sleep(self.configuration.wait_before_screenshots / 1000.0)
-            image = self._image_provider.get_image()
-            self._debug_screenshot_provider.save(image, "original")
-            scale_provider.update_scale_ratio(image.width)
-            pixel_ratio = 1 / scale_provider.scale_ratio
-            if pixel_ratio != 1.0:
-                logger.info("Scalling")
-                image = image_utils.scale_image(image, 1.0 / pixel_ratio)
-                self._debug_screenshot_provider.save(image, "scaled")
-
-            if not isinstance(self.cut_provider, NullCutProvider):
-                logger.info("Cutting")
-                image = self.cut_provider.cut(image)
-                self._debug_screenshot_provider.save(image, "cutted")
-
+            image = self._get_scaled_cropped_image(scale_provider)
             if not self._is_check_region and not self._driver.is_mobile_app:
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
-        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+            return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+
+    def _get_scaled_cropped_image(self, scale_provider):
+        image = self._image_provider.get_image()
+        self._debug_screenshot_provider.save(image, "original")
+        scale_provider.update_scale_ratio(image.width)
+        pixel_ratio = 1 / scale_provider.scale_ratio
+        if pixel_ratio != 1.0:
+            logger.info("Scaling")
+            image = image_utils.scale_image(image, 1.0 / pixel_ratio)
+            self._debug_screenshot_provider.save(image, "scaled")
+        if not isinstance(self.cut_provider, NullCutProvider):
+            logger.info("Cutting")
+            image = self.cut_provider.cut(image)
+            self._debug_screenshot_provider.save(image, "cutted")
+        return image
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
