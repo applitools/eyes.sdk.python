@@ -159,7 +159,9 @@ def get_full_window_dom(driver, return_as_dict=False):
     )
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
 
-    with ScrollPositionProvider(driver, current_root_element):
+    with eyes_selenium_utils.get_and_restore_state(
+        ScrollPositionProvider(driver, current_root_element)
+    ):
         logger.debug("Traverse DOM Tree")
         _traverse_dom_tree(driver, {"childNodes": [dom_tree], "tagName": "OUTER_HTML"})
 
