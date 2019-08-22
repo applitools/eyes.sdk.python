@@ -210,10 +210,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 from_ == self.CONTEXT_RELATIVE or from_ == self.CONTEXT_AS_IS
             ) and to == self.SCREENSHOT_AS_IS:
                 # If this is not a sub-screenshot, this will have no effect.
-                result = result.offset(
-                    self._frame_location_in_screenshot.x,
-                    self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(self._frame_location_in_screenshot)
                 # If this is not a region subscreenshot, this will have no effect.
                 result = result.offset(
                     -self.region_window.left, -self.region_window.top
@@ -221,61 +218,34 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             elif from_ == self.SCREENSHOT_AS_IS and (
                 to == self.CONTEXT_RELATIVE or to == self.CONTEXT_AS_IS
             ):
-                result = result.offset(
-                    -self._frame_location_in_screenshot.x,
-                    -self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(-self._frame_location_in_screenshot)
             return result
 
         if from_ == self.CONTEXT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
-                result = result.offset(
-                    self._current_frame_scroll_position.x,
-                    self._current_frame_scroll_position.y,
-                )
+                result = result.offset(self._current_frame_scroll_position)
             elif to == self.SCREENSHOT_AS_IS:
-                result = result.offset(
-                    self._frame_location_in_screenshot.x,
-                    self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(self._frame_location_in_screenshot)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
         elif from_ == self.CONTEXT_RELATIVE:
             if to == self.SCREENSHOT_AS_IS:
                 # First, convert context-relative to context-as-is.
-                result = result.offset(
-                    -self._current_frame_scroll_position.x,
-                    -self._current_frame_scroll_position.y,
-                )
+                result = result.offset(-self._current_frame_scroll_position)
                 # Now convert context-as-is to screenshot-as-is
-                result = result.offset(
-                    self._frame_location_in_screenshot.x,
-                    self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(self._frame_location_in_screenshot)
             elif to == self.CONTEXT_AS_IS:
-                result = result.offset(
-                    -self._current_frame_scroll_position.x,
-                    -self._current_frame_scroll_position.y,
-                )
+                result = result.offset(-self._current_frame_scroll_position)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
         elif from_ == self.SCREENSHOT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
                 # First, convert context-relative to context-as-is.
-                result = result.offset(
-                    -self._frame_location_in_screenshot.x,
-                    -self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(-self._frame_location_in_screenshot)
                 # Now convert context-as-is to screenshot-as-is
-                result = result.offset(
-                    self._current_frame_scroll_position.x,
-                    self._current_frame_scroll_position.y,
-                )
+                result = result.offset(self._current_frame_scroll_position)
             elif to == self.CONTEXT_AS_IS:
-                result = result.offset(
-                    -self._frame_location_in_screenshot.x,
-                    -self._frame_location_in_screenshot.y,
-                )
+                result = result.offset(-self._frame_location_in_screenshot)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
         else:
