@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import hashlib
 import typing
+
 import attr
 
 from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
@@ -120,6 +121,6 @@ def all_fields(obj):
     Returns:
         list of attributes and methods names
     """
-    if attr.has(obj.__class__):
+    if attr.has(obj):
         return list(attr.fields_dict(obj).keys())
     return []
