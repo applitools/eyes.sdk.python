@@ -11,7 +11,7 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import RenderStatus, RunningSession, logger
+from applitools.common import RunningSession, logger
 from applitools.common.errors import EyesError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
@@ -25,7 +25,6 @@ from applitools.common.utils import (
     json_utils,
     urljoin,
 )
-from applitools.common.utils.general_utils import retry
 from applitools.common.visual_grid import (
     RenderingInfo,
     RenderRequest,
@@ -51,12 +50,12 @@ __all__ = ("ServerConnector",)
 
 @attr.s
 class _RequestCommunicator(object):
-    LONG_REQUEST_DELAY_SEC = 2  # type: int
-    MAX_LONG_REQUEST_DELAY_SEC = 10  # type: int
+    LONG_REQUEST_DELAY_MS = 2000  # type: int
+    MAX_LONG_REQUEST_DELAY_MS = 10000  # type: int
     LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5  # type: float
 
     headers = attr.ib()  # type: Dict
-    timeout_sec = attr.ib(default=None)  # type: int
+    timeout_ms = attr.ib(default=None)  # type: int
     api_key = attr.ib(default=None)  # type: Text
     server_url = attr.ib(default=None)  # type: Text
 
@@ -70,14 +69,16 @@ class _RequestCommunicator(object):
             params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
         headers = kwargs.get("headers", self.headers).copy()
-        timeout = kwargs.get("timeout", self.timeout_sec)
+        timeout_sec = kwargs.get("timeout", None)
+        if timeout_sec is None:
+            timeout_sec = datetime_utils.to_sec(self.timeout_ms)
         response = method(
             url_resource,
             data=kwargs.get("data", None),
             verify=False,
             params=params,
             headers=headers,
-            timeout=timeout,
+            timeout=timeout_sec,
         )
         try:
             response.raise_for_status()
@@ -115,14 +116,14 @@ class _RequestCommunicator(object):
         else:
             raise EyesError("Unknown error during long request: {}".format(response))
 
-    def _long_request_loop(self, url, delay=LONG_REQUEST_DELAY_SEC):
+    def _long_request_loop(self, url, delay=LONG_REQUEST_DELAY_MS):
         delay = min(
-            self.MAX_LONG_REQUEST_DELAY_SEC,
+            self.MAX_LONG_REQUEST_DELAY_MS,
             math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
         )
-        logger.debug("Still running... Retrying in {}s".format(delay))
+        logger.debug("Still running... Retrying in {} ms".format(delay))
 
-        time.sleep(delay)
+        datetime_utils.sleep(delay)
         response = self.request(
             requests.get,
             url,
@@ -187,7 +188,7 @@ class ServerConnector(object):
             )
         self._com.server_url = conf.server_url
         self._com.api_key = conf.api_key
-        self._com.timeout_sec = conf.timeout / 1000.0
+        self._com.timeout_ms = conf.timeout
 
     @property
     def server_url(self):
@@ -207,11 +208,11 @@ class ServerConnector(object):
 
     @property
     def timeout(self):
-        return self._com.timeout_sec * 1000  # ms
+        return self._com.timeout_ms
 
     @timeout.setter
     def timeout(self, value):
-        self._com.timeout_sec = value / 1000.0
+        self._com.timeout_ms = value
 
     @property
     def is_session_started(self):
@@ -403,7 +404,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @retry()
+    @datetime_utils.retry()
     def download_resource(self, url):
         # type: (Text) -> Response
         # TODO: Fixme retry mech
@@ -411,11 +412,10 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Accept-Encoding"] = "identity"
 
-        response = requests.get(
-            url, headers=headers, timeout=self._com.timeout_sec, verify=False
-        )
+        timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
+        response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
         if response.status_code == requests.codes.not_acceptable:
-            response = requests.get(url, timeout=self._com.timeout_sec, verify=False)
+            response = requests.get(url, timeout=timeout_sec, verify=False)
         response.raise_for_status()
         return response
 

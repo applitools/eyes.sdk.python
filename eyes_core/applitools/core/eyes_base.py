@@ -716,7 +716,7 @@ class EyesBase(_EyesBaseAbstract):
             )
 
         region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout_ms))
+        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
         result = self._match_window_task.match_window(
             self._user_inputs,

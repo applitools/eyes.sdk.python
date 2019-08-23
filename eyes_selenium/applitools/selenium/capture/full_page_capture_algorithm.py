@@ -1,6 +1,5 @@
 import math
 import typing
-from time import sleep
 
 import attr
 from PIL import Image
@@ -8,7 +7,7 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.common import CoordinatesType, Point, RectangleSize, Region, logger
 from applitools.common.geometry import SubregionForStitching
-from applitools.common.utils import argument_guard, image_utils
+from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import PositionMemento, PositionProvider
 from applitools.core.cut import NullCutProvider
 from applitools.selenium.capture import EyesWebDriverScreenshot
@@ -184,7 +183,7 @@ class FullPageCaptureAlgorithm(object):
             )
 
             # Actually taking the screenshot.
-            sleep(self.wait_before_screenshots / 1000.0)
+            datetime_utils.sleep(self.wait_before_screenshots)
             part_image = self.image_provider.get_image()
             cut_part = scaled_cut_provider.cut(part_image)
             r = part_region.physical_crop_area

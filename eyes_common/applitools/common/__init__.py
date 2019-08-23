@@ -30,7 +30,13 @@ from .errors import (
     OutOfBoundsError,
     TestFailedError,
 )
-from .geometry import CoordinatesType, Point, RectangleSize, Region
+from .geometry import (
+    CoordinatesType,
+    Point,
+    RectangleSize,
+    Region,
+    SubregionForStitching,
+)
 from .logger import FileLogger, NullLogger, StdoutLogger
 from .match import (
     ExactMatchSettings,

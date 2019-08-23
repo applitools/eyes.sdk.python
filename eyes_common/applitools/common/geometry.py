@@ -16,7 +16,13 @@ if TYPE_CHECKING:
     from .utils.custom_types import ViewPort
     from .visual_grid import EmulationDevice
 
-__all__ = ("Point", "Region", "CoordinatesType", "RectangleSize")
+__all__ = (
+    "Point",
+    "Region",
+    "CoordinatesType",
+    "RectangleSize",
+    "SubregionForStitching",
+)
 
 
 class DictAccessMixin(object):

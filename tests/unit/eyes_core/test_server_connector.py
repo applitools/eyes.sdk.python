@@ -305,7 +305,7 @@ def test_stop_session(started_connector):
 
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
-    new_timeout_sec = new_timeout / 1000.0
+    new_timeout_sec = int(new_timeout / 1000.0)
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
     conf = Configuration(
