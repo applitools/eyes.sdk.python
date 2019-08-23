@@ -12,11 +12,11 @@ if typing.TYPE_CHECKING:
     from typing import List, Optional, Dict, Any, Text
     from applitools.common import (
         TestResults,
-        SeleniumConfiguration,
         VisualGridSelector,
         RenderBrowserInfo,
         RenderStatusResults,
     )
+    from applitools.common.selenium import Configuration
     from applitools.selenium.fluent import SeleniumCheckSettings
     from .visual_grid_runner import VisualGridRunner
     from .eyes_connector import EyesConnector
@@ -49,7 +49,7 @@ TRANSITIONS = [
 @attr.s(hash=True)
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
-    configuration = attr.ib(hash=False, repr=False)  # type: SeleniumConfiguration
+    configuration = attr.ib(hash=False, repr=False)  # type: Configuration
     browser_info = attr.ib()  # type: RenderBrowserInfo
     # listener = attr.ib()  # type:
     region_selectors = attr.ib(

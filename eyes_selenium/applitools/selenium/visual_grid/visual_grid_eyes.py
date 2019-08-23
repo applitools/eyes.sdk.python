@@ -19,9 +19,8 @@ from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Union, Optional, Dict
-    from applitools.common.config import SeleniumConfiguration
     from applitools.common.utils.custom_types import AnyWebElement
-    from applitools.selenium import Eyes, EyesWebDriver
+    from applitools.selenium import Eyes, EyesWebDriver, Configuration
 
 
 GET_ELEMENT_XPATH_JS = """
@@ -84,7 +83,7 @@ class VisualGridEyes(object):
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._config_provider.configuration
 
     def open(self, driver):

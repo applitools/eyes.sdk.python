@@ -4,10 +4,10 @@ from enum import Enum
 
 import attr
 
-from .config.misc import BrowserType
 from .geometry import RectangleSize
+from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
-from .utils.compat import ABC, basestring
+from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:

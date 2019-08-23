@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import EyesError, SeleniumConfiguration, logger
+from applitools.common import EyesError, logger
+from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.selenium import eyes_selenium_utils
@@ -33,7 +34,7 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to("configuration", all_fields(SeleniumConfiguration))
+@proxy_to("configuration", all_fields(Configuration))
 class Eyes(object):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
@@ -44,7 +45,7 @@ class Eyes(object):
 
     def __init__(self, runner=None):
         # type: (Optional[VisualGridRunner]) -> None
-        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+        self._configuration = Configuration()  # type: Configuration
 
         # backward compatibility with settings server_url
         if isinstance(runner, str):
@@ -67,13 +68,13 @@ class Eyes(object):
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._configuration
 
     @configuration.setter
     def configuration(self, new_conf):
-        # type: (SeleniumConfiguration) -> None
-        argument_guard.is_a(new_conf, SeleniumConfiguration)
+        # type: (Configuration) -> None
+        argument_guard.is_a(new_conf, Configuration)
         if self._configuration.api_key and not new_conf.api_key:
             new_conf.api_key = self._configuration.api_key
         if self._configuration.server_url and not new_conf.server_url:

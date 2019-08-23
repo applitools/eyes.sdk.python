@@ -11,8 +11,8 @@ from applitools.common import (
     Region,
     logger,
 )
-from applitools.common.config import SeleniumConfiguration, StitchMode
 from applitools.common.geometry import Point
+from applitools.common.selenium import Configuration, StitchMode
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -129,7 +129,7 @@ class SeleniumEyes(EyesBase):
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._config_provider.configuration
 
     @property

@@ -1,13 +1,13 @@
 from applitools.common import (
-    BatchInfo,
-    BrowserType,
     DeviceName,
     MatchLevel,
     Region,
     ScreenOrientation,
+    StdoutLogger,
+    logger,
 )
-from applitools.common import SeleniumConfiguration as Configuration  # noqa
-from applitools.common import StdoutLogger, StitchMode, logger
+from applitools.common.config import BatchInfo  # noqa
+from applitools.common.selenium import BrowserType, Configuration, StitchMode  # noqa
 from applitools.common.server import FailureReports  # noqa
 from applitools.core.cut import (  # noqa
     FixedCutProvider,

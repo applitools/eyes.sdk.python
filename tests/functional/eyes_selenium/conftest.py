@@ -6,8 +6,13 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
 import pytest
-from applitools.common import BatchInfo, logger
-from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
+from applitools.selenium import (
+    BatchInfo,
+    Eyes,
+    EyesWebDriver,
+    eyes_selenium_utils,
+    logger,
+)
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
 from mock import MagicMock

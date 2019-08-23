@@ -3,15 +3,8 @@ from __future__ import absolute_import
 import abc
 import typing
 
-from applitools.common import (
-    AppOutput,
-    BatchInfo,
-    Configuration,
-    RectangleSize,
-    Region,
-    RunningSession,
-    logger,
-)
+from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
+from applitools.common.config import BatchInfo, Configuration
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,

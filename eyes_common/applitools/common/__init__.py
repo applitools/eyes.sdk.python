@@ -8,19 +8,13 @@ from . import (
     match,
     match_window_data,
     metadata,
+    selenium,
     server,
     test_results,
     visual_grid,
 )
 from .app_output import AppOutput
 from .capture import EyesScreenshot
-from .config import (
-    BatchInfo,
-    BrowserType,
-    Configuration,
-    SeleniumConfiguration,
-    StitchMode,
-)
 from .errors import (
     CoordinatesTypeConversionError,
     DiffsFoundError,
@@ -69,7 +63,6 @@ from .visual_grid import (
 
 __all__ = (
     logger.__all__  # noqa
-    + config.__all__  # noqa
     + errors.__all__  # noqa
     + geometry.__all__  # noqa
     + match.__all__  # noqa
