@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Text, Union
 
 import attr
 
+from applitools.common import logger
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
@@ -125,6 +126,12 @@ class Configuration(object):
 
     @property
     def is_dom_send(self):
+        # type: () -> bool
+        logger.deprecation("Use is_send_dom instead")
+        return self.is_send_dom
+
+    @property
+    def is_send_dom(self):
         # type: () -> bool
         return self.send_dom
 
