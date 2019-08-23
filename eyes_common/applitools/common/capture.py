@@ -102,7 +102,11 @@ class EyesScreenshot(ABC):
 
         updated_location = self.convert_location(region.location, from_, to)
         return Region(
-            updated_location.x, updated_location.y, region.width, region.height
+            updated_location.x,
+            updated_location.y,
+            region.width,
+            region.height,
+            coordinates_type=to,
         )
 
     @property

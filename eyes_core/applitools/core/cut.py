@@ -1,10 +1,11 @@
 import math
 from abc import abstractmethod
+from typing import Dict, Union
 
 import attr
 from PIL.Image import Image
 
-from applitools.common import Region
+from applitools.common import RectangleSize, Region
 from applitools.common.utils import ABC, image_utils
 
 __all__ = ("FixedCutProvider", "UnscaledFixedCutProvider", "NullCutProvider")
@@ -34,6 +35,15 @@ class CutProvider(ABC):
     def scale(self, scale_ratio):
         # type: (float) -> CutProvider
         """Get a scaled version of the cut provider"""
+
+    def to_region(self, size):
+        # type: (Union[RectangleSize, Dict]) -> Region
+        return Region(
+            left=self.left,
+            top=self.header,
+            width=size["width"] - self.left - self.right,
+            height=size["height"] - self.header - self.footer,
+        )
 
 
 class FixedCutProvider(CutProvider):

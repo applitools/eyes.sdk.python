@@ -7,7 +7,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
-from applitools.common.geometry import Region
+from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import proxy_to
 
 from . import eyes_selenium_utils
@@ -15,7 +15,6 @@ from . import eyes_selenium_utils
 if tp.TYPE_CHECKING:
     from typing import Optional, Text
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.common.geometry import Point
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -77,14 +76,36 @@ _JS_GET_SIZE_AND_BORDER_WIDTHS = """
 @proxy_to(
     "_element",
     [
-        "find_element",
-        "find_elements" "tag_name",
+        "tag_name",
         "text",
+        "submit",
+        "clear",
+        "get_property",
+        "get_attribute",
+        "is_selected",
+        "is_enabled",
+        "find_element_by_id",
+        "find_elements_by_id",
+        "find_element_by_name",
+        "find_elements_by_name",
+        "find_element_by_link_text",
+        "find_elements_by_link_text",
+        "find_element_by_partial_link_text",
+        "find_elements_by_partial_link_text",
+        "find_element_by_tag_name",
+        "find_elements_by_tag_name",
+        "find_element_by_xpath",
+        "find_elements_by_xpath",
+        "find_element_by_class_name",
+        "find_elements_by_class_name",
+        "find_element_by_css_selector",
+        "find_elements_by_css_selector",
+        "is_displayed",
         "location_once_scrolled_into_view",
         "parent",
-        "rect",
         "screenshot_as_base64",
         "screenshot_as_png",
+        "screenshot",
         "location_in_view",
         "anonymous_children",
     ],
@@ -142,11 +163,15 @@ class EyesWebElement(object):
             left, width = 0, max(0, width + left)
         if top < 0:
             top, height = 0, max(0, height + top)
-        return Region(left, top, width, height)
+        return Region(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE)
 
     @property
     def location(self):
         return self._element.location
+
+    @property
+    def rect(self):
+        return self._element.rect
 
     @property
     def is_attached_to_page(self):
@@ -159,6 +184,12 @@ class EyesWebElement(object):
     @property
     def size(self):
         return self._element.size
+
+    @property
+    def scroll_location(self):
+        # type: () -> Point
+        pos = self.driver.execute_script(_JS_GET_SCROLL_POSITION, self.element)
+        return eyes_selenium_utils.parse_location_string(pos)
 
     @property
     def id(self):
@@ -204,7 +235,7 @@ class EyesWebElement(object):
         """
         Clicks and element.
         """
-        self._driver._eyes.add_mouse_trigger_by_element("click", self)
+        self._driver.eyes.add_mouse_trigger_by_element("click", self)
         self._element.click()
 
     def send_keys(self, *value):
@@ -228,7 +259,7 @@ class EyesWebElement(object):
 
         :return: The previous value of the overflow property (could be None).
         """
-        logger.debug("EyesWebElement.HideScrollbars()")
+        logger.debug("EyesWebElement.hide_scrollbars()")
         self._original_overflow = eyes_selenium_utils.hide_scrollbars(  # type: ignore
             self.driver, self.element
         )
@@ -299,7 +330,7 @@ class EyesWebElement(object):
         # type: (Point) -> Point
         """Scrolls to the specified location inside the element."""
         position = self._driver.execute_script(
-            _JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y)
+            _JS_SCROLL_TO_FORMATTED_STR.format(location["x"], location["y"])
             + _JS_GET_SCROLL_POSITION,
             self._element,
         )
@@ -320,10 +351,25 @@ class EyesWebElement(object):
             bottom=int(ret_val[5].rstrip("px")),
         )
 
-    def __str__(self):
-        return "EyesWebElement: id {}, tag_name {}".format(
-            self._element.id, self._element.tag_name
+    @property
+    def bounding_client_rect(self):
+        left, top, width, height = self.driver.execute_script(
+            "var r = arguments[0].getBoundingClientRect();"
+            "return r.left+';'+r.top+';'+r.width+';'+r.height;",
+            self._element,
+        ).split(";")
+        return dict(
+            x=math.ceil(float(left)),
+            y=math.ceil(float(top)),
+            width=math.ceil(float(width)),
+            height=math.ceil(float(height)),
         )
+
+    def __str__(self):
+        tag_name = "None"
+        if self.is_attached_to_page:
+            tag_name = self._element.tag_name
+        return "EyesWebElement: id {}, tag_name {}".format(self._element.id, tag_name)
 
 
 class SizeAndBorders(object):
@@ -332,3 +378,6 @@ class SizeAndBorders(object):
     def __init__(self, width, height, left, top, right, bottom):
         self.size = dict(width=width, height=height)
         self.borders = dict(left=left, top=top, right=right, bottom=bottom)
+
+    def __str__(self):
+        return "SizeAndBorders(size={}, borders={})".format(self.size, self.borders)

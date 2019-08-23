@@ -58,3 +58,24 @@ def test_abort_eyes(eyes, driver):
     eyes.open(driver, "Python | VisualGrid", "TestAbortSeleniumEyes")
     eyes.check_window()
     eyes.abort()
+
+
+@pytest.mark.platform("Linux")
+def test_coordinates_resolving(eyes, driver):
+    driver.get("https://applitools.com/helloworld")
+    driver = eyes.open(
+        driver,
+        "Python Selenium",
+        "TestCoordinatesResolving",
+        {"width": 800, "height": 600},
+    )
+    element = driver.find_element_by_css_selector("button")
+    left = element.location["x"]
+    top = element.location["y"]
+    width = element.size["width"]
+    height = element.size["height"]
+
+    eyes.check("web element", Target.region(element))
+    eyes.check("coordinates", Target.region(Region(left, top, width, height)))
+
+    eyes.close()

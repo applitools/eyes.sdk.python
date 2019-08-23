@@ -3,7 +3,6 @@ import typing
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from applitools.common import (
     AppEnvironment,
@@ -36,6 +35,9 @@ from applitools.selenium.capture.full_page_capture_algorithm import (
     FullPageCaptureAlgorithm,
 )
 from applitools.selenium.capture.image_providers import get_image_provider
+from applitools.selenium.capture.screenshot_utils import (
+    cut_to_viewport_size_if_required,
+)
 from applitools.selenium.region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
@@ -51,7 +53,7 @@ from .positioning import (
     ElementPositionProvider,
     ScrollPositionProvider,
 )
-from .useragent import BrowserNames, UserAgent
+from .useragent import UserAgent
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
@@ -62,7 +64,7 @@ if typing.TYPE_CHECKING:
         ViewPort,
         AnyWebElement,
     )
-    from applitools.core import MatchWindowTask, ScaleProvider
+    from applitools.core import MatchWindowTask, ScaleProvider, PositionMemento
     from .frames import Frame
     from .fluent import SeleniumCheckSettings
     from .eyes import Eyes
@@ -87,15 +89,18 @@ class SeleniumEyes(EyesBase):
     _match_window_task = None  # type: Optional[MatchWindowTask]
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
     _check_frame_or_element = None  # type: bool
-    _original_frame_chain = None  # type: Optional[FrameChain]
+    _original_fc = None  # type: Optional[FrameChain]
     _scroll_root_element = None
     _effective_viewport = None  # type: Optional[Region]
-    _target_element = None
+    _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
     _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
-
+    _switched_to_frame_count = 0  # int
+    _full_region_to_check = None  # type: Optional[Region]
+    _position_memento = None  # type: Optional[PositionMemento]
+    _is_check_region = None  # type: Optional[bool]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
@@ -131,7 +136,7 @@ class SeleniumEyes(EyesBase):
     @property
     def original_frame_chain(self):
         # type: () -> FrameChain
-        return self._original_frame_chain
+        return self._original_fc
 
     @property
     def stitch_content(self):
@@ -221,6 +226,16 @@ class SeleniumEyes(EyesBase):
             return True
         return False
 
+    def _create_position_provider(self, scroll_root_element):
+        stitch_mode = self.configuration.stitch_mode
+        logger.info(
+            "initializing position provider. stitch_mode: {}".format(stitch_mode)
+        )
+        if stitch_mode == StitchMode.Scroll:
+            return ScrollPositionProvider(self.driver, scroll_root_element)
+        elif stitch_mode == StitchMode.CSS:
+            return CSSTranslatePositionProvider(self.driver, scroll_root_element)
+
     def check(self, name, check_settings=None):
         # type: (Text, Optional[SeleniumCheckSettings]) -> MatchResult
         if check_settings is None:
@@ -241,7 +256,7 @@ class SeleniumEyes(EyesBase):
         self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
-        self._original_frame_chain = self.driver.frame_chain.clone()
+        self._original_fc = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_platform:
             # hide scrollbar for main window
@@ -261,15 +276,17 @@ class SeleniumEyes(EyesBase):
 
         self._stitch_content = False
         self._scroll_root_element = None
+        if self._position_memento:
+            self._position_provider.restore_state(self._position_memento)
         self._position_provider = None
-        self._original_frame_chain = None
+        self._original_fc = None
         logger.debug("check - done!")
         return result
 
     def _check_result_flow(self, name, check_settings):
         target_region = check_settings.values.target_region
         result = None
-        if target_region:
+        if target_region and self._switched_to_frame_count == 0:
             logger.debug("have target region")
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
@@ -310,8 +327,33 @@ class SeleniumEyes(EyesBase):
 
     def _check_full_frame_or_element(self, name, check_settings):
         self._check_frame_or_element = True
+
+        def full_frame_or_element_region(check_settings):
+            logger.debug(
+                "check_frame_or_element: {}".format(self._check_frame_or_element)
+            )
+            if self._check_frame_or_element:
+                fc = self._ensure_frame_visible()
+                # FIXME - Scaling should be handled in a single place instead
+                scale_factory = self._update_scaling_params()
+                screenshot_image = self._image_provider.get_image()
+                scale_factory.update_scale_ratio(screenshot_image.width)
+                self.driver.switch_to.frames(fc)
+                screenshot = EyesWebDriverScreenshot.create_viewport(
+                    self.driver, screenshot_image
+                )
+                # TODO HERE
+                logger.debug("replacing region_to_check")
+                self._region_to_check = screenshot.frame_window
+                self._full_region_to_check = Region.EMPTY()
+
+            target_region = check_settings.values.target_region
+            if target_region is None:
+                target_region = Region.EMPTY()
+            return target_region
+
         result = self._check_window_base(
-            RegionProvider(self._full_frame_or_element_region),
+            RegionProvider(lambda: full_frame_or_element_region(check_settings)),
             name,
             False,
             check_settings,
@@ -319,66 +361,6 @@ class SeleniumEyes(EyesBase):
         self._check_frame_or_element = False
         self._region_to_check = None
         return result
-
-    def _ensure_frame_visible(self):
-        logger.debug("scroll_root_element_: []".format(self._scroll_root_element))
-        original_fc = self.driver.frame_chain.clone()
-        fc = self.driver.frame_chain.clone()
-        self.driver.execute_script("window.scrollTo(0,0);")
-        origin_driver = eyes_selenium_utils.get_underlying_driver(self.driver)
-
-        while len(fc) > 0:
-            logger.debug("fc count: {}".format(fc.size))
-            self.driver.switch_to.parent_frame_static(origin_driver.switch_to, fc)
-            self.driver.execute_script("window.scrollTo(0,0);")
-            prev_frame = fc.pop()
-            frame = fc.peek
-            scroll_root_element = None
-            if fc.size == original_fc.size:
-                logger.debug("PositionProvider: {}".format(self.position_provider))
-                self.position_provider.push_state()
-                scroll_root_element = self._scroll_root_element
-            else:
-                if frame:
-                    scroll_root_element = frame.scroll_root_element
-                if not scroll_root_element:
-                    scroll_root_element = self.driver.find_element_by_tag_name("html")
-            logger.debug("scroll_root_element {}".format(scroll_root_element))
-
-            position_provider = self._element_position_provider_from(
-                scroll_root_element
-            )
-            position_provider.set_position(prev_frame.location)
-            reg = Region.from_(Point.ZERO(), prev_frame.inner_size)
-            self._effective_viewport.intersect(reg)
-        self.driver.switch_to.frames(original_fc)
-        return original_fc
-
-    def _element_position_provider_from(self, scroll_root_element):
-        # type: (EyesWebElement) -> PositionProvider
-        position_provider = scroll_root_element.position_provider
-        if not position_provider:
-            position_provider = self._create_position_provider(scroll_root_element)
-            scroll_root_element.position_provider = position_provider
-        logger.debug("position provider: {}".format(position_provider))
-        self.current_frame_position_provider = position_provider
-        return position_provider
-
-    def _full_frame_or_element_region(self):
-        if self._check_frame_or_element:
-            fc = self._ensure_frame_visible()
-            # FIXME - Scaling should be handled in a single place instead
-            scale_factory = self._update_scaling_params()
-            screenshot_image = self._image_provider.get_image()
-            scale_factory.update_scale_ratio(screenshot_image.width)
-            self.driver.switch_to.frames(fc)
-            screenshot = EyesWebDriverScreenshot.create_viewport(
-                self.driver, screenshot_image
-            )
-            # TODO HERE
-            logger.debug("replacing region_to_check")
-            self._region_to_check = screenshot.frame_window
-        return Region.EMPTY()
 
     def _check_frame_fluent(self, name, check_settings):
         fc = self.driver.frame_chain.clone()
@@ -390,10 +372,167 @@ class SeleniumEyes(EyesBase):
         self._target_element = None
         return result
 
+    def _check_element(self, name, check_settings):
+        element = self._target_element  # type: EyesWebElement
+
+        scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+            self.driver, self._scroll_root_element
+        )
+        pos_provider = self._create_position_provider(scroll_root_element)
+
+        self._region_to_check = Region.EMPTY()
+        self._full_region_to_check = Region.EMPTY()
+
+        result = None
+        with eyes_selenium_utils.get_and_restore_state(pos_provider):
+            with self._ensure_element_visible(element):
+                pl = element.location
+                try:
+                    self._check_frame_or_element = True
+                    display_style = element.get_computed_style("display")
+
+                    if self.configuration.hide_scrollbars:
+                        element.hide_scrollbars()
+
+                    size_and_borders = element.size_and_borders
+                    border_widths = size_and_borders.borders
+                    element_size = size_and_borders.size
+
+                    use_entire_size = False
+                    if display_style != "inline" and (
+                        element_size["height"] <= self._effective_viewport["height"]
+                        and element_size["width"] <= self._effective_viewport["width"]
+                    ):
+                        self._element_position_provider = ElementPositionProvider(
+                            self.driver, element
+                        )
+                        use_entire_size = True
+                    else:
+                        self._element_position_provider = None
+
+                    element_region = Region(
+                        pl["x"] + border_widths["left"],
+                        pl["y"] + border_widths["top"],
+                        element_size["width"],
+                        element_size["height"],
+                        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
+                    )
+                    self._region_to_check = element_region
+
+                    if use_entire_size:
+                        self._full_region_to_check = Region.from_(
+                            element_region.location,
+                            self._element_position_provider.get_entire_size(),
+                        )
+                    else:
+                        self._full_region_to_check = Region(
+                            left=element_region.left,
+                            top=element_region.top,
+                            width=element_region.width,
+                            height=element_region.height,
+                        )
+
+                    if not self._effective_viewport.is_size_empty:
+                        self._region_to_check.intersect(self._effective_viewport)
+
+                    result = self._check_window_base(
+                        NULL_REGION_PROVIDER, name, False, check_settings
+                    )
+                except Exception as e:
+                    logger.exception(e)
+                    raise e
+                finally:
+                    if self.configuration.hide_scrollbars:
+                        element.return_to_original_overflow()
+                    self._check_frame_or_element = False
+                    self._region_to_check = None
+                    self._element_position_provider = None
+        return result
+
+    def _check_region(self, name, check_settings):
+        self._is_check_region = True
+
+        def get_region():
+            rect = check_settings.values.target_region
+            if rect is None:
+                if self.driver.is_mobile_platform:
+                    bounds = self._target_element.rect
+                else:
+                    bounds = self._target_element.bounding_client_rect
+                region = Region(
+                    bounds["x"],
+                    bounds["y"],
+                    bounds["width"],
+                    bounds["height"],
+                    coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
+                )
+            else:
+                s = self._target_element.size_and_borders.size
+                b = self._target_element.size_and_borders.borders
+                p = Point.from_(self._target_element.location)
+                p = p.offset(b["left"], b["top"])
+
+                x = p.x + rect.left
+                y = p.y + rect.top
+                w = min(p.x + s["width"], rect.right) - x
+                h = min(p.y + s["height"], rect.bottom) - y
+                region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
+            return region
+
+        result = self._check_window_base(
+            RegionProvider(get_region), name, False, check_settings
+        )
+        self._is_check_region = False
+        return result
+
+    def _ensure_frame_visible(self):
+        logger.debug("scroll_root_element_: {}".format(self._scroll_root_element))
+        current_fc = self.driver.frame_chain.clone()
+        fc = self.driver.frame_chain.clone()
+        self.driver.execute_script("window.scrollTo(0,0);")
+        origin_driver = eyes_selenium_utils.get_underlying_driver(self.driver)
+
+        while len(fc) > 0:
+            logger.debug("fc count: {}".format(fc.size))
+            self.driver.switch_to.parent_frame_static(origin_driver.switch_to, fc)
+            self.driver.execute_script("window.scrollTo(0,0);")
+            child_frame = fc.pop()
+            parent_frame = fc.peek
+            scroll_root_element = None
+            if fc.size == self._original_fc.size:
+                logger.debug("PositionProvider: {}".format(self.position_provider))
+                self._position_memento = self.position_provider.get_state()
+                scroll_root_element = self._scroll_root_element
+            else:
+                if parent_frame:
+                    scroll_root_element = parent_frame.scroll_root_element
+                if not scroll_root_element:
+                    scroll_root_element = self.driver.find_element_by_tag_name("html")
+            logger.debug("scroll_root_element {}".format(scroll_root_element))
+
+            position_provider = self._element_position_provider_from(
+                scroll_root_element
+            )
+            position_provider.set_position(child_frame.location)
+            reg = Region.from_(Point.ZERO(), child_frame.inner_size)
+            self._effective_viewport.intersect(reg)
+        self.driver.switch_to.frames(current_fc)
+        return current_fc
+
+    def _element_position_provider_from(self, scroll_root_element):
+        # type: (EyesWebElement) -> PositionProvider
+        position_provider = scroll_root_element.position_provider
+        if not position_provider:
+            position_provider = self._create_position_provider(scroll_root_element)
+            scroll_root_element.position_provider = position_provider
+        logger.debug("position provider: {}".format(position_provider))
+        self.current_frame_position_provider = position_provider
+        return position_provider
+
     @contextlib.contextmanager
     def _switch_to_frame(self, check_settings):
         # type: (SeleniumCheckSettings) -> Generator
-        switched_to_frame_count = 0
+        self._switched_to_frame_count = 0
         # TODO: refactor frames storing
         frames = {}
         frame_chain = check_settings.values.frame_chain
@@ -405,18 +544,18 @@ class SeleniumEyes(EyesBase):
             cur_frame = self._driver.frame_chain.peek
             cur_frame.scroll_root_element = root_element
             self._try_hide_scrollbars(cur_frame)
-            frames[switched_to_frame_count] = cur_frame
-            switched_to_frame_count += 1
+            frames[self._switched_to_frame_count] = cur_frame
+            self._switched_to_frame_count += 1
 
         yield
 
-        while switched_to_frame_count > 0:
-            cur_frame = frames.get(switched_to_frame_count - 1)
+        while self._switched_to_frame_count > 0:
+            cur_frame = frames.get(self._switched_to_frame_count - 1)
             if cur_frame:
                 self._try_restore_scrollbars(cur_frame)
             self.driver.switch_to.parent_frame()
             self.driver.switch_to.reset_scroll()
-            switched_to_frame_count -= 1
+            self._switched_to_frame_count -= 1
 
     @property
     def scroll_root_element(self):
@@ -640,8 +779,8 @@ class SeleniumEyes(EyesBase):
         return target_element
 
     def _create_full_page_capture_algorithm(self, scale_provider):
-        scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self.driver
+        scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+            self.driver, self._scroll_root_element
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
@@ -656,35 +795,46 @@ class SeleniumEyes(EyesBase):
             self._region_position_compensation,
         )
 
+    @contextlib.contextmanager
     def _try_hide_caret(self):
-        if self.configuration.hide_caret:
+        active_element = None
+        if self.configuration.hide_caret and not self.driver.is_mobile_app:
             try:
-                self.driver.execute_script(
+                active_element = self.driver.execute_script(
                     "var activeElement = document.activeElement; activeElement "
                     "&& activeElement.blur(); return activeElement;"
                 )
+            except WebDriverException as e:
+                logger.warning("Cannot hide caret! \n{}".format(e))
+        yield
+
+        if self.configuration.hide_caret and not self.driver.is_mobile_app:
+            try:
+                self.driver.execute_script("arguments[0].focus();", active_element)
             except WebDriverException as e:
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
-                self.position_provider.push_state()
+                state = self.position_provider.get_state()
 
-        self._try_hide_caret()
+        with self._try_hide_caret():
 
-        scale_provider = self._update_scaling_params()
+            scale_provider = self._update_scaling_params()
 
-        if self._check_frame_or_element:
-            self._last_screenshot = self._entire_element_screenshot(scale_provider)
-        elif self.configuration.force_full_page_screenshot or self._stitch_content:
-            self._last_screenshot = self._full_page_screenshot(scale_provider)
-        else:
-            self._last_screenshot = self._viewport_screenshot(scale_provider)
+            if self._check_frame_or_element and not self.driver.is_mobile_app:
+                self._last_screenshot = self._entire_element_screenshot(scale_provider)
+            elif (
+                self.configuration.force_full_page_screenshot or self._stitch_content
+            ) and not self.driver.is_mobile_app:
+                self._last_screenshot = self._full_page_screenshot(scale_provider)
+            else:
+                self._last_screenshot = self._element_screenshot(scale_provider)
 
         with self._driver.switch_to.frames_and_back(self.original_frame_chain):
             if self.position_provider and not self.driver.is_mobile_platform:
-                self.position_provider.pop_state()
+                self.position_provider.restore_state(state)
 
         return self._last_screenshot
 
@@ -698,26 +848,10 @@ class SeleniumEyes(EyesBase):
             elem_position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
-
-        # TODO: Should be moved in proper place???
-        if self.driver.frame_chain:
-            if (
-                self._user_agent.browser == BrowserNames.Firefox
-                and self._user_agent.browser_major_version < 60
-            ) or self._user_agent.browser in (
-                BrowserNames.Chrome,
-                BrowserNames.HeadlessChrome,
-                BrowserNames.Safari,
-                BrowserNames.Edge,
-                BrowserNames.IE,
-            ):
-                self._region_to_check.left += int(
-                    self._driver.frame_chain.peek.location.x
-                )
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
-            self._region_to_check, None, elem_position_provider
+            self._region_to_check, self._full_region_to_check, elem_position_provider
         )
         return EyesWebDriverScreenshot.create_entire_frame(
             self._driver, image, RectangleSize.from_(image)
@@ -745,38 +879,42 @@ class SeleniumEyes(EyesBase):
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(region, None, self.position_provider)
 
-        return EyesWebDriverScreenshot.create_full_page(
-            self._driver, image, original_frame_position
-        )
+            return EyesWebDriverScreenshot.create_full_page(
+                self._driver, image, original_frame_position
+            )
 
-    def _viewport_screenshot(self, scale_provider):
+    def _element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
-        logger.info("Viewport screenshot requested")
-        self._ensure_element_visible(self._target_element)
+        logger.info("Element screenshot requested")
+        with self._ensure_element_visible(self._target_element):
+            sleep(self.configuration.wait_before_screenshots / 1000.0)
+            image = self._get_scaled_cropped_image(scale_provider)
+            if not self._is_check_region and not self._driver.is_mobile_app:
+                # Some browsers return always full page screenshot (IE).
+                # So we cut such images to viewport size
+                image = cut_to_viewport_size_if_required(self.driver, image)
+            return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
-        sleep(self.configuration.wait_before_screenshots / 1000.0)
+    def _get_scaled_cropped_image(self, scale_provider):
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
-
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
-            logger.info("Scalling")
+            logger.info("Scaling")
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
             self._debug_screenshot_provider.save(image, "scaled")
-
         if not isinstance(self.cut_provider, NullCutProvider):
             logger.info("Cutting")
             image = self.cut_provider.cut(image)
             self._debug_screenshot_provider.save(image, "cutted")
-
-        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+        return image
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
         with switch_to.frames_and_back(self.original_frame_chain):
             try:
-                location = ScrollPositionProvider.get_current_position_static(
+                location = eyes_selenium_utils.get_current_position(
                     self.driver, self.scroll_root_element
                 )
             except WebDriverException as e:
@@ -786,123 +924,41 @@ class SeleniumEyes(EyesBase):
         viewport_bounds = Region.from_(location, self._get_viewport_size())
         return viewport_bounds
 
+    @contextlib.contextmanager
     def _ensure_element_visible(self, element):
-        if self._target_element is None:
-            # No element? we must be checking the window.
-            return None
-        if self.driver.is_mobile_platform:
-            logger.debug("NATIVE context identified, skipping 'ensure element visible'")
-            return None
+        position_provider = None
+        if self._target_element and not self.driver.is_mobile_app:
+            original_fc = self.driver.frame_chain.clone()
+            eyes_element = EyesWebElement(element, self.driver)
+            element_bounds = eyes_element.bounds
 
-        original_fc = self.driver.frame_chain.clone()
-        switch_to = self.driver.switch_to
-        eyes_element = EyesWebElement(element, self.driver)
-        element_bounds = eyes_element.bounds
-
-        current_frame_offset = original_fc.current_frame_offset
-        element_bounds = element_bounds.offset(
-            current_frame_offset.x, current_frame_offset.y
-        )
-        viewport_bounds = self._get_viewport_scroll_bounds()
-        logger.info(
-            "viewport_bounds: {}; element_bounds: {}".format(
-                viewport_bounds, element_bounds
+            current_frame_offset = original_fc.current_frame_offset
+            element_bounds = element_bounds.offset(current_frame_offset)
+            viewport_bounds = self._get_viewport_scroll_bounds()
+            logger.info(
+                "viewport_bounds: {}; element_bounds: {}".format(
+                    viewport_bounds, element_bounds
+                )
             )
-        )
-        if not element_bounds.contains(viewport_bounds):
-            self._ensure_frame_visible()
-            element_location = Point.from_(element.location)
-            if len(original_fc) > 0 and element is not original_fc.peek.reference:
-                switch_to.frames(original_fc)
-                scroll_root_element = self.driver.find_element_by_tag_name("html")
-            else:
-                scroll_root_element = self.scroll_root_element
-            position_provider = self._element_position_provider_from(
-                scroll_root_element
-            )
-            position_provider.set_position(element_location)
-
-    def _create_position_provider(self, scroll_root_element):
-        stitch_mode = self.configuration.stitch_mode
-        logger.info(
-            "initializing position provider. stitch_mode: {}".format(stitch_mode)
-        )
-        if stitch_mode == StitchMode.Scroll:
-            return ScrollPositionProvider(self.driver, scroll_root_element)
-        elif stitch_mode == StitchMode.CSS:
-            return CSSTranslatePositionProvider(self.driver, scroll_root_element)
-
-    def _check_element(self, name, check_settings):
-        element = self._target_element  # type: EyesWebElement
-        self._region_to_check = None
-        scroll_root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self.driver
-        )
-        pos_provider = self._create_position_provider(scroll_root_element)
-        result = None
-        with pos_provider:
-            self._ensure_element_visible(element)
-            pl = element.location
-            try:
-                self._check_frame_or_element = True
-                display_style = element.get_computed_style("display")
-
-                if self.configuration.hide_scrollbars:
-                    # FIXME bug if trying to hide
-                    element.hide_scrollbars()
-
-                size_and_borders = element.size_and_borders
-                border_widths = size_and_borders.borders
-                element_size = size_and_borders.size
-                if display_style != "inline" and (
-                    element_size["height"] <= self._effective_viewport["height"]
-                    and element_size["width"] <= self._effective_viewport["width"]
-                ):
-                    self._element_position_provider = ElementPositionProvider(
-                        self.driver, element
+            if not viewport_bounds.contains(element_bounds):
+                self._ensure_frame_visible()
+                element_location = Point.from_(element.location)
+                if len(original_fc) > 0 and element is not original_fc.peek.reference:
+                    fc = original_fc
+                    self.driver.switch_to.frames(original_fc)
+                    scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+                        self.driver, self._scroll_root_element
                     )
                 else:
-                    self._element_position_provider = None
-
-                element_region = Region(
-                    pl["x"] + border_widths["left"],
-                    pl["y"] + border_widths["top"],
-                    element_size["width"],
-                    element_size["height"],
-                    coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,
+                    fc = self.driver.frame_chain.clone()
+                    scroll_root_element = self.scroll_root_element
+                position_provider = self._element_position_provider_from(
+                    scroll_root_element
                 )
-                self._region_to_check = element_region
+                state = position_provider.get_state()
+                position_provider.set_position(element_location)
 
-                if not self._effective_viewport.is_size_empty:
-                    self._region_to_check.intersect(self._effective_viewport)
-
-                result = self._check_window_base(
-                    NULL_REGION_PROVIDER, name, False, check_settings
-                )
-            except Exception as e:
-                logger.exception(e)
-                raise e
-            finally:
-                if self.configuration.hide_scrollbars:
-                    element.return_to_original_overflow()
-                self._check_frame_or_element = False
-                self._region_to_check = None
-                self._element_position_provider = None
-        return result
-
-    def _check_region(self, name, check_settings):
-        def get_region():
-            location = self._target_element.location
-            size = self._target_element.size
-            return Region(
-                location["x"],
-                location["y"],
-                size["width"],
-                size["height"],
-                coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
-            )
-
-        result = self._check_window_base(
-            RegionProvider(get_region), name, False, check_settings
-        )
-        return result
+        yield
+        if self._target_element and position_provider and not self.driver.is_mobile_app:
+            self.driver.switch_to.frames(fc)
+            position_provider.restore_state(state)

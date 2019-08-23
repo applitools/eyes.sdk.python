@@ -4,7 +4,6 @@ from collections import namedtuple
 from itertools import chain
 
 import pytest
-
 from common_fixtures import *  # noqa
 
 try:
@@ -95,7 +94,10 @@ SUPPORTED_PLATFORMS = [
         name="Windows",
         version="10",
         browsers=COMMON_BROWSERS
-        + [("internet explorer", "latest"), ("MicrosoftEdge", "latest")],
+        + [
+            ("internet explorer", "latest"),
+            # ("MicrosoftEdge", "latest")
+        ],
         extra=None,
     ),
     Platform(name="Linux", version="", browsers=COMMON_BROWSERS, extra=None),
@@ -193,7 +195,7 @@ def _setup_env_vars_for_session():
 
 def pytest_generate_tests(metafunc):
     platform_name = metafunc.config.getoption("platform")
-    browser_name = metafunc.config.getoption("browser")
+    browser_name = metafunc.config.getoption("browser", "chrome")
     headless = metafunc.config.getoption("headless")
 
     _setup_env_vars_for_session()

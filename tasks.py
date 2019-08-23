@@ -165,7 +165,7 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
         "--browser '%(browser)s' {tests} "
         "--ignore={tests}/test_client_sites.py"
     ).format(
-        proc_num="-n 2" if remote else "",
+        proc_num="-n 4" if remote else "",
         headless=headless,
         remote="--remote 1" if remote else "",
         platform=platform,
