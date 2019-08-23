@@ -31,7 +31,7 @@ class FullPageCaptureAlgorithm(object):
     origin_provider = attr.ib()  # type: PositionProvider
     scale_provider = attr.ib()  # type: ScaleProvider
     cut_provider = attr.ib()  # type: CutProvider
-    stitching_overlap = attr.ib()  # type: int
+    stitch_overlap = attr.ib()  # type: int
     image_provider = attr.ib()  # type: ImageProvider
     region_position_compensation = attr.ib()  # type: RegionPositionCompensation
 
@@ -307,7 +307,7 @@ class FullPageCaptureAlgorithm(object):
         # Getting the list of sub-regions composing the whole region (we'll take
         # screenshot for each one).
         image_parts = full_area.get_sub_regions(
-            part_image_size, self.stitching_overlap, pixel_ratio, rect_in_screenshot
+            part_image_size, self.stitch_overlap, pixel_ratio, rect_in_screenshot
         )
         return image_parts
 

@@ -98,7 +98,7 @@ class Configuration(object):
         default=ImageMatchSettings()
     )  # type: ImageMatchSettings
     hide_caret = attr.ib(init=False, default=None)  # type: Optional[bool]
-    stitching_overlap = attr.ib(init=False, default=5)  # type: int
+    stitch_overlap = attr.ib(init=False, default=5)  # type: int
 
     api_key = attr.ib(
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)

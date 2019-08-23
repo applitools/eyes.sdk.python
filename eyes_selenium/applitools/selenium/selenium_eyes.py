@@ -789,7 +789,7 @@ class SeleniumEyes(EyesBase):
             origin_provider,
             scale_provider,
             self._cut_provider,
-            self.configuration.stitching_overlap,
+            self.configuration.stitch_overlap,
             self._image_provider,
             self._region_position_compensation,
         )
