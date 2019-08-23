@@ -138,7 +138,7 @@ class SeleniumEyes(EyesBase):
         return self._original_fc
 
     @property
-    def stitch_content(self):
+    def should_stitch_content(self):
         # type: () -> bool
         return self._stitch_content
 

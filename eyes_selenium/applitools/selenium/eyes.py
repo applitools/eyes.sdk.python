@@ -99,9 +99,9 @@ class Eyes(object):
         return self._current_eyes.full_agent_id
 
     @property
-    def stitch_content(self):
+    def should_stitch_content(self):
         # type: () -> bool
-        return self._current_eyes.stitch_content
+        return self._current_eyes.should_stitch_content
 
     @property
     def original_fc(self):
