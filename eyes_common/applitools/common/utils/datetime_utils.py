@@ -1,5 +1,9 @@
+import itertools
+import time
 from datetime import datetime, timedelta, tzinfo
-from typing import Text
+from typing import Text, Union
+
+from applitools.common import logger
 
 __all__ = ("UTC", "to_rfc1123_datetime", "current_time_in_rfc1123")
 
@@ -61,3 +65,72 @@ def to_rfc1123_datetime(dt):
 def current_time_in_rfc1123():
     # type: () -> Text
     return to_rfc1123_datetime(datetime.now(UTC))
+
+
+def to_sec(millisecond):
+    # type: (Union[int, float]) -> int
+    return int(millisecond / 1000.0)
+
+
+def to_ms(seconds):
+    # type: (Union[int, float]) -> int
+    return int(seconds * 1000)
+
+
+def sleep(time_ms):
+    # type: (int) -> None
+    """Make program sleep for a specified time
+
+    The main API uses milliseconds but python internally uses seconds.
+    So this helper uses for seamlessly conversion.
+
+    Args:
+        time_ms: time in milliseconds
+    """
+    time.sleep(to_sec(time_ms))
+    logger.info("Sleep for {} ms".format(time_ms))
+
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+
+        if "log_time" in kw:
+            name = kw.get("log_name", method.__name__.upper())
+            kw["log_time"][name] = to_ms(te - ts)
+        else:
+            logger.debug("%r  %2.2f ms" % (method.__name__, to_ms(te - ts)))
+        return result
+
+    return timed
+
+
+def retry(delays=(0, 100, 500), exception=Exception, report=lambda *args: None):
+    """
+    This is a Python decorator which helps implementing an aspect oriented
+    implementation of a retrying of certain steps which might fail sometimes.
+    https://code.activestate.com/recipes/580745-retry-decorator-in-python/
+    """
+
+    def wrapper(function):
+        def wrapped(*args, **kwargs):
+            problems = []
+            for delay in itertools.chain(delays, [None]):
+                try:
+                    return function(*args, **kwargs)
+                except exception as problem:
+                    problems.append(problem)
+                    if delay is None:
+                        report("retryable failed definitely:", problems)
+                        raise
+                    else:
+                        report(
+                            "retryable failed:", problem, "-- delaying for %ds" % delay
+                        )
+                        sleep(delay)
+
+        return wrapped
+
+    return wrapper

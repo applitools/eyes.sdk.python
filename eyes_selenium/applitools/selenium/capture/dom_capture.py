@@ -9,7 +9,7 @@ import requests
 import tinycss2
 
 from applitools.common import logger
-from applitools.common.utils import general_utils
+from applitools.common.utils import datetime_utils, general_utils
 from applitools.common.utils.compat import urljoin
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider
@@ -149,7 +149,7 @@ _ARGS_OBJ = {
 CSS_DOWNLOAD_TIMEOUT = 3  # Secs
 
 
-@general_utils.timeit
+@datetime_utils.timeit
 def get_full_window_dom(driver, return_as_dict=False):
     # type: (EyesWebDriver, bool) -> tp.Union[str, dict]
 
@@ -228,7 +228,7 @@ def _loop(driver, dom_tree):
     return iterate_child_nodes(node.child_nodes)
 
 
-@general_utils.timeit
+@datetime_utils.timeit
 def _get_frame_bundled_css(driver):
     # type: (EyesWebDriver) -> tp.Text
     base_url = driver.current_url  # type: ignore
@@ -252,7 +252,7 @@ def _get_frame_bundled_css(driver):
 def _process_raw_css_node(node, minimize_css=True):
     # type: (CssNode, bool) -> tp.Text
 
-    @general_utils.retry()
+    @datetime_utils.retry()
     def get_css(url):
         if url.startswith("blob:"):
             logger.warning("Passing blob URL: {}".format(url))

@@ -1,6 +1,5 @@
 import contextlib
 import typing
-from time import sleep
 
 from selenium.common.exceptions import WebDriverException
 
@@ -14,7 +13,7 @@ from applitools.common import (
 )
 from applitools.common.config import SeleniumConfiguration, StitchMode
 from applitools.common.geometry import Point
-from applitools.common.utils import image_utils
+from applitools.common.utils import datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
     ContextBasedScaleProvider,
@@ -887,7 +886,7 @@ class SeleniumEyes(EyesBase):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
-            sleep(self.configuration.wait_before_screenshots / 1000.0)
+            datetime_utils.sleep(self.configuration.wait_before_screenshots)
             image = self._get_scaled_cropped_image(scale_provider)
             if not self._is_check_region and not self._driver.is_mobile_app:
                 # Some browsers return always full page screenshot (IE).
