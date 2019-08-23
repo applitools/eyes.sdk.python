@@ -102,7 +102,7 @@ _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
-_SLEEP_MS = 1
+_SLEEP_MS = 1000
 _RETRIES = 3
 
 
