@@ -279,7 +279,7 @@ class EyesBase(_EyesBaseAbstract):
         del self.configuration.properties[:]
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         """
         Returns whether the session is currently running.
@@ -510,7 +510,7 @@ class EyesBase(_EyesBaseAbstract):
         raise EyesError("eyes.open_base() failed")
 
     def _validate_session_open(self):
-        if self.is_opened:
+        if self.is_open:
             self.abort()
             raise EyesError("A test is already running")
 

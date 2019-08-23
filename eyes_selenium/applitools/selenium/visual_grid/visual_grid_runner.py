@@ -127,7 +127,7 @@ class VisualGridRunner(object):
 
     def get_all_test_results(self, raise_ex=True):
         # type: (bool) -> TestResultSummary
-        while not any(e.is_opened for e in self.all_eyes):
+        while not any(e.is_open for e in self.all_eyes):
             datetime_utils.sleep(500)
         test_list = self.process_test_list(
             [test for e in self.all_eyes for test in e.test_list], raise_ex

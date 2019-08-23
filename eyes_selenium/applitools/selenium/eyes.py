@@ -62,7 +62,7 @@ class Eyes(object):
             raise ValueError("Wrong runner")
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         return self._is_opened
 
@@ -300,7 +300,7 @@ class Eyes(object):
         """
         if self.configuration.is_disabled:
             return MatchResult()
-        if not self.is_opened:
+        if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)

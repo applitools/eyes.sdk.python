@@ -74,7 +74,7 @@ class VisualGridEyes(object):
         self.test_list = []  # type: List[RunningTest]
 
     @property
-    def is_opened(self):
+    def is_open(self):
         return self._is_opened
 
     @property
