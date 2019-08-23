@@ -43,7 +43,7 @@ from .match import (
 from .match_window_data import MatchWindowData, Options
 from .metadata import AppEnvironment, RunningSession, SessionStartInfo
 from .server import FailureReports, SessionType
-from .test_results import TestResults, TestResultSummary
+from .test_results import TestResults, TestResultsSummary
 from .visual_grid import (
     ChromeEmulationInfo,
     DeviceName,
