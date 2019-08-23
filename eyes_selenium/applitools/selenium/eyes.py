@@ -297,9 +297,7 @@ class Eyes(object):
             raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)
 
-    def check_window(
-        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS
-    ):
+    def check_window(self, tag=None, match_timeout=-1):
         # type: (Optional[Text], int) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected output.
@@ -315,7 +313,7 @@ class Eyes(object):
         self,
         region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
         tag=None,  # type: Optional[Text]
-        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS,  # type: int
+        match_timeout=-1,  # type: int
         stitch_content=False,  # type: bool
     ):
         # type: (...) -> MatchResult

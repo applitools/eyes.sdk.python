@@ -21,11 +21,11 @@ __all__ = ("SeleniumConfiguration",)
 
 @attr.s
 class SeleniumConfiguration(Configuration):
-    DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
+    _DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 
     force_full_page_screenshot = attr.ib(default=False)  # type: bool
     wait_before_screenshots = attr.ib(
-        default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS
+        default=_DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS
     )  # type: int  # ms
     stitch_mode = attr.ib(default=StitchMode.Scroll)  # type: StitchMode
     hide_scrollbars = attr.ib(default=False)  # type: bool

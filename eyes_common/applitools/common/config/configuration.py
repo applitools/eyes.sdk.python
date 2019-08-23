@@ -15,7 +15,8 @@ from applitools.common.utils.json_utils import JsonInclude
 __all__ = ("BatchInfo", "Configuration")
 
 MINIMUM_MATCH_TIMEOUT_MS = 600
-DEFAULT_TIMEOUT_MS = 60 * 5 * 1000
+DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
+DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
@@ -53,8 +54,6 @@ class BatchInfo(object):
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
-
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
         factory=lambda: os.getenv("APPLITOOLS_BRANCH", None)
@@ -104,7 +103,7 @@ class Configuration(object):
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
-    timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # type: int # ms
+    timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
     def _validate1(self, attribute, value):
