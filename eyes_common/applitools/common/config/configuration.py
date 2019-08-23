@@ -137,8 +137,3 @@ class Configuration(object):
     def short_description(self):
         # type: () -> Text
         return "{} of {}".format(self.test_name, self.app_name)
-
-    @staticmethod
-    def all_fields():
-        # type: () -> List[Text]
-        return list(attr.fields_dict(Configuration).keys())

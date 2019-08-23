@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import hashlib
 import typing
+import attr
 
 from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
@@ -107,3 +108,18 @@ def proxy_to(proxy_obj_name, fields):
         return cls
 
     return dec
+
+
+def all_fields(obj):
+    # type: (Any) -> List[Text]
+    """Get all public fields from the object
+
+    Args:
+        obj: any kind object
+
+    Returns:
+        list of attributes and methods names
+    """
+    if attr.has(obj.__class__):
+        return list(attr.fields_dict(obj).keys())
+    return []

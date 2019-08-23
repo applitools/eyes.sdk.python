@@ -4,7 +4,7 @@ import typing
 
 from applitools.common import EyesError, SeleniumConfiguration, logger
 from applitools.common.utils import argument_guard
-from applitools.common.utils.general_utils import proxy_to
+from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.selenium import eyes_selenium_utils
 
 from .fluent import Target
@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to("configuration", SeleniumConfiguration.all_fields())
+@proxy_to("configuration", all_fields(SeleniumConfiguration))
 class Eyes(object):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
