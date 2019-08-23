@@ -21,7 +21,7 @@ from .positioning import (
     NULL_REGION_PROVIDER,
     InvalidPositionProvider,
     NullRegionProvider,
-    PositionMomento,
+    PositionMemento,
     PositionProvider,
     RegionProvider,
 )
@@ -44,7 +44,7 @@ __all__ = (
     "ScaleProvider",
     "EyesBase",
     "PositionProvider",
-    "PositionMomento",
+    "PositionMemento",
     "InvalidPositionProvider",
     "RegionProvider",
     "FixedCutProvider",

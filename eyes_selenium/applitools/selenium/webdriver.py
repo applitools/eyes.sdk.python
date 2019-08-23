@@ -80,6 +80,7 @@ class _EyesSwitchTo(object):
     """
 
     PARENT_FRAME = 1
+    _position_memento = None
 
     def __init__(self, driver, switch_to):
         # type: (EyesWebDriver, SwitchTo) -> None
@@ -92,7 +93,7 @@ class _EyesSwitchTo(object):
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
-            driver, eyes_selenium_utils.current_frame_scroll_root_element(driver)
+            driver, eyes_selenium_utils.curr_frame_scroll_root_element(driver)
         )
 
     @contextlib.contextmanager
@@ -144,8 +145,10 @@ class _EyesSwitchTo(object):
         for frame in frame_chain:
             self.frame(frame.reference)
             logger.debug(
-                "frame.Reference: %s ; frame.ScrollRootElement: %s"
-                % (frame.reference.id, frame.scroll_root_element.id)
+                "frame.Reference: {}; frame.ScrollRootElement: {}".format(
+                    getattr(frame.reference, "id", None),
+                    getattr(frame.scroll_root_element, "id", None),
+                )
             )
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
@@ -184,23 +187,22 @@ class _EyesSwitchTo(object):
         :param target_frame: The element about to be switched to.
         """
         argument_guard.not_none(target_frame)
-        pl = target_frame.location
 
         size_and_borders = target_frame.size_and_borders
         borders = size_and_borders.borders
         frame_inner_size = size_and_borders.size
+        bounds = target_frame.bounding_client_rect
 
-        content_location = Point(pl["x"] + borders["left"], pl["y"] + borders["top"])
-        sp = ScrollPositionProvider(
-            self._driver, self._driver.find_element_by_tag_name("html")
+        content_location = Point(
+            bounds["x"] + borders["left"], bounds["y"] + borders["top"]
         )
-        original_location = sp.get_current_position()
-        sp.set_position(original_location)
+        original_location = target_frame.scroll_location
+
         frame = Frame(
-            target_frame,
-            content_location,
-            target_frame.size,
-            frame_inner_size,
+            reference=target_frame,
+            location=content_location,
+            outer_size=RectangleSize.from_(target_frame.size),
+            inner_size=RectangleSize.from_(frame_inner_size),
             parent_scroll_position=original_location,
         )
         self._driver.frame_chain.push(frame)
@@ -215,12 +217,12 @@ class _EyesSwitchTo(object):
             for frame in frame_chain_parent:
                 switch_to.frame(frame.reference)
 
+    @contextlib.contextmanager
     def frames_do_scroll(self, frame_chain):
         self.default_content()
-        root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self._driver
-        )
+        root_element = eyes_selenium_utils.curr_frame_scroll_root_element(self._driver)
         scroll_provider = ScrollPositionProvider(self._driver, root_element)
+        self._position_memento = scroll_provider.get_state()
         for frame in frame_chain:
             logger.debug("Scrolling by parent scroll position...")
             frame_location = frame.location
@@ -234,8 +236,9 @@ class _EyesSwitchTo(object):
         return self._driver
 
     def reset_scroll(self):
-        if self._scroll_position.states:
-            self._scroll_position.pop_state()
+        if self._position_memento:
+            self._scroll_position.restore_state(self._position_memento)
+            self._position_memento = None
 
 
 @proxy_to(
