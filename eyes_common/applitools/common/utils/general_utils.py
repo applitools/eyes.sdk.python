@@ -1,11 +1,7 @@
 from __future__ import absolute_import
 
 import hashlib
-import itertools
-import time
 import typing
-
-from applitools.common import logger
 
 from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
@@ -56,51 +52,6 @@ def is_absolute_url(url):
 
 def is_url_with_scheme(url):
     return bool(urlparse(url).scheme)
-
-
-def timeit(method):
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-
-        if "log_time" in kw:
-            name = kw.get("log_name", method.__name__.upper())
-            kw["log_time"][name] = int((te - ts) * 1000)
-        else:
-            logger.debug("%r  %2.2f ms" % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
-
-
-def retry(delays=(0, 1, 5), exception=Exception, report=lambda *args: None):
-    """
-    This is a Python decorator which helps implementing an aspect oriented
-    implementation of a retrying of certain steps which might fail sometimes.
-    https://code.activestate.com/recipes/580745-retry-decorator-in-python/
-    """
-
-    def wrapper(function):
-        def wrapped(*args, **kwargs):
-            problems = []
-            for delay in itertools.chain(delays, [None]):
-                try:
-                    return function(*args, **kwargs)
-                except exception as problem:
-                    problems.append(problem)
-                    if delay is None:
-                        report("retryable failed definitely:", problems)
-                        raise
-                    else:
-                        report(
-                            "retryable failed:", problem, "-- delaying for %ds" % delay
-                        )
-                        time.sleep(delay)
-
-        return wrapped
-
-    return wrapper
 
 
 def get_sha256_hash(content):

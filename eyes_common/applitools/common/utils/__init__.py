@@ -1,4 +1,4 @@
-from . import argument_guard, compat, image_utils  # noqa
+from . import argument_guard, compat, datetime_utils, image_utils  # noqa
 from .compat import (  # type: ignore # noqa
     ABC,
     gzip_compress,
@@ -18,4 +18,4 @@ from .datetime_utils import (  # type: ignore # noqa
 )
 from .general_utils import cached_property  # noqa
 
-__all__ = compat.__all__ + ("image_utils", "argument_guard")  # noqa
+__all__ = compat.__all__ + ("image_utils", "argument_guard", "datetime_utils")  # noqa

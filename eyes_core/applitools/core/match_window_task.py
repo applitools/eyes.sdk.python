@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import time
 import typing
 from datetime import datetime
 
@@ -9,7 +8,7 @@ from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import image_utils
+from applitools.common.utils import datetime_utils, image_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
@@ -77,7 +76,7 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    MATCH_INTERVAL_SEC = 0.5
+    _MATCH_INTERVAL_MS = 500  # ms
 
     def __init__(
         self,
@@ -132,7 +131,6 @@ class MatchWindowTask(object):
             retry_timeout_ms = self._default_retry_timeout_ms
         logger.debug("retry_timeout = {} ms".format(retry_timeout_ms))
 
-        retry_timeout_sec = int(retry_timeout_ms / 1000)
         screenshot = self._take_screenshot(
             user_inputs,
             region,
@@ -140,7 +138,7 @@ class MatchWindowTask(object):
             should_run_once_on_timeout,
             ignore_mismatch,
             check_settings,
-            retry_timeout_sec,
+            retry_timeout_ms,
         )
         if ignore_mismatch:
             return self._match_result
@@ -252,29 +250,24 @@ class MatchWindowTask(object):
         should_run_once_on_timeout,  # type: bool
         ignore_mismatch,  # type: bool
         check_settings,  # type: CheckSettings
-        retry_timeout_sec,  # type: int
+        retry_timeout,  # type: int
     ):
         # type: (...) -> EyesScreenshot
 
         time_start = datetime.now()
-        if retry_timeout_sec == 0 or should_run_once_on_timeout:
+        if retry_timeout == 0 or should_run_once_on_timeout:
             if should_run_once_on_timeout:
-                time.sleep(retry_timeout_sec)
+                datetime_utils.sleep(retry_timeout)
 
             screenshot = self._try_take_screenshot(
                 user_inputs, region, tag, ignore_mismatch, check_settings
             )
         else:
             screenshot = self._retry_taking_screenshot(
-                user_inputs,
-                region,
-                tag,
-                ignore_mismatch,
-                check_settings,
-                retry_timeout_sec,
+                user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
             )
         time_end = datetime.now()
-        summary_ms = (time_end - time_start).seconds * 1000
+        summary_ms = datetime_utils.to_ms((time_end - time_start).seconds)
         logger.debug(
             "MatchWindowTask._take_screenshot completed in {} ms".format(summary_ms)
         )
@@ -324,7 +317,7 @@ class MatchWindowTask(object):
         # type: (...) -> EyesScreenshot
 
         start = datetime.now()  # Start the retry timer.
-        retry = (datetime.now() - start).seconds
+        retry = datetime_utils.to_ms((datetime.now() - start).seconds)
 
         # The match retry loop.
         screenshot = self._taking_screenshot_loop(
@@ -351,17 +344,17 @@ class MatchWindowTask(object):
         tag,  # type: Text
         ignore_mismatch,  # type: bool
         check_settings,  # type: CheckSettings
-        retry_timeout_sec,  # type: int
-        retry_sec,  # type: int
+        retry_timeout_ms,  # type: int
+        retry_ms,  # type: int
         start,  # type: datetime
         screenshot=None,  # type: Optional[EyesScreenshot]
     ):
         # type: (...) -> Optional[EyesScreenshot]
 
-        if retry_sec >= retry_timeout_sec:
+        if retry_ms >= retry_timeout_ms:
             return screenshot
 
-        time.sleep(self.MATCH_INTERVAL_SEC)
+        datetime_utils.sleep(self._MATCH_INTERVAL_MS)
 
         new_screenshot = self._try_take_screenshot(
             user_inputs,
@@ -373,15 +366,15 @@ class MatchWindowTask(object):
         if self._match_result.as_expected:
             return new_screenshot
 
-        retry_sec = (start - datetime.now()).seconds
+        retry_ms = (start - datetime.now()).seconds
         return self._taking_screenshot_loop(
             user_inputs,
             region,
             tag,
             ignore_mismatch,
             check_settings,
-            retry_timeout_sec,
-            retry_sec,
+            retry_timeout_ms,
+            retry_ms,
             start,
             new_screenshot,
         )
