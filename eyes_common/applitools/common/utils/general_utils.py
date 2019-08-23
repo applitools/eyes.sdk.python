@@ -4,7 +4,6 @@ import hashlib
 import itertools
 import time
 import typing
-from datetime import timedelta, tzinfo
 
 from applitools.common import logger
 
@@ -19,27 +18,6 @@ if typing.TYPE_CHECKING:
     from typing import Callable, Any, List, Text
 
     T = typing.TypeVar("T")
-
-
-class _UtcTz(tzinfo):
-    """
-    A UTC timezone class which is tzinfo compliant.
-    """
-
-    _ZERO = timedelta(0)
-
-    def utcoffset(self, dt):
-        return _UtcTz._ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return _UtcTz._ZERO
-
-
-# Constant representing UTC
-UTC = _UtcTz()
 
 
 def use_default_if_none_factory(default_obj, obj):
