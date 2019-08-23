@@ -131,8 +131,3 @@ class Configuration(object):
     def clone(self):
         # type: () -> Configuration
         return copy(self)
-
-    @property
-    def short_description(self):
-        # type: () -> Text
-        return "{} of {}".format(self.test_name, self.app_name)

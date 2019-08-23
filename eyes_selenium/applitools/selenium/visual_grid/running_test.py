@@ -209,10 +209,11 @@ class RunningTest(object):
         region_to_check,
     ):
         # type: (Dict[str, Any],Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
+        short_description = "{} of {}".format(
+            self.configuration.test_name, self.configuration.app_name
+        )
         render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(
-                self.configuration.short_description, tag
-            ),
+            name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
             running_test=self,
             resource_cache=visual_grid_manager.resource_cache,
