@@ -1,21 +1,21 @@
 language: python
 services:
-  - xvfb
+    - xvfb
 install:
     - pip install -U tox
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
     - sleep 10 # give webdriver some time to start
-    - export APPLITOOLS_BATCH_ID=`uuidgen -t`
+    - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
 script:
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
 stages:
-    - lint
-    - unit-tests
-    - integration-tests
-    - eyes-images-tests
+#    - lint
+#    - unit-tests
+#    - integration-tests
+#    - eyes-images-tests
     - functional-tests
 jobs:
     include:
@@ -46,21 +46,44 @@ jobs:
               chrome: stable
               firefox: latest
           env:
-              - TOX_ENV=selenium-on-linux
-        - python: 3.6
-          env:
-              - TOX_ENV=images
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-windows-remote
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-on-macos-remote
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-appium-remote
-        - python: 3.6
+              - TOX_ENV=selenium
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=images
+        - os: windows
+          language: sh
+          python: "3.7"
+          before_install:
+               - choco install python3
+               - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+               - python -m pip install --upgrade pip wheel
           addons:
               chrome: stable
+              firefox: latest
           env:
-              - TOX_ENV=visualgrid
+              - TOX_ENV=selenium
+        - os: osx
+          language: sh
+          python: "3.7"
+          before_install:
+              - python3 --version
+              - python3 -m pip install --upgrade pip wheel
+          install:
+              - sudo safaridriver --enable
+              - pip3 install -U tox
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+          script:
+              - echo $APPLITOOLS_BATCH_ID
+              - python3 -m tox -e $TOX_ENV
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium-appium-remote
+#        - python: 3.6
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=visualgrid

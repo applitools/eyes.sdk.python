@@ -100,7 +100,7 @@ SUPPORTED_PLATFORMS = [
     Platform(name="Linux", version="", browsers=COMMON_BROWSERS, extra=None),
     Platform(
         name="macOS",
-        version="10.13",
+        version="10.14",
         browsers=COMMON_BROWSERS + [("safari", "latest")],
         extra=None,
     ),
@@ -166,7 +166,7 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
         sys2platform_name = {
             "linux": "Linux",
             "linux2": "Linux",
-            "darwin": "macOS 10.13",
+            "darwin": "macOS 10.14",
             "win32": "Windows 10",
         }
         platform_name = sys2platform_name[sys.platform]

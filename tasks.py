@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from os import path
 
 from invoke import task
@@ -161,20 +162,24 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
     pattern = (
         "pytest {proc_num} --headless {headless} {"
         "remote} "
-        "--platform '{platform}' "
         "--browser '%(browser)s' {tests} "
-        "--ignore={tests}/test_client_sites.py"
+        "--ignore={tests}/test_client_sites.py "
+        "--ignore={tests}/test_dom_capture.py"
     ).format(
         proc_num="-n 4" if remote else "",
         headless=headless,
         remote="--remote 1" if remote else "",
-        platform=platform,
+        platform="--platform '{}'".format(platform) if platform else "",
         tests=sel_tests,
     )
+
+    if platform is None:
+        platform = sys.platform
+    platform = platform.lower()
     browsers = ["firefox", "chrome"]
-    if platform.lower().startswith("mac"):
+    if platform.startswith("mac") or platform.startswith("darwin"):
         browsers.append("safari")
-    elif platform.lower().startswith("windows"):
+    elif platform.startswith("win"):
         browsers.append("internet explorer")
         browsers.append("MicrosoftEdge")
 
