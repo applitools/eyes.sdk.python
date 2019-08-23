@@ -538,7 +538,7 @@ def get_default_content_scroll_position(current_frames, driver):
             driver, curr_frame_scroll_root_element(driver)
         )
     else:
-        current_fc = driver.eyes.original_frame_chain
+        current_fc = driver.eyes.original_fc
         with driver.switch_to.frames_and_back(current_fc):
             scroll_position = get_current_position(
                 driver, curr_frame_scroll_root_element(driver)

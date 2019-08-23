@@ -104,9 +104,16 @@ class Eyes(object):
         return self._current_eyes.stitch_content
 
     @property
-    def original_frame_chain(self):
-        # type: () -> FrameChain
-        return self._current_eyes.original_frame_chain
+    def original_fc(self):
+        # type: () -> Optional[FrameChain]
+        """ Gets original frame chain
+
+        Before check() call we save original frame chain
+
+        Returns:
+            Frame chain saved before check() call
+        """
+        return self._current_eyes.original_fc
 
     # def rotation(self):
     #     if not self._is_visual_grid_eyes:

@@ -133,7 +133,7 @@ class SeleniumEyes(EyesBase):
         return self._config_provider.configuration
 
     @property
-    def original_frame_chain(self):
+    def original_fc(self):
         # type: () -> FrameChain
         return self._original_fc
 
@@ -814,7 +814,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
-        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self._original_fc):
             if self.position_provider and not self.driver.is_mobile_platform:
                 state = self.position_provider.get_state()
 
@@ -831,7 +831,7 @@ class SeleniumEyes(EyesBase):
             else:
                 self._last_screenshot = self._element_screenshot(scale_provider)
 
-        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self._original_fc):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.restore_state(state)
 
@@ -865,7 +865,7 @@ class SeleniumEyes(EyesBase):
         else:
             original_frame_position = Point.ZERO()
 
-        with self.driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self.driver.switch_to.frames_and_back(self._original_fc):
             location = self.scroll_root_element.location
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
@@ -911,7 +911,7 @@ class SeleniumEyes(EyesBase):
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
-        with switch_to.frames_and_back(self.original_frame_chain):
+        with switch_to.frames_and_back(self._original_fc):
             try:
                 location = eyes_selenium_utils.get_current_position(
                     self.driver, self.scroll_root_element
