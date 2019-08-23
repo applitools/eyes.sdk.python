@@ -151,12 +151,6 @@ class RenderBrowserInfo(object):
         return 0
 
     @property
-    def size_mode(self):
-        # type: () -> Text
-        # TODO: Add more size modes
-        return "full-page"
-
-    @property
     def platform(self):
         # type: () -> Text
         if self.browser_type in [
