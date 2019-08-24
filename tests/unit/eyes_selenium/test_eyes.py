@@ -2,7 +2,8 @@ import datetime
 import json
 
 import pytest
-from applitools.common import BatchInfo, EyesError, MatchLevel, StitchMode
+from applitools.common import BatchInfo, EyesError, MatchLevel
+from applitools.common.selenium import StitchMode
 from applitools.common.utils import json_utils
 from applitools.core import (
     FixedCutProvider,

@@ -1,4 +1,4 @@
-from . import (
+from . import (  # noqa
     app_output,
     capture,
     config,
@@ -13,9 +13,10 @@ from . import (
     test_results,
     visual_grid,
 )
-from .app_output import AppOutput
-from .capture import EyesScreenshot
-from .errors import (
+from .app_output import AppOutput  # noqa
+from .capture import EyesScreenshot  # noqa
+from .config import BatchInfo, Configuration  # noqa
+from .errors import (  # noqa
     CoordinatesTypeConversionError,
     DiffsFoundError,
     EyesError,
@@ -24,15 +25,15 @@ from .errors import (
     OutOfBoundsError,
     TestFailedError,
 )
-from .geometry import (
+from .geometry import (  # noqa
     CoordinatesType,
     Point,
     RectangleSize,
     Region,
     SubregionForStitching,
 )
-from .logger import FileLogger, NullLogger, StdoutLogger
-from .match import (
+from .logger import FileLogger, NullLogger, StdoutLogger  # noqa
+from .match import (  # noqa
     ExactMatchSettings,
     FloatingBounds,
     FloatingMatchSettings,
@@ -40,11 +41,12 @@ from .match import (
     MatchLevel,
     MatchResult,
 )
-from .match_window_data import MatchWindowData, Options
-from .metadata import AppEnvironment, RunningSession, SessionStartInfo
-from .server import FailureReports, SessionType
-from .test_results import TestResults, TestResultsSummary
-from .visual_grid import (
+from .match_window_data import MatchWindowData, Options  # noqa
+from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
+from .selenium import StitchMode  # noqa
+from .server import FailureReports, SessionType  # noqa
+from .test_results import TestResults, TestResultsSummary  # noqa
+from .visual_grid import (  # noqa
     ChromeEmulationInfo,
     DeviceName,
     EmulationDevice,
