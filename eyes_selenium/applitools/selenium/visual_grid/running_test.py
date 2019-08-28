@@ -201,14 +201,15 @@ class RunningTest(object):
 
     def _render_task(
         self,
-        script_result,
-        tag,
-        visual_grid_manager,
-        region_selectors,
-        size_mode,
-        region_to_check,
+        script_result,  # type: Dict[Text, Any]
+        tag,  # type: Text
+        visual_grid_manager,  # type: VisualGridRunner
+        region_selectors,  # type: List
+        size_mode,  # type: Text
+        region_to_check,  # type: Region
+        script_hooks,  # type: Dict[Text, Any]
     ):
-        # type: (Dict[str, Any],Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
+        # type: (...)->RenderTask
         short_description = "{} of {}".format(
             self.configuration.test_name, self.configuration.app_name
         )
@@ -223,6 +224,7 @@ class RunningTest(object):
             region_selectors=region_selectors,
             size_mode=size_mode,
             region_to_check=region_to_check,
+            script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
         )
         logger.debug("RunningTest %s" % render_task.name)

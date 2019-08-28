@@ -30,6 +30,8 @@ if TYPE_CHECKING:
         CssSelector,
     )
 
+BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
+
 
 @attr.s
 class FrameLocator(object):
@@ -174,6 +176,11 @@ class SeleniumCheckSettings(CheckSettings):
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
+        return self
+
+    def before_render_screenshot_hook(self, hook):
+        # type: (Text) -> SeleniumCheckSettings
+        self.values.script_hooks[BEFORE_CAPTURE_SCREENSHOT] = hook
         return self
 
     def _region_provider_from(self, region, method_name):
