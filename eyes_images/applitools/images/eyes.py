@@ -49,11 +49,11 @@ class Eyes(EyesBase):
         return ""
 
     @staticmethod
-    def get_viewport_size_static():
+    def get_viewport_size():
         pass
 
     @staticmethod
-    def set_viewport_size_static(value):
+    def set_viewport_size(value):
         pass
 
     def _get_viewport_size(self):

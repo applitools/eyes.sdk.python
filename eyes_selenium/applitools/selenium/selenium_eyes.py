@@ -103,7 +103,7 @@ class SeleniumEyes(EyesBase):
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
-    def set_viewport_size_static(driver, size=None, viewportsize=None):
+    def set_viewport_size(driver, size=None, viewportsize=None):
         # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
         assert driver is not None
         if size is None and viewportsize is None:
@@ -113,7 +113,7 @@ class SeleniumEyes(EyesBase):
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     @staticmethod
-    def get_viewport_size_static(driver):
+    def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
@@ -620,7 +620,7 @@ class SeleniumEyes(EyesBase):
     def _get_viewport_size(self):
         size = self.configuration.viewport_size
         if size is None:
-            size = self.get_viewport_size_static(self._driver)
+            size = self.get_viewport_size(self._driver)
         return size
 
     def _ensure_viewport_size(self):
@@ -642,7 +642,7 @@ class SeleniumEyes(EyesBase):
             self.driver.switch_to.default_content()
 
             try:
-                self.set_viewport_size_static(self._driver, size)
+                self.set_viewport_size(self._driver, size)
                 self._effective_viewport = Region(
                     0,
                     0,

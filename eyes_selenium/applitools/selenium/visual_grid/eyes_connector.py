@@ -94,10 +94,10 @@ class EyesConnector(EyesBase):
     def _try_capture_dom(self):
         return None
 
-    def get_viewport_size_static(self):
+    def get_viewport_size(self):
         return None
 
-    def set_viewport_size_static(self, size):
+    def set_viewport_size(self, size):
         return None
 
     def _get_viewport_size(self):
