@@ -7,15 +7,15 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from applitools.common import (
+    AppEnvironment,
     AppOutput,
+    BatchInfo,
     Configuration,
     ImageMatchSettings,
+    MatchLevel,
     RunningSession,
     SessionStartInfo,
     SessionType,
-    BatchInfo,
-    AppEnvironment,
-    MatchLevel,
 )
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
@@ -72,13 +72,7 @@ def configured_connector(custom_eyes_server):
 
 @pytest.fixture(scope="function")
 def started_connector(configured_connector):
-    configured_connector._request = configured_connector._request_factory.create(
-        server_url=configured_connector.server_url,
-        api_key=configured_connector.api_key,
-        timeout_sec=configured_connector.timeout_sec,
-    )
     configured_connector._is_session_started = True
-
     return configured_connector
 
 
