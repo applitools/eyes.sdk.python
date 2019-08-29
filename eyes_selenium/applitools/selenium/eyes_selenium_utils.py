@@ -12,10 +12,13 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Point, RectangleSize, logger
 
 if tp.TYPE_CHECKING:
-    from typing import Text, Optional, Any, Iterator, Union
+    from typing import Text, Optional, Any, Union, Iterator
+    from applitools.selenium.frames import FrameChain
+    from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
     from applitools.selenium.fluent import SeleniumCheckSettings, FrameLocator
+
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
@@ -35,6 +38,8 @@ __all__ = (
     "hide_scrollbars",
     "set_overflow",
     "parse_location_string",
+    "get_cur_position_provider",
+    "get_updated_scroll_position",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -440,7 +445,16 @@ def parse_location_string(position):
     xy = position.split(";")
     if len(xy) != 2:
         raise WebDriverException("Could not get scroll position!")
-    return Point(float(xy[0]), float(xy[1]))
+    return Point(round(float(xy[0])), round(float(xy[1])))
+
+
+def get_current_position(driver, element):
+    # type: (AnyWebDriver, AnyWebElement) -> Point
+    element = get_underlying_webelement(element)
+    xy = driver.execute_script(
+        "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
+    )
+    return parse_location_string(xy)
 
 
 def scroll_root_element_from(driver, container=None):
@@ -469,13 +483,53 @@ def scroll_root_element_from(driver, container=None):
     return scroll_root_element
 
 
-def current_frame_scroll_root_element(driver):
-    # type: (EyesWebDriver) -> EyesWebElement
+def current_frame_scroll_root_element(driver, scroll_root_element=None):
+    # type: (EyesWebDriver, Optional[AnyWebElement]) -> EyesWebElement
     fc = driver.frame_chain.clone()
     cur_frame = fc.peek
     root_element = None
     if cur_frame:
         root_element = cur_frame.scroll_root_element
     if root_element is None and not driver.is_mobile_app:
-        root_element = driver.find_element_by_tag_name("html")
+        if scroll_root_element:
+            root_element = scroll_root_element
+        else:
+            root_element = driver.find_element_by_tag_name("html")
     return root_element
+
+
+def get_cur_position_provider(driver):
+    # type: (EyesWebDriver) -> SeleniumPositionProvider
+    cur_frame_position_provider = driver.eyes.current_frame_position_provider
+    if cur_frame_position_provider:
+        return cur_frame_position_provider
+    else:
+        return driver.eyes.position_provider
+
+
+def get_updated_scroll_position(position_provider):
+    # type: (SeleniumPositionProvider) -> Point
+    try:
+        sp = position_provider.get_current_position()
+        if not sp:
+            sp = Point.zero()
+    except WebDriverException:
+        sp = Point.zero()
+
+    return sp
+
+
+def get_default_content_scroll_position(current_frames, driver):
+    # type: (FrameChain, EyesWebDriver) -> Point
+    if current_frames.size == 0:
+
+        scroll_position = get_current_position(
+            driver, current_frame_scroll_root_element(driver)
+        )
+    else:
+        current_fc = driver.eyes.original_frame_chain
+        with driver.switch_to.frames_and_back(current_fc):
+            scroll_position = get_current_position(
+                driver, current_frame_scroll_root_element(driver)
+            )
+    return scroll_position
