@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 
 import json
+import math
 import time
 import typing
 from struct import pack
 
+import attr
 import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
@@ -17,6 +19,7 @@ from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.utils import (
     argument_guard,
+    datetime_utils,
     gzip_compress,
     image_utils,
     json_utils,
@@ -46,28 +49,27 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
 __all__ = ("ServerConnector",)
 
 
+@attr.s
 class _RequestCommunicator(object):
-    LONG_REQUEST_DELAY_SEC = 2
-    MAX_LONG_REQUEST_DELAY_SEC = 10
-    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5
+    LONG_REQUEST_DELAY_SEC = 2  # type: int
+    MAX_LONG_REQUEST_DELAY_SEC = 10  # type: int
+    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5  # type: float
 
-    def __init__(self, timeout_sec, headers, api_key, endpoint_uri):
-        # type: (int, Dict, Text, Text) -> None
-        self.timeout_sec = timeout_sec
-        self.headers = headers.copy()
-        self.api_key = api_key
-        self.endpoint_uri = endpoint_uri
+    headers = attr.ib()  # type: Dict
+    timeout_sec = attr.ib(default=None)  # type: int
+    api_key = attr.ib(default=None)  # type: Text
+    server_url = attr.ib(default=None)  # type: Text
 
-    def request(self, method, url_resource, **kwargs):
+    def request(self, method, url_resource, use_api_key=True, **kwargs):
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
-        url_resource = urljoin(self.endpoint_uri, url_resource)
+        url_resource = urljoin(self.server_url, url_resource)
         params = {}
-        if self.api_key:
+        if use_api_key:
             params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
-        headers = kwargs.get("headers", self.headers)
+        headers = kwargs.get("headers", self.headers).copy()
         timeout = kwargs.get("timeout", self.timeout_sec)
         response = method(
             url_resource,
@@ -84,78 +86,51 @@ class _RequestCommunicator(object):
         return response
 
     def long_request(self, method, url_resource, **kwargs):
-        headers = kwargs["headers"].copy()
-        headers["Eyes-Expect"] = "202-accepted"
-        for delay in self.request_delay():
-            # Sending the current time of the request (in RFC 1123 format)
-            headers["Eyes-Date"] = time.strftime(
-                "%a, %d %b %Y %H:%M:%S GMT", time.gmtime()
+        headers = kwargs.get("headers", self.headers).copy()
+        headers["Eyes-Expect"] = "202+location"
+        headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
+        kwargs["headers"] = headers
+        response = self.request(method, url_resource, **kwargs)
+        return self._long_request_check_status(response)
+
+    def _long_request_check_status(self, response):
+        if response.status_code == requests.codes.ok:
+            # request ends successful
+            return response
+        elif response.status_code == requests.codes.accepted:
+            # long request here; calling received url to know that request was processed
+            url = response.headers["Location"]
+            response = self._long_request_loop(url)
+            return self._long_request_check_status(response)
+        elif response.status_code == requests.codes.created:
+            # delete url that was used before
+            url = response.headers["Location"]
+            return self.request(
+                requests.delete,
+                url,
+                headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
-            kwargs["headers"] = headers
-            response = self.request(method, url_resource, **kwargs)
-            if response.status_code != 202:
-                return response
-            logger.debug("Still running... Retrying in {}s".format(delay))
+        elif response.status_code == requests.codes.gone:
+            raise EyesError("The server task has gone.")
         else:
-            raise requests.Timeout("Couldn't process request")
+            raise EyesError("Unknown error during long request: {}".format(response))
 
-    @staticmethod
-    def request_delay(
-        first_delay=LONG_REQUEST_DELAY_SEC,
-        step_factor=LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR,
-        max_delay=MAX_LONG_REQUEST_DELAY_SEC,
-    ):
-        delay = _RequestCommunicator.LONG_REQUEST_DELAY_SEC  # type: Num
-        while True:
-            yield delay
-            time.sleep(first_delay)
-            delay = delay * step_factor
-            if delay > max_delay:
-                raise StopIteration
+    def _long_request_loop(self, url, delay=LONG_REQUEST_DELAY_SEC):
+        delay = min(
+            self.MAX_LONG_REQUEST_DELAY_SEC,
+            math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
+        )
+        logger.debug("Still running... Retrying in {}s".format(delay))
 
-
-class _Request(object):
-    """
-    Class for fetching data from
-    """
-
-    def __init__(self, com):
-        self._com = com  # type: _RequestCommunicator
-
-    def post(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, **Any) -> requests.Response
-        func = self._com.long_request if long_query else self._com.request
-        return func(requests.post, url_resource, **kwargs)
-
-    def put(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, **Any) -> requests.Response
-        func = self._com.long_request if long_query else self._com.request
-        return func(requests.put, url_resource, **kwargs)
-
-    def get(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, **Any) -> requests.Response
-        func = self._com.long_request if long_query else self._com.request
-        return func(requests.get, url_resource, **kwargs)
-
-    def delete(self, url_resource=None, long_query=False, **kwargs):
-        # type: (str, bool, **Any) -> requests.Response
-        func = self._com.long_request if long_query else self._com.request
-        return func(requests.delete, url_resource, **kwargs)
-
-
-def create_request_factory(headers):
-    class RequestFactory(object):
-        def __init__(self):
-            self._com = None
-
-        def create(self, api_key, server_url, timeout_sec):
-            # server_url could be updated
-            self._com = _RequestCommunicator(
-                timeout_sec, headers, api_key, endpoint_uri=server_url
-            )
-            return _Request(self._com)
-
-    return RequestFactory()
+        time.sleep(delay)
+        response = self.request(
+            requests.get,
+            url,
+            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
+        )
+        if response.status_code != requests.codes.ok:
+            return response
+        return self._long_request_loop(url, delay)
 
 
 def prepare_match_data(match_data):
@@ -192,12 +167,7 @@ class ServerConnector(object):
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
 
-    api_key = None
-    timeout_sec = None
-    server_url = None  # type: Optional[Text]
     _is_session_started = False
-    _request = None  # type: Optional[_Request]
-    _render_request = None  # type: Optional[_Request]
 
     def __init__(self):
         # type: () -> None
@@ -207,31 +177,41 @@ class ServerConnector(object):
         :param server_url: The url of the Applitools server.
         """
         self._render_info = None  # type: Optional[RenderingInfo]
-        self._request_factory = create_request_factory(
-            headers=ServerConnector.DEFAULT_HEADERS
-        )
+        self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
-    def _validate_api_key(self):
-        if self.api_key is None:
+    def update_config(self, conf):
+        if conf.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
                 " API Key and use 'api_key' to set it."
             )
+        self._com.server_url = conf.server_url
+        self._com.api_key = conf.api_key
+        self._com.timeout_sec = conf.timeout / 1000.0
 
-    def update_config(self, conf):
-        self.server_url = conf.server_url
-        self.api_key = conf.api_key
-        self._validate_api_key()
-        self.timeout_sec = conf.timeout / 1000.0
+    @property
+    def server_url(self):
+        return self._com.server_url
 
-        self._request = self._request_factory.create(
-            server_url=self.server_url,
-            api_key=self.api_key,
-            timeout_sec=self.timeout_sec,
-        )
-        self._render_request = self._request_factory.create(
-            server_url=self.server_url, api_key=None, timeout_sec=self.timeout_sec
-        )
+    @server_url.setter
+    def server_url(self, value):
+        self._com.server_url = value
+
+    @property
+    def api_key(self):
+        return self._com.api_key
+
+    @api_key.setter
+    def api_key(self, value):
+        self._com.api_key = value
+
+    @property
+    def timeout(self):
+        return self._com.timeout_sec * 1000  # ms
+
+    @timeout.setter
+    def timeout(self, value):
+        self._com.timeout_sec = value / 1000.0
 
     @property
     def is_session_started(self):
@@ -250,7 +230,9 @@ class ServerConnector(object):
         """
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
-        response = self._request.post(url_resource=self.API_SESSIONS_RUNNING, data=data)
+        response = self._com.request(
+            requests.post, url_resource=self.API_SESSIONS_RUNNING, data=data
+        )
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
         self._is_session_started = True
@@ -272,9 +254,9 @@ class ServerConnector(object):
             raise EyesError("Session not started")
 
         params = {"aborted": is_aborted, "updateBaseline": save}
-        response = self._request.delete(
+        response = self._com.long_request(
+            requests.delete,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
-            long_query=True,
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
         )
@@ -308,7 +290,8 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         # TODO: allow to send images as base64
-        response = self._request.post(
+        response = self._com.long_request(
+            requests.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
             headers=headers,
@@ -331,7 +314,8 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
-        response = self._request.post(
+        response = self._com.request(
+            requests.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
             data=dom_bytes,
             headers=headers,
@@ -346,7 +330,9 @@ class ServerConnector(object):
         logger.debug("render_info() called.")
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
-        response = self._request.get(self.RENDER_INFO_PATH, headers=headers)
+        response = self._com.request(
+            requests.get, self.RENDER_INFO_PATH, headers=headers
+        )
         if not response.ok:
             raise EyesError(
                 "Cannot get render info: \n Status: {}, Content: {}".format(
@@ -369,8 +355,10 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = self._render_info.access_token
 
         data = json_utils.to_json(render_requests)
-        response = self._render_request.post(url, headers=headers, data=data)
-        if response.ok or response.status_code == 404:
+        response = self._com.request(
+            requests.post, url, use_api_key=False, headers=headers, data=data
+        )
+        if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
             "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
@@ -379,7 +367,7 @@ class ServerConnector(object):
         )
 
     def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> bool
+        # type: (RunningRender, VGResource) -> Text
         argument_guard.not_none(running_render)
         argument_guard.not_none(resource)
         if self._render_info is None:
@@ -398,8 +386,10 @@ class ServerConnector(object):
         url = urljoin(
             self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
         )
-        response = self._render_request.put(
+        response = self._com.request(
+            requests.put,
             url,
+            use_api_key=False,
             headers=headers,
             data=content,
             params={"render-id": running_render.render_id},
@@ -422,14 +412,15 @@ class ServerConnector(object):
         headers["Accept-Encoding"] = "identity"
 
         response = requests.get(
-            url, headers=headers, timeout=self.timeout_sec, verify=False
+            url, headers=headers, timeout=self._com.timeout_sec, verify=False
         )
-        if response.status_code == 406:
-            response = requests.get(url, timeout=self.timeout_sec, verify=False)
+        if response.status_code == requests.codes.not_acceptable:
+            response = requests.get(url, timeout=self._com.timeout_sec, verify=False)
         response.raise_for_status()
         return response
 
     def render_status_by_id(self, render_id):
+        # type: (Text) -> List[RenderStatusResults]
         argument_guard.not_none(render_id)
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
@@ -438,8 +429,12 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/json"
         headers["X-Auth-Token"] = self._render_info.access_token
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._render_request.post(
-            url, headers=headers, data=json.dumps([render_id])
+        response = self._com.request(
+            requests.post,
+            url,
+            use_api_key=False,
+            headers=headers,
+            data=json.dumps([render_id]),
         )
         if not response.ok:
             raise EyesError(

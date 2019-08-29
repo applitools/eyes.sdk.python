@@ -3,7 +3,6 @@ import typing
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from applitools.common import (
     AppEnvironment,
@@ -23,11 +22,11 @@ from applitools.core import (
     FixedScaleProvider,
     ImageProvider,
     MouseTrigger,
+    NullCutProvider,
     NullScaleProvider,
     PositionProvider,
     RegionProvider,
     TextTrigger,
-    NullCutProvider,
 )
 from applitools.selenium.capture.eyes_webdriver_screenshot import (
     EyesWebDriverScreenshotFactory,
@@ -36,6 +35,9 @@ from applitools.selenium.capture.full_page_capture_algorithm import (
     FullPageCaptureAlgorithm,
 )
 from applitools.selenium.capture.image_providers import get_image_provider
+from applitools.selenium.capture.screenshot_utils import (
+    cut_to_viewport_size_if_required,
+)
 from applitools.selenium.region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
@@ -95,7 +97,7 @@ class SeleniumEyes(EyesBase):
     _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
-
+    _is_check_region = None  # type: Optional[bool]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
@@ -753,24 +755,28 @@ class SeleniumEyes(EyesBase):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Viewport screenshot requested")
         self._ensure_element_visible(self._target_element)
-
         sleep(self.configuration.wait_before_screenshots / 1000.0)
+        image = self._get_scaled_cropped_image(scale_provider)
+        if not self._is_check_region and not self._driver.is_mobile_app:
+            # Some browsers return always full page screenshot (IE).
+            # So we cut such images to viewport size
+            image = cut_to_viewport_size_if_required(self.driver, image)
+        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+
+    def _get_scaled_cropped_image(self, scale_provider):
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
-
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
-            logger.info("Scalling")
+            logger.info("Scaling")
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
             self._debug_screenshot_provider.save(image, "scaled")
-
         if not isinstance(self.cut_provider, NullCutProvider):
             logger.info("Cutting")
             image = self.cut_provider.cut(image)
             self._debug_screenshot_provider.save(image, "cutted")
-
-        return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+        return image
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
@@ -889,6 +895,8 @@ class SeleniumEyes(EyesBase):
         return result
 
     def _check_region(self, name, check_settings):
+        self._is_check_region = True
+
         def get_region():
             location = self._target_element.location
             size = self._target_element.size
@@ -903,4 +911,5 @@ class SeleniumEyes(EyesBase):
         result = self._check_window_base(
             RegionProvider(get_region), name, False, check_settings
         )
+        self._is_check_region = False
         return result

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from applitools.selenium import Region, Target
@@ -59,3 +61,22 @@ def test_abort_eyes(eyes, driver):
     eyes.open(driver, "Python VisualGrid", "TestAbortSeleniumEyes")
     eyes.check_window()
     eyes.abort()
+
+
+def test_ie_viewport_screenshot(eyes, webdriver_module):
+    sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+        username=os.getenv("SAUCE_USERNAME", None),
+        password=os.getenv("SAUCE_ACCESS_KEY", None),
+    )
+    driver = webdriver_module.Remote(
+        command_executor=sauce_url,
+        desired_capabilities={
+            "browserName": "internet explorer",
+            "platform": "Windows 10",
+            "version": "11.285",
+        },
+    )
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
+    eyes.open(driver, "Python SDK", "TestIEViewportScreenshot")
+    eyes.check_window()
+    eyes.close()

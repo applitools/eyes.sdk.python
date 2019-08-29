@@ -1,10 +1,11 @@
 language: python
+services:
+  - xvfb
 install:
     - pip install -U tox
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
-    - sh -e /etc/init.d/xvfb start
     - sleep 10 # give webdriver some time to start
     - export APPLITOOLS_BATCH_ID=`uuidgen -t`
 script:
