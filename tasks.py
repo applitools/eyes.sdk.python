@@ -164,7 +164,6 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
         "remote} "
         "--browser '%(browser)s' {tests} "
         "--ignore={tests}/test_client_sites.py "
-        "--ignore={tests}/test_dom_capture.py"
     ).format(
         proc_num="-n 4" if remote else "",
         headless=headless,
@@ -178,9 +177,9 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
     platform = platform.lower()
     browsers = ["firefox", "chrome"]
     if platform.startswith("mac") or platform.startswith("darwin"):
-        browsers.append("safari")
+        browsers += ["safari"]
     elif platform.startswith("win"):
-        browsers = ["chrome"]
+        browsers += ["internet explorer", "MicrosoftEdge"]
 
     # use Unix background task execution for run tests in parallel
     command = "&".join([pattern % dict(browser=browser) for browser in browsers])
