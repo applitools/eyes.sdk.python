@@ -1,17 +1,4 @@
-"""
-Pytest configuration
-
-pytest |-n|--platform|--browser|--headless
-
-Example of usage:
-    pytest -n 5     # run tests on all supported platforms in 5 thread
-    pytest --platform 'iPhone 10.0'  # run tests only for iPhone 10.0 platform in one thread
-    pytest --platform 'Linux' --browser firefox    # run all tests on Linux platform with firefox browser
-    pytest --browser firefox    # run all tests on your current platform with firefox browser
-    pytest --browser firefox --headless 1   # run all tests on your current platform with firefox browser in headless mode
-"""
 import pytest
-
 from applitools.common import StdoutLogger, logger
 from applitools.common.utils import iteritems
 
