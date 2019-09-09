@@ -18,7 +18,7 @@ def image():
     return img
 
 
-def _setup_env_vars_for_session():
+def pytest_generate_tests(metafunc):
     import uuid
 
     # setup environment variables once per test run if not settled up
@@ -27,7 +27,3 @@ def _setup_env_vars_for_session():
     os.environ["APPLITOOLS_BATCH_ID"] = os.getenv(
         "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
     )
-
-
-def pytest_generate_tests(metafunc):
-    _setup_env_vars_for_session()

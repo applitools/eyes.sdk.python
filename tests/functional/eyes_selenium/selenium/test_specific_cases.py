@@ -46,7 +46,8 @@ def test_check_window_with_send_dom(eyes, driver):
     driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     driver.find_element_by_tag_name("input").send_keys("My Input")
     eyes.check(
-        "Fluent - Window with Ignore region", Target.window().send_dom().use_dom()
+        "Fluent - Window with Ignore region",
+        Target.window().send_dom().use_dom().ignore_caret(),
     )
     assert "data-applitools-scroll" in driver.page_source
     assert "data-applitools-original-overflow" in driver.page_source

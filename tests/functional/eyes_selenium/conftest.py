@@ -43,14 +43,6 @@ sys2platform_name = {
 }
 
 
-def _setup_env_vars_for_session():
-    os.environ["APPLITOOLS_BATCH_NAME"] = "Py|Sel|{}".format(__version__)
-
-
-def pytest_generate_tests(metafunc):
-    _setup_env_vars_for_session()
-
-
 @pytest.fixture
 def eyes_class():
     return Eyes
@@ -82,11 +74,7 @@ def eyes_open(request, eyes, driver):
 
     batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
     eyes.configuration.batch = BatchInfo(
-        "{}|{}|{}".format(
-            batch_name,
-            os.getenv("TEST_PLATFORM", sys.platform.capitalize()),
-            "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc",
-        )
+        "{}|{}".format(batch_name, "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc")
     )
     if eyes.force_full_page_screenshot:
         test_suite_name += " - ForceFPS"
@@ -132,9 +120,7 @@ def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
 
-    force_remote = request.config.getoption("remote")
-    if force_remote is None:
-        force_remote = bool(os.getenv("TEST_REMOTE", False))
+    force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
         force_remote = True
 
@@ -160,7 +146,7 @@ def driver(request, browser_config, webdriver_module):
             browser_config["browserName"]
         )
         if options:
-            headless = request.config.getoption("headless")
+            headless = os.getenv("TEST_BROWSER_HEADLESS", True)
             options = options()
             options.headless = bool(headless)
         if driver_manager_class:
@@ -285,11 +271,11 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
 
         # huck for preventing overwriting 'platform' value in desired_capabilities by chrome options
         browser_caps = options.to_capabilities() if options else {}
-        print(
-            "browser_name: {}\ncaps: {}\n self.browsers: {}".format(
-                browser_name, browser_caps, self.browsers
-            )
-        )
+        # print(
+        #     "browser_name: {}\ncaps: {}\n self.browsers: {}".format(
+        #         browser_name, browser_caps, self.browsers
+        #     )
+        # )
         browser_name, browser_version = [
             b for b in self.browsers if browser_name.lower() == b[0].lower()
         ][0]
@@ -399,12 +385,8 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
 
 
 def _setup_env_vars_for_session():
-    import uuid
-
-    # setup environment variables once per test run if not settled up
-    # needed for multi thread run
-    os.environ["APPLITOOLS_BATCH_ID"] = os.getenv(
-        "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
+    os.environ["APPLITOOLS_BATCH_NAME"] = "Py|Sel|{}|{}".format(
+        __version__, os.getenv("TEST_PLATFORM")
     )
 
 
@@ -479,16 +461,16 @@ def pytest_runtest_makereport(item, call):
 def pytest_runtest_setup(item):
     """Skip tests that not fit for selected platform"""
     platform_marker = item.get_closest_marker("platform")
-    platform_cmd = item.config.getoption("platform")
-    if platform_marker and platform_cmd:
+    platform_env = os.getenv("TEST_PLATFORM")
+    if platform_marker and platform_env:
         platforms = platform_marker.args
-        cmd_platform = platform_cmd.split()[0]  # remove platform version
+        cmd_platform = platform_env.split()[0]  # remove platform version
         if cmd_platform and cmd_platform not in platforms:
             pytest.skip("test requires platform %s" % cmd_platform)
 
     browser_marker = item.get_closest_marker("browser")
-    browser_cmd = item.config.getoption("browser")
-    if browser_marker and browser_cmd:
+    browsers_env = os.getenv("TEST_BROWSERS", "").split(",")
+    if browser_marker and browsers_env:
         browsers = browser_marker.args
-        if browser_cmd and browser_cmd not in browsers:
-            pytest.skip("test requires browser %s" % browser_cmd)
+        if bool(set(browsers_env).intersection(set(browsers))):
+            pytest.skip("test requires browsers %s" % browsers_env)
