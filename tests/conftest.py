@@ -175,14 +175,6 @@ def pytest_addoption(parser):
 
 
 def _get_capabilities(platform_name=None, browser_name=None, headless=False):
-    if platform_name is None:
-        sys2platform_name = {
-            "linux": "Linux",
-            "linux2": "Linux",
-            "darwin": "macOS 10.14",
-            "win32": "Windows 10",
-        }
-        platform_name = sys2platform_name[sys.platform]
     platform = SUPPORTED_PLATFORMS_DICT[platform_name]
     if platform.is_appium_based:
         capabilities = [platform.platform_capabilities()]
@@ -203,27 +195,38 @@ def _setup_env_vars_for_session():
     )
 
 
+sys2platform_name = {
+    "linux": "Linux",
+    "linux2": "Linux",
+    "darwin": "macOS 10.14",
+    "win32": "Windows 10",
+}
+
+
 def pytest_generate_tests(metafunc):
     platform_name = metafunc.config.getoption("platform")
-    browser_name = metafunc.config.getoption("browser", "chrome")
+    browser_name = metafunc.config.getoption("browser")
     headless = metafunc.config.getoption("headless")
+
+    if platform_name is None:
+        platform_name = os.getenv("TEST_PLATFORM", sys2platform_name[sys.platform])
+    browsers = os.getenv("TEST_BROWSERS", "").split(",")
 
     _setup_env_vars_for_session()
 
-    if platform_name or browser_name:
+    if platform_name and browsers:
+        desired_caps = []
+        for b_name in browsers:
+            desired_caps.extend(_get_capabilities(platform_name, b_name, headless))
+    elif platform_name and browser_name:
         desired_caps = _get_capabilities(platform_name, browser_name, headless)
     else:
-        desired_caps = []
-        platforms = getattr(metafunc.function, "platform", [])
-        if platforms:
-            platforms = platforms.args
-
-        for platform in SUPPORTED_PLATFORMS:
-            if platform.name not in platforms:
-                continue
-            desired_caps.extend(
-                _get_capabilities(platform.full_name, headless=headless)
-            )
+        raise ValueError(
+            "Wrong parameters passed: "
+            "\n\tplatform_name: {}"
+            "\n\tbrowser_name: {}"
+            "\n\tbrowsers: {}".format(platform_name, browser_name, browsers)
+        )
 
     # update capabilities from capabilities marker
     if hasattr(metafunc, "function"):

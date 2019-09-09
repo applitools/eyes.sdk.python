@@ -66,9 +66,10 @@ def eyes_open(request, eyes, driver):
 
     batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
     eyes.configuration.batch = BatchInfo(
-        "{}|{}".format(
+        "{}|{}|{}".format(
             batch_name,
-            driver.desired_capabilities.get("platformName", sys.platform.capitalize()),
+            os.getenv("TEST_PLATFORM", sys.platform.capitalize()),
+            "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc",
         )
     )
     if eyes.force_full_page_screenshot:
@@ -115,7 +116,9 @@ def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
 
-    force_remote = request.config.getoption("remote", default=False)
+    force_remote = request.config.getoption("remote")
+    if force_remote is None:
+        force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
         force_remote = True
 

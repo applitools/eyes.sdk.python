@@ -12,33 +12,33 @@ script:
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
 stages:
-    - lint
-    - unit-tests
-    - integration-tests
-    - eyes-images-tests
+#    - lint
+#    - unit-tests
+#    - integration-tests
+#    - eyes-images-tests
     - functional-tests
 jobs:
     include:
-        - stage: lint
-          python: 3.6
-          env:
-              - TOX_ENV=lint
-
-        - stage: unit-tests
-          python: 2.7
-          env:
-              - TOX_ENV=unit
-        - python: 3.6
-          env:
-              - TOX_ENV=unit
-
-        - stage: integration-tests
-          python: 2.7
-          env:
-              - TOX_ENV=integration
-        - python: 3.6
-          env:
-              - TOX_ENV=integration
+#        - stage: lint
+#          python: 3.6
+#          env:
+#              - TOX_ENV=lint
+#
+#        - stage: unit-tests
+#          python: 2.7
+#          env:
+#              - TOX_ENV=unit
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=unit
+#
+#        - stage: integration-tests
+#          python: 2.7
+#          env:
+#              - TOX_ENV=integration
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=integration
 
         - stage: functional-tests
           python: 3.6
@@ -47,9 +47,25 @@ jobs:
               firefox: latest
           env:
               - TOX_ENV=selenium
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=images
+              - TEST_PLATFORM="Linux"
+              - TEST_BROWSERS=chrome,firefox
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM="macOS 10.14"
+              - TEST_BROWSERS=safari
+              - TEST_REMOTE=1
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM="Windows 10"
+              - TEST_BROWSERS=chrome,firefox,"internet explorer"
+              - TEST_REMOTE=1
+              - PYTEST_XDIST_WORKER_COUNT=2
+
+        - python: 3.6
+          env:
+              - TOX_ENV=images
 #        - os: windows
 #          language: sh
 #          python: "3.7"
@@ -73,14 +89,24 @@ jobs:
               firefox: latest
           env:
               - TOX_ENV=selenium
+              - TEST_PLATFORM="macOS 10.14"
+              - TEST_BROWSERS=chrome,firefox
           script:
               - echo $APPLITOOLS_BATCH_ID
               - python3 -m tox -e $TOX_ENV
         - python: 3.6
           env:
-              - TOX_ENV=selenium-appium-remote
+              - TOX_ENV=selenium-appium
+              - TEST_PLATFORM="Android 6.0"
+              - TEST_REMOTE=1
+        - python: 3.6
+          env:
+              - TOX_ENV=selenium-appium
+              - TEST_PLATFORM="iOS 11.3"
+              - TEST_REMOTE=1
         - python: 3.6
           addons:
               chrome: stable
           env:
-              - TOX_ENV=visualgrid
+              - TOX_ENV=selenium-visualgrid
+              - TEST_BROWSERS=chrome

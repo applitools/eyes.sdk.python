@@ -157,29 +157,12 @@ def move_js_resources_to(pack):
 
 
 @task
-def run_selenium_tests(c, remote=False, headless=False, platform=None):
-    sel_tests = "tests/functional/eyes_selenium/selenium"
-    pattern = (
-        "pytest {proc_num} --headless {headless} {"
-        "remote} "
-        "--browser '%(browser)s' {tests} "
-        "--ignore={tests}/test_client_sites.py "
-    ).format(
-        proc_num="-n 4" if remote else "",
-        headless=headless,
-        remote="--remote 1" if remote else "",
-        platform="--platform '{}'".format(platform) if platform else "",
-        tests=sel_tests,
-    )
+def run_tests_on_CI(c, tests):
+    browsers = os.getenv("TEST_BROWSERS", "").split(",")
+    if not browsers:
+        raise ValueError("`TEST_BROWSERS` env variable should be set")
 
-    if platform is None:
-        platform = sys.platform
-    platform = platform.lower()
-    browsers = ["firefox", "chrome"]
-    # if platform.startswith("mac") or platform.startswith("darwin"):
-    #     browsers += ["safari"]
-    # elif platform.startswith("win"):
-    #     browsers += ["internet explorer", "MicrosoftEdge"]
+    pattern = "pytest {tests} --ignore={tests}/test_client_sites.py".format(tests=tests)
 
     # use Unix background task execution for run tests in parallel
     command = "&".join([pattern % dict(browser=browser) for browser in browsers])
