@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import time
 import typing as tp
 from contextlib import contextmanager
 
@@ -10,6 +9,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger
+from applitools.common.utils import datetime_utils
 
 if tp.TYPE_CHECKING:
     from typing import Text, Optional, Any, Union, Generator, Dict
@@ -102,7 +102,7 @@ _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
-_SLEEP_SEC = 1
+_SLEEP_MS = 1000
 _RETRIES = 3
 
 
@@ -219,7 +219,7 @@ def set_browser_size(driver, required_size):
     while True:
         logger.info("Trying to set browser size to: " + str(required_size))
         set_window_size(driver, required_size)
-        time.sleep(_SLEEP_SEC)
+        datetime_utils.sleep(_SLEEP_MS)
         current_size = get_window_size(driver)
         logger.info("Current browser size: " + str(required_size))
 
@@ -340,7 +340,7 @@ def return_to_original_overflow(driver, root_element, origin_overflow):
 def set_overflow(driver, overflow, root_element):
     # type: (EyesWebDriver, Text, AnyWebElement) -> Optional[Text]
     root_element = get_underlying_webelement(root_element)
-    with timeout(0.1):
+    with timeout(100):
         try:
             return driver.execute_script(
                 _JS_SET_OVERFLOW % (overflow, overflow), root_element
@@ -376,9 +376,9 @@ def add_data_scroll_to_element(driver, element):
 
 
 @contextmanager
-def timeout(timeout):
+def timeout(timeout_ms):
     # type: (Num) -> Generator
-    time.sleep(timeout)
+    datetime_utils.sleep(timeout_ms)
     yield
 
 

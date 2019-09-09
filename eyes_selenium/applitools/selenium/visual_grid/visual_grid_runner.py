@@ -5,7 +5,6 @@ import sys
 import threading
 import typing
 from concurrent.futures import ThreadPoolExecutor
-from time import sleep
 
 from applitools.common import (
     DiffsFoundError,
@@ -15,6 +14,7 @@ from applitools.common import (
     TestResultSummary,
     logger,
 )
+from applitools.common.utils import datetime_utils
 from applitools.selenium.visual_grid.resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
@@ -68,7 +68,7 @@ class VisualGridRunner(object):
                 task = self.task_queue.pop()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
-                sleep(1)
+                datetime_utils.sleep(1000)
                 continue
             future = self._executor.submit(lambda task: task(), task)
             self._future_to_task[future] = task
@@ -77,7 +77,7 @@ class VisualGridRunner(object):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
         while sum(r.score for r in self.all_running_tests) > 0:
-            sleep(0.5)
+            datetime_utils.sleep(500)
         self.still_running = False
         for future in concurrent.futures.as_completed(self._future_to_task):
             task = self._future_to_task[future]
@@ -100,7 +100,7 @@ class VisualGridRunner(object):
             ]
             if len(completed_states) == len(test_list):
                 break
-            sleep(0.5)
+            datetime_utils.sleep(500)
         self.stop()
         logger.close()
 
@@ -128,7 +128,7 @@ class VisualGridRunner(object):
     def get_all_test_results(self, raise_ex=True):
         # type: (bool) -> TestResultSummary
         while not any(e.is_opened for e in self.all_eyes):
-            sleep(0.5)
+            datetime_utils.sleep(500)
         test_list = self.process_test_list(
             [test for e in self.all_eyes for test in e.test_list], raise_ex
         )

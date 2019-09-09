@@ -2,9 +2,9 @@ import json
 import os
 from typing import Any
 
-import pytest
-from mock import patch
+import requests
 
+import pytest
 from applitools.common import (
     AppEnvironment,
     AppOutput,
@@ -24,6 +24,7 @@ from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core import ServerConnector
+from mock import patch
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -36,6 +37,8 @@ RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
 RUNNING_SESSION_URL = urljoin(CUSTOM_EYES_SERVER, API_SESSIONS_RUNNING)
 RUNNING_SESSION_DATA_URL = urljoin(RUNNING_SESSION_URL, "data")
 RENDER_INFO_PATH_URL = urljoin(CUSTOM_EYES_SERVER, RENDER_INFO_PATH)
+LONG_REQUEST_URL = urljoin(CUSTOM_EYES_SERVER, "/one")
+LONG_REQUEST_RESPONSE_URL = urljoin(CUSTOM_EYES_SERVER, "/second")
 
 RENDER_INFO_URL = "https://render-wus.applitools.com"
 RENDER_INFO_AT = "Some Token"
@@ -95,6 +98,8 @@ def mocked_requests_delete(*args, **kwargs):
     url = args[0]
     if url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA_RESPONSE_ID):
         return MockResponse(STOP_SESSION_DATA, 200)
+    elif url == LONG_REQUEST_RESPONSE_URL:
+        return MockResponse({}, 200)
     return MockResponse(None, 404)
 
 
@@ -103,6 +108,10 @@ def mocked_requests_get(*args, **kwargs):
     url = args[0]
     if url == RENDER_INFO_PATH_URL:
         return MockResponse(RENDERING_INFO_DATA, 200)
+    if url == LONG_REQUEST_URL:
+        return MockResponse(None, 202, {"Location": LONG_REQUEST_RESPONSE_URL})
+    if url == LONG_REQUEST_RESPONSE_URL:
+        return MockResponse(None, 201, {"Location": LONG_REQUEST_RESPONSE_URL})
     return MockResponse(None, 404)
 
 
@@ -296,7 +305,7 @@ def test_stop_session(started_connector):
 
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
-    new_timeout_sec = new_timeout / 1000.0
+    new_timeout_sec = int(new_timeout / 1000.0)
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
     conf = Configuration(
@@ -314,6 +323,13 @@ def test_request_with_changed_values(configured_connector):
     assert mocked_post.call_args[1]["timeout"] == new_timeout_sec
     assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
     assert new_server_url in mocked_post.call_args[0][0]
+
+
+def test_long_request(configured_connector):
+    with patch("requests.get", side_effect=mocked_requests_get):
+        with patch("requests.delete", side_effect=mocked_requests_delete):
+            r = configured_connector._com.long_request(requests.get, LONG_REQUEST_URL)
+            assert r.status_code == 200
 
 
 def test_get_rendering_info(started_connector):

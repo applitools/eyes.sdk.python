@@ -1,8 +1,8 @@
-import time
 import typing
 
 import attr
 import tinycss2
+
 from applitools.common import (
     EyesError,
     RenderInfo,
@@ -12,7 +12,7 @@ from applitools.common import (
     VGResource,
     logger,
 )
-from applitools.common.utils import urlparse
+from applitools.common.utils import datetime_utils, urlparse
 
 from .vg_task import VGTask
 
@@ -67,7 +67,7 @@ class RenderTask(VGTask):
             except Exception as e:
                 logger.exception(e)
                 fetch_fails += 1
-                time.sleep(1.5)
+                datetime_utils.sleep(1500)
             if not render_requests:
                 continue
 
@@ -172,11 +172,11 @@ class RenderTask(VGTask):
                     )
                 except Exception as e:
                     logger.exception(e)
-                    time.sleep(1)
+                    datetime_utils.sleep(1000)
                     fails_count += 1
                 finally:
                     iterations += 1
-                    time.sleep(0.5)
+                    datetime_utils.sleep(500)
                 if statuses or 0 < fails_count < 3:
                     break
             finished = bool(

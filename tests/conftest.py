@@ -94,7 +94,10 @@ SUPPORTED_PLATFORMS = [
         name="Windows",
         version="10",
         browsers=COMMON_BROWSERS
-        + [("internet explorer", "latest"), ("MicrosoftEdge", "latest")],
+        + [
+            ("internet explorer", "latest"),
+            # ("MicrosoftEdge", "latest")
+        ],
         extra=None,
     ),
     Platform(name="Linux", version="", browsers=COMMON_BROWSERS, extra=None),
