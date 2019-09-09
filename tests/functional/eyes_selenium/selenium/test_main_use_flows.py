@@ -50,6 +50,7 @@ class TestFluentAPI(TestSetup):
             Target.window()
             .fully()
             .timeout(5000)
+            .ignore_caret()
             .ignore(Region(left=50, top=50, width=100, height=100)),
         )
 
