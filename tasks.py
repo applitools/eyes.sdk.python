@@ -180,8 +180,7 @@ def run_selenium_tests(c, remote=False, headless=False, platform=None):
     if platform.startswith("mac") or platform.startswith("darwin"):
         browsers.append("safari")
     elif platform.startswith("win"):
-        browsers.append("internet explorer")
-        browsers.append("MicrosoftEdge")
+        browsers = ["chrome"]
 
     # use Unix background task execution for run tests in parallel
     command = "&".join([pattern % dict(browser=browser) for browser in browsers])

@@ -50,6 +50,10 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
         from selenium.webdriver import FirefoxOptions
         from selenium.webdriver import ChromeOptions
 
+        # clean up from quotes for correct comparision; original bug on Windows where
+        # string contains quotes
+        browser_name = browser_name.strip("\"' ")
+
         options = None
         if "firefox" == browser_name:
             options = FirefoxOptions()
@@ -61,9 +65,15 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
 
         # huck for preventing overwriting 'platform' value in desired_capabilities by chrome options
         browser_caps = options.to_capabilities() if options else {}
+        print(
+            "browser_name: {}\ncaps: {}\n self.browsers: {}".format(
+                browser_name, browser_caps, self.browsers
+            )
+        )
         browser_name, browser_version = [
             b for b in self.browsers if browser_name.lower() == b[0].lower()
         ][0]
+
         browser_caps.update(
             {
                 "browserName": browser_name,
