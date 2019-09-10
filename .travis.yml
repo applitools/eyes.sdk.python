@@ -12,33 +12,33 @@ script:
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
 stages:
-#    - lint
-#    - unit-tests
-#    - integration-tests
-#    - eyes-images-tests
+    - lint
+    - unit-tests
+    - integration-tests
+    - eyes-images-tests
     - functional-tests
 jobs:
     include:
-#        - stage: lint
-#          python: 3.6
-#          env:
-#              - TOX_ENV=lint
-#
-#        - stage: unit-tests
-#          python: 2.7
-#          env:
-#              - TOX_ENV=unit
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=unit
-#
-#        - stage: integration-tests
-#          python: 2.7
-#          env:
-#              - TOX_ENV=integration
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=integration
+        - stage: lint
+          python: 3.6
+          env:
+              - TOX_ENV=lint
+
+        - stage: unit-tests
+          python: 2.7
+          env:
+              - TOX_ENV=unit
+        - python: 3.6
+          env:
+              - TOX_ENV=unit
+
+        - stage: integration-tests
+          python: 2.7
+          env:
+              - TOX_ENV=integration
+        - python: 3.6
+          env:
+              - TOX_ENV=integration
 
         - stage: functional-tests
           python: 3.6
