@@ -162,8 +162,14 @@ def run_tests_on_CI(c, tests):
     if not browsers:
         raise ValueError("`TEST_BROWSERS` env variable should be set")
 
-    pattern = "pytest {tests} --ignore={tests}/test_client_sites.py".format(tests=tests)
+    pattern = "pytest {tests} " "--ignore={tests}/test_client_sites.py".format(
+        tests=tests
+    )
 
     # use Unix background task execution for run tests in parallel
-    command = "&".join([pattern % dict(browser=browser) for browser in browsers])
+    command = pattern
+    if browsers:
+        command = "&".join(
+            ["TEST_BROWSERS={} ".format(browser) + pattern for browser in browsers]
+        )
     c.run(command, echo=True)
