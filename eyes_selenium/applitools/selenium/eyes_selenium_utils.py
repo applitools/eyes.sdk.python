@@ -187,7 +187,13 @@ def get_viewport_size(driver):
 
     :param driver: The webdriver to use for getting the viewport size.
     """
-    # noinspection PyBroadException
+
+    if is_mobile_app(driver):
+        # it's expected that on mobile app windows size required and attempt
+        # to get viewport size with JS would raise an exception so just return
+        # windows size directly in this case
+        return get_window_size(driver)
+
     try:
         width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
         return RectangleSize(width=width, height=height)
