@@ -2,8 +2,10 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import SeleniumConfiguration, logger, EyesError
+from applitools.common import EyesError, SeleniumConfiguration, logger
 from applitools.common.utils import argument_guard
+from applitools.common.utils.general_utils import proxy_to
+from applitools.selenium import eyes_selenium_utils
 
 from .fluent import Target
 from .selenium_eyes import SeleniumEyes
@@ -11,69 +13,37 @@ from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional, Union, Callable, Any, List, Tuple
+    from typing import Text, Optional, Union, List, Tuple
     from selenium.webdriver.remote.webelement import WebElement
     from applitools.common import MatchResult, TestResults, Region, SessionType
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
         FrameReference,
+        AnyWebElement,
     )
+    from applitools.core import (
+        PositionProvider,
+        FixedCutProvider,
+        UnscaledFixedCutProvider,
+        NullCutProvider,
+    )
+    from .frames import FrameChain
     from .fluent import SeleniumCheckSettings
     from .webelement import EyesWebElement
 
 
+@proxy_to("configuration", SeleniumConfiguration.all_fields())
 class Eyes(object):
-    EYES_COMMON = [
-        "base_agent_id",
-        "is_debug_screenshot_provided",
-        "abort",
-        "original_frame_chain",
-        "viewport_size",
-        "stitch_content",
-        "device_pixel_ratio",
-        "scale_ratio",
-        "position_provider",
-        "cut_provider",
-        "_original_frame_chain",
-        "full_agent_id",
-        "agent_setup",
-        "add_property",
-        "clear_properties",
-        "set_viewport_size_static",
-        "get_viewport_size_static",
-        "add_mouse_trigger_by_element",
-        "add_text_trigger_by_element",
-        "current_frame_position_provider",
-    ]
-    DELEGATE_TO_CONFIG = SeleniumConfiguration.all_fields()
-
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
-    _is_opened = False
-
-    @property
-    def is_opened(self):
-        return self._is_opened
-
-    @property
-    def configuration(self):
-        return self._configuration
-
-    @configuration.setter
-    def configuration(self, new_conf):
-        argument_guard.is_a(new_conf, SeleniumConfiguration)
-        if self._configuration.api_key and not new_conf.api_key:
-            new_conf.api_key = self._configuration.api_key
-        if self._configuration.server_url and not new_conf.server_url:
-            new_conf.server_url = self._configuration.server_url
-        self._configuration = new_conf
+    _is_opened = False  # type: bool
 
     def __init__(self, runner=None):
-        # type: (Optional[Any]) -> None
+        # type: (Optional[VisualGridRunner]) -> None
         self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
 
         # backward compatibility with settings server_url
@@ -89,6 +59,215 @@ class Eyes(object):
             self._is_visual_grid_eyes = True
         else:
             raise ValueError("Wrong runner")
+
+    @property
+    def is_opened(self):
+        # type: () -> bool
+        return self._is_opened
+
+    @property
+    def configuration(self):
+        # type: () -> SeleniumConfiguration
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, new_conf):
+        # type: (SeleniumConfiguration) -> None
+        argument_guard.is_a(new_conf, SeleniumConfiguration)
+        if self._configuration.api_key and not new_conf.api_key:
+            new_conf.api_key = self._configuration.api_key
+        if self._configuration.server_url and not new_conf.server_url:
+            new_conf.server_url = self._configuration.server_url
+        self._configuration = new_conf
+
+    @property
+    def base_agent_id(self):
+        # type: () -> Text
+        """
+        Must return version of SDK. (e.g. selenium, visualgrid) in next format:
+            "eyes.{package}.python/{lib_version}"
+        """
+        return self._current_eyes.base_agent_id
+
+    @property
+    def full_agent_id(self):
+        # type: () -> Text
+        """
+        Gets the agent id, which identifies the current library using the SDK.
+
+        """
+        return self._current_eyes.full_agent_id
+
+    @property
+    def stitch_content(self):
+        # type: () -> bool
+        return self._current_eyes.stitch_content
+
+    @property
+    def original_frame_chain(self):
+        # type: () -> FrameChain
+        return self._current_eyes.original_frame_chain
+
+    # def rotation(self):
+    #     if not self._is_visual_grid_eyes:
+    #         return self._selenium_eyes.rotation
+
+    @property
+    def device_pixel_ratio(self):
+        # type: () -> int
+        """
+        Gets device pixel ratio.
+
+        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't
+        possible to extract it.
+        """
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.device_pixel_ratio
+        return 0
+
+    @property
+    def scale_ratio(self):
+        # type: () -> float
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.scale_ratio
+        return 0
+
+    @scale_ratio.setter
+    def scale_ratio(self, value):
+        # type: (float) -> None
+        """
+        Manually set the scale ratio for the images being validated.
+        """
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.scale_ratio = value
+
+    @property
+    def position_provider(self):
+        """
+        Sets position provider.
+        """
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.position_provider
+        return None
+
+    @property
+    def is_debug_screenshot_provided(self):
+        # type: () -> bool
+        """True if screenshots saving enabled."""
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.is_debug_screenshot_provided
+
+    @is_debug_screenshot_provided.setter
+    def is_debug_screenshot_provided(self, save):
+        # type: (bool) -> None
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.is_debug_screenshot_provided = save
+
+    @position_provider.setter
+    def position_provider(self, provider):
+        # type: (PositionProvider) -> None
+        """
+        Gets position provider.
+        """
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.position_provider = provider
+
+    @property
+    def cut_provider(self):
+        # type:()->Optional[Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider]]
+        """
+        Gets current cut provider
+        """
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.cut_provider
+        return None
+
+    @cut_provider.setter
+    def cut_provider(self, provider):
+        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
+        """
+        Manually set the the sizes to cut from an image before it's validated.
+
+        :param provider:
+        :return:
+        """
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.cut_provider = provider
+
+    @property
+    def is_cut_provider_explicitly_set(self):
+        """
+        Gets is cut provider explicitly set.
+        """
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.is_cut_provider_explicitly_set
+        return False
+
+    @property
+    def agent_setup(self):
+        """
+        Gets agent setup.
+        """
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.agent_setup
+        return None
+
+    @property
+    def current_frame_position_provider(self):
+        # type: () -> Optional[PositionProvider]
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.current_frame_position_provider
+        return None
+
+    @staticmethod
+    def get_viewport_size_static(driver):
+        # type: (AnyWebDriver) -> ViewPort
+        return eyes_selenium_utils.get_viewport_size(driver)
+
+    @staticmethod
+    def set_viewport_size_static(driver, size):
+        # type: (AnyWebDriver, ViewPort) -> None
+        assert driver is not None
+        if size is None:
+            raise ValueError("set_viewport_size_static require `size` parameter")
+        eyes_selenium_utils.set_viewport_size(driver, size)
+
+    def add_property(self, name, value):
+        # type: (Text, Text) -> None
+        """
+        Associates a key/value pair with the test. This can be used later for filtering.
+        :param name: (string) The property name.
+        :param value: (string) The property value
+        """
+        self._current_eyes.add_property(name, value)
+
+    def clear_properties(self):
+        """
+        Clears the list of custom properties.
+        """
+        self._current_eyes.clear_properties()
+
+    def add_mouse_trigger_by_element(self, action, element):
+        # type: (Text, AnyWebElement) -> None
+        """
+        Adds a mouse trigger.
+
+        :param action: Mouse action (click, double click etc.)
+        :param element: The element on which the action was performed.
+        """
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.add_mouse_trigger_by_element(action, element)
+
+    def add_text_trigger_by_element(self, element, text):
+        # type: (AnyWebElement, Text) -> None
+        """
+        Adds a text trigger.
+
+        :param element: The element to which the text was sent.
+        :param text: The trigger's text.
+        """
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.add_text_trigger_by_element(element, text)
 
     @property
     def driver(self):
@@ -246,6 +425,16 @@ class Eyes(object):
         else:
             self._selenium_eyes.close(False)
 
+    def abort(self):
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        self._current_eyes.abort()
+
+    def abort_if_not_closed(self):
+        logger.deprecation("Use `abort()` instead")
+        self.abort()
+
     def _init_driver(self, driver):
         # type: (AnyWebDriver) -> None
         if isinstance(driver, EyesWebDriver):
@@ -262,21 +451,3 @@ class Eyes(object):
             return self._visual_grid_eyes
         else:
             return self._selenium_eyes
-
-    def __getattr__(self, name):
-        # type: (str) -> Union[Callable, bool]
-        if name in self.DELEGATE_TO_CONFIG:
-            return getattr(self.configuration, name)
-        if name in self.EYES_COMMON:
-            return getattr(self._current_eyes, name)
-        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
-
-    def __setattr__(self, name, value):
-        # type: (str, Any) -> None
-        if name in self.DELEGATE_TO_CONFIG:
-            setattr(self.configuration, name, value)
-            return
-        if name in self.EYES_COMMON:
-            setattr(self._current_eyes, name, value)
-        else:
-            super(Eyes, self).__setattr__(name, value)
