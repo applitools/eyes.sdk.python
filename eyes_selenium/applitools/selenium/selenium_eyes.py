@@ -523,6 +523,7 @@ class SeleniumEyes(EyesBase):
     def _environment(self):
         os = self.configuration.host_os
         # If no host OS was set, check for mobile OS.
+        device_info = "Desktop"
         if os is None:
             logger.info("No OS set, checking for mobile OS...")
             # Since in Python Appium driver is the same for Android and iOS,
@@ -530,6 +531,7 @@ class SeleniumEyes(EyesBase):
             if eyes_selenium_utils.is_mobile_platform(self._driver):
                 platform_name = self._driver.platform_name
                 logger.info(platform_name + " detected")
+                device_info = self._driver.desired_capabilities.get("deviceModel", "")
                 platform_version = self._driver.platform_version
                 if platform_version is not None:
                     # Notice that Python's "split" function's +limit+ is the the
@@ -548,6 +550,7 @@ class SeleniumEyes(EyesBase):
             hosting_app=self.configuration.host_app,
             display_size=self.configuration.viewport_size,
             inferred=self._inferred_environment,
+            device_info=device_info,
         )
         return app_env
 
