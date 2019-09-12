@@ -616,6 +616,11 @@ class SeleniumEyes(EyesBase):
         return self._scale_provider
 
     def _try_capture_dom(self):
+        if self.driver.is_mobile_app:
+            # While capture dom for native apps, appium throw an exception
+            # "Method is not implemented" which shown in output as a warning msg
+            # and mislead users.
+            return None
         try:
             dom_json = dom_capture.get_full_window_dom(self._driver)
             return dom_json
