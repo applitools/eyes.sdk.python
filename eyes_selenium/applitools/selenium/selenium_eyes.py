@@ -765,7 +765,7 @@ class SeleniumEyes(EyesBase):
         self._ensure_element_visible(self._target_element)
         sleep(self.configuration.wait_before_screenshots / 1000.0)
         image = self._get_scaled_cropped_image(scale_provider)
-        if not self._is_check_region and not self._driver.is_mobile_app:
+        if not self._is_check_region and not self._driver.is_mobile_platform:
             # Some browsers return always full page screenshot (IE).
             # So we cut such images to viewport size
             image = cut_to_viewport_size_if_required(self.driver, image)
