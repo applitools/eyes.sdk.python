@@ -135,11 +135,15 @@ def is_mobile_app(driver):
     """
     Returns whether the platform running is a mobile app.
     """
-    platform_name = driver.desired_capabilities.get("platformName", "").lower()
-    browser_name = driver.desired_capabilities.get("browserName", "").lower()
-    app = driver.desired_capabilities.get("app", None)
+    caps = driver.desired_capabilities
+    platform_name = caps.get("platformName", "").lower()
+    browser_name = caps.get("browserName", "").lower()
+    is_app = any(
+        param in caps
+        for param in ["app", "appActivity", "appPackage", "bundleId", "appName"]
+    )
     is_mobile = "android" in platform_name or "ios" in platform_name
-    if is_mobile and app and not browser_name:
+    if is_mobile and is_app and not browser_name:
         return True
     return False
 
