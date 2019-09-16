@@ -42,15 +42,20 @@ def cut_to_viewport_size_if_required(driver, image):
     # type: (EyesWebDriver, Image) -> Image
     # Some browsers return always full page screenshot (IE).
     # So we cut such images to viewport size
-    position_provider = get_cur_position_provider(driver)
-    curr_frame_scroll = get_updated_scroll_position(position_provider)
+
+    cur_position = driver.eyes._original_scroll_position
+    if cur_position:
+        top = cur_position.y
+    else:
+        top = 0
+
     screenshot_type = update_screenshot_type(None, image, driver)
     if screenshot_type != ScreenshotType.VIEWPORT:
         viewport_size = driver.eyes.viewport_size
         image = image_utils.crop_image(
             image,
             region_to_crop=Region(
-                top=curr_frame_scroll.x,
+                top=top,
                 left=0,
                 height=viewport_size["height"],
                 width=viewport_size["width"],

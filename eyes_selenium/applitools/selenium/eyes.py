@@ -451,3 +451,9 @@ class Eyes(object):
             return self._visual_grid_eyes
         else:
             return self._selenium_eyes
+
+    @property
+    def _original_scroll_position(self):
+        if self._selenium_eyes:
+            return self._selenium_eyes._original_scroll_position
+        return None

@@ -98,6 +98,7 @@ class SeleniumEyes(EyesBase):
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
     _is_check_region = None  # type: Optional[bool]
+    _original_scroll_position = None  # type: Optional[Point]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
@@ -246,6 +247,12 @@ class SeleniumEyes(EyesBase):
         self._original_frame_chain = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_platform:
+            # save original scroll position
+            scroll_provider = ScrollPositionProvider(
+                self.driver, self._scroll_root_element
+            )
+            self._original_scroll_position = scroll_provider.get_current_position()
+
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
