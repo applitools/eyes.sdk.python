@@ -694,6 +694,10 @@ class EyesWebDriver(object):
         size = self._driver.get_window_size(windowHandle)
         return RectangleSize(**size)
 
+    def get_window_position(self, windowHandle="current"):
+        loc = self._driver.get_window_position(windowHandle)
+        return Point(**loc)
+
     def set_window_size(self, width, height, windowHandle="current"):
         self._driver.set_window_size(width, height, windowHandle)
 
