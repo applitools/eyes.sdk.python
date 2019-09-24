@@ -141,8 +141,10 @@ class _EyesSwitchTo(object):
         for frame in frame_chain:
             self.frame(frame.reference)
             logger.debug(
-                "frame.Reference: %s ; frame.ScrollRootElement: %s"
-                % (frame.reference.id, frame.scroll_root_element.id)
+                "frame.reference: {}; frame.scroll_root_element: {}".format(
+                    getattr(frame.reference, "id", None),
+                    getattr(frame.scroll_root_element, "id", None),
+                )
             )
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
