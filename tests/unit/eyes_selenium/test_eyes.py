@@ -1,14 +1,14 @@
-import json
 import datetime
+import json
 
 import pytest
 from mock import patch
 
-from applitools.common import MatchLevel, StitchMode, BatchInfo, EyesError
+from applitools.common import BatchInfo, EyesError, MatchLevel, StitchMode
 from applitools.common.utils import json_utils
 from applitools.core import (
-    NullScaleProvider,
     FixedCutProvider,
+    NullScaleProvider,
     UnscaledFixedCutProvider,
 )
 from applitools.selenium import Eyes, Target
@@ -46,10 +46,9 @@ def eyes(request):
 
 
 def test_set_get_scale_ratio(eyes):
-    eyes.scale_ratio = 2.0
-    assert eyes.scale_ratio == 2.0
-
     if not eyes._is_visual_grid_eyes:
+        eyes.scale_ratio = 2.0
+        assert eyes.scale_ratio == 2.0
         eyes.scale_ratio = None
         assert eyes.scale_ratio == NullScaleProvider.UNKNOWN_SCALE_RATIO
 
