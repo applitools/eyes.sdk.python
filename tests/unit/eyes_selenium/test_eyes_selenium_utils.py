@@ -41,8 +41,11 @@ def test_appium_webdriver(driver_mock):
 
 
 @pytest.mark.parametrize("platform_name", ["Android", "ios 11"])
-def test_using_mobile_app(driver_mock, platform_name):
-    driver_mock.desired_capabilities["app"] = "some_app"
+@pytest.mark.parametrize(
+    "param", ["app", "appActivity", "appPackage", "bundleId", "appName"]
+)
+def test_using_mobile_app(driver_mock, platform_name, param):
+    driver_mock.desired_capabilities[param] = "some_app"
     driver_mock.desired_capabilities["platformName"] = platform_name
     assert eyes_selenium_utils.is_mobile_app(driver_mock)
     assert not eyes_selenium_utils.is_mobile_web(driver_mock)

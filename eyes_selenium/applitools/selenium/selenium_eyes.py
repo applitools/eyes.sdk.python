@@ -98,6 +98,7 @@ class SeleniumEyes(EyesBase):
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
     _is_check_region = None  # type: Optional[bool]
+    _original_scroll_position = None  # type: Optional[Point]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
@@ -246,6 +247,12 @@ class SeleniumEyes(EyesBase):
         self._original_frame_chain = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_platform:
+            # save original scroll position
+            scroll_provider = ScrollPositionProvider(
+                self.driver, self._scroll_root_element
+            )
+            self._original_scroll_position = scroll_provider.get_current_position()
+
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
@@ -523,6 +530,7 @@ class SeleniumEyes(EyesBase):
     def _environment(self):
         os = self.configuration.host_os
         # If no host OS was set, check for mobile OS.
+        device_info = "Desktop"
         if os is None:
             logger.info("No OS set, checking for mobile OS...")
             # Since in Python Appium driver is the same for Android and iOS,
@@ -530,6 +538,7 @@ class SeleniumEyes(EyesBase):
             if eyes_selenium_utils.is_mobile_platform(self._driver):
                 platform_name = self._driver.platform_name
                 logger.info(platform_name + " detected")
+                device_info = self._driver.desired_capabilities.get("deviceModel", "")
                 platform_version = self._driver.platform_version
                 if platform_version is not None:
                     # Notice that Python's "split" function's +limit+ is the the
@@ -548,6 +557,7 @@ class SeleniumEyes(EyesBase):
             hosting_app=self.configuration.host_app,
             display_size=self.configuration.viewport_size,
             inferred=self._inferred_environment,
+            device_info=device_info,
         )
         return app_env
 
@@ -613,6 +623,11 @@ class SeleniumEyes(EyesBase):
         return self._scale_provider
 
     def _try_capture_dom(self):
+        if self.driver.is_mobile_app:
+            # While capture dom for native apps, appium throw an exception
+            # "Method is not implemented" which shown in output as a warning msg
+            # and mislead users.
+            return None
         try:
             dom_json = dom_capture.get_full_window_dom(self._driver)
             return dom_json
@@ -757,7 +772,7 @@ class SeleniumEyes(EyesBase):
         self._ensure_element_visible(self._target_element)
         sleep(self.configuration.wait_before_screenshots / 1000.0)
         image = self._get_scaled_cropped_image(scale_provider)
-        if not self._is_check_region and not self._driver.is_mobile_app:
+        if not self._is_check_region and not self._driver.is_mobile_platform:
             # Some browsers return always full page screenshot (IE).
             # So we cut such images to viewport size
             image = cut_to_viewport_size_if_required(self.driver, image)

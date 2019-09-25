@@ -135,11 +135,15 @@ def is_mobile_app(driver):
     """
     Returns whether the platform running is a mobile app.
     """
-    platform_name = driver.desired_capabilities.get("platformName", "").lower()
-    browser_name = driver.desired_capabilities.get("browserName", "").lower()
-    app = driver.desired_capabilities.get("app", None)
+    caps = driver.desired_capabilities
+    platform_name = caps.get("platformName", "").lower()
+    browser_name = caps.get("browserName", "").lower()
+    is_app = any(
+        param in caps
+        for param in ["app", "appActivity", "appPackage", "bundleId", "appName"]
+    )
     is_mobile = "android" in platform_name or "ios" in platform_name
-    if is_mobile and app and not browser_name:
+    if is_mobile and is_app and not browser_name:
         return True
     return False
 
@@ -187,7 +191,13 @@ def get_viewport_size(driver):
 
     :param driver: The webdriver to use for getting the viewport size.
     """
-    # noinspection PyBroadException
+
+    if is_mobile_app(driver):
+        # it's expected that on mobile app windows size required and attempt
+        # to get viewport size with JS would raise an exception so just return
+        # windows size directly in this case
+        return get_window_size(driver)
+
     try:
         width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
         return RectangleSize(width=width, height=height)

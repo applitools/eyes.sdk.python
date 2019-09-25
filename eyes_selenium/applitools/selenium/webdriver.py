@@ -4,7 +4,7 @@ import contextlib
 import typing
 
 import attr
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -40,7 +40,10 @@ class FrameResolver(object):
         frame_ref = self._ref_if_locator(self._frame_ref)
         driver = self._driver
         if isinstance(frame_ref, basestring):
-            frame_eyes_webelement = driver.find_element_by_name(frame_ref)
+            try:
+                frame_eyes_webelement = driver.find_element_by_name(frame_ref)
+            except NoSuchElementException:
+                frame_eyes_webelement = driver.find_element_by_id(frame_ref)
         elif isinstance(frame_ref, int):
             frame_elements_list = driver.find_elements_by_css_selector("frame, iframe")
             frame_eyes_webelement = frame_elements_list[frame_ref]
@@ -141,8 +144,10 @@ class _EyesSwitchTo(object):
         for frame in frame_chain:
             self.frame(frame.reference)
             logger.debug(
-                "frame.Reference: %s ; frame.ScrollRootElement: %s"
-                % (frame.reference.id, frame.scroll_root_element.id)
+                "frame.reference: {}; frame.scroll_root_element: {}".format(
+                    getattr(frame.reference, "id", None),
+                    getattr(frame.scroll_root_element, "id", None),
+                )
             )
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
@@ -694,8 +699,38 @@ class EyesWebDriver(object):
         size = self._driver.get_window_size(windowHandle)
         return RectangleSize(**size)
 
+    def get_window_position(self, windowHandle="current"):
+        loc = self._driver.get_window_position(windowHandle)
+        return Point(**loc)
+
     def set_window_size(self, width, height, windowHandle="current"):
         self._driver.set_window_size(width, height, windowHandle)
 
     def set_window_position(self, x, y, windowHandle="current"):
         self._driver.set_window_position(x, y, windowHandle)
+
+    @property
+    def desired_capabilities(self):
+        # type: () -> Dict
+        """
+        returns the drivers current desired capabilities being used
+        """
+        return self._driver.desired_capabilities
+
+    def close(self):
+        """
+        Closes the current window.
+
+        :Usage:
+            driver.close()
+        """
+        self._driver.close()
+
+    def quit(self):
+        """
+        Quits the driver and closes every associated window.
+
+        :Usage:
+            driver.quit()
+        """
+        self._driver.quit()

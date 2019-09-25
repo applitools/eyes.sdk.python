@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from applitools.selenium import Region, Target
+from applitools.selenium import Region, StitchMode, Target
 
 
 @pytest.mark.platform("Linux")
@@ -63,7 +63,8 @@ def test_abort_eyes(eyes, driver):
     eyes.abort()
 
 
-def test_ie_viewport_screenshot(eyes, webdriver_module):
+@pytest.fixture
+def ie_driver(webdriver_module):
     sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
         username=os.getenv("SAUCE_USERNAME", None),
         password=os.getenv("SAUCE_ACCESS_KEY", None),
@@ -76,7 +77,34 @@ def test_ie_viewport_screenshot(eyes, webdriver_module):
             "version": "11.285",
         },
     )
-    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
-    eyes.open(driver, "Python SDK", "TestIEViewportScreenshot")
+    return driver
+
+
+@pytest.mark.parametrize(
+    "eyes",
+    [
+        {"force_full_page_screenshot": True, "stitch_mode": StitchMode.CSS},
+        {"force_full_page_screenshot": False, "stitch_mode": StitchMode.CSS},
+        {"force_full_page_screenshot": True, "stitch_mode": StitchMode.Scroll},
+        {"force_full_page_screenshot": False, "stitch_mode": StitchMode.Scroll},
+    ],
+    indirect=True,
+    ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
+)
+def test_ie_viewport_screenshot_with_scrolling(eyes, ie_driver):
+    ie_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
+
+    test_name = "TestIEViewportScreenshot"
+    if eyes.force_full_page_screenshot:
+        test_name += "_FPS"
+    test_name += "_%s" % eyes.stitch_mode.value
+    eyes.open(ie_driver, "Python SDK", test_name)
+
+    eyes.check_window()
+
+    ie_driver.execute_script(
+        "arguments[0].scrollIntoView();",
+        ie_driver.find_element_by_id("overflowing-div-image"),
+    )
     eyes.check_window()
     eyes.close()

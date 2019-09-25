@@ -77,14 +77,36 @@ _JS_GET_SIZE_AND_BORDER_WIDTHS = """
 @proxy_to(
     "_element",
     [
-        "find_element",
-        "find_elements" "tag_name",
+        "tag_name",
         "text",
+        "submit",
+        "clear",
+        "get_property",
+        "get_attribute",
+        "is_selected",
+        "is_enabled",
+        "find_element_by_id",
+        "find_elements_by_id",
+        "find_element_by_name",
+        "find_elements_by_name",
+        "find_element_by_link_text",
+        "find_elements_by_link_text",
+        "find_element_by_partial_link_text",
+        "find_elements_by_partial_link_text",
+        "find_element_by_tag_name",
+        "find_elements_by_tag_name",
+        "find_element_by_xpath",
+        "find_elements_by_xpath",
+        "find_element_by_class_name",
+        "find_elements_by_class_name",
+        "find_element_by_css_selector",
+        "find_elements_by_css_selector",
+        "is_displayed",
         "location_once_scrolled_into_view",
         "parent",
-        "rect",
         "screenshot_as_base64",
         "screenshot_as_png",
+        "screenshot",
         "location_in_view",
         "anonymous_children",
     ],
@@ -147,6 +169,10 @@ class EyesWebElement(object):
     @property
     def location(self):
         return self._element.location
+
+    @property
+    def rect(self):
+        return self._element.rect
 
     @property
     def is_attached_to_page(self):
@@ -228,7 +254,7 @@ class EyesWebElement(object):
 
         :return: The previous value of the overflow property (could be None).
         """
-        logger.debug("EyesWebElement.HideScrollbars()")
+        logger.debug("EyesWebElement.hide_scrollbars()")
         self._original_overflow = eyes_selenium_utils.hide_scrollbars(  # type: ignore
             self.driver, self.element
         )
@@ -321,9 +347,10 @@ class EyesWebElement(object):
         )
 
     def __str__(self):
-        return "EyesWebElement: id {}, tag_name {}".format(
-            self._element.id, self._element.tag_name
-        )
+        tag_name = "None"
+        if self.is_attached_to_page:
+            tag_name = self._element.tag_name
+        return "EyesWebElement: id {}, tag_name {}".format(self._element.id, tag_name)
 
 
 class SizeAndBorders(object):
@@ -332,3 +359,6 @@ class SizeAndBorders(object):
     def __init__(self, width, height, left, top, right, bottom):
         self.size = dict(width=width, height=height)
         self.borders = dict(left=left, top=top, right=right, bottom=bottom)
+
+    def __str__(self):
+        return "SizeAndBorders(size={}, borders={})".format(self.size, self.borders)
