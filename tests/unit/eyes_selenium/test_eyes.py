@@ -2,6 +2,8 @@ import datetime
 import json
 
 import pytest
+from mock import patch
+
 from applitools.common import BatchInfo, EyesError, MatchLevel, StitchMode
 from applitools.common.utils import json_utils
 from applitools.core import (
@@ -11,7 +13,6 @@ from applitools.core import (
 )
 from applitools.selenium import Eyes, Target
 from applitools.selenium.visual_grid import VisualGridRunner
-from mock import patch
 
 
 def open_and_get_start_session_info(eyes, driver):

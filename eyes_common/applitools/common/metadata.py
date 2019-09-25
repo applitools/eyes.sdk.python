@@ -4,11 +4,12 @@ import attr
 
 from .match import ImageMatchSettings
 from .server import SessionType
+from .utils.compat import basestring
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from applitools.common import DeviceName, BatchInfo, RenderingInfo, RectangleSize
-    from typing import Optional, Text
+    from typing import Optional, Text, Union
 
 __all__ = ("RunningSession", "AppEnvironment", "SessionStartInfo")
 
@@ -29,7 +30,9 @@ class RunningSession(object):
 
 
 def _to_device_info(v):
-    # type: (Optional[DeviceName]) -> Text
+    # type: (Optional[Union[DeviceName, Text]]) -> Text
+    if isinstance(v, basestring):
+        return v
     return "Desktop" if v is None else "{} (Chrome emulation)".format(v.value)
 
 

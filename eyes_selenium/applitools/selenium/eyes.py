@@ -184,7 +184,7 @@ class Eyes(object):
 
     @cut_provider.setter
     def cut_provider(self, provider):
-        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider]) -> None
+        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         """
         Manually set the the sizes to cut from an image before it's validated.
 
@@ -452,3 +452,9 @@ class Eyes(object):
             return self._visual_grid_eyes
         else:
             return self._selenium_eyes
+
+    @property
+    def _original_scroll_position(self):
+        if self._selenium_eyes:
+            return self._selenium_eyes._original_scroll_position
+        return None
