@@ -1,7 +1,7 @@
+import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
 
-import pytest
 from applitools.selenium import FixedCutProvider, StitchMode, Target
 
 URL_BAR_SIZE = 77
@@ -79,10 +79,11 @@ def test_selenium_and_appium_work(eyes_open):
 
 
 @pytest.mark.platform("iOS")
-@pytest.mark.test_page_url("https://www.goodrx.com/")
-def test_cut_header_and_bottom(eyes_open):
+@pytest.mark.test_page_url("http://demo.applitools.com/")
+def test_cut_header_and_bottom_of_screenshot_on_ios(eyes_open):
     eyes, driver = eyes_open
     eyes.send_dom = False
+    eyes.stitch_mode = StitchMode.CSS
     eyes.cut_provider = FixedCutProvider(URL_BAR_SIZE, NAVIGATION_BAR_SIZE, 0, 0)
-    eyes.check("Home Window", Target.window())
-    eyes.check("Home Window Fully", Target.window().fully().ignore(".sc-1coxrzh-2"))
+    eyes.check("Window", Target.window())
+    eyes.check("Fully", Target.window().fully())

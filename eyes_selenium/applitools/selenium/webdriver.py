@@ -145,7 +145,7 @@ class _EyesSwitchTo(object):
         for frame in frame_chain:
             self.frame(frame.reference)
             logger.debug(
-                "frame.Reference: {}; frame.ScrollRootElement: {}".format(
+                "frame.reference: {}; frame.scroll_root_element: {}".format(
                     getattr(frame.reference, "id", None),
                     getattr(frame.scroll_root_element, "id", None),
                 )
@@ -699,6 +699,10 @@ class EyesWebDriver(object):
     def get_window_size(self, windowHandle="current"):
         size = self._driver.get_window_size(windowHandle)
         return RectangleSize(**size)
+
+    def get_window_position(self, windowHandle="current"):
+        loc = self._driver.get_window_position(windowHandle)
+        return Point(**loc)
 
     def set_window_size(self, width, height, windowHandle="current"):
         self._driver.set_window_size(width, height, windowHandle)
