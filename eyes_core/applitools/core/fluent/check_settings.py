@@ -34,7 +34,7 @@ class CheckSettingsValues(object):
     send_dom = attr.ib(init=False, default=None)  # type: bool
     use_dom = attr.ib(init=False, default=None)  # type: bool
     enable_patterns = attr.ib(init=False, default=None)  # type: bool
-    ignore_displacement = attr.ib(init=False, default=None)  # type: bool
+    ignore_displacements = attr.ib(init=False, default=None)  # type: bool
 
     ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
@@ -175,9 +175,9 @@ class CheckSettings(object):
         self.values.enable_patterns = enable
         return self
 
-    def ignore_displacement(self, should_ignore=True):
+    def ignore_displacements(self, should_ignore=True):
         # type: (Self, bool) -> Self
-        self.values.ignore_displacement = should_ignore
+        self.values.ignore_displacements = should_ignore
         return self
 
     def match_level(self, match_level):

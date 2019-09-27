@@ -1,7 +1,7 @@
 import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
-from applitools.common.utils.general_utils import proxy_to
+from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core import (
     NULL_REGION_PROVIDER,
     EyesBase,
@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort
 
 
-@proxy_to("configuration", Configuration.all_fields())
+@proxy_to("configuration", all_fields(Configuration))
 class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
@@ -49,11 +49,11 @@ class Eyes(EyesBase):
         return ""
 
     @staticmethod
-    def get_viewport_size_static():
+    def get_viewport_size():
         pass
 
     @staticmethod
-    def set_viewport_size_static(value):
+    def set_viewport_size(value):
         pass
 
     def _get_viewport_size(self):
@@ -125,7 +125,7 @@ class Eyes(EyesBase):
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
-        if not self.is_opened:
+        if not self._is_opened:
             self.abort()
             raise EyesError("you must call open() before checking")
 

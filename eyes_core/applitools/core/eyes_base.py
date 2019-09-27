@@ -3,15 +3,8 @@ from __future__ import absolute_import
 import abc
 import typing
 
-from applitools.common import (
-    AppOutput,
-    BatchInfo,
-    Configuration,
-    RectangleSize,
-    Region,
-    RunningSession,
-    logger,
-)
+from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
+from applitools.common.config import BatchInfo, Configuration
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
@@ -80,14 +73,14 @@ class _EyesBaseAbstract(ABC):
         pass
 
     @abc.abstractmethod
-    def get_viewport_size_static(self):
+    def get_viewport_size(self):
         # type: () -> RectangleSize
         """
         :return: The viewport size of the AUT.
         """
 
     @abc.abstractmethod
-    def set_viewport_size_static(self, size):
+    def set_viewport_size(self, size):
         # type: (ViewPort) -> None
         """
         :param size: The required viewport size.
@@ -286,7 +279,7 @@ class EyesBase(_EyesBaseAbstract):
         del self.configuration.properties[:]
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         """
         Returns whether the session is currently running.
@@ -517,7 +510,7 @@ class EyesBase(_EyesBaseAbstract):
         raise EyesError("eyes.open_base() failed")
 
     def _validate_session_open(self):
-        if self.is_opened:
+        if self.is_open:
             self.abort()
             raise EyesError("A test is already running")
 
@@ -710,9 +703,9 @@ class EyesBase(_EyesBaseAbstract):
             check_settings = check_settings.ignore_caret(
                 get_config_value("enable_patterns")
             )
-        if check_settings.values.ignore_displacement is None:
-            check_settings = check_settings.ignore_displacement(
-                self.configuration.default_match_settings.ignore_displacement
+        if check_settings.values.ignore_displacements is None:
+            check_settings = check_settings.ignore_displacements(
+                self.configuration.default_match_settings.ignore_displacements
             )
 
         region = region_provider.get_region()

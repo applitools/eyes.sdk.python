@@ -12,11 +12,11 @@ if typing.TYPE_CHECKING:
     from typing import List, Optional, Dict, Any, Text
     from applitools.common import (
         TestResults,
-        SeleniumConfiguration,
         VisualGridSelector,
         RenderBrowserInfo,
         RenderStatusResults,
     )
+    from applitools.common.selenium import Configuration
     from applitools.selenium.fluent import SeleniumCheckSettings
     from .visual_grid_runner import VisualGridRunner
     from .eyes_connector import EyesConnector
@@ -49,7 +49,7 @@ TRANSITIONS = [
 @attr.s(hash=True)
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
-    configuration = attr.ib(hash=False, repr=False)  # type: SeleniumConfiguration
+    configuration = attr.ib(hash=False, repr=False)  # type: Configuration
     browser_info = attr.ib()  # type: RenderBrowserInfo
     # listener = attr.ib()  # type:
     region_selectors = attr.ib(
@@ -201,18 +201,20 @@ class RunningTest(object):
 
     def _render_task(
         self,
-        script_result,
-        tag,
-        visual_grid_manager,
-        region_selectors,
-        size_mode,
-        region_to_check,
+        script_result,  # type: Dict[Text, Any]
+        tag,  # type: Text
+        visual_grid_manager,  # type: VisualGridRunner
+        region_selectors,  # type: List
+        size_mode,  # type: Text
+        region_to_check,  # type: Region
+        script_hooks,  # type: Dict[Text, Any]
     ):
-        # type: (Dict[str, Any],Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
+        # type: (...)->RenderTask
+        short_description = "{} of {}".format(
+            self.configuration.test_name, self.configuration.app_name
+        )
         render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(
-                self.configuration.short_description, tag
-            ),
+            name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
             running_test=self,
             resource_cache=visual_grid_manager.resource_cache,
@@ -222,6 +224,7 @@ class RunningTest(object):
             region_selectors=region_selectors,
             size_mode=size_mode,
             region_to_check=region_to_check,
+            script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
         )
         logger.debug("RunningTest %s" % render_task.name)

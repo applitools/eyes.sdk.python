@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .utils.custom_types import SessionUrls, StepInfo
 
 
-__all__ = ("TestResults", "TestResultSummary")
+__all__ = ("TestResults", "TestResultsSummary")
 
 
 class TestResultsStatus(Enum):
@@ -101,7 +101,7 @@ class TestResults(object):
 
 
 @attr.s
-class TestResultSummary(object):
+class TestResultsSummary(object):
     all_results = attr.ib()  # type: List[TestResults]
     exceptions = attr.ib(default=0)  # type: int
 

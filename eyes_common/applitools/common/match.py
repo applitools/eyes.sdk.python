@@ -108,7 +108,7 @@ class ImageMatchSettings(object):
     enable_patterns = attr.ib(
         default=False, metadata={JsonInclude.THIS: True}
     )  # type:bool
-    ignore_displacement = attr.ib(
+    ignore_displacements = attr.ib(
         default=False, metadata={JsonInclude.THIS: True}
     )  # type:bool
 

@@ -1,7 +1,8 @@
-from typing import TYPE_CHECKING, List, Text, overload
+from typing import TYPE_CHECKING, List, overload
 
 import attr
 
+from applitools.common.config import Configuration as ConfigurationBase
 from applitools.common.geometry import RectangleSize
 from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import (
@@ -10,19 +11,18 @@ from applitools.common.visual_grid import (
     ScreenOrientation,
 )
 
-from .configuration import Configuration
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
     from applitools.common.visual_grid import DeviceName
 
-__all__ = ("SeleniumConfiguration",)
+__all__ = ("Configuration",)
+
+DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 
 
 @attr.s
-class SeleniumConfiguration(Configuration):
-    DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
-
+class Configuration(ConfigurationBase):
     force_full_page_screenshot = attr.ib(default=False)  # type: bool
     wait_before_screenshots = attr.ib(
         default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS
@@ -38,12 +38,12 @@ class SeleniumConfiguration(Configuration):
 
     @overload  # noqa
     def add_browser(self, render_info):
-        # type: (RenderBrowserInfo) -> SeleniumConfiguration
+        # type: (RenderBrowserInfo) -> Configuration
         pass
 
     @overload  # noqa
     def add_browser(self, width, height, browser_type):
-        # type: (int, int, BrowserType) -> SeleniumConfiguration
+        # type: (int, int, BrowserType) -> Configuration
         pass
 
     def add_browser(self, *args):  # noqa
@@ -64,7 +64,7 @@ class SeleniumConfiguration(Configuration):
         return self
 
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
-        # type: (DeviceName, ScreenOrientation) -> SeleniumConfiguration
+        # type: (DeviceName, ScreenOrientation) -> Configuration
         argument_guard.not_none(device_name)
         emu = ChromeEmulationInfo(device_name, orientation)
         self.add_browser(RenderBrowserInfo(emulation_info=emu))
@@ -81,8 +81,3 @@ class SeleniumConfiguration(Configuration):
             baseline_env_name=self.baseline_env_name,
         )
         return [browser_info]
-
-    @staticmethod
-    def all_fields():
-        # type: () -> List[Text]
-        return list(attr.fields_dict(SeleniumConfiguration).keys())

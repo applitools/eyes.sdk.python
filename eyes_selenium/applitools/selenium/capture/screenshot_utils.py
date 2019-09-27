@@ -23,7 +23,7 @@ def update_screenshot_type(screenshot_type, image, driver):
     # type: ( Optional[ScreenshotType], Image, EyesWebDriver) -> ScreenshotType
     if screenshot_type is None:
         viewport_size = driver.eyes.viewport_size
-        scale_viewport = driver.eyes.stitch_content
+        scale_viewport = driver.eyes.should_stitch_content
 
         if scale_viewport:
             pixel_ratio = driver.eyes.device_pixel_ratio

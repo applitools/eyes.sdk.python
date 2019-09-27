@@ -155,3 +155,9 @@ def test_match_regions_with_by_values(method_name):
     assert regions[3].selector == "tag_name"
     assert regions[4].selector == "css_selector"
     assert regions[5].selector == "xpath"
+
+
+def test_before_render_screenshot_hook():
+    cs = SeleniumCheckSettings()
+    cs.before_render_screenshot_hook("some hook")
+    assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"
