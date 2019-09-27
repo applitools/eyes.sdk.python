@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Text, Union
 
 import attr
 
+from applitools.common import logger
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
@@ -15,7 +16,8 @@ from applitools.common.utils.json_utils import JsonInclude
 __all__ = ("BatchInfo", "Configuration")
 
 MINIMUM_MATCH_TIMEOUT_MS = 600
-DEFAULT_TIMEOUT_MS = 60 * 5 * 1000
+DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
+DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
@@ -53,8 +55,6 @@ class BatchInfo(object):
 
 @attr.s
 class Configuration(object):
-    DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
-
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
         factory=lambda: os.getenv("APPLITOOLS_BRANCH", None)
@@ -98,13 +98,13 @@ class Configuration(object):
         default=ImageMatchSettings()
     )  # type: ImageMatchSettings
     hide_caret = attr.ib(init=False, default=None)  # type: Optional[bool]
-    stitching_overlap = attr.ib(init=False, default=5)  # type: int
+    stitch_overlap = attr.ib(init=False, default=5)  # type: int
 
     api_key = attr.ib(
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
-    timeout = attr.ib(default=DEFAULT_TIMEOUT_MS)  # type: int # ms
+    timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
     def _validate1(self, attribute, value):
@@ -127,18 +127,14 @@ class Configuration(object):
     @property
     def is_dom_send(self):
         # type: () -> bool
+        logger.deprecation("Use is_send_dom instead")
+        return self.is_send_dom
+
+    @property
+    def is_send_dom(self):
+        # type: () -> bool
         return self.send_dom
 
     def clone(self):
         # type: () -> Configuration
         return copy(self)
-
-    @property
-    def short_description(self):
-        # type: () -> Text
-        return "{} of {}".format(self.test_name, self.app_name)
-
-    @staticmethod
-    def all_fields():
-        # type: () -> List[Text]
-        return list(attr.fields_dict(Configuration).keys())

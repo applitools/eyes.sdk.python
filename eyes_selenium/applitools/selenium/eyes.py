@@ -2,9 +2,10 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import EyesError, SeleniumConfiguration, logger
+from applitools.common import EyesError, logger
+from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
-from applitools.common.utils.general_utils import proxy_to
+from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.selenium import eyes_selenium_utils
 
 from .fluent import Target
@@ -33,7 +34,7 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to("configuration", SeleniumConfiguration.all_fields())
+@proxy_to("configuration", all_fields(Configuration))
 class Eyes(object):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
@@ -44,7 +45,7 @@ class Eyes(object):
 
     def __init__(self, runner=None):
         # type: (Optional[VisualGridRunner]) -> None
-        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+        self._configuration = Configuration()  # type: Configuration
 
         # backward compatibility with settings server_url
         if isinstance(runner, str):
@@ -61,19 +62,19 @@ class Eyes(object):
             raise ValueError("Wrong runner")
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         return self._is_opened
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._configuration
 
     @configuration.setter
     def configuration(self, new_conf):
-        # type: (SeleniumConfiguration) -> None
-        argument_guard.is_a(new_conf, SeleniumConfiguration)
+        # type: (Configuration) -> None
+        argument_guard.is_a(new_conf, Configuration)
         if self._configuration.api_key and not new_conf.api_key:
             new_conf.api_key = self._configuration.api_key
         if self._configuration.server_url and not new_conf.server_url:
@@ -99,14 +100,21 @@ class Eyes(object):
         return self._current_eyes.full_agent_id
 
     @property
-    def stitch_content(self):
+    def should_stitch_content(self):
         # type: () -> bool
-        return self._current_eyes.stitch_content
+        return self._current_eyes.should_stitch_content
 
     @property
-    def original_frame_chain(self):
-        # type: () -> FrameChain
-        return self._current_eyes.original_frame_chain
+    def original_fc(self):
+        # type: () -> Optional[FrameChain]
+        """ Gets original frame chain
+
+        Before check() call we save original frame chain
+
+        Returns:
+            Frame chain saved before check() call
+        """
+        return self._current_eyes.original_fc
 
     # def rotation(self):
     #     if not self._is_visual_grid_eyes:
@@ -292,14 +300,12 @@ class Eyes(object):
         """
         if self.configuration.is_disabled:
             return MatchResult()
-        if not self.is_opened:
+        if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)
 
-    def check_window(
-        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS
-    ):
+    def check_window(self, tag=None, match_timeout=-1):
         # type: (Optional[Text], int) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected output.
@@ -315,7 +321,7 @@ class Eyes(object):
         self,
         region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
         tag=None,  # type: Optional[Text]
-        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS,  # type: int
+        match_timeout=-1,  # type: int
         stitch_content=False,  # type: bool
     ):
         # type: (...) -> MatchResult

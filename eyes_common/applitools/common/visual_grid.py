@@ -4,10 +4,10 @@ from enum import Enum
 
 import attr
 
-from .config.misc import BrowserType
 from .geometry import RectangleSize
+from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
-from .utils.compat import ABC, basestring
+from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
@@ -149,12 +149,6 @@ class RenderBrowserInfo(object):
         if self.viewport_size:
             return self.viewport_size["height"]
         return 0
-
-    @property
-    def size_mode(self):
-        # type: () -> Text
-        # TODO: Add more size modes
-        return "full-page"
 
     @property
     def platform(self):

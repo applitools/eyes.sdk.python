@@ -9,7 +9,6 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     BatchInfo,
-    EyesError,
     ImageMatchSettings,
     MatchLevel,
     MatchWindowData,
@@ -18,7 +17,7 @@ from applitools.common import (
     SessionStartInfo,
     TestResults,
 )
-from applitools.common.config.configuration import DEFAULT_SERVER_URL, Configuration
+from applitools.common.config import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json

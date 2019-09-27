@@ -6,7 +6,6 @@ from applitools.common import (
     EyesError,
     RectangleSize,
     Region,
-    SeleniumConfiguration,
     logger,
 )
 from applitools.common.visual_grid import (
@@ -18,6 +17,7 @@ from applitools.common.visual_grid import (
 )
 from applitools.core import NULL_REGION_PROVIDER, EyesBase
 from applitools.core.capture import AppOutputWithScreenshot
+from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
 
 class EyesConnector(EyesBase):
     def __init__(self, browser_info, config):
-        # type: (RenderBrowserInfo,SeleniumConfiguration) -> None
+        # type: (RenderBrowserInfo, Configuration) -> None
         super(EyesConnector, self).__init__()
         self.device = None
         self.device_size = None
@@ -45,7 +45,7 @@ class EyesConnector(EyesBase):
         self._server_connector.update_config(config)
 
     def open(self, config):
-        # type: (SeleniumConfiguration) -> None
+        # type: (Configuration) -> None
         """Starts a new test without setting the viewport size of the AUT."""
         logger.info(
             "opening EyesConnector with viewport size: {}".format(
@@ -94,10 +94,10 @@ class EyesConnector(EyesBase):
     def _try_capture_dom(self):
         return None
 
-    def get_viewport_size_static(self):
+    def get_viewport_size(self):
         return None
 
-    def set_viewport_size_static(self, size):
+    def set_viewport_size(self, size):
         return None
 
     def _get_viewport_size(self):

@@ -2,9 +2,8 @@ import os
 import uuid
 from datetime import datetime
 
-from mock import patch
-
 from applitools.common.config import BatchInfo
+from mock import patch
 
 
 def test_create_batch_info(monkeypatch):
@@ -15,9 +14,7 @@ def test_create_batch_info(monkeypatch):
     monkeypatch.delenv("APPLITOOLS_BATCH_ID")
     with patch("uuid.uuid4") as mock_uuid:
         mock_uuid.return_value = uuid_value
-        with patch(
-            "applitools.common.config.configuration.datetime"
-        ) as mocked_datetime:
+        with patch("applitools.common.config.datetime") as mocked_datetime:
             mocked_datetime.now.return_value = now
             bi = BatchInfo(batch_name)
             bi.sequence_name = "sequence name"

@@ -17,7 +17,7 @@ from applitools.common.utils import datetime_utils, urlparse
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Dict, Any, Text, List
+    from typing import Callable, Dict, Any, Text, List, Optional
     from applitools.common import RenderStatusResults, Region
     from applitools.selenium.visual_grid import RunningTest, EyesConnector
 
@@ -36,7 +36,8 @@ class RenderTask(VGTask):
     region_selectors = attr.ib(hash=False, factory=list)
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
-    agent_id = attr.ib(default=None)
+    script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
+    agent_id = attr.ib(default=None)  # type: Optional[Text]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
@@ -149,7 +150,7 @@ class RenderTask(VGTask):
             render_info=r_info,
             browser_name=self.running_test.browser_info.browser_type,
             platform=self.running_test.browser_info.platform,
-            script_hooks={},
+            script_hooks=self.script_hooks,
             selectors_to_find_regions_for=self.region_selectors,
             send_dom=self.running_test.configuration.send_dom,
         )

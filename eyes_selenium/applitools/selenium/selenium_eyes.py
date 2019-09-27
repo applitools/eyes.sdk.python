@@ -11,8 +11,8 @@ from applitools.common import (
     Region,
     logger,
 )
-from applitools.common.config import SeleniumConfiguration, StitchMode
 from applitools.common.geometry import Point
+from applitools.common.selenium import Configuration, StitchMode
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -104,7 +104,7 @@ class SeleniumEyes(EyesBase):
     current_frame_position_provider = None  # type: Optional[PositionProvider]
 
     @staticmethod
-    def set_viewport_size_static(driver, size=None, viewportsize=None):
+    def set_viewport_size(driver, size=None, viewportsize=None):
         # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
         assert driver is not None
         if size is None and viewportsize is None:
@@ -114,7 +114,7 @@ class SeleniumEyes(EyesBase):
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     @staticmethod
-    def get_viewport_size_static(driver):
+    def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
@@ -130,16 +130,16 @@ class SeleniumEyes(EyesBase):
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._config_provider.configuration
 
     @property
-    def original_frame_chain(self):
+    def original_fc(self):
         # type: () -> FrameChain
         return self._original_fc
 
     @property
-    def stitch_content(self):
+    def should_stitch_content(self):
         # type: () -> bool
         return self._stitch_content
 
@@ -627,7 +627,7 @@ class SeleniumEyes(EyesBase):
     def _get_viewport_size(self):
         size = self.configuration.viewport_size
         if size is None:
-            size = self.get_viewport_size_static(self._driver)
+            size = self.get_viewport_size(self._driver)
         return size
 
     def _ensure_viewport_size(self):
@@ -649,7 +649,7 @@ class SeleniumEyes(EyesBase):
             self.driver.switch_to.default_content()
 
             try:
-                self.set_viewport_size_static(self._driver, size)
+                self.set_viewport_size(self._driver, size)
                 self._effective_viewport = Region(
                     0,
                     0,
@@ -804,7 +804,7 @@ class SeleniumEyes(EyesBase):
             origin_provider,
             scale_provider,
             self._cut_provider,
-            self.configuration.stitching_overlap,
+            self.configuration.stitch_overlap,
             self._image_provider,
             self._region_position_compensation,
         )
@@ -829,7 +829,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning("Cannot hide caret! \n{}".format(e))
 
     def _get_screenshot(self):
-        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self._original_fc):
             if self.position_provider and not self.driver.is_mobile_platform:
                 state = self.position_provider.get_state()
 
@@ -846,7 +846,7 @@ class SeleniumEyes(EyesBase):
             else:
                 self._last_screenshot = self._element_screenshot(scale_provider)
 
-        with self._driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self._driver.switch_to.frames_and_back(self._original_fc):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.restore_state(state)
 
@@ -880,7 +880,7 @@ class SeleniumEyes(EyesBase):
         else:
             original_frame_position = Point.ZERO()
 
-        with self.driver.switch_to.frames_and_back(self.original_frame_chain):
+        with self.driver.switch_to.frames_and_back(self._original_fc):
             location = self.scroll_root_element.location
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
@@ -926,7 +926,7 @@ class SeleniumEyes(EyesBase):
 
     def _get_viewport_scroll_bounds(self):
         switch_to = self.driver.switch_to
-        with switch_to.frames_and_back(self.original_frame_chain):
+        with switch_to.frames_and_back(self._original_fc):
             try:
                 location = eyes_selenium_utils.get_current_position(
                     self.driver, self.scroll_root_element

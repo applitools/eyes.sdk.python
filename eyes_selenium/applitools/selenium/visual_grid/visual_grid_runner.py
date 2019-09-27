@@ -11,7 +11,7 @@ from applitools.common import (
     EyesError,
     NewTestError,
     TestFailedError,
-    TestResultSummary,
+    TestResultsSummary,
     logger,
 )
 from applitools.common.utils import datetime_utils
@@ -126,8 +126,8 @@ class VisualGridRunner(object):
         return test_list
 
     def get_all_test_results(self, raise_ex=True):
-        # type: (bool) -> TestResultSummary
-        while not any(e.is_opened for e in self.all_eyes):
+        # type: (bool) -> TestResultsSummary
+        while not any(e.is_open for e in self.all_eyes):
             datetime_utils.sleep(500)
         test_list = self.process_test_list(
             [test for e in self.all_eyes for test in e.test_list], raise_ex
@@ -135,7 +135,7 @@ class VisualGridRunner(object):
         for e in self.all_eyes:
             e._is_opened = False
         exceptions = [exp for t in test_list for exp in t.pending_exceptions]
-        return TestResultSummary([t.test_result for t in test_list], len(exceptions))
+        return TestResultsSummary([t.test_result for t in test_list], len(exceptions))
 
     @property
     def all_running_tests(self):
