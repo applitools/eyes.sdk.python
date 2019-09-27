@@ -84,23 +84,6 @@ def test_coordinates_resolving(eyes, driver):
     eyes.close()
 
 
-@pytest.fixture
-def ie_driver(webdriver_module):
-    sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-        username=os.getenv("SAUCE_USERNAME", None),
-        password=os.getenv("SAUCE_ACCESS_KEY", None),
-    )
-    driver = webdriver_module.Remote(
-        command_executor=sauce_url,
-        desired_capabilities={
-            "browserName": "internet explorer",
-            "platform": "Windows 10",
-            "version": "11.285",
-        },
-    )
-    return driver
-
-
 @pytest.mark.parametrize(
     "eyes",
     [
@@ -112,20 +95,22 @@ def ie_driver(webdriver_module):
     indirect=True,
     ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
 )
-def test_ie_viewport_screenshot_with_scrolling(eyes, ie_driver):
-    ie_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
+@pytest.mark.platform("Windows")
+@pytest.mark.browser("internet explorer")
+def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
 
     test_name = "TestIEViewportScreenshot"
     if eyes.force_full_page_screenshot:
         test_name += "_FPS"
     test_name += "_%s" % eyes.stitch_mode.value
-    eyes.open(ie_driver, "Python SDK", test_name)
+    eyes.open(driver, "Python SDK", test_name)
 
     eyes.check_window()
 
-    ie_driver.execute_script(
+    driver.execute_script(
         "arguments[0].scrollIntoView();",
-        ie_driver.find_element_by_id("overflowing-div-image"),
+        driver.find_element_by_id("overflowing-div-image"),
     )
     eyes.check_window()
     eyes.close()
