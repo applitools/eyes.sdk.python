@@ -228,16 +228,16 @@ class Eyes(object):
         return None
 
     @staticmethod
-    def get_viewport_size_static(driver):
+    def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
         return eyes_selenium_utils.get_viewport_size(driver)
 
     @staticmethod
-    def set_viewport_size_static(driver, size):
+    def set_viewport_size(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
         assert driver is not None
         if size is None:
-            raise ValueError("set_viewport_size_static require `size` parameter")
+            raise ValueError("set_viewport_size require `size` parameter")
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     def add_property(self, name, value):

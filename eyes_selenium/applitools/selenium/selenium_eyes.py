@@ -108,7 +108,7 @@ class SeleniumEyes(EyesBase):
         # type: (AnyWebDriver, Optional[ViewPort], Optional[ViewPort]) -> None
         assert driver is not None
         if size is None and viewportsize is None:
-            raise ValueError("set_viewport_size_static require `size` parameter")
+            raise ValueError("set_viewport_size require `size` parameter")
         if viewportsize:
             logger.deprecation("Use `size` parameter instead")
         eyes_selenium_utils.set_viewport_size(driver, size)
