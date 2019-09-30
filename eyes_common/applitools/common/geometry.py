@@ -434,7 +434,7 @@ class Region(DictAccessMixin):
         l2p_scale_ratio,  # type: float
         physical_rect_in_screenshot,  # type: Region
     ):
-        # type: (...) -> List[Region]
+        # type: (...) -> List[SubregionForStitching]
         sub_regions = []
 
         double_logical_overlap = logical_overlap * 2
