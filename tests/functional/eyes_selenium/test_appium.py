@@ -84,6 +84,5 @@ def test_cut_header_and_bottom_of_screenshot_on_ios(eyes_open):
     eyes, driver = eyes_open
     eyes.send_dom = False
     eyes.stitch_mode = StitchMode.CSS
-    eyes.cut_provider = FixedCutProvider(URL_BAR_SIZE, NAVIGATION_BAR_SIZE, 0, 0)
     eyes.check("Window", Target.window())
     eyes.check("Fully", Target.window().fully())
