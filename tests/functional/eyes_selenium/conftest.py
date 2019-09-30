@@ -330,11 +330,11 @@ SUPPORTED_PLATFORMS = [
     ),
     Platform(
         name="iOS",
-        version="11.3",
+        version="12.2",
         browsers=[],
         extra={
-            "appiumVersion": "1.9.1",
-            "deviceName": "Iphone Simulator",
+            "appiumVersion": "1.13.0",
+            "deviceName": "iPhone XR Simulator",
             "deviceOrientation": "portrait",
             "browserName": "Safari",
         },

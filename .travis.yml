@@ -102,7 +102,7 @@ jobs:
         - python: 3.6
           env:
               - TOX_ENV=selenium-appium
-              - TEST_PLATFORM="iOS 11.3"
+              - TEST_PLATFORM="iOS 12.2"
               - TEST_REMOTE=1
         - python: 3.6
           addons:
