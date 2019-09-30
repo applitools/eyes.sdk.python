@@ -36,6 +36,7 @@ def test_directly_set_viewport_size(eyes, driver):
     eyes.close()
 
 
+@pytest.mark.browser("chrome")
 @pytest.mark.platform("Linux")
 @pytest.mark.eyes(hide_scrollbars=True)
 def test_check_window_with_send_dom(eyes, driver):
