@@ -88,7 +88,7 @@ def sleep(time_ms):
         time_ms: time in milliseconds
     """
     time.sleep(to_sec(time_ms))
-    logger.info("Sleep for {} ms".format(time_ms))
+    logger.debug("Sleep for {} ms".format(time_ms))
 
 
 def timeit(method):
