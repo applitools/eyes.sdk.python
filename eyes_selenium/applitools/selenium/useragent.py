@@ -55,12 +55,13 @@ class BrowserNames(Enum):
     HeadlessChrome = "HeadlessChrome"
     Safari = "Safari"
     Chromium = "Chromium"
+    MobileSafari = "Mobile Safari"
 
 
 class OSNames(Enum):
     Unknown = "Unknown"
     Windows = "Windows"
-    IOS = "IOS"
+    IOS = "iOS"
     Macintosh = "Macintosh"
     ChromeOS = "ChromeOS"
     Android = "Android"
