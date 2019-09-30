@@ -184,6 +184,7 @@ class VisualGridEyes(object):
                     region_selectors=region_xpaths,
                     size_mode=size_mode,
                     region_to_check=self.region_to_check,
+                    script_hooks=check_settings.values.script_hooks,
                 )
                 if test.state == "new":
                     test.becomes_not_rendered()

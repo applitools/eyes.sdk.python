@@ -166,6 +166,7 @@ class RunningTest(object):
         region_selectors,
         size_mode,
         region_to_check,
+        script_hooks,
     ):
         # type: (...) -> None
         logger.debug("RunningTest %s , %s" % (tag, check_settings))
@@ -176,6 +177,7 @@ class RunningTest(object):
             region_selectors,
             size_mode,
             region_to_check,
+            script_hooks,
         )
 
         def check_run():
