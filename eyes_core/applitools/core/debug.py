@@ -17,6 +17,9 @@ class DebugScreenshotProvider(object):
     _prefix = attr.ib(default=DEFAULT_PREFIX)
     _path = attr.ib(default=DEFAULT_PATH)
 
+    def __attrs_post_init__(self):
+        self._image_counter = 0
+
     @property
     def prefix(self):
         return self._prefix
@@ -51,7 +54,10 @@ class FileDebugScreenshotProvider(DebugScreenshotProvider):
     """ A debug screenshot provider for saving screenshots to file."""
 
     def save(self, image, suffix):
-        now = datetime.now().isoformat()
+        now = datetime.now().strftime("%H:%M:%S")
+        suffix = "{}-{}".format(self._image_counter, suffix)
+        self._image_counter += 1
+
         filename = "{path}/{prefix}_{timestamp}_{suffix}.png".format(
             path=self.path, prefix=self.DEFAULT_PREFIX, timestamp=now, suffix=suffix
         )
