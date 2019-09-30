@@ -13,7 +13,7 @@ from applitools.common import (
 )
 from applitools.common.geometry import Point
 from applitools.common.selenium import Configuration, StitchMode
-from applitools.common.utils import datetime_utils, image_utils
+from applitools.common.utils import datetime_utils, image_utils, argument_guard
 from applitools.core import (
     NULL_REGION_PROVIDER,
     ContextBasedScaleProvider,
@@ -116,7 +116,8 @@ class SeleniumEyes(EyesBase):
     @staticmethod
     def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
-        return eyes_selenium_utils.get_viewport_size(driver)
+        argument_guard.not_none(driver)
+        return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
     def __init__(self, config):
         # type: (Eyes) -> None
@@ -627,7 +628,7 @@ class SeleniumEyes(EyesBase):
     def _get_viewport_size(self):
         size = self.configuration.viewport_size
         if size is None:
-            size = self.get_viewport_size(self._driver)
+            size = self.driver.get_default_content_viewport_size()
         return size
 
     def _ensure_viewport_size(self):
@@ -881,6 +882,13 @@ class SeleniumEyes(EyesBase):
             original_frame_position = Point.ZERO()
 
         with self.driver.switch_to.frames_and_back(self._original_fc):
+            scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+                self.driver
+            )
+            origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
+            origin_provider.set_position(Point.ZERO())
+            logger.debug("resetting origin_provider location")
+
             location = self.scroll_root_element.location
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
@@ -891,7 +899,9 @@ class SeleniumEyes(EyesBase):
             )
 
             algo = self._create_full_page_capture_algorithm(scale_provider)
-            image = algo.get_stitched_region(region, None, self.position_provider)
+            image = algo.get_stitched_region(
+                region, Region.EMPTY(), self.position_provider
+            )
 
             return EyesWebDriverScreenshot.create_full_page(
                 self._driver, image, original_frame_position
