@@ -192,19 +192,8 @@ def get_viewport_size(driver):
 
     :param driver: The webdriver to use for getting the viewport size.
     """
-
-    if is_mobile_app(driver):
-        # it's expected that on mobile app windows size required and attempt
-        # to get viewport size with JS would raise an exception so just return
-        # windows size directly in this case
-        return get_window_size(driver)
-
-    try:
-        width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
-        return RectangleSize(width=width, height=height)
-    except WebDriverException:
-        logger.warning("Failed to get viewport size. Only window size is available")
-        return get_window_size(driver)
+    width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
+    return RectangleSize(width=width, height=height)
 
 
 def get_window_size(driver):
@@ -405,7 +394,7 @@ def is_landscape_orientation(driver):
             original_context = appium_driver.context
             if (
                 len(appium_driver.contexts) > 1
-                and not original_context.uppar() == "NATIVE_APP"
+                and not original_context.upper() == "NATIVE_APP"
             ):
                 appium_driver.switch_to.context("NATIVE_APP")
             else:
@@ -428,12 +417,13 @@ def is_landscape_orientation(driver):
 def get_viewport_size_or_display_size(driver):
     logger.debug("get_viewport_size_or_display_size()")
 
-    try:
-        return get_viewport_size(driver)
-    except Exception as e:
-        logger.warning(
-            "Failed to extract viewport size using Javascript: {}".format(str(e))
-        )
+    if not is_mobile_app(driver):
+        try:
+            return get_viewport_size(driver)
+        except Exception as e:
+            logger.warning(
+                "Failed to extract viewport size using Javascript: {}".format(str(e))
+            )
     # If we failed to extract the viewport size using JS, will use the
     # window size instead.
 

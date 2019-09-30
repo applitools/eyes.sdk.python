@@ -665,12 +665,15 @@ class EyesWebDriver(object):
         """
         return self._frame_chain
 
-    def get_default_content_viewport_size(self, force_query=False):
+    def get_default_content_viewport_size(self, force_query=True):
         # type: (bool) -> ViewPort
         """
-        Gets the viewport size.
+        Args:
+            force_query: If true, we will perform the query even if we have a cached
+                         viewport size.
 
-        :return: The viewport size of the most outer frame.
+        Returns:
+            The viewport size of the default content (outer most frame).
         """
         if self._default_content_viewport_size and not force_query:
             return self._default_content_viewport_size

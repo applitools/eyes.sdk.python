@@ -383,7 +383,6 @@ class Eyes(object):
         app_name=None,  # type: Optional[Text]
         test_name=None,  # type: Optional[Text]
         viewport_size=None,  # type: Optional[ViewPort]
-        session_type=None,  # type: Optional[SessionType]
     ):
         # type: (...) -> EyesWebDriver
         """
@@ -395,9 +394,6 @@ class Eyes(object):
         :param test_name: The test name.
         :param viewport_size: The client's viewport size (i.e.,
             the visible part of the document's body) or None to allow any viewport size.
-        :param session_type: The type of test (e.g., Progression for timing tests)
-             or Sequential by default.
-        :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
         if app_name:
@@ -406,8 +402,6 @@ class Eyes(object):
             self.configuration.test_name = test_name
         if viewport_size:
             self.configuration.viewport_size = viewport_size  # type: ignore
-        if session_type:
-            self.configuration.session_type = session_type  # type: ignore
 
         self._init_driver(driver)
         result = self._current_eyes.open(self.driver)
