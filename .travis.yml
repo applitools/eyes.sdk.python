@@ -49,12 +49,12 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM="Linux"
               - TEST_BROWSERS=chrome,firefox
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium
-              - TEST_PLATFORM="macOS 10.14"
-              - TEST_BROWSERS=safari
-              - TEST_REMOTE=1
+#        - python: 3.6
+#          env:
+#              - TOX_ENV=selenium
+#              - TEST_PLATFORM="macOS 10.14"
+#              - TEST_BROWSERS=safari
+#              - TEST_REMOTE=1
         - python: 3.6
           env:
               - TOX_ENV=selenium
