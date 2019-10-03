@@ -599,7 +599,7 @@ class EyesBase(_EyesBaseAbstract):
         logger.info("Done getting screenshot!")
         if not region.is_size_empty:
             screenshot = screenshot.sub_screenshot(region)
-            self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
+            self._debug_screenshot_provider.save(screenshot.image, "sub_screenshot")
 
         if not self._dom_url and (
             self.configuration.send_dom or check_settings.values.send_dom
