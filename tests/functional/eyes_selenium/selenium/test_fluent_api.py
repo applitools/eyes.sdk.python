@@ -9,9 +9,8 @@ from applitools.selenium import Region, StitchMode, Target
 @pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API")
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-@pytest.mark.test_name_pattern({"from": "Fluent", "to": "_Fluent"})
 class TestFluentAPI(object):
-    def test_check_window_with_ignore_region_fluent(self):
+    def test_check_window_with_ignore_region__fluent(self):
         self.driver.find_element_by_tag_name("input").send_keys("My Input")
         self.eyes.check(
             "Fluent - Window with Ignore region",
@@ -22,7 +21,7 @@ class TestFluentAPI(object):
             .ignore(Region(left=50, top=50, width=100, height=100)),
         )
 
-    def test_check_region_with_ignore_region_fluent(self):
+    def test_check_region_with_ignore_region__fluent(self):
         self.eyes.check(
             "Fluent - Region with Ignore region",
             Target.region("#overflowing-div").ignore(
@@ -30,10 +29,10 @@ class TestFluentAPI(object):
             ),
         )
 
-    def test_check_check_window_fluent(self):
+    def test_check_check_window__fluent(self):
         self.eyes.check("Fluent - Window", Target.window())
 
-    def test_scrollbars_hidden_and_returned_fluent(self):
+    def test_scrollbars_hidden_and_returned__fluent(self):
         self.eyes.check("Fluent - Window (Before)", Target.window().fully())
         self.eyes.check(
             "Fluent - Inner frame div",
@@ -41,7 +40,7 @@ class TestFluentAPI(object):
         )
         self.eyes.check("Fluent - Window (After)", Target.window().fully())
 
-    def test_check_window_with_ignore_by_selector_fluent(self):
+    def test_check_window_with_ignore_by_selector__fluent(self):
         self.eyes.check(
             "Fluent - Window with ignore region by selector",
             Target.window().ignore("#overflowing-div"),
@@ -53,19 +52,19 @@ class TestFluentAPI(object):
             Target.window().floating("#overflowing-div", 3, 3, 20, 30),
         )
 
-    def test_check_window_with_floating_by_region_fluent(self):
+    def test_check_window_with_floating_by_region__fluent(self):
         self.eyes.check(
             "Fluent - Window with floating region by selector",
             Target.window().floating(Region(10, 10, 10, 10), 3, 3, 20, 30),
         )
 
-    def test_check_element_fully_fluent(self):
+    def test_check_element_fully__fluent(self):
         element = self.driver.find_element_by_css_selector("#overflowing-div-image")
         self.eyes.check(
             "Fluent - Region by element - fully", Target.region(element).fully()
         )
 
-    def test_check_element_with_ignore_region_by_element_fluent(self):
+    def test_check_element_with_ignore_region_by_element__fluent(self):
         element = self.driver.find_element_by_id("overflowing-div-image")
         ignore_element = self.driver.find_element_by_id("overflowing-div")
         self.eyes.check(
@@ -77,7 +76,7 @@ class TestFluentAPI(object):
         element = self.driver.find_element_by_id("overflowing-div-image")
         self.eyes.check("Fluent - Region by element - fully", Target.region(element))
 
-    def test_check_element_with_ignore_region_by_element_outside_the_viewport_fluent(
+    def test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent(
         self
     ):
         element = self.driver.find_element_by_id("overflowing-div-image")
@@ -86,18 +85,18 @@ class TestFluentAPI(object):
             "Fluent - Region by element", Target.region(element).ignore(ignore_element)
         )
 
-    def test_check_element_with_ignore_region_by_same_element_fluent(self):
+    def test_check_element_with_ignore_region_by_same_element__fluent(self):
         element = self.driver.find_element_by_id("overflowing-div-image")
         self.eyes.check(
             "Fluent - Region by element", Target.region(element).ignore(element)
         )
 
-    def test_check_full_window_with_multiple_ignore_regions_by_selector_fluent(self):
+    def test_check_full_window_with_multiple_ignore_regions_by_selector__fluent(self):
         self.eyes.check(
             "Fluent - Region by element", Target.window().fully().ignore(".ignore")
         )
 
-    def test_check_overflowing_region_by_coordinates_fluent(self):
+    def test_check_overflowing_region_by_coordinates__fluent(self):
         self.check(
             "Fluent - Region by overflowing coordinates",
             Target.region(Region(50, 110, 90, 550)),
@@ -119,7 +118,7 @@ class TestFluentAPI(object):
             Target.region(Region(30, 50, 300, 620)).with_name("rectangle"),
         )
 
-    def test_check_region_by_coordinates_fluent(self):
+    def test_check_region_by_coordinates__fluent(self):
         self.check(
             "Fluent - Region by coordinates", Target.region(Region(50, 70, 90, 110))
         )
@@ -136,14 +135,14 @@ class TestFluentAPI(object):
             .scroll_root_element(scroll_root_sel),
         )
 
-    def test_check_window_with_ignore_by_selector_centered_fluent(self):
+    def test_check_window_with_ignore_by_selector_centered__fluent(self):
         self.eyes.check(
             "Fluent - Window with ignore region by selector centered",
             Target.window().ignore("#centred"),
         )
         # TODO: setExpectedIgnoreRegions(new Region(122, 928, 456, 306))
 
-    def test_check_window_with_ignore_by_selector_stretched_fluent(self):
+    def test_check_window_with_ignore_by_selector__stretched__fluent(self):
         self.eyes.check(
             "Fluent - Window with ignore region by selector stretched",
             Target.region("#stretched"),

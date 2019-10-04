@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import typing
 from collections import namedtuple
@@ -58,6 +59,10 @@ def webdriver_module():
     return webdriver
 
 
+def underscore_to_camelcase(text):
+    return re.sub(r"(?:^|_)([a-z])", lambda m: m.group(1).upper(), text)
+
+
 @pytest.fixture(scope="function")
 def eyes_open(request, eyes, driver):
     test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
@@ -69,13 +74,8 @@ def eyes_open(request, eyes, driver):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-    test_name_pattern = request.node.get_closest_marker("test_name_pattern")
-    test_name_pattern = (
-        test_name_pattern.args[-1] if test_name_pattern else {"from": "", "to": ""}
-    )
     # use camel case in method name for fit java sdk tests name
-    test_name = request.function.__name__.title().replace("_", "")
-    test_name = test_name.replace(test_name_pattern["from"], test_name_pattern["to"])
+    test_name = underscore_to_camelcase(request.function.__name__)
 
     batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
     eyes.configuration.batch = BatchInfo(

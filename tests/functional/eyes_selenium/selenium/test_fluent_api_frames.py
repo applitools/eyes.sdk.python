@@ -8,34 +8,35 @@ from applitools.selenium import Region, StitchMode, Target
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.viewport_size({"width": 700, "height": 460})
 @pytest.mark.eyes(stitch_mode=StitchMode.CSS)
-class TestSetup(object):
-    pass
-
-
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API")
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-@pytest.mark.test_name_pattern({"from": "Fluent", "to": "_Fluent"})
-class TestFluentAPIFrames(TestSetup):
-    def test_check_frame_fully_fluent(self):
+class TestFluentAPIFrames(object):
+    def test_check_frame__fully__fluent(self):
         self.eyes.check("Fluent - Full Frame", Target.frame("frame1").fully())
 
-    def test_check_frame_fluent(self):
+    def test_check_frame__fluent(self):
         self.eyes.hide_scrollbars = False
         self.eyes.check("Fluent - Frame", Target.frame("frame1"))
 
-    def test_check_frame_in_frame_fully_fluent(self):
+    def test_check_frame_in_frame__fully__fluent(self):
         self.eyes.check(
             "Fluent - Full Frame in Frame",
             Target.frame("frame1").frame("frame1-1").fully(),
         )
 
-    def test_check_region_in_frame_fluent(self):
+    def test_check_region_in_frame__fluent(self):
         self.eyes.check(
             "Fluent - Region in Frame in Frame",
             Target.frame("frame1").region([By.ID, "inner-frame-div"]).fully(),
         )
 
-    def test_check_region_in_frame2_fluent(self):
+    def test_check_region_in_frame_in_frame__fluent(self):
+        self.eyes.check(
+            "Fluent - Region in Frame in Frame",
+            Target.frame("frame1").frame("frame1-1").region("img").fully(),
+        )
+
+    def test_check_region_in_frame2__fluent(self):
         self.eyes.check(
             "Fluent - Inner frame div 1",
             Target.frame("frame1")
@@ -72,7 +73,7 @@ class TestFluentAPIFrames(TestSetup):
             .floating(25, Region(200, 200, 150, 150)),
         )
 
-    def test_check_region_in_frame3_fluent(self):
+    def test_check_region_in_frame3__fluent(self):
         self.eyes.check(
             "Fluent - Full frame with floating region",
             Target.frame("frame1")
@@ -81,20 +82,20 @@ class TestFluentAPIFrames(TestSetup):
             .floating(25, Region(200, 200, 150, 150)),
         )
 
-    def test_check_region_by_coordinate_in_frame_fully_fluent(self):
+    def test_check_region_by_coordinate_in_frame__fully__fluent(self):
         self.eyes.check(
             "Fluent - Inner frame coordinates",
             Target.frame("frame1").region(Region(30, 40, 400, 1200)).fully(),
         )
 
-    def test_check_region_by_coordinate_in_frame_fluent(self):
+    def test_check_region_by_coordinate_in_frame__fluent(self):
         self.eyes.hide_scrollbars = False
         self.eyes.check(
             "Fluent - Inner frame coordinates",
             Target.frame("frame1").region(Region(30, 40, 400, 1200)),
         )
 
-    def test_check_frame_in_frame_fully_fluent2(self):
+    def test_check_frame_in_frame__fully__fluent2(self):
         self.eyes.check("Fluent - Window", Target.window().fully())
         self.eyes.check(
             "Fluent - Full Frame in Frame 2",
@@ -106,11 +107,15 @@ class TestFluentAPIFrames(TestSetup):
         self.eyes.check("", Target.region("#inner-frame-div"))
 
 
+@pytest.mark.platform("Linux", "Windows", "macOS")
+@pytest.mark.usefixtures("eyes_for_class")
+@pytest.mark.viewport_size({"width": 700, "height": 460})
+@pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases")
 @pytest.mark.test_page_url(
     "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
 )
-class TestSpecialCases(TestSetup):
+class TestSpecialCases(object):
     def test_check_region_in_a_very_big_frame(self):
         self.eyes.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
