@@ -5,23 +5,24 @@ import typing
 from collections import namedtuple
 from itertools import chain
 
+import pytest
+from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
-import pytest
 from applitools.selenium import (
     BatchInfo,
     Eyes,
     EyesWebDriver,
+    StitchMode,
     eyes_selenium_utils,
     logger,
 )
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
-from mock import MagicMock
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
 try:
     from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
@@ -81,12 +82,22 @@ def eyes_open(request, eyes, driver):
     eyes.configuration.batch = BatchInfo(
         "{}|{}".format(batch_name, "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc")
     )
-    if eyes.force_full_page_screenshot:
-        test_suite_name += " - ForceFPS"
-        test_name += "_FPS"
+
+    eyes.add_property("Selenium Session ID", str(driver.session_id))
+    eyes.add_property(
+        "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"
+    )
+    eyes.add_property("Agent ID", eyes.full_agent_id)
+
+    if isinstance(eyes._runner, VisualGridRunner):
+        test_name += "_VG"
+    elif eyes.stitch_mode == StitchMode.Scroll:
+        test_name += "_Scroll"
+
     eyes_driver = eyes.open(
         driver, test_suite_name, test_name, viewport_size=viewport_size
     )
+    logger.info("navigation to URL: {}".format(test_page_url))
     eyes_driver.get(test_page_url)
 
     yield eyes, eyes_driver
