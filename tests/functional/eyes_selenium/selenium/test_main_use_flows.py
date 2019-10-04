@@ -1,3 +1,5 @@
+import time
+
 from selenium.webdriver.common.by import By
 
 import pytest
@@ -12,31 +14,6 @@ from applitools.selenium import Region, StitchMode, Target
 @pytest.mark.eyes(stitch_mode=StitchMode.CSS)
 class TestSetup(object):
     pass
-
-
-@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-@pytest.mark.test_suite_name("Eyes Selenium SDK - Classic API")
-class TestClassicAPI(TestSetup):
-    def test_check_window(self):
-        self.eyes.check_window(tag="Window")
-
-    def test_check_region(self):
-        self.eyes.check_region(
-            [By.ID, "overflowing-div"], tag="Region", stitch_content=True
-        )
-
-    def test_check_region_in_frame(self):
-        self.eyes.check_region_in_frame(
-            "frame1",
-            [By.ID, "inner-frame-div"],
-            tag="Inner frame div",
-            stitch_content=True,
-        )
-
-    def test_check_region2(self):
-        self.eyes.check_region(
-            [By.ID, "overflowing-div-image"], tag="minions", stitch_content=True
-        )
 
 
 @pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API")
