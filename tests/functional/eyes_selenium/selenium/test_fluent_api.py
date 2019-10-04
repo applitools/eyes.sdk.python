@@ -97,14 +97,14 @@ class TestFluentAPI(object):
         )
 
     def test_check_overflowing_region_by_coordinates__fluent(self):
-        self.check(
+        self.eyes.check(
             "Fluent - Region by overflowing coordinates",
             Target.region(Region(50, 110, 90, 550)),
         )
 
     @pytest.mark.skip("Not implemented")
     def test_check_many(self):
-        self.check(
+        self.eyes.check(
             Target.region("#overflowing-div-image").with_name("overflowing div image"),
             Target.region("overflowing-div").with_name("overflowing div"),
             Target.region("overflowing-div-image")
@@ -119,14 +119,14 @@ class TestFluentAPI(object):
         )
 
     def test_check_region_by_coordinates__fluent(self):
-        self.check(
+        self.eyes.check(
             "Fluent - Region by coordinates", Target.region(Region(50, 70, 90, 110))
         )
 
     def test_check_scrollable_modal(self):
-        self.driver.find_element_by_id("centred").click()
+        self.driver.find_element_by_id("centered").click()
         scroll_root_sel = (
-            "modal-content" if self.eyes.stitch_mode == StitchMode.CSS else "modal"
+            "#modal-content" if self.eyes.stitch_mode == StitchMode.CSS else "#modal"
         )
         self.eyes.check(
             "Scrollable Modal",
@@ -135,10 +135,10 @@ class TestFluentAPI(object):
             .scroll_root_element(scroll_root_sel),
         )
 
-    def test_check_window_with_ignore_by_selector_centered__fluent(self):
+    def test_check_window_with_ignore_by_selector__centered__fluent(self):
         self.eyes.check(
             "Fluent - Window with ignore region by selector centered",
-            Target.window().ignore("#centred"),
+            Target.window().ignore("#centered"),
         )
         # TODO: setExpectedIgnoreRegions(new Region(122, 928, 456, 306))
 
@@ -149,10 +149,11 @@ class TestFluentAPI(object):
             # TODO: add analog setExpectedIgnoreRegions(new Region(8, 1270, 690, 206))
         )
 
-    def test_check_region_by_selector_after_manual_scroll_fluent(self):
+    def test_check_region_by_selector_after_manual_scroll__fluent(self):
         self.driver.execute_script("window.scrollBy(0,900)")
         self.eyes.check(
-            "Fluent - Region by selector after manual scroll", Target.region("#centred")
+            "Fluent - Region by selector after manual scroll",
+            Target.region("#centered"),
         )
 
     def test_simple_region(self):

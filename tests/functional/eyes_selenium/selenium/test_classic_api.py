@@ -45,7 +45,7 @@ class TestClassicAPI(object):
         self.eyes.hide_scrollbars = False
         self.driver.execute_script("document.documentElement.scrollTo(0,350);")
         self.driver.switch_to.default_content()
-        self.driver.switch_to.frame(self.driver.find_element_by_id("frame1"))
+        self.driver.switch_to.frame(self.driver.find_element_by_name("frame1"))
         self.eyes.check_frame("frame1-1", "inner-frame")
         # TODO: add eyes.logger.log?()
         # self.eyes.log("Validating (1) ...")
