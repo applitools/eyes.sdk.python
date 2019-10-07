@@ -11,7 +11,7 @@ pytestmark = [
         "http://applitools.github.io/demo/TestPages/FramesTestPage/"
     ),
     pytest.mark.parametrize(
-        "eyes_opened",
+        "eyes",
         [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
         indirect=True,
     ),

@@ -7,7 +7,7 @@ pytestmark = [
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Scroll Root Element"),
     pytest.mark.parametrize(
-        "eyes_opened",
+        "eyes",
         [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
         indirect=True,
     ),
