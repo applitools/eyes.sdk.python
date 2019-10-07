@@ -11,7 +11,9 @@ def eyes(request, eyes_class):
     # TODO: allow to setup logger level through pytest option
     # logger.set_logger(StdoutLogger())
     eyes = eyes_class()
-    eyes.hide_scrollbars = True
+    eyes.configuration.hide_scrollbars = True
+    eyes.configuration.save_new_tests = False
+
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}
