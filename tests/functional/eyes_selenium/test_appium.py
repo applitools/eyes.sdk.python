@@ -59,8 +59,7 @@ def test_ios_native(eyes, driver):
     ids=lambda o: "with FSP" if o["force_full_page_screenshot"] else "no FSP",
 )
 def test_final_application(eyes_open):
-    eyes, driver = eyes_open
-    eyes.check_window("Home")
+    eyes_open.check_window("Home")
 
 
 @pytest.mark.platform("Android", "iOS")
@@ -74,8 +73,7 @@ def test_final_application(eyes_open):
     else "with Selenium",
 )
 def test_selenium_and_appium_work(eyes_open):
-    eyes, driver = eyes_open
-    eyes.check_window("Home")
+    eyes_open.check_window("Home")
 
 
 @pytest.mark.platform("iOS")

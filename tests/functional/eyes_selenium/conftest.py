@@ -66,8 +66,6 @@ def underscore_to_camelcase(text):
 
 @pytest.fixture(scope="function")
 def eyes_open(request, eyes, driver):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
-
     viewport_size = request.node.get_closest_marker("viewport_size")
     viewport_size = viewport_size.args[-1] if viewport_size else None
 
@@ -94,13 +92,8 @@ def eyes_open(request, eyes, driver):
     elif eyes.stitch_mode == StitchMode.Scroll:
         test_name += "_Scroll"
 
-    eyes_driver = eyes.open(
-        driver, test_suite_name, test_name, viewport_size=viewport_size
-    )
-    logger.info("navigation to URL: {}".format(test_page_url))
-    eyes_driver.get(test_page_url)
-
-    yield eyes, eyes_driver
+    eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
+    yield eyes
     results = eyes.close()
     print(results)
 
@@ -109,9 +102,8 @@ def eyes_open(request, eyes, driver):
 def eyes_for_class(request, eyes_open):
     # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
 
-    eyes, driver = eyes_open
-    request.cls.eyes = eyes
-    request.cls.driver = driver
+    request.cls.eyes = eyes_open
+    request.cls.driver = eyes_open.driver
     yield
 
 
@@ -135,6 +127,7 @@ def driver_for_class(request, driver):
 def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
+    test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
 
     force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
@@ -174,6 +167,10 @@ def driver(request, browser_config, webdriver_module):
 
     if browser is None:
         raise WebDriverException("Never created!")
+
+    if test_page_url:
+        browser.get(test_page_url)
+        logger.info("navigation to URL: {}".format(test_page_url))
 
     yield browser
 
