@@ -58,8 +58,8 @@ def test_ios_native(eyes, driver):
     indirect=True,
     ids=lambda o: "with FSP" if o["force_full_page_screenshot"] else "no FSP",
 )
-def test_final_application(eyes_open):
-    eyes_open.check_window("Home")
+def test_final_application(eyes_opened):
+    eyes_opened.check_window("Home")
 
 
 @pytest.mark.platform("Android", "iOS")
@@ -72,15 +72,14 @@ def test_final_application(eyes_open):
     if o["webdriver_module"].__name__.startswith("appium.")
     else "with Selenium",
 )
-def test_selenium_and_appium_work(eyes_open):
-    eyes_open.check_window("Home")
+def test_selenium_and_appium_work(eyes_opened):
+    eyes_opened.check_window("Home")
 
 
 @pytest.mark.platform("iOS")
 @pytest.mark.test_page_url("http://demo.applitools.com/")
-def test_cut_header_and_bottom_of_screenshot_on_ios(eyes_open):
-    eyes, driver = eyes_open
-    eyes.send_dom = False
-    eyes.stitch_mode = StitchMode.CSS
-    eyes.check("Window", Target.window())
-    eyes.check("Fully", Target.window().fully())
+def test_cut_header_and_bottom_of_screenshot_on_ios(eyes_opened):
+    eyes_opened.send_dom = False
+    eyes_opened.stitch_mode = StitchMode.CSS
+    eyes_opened.check("Window", Target.window())
+    eyes_opened.check("Fully", Target.window().fully())

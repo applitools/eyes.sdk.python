@@ -65,7 +65,7 @@ def underscore_to_camelcase(text):
 
 
 @pytest.fixture(scope="function")
-def eyes_open(request, eyes, driver):
+def eyes_opened(request, eyes, driver):
     viewport_size = request.node.get_closest_marker("viewport_size")
     viewport_size = viewport_size.args[-1] if viewport_size else None
 
@@ -99,11 +99,11 @@ def eyes_open(request, eyes, driver):
 
 
 @pytest.fixture(scope="function")
-def eyes_for_class(request, eyes_open):
+def eyes_for_class(request, eyes_opened):
     # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
 
-    request.cls.eyes = eyes_open
-    request.cls.driver = eyes_open.driver
+    request.cls.eyes = eyes_opened
+    request.cls.driver = eyes_opened.driver
     yield
 
 
