@@ -109,7 +109,6 @@ def eyes_for_class(request, eyes_opened):
 
 @pytest.fixture(scope="function")
 def driver_for_class(request, driver):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
     viewport_size = request.node.get_closest_marker("viewport_size").args[0]
 
     driver = EyesWebDriver(driver, MagicMock(Eyes))
@@ -118,7 +117,6 @@ def driver_for_class(request, driver):
         eyes_selenium_utils.set_browser_size(driver, viewport_size)
     request.cls.driver = driver
 
-    driver.get(test_page_url)
     yield
     driver.quit()
 
@@ -127,7 +125,8 @@ def driver_for_class(request, driver):
 def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
-    test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
+    test_page_url = request.node.get_closest_marker("test_page_url")
+    test_page_url = test_page_url.args[-1] if test_page_url else None
 
     force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:

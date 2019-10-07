@@ -1,10 +1,10 @@
-import os
 import pytest
 
 from applitools.selenium import Region, StitchMode, Target
 
 
 @pytest.mark.platform("Linux")
+@pytest.mark.test_page_url("https://applitools.com/helloworld")
 def test_quickstart_example(eyes, driver):
     required_viewport = {"width": 1200, "height": 800}
     eyes.set_viewport_size(driver, required_viewport)
@@ -14,7 +14,6 @@ def test_quickstart_example(eyes, driver):
         test_name="My first Selenium Python test!",
         viewport_size={"width": 800, "height": 600},
     )
-    driver.get("https://applitools.com/helloworld")
 
     eyes.check_window("Hello!")
 
@@ -39,6 +38,7 @@ def test_directly_set_viewport_size(eyes, driver):
 @pytest.mark.browser("chrome")
 @pytest.mark.platform("Linux")
 @pytest.mark.eyes(hide_scrollbars=True)
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 def test_check_window_with_send_dom(eyes, driver):
     eyes.open(
         driver,
@@ -46,7 +46,6 @@ def test_check_window_with_send_dom(eyes, driver):
         "TestCheckWindowWithSendDom",
         {"width": 800, "height": 600},
     )
-    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     driver.find_element_by_tag_name("input").send_keys("My Input")
     eyes.check(
         "Fluent - Window with Ignore region",
@@ -57,16 +56,16 @@ def test_check_window_with_send_dom(eyes, driver):
     eyes.close()
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com/")
 def test_abort_eyes(eyes, driver):
-    driver.get("https://demo.applitools.com")
     eyes.open(driver, "Python | VisualGrid", "TestAbortSeleniumEyes")
     eyes.check_window()
     eyes.abort()
 
 
 @pytest.mark.platform("Linux")
+@pytest.mark.test_page_url("https://applitools.com/helloworld")
 def test_coordinates_resolving(eyes, driver):
-    driver.get("https://applitools.com/helloworld")
     driver = eyes.open(
         driver,
         "Python Selenium",
@@ -98,9 +97,8 @@ def test_coordinates_resolving(eyes, driver):
 )
 @pytest.mark.platform("Windows")
 @pytest.mark.browser("internet explorer")
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage")
 def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
-    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage")
-
     test_name = "TestIEViewportScreenshot"
     if eyes.force_full_page_screenshot:
         test_name += "_FPS"
