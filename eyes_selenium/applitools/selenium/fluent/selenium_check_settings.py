@@ -213,12 +213,12 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def scroll_root_element(self, element):
-        # type: (AnyWebElement) -> None
+        # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def scroll_root_element(self, selector):
-        # type: (CssSelector) -> None
+        # type: (CssSelector) -> SeleniumCheckSettings
         pass
 
     def scroll_root_element(self, element_or_selector):  # noqa
@@ -226,6 +226,7 @@ class SeleniumCheckSettings(CheckSettings):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
+        return self
 
     def _floating_provider_from(self, region, bounds):
         if is_webelement(region):
