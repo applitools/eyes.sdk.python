@@ -2,10 +2,7 @@ import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
 
-from applitools.selenium import FixedCutProvider, StitchMode, Target
-
-URL_BAR_SIZE = 77
-NAVIGATION_BAR_SIZE = 48
+from applitools.selenium import StitchMode, Target
 
 
 @pytest.fixture

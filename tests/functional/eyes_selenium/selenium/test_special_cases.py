@@ -8,7 +8,7 @@ pytestmark = [
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases"),
     pytest.mark.test_page_url(
-        "http://applitools.github.io/demo/TestPages/FramesTestPage/"
+        "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
     ),
     pytest.mark.parametrize(
         "eyes",
