@@ -3,7 +3,7 @@ import pytest
 from applitools.selenium import StitchMode, Target
 
 pytestmark = [
-    pytest.mark.platform("Linux", "Windows", "macOS"),
+    pytest.mark.platform("Linux"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Page With Header"),
     pytest.mark.test_page_url(

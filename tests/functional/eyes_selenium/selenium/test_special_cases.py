@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from applitools.selenium import StitchMode, Target
 
 pytestmark = [
-    pytest.mark.platform("Linux", "Windows", "macOS"),
+    pytest.mark.platform("Linux"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases"),
     pytest.mark.test_page_url(
@@ -14,6 +14,7 @@ pytestmark = [
         "eyes",
         [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
         indirect=True,
+        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
     ),
 ]
 
@@ -25,7 +26,7 @@ def test_check_region_in_a_very_big_frame(eyes_opened):
 def test_check_region_in_a_very_big_frame_after_manual_switch_frame(eyes_opened):
     eyes_opened.driver.switch_to.frame("frame1")
 
-    element = eyes_opened.driver.find_element(By.CSS_SELECTOR, "img")
+    element = eyes_opened.driver.find_element_by_tag_name("img")
     eyes_opened.driver.execute_script(
         "arguments[0].scrollIntoView(true);", element.element
     )

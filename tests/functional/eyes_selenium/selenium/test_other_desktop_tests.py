@@ -3,10 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from applitools.selenium import StitchMode, Target
+from applitools.selenium import StitchMode
 
 pytestmark = [
-    pytest.mark.platform("Linux", "Windows", "macOS"),
+    pytest.mark.platform("Linux"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.parametrize(
         "eyes",
