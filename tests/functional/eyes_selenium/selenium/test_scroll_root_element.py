@@ -10,6 +10,7 @@ pytestmark = [
         "eyes",
         [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
         indirect=True,
+        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
     ),
 ]
 
