@@ -23,7 +23,7 @@ def test_check_region_in_a_very_big_frame(eyes_opened):
     eyes_opened.check("map", Target.frame("frame1").region([By.TAG_NAME, "img"]))
 
 
-def test_check_region_in_a_very_big_frame_after_manual_switch_frame(eyes_opened):
+def test_check_region_in_a_very_big_frame_after_manual_switch_to_frame(eyes_opened):
     eyes_opened.driver.switch_to.frame("frame1")
 
     element = eyes_opened.driver.find_element_by_tag_name("img")

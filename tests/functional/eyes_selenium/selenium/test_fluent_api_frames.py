@@ -96,7 +96,7 @@ def test_check_region_in_frame3__fluent(eyes_opened):
     )
 
 
-def test_check_region_by_coordinate_in_frame__fully__fluent(eyes_opened):
+def test_check_region_by_coordinate_in_frame_fully__fluent(eyes_opened):
     eyes_opened.check(
         "Fluent - Inner frame coordinates",
         Target.frame("frame1").region(Region(30, 40, 400, 1200)).fully(),
