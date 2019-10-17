@@ -27,8 +27,12 @@ def test_check_page_with_header__window__fully(eyes_opened):
 
 
 def test_check_page_with_header__region(eyes_opened):
-    eyes_opened.check("Page with header", Target.region("div.page").fully(False))
+    eyes_opened.check(
+        "Region without the header", Target.region("div.page").fully(False)
+    )
 
 
 def test_check_page_with_header__region__fully(eyes_opened):
-    eyes_opened.check("Page with header - fully", Target.region("div.page").fully(True))
+    eyes_opened.check(
+        "Region without the header - fully", Target.region("div.page").fully(True)
+    )
