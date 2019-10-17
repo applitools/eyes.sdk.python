@@ -13,6 +13,7 @@ def eyes(request, eyes_class):
     eyes = eyes_class()
     eyes.configuration.hide_scrollbars = True
     eyes.configuration.save_new_tests = False
+    eyes.configuration.hide_caret = True
 
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
