@@ -115,7 +115,7 @@ class ScrollPositionProvider(SeleniumPositionProvider):
 class CSSTranslatePositionProvider(SeleniumPositionProvider):
     def __init__(self, driver, scroll_root_element):
         # type: (EyesWebDriver, AnyWebElement) -> None
-        self._last_set_position = None
+        self._last_set_position = Point.ZERO()
         super(CSSTranslatePositionProvider, self).__init__(driver, scroll_root_element)
 
     def get_current_position(self):
