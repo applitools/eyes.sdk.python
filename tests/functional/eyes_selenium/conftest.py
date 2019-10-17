@@ -3,6 +3,7 @@ import re
 import sys
 import typing
 from collections import namedtuple
+from distutils.util import strtobool
 from itertools import chain
 
 import pytest
@@ -154,7 +155,7 @@ def driver(request, browser_config, webdriver_module):
             browser_config["browserName"]
         )
         if options:
-            headless = os.getenv("TEST_BROWSER_HEADLESS", True)
+            headless = strtobool(os.getenv("TEST_BROWSER_HEADLESS", "True"))
             options = options()
             options.headless = bool(headless)
         if driver_manager_class:
@@ -403,7 +404,7 @@ def _setup_env_vars_for_session():
 
 
 def pytest_generate_tests(metafunc):
-    headless = os.getenv("TEST_BROWSER_HEADLESS", True)
+    headless = strtobool(os.getenv("TEST_BROWSER_HEADLESS", "True"))
 
     platform_name = os.getenv("TEST_PLATFORM", None)
     if platform_name is None:
