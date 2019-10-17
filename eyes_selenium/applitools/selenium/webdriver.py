@@ -271,6 +271,7 @@ class _EyesSwitchTo(object):
         "location",
         "orientation",
         "file_detector",
+        "session_id",
     ],
 )
 class EyesWebDriver(object):

@@ -163,7 +163,7 @@ def run_tests_on_CI(c, tests):
         raise ValueError("`TEST_BROWSERS` env variable should be set")
 
     pattern = "pytest {par} {tests} --ignore={tests}/test_client_sites.py".format(
-        par="-n2" if bool(os.getenv("TEST_REMOTE", False)) else "", tests=tests
+        par="-n5" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
     )
 
     # use Unix background task execution for run tests in parallel
