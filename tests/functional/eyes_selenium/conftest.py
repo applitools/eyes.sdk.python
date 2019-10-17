@@ -1,26 +1,29 @@
 import os
+import re
 import sys
 import typing
 from collections import namedtuple
+from distutils.util import strtobool
 from itertools import chain
 
+import pytest
+from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
-import pytest
 from applitools.selenium import (
     BatchInfo,
     Eyes,
     EyesWebDriver,
+    StitchMode,
     eyes_selenium_utils,
     logger,
 )
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
-from mock import MagicMock
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
 try:
     from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
@@ -58,10 +61,12 @@ def webdriver_module():
     return webdriver
 
 
-@pytest.fixture(scope="function")
-def eyes_open(request, eyes, driver):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[-1]
+def underscore_to_camelcase(text):
+    return re.sub(r"(?:^|_)([a-z])", lambda m: m.group(1).upper(), text)
 
+
+@pytest.fixture(scope="function")
+def eyes_opened(request, eyes, driver):
     viewport_size = request.node.get_closest_marker("viewport_size")
     viewport_size = viewport_size.args[-1] if viewport_size else None
 
@@ -69,44 +74,42 @@ def eyes_open(request, eyes, driver):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-    test_name_pattern = request.node.get_closest_marker("test_name_pattern")
-    test_name_pattern = (
-        test_name_pattern.args[-1] if test_name_pattern else {"from": "", "to": ""}
-    )
     # use camel case in method name for fit java sdk tests name
-    test_name = request.function.__name__.title().replace("_", "")
-    test_name = test_name.replace(test_name_pattern["from"], test_name_pattern["to"])
+    test_name = underscore_to_camelcase(request.function.__name__)
 
     batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
     eyes.configuration.batch = BatchInfo(
         "{}|{}".format(batch_name, "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc")
     )
-    if eyes.force_full_page_screenshot:
-        test_suite_name += " - ForceFPS"
-        test_name += "_FPS"
-    eyes_driver = eyes.open(
-        driver, test_suite_name, test_name, viewport_size=viewport_size
-    )
-    eyes_driver.get(test_page_url)
 
-    yield eyes, eyes_driver
+    eyes.add_property("Selenium Session ID", str(driver.session_id))
+    eyes.add_property(
+        "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"
+    )
+    eyes.add_property("Agent ID", eyes.full_agent_id)
+
+    if isinstance(eyes._runner, VisualGridRunner):
+        test_name += "_VG"
+    elif eyes.stitch_mode == StitchMode.Scroll:
+        test_name += "_Scroll"
+
+    eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
+    yield eyes
     results = eyes.close()
     print(results)
 
 
 @pytest.fixture(scope="function")
-def eyes_for_class(request, eyes_open):
+def eyes_for_class(request, eyes_opened):
     # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
 
-    eyes, driver = eyes_open
-    request.cls.eyes = eyes
-    request.cls.driver = driver
+    request.cls.eyes = eyes_opened
+    request.cls.driver = eyes_opened.driver
     yield
 
 
 @pytest.fixture(scope="function")
 def driver_for_class(request, driver):
-    test_page_url = request.node.get_closest_marker("test_page_url").args[0]
     viewport_size = request.node.get_closest_marker("viewport_size").args[0]
 
     driver = EyesWebDriver(driver, MagicMock(Eyes))
@@ -115,7 +118,6 @@ def driver_for_class(request, driver):
         eyes_selenium_utils.set_browser_size(driver, viewport_size)
     request.cls.driver = driver
 
-    driver.get(test_page_url)
     yield
     driver.quit()
 
@@ -124,6 +126,8 @@ def driver_for_class(request, driver):
 def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
+    test_page_url = request.node.get_closest_marker("test_page_url")
+    test_page_url = test_page_url.args[-1] if test_page_url else None
 
     force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
@@ -151,7 +155,7 @@ def driver(request, browser_config, webdriver_module):
             browser_config["browserName"]
         )
         if options:
-            headless = os.getenv("TEST_BROWSER_HEADLESS", True)
+            headless = strtobool(os.getenv("TEST_BROWSER_HEADLESS", "True"))
             options = options()
             options.headless = bool(headless)
         if driver_manager_class:
@@ -163,6 +167,10 @@ def driver(request, browser_config, webdriver_module):
 
     if browser is None:
         raise WebDriverException("Never created!")
+
+    if test_page_url:
+        browser.get(test_page_url)
+        logger.info("navigation to URL: {}".format(test_page_url))
 
     yield browser
 
@@ -396,7 +404,7 @@ def _setup_env_vars_for_session():
 
 
 def pytest_generate_tests(metafunc):
-    headless = os.getenv("TEST_BROWSER_HEADLESS", True)
+    headless = strtobool(os.getenv("TEST_BROWSER_HEADLESS", "True"))
 
     platform_name = os.getenv("TEST_PLATFORM", None)
     if platform_name is None:

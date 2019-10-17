@@ -3,9 +3,9 @@ import os
 import time
 from collections import OrderedDict
 
+import pytest
 from selenium.webdriver.common.by import By
 
-import pytest
 from applitools.common import Point
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.capture import dom_capture
@@ -26,6 +26,7 @@ class TestDomCaptureUnit(object):
     @pytest.mark.test_page_url(
         "https://applitools-dom-capture-origin-1.surge.sh/test.html"
     )
+    @pytest.mark.skip
     def test_send_dom_simple_HTML(self):
         actual_dom_json = dom_capture.get_full_window_dom(
             self.driver, return_as_dict=True
