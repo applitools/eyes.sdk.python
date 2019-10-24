@@ -13,7 +13,7 @@ from applitools.common import (
 )
 from applitools.common.geometry import Point
 from applitools.common.selenium import Configuration, StitchMode
-from applitools.common.utils import datetime_utils, image_utils, argument_guard
+from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
     ContextBasedScaleProvider,
@@ -672,7 +672,7 @@ class SeleniumEyes(EyesBase):
             logger.info("No OS set, checking for mobile OS...")
             # Since in Python Appium driver is the same for Android and iOS,
             # we need to use the desired capabilities to figure this out.
-            if eyes_selenium_utils.is_mobile_platform(self._driver):
+            if eyes_selenium_utils.is_mobile_app(self._driver):
                 platform_name = self._driver.platform_name
                 logger.info(platform_name + " detected")
                 device_info = self._driver.desired_capabilities.get("deviceModel", "")
