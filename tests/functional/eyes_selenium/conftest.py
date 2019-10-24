@@ -86,8 +86,6 @@ def eyes_opened(request, eyes, driver):
     eyes.add_property(
         "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"
     )
-    eyes.add_property("Agent ID", eyes.full_agent_id)
-
     if isinstance(eyes._runner, VisualGridRunner):
         test_name += "_VG"
     elif eyes.stitch_mode == StitchMode.Scroll:
@@ -335,6 +333,10 @@ SUPPORTED_PLATFORMS = [
         version="10.14",
         browsers=COMMON_BROWSERS + [("safari", "latest")],
         extra=None,
+    ),
+    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.13.0"}),
+    Platform(
+        name="Android", version="", browsers=[], extra={"appiumVersion": "1.13.0"}
     ),
     Platform(
         name="iOS",
