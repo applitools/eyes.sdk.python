@@ -96,22 +96,12 @@ jobs:
 #              - python3 -m tox -e $TOX_ENV
         - python: 3.6
           env:
-              - TOX_ENV=selenium-appium
-              - TEST_PLATFORM="Android 6.0"
-              - TEST_REMOTE=1
-        - python: 3.6
-          env:
-              - TOX_ENV=selenium-appium
-              - TEST_PLATFORM="iOS 12.2"
-              - TEST_REMOTE=1
-        - python: 3.6
-          env:
-              - TOX_ENV=mobile-web
+              - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
         - python: 3.6
           env:
-              - TOX_ENV=mobile-web
+              - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
         - python: 3.6
