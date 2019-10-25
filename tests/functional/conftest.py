@@ -30,5 +30,7 @@ def eyes(request, eyes_class):
     for key, val in iteritems(eyes_mark_opts):
         setattr(eyes, key, val)
 
+    eyes.add_property("Agent ID", eyes.full_agent_id)
+
     yield eyes
     eyes.abort()
