@@ -230,7 +230,7 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
-        return eyes_selenium_utils.get_viewport_size(driver)
+        return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
     @staticmethod
     def set_viewport_size(driver, size):
@@ -418,7 +418,6 @@ class Eyes(object):
             self.configuration.test_name = test_name
         if viewport_size:
             self.configuration.viewport_size = viewport_size  # type: ignore
-
         self._init_driver(driver)
         result = self._current_eyes.open(self.driver)
         self._is_opened = True
