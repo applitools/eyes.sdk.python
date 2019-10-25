@@ -51,7 +51,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "virtualenv==16.3.0",
         "pytest-virtualenv==1.4.0",
         "mock",
-        "webdriver_manager",
+        "webdriver_manager==1.5",
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
     if testing:
