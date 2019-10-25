@@ -86,8 +86,6 @@ def eyes_opened(request, eyes, driver):
     eyes.add_property(
         "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"
     )
-    eyes.add_property("Agent ID", eyes.full_agent_id)
-
     if isinstance(eyes._runner, VisualGridRunner):
         test_name += "_VG"
     elif eyes.stitch_mode == StitchMode.Scroll:
@@ -186,49 +184,6 @@ def driver(request, browser_config, webdriver_module):
         )
     finally:
         browser.quit()
-
-
-@pytest.fixture
-def vg_runner():
-    vg = VisualGridRunner(10)
-    return vg
-
-
-@pytest.fixture
-def batch_info():
-    batch_info = BatchInfo("hello world batch")
-    batch_info.id = "hw_VG_Batch_ID"
-    return batch_info
-
-
-@pytest.fixture
-def eyes_vg(vg_runner, sel_config, driver, request, test_page_url):
-    app_name = request.node.get_closest_marker("app_name")
-    if app_name:
-        app_name = app_name.args[0]
-    test_name = request.node.get_closest_marker("test_name")
-    if test_name:
-        test_name = test_name.args[0]
-    viewport_size = request.node.get_closest_marker("viewport_size")
-    if viewport_size:
-        viewport_size = viewport_size.args[0]
-    else:
-        viewport_size = None
-
-    eyes = Eyes(vg_runner)
-    eyes.server_url = "https://eyes.applitools.com/"
-    eyes.configuration = sel_config
-
-    app_name = app_name or eyes.configuration.app_name
-    test_name = test_name or eyes.configuration.test_name
-    viewport_size = viewport_size or eyes.configuration.viewport_size
-
-    driver.get(test_page_url)
-    eyes.open(driver, app_name, test_name, viewport_size)
-    yield eyes
-    logger.debug("closing WebDriver for url {}".format(test_page_url))
-    eyes.close()
-    # TODO: print VG test results
 
 
 class Platform(namedtuple("Platform", "name version browsers extra")):
@@ -336,47 +291,10 @@ SUPPORTED_PLATFORMS = [
         browsers=COMMON_BROWSERS + [("safari", "latest")],
         extra=None,
     ),
+    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.13.0"}),
     Platform(
-        name="iOS",
-        version="12.2",
-        browsers=[],
-        extra={
-            "appiumVersion": "1.13.0",
-            "deviceName": "iPhone XR Simulator",
-            "deviceOrientation": "portrait",
-            "browserName": "Safari",
-        },
+        name="Android", version="", browsers=[], extra={"appiumVersion": "1.13.0"}
     ),
-    Platform(
-        name="Android",
-        version="6.0",
-        browsers=[],
-        extra={
-            "appiumVersion": "1.9.1",
-            "deviceName": "Android Emulator",
-            "deviceOrientation": "portrait",
-            "browserName": "Chrome",
-            "newCommandTimeout": 60 * 5,
-        },
-    ),  # Platform(name='Android', version='7.0', browsers=[], extra={
-    #     "appiumVersion":     "1.9.1",
-    #     "deviceName":        "Android Emulator",
-    #     "deviceOrientation": "portrait",
-    #     "browserName":       "Chrome",
-    #     "newCommandTimeout": 60 * 5
-    # }),
-    # Platform(
-    #     name="Android",
-    #     version="9",
-    #     browsers=[],
-    #     extra={
-    #         "appiumVersion": "1.9.1",
-    #         "deviceName": "Samsung S9+",
-    #         "deviceOrientation": "portrait",
-    #         "browserName": "Chrome",
-    #         "newCommandTimeout": 60 * 5,
-    #     },
-    # ),
 ]
 SUPPORTED_PLATFORMS_DICT = {
     platform.full_name: platform for platform in SUPPORTED_PLATFORMS

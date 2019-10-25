@@ -51,7 +51,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "virtualenv==16.3.0",
         "pytest-virtualenv==1.4.0",
         "mock",
-        "webdriver_manager",
+        "webdriver_manager==1.5",
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
     if testing:
@@ -163,7 +163,7 @@ def run_tests_on_CI(c, tests):
         raise ValueError("`TEST_BROWSERS` env variable should be set")
 
     pattern = "pytest {par} {tests} --ignore={tests}/test_client_sites.py".format(
-        par="-n5" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
+        par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
     )
 
     # use Unix background task execution for run tests in parallel
