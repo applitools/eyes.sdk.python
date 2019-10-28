@@ -4,16 +4,10 @@ from applitools.selenium import Region, StitchMode, Target
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
-    pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API"),
+    pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_page_url(
         "http://applitools.github.io/demo/TestPages/FramesTestPage/"
-    ),
-    pytest.mark.parametrize(
-        "eyes",
-        [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
-        indirect=True,
-        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
     ),
 ]
 

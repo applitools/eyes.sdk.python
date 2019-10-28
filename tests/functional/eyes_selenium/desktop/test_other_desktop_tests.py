@@ -3,17 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from applitools.selenium import StitchMode
-
 pytestmark = [
     pytest.mark.platform("Linux"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
-    pytest.mark.parametrize(
-        "eyes",
-        [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
-        indirect=True,
-        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
-    ),
 ]
 
 
