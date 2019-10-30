@@ -184,8 +184,7 @@ class RenderTask(VGTask):
                 statuses
                 and statuses[0] is not None
                 and (
-                    statuses[0].status == RenderStatus.ERROR
-                    or statuses[0].status == RenderStatus.RENDERED
+                    statuses[0].status != RenderStatus.RENDERING
                     or iterations > self.MAX_ITERATIONS
                     or False
                 )
