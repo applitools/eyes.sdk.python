@@ -12,7 +12,7 @@ from .region import (
 )
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import Num, REGION_VALUES
+    from applitools.common.utils.custom_types import Num
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 
@@ -58,44 +58,46 @@ class CheckSettings(object):
         init=False, factory=CheckSettingsValues
     )  # type: CheckSettingsValues
 
-    def layout(self, *args):
-        # type: (Self, *REGION_VALUES)  -> Self
+    def layout(self, *regions):
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
-        if not args:
+        if not regions:
             return self
-        self.values.layout_regions = self.__regions(args, method_name="layout_regions")
+        self.values.layout_regions = self.__regions(
+            regions, method_name="layout_regions"
+        )
         return self
 
     def exact(self):
-        # type: (Self)  -> Self
-
         """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
         self.values.match_level = MatchLevel.EXACT
         return self
 
-    def strict(self, *args):
-        # type: (Self, *REGION_VALUES)  -> Self
+    def strict(self, *regions):
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
-        if not args:
+        if not regions:
             return self
-        self.values.strict_regions = self.__regions(args, method_name="strict_regions")
+        self.values.strict_regions = self.__regions(
+            regions, method_name="strict_regions"
+        )
         return self
 
-    def content(self, *args):
-        # type: (Self, *REGION_VALUES)  -> Self
+    def content(self, *regions):
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
-        if not args:
+        if not regions:
             return self
         self.values.content_regions = self.__regions(
-            args, method_name="content_regions"
+            regions, method_name="content_regions"
         )
         return self
 
     def ignore(self, *regions):
-        # type: (Self, *REGION_VALUES)  -> Self
+        # type: (Self, *Region)  -> Self
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
@@ -104,14 +106,14 @@ class CheckSettings(object):
 
     @overload  # noqa
     def floating(self, max_offset, region):
-        # type: (Self, int, REGION_VALUES) -> Self
+        # type: (Self, int, Region) -> Self
         pass
 
     @overload  # noqa
     def floating(
         self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
     ):
-        # type: (Self, REGION_VALUES, int, int, int, int) -> Self
+        # type: (Self, Region, int, int, int, int) -> Self
         pass
 
     def floating(self, *args):  # noqa
@@ -224,7 +226,7 @@ class CheckSettings(object):
     def _region_provider_from(self, region, method_name):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
-            logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
+            logger.debug("{name}: RegionByRegion".format(name=method_name))
             return RegionByRectangle(region)
         raise TypeError("Unknown region type.")
 
