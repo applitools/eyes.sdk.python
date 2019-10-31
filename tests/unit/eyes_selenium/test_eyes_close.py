@@ -1,6 +1,8 @@
 import os
 
 import pytest
+from mock import MagicMock
+
 from applitools.common import (
     DiffsFoundError,
     EyesError,
@@ -9,7 +11,6 @@ from applitools.common import (
     TestResults,
 )
 from applitools.selenium import Eyes
-from mock import MagicMock
 
 
 @pytest.fixture(scope="function")
@@ -84,13 +85,6 @@ def test_eyes_close_old_test_unresolved(eyes_opened_unresolved_old):
 
 def test_eyes_close_old_test_unresolved_silent(eyes_opened_unresolved_old):
     eyes_opened_unresolved_old.close(False)
-
-
-def test_eyes_close_new_test_unresolved_should_fail(eyes_opened_unresolved_new):
-    eyes_opened_unresolved_new.fail_on_new_test = True
-
-    with pytest.raises(NewTestError):
-        eyes_opened_unresolved_new.close(False)
 
 
 def test_eyes_close_new_test_unresolved(eyes_opened_unresolved_new):
