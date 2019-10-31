@@ -33,7 +33,7 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     started_at = attr.ib(
         factory=lambda: datetime.now(UTC), metadata={JsonInclude.THIS: True}
-    )  # type: Union[datetime, Text]
+    )  # type: datetime
     sequence_name = attr.ib(
         init=False,
         factory=lambda: os.getenv("APPLITOOLS_BATCH_SEQUENCE"),
@@ -47,7 +47,7 @@ class BatchInfo(object):
     )  # type: Text
 
     def with_batch_id(self, id):
-        # type: (Union[Text, int]) -> BatchInfo
+        # type: (Text) -> BatchInfo
         argument_guard.not_none(id)
         self.id = str(id)
         return self
