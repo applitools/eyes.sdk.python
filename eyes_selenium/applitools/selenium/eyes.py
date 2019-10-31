@@ -159,17 +159,17 @@ class Eyes(object):
         return None
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         if not self._is_visual_grid_eyes:
-            return self._selenium_eyes.is_debug_screenshot_provided
+            return self._selenium_eyes._debug_screenshot_provided
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.is_debug_screenshot_provided = save
+            self._selenium_eyes._debug_screenshot_provided = save
 
     @position_provider.setter
     def position_provider(self, provider):
