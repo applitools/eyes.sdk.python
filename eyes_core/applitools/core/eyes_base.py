@@ -181,13 +181,13 @@ class EyesBase(_EyesBaseAbstract):
         self._cut_provider = provider
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         prev = self._debug_screenshot_provider
         if save:
