@@ -154,12 +154,12 @@ class CheckSettings(object):
         self.values.floating_regions.append(region_or_container)
         return self
 
-    def send_dom(self, send=True):
+    def send_dom(self, senddom=True):
         # type: (Self, bool) -> Self
         """
          Defines whether to send the document DOM or not.
         """
-        self.values.send_dom = send
+        self.values.send_dom = senddom
         return self
 
     def use_dom(self, use=True):
