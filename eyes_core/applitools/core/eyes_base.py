@@ -173,12 +173,12 @@ class EyesBase(_EyesBaseAbstract):
         return self._cut_provider
 
     @cut_provider.setter
-    def cut_provider(self, provider):
-        # type: (Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]) -> None
+    def cut_provider(self, cutprovider):
+        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         argument_guard.is_in(
-            provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
+            cutprovider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         )
-        self._cut_provider = provider
+        self._cut_provider = cutprovider
 
     @property
     def _debug_screenshot_provided(self):
