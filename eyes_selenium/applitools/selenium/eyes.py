@@ -66,20 +66,20 @@ class Eyes(object):
         # type: () -> bool
         return self._is_opened
 
-    @property
-    def configuration(self):
+    def get_configuration(self):
         # type: () -> Configuration
         return self._configuration
 
-    @configuration.setter
-    def configuration(self, new_conf):
+    def set_configuration(self, configuration):
         # type: (Configuration) -> None
-        argument_guard.is_a(new_conf, Configuration)
-        if self._configuration.api_key and not new_conf.api_key:
-            new_conf.api_key = self._configuration.api_key
-        if self._configuration.server_url and not new_conf.server_url:
-            new_conf.server_url = self._configuration.server_url
-        self._configuration = new_conf
+        argument_guard.is_a(configuration, Configuration)
+        if self._configuration.api_key and not configuration.api_key:
+            configuration.api_key = self._configuration.api_key
+        if self._configuration.server_url and not configuration.server_url:
+            configuration.server_url = self._configuration.server_url
+        self._configuration = configuration
+
+    configuration = property(get_configuration, set_configuration)
 
     @property
     def base_agent_id(self):

@@ -215,14 +215,14 @@ class EyesBase(_EyesBaseAbstract):
         )
         return app_env
 
-    @property
-    def configuration(self):
+    def get_configuration(self):
         return self._config_provider
 
-    @configuration.setter
-    def configuration(self, value):
+    def set_configuration(self, configuration):
         # type:(Configuration) -> None
-        self._config_provider = value
+        self._config_provider = configuration
+
+    configuration = property(get_configuration, set_configuration)
 
     @property
     def scale_ratio(self):
