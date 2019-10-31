@@ -89,7 +89,6 @@ class Configuration(object):
     is_disabled = attr.ib(default=False)  # type: bool
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
-    fail_on_new_test = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
     send_dom = attr.ib(default=True)  # type: bool
     use_dom = attr.ib(default=False)  # type: bool

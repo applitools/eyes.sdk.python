@@ -332,7 +332,7 @@ class EyesBase(_EyesBaseAbstract):
                 if results.is_new:
                     instructions = "Please approve the new baseline at " + results_url
                     logger.info("--- New test ended. " + instructions)
-                    if raise_ex or self.configuration.fail_on_new_test:
+                    if raise_ex:
                         message = "'%s' of '%s'. %s" % (
                             self._session_start_info.scenario_id_or_name,
                             self._session_start_info.app_id_or_name,
