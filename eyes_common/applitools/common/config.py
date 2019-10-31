@@ -102,7 +102,7 @@ class Configuration(object):
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
-    timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
+    _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
     def _validate1(self, attribute, value):
