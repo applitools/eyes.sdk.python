@@ -123,7 +123,7 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
-    def region(self, by_selector):
+    def region(self, by):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
