@@ -230,10 +230,10 @@ class EyesBase(_EyesBaseAbstract):
         return self._scale_provider.scale_ratio
 
     @scale_ratio.setter
-    def scale_ratio(self, value):
+    def scale_ratio(self, scale_ratio):
         # type: (float) -> None
-        if value:
-            self._scale_provider = FixedScaleProvider(value)
+        if scale_ratio:
+            self._scale_provider = FixedScaleProvider(scale_ratio)
         else:
             self._scale_provider = NullScaleProvider()
 
