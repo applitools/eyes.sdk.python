@@ -147,17 +147,17 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
-    def frame(self, frame_element):
+    def frame(self, element):
         # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def frame(self, frame_index):
+    def frame(self, index):
         # type: (FrameIndex) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def frame(self, frame_by_selector):
+    def frame(self, by):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
