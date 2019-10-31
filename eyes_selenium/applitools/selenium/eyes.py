@@ -191,7 +191,7 @@ class Eyes(object):
         return None
 
     @cut_provider.setter
-    def cut_provider(self, provider):
+    def cut_provider(self, cutprovider):
         # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         """
         Manually set the the sizes to cut from an image before it's validated.
@@ -200,7 +200,7 @@ class Eyes(object):
         :return:
         """
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.cut_provider = provider
+            self._selenium_eyes.cut_provider = cutprovider
 
     @property
     def is_cut_provider_explicitly_set(self):
