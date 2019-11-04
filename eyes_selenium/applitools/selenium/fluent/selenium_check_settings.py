@@ -128,6 +128,9 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (*Region)  -> SeleniumCheckSettings
         pass
 
+    def layout(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).layout(*region)
+
     @overload  # noqa
     def strict(self, *by):
         # type: (*BySelector)  -> SeleniumCheckSettings
@@ -147,6 +150,9 @@ class SeleniumCheckSettings(CheckSettings):
     def strict(self, *region):
         # type: (*Region)  -> SeleniumCheckSettings
         pass
+
+    def strict(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).strict(*region)
 
     @overload  # noqa
     def content(self, *by):
@@ -168,6 +174,9 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (*Region)  -> SeleniumCheckSettings
         pass
 
+    def content(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).content(*region)
+
     @overload  # noqa
     def ignore(self, *by):
         # type: (*BySelector)  -> SeleniumCheckSettings
@@ -188,6 +197,9 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (*Region)  -> SeleniumCheckSettings
         pass
 
+    def ignore(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).ignore(*region)
+
     @overload  # noqa
     def floating(self, max_offset, region):
         # type: (int, FLOATING_VALUES) -> SeleniumCheckSettings
@@ -199,6 +211,9 @@ class SeleniumCheckSettings(CheckSettings):
     ):
         # type: (FLOATING_VALUES, int, int, int, int) -> SeleniumCheckSettings
         pass
+
+    def floating(self, *args):  # noqa
+        return super(SeleniumCheckSettings, self).floating(*args)
 
     @overload  # noqa
     def region(self, region):
