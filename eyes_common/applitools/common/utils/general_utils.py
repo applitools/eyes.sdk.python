@@ -128,7 +128,7 @@ def all_fields(obj):
 
 
 def get_env_with_prefix(env_name, default=None):
-    # type: (Text, Optional[Text]) -> Text
+    # type: (Text, Optional[Text]) -> Optional[Text]
     """
     Takes name of ENV variable, check if exists origin and with list of prefixes
     """
@@ -141,6 +141,4 @@ def get_env_with_prefix(env_name, default=None):
             value = os.getenv(name)
             if value:
                 return value
-    if default or isinstance(default, str):
-        return default
-    raise KeyError("The {} ENV variable isn't available.".format(env_name))
+    return default
