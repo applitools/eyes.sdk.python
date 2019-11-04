@@ -11,6 +11,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
+from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
 
 __all__ = ("BatchInfo", "Configuration")
@@ -28,7 +29,7 @@ class BatchInfo(object):
     """
 
     name = attr.ib(
-        factory=lambda: os.getenv("APPLITOOLS_BATCH_NAME"),
+        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_NAME"),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
     started_at = attr.ib(
@@ -36,13 +37,13 @@ class BatchInfo(object):
     )  # type: datetime
     sequence_name = attr.ib(
         init=False,
-        factory=lambda: os.getenv("APPLITOOLS_BATCH_SEQUENCE"),
+        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE"),
         metadata={JsonInclude.NAME: "batchSequenceName"},
     )  # type: Optional[Text]
     id = attr.ib(
         init=False,
         converter=str,
-        factory=lambda: os.getenv("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
+        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
         metadata={JsonInclude.THIS: True},
     )  # type: Text
 
@@ -57,13 +58,13 @@ class BatchInfo(object):
 class Configuration(object):
     batch = attr.ib(default=None)  # type: Optional[BatchInfo]
     branch_name = attr.ib(
-        factory=lambda: os.getenv("APPLITOOLS_BRANCH", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_BRANCH", None)
     )  # type: Optional[Text]
     parent_branch_name = attr.ib(
-        factory=lambda: os.getenv("APPLITOOLS_PARENT_BRANCH", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_PARENT_BRANCH", None)
     )  # type: Optional[Text]
     baseline_branch_name = attr.ib(
-        factory=lambda: os.getenv("APPLITOOLS_BASELINE_BRANCH", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_BASELINE_BRANCH", None)
     )  # type: Optional[Text]
     agent_id = attr.ib(default=None)  # type: Optional[Text]
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
@@ -99,9 +100,11 @@ class Configuration(object):
     stitch_overlap = attr.ib(default=5)  # type: int
 
     api_key = attr.ib(
-        factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
-    server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
+    server_url = attr.ib(
+        factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
+    )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
