@@ -5,14 +5,15 @@ from datetime import datetime
 import attr
 
 from applitools.common.utils import image_utils
+from applitools.common.utils.general_utils import get_env_with_prefix
 
 
 @attr.s
 class DebugScreenshotProvider(object):
     """Interface for saving debug screenshots."""
 
-    DEFAULT_PREFIX = os.getenv("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
-    DEFAULT_PATH = os.getenv("DEBUG_SCREENSHOT_PATH", "")
+    DEFAULT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
+    DEFAULT_PATH = get_env_with_prefix("DEBUG_SCREENSHOT_PATH", "")
 
     _prefix = attr.ib(default=DEFAULT_PREFIX)
     _path = attr.ib(default=DEFAULT_PATH)

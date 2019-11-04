@@ -11,13 +11,15 @@ import typing as tp
 import warnings
 from logging import Logger
 
+from applitools.common.utils.general_utils import get_env_with_prefix
+
 _DEFAULT_EYES_LOGGER_NAME = "eyes"
 _DEFAULT_EYES_FORMATTER = logging.Formatter(
     "%(asctime)s [%(levelname)s] %(threadName)-9s) %(name)s: %(message)s"
 )
-_DEFAULT_LOGGER_LEVEL = int(os.getenv("LOGGER_LEVEL", logging.INFO))
-_DEBUG_SCREENSHOT_PREFIX = os.getenv("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
-_DEBUG_SCREENSHOT_PATH = os.getenv("DEBUG_SCREENSHOT_PATH", ".")
+_DEFAULT_LOGGER_LEVEL = int(get_env_with_prefix("LOGGER_LEVEL", logging.INFO))
+_DEBUG_SCREENSHOT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
+_DEBUG_SCREENSHOT_PATH = get_env_with_prefix("DEBUG_SCREENSHOT_PATH", ".")
 
 __all__ = ("StdoutLogger", "FileLogger", "NullLogger")
 
