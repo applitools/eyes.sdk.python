@@ -45,7 +45,7 @@ from .match_window_data import MatchWindowData, Options  # noqa
 from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
 from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
-from .test_results import TestResults, TestResultsSummary  # noqa
+from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
 from .visual_grid import (  # noqa
     ChromeEmulationInfo,
     DeviceName,

@@ -6,6 +6,7 @@ from .capture import (
 )
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
 from .eyes_base import EyesBase
+from .eyes_runner import EyesRunner
 from .fluent import (
     CheckSettings,
     CheckSettingsValues,
@@ -65,4 +66,5 @@ __all__ = (
     "AppOutputProvider",
     "EyesScreenshotFactory",
     "ImageProvider",
+    "EyesRunner",
 )
