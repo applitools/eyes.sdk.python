@@ -9,6 +9,7 @@ from applitools.common import (
     MatchResult,
     RectangleSize,
     Region,
+    TestResults,
     logger,
 )
 from applitools.common.geometry import Point
@@ -286,7 +287,8 @@ class SeleniumEyes(EyesBase):
         logger.debug("check - done!")
         return result
 
-    def close(self, raise_ex):
+    def close(self, raise_ex=True):
+        # type: (bool) -> Optional[TestResults]
         results = None
         try:
             results = super(SeleniumEyes, self).close(raise_ex)
