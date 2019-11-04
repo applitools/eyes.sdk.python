@@ -173,21 +173,21 @@ class EyesBase(_EyesBaseAbstract):
         return self._cut_provider
 
     @cut_provider.setter
-    def cut_provider(self, provider):
-        # type: (Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]) -> None
+    def cut_provider(self, cutprovider):
+        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         argument_guard.is_in(
-            provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
+            cutprovider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         )
-        self._cut_provider = provider
+        self._cut_provider = cutprovider
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         prev = self._debug_screenshot_provider
         if save:
@@ -215,14 +215,14 @@ class EyesBase(_EyesBaseAbstract):
         )
         return app_env
 
-    @property
-    def configuration(self):
+    def get_configuration(self):
         return self._config_provider
 
-    @configuration.setter
-    def configuration(self, value):
+    def set_configuration(self, configuration):
         # type:(Configuration) -> None
-        self._config_provider = value
+        self._config_provider = configuration
+
+    configuration = property(get_configuration, set_configuration)
 
     @property
     def scale_ratio(self):
@@ -230,10 +230,10 @@ class EyesBase(_EyesBaseAbstract):
         return self._scale_provider.scale_ratio
 
     @scale_ratio.setter
-    def scale_ratio(self, value):
+    def scale_ratio(self, scale_ratio):
         # type: (float) -> None
-        if value:
-            self._scale_provider = FixedScaleProvider(value)
+        if scale_ratio:
+            self._scale_provider = FixedScaleProvider(scale_ratio)
         else:
             self._scale_provider = NullScaleProvider()
 
@@ -332,7 +332,7 @@ class EyesBase(_EyesBaseAbstract):
                 if results.is_new:
                     instructions = "Please approve the new baseline at " + results_url
                     logger.info("--- New test ended. " + instructions)
-                    if raise_ex or self.configuration.fail_on_new_test:
+                    if raise_ex:
                         message = "'%s' of '%s'. %s" % (
                             self._session_start_info.scenario_id_or_name,
                             self._session_start_info.app_id_or_name,
@@ -516,7 +516,7 @@ class EyesBase(_EyesBaseAbstract):
 
     def _log_open_base(self):
         logger.debug("Eyes server URL is '{}'".format(self.configuration.server_url))
-        logger.debug("Timeout = {} ms".format(self.configuration.timeout))
+        logger.debug("Timeout = {} ms".format(self.configuration._timeout))
         logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(

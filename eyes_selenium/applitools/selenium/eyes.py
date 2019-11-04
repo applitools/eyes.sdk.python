@@ -66,20 +66,20 @@ class Eyes(object):
         # type: () -> bool
         return self._is_opened
 
-    @property
-    def configuration(self):
+    def get_configuration(self):
         # type: () -> Configuration
         return self._configuration
 
-    @configuration.setter
-    def configuration(self, new_conf):
+    def set_configuration(self, configuration):
         # type: (Configuration) -> None
-        argument_guard.is_a(new_conf, Configuration)
-        if self._configuration.api_key and not new_conf.api_key:
-            new_conf.api_key = self._configuration.api_key
-        if self._configuration.server_url and not new_conf.server_url:
-            new_conf.server_url = self._configuration.server_url
-        self._configuration = new_conf
+        argument_guard.is_a(configuration, Configuration)
+        if self._configuration.api_key and not configuration.api_key:
+            configuration.api_key = self._configuration.api_key
+        if self._configuration.server_url and not configuration.server_url:
+            configuration.server_url = self._configuration.server_url
+        self._configuration = configuration
+
+    configuration = property(get_configuration, set_configuration)
 
     @property
     def base_agent_id(self):
@@ -159,17 +159,17 @@ class Eyes(object):
         return None
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         if not self._is_visual_grid_eyes:
-            return self._selenium_eyes.is_debug_screenshot_provided
+            return self._selenium_eyes._debug_screenshot_provided
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.is_debug_screenshot_provided = save
+            self._selenium_eyes._debug_screenshot_provided = save
 
     @position_provider.setter
     def position_provider(self, provider):
@@ -191,7 +191,7 @@ class Eyes(object):
         return None
 
     @cut_provider.setter
-    def cut_provider(self, provider):
+    def cut_provider(self, cutprovider):
         # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         """
         Manually set the the sizes to cut from an image before it's validated.
@@ -200,7 +200,7 @@ class Eyes(object):
         :return:
         """
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.cut_provider = provider
+            self._selenium_eyes.cut_provider = cutprovider
 
     @property
     def is_cut_provider_explicitly_set(self):

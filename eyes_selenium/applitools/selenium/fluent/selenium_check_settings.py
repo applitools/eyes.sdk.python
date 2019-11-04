@@ -28,6 +28,7 @@ if TYPE_CHECKING:
         FrameIndex,
         BySelector,
         CssSelector,
+        FLOATING_VALUES,
     )
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
@@ -108,6 +109,113 @@ class SeleniumCheckSettings(CheckSettings):
     _frame = attr.ib(default=None)
 
     @overload  # noqa
+    def layout(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def layout(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def layout(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def layout(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def layout(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).layout(*region)
+
+    @overload  # noqa
+    def strict(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def strict(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).strict(*region)
+
+    @overload  # noqa
+    def content(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def content(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).content(*region)
+
+    @overload  # noqa
+    def ignore(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def ignore(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).ignore(*region)
+
+    @overload  # noqa
+    def floating(self, max_offset, region):
+        # type: (int, FLOATING_VALUES) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def floating(
+        self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
+    ):
+        # type: (FLOATING_VALUES, int, int, int, int) -> SeleniumCheckSettings
+        pass
+
+    def floating(self, *args):  # noqa
+        return super(SeleniumCheckSettings, self).floating(*args)
+
+    @overload  # noqa
     def region(self, region):
         # type: (Region) -> SeleniumCheckSettings
         pass
@@ -123,7 +231,7 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
-    def region(self, by_selector):
+    def region(self, by):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
@@ -147,17 +255,17 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
-    def frame(self, frame_element):
+    def frame(self, element):
         # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def frame(self, frame_index):
+    def frame(self, index):
         # type: (FrameIndex) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def frame(self, frame_by_selector):
+    def frame(self, by):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
@@ -185,15 +293,15 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
-            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
+            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
             sel = _css_selector_from_(by, val)
-            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
+            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionByCssSelector(sel)
         elif is_webelement(region):
-            logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
+            logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name

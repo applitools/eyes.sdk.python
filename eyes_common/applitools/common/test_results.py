@@ -100,28 +100,66 @@ class TestResults(object):
         return "{} [{}]".format(preamble, origin_str)
 
 
-@attr.s
+@attr.s(repr=False, str=False)
 class TestResultsSummary(object):
-    all_results = attr.ib()  # type: List[TestResults]
-    exceptions = attr.ib(default=0)  # type: int
+    _all_results = attr.ib()  # type: List[TestResults]
+    _exceptions = attr.ib(default=0)  # type: int
+    _passed = attr.ib(init=False, default=0)  # type: int
+    _unresolved = attr.ib(init=False, default=0)  # type: int
+    _failed = attr.ib(init=False, default=0)  # type: int
+    _mismatches = attr.ib(init=False, default=0)  # type: int
+    _missing = attr.ib(init=False, default=0)  # type: int
+    _matches = attr.ib(init=False, default=0)  # type: int
 
-    passed = attr.ib(init=False, default=0)  # type: int
-    unresolved = attr.ib(init=False, default=0)  # type: int
-    failed = attr.ib(init=False, default=0)  # type: int
-    mismatches = attr.ib(init=False, default=0)  # type: int
-    missing = attr.ib(init=False, default=0)  # type: int
-    matches = attr.ib(init=False, default=0)  # type: int
+    @property
+    def all_results(self):
+        # TODO: add TestResultContainer
+        return self._all_results
+
+    def size(self):
+        return len(self)
 
     def __attrs_post_init__(self):
-        for result in self.all_results:
+        for result in self._all_results:
             if result is None:
                 continue
             if result.is_failed:
-                self.failed += 1
+                self._failed += 1
             elif result.is_passed:
-                self.passed += 1
+                self._passed += 1
             elif result.is_unresolved:
-                self.unresolved += 1
-            self.matches += result.matches
-            self.missing += result.missing
-            self.mismatches += result.mismatches
+                self._unresolved += 1
+            self._matches += result.matches
+            self._missing += result.missing
+            self._mismatches += result.mismatches
+
+    def __len__(self):
+        return len(self._all_results)
+
+    def __iter__(self):
+        return iter(self._all_results)
+
+    def __getitem__(self, item):
+        return self._all_results[item]
+
+    def __str__(self):
+        return """
+result summary {{
+    all results={all_results}
+    passed={passed}
+    unresolved={unresolved}
+    failed={failed}
+    exceptions={exceptions}
+    mismatches={mismatches}
+    missing={missing}
+    matches={matches}
+}}""".format(
+            all_results=self._all_results,
+            passed=self._passed,
+            unresolved=self._unresolved,
+            failed=self._failed,
+            exceptions=self._exceptions,
+            mismatches=self._mismatches,
+            missing=self._missing,
+            matches=self._matches,
+        )
