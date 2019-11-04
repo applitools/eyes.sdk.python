@@ -27,30 +27,25 @@ from applitools.core import (
     RegionProvider,
     TextTrigger,
 )
-from applitools.selenium.capture.eyes_webdriver_screenshot import (
-    EyesWebDriverScreenshotFactory,
-)
-from applitools.selenium.capture.full_page_capture_algorithm import (
-    FullPageCaptureAlgorithm,
-)
-from applitools.selenium.capture.image_providers import get_image_provider
-from applitools.selenium.capture.screenshot_utils import (
-    cut_to_viewport_size_if_required,
-)
-from applitools.selenium.region_compensation import (
-    RegionPositionCompensation,
-    get_region_position_compensation,
-)
 
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
+from .capture.eyes_webdriver_screenshot import EyesWebDriverScreenshotFactory
+from .capture.full_page_capture_algorithm import FullPageCaptureAlgorithm
+from .capture.image_providers import get_image_provider
+from .capture.screenshot_utils import cut_to_viewport_size_if_required
+from .classic_runner import ClassicRunner
 from .fluent import Target
 from .frames import FrameChain
 from .positioning import (
     CSSTranslatePositionProvider,
     ElementPositionProvider,
     ScrollPositionProvider,
+)
+from .region_compensation import (
+    RegionPositionCompensation,
+    get_region_position_compensation,
 )
 from .useragent import UserAgent
 from .webdriver import EyesWebDriver
@@ -102,6 +97,7 @@ class SeleniumEyes(EyesBase):
     _is_check_region = None  # type: Optional[bool]
     _original_scroll_position = None  # type: Optional[Point]
     current_frame_position_provider = None  # type: Optional[PositionProvider]
+    _runner = None  # type: Optional[ClassicRunner]
 
     @staticmethod
     def set_viewport_size(driver, size=None, viewportsize=None):
@@ -119,15 +115,15 @@ class SeleniumEyes(EyesBase):
         argument_guard.not_none(driver)
         return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
-    def __init__(self, config):
-        # type: (Eyes) -> None
+    def __init__(self, configuration_provider, runner=None):
+        # type: (Eyes, Optional[ClassicRunner]) -> None
         super(SeleniumEyes, self).__init__()
 
-        self._config_provider = config
+        self._config_provider = configuration_provider
         self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
-
         self._stitch_content = False  # type: bool
+        self._runner = runner if runner else ClassicRunner()
 
     @property
     def configuration(self):
@@ -189,6 +185,7 @@ class SeleniumEyes(EyesBase):
         self._region_position_compensation = get_region_position_compensation(
             self._user_agent, self
         )
+        self._runner.add_batch(self.configuration.batch.id, self)
         return self._driver
 
     def _try_hide_scrollbars(self, frame=None):
@@ -289,6 +286,17 @@ class SeleniumEyes(EyesBase):
         self._original_fc = None
         logger.debug("check - done!")
         return result
+
+    def close(self, raise_ex):
+        results = None
+        try:
+            results = super(SeleniumEyes, self).close(raise_ex)
+        except Exception as e:
+            if raise_ex:
+                raise e
+        if self._runner:
+            self._runner.aggregate_result(results)
+        return results
 
     def _check_result_flow(self, name, check_settings):
         target_region = check_settings.values.target_region

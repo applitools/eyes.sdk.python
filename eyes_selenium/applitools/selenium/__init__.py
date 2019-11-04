@@ -15,6 +15,7 @@ from applitools.core.cut import (  # noqa
     UnscaledFixedCutProvider,
 )
 
+from .classic_runner import ClassicRunner
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
 from .visual_grid import VisualGridRunner
@@ -40,4 +41,5 @@ __all__ = (
     "FixedCutProvider",
     "NullCutProvider",
     "UnscaledFixedCutProvider",
+    "ClassicRunner",
 )

@@ -11,11 +11,14 @@ from applitools.common import (
     EyesError,
     NewTestError,
     TestFailedError,
+    TestResultContainer,
     TestResultsSummary,
     logger,
 )
 from applitools.common.utils import datetime_utils
-from applitools.selenium.visual_grid.resource_cache import ResourceCache
+from applitools.core import EyesRunner
+
+from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List
@@ -28,9 +31,11 @@ if typing.TYPE_CHECKING:
     )
 
 
-class VisualGridRunner(object):
+class VisualGridRunner(EyesRunner):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
+        super(VisualGridRunner, self).__init__()
+
         kwargs = {}
         if sys.version_info >= (3, 6):
             kwargs["thread_name_prefix"] = "VGR-Executor"
@@ -125,17 +130,23 @@ class VisualGridRunner(object):
                     raise TestFailedError(msg, results)
         return test_list
 
-    def get_all_test_results(self, raise_ex=True):
+    def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         while not any(e.is_open for e in self.all_eyes):
             datetime_utils.sleep(500)
         test_list = self.process_test_list(
-            [test for e in self.all_eyes for test in e.test_list], raise_ex
-        )
+            [test for e in self.all_eyes for test in e.test_list],
+            should_raise_exception,
+        )  # type: List[RunningTest]
         for e in self.all_eyes:
             e._is_opened = False
-        exceptions = [exp for t in test_list for exp in t.pending_exceptions]
-        return TestResultsSummary([t.test_result for t in test_list], len(exceptions))
+        results = []
+        for test in test_list:
+            exp = test.pending_exceptions[0] if len(test.pending_exceptions) else None
+            results.append(
+                TestResultContainer(test.test_result, test.browser_info, exp)
+            )
+        return TestResultsSummary(results)
 
     @property
     def all_running_tests(self):

@@ -32,7 +32,7 @@ class Configuration(ConfigurationBase):
     hide_caret = attr.ib(default=False)  # type: bool
 
     # Rendering Configuration
-    is_throw_exception_on = False  # type: bool
+    is_raise_exception_on = False  # type: bool
     is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
