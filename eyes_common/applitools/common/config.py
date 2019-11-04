@@ -33,7 +33,7 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     started_at = attr.ib(
         factory=lambda: datetime.now(UTC), metadata={JsonInclude.THIS: True}
-    )  # type: Union[datetime, Text]
+    )  # type: datetime
     sequence_name = attr.ib(
         init=False,
         factory=lambda: os.getenv("APPLITOOLS_BATCH_SEQUENCE"),
@@ -47,7 +47,7 @@ class BatchInfo(object):
     )  # type: Text
 
     def with_batch_id(self, id):
-        # type: (Union[Text, int]) -> BatchInfo
+        # type: (Text) -> BatchInfo
         argument_guard.not_none(id)
         self.id = str(id)
         return self
@@ -89,7 +89,6 @@ class Configuration(object):
     is_disabled = attr.ib(default=False)  # type: bool
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
-    fail_on_new_test = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
     send_dom = attr.ib(default=True)  # type: bool
     use_dom = attr.ib(default=False)  # type: bool
@@ -103,7 +102,7 @@ class Configuration(object):
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
-    timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
+    _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
     def _validate1(self, attribute, value):

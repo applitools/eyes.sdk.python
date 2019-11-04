@@ -188,7 +188,7 @@ class ServerConnector(object):
             )
         self._com.server_url = conf.server_url
         self._com.api_key = conf.api_key
-        self._com.timeout_ms = conf.timeout
+        self._com.timeout_ms = conf._timeout
 
     @property
     def server_url(self):
