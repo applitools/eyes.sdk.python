@@ -363,6 +363,10 @@ class EyesBase(_EyesBaseAbstract):
             self._running_session = None
             logger.close()
 
+    def close_batch(self, batch_id):
+        # type: (Text) -> None
+        self._server_connector.close_batch(batch_id)
+
     def abort(self):
         # type: () -> None
         """

@@ -4,6 +4,7 @@ import json
 import math
 import time
 import typing
+from distutils.util import strtobool
 from struct import pack
 
 import attr
@@ -25,6 +26,7 @@ from applitools.common.utils import (
     json_utils,
     urljoin,
 )
+from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.visual_grid import (
     RenderingInfo,
     RenderRequest,
@@ -167,6 +169,8 @@ class ServerConnector(object):
     RESOURCES_SHA_256 = "/resources/sha256/"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
+
+    CLOSE_BATCH = "api/sessions/batches/{}/close/bypointerid"
 
     _is_session_started = False
 
@@ -443,3 +447,15 @@ class ServerConnector(object):
                 )
             )
         return json_utils.attr_from_response(response, RenderStatusResults)
+
+    def close_batch(self, batch_id):
+        if strtobool(get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")):
+            logger.debug(
+                "APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true."
+            )
+            return
+        argument_guard.not_none(batch_id)
+        logger.info("called with {}".format(batch_id))
+        url = self.CLOSE_BATCH.format(batch_id)
+        res = self._com.request(requests.delete, url)
+        logger.info("delete batch is done with {} status".format(res.status_code))
