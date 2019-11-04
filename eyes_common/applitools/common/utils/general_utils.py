@@ -141,6 +141,6 @@ def get_env_with_prefix(env_name, default=None):
             value = os.getenv(name)
             if value:
                 return value
-    if default:
+    if default or isinstance(default, str):
         return default
     raise KeyError("The {} ENV variable isn't available.".format(env_name))
