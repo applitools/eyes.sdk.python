@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import hashlib
+import os
 import typing
 
 import attr
@@ -13,7 +14,7 @@ General purpose utilities.
 
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Any, List, Text
+    from typing import Callable, Any, List, Text, Optional
 
     T = typing.TypeVar("T")
 
@@ -124,3 +125,22 @@ def all_fields(obj):
     if attr.has(obj):
         return list(attr.fields_dict(obj).keys())
     return []
+
+
+def get_env_with_prefix(env_name, default=None):
+    # type: (Text, Optional[Text]) -> Text
+    """
+    Takes name of ENV variable, check if exists origin and with list of prefixes
+    """
+    prefixes_to_check = ["bamboo"]
+    try:
+        return os.environ[env_name]
+    except KeyError:
+        for prefix in prefixes_to_check:
+            name = "{}_{}".format(prefix, env_name)
+            value = os.getenv(name)
+            if value:
+                return value
+    if default:
+        return default
+    raise KeyError("The {} ENV variable isn't available.".format(env_name))

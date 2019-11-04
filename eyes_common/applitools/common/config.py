@@ -101,7 +101,11 @@ class Configuration(object):
     api_key = attr.ib(
         factory=lambda: os.getenv("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
-    server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
+    server_url = attr.ib(
+        default=os.getenv("APPLITOOLS_SERVER_URL")
+        if os.getenv("APPLITOOLS_SERVER_URL")
+        else DEFAULT_SERVER_URL
+    )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @match_timeout.validator
