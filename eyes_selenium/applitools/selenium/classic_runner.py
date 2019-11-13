@@ -16,8 +16,8 @@ class ClassicRunner(EyesRunner):
 
     def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        if should_raise_exception and self._exception:
-            raise self._exception
+        if should_raise_exception and self.exception:
+            raise self.exception
         result = []
         for test_result in self._all_test_result:
             result.append(TestResultContainer(test_result, None, None))
