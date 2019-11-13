@@ -119,15 +119,14 @@ class VisualGridRunner(EyesRunner):
         if raise_ex:
             for test in test_list:
                 results = test.test_result
-                msg = "Test '{}' of '{}'. \n\tSee details at: {}".format(
-                    results.name, results.app_name, results.url
-                )
+                scenario_id_or_name = results.name
+                app_id_or_name = results.app_name
                 if results.is_unresolved and not results.is_new:
-                    raise DiffsFoundError(msg, results)
+                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
                 if results.is_new:
-                    raise NewTestError(msg, results)
+                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
                 if results.is_failed:
-                    raise TestFailedError(msg, results)
+                    raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
         return test_list
 
     def get_all_test_results_impl(self, should_raise_exception=True):

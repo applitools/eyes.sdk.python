@@ -9,10 +9,10 @@ class EyesRunner(ABC):
         self._batch_server_connectors = {}
 
     @abstractmethod
-    def get_all_test_results_impl(self, should_raise_exception=True):
+    def get_all_test_results_impl(self, should_raise_exception):
         pass
 
-    def get_all_test_results(self, should_raise_exception):
+    def get_all_test_results(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         try:
             return self.get_all_test_results_impl(should_raise_exception)
