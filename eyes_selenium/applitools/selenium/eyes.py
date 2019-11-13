@@ -293,6 +293,12 @@ class Eyes(object):
             return self.configuration.send_dom
         return False
 
+    @send_dom.setter
+    def send_dom(self, value):
+        # type: (bool) -> None
+        if not self._is_visual_grid_eyes:
+            self.configuration.send_dom = value
+
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         """
