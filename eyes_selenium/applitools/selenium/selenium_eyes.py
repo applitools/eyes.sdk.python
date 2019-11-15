@@ -116,11 +116,11 @@ class SeleniumEyes(EyesBase):
         argument_guard.not_none(driver)
         return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
-    def __init__(self, configuration_provider, runner=None):
+    def __init__(self, config_provider, runner):
         # type: (Eyes, Optional[ClassicRunner]) -> None
         super(SeleniumEyes, self).__init__()
 
-        self._config_provider = configuration_provider
+        self._config_provider = config_provider
         self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_content = False  # type: bool

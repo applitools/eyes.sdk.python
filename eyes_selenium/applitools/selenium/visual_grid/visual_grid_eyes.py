@@ -65,9 +65,9 @@ class VisualGridEyes(object):
     rendering_info = None
     is_check_timer_timeout = False
 
-    def __init__(self, runner, config):
-        # type: (VisualGridRunner, Eyes)-> None
-        self._config_provider = config
+    def __init__(self, config_provider, runner):
+        # type: (Eyes, VisualGridRunner)-> None
+        self._config_provider = config_provider
         self._elements = []
         argument_guard.not_none(runner)
         self.vg_manager = runner

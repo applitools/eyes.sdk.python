@@ -53,10 +53,10 @@ class Eyes(object):
             runner = None
 
         if runner is None:
-            self._selenium_eyes = SeleniumEyes(self)
+            self._selenium_eyes = SeleniumEyes(self, None)
         elif isinstance(runner, VisualGridRunner):
             self._runner = runner
-            self._visual_grid_eyes = VisualGridEyes(runner, self)
+            self._visual_grid_eyes = VisualGridEyes(self, runner)
             self._is_visual_grid_eyes = True
         elif isinstance(runner, ClassicRunner):
             self._runner = runner
