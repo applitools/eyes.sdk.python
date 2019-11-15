@@ -1,20 +1,12 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.selenium import StitchMode
-
 pytestmark = [
     pytest.mark.platform("Linux", "Windows", "macOS"),
-    pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Classic API"),
+    pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_page_url(
         "http://applitools.github.io/demo/TestPages/FramesTestPage/"
-    ),
-    pytest.mark.parametrize(
-        "eyes",
-        [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
-        indirect=True,
-        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
     ),
 ]
 

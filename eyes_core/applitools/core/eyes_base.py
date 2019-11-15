@@ -286,6 +286,36 @@ class EyesBase(_EyesBaseAbstract):
         """
         return self._is_opened
 
+    @staticmethod
+    def log_session_results_and_raise_exception(raise_ex, results):
+        logger.info("close(): %s" % results)
+        results_url = results.url
+        scenario_id_or_name = results.name
+        app_id_or_name = results.app_name
+        if results.is_unresolved:
+            if results.is_new:
+                logger.info(
+                    "--- New test ended. \n\tPlease approve the new baseline at {}".format(
+                        results_url
+                    )
+                )
+                if raise_ex:
+                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
+            else:
+                logger.info(
+                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
+                )
+                if raise_ex:
+                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
+        elif results.is_failed:
+            logger.info(
+                "--- Failed test ended. \n\tSee details at {}".format(results_url)
+            )
+            if raise_ex:
+                raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+        # Test passed
+        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
+
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
         """
@@ -326,50 +356,7 @@ class EyesBase(_EyesBaseAbstract):
             )
             results.is_new = is_new_session
             results.url = results_url
-            logger.info("close(): %s" % results)
-
-            if results.is_unresolved:
-                if results.is_new:
-                    instructions = "Please approve the new baseline at " + results_url
-                    logger.info("--- New test ended. " + instructions)
-                    if raise_ex:
-                        message = "'%s' of '%s'. %s" % (
-                            self._session_start_info.scenario_id_or_name,
-                            self._session_start_info.app_id_or_name,
-                            instructions,
-                        )
-                        raise NewTestError(message, results)
-                else:
-                    logger.info(
-                        "--- Failed test ended. \n\tSee details at {}".format(
-                            results_url
-                        )
-                    )
-                    if raise_ex:
-                        raise DiffsFoundError(
-                            "Test '{}' of '{}' detected differences! "
-                            "\n\tSee details at: {}".format(
-                                self._session_start_info.scenario_id_or_name,
-                                self._session_start_info.app_id_or_name,
-                                results_url,
-                            ),
-                            results,
-                        )
-            elif results.is_failed:
-                logger.info(
-                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
-                )
-                if raise_ex:
-                    raise TestFailedError(
-                        "Test '{}' of '{}'. \n\tSee details at: {}".format(
-                            self._session_start_info.scenario_id_or_name,
-                            self._session_start_info.app_id_or_name,
-                            results_url,
-                        ),
-                        results,
-                    )
-            # Test passed
-            logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
+            self.log_session_results_and_raise_exception(raise_ex, results)
 
             return results
         finally:

@@ -151,6 +151,7 @@ class RunningTest(object):
                 "render_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
+            self.becomes_completed()
 
         open_task.on_task_succeeded(open_task_succeeded)
         open_task.on_task_error(open_task_error)
@@ -247,6 +248,7 @@ class RunningTest(object):
                 "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
+            self.becomes_completed()
 
         render_task.on_task_succeeded(render_task_succeeded)
         render_task.on_task_error(render_task_error)

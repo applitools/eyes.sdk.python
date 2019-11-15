@@ -15,9 +15,10 @@ from applitools.core.cut import (  # noqa
     UnscaledFixedCutProvider,
 )
 
+from .classic_runner import ClassicRunner  # noqa
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
-from .visual_grid import VisualGridRunner
+from .visual_grid import VisualGridRunner  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
 
@@ -40,4 +41,5 @@ __all__ = (
     "FixedCutProvider",
     "NullCutProvider",
     "UnscaledFixedCutProvider",
+    "ClassicRunner",
 )

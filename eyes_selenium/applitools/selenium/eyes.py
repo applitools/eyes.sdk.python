@@ -6,7 +6,7 @@ from applitools.common import EyesError, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
-from applitools.selenium import eyes_selenium_utils
+from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
 from .fluent import Target
 from .selenium_eyes import SeleniumEyes
@@ -53,11 +53,15 @@ class Eyes(object):
             runner = None
 
         if runner is None:
-            self._selenium_eyes = SeleniumEyes(self)
+            self._selenium_eyes = SeleniumEyes(self, None)
         elif isinstance(runner, VisualGridRunner):
             self._runner = runner
-            self._visual_grid_eyes = VisualGridEyes(runner, self)
+            self._visual_grid_eyes = VisualGridEyes(self, runner)
             self._is_visual_grid_eyes = True
+        elif isinstance(runner, ClassicRunner):
+            self._runner = runner
+            self._selenium_eyes = SeleniumEyes(self, runner)
+            self._is_visual_grid_eyes = False
         else:
             raise ValueError("Wrong runner")
 
@@ -288,6 +292,12 @@ class Eyes(object):
         if not self._is_visual_grid_eyes:
             return self.configuration.send_dom
         return False
+
+    @send_dom.setter
+    def send_dom(self, value):
+        # type: (bool) -> None
+        if not self._is_visual_grid_eyes:
+            self.configuration.send_dom = value
 
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult

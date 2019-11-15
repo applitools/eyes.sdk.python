@@ -11,9 +11,10 @@ from .match import ImageMatchSettings
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, List
     from .utils.custom_types import SessionUrls, StepInfo
+    from .visual_grid import RenderBrowserInfo
 
 
-__all__ = ("TestResults", "TestResultsSummary")
+__all__ = ("TestResults", "TestResultsSummary", "TestResultContainer")
 
 
 class TestResultsStatus(Enum):
@@ -101,9 +102,34 @@ class TestResults(object):
 
 
 @attr.s(repr=False, str=False)
+class TestResultContainer(object):
+    test_results = attr.ib()  # type: TestResults
+    browser_info = attr.ib()  # type: Optional[RenderBrowserInfo]
+    exception = attr.ib()  # type: Optional[Exception]
+
+    def __str__(self):
+        browser_info = (
+            "\n browser_info = {}".format(self.browser_info)
+            if self.browser_info
+            else ""
+        )
+        return (
+            "TestResultContainer{{"
+            "\n test_results = {test_results}"
+            "{browser_info}"
+            "\n exception = {exception}"
+            "}}".format(
+                test_results=self.test_results,
+                browser_info=browser_info,
+                exception=self.exception,
+            )
+        )
+
+
+@attr.s(repr=False, str=False)
 class TestResultsSummary(object):
-    _all_results = attr.ib()  # type: List[TestResults]
-    _exceptions = attr.ib(default=0)  # type: int
+    _all_results = attr.ib()  # type: List[TestResultContainer]
+    _exceptions = attr.ib(init=False, default=0)  # type: int
     _passed = attr.ib(init=False, default=0)  # type: int
     _unresolved = attr.ib(init=False, default=0)  # type: int
     _failed = attr.ib(init=False, default=0)  # type: int
@@ -113,14 +139,19 @@ class TestResultsSummary(object):
 
     @property
     def all_results(self):
-        # TODO: add TestResultContainer
+        # type: () -> List[TestResultContainer]
         return self._all_results
 
     def size(self):
+        # type: () -> int
         return len(self)
 
     def __attrs_post_init__(self):
-        for result in self._all_results:
+        for result_container in self._all_results:
+            if result_container and result_container.exception:
+                self._exceptions += 1
+
+            result = result_container.test_results
             if result is None:
                 continue
             if result.is_failed:

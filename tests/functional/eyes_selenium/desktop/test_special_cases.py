@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.selenium import StitchMode, Target
+from applitools.selenium import Target
 
 pytestmark = [
     pytest.mark.platform("Linux"),
@@ -9,12 +9,6 @@ pytestmark = [
     pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases"),
     pytest.mark.test_page_url(
         "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html"
-    ),
-    pytest.mark.parametrize(
-        "eyes",
-        [dict(stitch_mode=StitchMode.CSS), dict(stitch_mode=StitchMode.Scroll)],
-        indirect=True,
-        ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
     ),
 ]
 
