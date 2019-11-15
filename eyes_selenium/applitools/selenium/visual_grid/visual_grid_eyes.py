@@ -10,7 +10,7 @@ from applitools.common import EyesError, TestFailedError, TestResults, logger
 from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
-from applitools.selenium import eyes_selenium_utils, resource
+from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from .eyes_connector import EyesConnector
@@ -65,9 +65,9 @@ class VisualGridEyes(object):
     rendering_info = None
     is_check_timer_timeout = False
 
-    def __init__(self, runner, config):
-        # type: (VisualGridRunner, Eyes)-> None
-        self._config_provider = config
+    def __init__(self, config_provider, runner):
+        # type: (Eyes, VisualGridRunner)-> None
+        self._config_provider = config_provider
         self._elements = []
         argument_guard.not_none(runner)
         self.vg_manager = runner
@@ -85,6 +85,36 @@ class VisualGridEyes(object):
     def configuration(self):
         # type: () -> Configuration
         return self._config_provider.configuration
+
+    @property
+    def base_agent_id(self):
+        # type: () -> Text
+        """
+        Must return version of SDK. (e.g. selenium, visualgrid) in next format:
+            "eyes.{package}.python/{lib_version}"
+        """
+        return "eyes.selenium.visualgrid.python/{version}".format(version=__version__)
+
+    @property
+    def full_agent_id(self):
+        # type: () -> Text
+        """
+        Gets the agent id, which identifies the current library using the SDK.
+
+        """
+        agent_id = self.configuration.agent_id
+        if agent_id is None:
+            return self.base_agent_id
+        return "{} [{}]".format(agent_id, self.base_agent_id)
+
+    def add_property(self, name, value):
+        # type: (Text, Text) -> None
+        """
+        Associates a key/value pair with the test. This can be used later for filtering.
+        :param name: (string) The property name.
+        :param value: (string) The property value
+        """
+        self.configuration.properties.append({"name": name, "value": value})
 
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
