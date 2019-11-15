@@ -133,10 +133,22 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             "CssTranslatePositionProvider - Setting position to: {}".format(location)
         )
         negated_location = -location
+
+        # fix for CSS stitching in Chrome 78
         self._driver.execute_script(
             (
-                "arguments[0].style.transform='translate({:d}px,"
-                "{:d}px';".format(negated_location["x"], negated_location["y"])
+                "arguments[0].style.transform='translate(10px,-{:d}px';".format(
+                    -location.y
+                )
+            ),
+            self._scroll_root_element,
+        )
+
+        self._driver.execute_script(
+            (
+                "arguments[0].style.transform='translate({:d}px,{:d}px';".format(
+                    negated_location["x"], negated_location["y"]
+                )
             ),
             self._scroll_root_element,
         )
