@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from applitools.common import BatchInfo
 from applitools.selenium import Eyes, VisualGridRunner, logger
 
 
@@ -10,10 +11,15 @@ def pytest_generate_tests(metafunc):
     os.environ["TEST_PLATFORM"] = "Linux"
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def vg_runner():
     vg = VisualGridRunner(10)
     return vg
+
+
+@pytest.fixture
+def batch_info():
+    return BatchInfo("Python|VG|")
 
 
 @pytest.fixture

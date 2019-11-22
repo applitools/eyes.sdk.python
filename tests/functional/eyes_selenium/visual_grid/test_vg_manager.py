@@ -1,4 +1,7 @@
-from applitools.selenium import BrowserType, Eyes
+import pytest
+
+from applitools.common import RectangleSize, EyesError
+from applitools.selenium import BrowserType, Eyes, Configuration, Target
 
 
 def test_get_all_test_results(vg_runner, driver):
@@ -28,3 +31,26 @@ def test_abort_eyes(vg_runner, driver):
     eyes.open(driver, "Python | VisualGrid", "TestAbortVGEyes")
     eyes.check_window()
     eyes.abort()
+
+
+def test_vgwith_bad_webhook(vg_runner, driver):
+    eyes = Eyes(vg_runner)
+    eyes.configuration = Configuration(
+        app_name="Visual Grid Python Tests",
+        test_name="Bad Webhook",
+        viewport_size=RectangleSize(800, 600),
+    )
+
+    eyes.open(driver)
+    eyes.check(
+        "",
+        Target.window()
+        .fully()
+        .before_render_screenshot_hook("gibberish uncompilable java script"),
+    )
+    with pytest.raises(EyesError) as e:
+        eyes.close()
+        vg_runner.get_all_test_results()
+
+    assert e
+    assert "failed to run before_capture_screenshot hook script" in str(e)

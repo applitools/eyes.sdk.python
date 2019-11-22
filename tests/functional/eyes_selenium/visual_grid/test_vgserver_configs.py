@@ -1,0 +1,15 @@
+import pytest
+
+from applitools.common import EyesError
+from applitools.selenium import Eyes, Configuration
+
+
+def test_vgdouble_close_no_check(driver, vg_runner, batch_info):
+    eyes = Eyes(vg_runner)
+    eyes.configuration = Configuration(
+        app_name="app", test_name="test", batch=batch_info
+    )
+    eyes.open(driver)
+    with pytest.raises(EyesError) as e:
+        eyes.close()
+        assert "Eyes not open" in str(e)

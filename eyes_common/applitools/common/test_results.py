@@ -1,16 +1,14 @@
 from __future__ import absolute_import
 
-import typing
 from enum import Enum
+from typing import TYPE_CHECKING, List, Optional, Text
 
 import attr
 
 from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
-if typing.TYPE_CHECKING:
-    from typing import Text, Optional, List
-    from .utils.custom_types import SessionUrls, StepInfo
+if TYPE_CHECKING:
     from .visual_grid import RenderBrowserInfo
 
 
@@ -25,6 +23,36 @@ class TestResultsStatus(Enum):
     Passed = "Passed"
     Unresolved = "Unresolved"
     Failed = "Failed"
+
+
+@attr.s
+class SessionUrls(object):
+    batch = attr.ib(default=None)  # type: Text
+    session = attr.ib(default=None)  # type: Text
+
+
+@attr.s
+class StepInfo(object):
+    @attr.s
+    class AppUrls(object):
+        step = attr.ib(default=None)  # type: Text
+        step_editor = attr.ib(default=None)  # type: Text
+
+    @attr.s
+    class ApiUrls(object):
+        baseline_image = attr.ib(default=None)  # type: Text
+        current_image = attr.ib(default=None)  # type: Text
+        diff_image = attr.ib(default=None)  # type: Text
+        checkpoint_image = attr.ib(default=None)  # type: Text
+        checkpoint_image_thumbnail = attr.ib(default=None)  # type: Text
+
+    name = attr.ib(default=None)  # type: Text
+    is_different = attr.ib(default=None)  # type: bool
+    has_baseline_image = attr.ib(default=None)  # type: bool
+    has_current_image = attr.ib(default=None)  # type: bool
+    has_checkpoint_image = attr.ib(default=None)  # type: bool
+    api_urls = attr.ib(default=None, type=ApiUrls)  # type: ApiUrls
+    app_urls = attr.ib(default=None, type=AppUrls)  # type: AppUrls
 
 
 @attr.s
@@ -66,9 +94,11 @@ class TestResults(object):
     duration = attr.ib(default=None, repr=False)  # type: int
     is_different = attr.ib(default=None, repr=False)  # type: bool
     is_aborted = attr.ib(default=None, repr=False)  # type: bool
-    app_urls = attr.ib(default=None, repr=False)  # type: SessionUrls
-    api_urls = attr.ib(default=None, repr=False)  # type: SessionUrls
-    steps_info = attr.ib(default=None, repr=False)  # type: StepInfo
+    app_urls = attr.ib(default=None, repr=False, type=SessionUrls)  # type: SessionUrls
+    api_urls = attr.ib(default=None, repr=False, type=SessionUrls)  # type: SessionUrls
+    steps_info = attr.ib(
+        default=None, repr=False, type=List[StepInfo]
+    )  # type: List[StepInfo]
     baseline_id = attr.ib(default=None, repr=False)  # type: Text
     default_match_settings = attr.ib(
         default=None, repr=False, type=ImageMatchSettings
