@@ -118,12 +118,14 @@ class Configuration(object):
     def _validate2(self, attribute, value):
         if value is None:
             return None
-        if not isinstance(value, RectangleSize) or not (
+        if isinstance(value, RectangleSize) or (
             isinstance(value, dict)
             and "width" in value.keys()
             and "height" in value.keys()
         ):
-            raise ValueError("Wrong viewport type settled")
+            return None
+
+        raise ValueError("Wrong viewport type settled")
 
     @property
     def is_dom_send(self):
