@@ -30,7 +30,3 @@ if TYPE_CHECKING:
     CssSelector = Text  # typedef
     REGION_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
     FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
-
-    # TODO: Implement objects
-    SessionUrls = Dict[Any, Any]  # typedef
-    StepInfo = Dict[Any, Any]  # typedef

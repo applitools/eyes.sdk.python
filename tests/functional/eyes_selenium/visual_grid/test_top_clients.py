@@ -1,6 +1,8 @@
 import pytest
+
 from applitools.selenium import (
     BatchInfo,
+    MatchLevel,
     BrowserType,
     Configuration,
     DeviceName,
@@ -50,3 +52,26 @@ def test_top_sites(eyes_vg, test_page_url):
     eyes_vg.check(
         "Step2 - " + test_page_url, Target.window().fully(True).send_dom(True)
     )
+
+
+TTS = [
+    ("https://amazon.com", MatchLevel.LAYOUT),
+    ("https://amazon.com", MatchLevel.LAYOUT),
+    ("https://applitools.com/features/frontend-development", MatchLevel.STRICT),
+    ("https://applitools.com/docs/topics/overview.html", MatchLevel.STRICT),
+    ("https://docs.microsoft.com/en-us/", MatchLevel.STRICT),
+    ("https://ebay.com", MatchLevel.LAYOUT),
+    ("https://facebook.com", MatchLevel.STRICT),
+    ("https://google.com", MatchLevel.STRICT),
+    ("https://instagram.com", MatchLevel.STRICT),
+    ("https://twitter.com", MatchLevel.STRICT),
+    ("https://wikipedia.org", MatchLevel.STRICT),
+    (
+        "https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc",
+        MatchLevel.STRICT,
+    ),
+    ("https://youtube.com", MatchLevel.LAYOUT),
+]
+# class TestIEyesBase(object):
+#     @pytest.mark.parametrize("test_url, match_level", TTS)
+#     def test(self, test_url, match_level):
