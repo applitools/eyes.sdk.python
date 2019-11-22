@@ -1,4 +1,7 @@
 ## [Unreleased] - 2019-*-*
+## Fixed
+- app_urls and api_urls were always None in TestResults
+- Validation error when passing RectangleSize as viewport_size in Configuration
 ### Added
 - ClassicRunner [Trello 1093](https://trello.com/c/DxBia1UC)
 - Type hints for Target class.
