@@ -128,6 +128,17 @@ class ImageMatchSettings(object):
         factory=list, metadata={JsonInclude.THIS: True}
     )  # type: List[Region]
 
+    @classmethod
+    def create_from_check_settings(cls, check_settings):
+        return ImageMatchSettings(
+            match_level=check_settings.values.match_level,
+            ignore_caret=check_settings.values.ignore_caret,
+            send_dom=check_settings.values.send_dom,
+            use_dom=check_settings.values.use_dom,
+            enable_patterns=check_settings.values.enable_patterns,
+            ignore_displacements=check_settings.values.ignore_displacements,
+        )
+
 
 @attr.s
 class FloatingBounds(object):
