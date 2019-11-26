@@ -2,9 +2,10 @@ import json
 import os
 from typing import Any
 
-import requests
-
 import pytest
+import requests
+from mock import patch
+
 from applitools.common import (
     AppEnvironment,
     AppOutput,
@@ -23,7 +24,6 @@ from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core import ServerConnector
-from mock import patch
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -213,8 +213,10 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
         force_match=False,
         force_mismatch=False,
         image_match_settings=SESSION_START_INFO_OBJ.default_match_settings,
+        render_id=None,
     ),
     agent_setup="Agent setup",
+    render_id=None,
 )
 
 
