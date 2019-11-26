@@ -7,7 +7,7 @@ from .match import ImageMatchSettings
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import Text
+    from typing import Text, Optional
     from .utils.custom_types import UserInputs
 
 
@@ -42,6 +42,7 @@ class Options(object):
     image_match_settings = attr.ib(
         type=ImageMatchSettings, metadata={JsonInclude.THIS: True}
     )  # type: ImageMatchSettings
+    render_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
 
 
 @attr.s
@@ -69,4 +70,5 @@ class MatchWindowData(object):
     )  # type: AppOutput
     tag = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     options = attr.ib(type=Options, metadata={JsonInclude.THIS: True})  # type: Options
-    agent_setup = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    agent_setup = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[Text]
+    render_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
