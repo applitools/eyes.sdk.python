@@ -157,6 +157,7 @@ class MatchWindowTask(object):
         regions=None,  # type: Optional[List[Region]]
         region_selectors=None,  # type: Optional[List[VisualGridSelector]]
         check_settings=None,  # type: Optional[CheckSettings]
+        render_id=None,  # type: Optional[Text]
     ):
         # type: (...) -> MatchResult
 
@@ -182,6 +183,7 @@ class MatchWindowTask(object):
             ignore_mismatch,
             image_match_settings,
             agent_setup,
+            render_id,
         )
 
     def _perform_match(
@@ -192,6 +194,7 @@ class MatchWindowTask(object):
         ignore_mismatch,  # type: bool
         image_match_settings,  # type: ImageMatchSettings
         agent_setup,  # type: Text
+        render_id,  # type: Text
     ):
         # type: (...) -> MatchResult
 
@@ -211,10 +214,12 @@ class MatchWindowTask(object):
                 force_mismatch=False,
                 force_match=False,
                 image_match_settings=image_match_settings,
+                render_id=render_id,
             ),
             app_output=app_output,
             tag=name,
             agent_setup=agent_setup,
+            render_id=render_id,
         )
         return self._server_connector.match_window(
             self._running_session, match_window_data
@@ -285,14 +290,8 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = ImageMatchSettings(
-            match_level=check_settings.values.match_level,
-            exact=None,
-            ignore_caret=check_settings.values.ignore_caret,
-            send_dom=check_settings.values.send_dom,
-            use_dom=check_settings.values.use_dom,
-            enable_patterns=check_settings.values.enable_patterns,
-            ignore_displacements=check_settings.values.ignore_displacements,
+        image_match_settings = ImageMatchSettings.create_from_check_settings(
+            check_settings
         )
         self._match_result = self.perform_match(
             app_output,

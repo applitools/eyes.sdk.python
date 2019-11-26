@@ -672,6 +672,23 @@ class EyesBase(_EyesBaseAbstract):
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
+        check_settings = self._process_check_settings_values(check_settings)
+
+        region = region_provider.get_region()
+        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
+
+        result = self._match_window_task.match_window(
+            self._user_inputs,
+            region,
+            tag,
+            self._should_match_once_on_timeout,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout_ms,
+        )
+        return result
+
+    def _process_check_settings_values(self, check_settings):
         get_config_value = general_utils.use_default_if_none_factory(
             self.configuration.default_match_settings, self.configuration
         )
@@ -694,20 +711,7 @@ class EyesBase(_EyesBaseAbstract):
             check_settings = check_settings.ignore_displacements(
                 self.configuration.default_match_settings.ignore_displacements
             )
-
-        region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
-
-        result = self._match_window_task.match_window(
-            self._user_inputs,
-            region,
-            tag,
-            self._should_match_once_on_timeout,
-            ignore_mismatch,
-            check_settings,
-            retry_timeout_ms,
-        )
-        return result
+        return check_settings
 
     def __ensure_viewport_size(self):
         # type: () -> None
