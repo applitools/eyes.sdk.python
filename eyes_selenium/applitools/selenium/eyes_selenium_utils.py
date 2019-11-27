@@ -131,6 +131,10 @@ def is_mobile_web(driver):
     return False
 
 
+def is_android(driver):
+    return "android" in driver.desired_capabilities.get("platformName", "").lower()
+
+
 def is_mobile_app(driver):
     # type: (AnyWebDriver) -> bool
     """

@@ -117,6 +117,7 @@ def save_image(image, filename):
 
 
 def crop_image(image, region_to_crop):
+    # type: (Image.Image, Region) -> Image.Image
     argument_guard.is_a(image, Image.Image)
     argument_guard.is_a(region_to_crop, Region)
 
@@ -141,3 +142,8 @@ def crop_image(image, region_to_crop):
         )
     )
     return cropped_image
+
+
+def rotate_image(image, rotate):
+    # type: (Image.Image, int) -> Image.Image
+    return image.rotate(rotate)

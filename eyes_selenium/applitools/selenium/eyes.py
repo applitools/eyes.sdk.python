@@ -44,7 +44,7 @@ class Eyes(object):
     _is_opened = False  # type: bool
 
     def __init__(self, runner=None):
-        # type: (Optional[VisualGridRunner]) -> None
+        # type: (Optional[VisualGridRunner, ClassicRunner]) -> None
         self._configuration = Configuration()  # type: Configuration
 
         # backward compatibility with settings server_url
@@ -84,6 +84,20 @@ class Eyes(object):
         self._configuration = configuration
 
     configuration = property(get_configuration, set_configuration)
+
+    @property
+    def rotation(self):
+        # type: () -> Optional[int]
+        if self._selenium_eyes and self.driver:
+            return self.driver.rotation
+        return None
+
+    @rotation.setter
+    def rotation(self, rotation):
+        # type: (int) -> None
+        argument_guard.is_a(rotation, int)
+        if self._selenium_eyes and self.driver:
+            self.driver.rotation = rotation
 
     @property
     def base_agent_id(self):
