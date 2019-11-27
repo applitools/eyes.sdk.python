@@ -6,10 +6,11 @@ from __future__ import absolute_import
 import base64
 import io
 import math
+from typing import Union
 
 from PIL import Image
 
-from applitools.common import logger
+from applitools.common import ScaleProvider, logger
 from applitools.common.errors import EyesError
 from applitools.common.geometry import Region
 
@@ -55,8 +56,16 @@ def image_from_base64(base64_str):
     return Image.open(io.BytesIO(base64.b64decode(base64_str)))
 
 
-def scale_image(image, scale_ratio):
-    # type: (Image.Image, float) -> Image.Image
+def scale_image(image, scale):
+    # type: (Image.Image, Union[float, ScaleProvider]) -> Image.Image
+    argument_guard.is_a(image, Image.Image)
+    argument_guard.not_none(scale_image)
+
+    if isinstance(scale, float) or isinstance(scale, int):
+        scale_ratio = scale
+    else:
+        scale_ratio = scale.scale_ratio
+
     if scale_ratio == 1:
         return image
 
