@@ -2,33 +2,12 @@ from __future__ import absolute_import
 
 from typing import TYPE_CHECKING
 
-from applitools.common import logger
-from applitools.common.utils import ABC
+from applitools.common import ScaleProvider, logger
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort
 
-__all__ = (
-    "FixedScaleProvider",
-    "NullScaleProvider",
-    "ContextBasedScaleProvider",
-    "ScaleProvider",
-)
-
-
-class ScaleProvider(ABC):
-    UNKNOWN_SCALE_RATIO = 0.0
-
-    def __init__(self, *args, **kwargs):
-        self._scale_ratio = self.UNKNOWN_SCALE_RATIO
-        self.device_pixel_ratio = 1
-
-    @property
-    def scale_ratio(self):
-        return self._scale_ratio
-
-    def update_scale_ratio(self, image_to_scale_width):
-        pass
+__all__ = ("FixedScaleProvider", "NullScaleProvider", "ContextBasedScaleProvider")
 
 
 class FixedScaleProvider(ScaleProvider):

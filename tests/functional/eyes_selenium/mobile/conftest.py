@@ -1,4 +1,5 @@
 import os
+from copy import copy
 
 import pytest
 from appium import webdriver as appium_webdriver
@@ -15,8 +16,8 @@ def pytest_generate_tests(metafunc):
 @pytest.yield_fixture(scope="function")
 def mobile_eyes(request, page, eyes):
     # configure eyes through @pytest.mark.parametrize('mobile_eyes', [], indirect=True)
-    browser_config = getattr(request, "param", {})
-    fully = browser_config.pop("fully")
+    browser_config = copy(getattr(request, "param", {}))
+    fully = browser_config.pop("fully", None)
 
     test_name = "{name} {plat_ver} {dev_or} {page}".format(
         name=browser_config["deviceName"],
