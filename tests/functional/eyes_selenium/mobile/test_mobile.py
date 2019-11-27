@@ -70,7 +70,7 @@ def create_browser_config(device, platform_name, browser_name):
     device_name, platform_version, dev_orientation, fully = device
     browser_config = {
         "deviceName": device_name,
-        "deviceOrientation": dev_orientation.name.capitalize(),
+        "deviceOrientation": dev_orientation.name.upper(),
         "platformVersion": platform_version,
         "platformName": platform_name,
         "browserName": browser_name,

@@ -43,6 +43,7 @@ from .match import (  # noqa
 )
 from .match_window_data import MatchWindowData, Options  # noqa
 from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
+from .scale_provider import ScaleProvider
 from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
 from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
@@ -75,5 +76,5 @@ __all__ = (
     + test_results.__all__  # noqa
     + visual_grid.__all__  # noqa
     + server.__all__  # noqa
-    + ("logger", "StitchMode")  # noqa
+    + ("logger", "StitchMode", "ScaleProvider")  # noqa
 )

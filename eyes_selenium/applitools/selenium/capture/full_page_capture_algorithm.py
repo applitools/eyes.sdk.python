@@ -13,7 +13,7 @@ from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Dict
-    from applitools.core.scaling import ScaleProvider
+    from applitools.common import ScaleProvider
     from applitools.core.debug import DebugScreenshotProvider
     from applitools.common.geometry import SubregionForStitching
     from applitools.selenium.region_compensation import RegionPositionCompensation
@@ -83,8 +83,8 @@ class FullPageCaptureAlgorithm(object):
             cropped_initial_screenshot, self._debug_msg("cropped_initial_screenshot")
         )
 
-        scaled_initial_screenshot = self._scale_if_needed(
-            cropped_initial_screenshot, pixel_ratio
+        scaled_initial_screenshot = image_utils.scale_image(
+            cropped_initial_screenshot, self.scale_provider
         )
         self.debug_screenshot_provider.save(
             scaled_initial_screenshot, self._debug_msg("scaled_initial_screenshot")
@@ -208,7 +208,7 @@ class FullPageCaptureAlgorithm(object):
             self.debug_screenshot_provider.save(
                 cropped_part, self._debug_msg("cropped_part")
             )
-            scaled_part_image = self._scale_if_needed(cropped_part, scale_ratio)
+            scaled_part_image = image_utils.scale_image(cropped_part, scale_ratio)
             self.debug_screenshot_provider.save(
                 scaled_part_image, self._debug_msg("scaled_part_image")
             )
@@ -277,12 +277,6 @@ class FullPageCaptureAlgorithm(object):
             )
             entire_size = RectangleSize(image.width, image.height)
         return entire_size
-
-    def _scale_if_needed(self, image, pixel_ratio):
-        # type: (Image, float) -> Image
-        if pixel_ratio != 1.0:
-            image = image_utils.scale_image(image, 1.0 / pixel_ratio)
-        return image
 
     def _crop_if_needed(self, image, region_in_screenshot):
         # type: (Image, Region) -> Image

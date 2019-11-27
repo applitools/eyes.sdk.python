@@ -59,7 +59,8 @@ if typing.TYPE_CHECKING:
         ViewPort,
         AnyWebElement,
     )
-    from applitools.core import MatchWindowTask, ScaleProvider, PositionMemento
+    from applitools.common import ScaleProvider
+    from applitools.core import MatchWindowTask, PositionMemento
     from .frames import Frame
     from .fluent import SeleniumCheckSettings
     from .eyes import Eyes
@@ -256,7 +257,7 @@ class SeleniumEyes(EyesBase):
         )
         self._original_fc = self.driver.frame_chain.clone()
 
-        if not self.driver.is_mobile_platform:
+        if not self.driver.is_mobile_app:
             # save original scroll position
             scroll_provider = ScrollPositionProvider(
                 self.driver, self._scroll_root_element
@@ -327,7 +328,7 @@ class SeleniumEyes(EyesBase):
                     result = self._check_frame_fluent(name, check_settings)
             else:
                 logger.debug("default case")
-                if not self.driver.is_mobile_platform:
+                if not self.driver.is_mobile_app:
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
@@ -715,8 +716,8 @@ class SeleniumEyes(EyesBase):
                 return self._driver.title
             except Exception:
                 self._should_get_title = (
-                    False
-                )  # Couldn't get _title, return empty string.
+                    False  # Couldn't get _title, return empty string.
+                )
         return ""
 
     @property
