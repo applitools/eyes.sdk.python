@@ -10,9 +10,10 @@ from typing import Union
 
 from PIL import Image
 
-from applitools.common import ScaleProvider, logger
+from applitools.common import logger
 from applitools.common.errors import EyesError
 from applitools.common.geometry import Region
+from applitools.common.scale_provider import ScaleProvider
 
 from . import argument_guard
 

@@ -1,4 +1,4 @@
-from .utils import ABC
+from .utils.compat import ABC
 
 
 class ScaleProvider(ABC):
