@@ -59,7 +59,8 @@ if typing.TYPE_CHECKING:
         ViewPort,
         AnyWebElement,
     )
-    from applitools.core import MatchWindowTask, ScaleProvider, PositionMemento
+    from applitools.common import ScaleProvider
+    from applitools.core import MatchWindowTask, PositionMemento
     from .frames import Frame
     from .fluent import SeleniumCheckSettings
     from .eyes import Eyes
