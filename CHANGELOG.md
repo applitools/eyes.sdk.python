@@ -5,6 +5,7 @@
 - CSS scrolling in chrome 78. [Trello 1206](https://trello.com/c/euVqe1Sv)
 - Rotation on mobile is broken [Trello 1354](https://trello.com/c/hS6Lv8PT)
 ### Added
+- DomCapture 7.0.22, DomSnapshot 1.4.8 [Trello 1227](https://trello.com/c/d5hmB3gG)
 - ClassicRunner [Trello 1093](https://trello.com/c/DxBia1UC)
 - Type hints for Target class.
 - Allow to get/set Configuration in Eyes with methods.

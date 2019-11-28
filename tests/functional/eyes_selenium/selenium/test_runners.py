@@ -21,7 +21,7 @@ def test_classic_runner_raise_exception(driver):
 
 def test_eyes_none_runner(driver):
     eyes = Eyes(None)
-    eyes.configuration.hide_scrollbars = False
+    eyes.configuration.hide_scrollbars = True
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
         driver, "Eyes Selenium SDK - Null Runner", "TestSeleniumEyesWithNullRunner"
