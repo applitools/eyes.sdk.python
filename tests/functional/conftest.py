@@ -1,20 +1,28 @@
+import os
+
 import pytest
 
-from applitools.common import StdoutLogger, logger
+from applitools.common import BatchInfo, StdoutLogger, logger
 from applitools.common.utils import iteritems
 
 logger.set_logger(StdoutLogger())
 
 
+@pytest.fixture
+def batch_info():
+    return BatchInfo(os.getenv("APPLITOOLS_BATCH_NAME", "Python SDK"))
+
+
 @pytest.fixture(scope="function")
-def eyes(request, eyes_class):
+def eyes(request, eyes_class, batch_info):
     # TODO: allow to setup logger level through pytest option
     # logger.set_logger(StdoutLogger())
     eyes = eyes_class()
+    eyes.configuration.batch = batch_info
     eyes.configuration.hide_scrollbars = True
     eyes.configuration.save_new_tests = False
     eyes.configuration.hide_caret = True
-
+    eyes._debug_screenshot_provided = True
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}

@@ -1,14 +1,28 @@
 import os
 from distutils.util import strtobool
 
-from applitools.selenium import BrowserType, Eyes, StitchMode, VisualGridRunner
+import pytest
+
+from applitools.selenium import (
+    BatchInfo,
+    BrowserType,
+    Eyes,
+    StitchMode,
+    VisualGridRunner,
+)
 
 
 def vg_eyes():
     vgr = VisualGridRunner(1)
     eyes = Eyes(vgr)
     eyes.configuration.add_browser(700, 460, BrowserType.CHROME)
+    eyes.configuration.batch = BatchInfo("Python SDK Desktop VG")
     return eyes
+
+
+@pytest.fixture
+def batch_info():
+    return BatchInfo("Python SDK Desktop Sel")
 
 
 def pytest_generate_tests(metafunc):

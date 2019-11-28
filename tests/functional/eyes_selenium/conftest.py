@@ -77,11 +77,6 @@ def eyes_opened(request, eyes, driver):
     # use camel case in method name for fit java sdk tests name
     test_name = underscore_to_camelcase(request.function.__name__)
 
-    batch_name = os.getenv("APPLITOOLS_BATCH_NAME")
-    eyes.configuration.batch = BatchInfo(
-        "{}|{}".format(batch_name, "Rem" if bool(os.getenv("TEST_REMOTE")) else "Loc")
-    )
-
     eyes.add_property("Selenium Session ID", str(driver.session_id))
     eyes.add_property(
         "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"

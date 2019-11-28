@@ -5,12 +5,17 @@ import pytest
 from appium import webdriver as appium_webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import StitchMode, logger
+from applitools.common import BatchInfo, StitchMode, logger
 
 
 def pytest_generate_tests(metafunc):
     if "page" in metafunc.fixturenames:
         metafunc.parametrize("page", ["mobile", "desktop", "scrolled_mobile"])
+
+
+@pytest.fixture
+def batch_info():
+    return BatchInfo("Python SDK Mobile")
 
 
 @pytest.yield_fixture(scope="function")
