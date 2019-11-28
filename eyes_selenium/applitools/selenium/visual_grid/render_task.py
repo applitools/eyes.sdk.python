@@ -12,7 +12,7 @@ from applitools.common import (
     VGResource,
     logger,
 )
-from applitools.common.utils import datetime_utils, urlparse
+from applitools.common.utils import datetime_utils, urljoin, urlparse
 
 from .vg_task import VGTask
 
@@ -107,9 +107,39 @@ class RenderTask(VGTask):
 
     def prepare_data_for_rg(self, data):
         # type: (Dict) -> RenderRequest
+        self.request_resources = {}
+        dom = self.parse_frame_dom_resources(data)
+        return self.prepare_rg_requests(self.running_test, dom, self.request_resources)
+
+    def prepare_rg_requests(self, running_test, dom, request_resources):
+        # type: (RunningTest, RGridDom, Dict) -> RenderRequest
+        r_info = RenderInfo(
+            width=running_test.browser_info.width,
+            height=running_test.browser_info.height,
+            size_mode=self.size_mode,
+            region=self.region_to_check,
+            emulation_info=running_test.browser_info.emulation_info,
+        )
+        return RenderRequest(
+            webhook=self.rendering_info.results_url,
+            agent_id=self.agent_id,
+            url=dom.url,
+            dom=dom,
+            resources=request_resources,
+            render_info=r_info,
+            browser_name=running_test.browser_info.browser_type,
+            platform=running_test.browser_info.platform,
+            script_hooks=self.script_hooks,
+            selectors_to_find_regions_for=self.region_selectors,
+            send_dom=running_test.configuration.send_dom,
+        )
+
+    def parse_frame_dom_resources(self, data):
+        # type: (Dict) -> RGridDom
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
+        frames = data.get("frames", [])
 
         for blob in blobs:
             resource = VGResource.from_blob(blob)
@@ -127,32 +157,17 @@ class RenderTask(VGTask):
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response)
 
+        for f_data in frames:
+            f_data["url"] = _apply_base_url(f_data["url"], base_url)
+            self.request_resources[f_data["url"]] = self.parse_frame_dom_resources(
+                f_data
+            ).resource
+
         for r_url in set(resource_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.request_resources.update(self.resource_cache)
-
-        r_info = RenderInfo(
-            width=self.running_test.browser_info.width,
-            height=self.running_test.browser_info.height,
-            size_mode=self.size_mode,
-            region=self.region_to_check,
-            emulation_info=self.running_test.browser_info.emulation_info,
-        )
-        dom = RGridDom(
+        return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
-        )
-        return RenderRequest(
-            webhook=self.rendering_info.results_url,
-            agent_id=self.agent_id,
-            url=base_url,
-            dom=dom,
-            resources=self.request_resources,
-            render_info=r_info,
-            browser_name=self.running_test.browser_info.browser_type,
-            platform=self.running_test.browser_info.platform,
-            script_hooks=self.script_hooks,
-            selectors_to_find_regions_for=self.region_selectors,
-            send_dom=self.running_test.configuration.send_dom,
         )
 
     def poll_render_status(self, render_request):
@@ -194,6 +209,13 @@ class RenderTask(VGTask):
                 "Got error during rendering: \n\t{}".format(statuses[0].error)
             )
         return statuses
+
+
+def _apply_base_url(discovered_url, base_url):
+    url = urlparse(discovered_url)
+    if url.scheme in ["http", "https"] and url.netloc:
+        return discovered_url
+    return urljoin(base_url, discovered_url)
 
 
 def _url_from_tags(tags):
