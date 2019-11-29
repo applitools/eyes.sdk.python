@@ -1,13 +1,13 @@
 import pytest
 
 from applitools.selenium import (
-    BatchInfo,
-    MatchLevel,
     BrowserType,
     Configuration,
     DeviceName,
+    Eyes,
     ScreenOrientation,
     Target,
+    logger,
 )
 
 
@@ -16,7 +16,6 @@ def sel_config(test_page_url):
     conf = Configuration()
     conf.test_name = "Top 10 websites - {}".format(test_page_url)
     conf.app_name = "Top Ten Sites"
-    conf.batch = BatchInfo("Py|VG")
     conf.branch_name = "TTS - config branch"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)
@@ -30,6 +29,36 @@ def sel_config(test_page_url):
     conf.add_device_emulation(DeviceName.iPhone_X)
     conf.add_device_emulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
     return conf
+
+
+@pytest.fixture
+def eyes_vg(vg_runner, sel_config, batch_info, driver, request, test_page_url):
+    app_name = request.node.get_closest_marker("app_name")
+    if app_name:
+        app_name = app_name.args[0]
+    test_name = request.node.get_closest_marker("test_name")
+    if test_name:
+        test_name = test_name.args[0]
+    viewport_size = request.node.get_closest_marker("viewport_size")
+    if viewport_size:
+        viewport_size = viewport_size.args[0]
+    else:
+        viewport_size = None
+
+    eyes = Eyes(vg_runner)
+    eyes.server_url = "https://eyes.applitools.com/"
+    eyes.configuration = sel_config
+    eyes.configuration.batch = batch_info
+    app_name = app_name or eyes.configuration.app_name
+    test_name = test_name or eyes.configuration.test_name
+    viewport_size = viewport_size or eyes.configuration.viewport_size
+
+    driver.get(test_page_url)
+    eyes.open(driver, app_name, test_name, viewport_size)
+    yield eyes
+    logger.debug("closing WebDriver for url {}".format(test_page_url))
+    eyes.close()
+    # TODO: print VG test results
 
 
 @pytest.mark.parametrize(
@@ -52,26 +81,3 @@ def test_top_sites(eyes_vg, test_page_url):
     eyes_vg.check(
         "Step2 - " + test_page_url, Target.window().fully(True).send_dom(True)
     )
-
-
-TTS = [
-    ("https://amazon.com", MatchLevel.LAYOUT),
-    ("https://amazon.com", MatchLevel.LAYOUT),
-    ("https://applitools.com/features/frontend-development", MatchLevel.STRICT),
-    ("https://applitools.com/docs/topics/overview.html", MatchLevel.STRICT),
-    ("https://docs.microsoft.com/en-us/", MatchLevel.STRICT),
-    ("https://ebay.com", MatchLevel.LAYOUT),
-    ("https://facebook.com", MatchLevel.STRICT),
-    ("https://google.com", MatchLevel.STRICT),
-    ("https://instagram.com", MatchLevel.STRICT),
-    ("https://twitter.com", MatchLevel.STRICT),
-    ("https://wikipedia.org", MatchLevel.STRICT),
-    (
-        "https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc",
-        MatchLevel.STRICT,
-    ),
-    ("https://youtube.com", MatchLevel.LAYOUT),
-]
-# class TestIEyesBase(object):
-#     @pytest.mark.parametrize("test_url, match_level", TTS)
-#     def test(self, test_url, match_level):
