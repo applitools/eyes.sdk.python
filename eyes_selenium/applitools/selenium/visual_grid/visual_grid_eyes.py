@@ -192,19 +192,15 @@ class VisualGridEyes(object):
 
         self.configuration.send_dom = check_settings.values.send_dom
 
-        size_mode = check_settings.values.size_mode
-        if size_mode is None:
-            if self.configuration.force_full_page_screenshot:
-                check_settings.values.size_mode = "full-page"
-
         # by default in VG fully is settled to True
         if check_settings.values.stitch_content is None:
             check_settings = check_settings.fully(True)
+        if self.configuration.force_full_page_screenshot:
+            check_settings.values.size_mode = "full-page"
 
         logger.info("check('{}', check_settings) - begin".format(name))
 
-        # region_xpaths = self.get_region_xpaths(check_settings)
-        region_xpaths = []
+        region_xpaths = self.get_region_xpaths(check_settings)
         self.region_to_check = None
         # logger.info("region_xpaths: {}".format(region_xpaths))
         script_result = self.get_script_result()
@@ -216,7 +212,6 @@ class VisualGridEyes(object):
                     script_result=script_result,
                     visual_grid_manager=self.vg_manager,
                     region_selectors=region_xpaths,
-                    size_mode=size_mode,
                     region_to_check=self.region_to_check,
                     script_hooks=check_settings.values.script_hooks,
                 )
@@ -290,7 +285,7 @@ class VisualGridEyes(object):
         vgs = VisualGridSelector(xpath, "target")
         check_settings.values.selector = vgs
 
-    def get_region_x_paths(self, check_settings):
+    def get_region_xpaths(self, check_settings):
         # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
         element_lists = self.collect_selenium_regions(check_settings)
         frame_chain = self.driver.frame_chain.clone()
@@ -302,7 +297,7 @@ class VisualGridEyes(object):
             xpath = self.driver.execute_script(
                 GET_ELEMENT_XPATH_JS, elem_region.webelement
             )
-            xpaths.append(xpath)
+            xpaths.append(VisualGridSelector(xpath, "target"))
         self.driver.switch_to.frames(frame_chain)
         return xpaths
 

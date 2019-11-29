@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, Tuple, Union, overload
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -56,6 +56,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
+    _size_mode = attr.ib(default="selector")  # type: Text
 
     @property
     def target_provider(self):
@@ -74,15 +75,25 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
         target_selector = self.target_selector
         if not target_region and not target_element and not target_selector:
             if stitch_content:
-                return "full-page"
-            return "viewport"
+                self._size_mode = "full-page"
+            self._size_mode = "viewport"
         if target_region:
             if stitch_content:
-                return "region"
-            return "region"
+                self._size_mode = "region"
+            self._size_mode = "region"
         if stitch_content:
-            return "selector"
-        return "selector"
+            self._size_mode = "selector"
+        return self._size_mode
+
+    @size_mode.setter
+    def size_mode(self, value):
+        assert value in [
+            "full-page",
+            "region",
+            "selector",
+            "viewport",
+        ], "Size mode isn't correct"
+        self._size_mode = value
 
 
 def _css_selector_from_(by, value):

@@ -56,15 +56,16 @@ class ScreenOrientation(Enum):
     LANDSCAPE = "landscape"
 
 
-@attr.s(hash=True)
+@attr.s(hash=True, slots=True)
 class EmulationBaseInfo(ABC):
     screen_orientation = attr.ib()  # type: ScreenOrientation
 
 
-@attr.s
+@attr.s(hash=True, slots=True)
 class VisualGridSelector(object):
-    selector = attr.ib()  # type: Text
+    selector = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     category = attr.ib()  # type: Text
+    type = attr.ib(default="xpath", metadata={JsonInclude.THIS: True})
 
 
 class DeviceName(Enum):
