@@ -89,7 +89,7 @@ def test_check_element_fluent(eyes_opened):
 
 
 def test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent(
-    eyes_opened
+    eyes_opened,
 ):
     element = eyes_opened.driver.find_element_by_id("overflowing-div-image")
     ignore_element = eyes_opened.driver.find_element_by_id("overflowing-div")
@@ -106,7 +106,7 @@ def test_check_element_with_ignore_region_by_same_element__fluent(eyes_opened):
 
 
 def test_check_full_window_with_multiple_ignore_regions_by_selector__fluent(
-    eyes_opened
+    eyes_opened,
 ):
     eyes_opened.check(
         "Fluent - Region by element", Target.window().fully().ignore(".ignore")
@@ -181,7 +181,7 @@ def test_simple_region(eyes_opened):
     eyes_opened.check("Simple Region", Target.window().region(Region(50, 50, 100, 100)))
 
 
-@pytest.mark.parametrize("ignore_displacements", [True, False])
+@pytest.mark.parametrize("ignore_displacements", [True])
 def test_ignore_displacements(eyes_opened, ignore_displacements):
     eyes_opened.check(
         "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
