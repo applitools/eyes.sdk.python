@@ -197,6 +197,10 @@ class VisualGridEyes(object):
             if self.configuration.force_full_page_screenshot:
                 check_settings.values.size_mode = "full-page"
 
+        # by default in VG fully is settled to True
+        if check_settings.values.stitch_content is None:
+            check_settings = check_settings.fully(True)
+
         logger.info("check('{}', check_settings) - begin".format(name))
 
         # region_xpaths = self.get_region_xpaths(check_settings)
