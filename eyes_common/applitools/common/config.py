@@ -88,6 +88,7 @@ class Configuration(object):
         default=MatchLevel.STRICT, converter=MatchLevel
     )  # type: MatchLevel
     is_disabled = attr.ib(default=False)  # type: bool
+    ignore_displacements = attr.ib(default=False)  # type: bool
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
