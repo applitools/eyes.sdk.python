@@ -192,12 +192,7 @@ class VisualGridEyes(object):
 
         self.configuration.send_dom = check_settings.values.send_dom
 
-        # by default in VG fully is settled to True
-        if check_settings.values.stitch_content is None:
-            check_settings = check_settings.fully(True)
-        if self.configuration.force_full_page_screenshot:
-            check_settings.values.size_mode = "full-page"
-
+        check_settings = self._update_check_settings(check_settings)
         logger.info("check('{}', check_settings) - begin".format(name))
 
         region_xpaths = self.get_region_xpaths(check_settings)
@@ -257,6 +252,27 @@ class VisualGridEyes(object):
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")
         self.abort()
+
+    def _update_check_settings(self, check_settings):
+        # type: (SeleniumCheckSettings) -> SeleniumCheckSettings
+        match_level = check_settings.values.match_level
+        fully = check_settings.values.stitch_content
+        send_dom = check_settings.values.send_dom
+        ignore_displacements = check_settings.values.ignore_displacements
+
+        if match_level is None:
+            check_settings = check_settings.match_level(self.configuration.match_level)
+        if fully is None:
+            fps = self.configuration.force_full_page_screenshot
+            check_settings = check_settings.fully(True if fps is None else fps)
+        if send_dom is None:
+            send = self.configuration.send_dom
+            check_settings = check_settings.send_dom(True if send is None else send)
+        if ignore_displacements is None:
+            check_settings = check_settings.ignore_displacements(
+                self.configuration.ignore_displacements
+            )
+        return check_settings
 
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector
