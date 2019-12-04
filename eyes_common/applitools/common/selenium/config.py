@@ -23,7 +23,7 @@ DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 
 @attr.s
 class Configuration(ConfigurationBase):
-    force_full_page_screenshot = attr.ib(default=False)  # type: bool
+    force_full_page_screenshot = attr.ib(default=None)  # type: bool
     wait_before_screenshots = attr.ib(
         default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS
     )  # type: int  # ms

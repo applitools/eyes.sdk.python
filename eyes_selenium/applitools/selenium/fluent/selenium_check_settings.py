@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, Tuple, Union, overload
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -68,20 +68,16 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     @property
     def size_mode(self):
-        target_region = self.target_region
-        target_element = self.target_element
-        stitch_content = self.stitch_content
-        target_selector = self.target_selector
-        if not target_region and not target_element and not target_selector:
-            if stitch_content:
+        if (
+            self.target_region is None
+            and self.target_selector is None
+            and self.target_element is None
+        ):
+            if self.stitch_content:
                 return "full-page"
             return "viewport"
-        if target_region:
-            if stitch_content:
-                return "region"
+        if self.target_region:
             return "region"
-        if stitch_content:
-            return "selector"
         return "selector"
 
 

@@ -329,8 +329,8 @@ class Eyes(object):
             raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)
 
-    def check_window(self, tag=None, match_timeout=-1, fully=False):
-        # type: (Optional[Text], int, bool) -> MatchResult
+    def check_window(self, tag=None, match_timeout=-1, fully=None):
+        # type: (Optional[Text], int, Optional[bool]) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected
          output.
@@ -343,8 +343,8 @@ class Eyes(object):
         logger.debug("check_window('%s')" % tag)
         return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
 
-    def check_frame(self, frame_reference, tag=None, match_timeout=-1, fully=False):
-        # type: (FrameReference, Optional[Text], int, bool) -> MatchResult
+    def check_frame(self, frame_reference, tag=None, match_timeout=-1):
+        # type: (FrameReference, Optional[Text], int) -> MatchResult
         """
         Check frame.
 
@@ -352,10 +352,11 @@ class Eyes(object):
                 name/id as would be used in a call to driver.switch_to.frame()).
         :param tag: An optional tag to be associated with the match.
         :param match_timeout: The amount of time to retry matching. (Milliseconds)
-        :param fully: Defines that the screenshot will contain the entire frame.
         :return: The match results.
         """
-        return self.check(tag, Target.frame(frame_reference).timeout(match_timeout))
+        return self.check(
+            tag, Target.frame(frame_reference).fully().timeout(match_timeout)
+        )
 
     def check_region(
         self,

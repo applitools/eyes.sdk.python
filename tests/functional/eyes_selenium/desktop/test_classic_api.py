@@ -20,7 +20,7 @@ def test_check_window_fully(eyes_opened):
 
 
 def test_check_window_viewport(eyes_opened):
-    eyes_opened.check_window("Viewport Window")
+    eyes_opened.check_window("Viewport Window", fully=False)
 
 
 def test_check_region(eyes_opened):
@@ -66,7 +66,7 @@ def test_check_inner_frame(eyes_opened):
 
 def test_check_window_after_scroll(eyes_opened):
     eyes_opened.driver.execute_script("document.documentElement.scrollTo(0,350);")
-    eyes_opened.check_window("viewport after scroll")
+    eyes_opened.check_window("viewport after scroll", fully=False)
 
 
 def test_double_check_window(eyes_opened):
