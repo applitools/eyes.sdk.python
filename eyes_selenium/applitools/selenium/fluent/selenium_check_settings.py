@@ -68,16 +68,16 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     @property
     def size_mode(self):
-        if self.target_region is None:
+        if (
+            self.target_region is None
+            and self.target_selector is None
+            and self.target_element is None
+        ):
             if self.stitch_content:
                 return "full-page"
             return "viewport"
         if self.target_region:
-            if self.stitch_content:
-                return "region"
             return "region"
-        if self.stitch_content:
-            return "selector"
         return "selector"
 
 
