@@ -165,7 +165,6 @@ class RunningTest(object):
         script_result,  # type: Dict[str, Any]
         visual_grid_manager,  # type: VisualGridRunner
         region_selectors,
-        size_mode,
         region_to_check,
         script_hooks,
     ):
@@ -176,9 +175,9 @@ class RunningTest(object):
             tag,
             visual_grid_manager,
             region_selectors,
-            size_mode,
             region_to_check,
             script_hooks,
+            check_settings,
         )
 
         def check_run():
@@ -208,9 +207,9 @@ class RunningTest(object):
         tag,  # type: Text
         visual_grid_manager,  # type: VisualGridRunner
         region_selectors,  # type: List
-        size_mode,  # type: Text
         region_to_check,  # type: Region
         script_hooks,  # type: Dict[Text, Any]
+        check_settings,
     ):
         # type: (...)->RenderTask
         short_description = "{} of {}".format(
@@ -225,10 +224,11 @@ class RunningTest(object):
             rendering_info=visual_grid_manager.render_info(self.eyes),
             eyes_connector=self.eyes,
             region_selectors=region_selectors,
-            size_mode=size_mode,
+            size_mode=check_settings.values.size_mode,
             region_to_check=region_to_check,
             script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
+            selector=check_settings.values.selector,
         )
         logger.debug("RunningTest %s" % render_task.name)
 

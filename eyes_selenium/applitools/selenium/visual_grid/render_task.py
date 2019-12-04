@@ -38,6 +38,7 @@ class RenderTask(VGTask):
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
     script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
     agent_id = attr.ib(default=None)  # type: Optional[Text]
+    selector = attr.ib(default=None)  # type: Optional[Text]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
@@ -117,6 +118,7 @@ class RenderTask(VGTask):
             width=running_test.browser_info.width,
             height=running_test.browser_info.height,
             size_mode=self.size_mode,
+            selector=self.selector,
             region=self.region_to_check,
             emulation_info=running_test.browser_info.emulation_info,
         )

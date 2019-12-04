@@ -6,6 +6,7 @@
 - Rotation on mobile is broken [Trello 1354](https://trello.com/c/hS6Lv8PT)
 - Capturing iframe's with VG [Trello 1356](https://trello.com/c/J5so3FDN)
 ### Added
+- Check region support in VisualGrid client [Trello 1360](https://trello.com/c/rFOwfgwA)
 - DomCapture 7.0.22, DomSnapshot 1.4.8 [Trello 1227](https://trello.com/c/d5hmB3gG)
 - ClassicRunner [Trello 1093](https://trello.com/c/DxBia1UC)
 - Type hints for Target class.

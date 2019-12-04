@@ -26,15 +26,15 @@ class CheckSettingsValues(object):
     target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
     timeout = attr.ib(init=False, default=-1)  # type: Num  # milliseconds
 
-    ignore_caret = attr.ib(init=False, default=None)  # type: bool
-    stitch_content = attr.ib(init=False, default=None)  # type: bool
+    ignore_caret = attr.ib(init=False, default=None)  # type: Optional[bool]
+    stitch_content = attr.ib(init=False, default=None)  # type: Optional[bool]
     match_level = attr.ib(init=False, default=None)  # type: Optional[MatchLevel]
     name = attr.ib(init=False, default=None)  # type: Optional[Text]
 
-    send_dom = attr.ib(init=False, default=None)  # type: bool
-    use_dom = attr.ib(init=False, default=None)  # type: bool
-    enable_patterns = attr.ib(init=False, default=None)  # type: bool
-    ignore_displacements = attr.ib(init=False, default=None)  # type: bool
+    send_dom = attr.ib(init=False, default=None)  # type: Optional[bool]
+    use_dom = attr.ib(init=False, default=None)  # type: Optional[bool]
+    enable_patterns = attr.ib(init=False, default=None)  # type: Optional[bool]
+    ignore_displacements = attr.ib(init=False, default=None)  # type: Optional[bool]
 
     ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
     layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
