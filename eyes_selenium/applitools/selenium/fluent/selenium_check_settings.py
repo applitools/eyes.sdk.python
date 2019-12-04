@@ -56,7 +56,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
-    _size_mode = attr.ib(default="selector")  # type: Text
 
     @property
     def target_provider(self):
@@ -69,31 +68,17 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     @property
     def size_mode(self):
-        target_region = self.target_region
-        target_element = self.target_element
-        stitch_content = self.stitch_content
-        target_selector = self.target_selector
-        if not target_region and not target_element and not target_selector:
-            if stitch_content:
-                self._size_mode = "full-page"
-            self._size_mode = "viewport"
-        if target_region:
-            if stitch_content:
-                self._size_mode = "region"
-            self._size_mode = "region"
-        if stitch_content:
-            self._size_mode = "selector"
-        return self._size_mode
-
-    @size_mode.setter
-    def size_mode(self, value):
-        assert value in [
-            "full-page",
-            "region",
-            "selector",
-            "viewport",
-        ], "Size mode isn't correct"
-        self._size_mode = value
+        if self.target_region is None:
+            if self.stitch_content:
+                return "full-page"
+            return "viewport"
+        if self.target_region:
+            if self.stitch_content:
+                return "region"
+            return "region"
+        if self.stitch_content:
+            return "selector"
+        return "selector"
 
 
 def _css_selector_from_(by, value):
