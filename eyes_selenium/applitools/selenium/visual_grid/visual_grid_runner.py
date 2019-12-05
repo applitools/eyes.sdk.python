@@ -112,8 +112,8 @@ class VisualGridRunner(EyesRunner):
         for test in test_list:
             if test.pending_exceptions:
                 raise EyesError(
-                    "During test execution above exception raised. \n {}".join(
-                        test.pending_exceptions
+                    "During test execution above exception raised. \n {:s}".join(
+                        str(e) for e in test.pending_exceptions
                     )
                 )
         if raise_ex:
