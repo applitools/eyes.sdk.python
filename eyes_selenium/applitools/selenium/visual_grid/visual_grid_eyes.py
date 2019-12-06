@@ -1,13 +1,21 @@
 import json
 import threading
 import typing
+import uuid
 from collections import OrderedDict
 from itertools import chain
 
 import attr
 
-from applitools.common import EyesError, TestFailedError, TestResults, logger
-from applitools.common.utils import argument_guard
+from applitools.common import (
+    DiffsFoundError,
+    EyesError,
+    NewTestError,
+    TestFailedError,
+    TestResults,
+    logger,
+)
+from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
@@ -72,6 +80,7 @@ class VisualGridEyes(object):
         argument_guard.not_none(runner)
         self.vg_manager = runner
         self.test_list = []  # type: List[RunningTest]
+        self._test_uuid = None
 
     @property
     def is_open(self):
@@ -118,6 +127,7 @@ class VisualGridEyes(object):
 
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
+        self._test_uuid = uuid.uuid4()
         if self.configuration.is_disabled:
             return driver
         logger.open_()
@@ -137,11 +147,14 @@ class VisualGridEyes(object):
             self.configuration.viewport_size = self._get_viewport_size()
 
         for b_info in browsers_info:
-            self.test_list.append(
-                RunningTest(
-                    self._create_vgeyes_connector(b_info), self.configuration, b_info
-                )
+            test = RunningTest(
+                self._create_vgeyes_connector(b_info), self.configuration, b_info
             )
+            test.on_results_received(
+                lambda r: self.vg_manager.aggregate_result(test, r)
+            )
+            test.test_uuid = self._test_uuid
+            self.test_list.append(test)
         self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
@@ -201,6 +214,8 @@ class VisualGridEyes(object):
         script_result = self.get_script_result()
         try:
             for test in self.test_list:
+                if self._test_uuid != test.test_uuid:
+                    continue
                 test.check(
                     tag=name,
                     check_settings=check_settings,
@@ -231,13 +246,38 @@ class VisualGridEyes(object):
             return TestResults()
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
-        self.vg_manager.process_test_list(self.test_list, raise_ex)
+
+        while True:
+            states = list(set([t.state for t in self.test_list]))
+            if len(states) == 1 and states[0] == "completed":
+                break
+            datetime_utils.sleep(500)
+
         self._is_opened = False
 
-        test_results = [t.test_result for t in self.test_list if t.test_result]
-        if not test_results:
+        for test in self.test_list:
+            if test.pending_exceptions:
+                raise EyesError(
+                    "During test execution above exception raised. \n {:s}".join(
+                        str(e) for e in test.pending_exceptions
+                    )
+                )
+        if raise_ex:
+            for test in self.test_list:
+                results = test.test_result
+                scenario_id_or_name = results.name
+                app_id_or_name = results.app_name
+                if results.is_unresolved and not results.is_new:
+                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
+                if results.is_new:
+                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
+                if results.is_failed:
+                    raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+
+        all_results = [t.test_result for t in self.test_list if t.test_result]
+        if not all_results:
             return TestResults()
-        return test_results[0]
+        return all_results[0]
 
     def abort(self):
         """
@@ -372,4 +412,4 @@ class VisualGridEyes(object):
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
             logger.exception(e)
-            raise TestFailedError(str(e))
+            raise EyesError(str(e))

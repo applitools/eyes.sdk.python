@@ -38,7 +38,7 @@ class RenderTask(VGTask):
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
     script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
     agent_id = attr.ib(default=None)  # type: Optional[Text]
-    selector = attr.ib(default=None)  # type: Optional[Text]
+    selector = attr.ib(hash=False, default=None)  # type: Optional[Text]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):

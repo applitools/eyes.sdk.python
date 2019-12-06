@@ -12,16 +12,17 @@ from applitools.common import (
     NewTestError,
     TestFailedError,
     TestResultContainer,
+    TestResults,
     TestResultsSummary,
     logger,
 )
-from applitools.common.utils import datetime_utils
+from applitools.common.utils import datetime_utils, iteritems
 from applitools.core import EyesRunner
 
 from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import Optional, List, Dict
     from applitools.common import RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
@@ -35,6 +36,7 @@ class VisualGridRunner(EyesRunner):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
         super(VisualGridRunner, self).__init__()
+        self._all_test_result = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
         if sys.version_info >= (3, 6):
@@ -53,6 +55,10 @@ class VisualGridRunner(EyesRunner):
         thread.daemon = True
         thread.start()
         self._thread = thread
+
+    def aggregate_result(self, test, test_result):
+        # type: (RunningTest, TestResults) -> None
+        self._all_test_result[test] = test_result
 
     def render_info(self, eyes_connector):
         # type: (EyesConnector) -> RenderingInfo
@@ -98,54 +104,37 @@ class VisualGridRunner(EyesRunner):
         self._executor.shutdown()
         self._thread.join()
 
-    def process_test_list(self, test_list, raise_ex):
-        while True:
-            completed_states = [
-                test.state for test in test_list if test.state == "completed"
-            ]
-            if len(completed_states) == len(test_list):
-                break
-            datetime_utils.sleep(500)
-        self.stop()
-        logger.close()
-
-        for test in test_list:
-            if test.pending_exceptions:
-                raise EyesError(
-                    "During test execution above exception raised. \n {}".join(
-                        test.pending_exceptions
-                    )
-                )
-        if raise_ex:
-            for test in test_list:
-                results = test.test_result
-                scenario_id_or_name = results.name
-                app_id_or_name = results.app_name
-                if results.is_unresolved and not results.is_new:
-                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
-                if results.is_new:
-                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
-                if results.is_failed:
-                    raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
-        return test_list
-
     def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        while not any(e.is_open for e in self.all_eyes):
+        while True:
+            states = list(set([t.state for t in self.all_running_tests]))
+            if len(states) == 1 and states[0] == "completed":
+                break
             datetime_utils.sleep(500)
-        test_list = self.process_test_list(
-            [test for e in self.all_eyes for test in e.test_list],
-            should_raise_exception,
-        )  # type: List[RunningTest]
-        for e in self.all_eyes:
-            e._is_opened = False
-        results = []
-        for test in test_list:
-            exp = test.pending_exceptions[0] if len(test.pending_exceptions) else None
-            results.append(
-                TestResultContainer(test.test_result, test.browser_info, exp)
+
+        all_results = []
+        for test, test_result in iteritems(self._all_test_result):
+            scenario_id_or_name = test_result.name
+            app_id_or_name = test_result.app_name
+            exception = None
+            if test_result.is_unresolved and not test_result.is_new:
+                exception = DiffsFoundError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            if test_result.is_new:
+                exception = NewTestError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            if test_result.is_failed:
+                exception = TestFailedError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            all_results.append(
+                TestResultContainer(test_result, test.browser_info, exception)
             )
-        return TestResultsSummary(results)
+            if exception and should_raise_exception:
+                raise exception
+        return TestResultsSummary(all_results)
 
     @property
     def all_running_tests(self):
