@@ -83,11 +83,6 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
     )
 
 
-def test_check_element__fluent(eyes_opened):
-    element = eyes_opened.driver.find_element_by_id("overflowing-div-image")
-    eyes_opened.check("Fluent - Region by element - fully", Target.region(element))
-
-
 def test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent(
     eyes_opened,
 ):
