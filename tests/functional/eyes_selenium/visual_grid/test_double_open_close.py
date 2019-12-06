@@ -36,7 +36,7 @@ def test_double_open_check_close_async(driver, vg_runner):
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window().fully().ignore_displacements(False))
-    eyes.close(False)
+    eyes.close_async()
 
     eyes.open(
         driver,
