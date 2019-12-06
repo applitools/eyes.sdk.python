@@ -33,7 +33,7 @@ def test_check_region_with_ignore_region__fluent(eyes_opened):
     )
 
 
-def test_check_check_window__fluent(eyes_opened):
+def test_check_window__fluent(eyes_opened):
     eyes_opened.check("Fluent - Window", Target.window())
 
 
@@ -83,7 +83,7 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
     )
 
 
-def test_check_element_fluent(eyes_opened):
+def test_check_element__fluent(eyes_opened):
     element = eyes_opened.driver.find_element_by_id("overflowing-div-image")
     eyes_opened.check("Fluent - Region by element - fully", Target.region(element))
 
