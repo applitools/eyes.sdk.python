@@ -10,6 +10,7 @@ from applitools.common import (
     RenderStatus,
     RGridDom,
     VGResource,
+    VisualGridSelector,
     logger,
 )
 from applitools.common.utils import datetime_utils, urljoin, urlparse
@@ -116,6 +117,10 @@ class RenderTask(VGTask):
         # type: (RunningTest, RGridDom, Dict) -> RenderRequest
         if self.size_mode == "region" and self.region_to_check is None:
             raise EyesError("Region to check should be present")
+        if self.size_mode == "selector" and not isinstance(
+            self.selector, VisualGridSelector
+        ):
+            raise EyesError("Selector should be present")
 
         region = None
         if self.region_to_check:
