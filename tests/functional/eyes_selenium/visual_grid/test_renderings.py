@@ -2,17 +2,17 @@ from collections import defaultdict
 
 import pytest
 
-from applitools.common import logger, RectangleSize
+from applitools.common import RectangleSize, logger
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
-    VisualGridRunner,
-    Eyes,
-    Configuration,
-    Target,
-    DeviceName,
     BrowserType,
-    StitchMode,
+    Configuration,
+    DeviceName,
+    Eyes,
     MatchLevel,
+    StitchMode,
+    Target,
+    VisualGridRunner,
 )
 from tests.utils import get_session_results
 
@@ -38,6 +38,7 @@ def test_mobile_only(driver, batch_info):
     all_results = runner.get_all_test_results()
 
 
+@pytest.mark.skip
 def test_viewports_test(driver, batch_info):
     runner = VisualGridRunner(30)
     eyes = Eyes(runner)

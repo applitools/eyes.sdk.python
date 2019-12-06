@@ -46,7 +46,7 @@ TRANSITIONS = [
 ]
 
 
-@attr.s(hash=True)
+@attr.s(hash=True, str=False)
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
     configuration = attr.ib(hash=False, repr=False)  # type: Configuration
@@ -58,6 +58,14 @@ class RunningTest(object):
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     task_to_future_mapping = attr.ib(init=False, factory=dict, hash=False)
+    test_uuid = attr.ib(init=False)
+    on_results = attr.ib(init=False, hash=False)
+    state = attr.ib(init=False, hash=False)
+
+    def __str__(self):
+        return "RunningTest: state={} uuid={}".format(
+            self.state, format(self.test_uuid)
+        )
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -90,6 +98,9 @@ class RunningTest(object):
             queued=True,
         )
         self.machine = machine
+
+    def on_results_received(self, func):
+        self.on_results = func
 
     @property
     def queue(self):
@@ -270,6 +281,8 @@ class RunningTest(object):
         def close_task_succeeded(test_result):
             logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
             self.test_result = test_result
+            if callable(self.on_results):
+                self.on_results(test_result)
 
         def close_task_completed():
             # type: () -> None
