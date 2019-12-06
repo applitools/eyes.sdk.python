@@ -114,12 +114,23 @@ class RenderTask(VGTask):
 
     def prepare_rg_requests(self, running_test, dom, request_resources):
         # type: (RunningTest, RGridDom, Dict) -> RenderRequest
+        if self.size_mode == "region" and self.region_to_check is None:
+            raise EyesError("Region to check should be present")
+
+        region = None
+        if self.region_to_check:
+            region = dict(
+                x=self.region_to_check.x,
+                y=self.region_to_check.y,
+                width=self.region_to_check.width,
+                height=self.region_to_check.height,
+            )
         r_info = RenderInfo(
             width=running_test.browser_info.width,
             height=running_test.browser_info.height,
             size_mode=self.size_mode,
             selector=self.selector,
-            region=self.region_to_check,
+            region=region,
             emulation_info=running_test.browser_info.emulation_info,
         )
         return RenderRequest(
