@@ -247,10 +247,11 @@ class VisualGridEyes(object):
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
 
-        states = list(set([t.state for t in self.test_list]))
-        while not (len(states) == 1 and states[0] == "completed"):
-            datetime_utils.sleep(500)
+        while True:
             states = list(set([t.state for t in self.test_list]))
+            if len(states) == 1 and states[0] == "completed":
+                break
+            datetime_utils.sleep(500)
 
         self._is_opened = False
 

@@ -106,10 +106,11 @@ class VisualGridRunner(EyesRunner):
 
     def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        states = list(set([t.state for t in self.all_running_tests]))
-        while not (len(states) == 1 and states[0] == "completed"):
-            datetime_utils.sleep(500)
+        while True:
             states = list(set([t.state for t in self.all_running_tests]))
+            if len(states) == 1 and states[0] == "completed":
+                break
+            datetime_utils.sleep(500)
 
         all_results = []
         for test, test_result in iteritems(self._all_test_result):
