@@ -339,7 +339,7 @@ class RenderStatusResults(object):
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[RenderStatus]
     selector_regions = attr.ib(
-        default=None, type=VGRegion, metadata={JsonInclude.THIS: True}
+        factory=list, type=VGRegion, metadata={JsonInclude.THIS: True}
     )  # type: List[VGRegion]
     device_size = attr.ib(
         default=None,
