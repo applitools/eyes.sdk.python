@@ -1,4 +1,5 @@
 import typing
+from itertools import chain
 
 import attr
 import tinycss2
@@ -34,7 +35,9 @@ class RenderTask(VGTask):
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()
-    region_selectors = attr.ib(hash=False, factory=list)
+    region_selectors = attr.ib(
+        hash=False, factory=list
+    )  # type: List[List[VisualGridSelector]]
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
     script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
@@ -148,7 +151,7 @@ class RenderTask(VGTask):
             browser_name=running_test.browser_info.browser_type,
             platform=running_test.browser_info.platform,
             script_hooks=self.script_hooks,
-            selectors_to_find_regions_for=self.region_selectors,
+            selectors_to_find_regions_for=list(chain(*self.region_selectors)),
             send_dom=running_test.configuration.send_dom,
         )
 

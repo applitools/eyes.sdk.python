@@ -54,7 +54,8 @@ class RunningTest(object):
     # listener = attr.ib()  # type:
     region_selectors = attr.ib(
         init=False, factory=list, hash=False
-    )  # type: List[VisualGridSelector]
+    )  # type: List[List[VisualGridSelector]]
+    regions = attr.ib(init=False, factory=list, hash=False)
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     task_to_future_mapping = attr.ib(init=False, factory=dict, hash=False)
@@ -193,7 +194,9 @@ class RunningTest(object):
 
         def check_run():
             logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
-            self.eyes.check(tag, check_settings, render_task.uuid)
+            self.eyes.check(
+                tag, check_settings, render_task.uuid, region_selectors, self.regions
+            )
 
         check_task = VGTask(
             "perform check {} {}".format(tag, check_settings), check_run
@@ -250,6 +253,11 @@ class RunningTest(object):
             )
             if render_status:
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
+                for vgr in render_status.selector_regions:
+                    if vgr.error:
+                        logger.error(vgr.error)
+                    else:
+                        self.regions.append(vgr.to_region())
             self.watch_render[render_task] = True
             if self.all_tasks_completed(self.watch_render):
                 self.becomes_rendered()

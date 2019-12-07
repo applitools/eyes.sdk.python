@@ -341,23 +341,25 @@ class VisualGridEyes(object):
         check_settings.values.selector = vgs
 
     def get_region_xpaths(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
+        # type: (SeleniumCheckSettings) -> List[List[VisualGridSelector]]
         element_lists = self.collect_selenium_regions(check_settings)
         frame_chain = self.driver.frame_chain.clone()
-        xpaths = []
-        for elem_region in element_lists:
-            if elem_region.webelement is None:
-                continue
-
-            xpath = self.driver.execute_script(
-                GET_ELEMENT_XPATH_JS, elem_region.webelement
-            )
-            xpaths.append(VisualGridSelector(xpath, "target"))
+        result = []
+        for element_list in element_lists:
+            xpaths = []
+            for elem_region in element_list:
+                if elem_region.webelement is None:
+                    continue
+                xpath = self.driver.execute_script(
+                    GET_ELEMENT_XPATH_JS, elem_region.webelement
+                )
+                xpaths.append(VisualGridSelector(xpath, elem_region.region_provider))
+            result.append(xpaths)
         self.driver.switch_to.frames(frame_chain)
-        return xpaths
+        return result
 
     def collect_selenium_regions(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[WebElementRegion]
+        # type: (SeleniumCheckSettings) -> List[List[WebElementRegion]]
         ignore_elements = self.get_elements_from_regions(
             check_settings.values.ignore_regions
         )
@@ -380,16 +382,14 @@ class VisualGridEyes(object):
                 element = self.driver.find_element_by_css_selector(target_selector)
 
         targets = [WebElementRegion("target", element)]
-        return list(
-            chain(
-                ignore_elements,
-                layout_elements,
-                strict_elements,
-                content_elements,
-                floating_elements,
-                targets,
-            )
-        )
+        return [
+            ignore_elements,
+            layout_elements,
+            strict_elements,
+            content_elements,
+            floating_elements,
+            targets,
+        ]
 
     def get_elements_from_regions(self, regions_provider):
         # type:(List[GetRegion])->List[WebElementRegion]
