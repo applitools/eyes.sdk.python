@@ -160,7 +160,7 @@ def test_check_window_with_ignore_by_selector__centered__fluent(eyes_opened):
 def test_check_window_with_ignore_by_selector__stretched__fluent(eyes_opened):
     eyes_opened.check(
         "Fluent - Window with ignore region by selector stretched",
-        Target.region("#stretched"),
+        Target.window().ignore("#stretched"),
         # TODO: add analog setExpectedIgnoreRegions(new Region(8, 1270, 690, 206))
     )
 
