@@ -20,11 +20,11 @@ class RunningSession(object):
     Encapsulates data for the session currently running in the agent.
     """
 
-    id = attr.ib()  # type: Text
-    session_id = attr.ib()  # type: Text
-    batch_id = attr.ib()  # type: Text
-    baseline_id = attr.ib()  # type: Text
-    url = attr.ib()  # type: Text
+    id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    session_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    batch_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    baseline_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     rendering_info = attr.ib(default=None)  # type: Optional[RenderingInfo]
     is_new_session = attr.ib(default=False)  # type: bool
 

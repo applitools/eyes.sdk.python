@@ -41,9 +41,15 @@ class MatchLevel(Enum):
 
 @attr.s
 class MatchResult(object):
-    as_expected = attr.ib(default=None)  # type: Optional[bool]
-    window_id = attr.ib(default=None)  # type: Optional[Text]
-    screenshot = attr.ib(default=None)  # type: Optional[EyesScreenshot]
+    as_expected = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
+    window_id = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    screenshot = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[EyesScreenshot]
 
 
 @attr.s
