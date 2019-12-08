@@ -1,11 +1,10 @@
 from __future__ import absolute_import
 
 import hashlib
-import itertools
-import time
+import os
 import typing
 
-from applitools.common import logger
+import attr
 
 from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
@@ -15,7 +14,7 @@ General purpose utilities.
 
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Any, List, Text
+    from typing import Callable, Any, List, Text, Optional
 
     T = typing.TypeVar("T")
 
@@ -56,51 +55,6 @@ def is_absolute_url(url):
 
 def is_url_with_scheme(url):
     return bool(urlparse(url).scheme)
-
-
-def timeit(method):
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-
-        if "log_time" in kw:
-            name = kw.get("log_name", method.__name__.upper())
-            kw["log_time"][name] = int((te - ts) * 1000)
-        else:
-            logger.debug("%r  %2.2f ms" % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
-
-
-def retry(delays=(0, 1, 5), exception=Exception, report=lambda *args: None):
-    """
-    This is a Python decorator which helps implementing an aspect oriented
-    implementation of a retrying of certain steps which might fail sometimes.
-    https://code.activestate.com/recipes/580745-retry-decorator-in-python/
-    """
-
-    def wrapper(function):
-        def wrapped(*args, **kwargs):
-            problems = []
-            for delay in itertools.chain(delays, [None]):
-                try:
-                    return function(*args, **kwargs)
-                except exception as problem:
-                    problems.append(problem)
-                    if delay is None:
-                        report("retryable failed definitely:", problems)
-                        raise
-                    else:
-                        report(
-                            "retryable failed:", problem, "-- delaying for %ds" % delay
-                        )
-                        time.sleep(delay)
-
-        return wrapped
-
-    return wrapper
 
 
 def get_sha256_hash(content):
@@ -156,3 +110,35 @@ def proxy_to(proxy_obj_name, fields):
         return cls
 
     return dec
+
+
+def all_fields(obj):
+    # type: (Any) -> List[Text]
+    """Get all public fields from the object
+
+    Args:
+        obj: any kind object
+
+    Returns:
+        list of attributes and methods names
+    """
+    if attr.has(obj):
+        return list(attr.fields_dict(obj).keys())
+    return []
+
+
+def get_env_with_prefix(env_name, default=None):
+    # type: (Text, Optional[Text]) -> Optional[Text]
+    """
+    Takes name of ENV variable, check if exists origin and with list of prefixes
+    """
+    prefixes_to_check = ["bamboo"]
+    try:
+        return os.environ[env_name]
+    except KeyError:
+        for prefix in prefixes_to_check:
+            name = "{}_{}".format(prefix, env_name)
+            value = os.getenv(name)
+            if value:
+                return value
+    return default

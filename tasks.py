@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from os import path
 
 from invoke import task
@@ -50,7 +51,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "virtualenv==16.3.0",
         "pytest-virtualenv==1.4.0",
         "mock",
-        "webdriver_manager",
+        "webdriver_manager==1.5",
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
     if testing:
@@ -156,28 +157,19 @@ def move_js_resources_to(pack):
 
 
 @task
-def run_selenium_tests(c, remote=False, headless=False, platform=None):
-    sel_tests = "tests/functional/eyes_selenium/selenium"
-    pattern = (
-        "pytest {proc_num} --headless {headless} {"
-        "remote} "
-        "--platform '{platform}' "
-        "--browser '%(browser)s' {tests} "
-        "--ignore={tests}/test_client_sites.py"
-    ).format(
-        proc_num="-n 2" if remote else "",
-        headless=headless,
-        remote="--remote 1" if remote else "",
-        platform=platform,
-        tests=sel_tests,
+def run_tests_on_CI(c, tests):
+    browsers = os.getenv("TEST_BROWSERS", "").split(",")
+    if not browsers:
+        raise ValueError("`TEST_BROWSERS` env variable should be set")
+
+    pattern = "pytest {par} {tests} --ignore={tests}/test_client_sites.py".format(
+        par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
     )
-    browsers = ["firefox", "chrome"]
-    if platform.lower().startswith("mac"):
-        browsers.append("safari")
-    elif platform.lower().startswith("windows"):
-        browsers.append("internet explorer")
-        browsers.append("MicrosoftEdge")
 
     # use Unix background task execution for run tests in parallel
-    command = "&".join([pattern % dict(browser=browser) for browser in browsers])
+    command = pattern
+    if browsers:
+        command = "&".join(
+            ["TEST_BROWSERS={} ".format(browser) + pattern for browser in browsers]
+        )
     c.run(command, echo=True)

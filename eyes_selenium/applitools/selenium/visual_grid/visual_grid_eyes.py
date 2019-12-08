@@ -1,16 +1,24 @@
 import json
 import threading
 import typing
+import uuid
 from collections import OrderedDict
 from itertools import chain
 
 import attr
 
-from applitools.common import EyesError, TestFailedError, TestResults, logger
-from applitools.common.utils import argument_guard
+from applitools.common import (
+    DiffsFoundError,
+    EyesError,
+    NewTestError,
+    TestFailedError,
+    TestResults,
+    logger,
+)
+from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
-from applitools.selenium import eyes_selenium_utils, resource
+from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from .eyes_connector import EyesConnector
@@ -19,9 +27,8 @@ from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Union, Optional, Dict
-    from applitools.common.config import SeleniumConfiguration
     from applitools.common.utils.custom_types import AnyWebElement
-    from applitools.selenium import Eyes, EyesWebDriver
+    from applitools.selenium import Eyes, EyesWebDriver, Configuration
 
 
 GET_ELEMENT_XPATH_JS = """
@@ -66,16 +73,17 @@ class VisualGridEyes(object):
     rendering_info = None
     is_check_timer_timeout = False
 
-    def __init__(self, runner, config):
-        # type: (VisualGridRunner, Eyes)-> None
-        self._config_provider = config
+    def __init__(self, config_provider, runner):
+        # type: (Eyes, VisualGridRunner)-> None
+        self._config_provider = config_provider
         self._elements = []
         argument_guard.not_none(runner)
         self.vg_manager = runner
         self.test_list = []  # type: List[RunningTest]
+        self._test_uuid = None
 
     @property
-    def is_opened(self):
+    def is_open(self):
         return self._is_opened
 
     @property
@@ -84,11 +92,42 @@ class VisualGridEyes(object):
 
     @property
     def configuration(self):
-        # type: () -> SeleniumConfiguration
+        # type: () -> Configuration
         return self._config_provider.configuration
+
+    @property
+    def base_agent_id(self):
+        # type: () -> Text
+        """
+        Must return version of SDK. (e.g. selenium, visualgrid) in next format:
+            "eyes.{package}.python/{lib_version}"
+        """
+        return "eyes.selenium.visualgrid.python/{version}".format(version=__version__)
+
+    @property
+    def full_agent_id(self):
+        # type: () -> Text
+        """
+        Gets the agent id, which identifies the current library using the SDK.
+
+        """
+        agent_id = self.configuration.agent_id
+        if agent_id is None:
+            return self.base_agent_id
+        return "{} [{}]".format(agent_id, self.base_agent_id)
+
+    def add_property(self, name, value):
+        # type: (Text, Text) -> None
+        """
+        Associates a key/value pair with the test. This can be used later for filtering.
+        :param name: (string) The property name.
+        :param value: (string) The property value
+        """
+        self.configuration.properties.append({"name": name, "value": value})
 
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
+        self._test_uuid = uuid.uuid4()
         if self.configuration.is_disabled:
             return driver
         logger.open_()
@@ -108,11 +147,14 @@ class VisualGridEyes(object):
             self.configuration.viewport_size = self._get_viewport_size()
 
         for b_info in browsers_info:
-            self.test_list.append(
-                RunningTest(
-                    self._create_vgeyes_connector(b_info), self.configuration, b_info
-                )
+            test = RunningTest(
+                self._create_vgeyes_connector(b_info), self.configuration, b_info
             )
+            test.on_results_received(
+                lambda r: self.vg_manager.aggregate_result(test, r)
+            )
+            test.test_uuid = self._test_uuid
+            self.test_list.append(test)
         self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
@@ -163,28 +205,24 @@ class VisualGridEyes(object):
 
         self.configuration.send_dom = check_settings.values.send_dom
 
-        size_mode = check_settings.values.size_mode
-        if size_mode is None:
-            if self.configuration.force_full_page_screenshot:
-                check_settings.values.size_mode = "full-page"
-
+        check_settings = self._update_check_settings(check_settings)
         logger.info("check('{}', check_settings) - begin".format(name))
 
-        # region_xpaths = self.get_region_xpaths(check_settings)
-        region_xpaths = []
-        self.region_to_check = None
-        # logger.info("region_xpaths: {}".format(region_xpaths))
+        region_xpaths = self.get_region_xpaths(check_settings)
+        logger.info("region_xpaths: {}".format(region_xpaths))
         script_result = self.get_script_result()
         try:
             for test in self.test_list:
+                if self._test_uuid != test.test_uuid:
+                    continue
                 test.check(
                     tag=name,
                     check_settings=check_settings,
                     script_result=script_result,
                     visual_grid_manager=self.vg_manager,
                     region_selectors=region_xpaths,
-                    size_mode=size_mode,
-                    region_to_check=self.region_to_check,
+                    region_to_check=check_settings.values.target_region,
+                    script_hooks=check_settings.values.script_hooks,
                 )
                 if test.state == "new":
                     test.becomes_not_rendered()
@@ -207,13 +245,40 @@ class VisualGridEyes(object):
             return TestResults()
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
-        self.vg_manager.process_test_list(self.test_list, raise_ex)
+
+        while True:
+            states = list(set([t.state for t in self.test_list]))
+            if len(states) == 1 and states[0] == "completed":
+                break
+            datetime_utils.sleep(500)
+
         self._is_opened = False
 
-        test_results = [t.test_result for t in self.test_list if t.test_result]
-        if not test_results:
+        for test in self.test_list:
+            if test.pending_exceptions:
+                raise EyesError(
+                    "During test execution above exception raised. \n {:s}".join(
+                        str(e) for e in test.pending_exceptions
+                    )
+                )
+        if raise_ex:
+            for test in self.test_list:
+                if test.test_result is None:
+                    raise TestFailedError("Test haven't finished correctly")
+                results = test.test_result
+                scenario_id_or_name = results.name
+                app_id_or_name = results.app_name
+                if results.is_unresolved and not results.is_new:
+                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
+                if results.is_new:
+                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
+                if results.is_failed:
+                    raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+
+        all_results = [t.test_result for t in self.test_list if t.test_result]
+        if not all_results:
             return TestResults()
-        return test_results[0]
+        return all_results[0]
 
     def abort(self):
         """
@@ -228,6 +293,27 @@ class VisualGridEyes(object):
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")
         self.abort()
+
+    def _update_check_settings(self, check_settings):
+        # type: (SeleniumCheckSettings) -> SeleniumCheckSettings
+        match_level = check_settings.values.match_level
+        fully = check_settings.values.stitch_content
+        send_dom = check_settings.values.send_dom
+        ignore_displacements = check_settings.values.ignore_displacements
+
+        if match_level is None:
+            check_settings = check_settings.match_level(self.configuration.match_level)
+        if fully is None:
+            fps = self.configuration.force_full_page_screenshot
+            check_settings = check_settings.fully(True if fps is None else fps)
+        if send_dom is None:
+            send = self.configuration.send_dom
+            check_settings = check_settings.send_dom(True if send is None else send)
+        if ignore_displacements is None:
+            check_settings = check_settings.ignore_displacements(
+                self.configuration.ignore_displacements
+            )
+        return check_settings
 
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector
@@ -256,24 +342,26 @@ class VisualGridEyes(object):
         vgs = VisualGridSelector(xpath, "target")
         check_settings.values.selector = vgs
 
-    def get_region_x_paths(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
+    def get_region_xpaths(self, check_settings):
+        # type: (SeleniumCheckSettings) -> List[List[VisualGridSelector]]
         element_lists = self.collect_selenium_regions(check_settings)
         frame_chain = self.driver.frame_chain.clone()
-        xpaths = []
-        for elem_region in element_lists:
-            if elem_region.webelement is None:
-                continue
-
-            xpath = self.driver.execute_script(
-                GET_ELEMENT_XPATH_JS, elem_region.webelement
-            )
-            xpaths.append(xpath)
+        result = []
+        for element_list in element_lists:
+            xpaths = []
+            for elem_region in element_list:
+                if elem_region.webelement is None:
+                    continue
+                xpath = self.driver.execute_script(
+                    GET_ELEMENT_XPATH_JS, elem_region.webelement
+                )
+                xpaths.append(VisualGridSelector(xpath, elem_region.region_provider))
+            result.append(xpaths)
         self.driver.switch_to.frames(frame_chain)
-        return xpaths
+        return result
 
     def collect_selenium_regions(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[WebElementRegion]
+        # type: (SeleniumCheckSettings) -> List[List[WebElementRegion]]
         ignore_elements = self.get_elements_from_regions(
             check_settings.values.ignore_regions
         )
@@ -296,16 +384,14 @@ class VisualGridEyes(object):
                 element = self.driver.find_element_by_css_selector(target_selector)
 
         targets = [WebElementRegion("target", element)]
-        return list(
-            chain(
-                ignore_elements,
-                layout_elements,
-                strict_elements,
-                content_elements,
-                floating_elements,
-                targets,
-            )
-        )
+        return [
+            ignore_elements,
+            layout_elements,
+            strict_elements,
+            content_elements,
+            floating_elements,
+            targets,
+        ]
 
     def get_elements_from_regions(self, regions_provider):
         # type:(List[GetRegion])->List[WebElementRegion]
@@ -327,4 +413,4 @@ class VisualGridEyes(object):
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
             logger.exception(e)
-            raise TestFailedError(str(e))
+            raise EyesError(str(e))

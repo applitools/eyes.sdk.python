@@ -1,34 +1,33 @@
-"""
-Pytest configuration
+import os
 
-pytest |-n|--platform|--browser|--headless
-
-Example of usage:
-    pytest -n 5     # run tests on all supported platforms in 5 thread
-    pytest --platform 'iPhone 10.0'  # run tests only for iPhone 10.0 platform in one thread
-    pytest --platform 'Linux' --browser firefox    # run all tests on Linux platform with firefox browser
-    pytest --browser firefox    # run all tests on your current platform with firefox browser
-    pytest --browser firefox --headless 1   # run all tests on your current platform with firefox browser in headless mode
-"""
 import pytest
 
-from applitools.common import StdoutLogger, logger
+from applitools.common import BatchInfo, StdoutLogger, logger
 from applitools.common.utils import iteritems
 
 logger.set_logger(StdoutLogger())
 
 
+@pytest.fixture
+def batch_info():
+    return BatchInfo(os.getenv("APPLITOOLS_BATCH_NAME", "Python SDK"))
+
+
 @pytest.fixture(scope="function")
-def eyes(request, eyes_class):
+def eyes(request, eyes_class, batch_info):
     # TODO: allow to setup logger level through pytest option
     # logger.set_logger(StdoutLogger())
     eyes = eyes_class()
-    eyes.hide_scrollbars = True
+    eyes.configuration.batch = batch_info
+    eyes.configuration.hide_scrollbars = True
+    eyes.configuration.save_new_tests = False
+    eyes.configuration.hide_caret = True
+    eyes._debug_screenshot_provided = True
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}
 
-    # configure eyes through @pytest.mark.parametrize('eyes', [])
+    # configure eyes through @pytest.mark.parametrize('eyes', [], indirect=True)
     eyes_parametrized_opts = getattr(request, "param", {})
     if set(eyes_mark_opts.keys()).intersection(eyes_parametrized_opts):
         raise ValueError(
@@ -38,6 +37,8 @@ def eyes(request, eyes_class):
     eyes_mark_opts.update(eyes_parametrized_opts)
     for key, val in iteritems(eyes_mark_opts):
         setattr(eyes, key, val)
+
+    eyes.add_property("Agent ID", eyes.full_agent_id)
 
     yield eyes
     eyes.abort()

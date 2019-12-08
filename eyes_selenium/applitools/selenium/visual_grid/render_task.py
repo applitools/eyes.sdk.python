@@ -1,8 +1,8 @@
-import time
 import typing
+from itertools import chain
+from threading import Lock, RLock
 
 import attr
-import tinycss2
 
 from applitools.common import (
     EyesError,
@@ -11,14 +11,16 @@ from applitools.common import (
     RenderStatus,
     RGridDom,
     VGResource,
+    VisualGridSelector,
     logger,
 )
-from applitools.common.utils import urlparse
+from applitools.common.utils import datetime_utils, urljoin, urlparse
+from applitools.selenium import css_parser
 
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Dict, Any, Text, List
+    from typing import Callable, Dict, Any, Text, List, Optional
     from applitools.common import RenderStatusResults, Region
     from applitools.selenium.visual_grid import RunningTest, EyesConnector
 
@@ -34,18 +36,23 @@ class RenderTask(VGTask):
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()
-    region_selectors = attr.ib(hash=False, factory=list)
+    region_selectors = attr.ib(
+        hash=False, factory=list
+    )  # type: List[List[VisualGridSelector]]
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
-    agent_id = attr.ib(default=None)
+    script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
+    agent_id = attr.ib(default=None)  # type: Optional[Text]
+    selector = attr.ib(hash=False, default=None)  # type: Optional[Text]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
 
     def __attrs_post_init__(self):
         # type: () -> None
-        self.func_to_run = self.perform
-        self.all_blobs = []
-        self.request_resources = {}
-        self.resource_urls = []
+        self.func_to_run = self.perform  # type: Callable
+        self.all_blobs = []  # type: List[VGResource]
+        self.request_resources = {}  # type: Dict[Text, VGResource]
+        self.resource_urls = []  # type: List[Text]
+        self.discovered_resources_lock = RLock()
 
     def perform(self):
         # type: () -> RenderStatusResults
@@ -68,7 +75,7 @@ class RenderTask(VGTask):
             except Exception as e:
                 logger.exception(e)
                 fetch_fails += 1
-                time.sleep(1.5)
+                datetime_utils.sleep(1500)
             if not render_requests:
                 continue
 
@@ -107,58 +114,97 @@ class RenderTask(VGTask):
 
     def prepare_data_for_rg(self, data):
         # type: (Dict) -> RenderRequest
+        self.request_resources = {}
+        dom = self.parse_frame_dom_resources(data)
+        return self.prepare_rg_requests(self.running_test, dom, self.request_resources)
+
+    def prepare_rg_requests(self, running_test, dom, request_resources):
+        # type: (RunningTest, RGridDom, Dict) -> RenderRequest
+        if self.size_mode == "region" and self.region_to_check is None:
+            raise EyesError("Region to check should be present")
+        if self.size_mode == "selector" and not isinstance(
+            self.selector, VisualGridSelector
+        ):
+            raise EyesError("Selector should be present")
+
+        region = None
+        if self.region_to_check:
+            region = dict(
+                x=self.region_to_check.x,
+                y=self.region_to_check.y,
+                width=self.region_to_check.width,
+                height=self.region_to_check.height,
+            )
+        r_info = RenderInfo(
+            width=running_test.browser_info.width,
+            height=running_test.browser_info.height,
+            size_mode=self.size_mode,
+            selector=self.selector,
+            region=region,
+            emulation_info=running_test.browser_info.emulation_info,
+        )
+        return RenderRequest(
+            webhook=self.rendering_info.results_url,
+            agent_id=self.agent_id,
+            url=dom.url,
+            dom=dom,
+            resources=request_resources,
+            render_info=r_info,
+            browser_name=running_test.browser_info.browser_type,
+            platform=running_test.browser_info.platform,
+            script_hooks=self.script_hooks,
+            selectors_to_find_regions_for=list(chain(*self.region_selectors)),
+            send_dom=running_test.configuration.send_dom,
+        )
+
+    def parse_frame_dom_resources(self, data):
+        # type: (Dict) -> RGridDom
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
+        frames = data.get("frames", [])
+        discovered_resources_urls = []
+
+        def handle_resources(content_type, content):
+            if content_type == "text/css":
+                urls_from_css = css_parser.get_urls_from_css_resource(content)
+                for discovered_url in urls_from_css:
+                    target_url = _apply_base_url(discovered_url, base_url)
+                    with self.discovered_resources_lock:
+                        discovered_resources_urls.append(target_url)
+
+        def get_resource(link):
+            # type: (Text) -> VGResource
+            response = self.eyes_connector.download_resource(link)
+            return VGResource.from_response(link, response, on_created=handle_resources)
+
+        for f_data in frames:
+            f_data["url"] = _apply_base_url(f_data["url"], base_url)
+            self.request_resources[f_data["url"]] = self.parse_frame_dom_resources(
+                f_data
+            ).resource
 
         for blob in blobs:
-            resource = VGResource.from_blob(blob)
+            resource = VGResource.from_blob(blob, on_created=handle_resources)
             if resource.url.rstrip("#") == base_url:
                 continue
 
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
-            if resource.content_type == "text/css":
-                urls_from_css = _get_urls_from_css_resource(resource)
-                resource_urls.extend(urls_from_css)
-
-        def get_resource(link):
-            # type: (Text) -> VGResource
-            response = self.eyes_connector.download_resource(link)
-            return VGResource.from_response(link, response)
 
         for r_url in set(resource_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
+        for r_url in discovered_resources_urls:
+            self.resource_cache.fetch_and_store(r_url, get_resource)
         self.request_resources.update(self.resource_cache)
-
-        r_info = RenderInfo(
-            width=self.running_test.browser_info.width,
-            height=self.running_test.browser_info.height,
-            size_mode=self.size_mode,
-            region=self.region_to_check,
-            emulation_info=self.running_test.browser_info.emulation_info,
-        )
-        dom = RGridDom(
+        return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
-        )
-        return RenderRequest(
-            webhook=self.rendering_info.results_url,
-            agent_id=self.agent_id,
-            url=base_url,
-            dom=dom,
-            resources=self.request_resources,
-            render_info=r_info,
-            browser_name=self.running_test.browser_info.browser_type,
-            platform=self.running_test.browser_info.platform,
-            script_hooks={},
-            selectors_to_find_regions_for=self.region_selectors,
-            send_dom=self.running_test.configuration.send_dom,
         )
 
     def poll_render_status(self, render_request):
         # type: (RenderRequest) -> List[RenderStatusResults]
         iterations = 0
-        statuses = []
+        statuses = []  # type: List[RenderStatusResults]
         if not render_request.render_id:
             raise EyesError("RenderStatus: Got empty renderId!")
         fails_count = 0
@@ -173,19 +219,18 @@ class RenderTask(VGTask):
                     )
                 except Exception as e:
                     logger.exception(e)
-                    time.sleep(1)
+                    datetime_utils.sleep(1000)
                     fails_count += 1
                 finally:
                     iterations += 1
-                    time.sleep(0.5)
+                    datetime_utils.sleep(500)
                 if statuses or 0 < fails_count < 3:
                     break
-            finished = (
+            finished = bool(
                 statuses
                 and statuses[0] is not None
                 and (
-                    statuses[0].status == RenderStatus.ERROR
-                    or statuses[0].status == RenderStatus.RENDERED
+                    statuses[0].status != RenderStatus.RENDERING
                     or iterations > self.MAX_ITERATIONS
                     or False
                 )
@@ -197,35 +242,8 @@ class RenderTask(VGTask):
         return statuses
 
 
-def _url_from_tags(tags):
-    for tag in tags:
-        if tag.type == "url":
-            try:
-                url = urlparse(tag.value)
-                if url.scheme in ["http", "https"]:
-                    yield url.geturl()
-            except Exception as e:
-                logger.exception(e)
-
-
-def _get_urls_from_css_resource(resource):
-    def is_import_node(n):
-        return n.type == "at-rule" and n.lower_at_keyword == "import"
-
-    try:
-        rules, encoding = tinycss2.parse_stylesheet_bytes(
-            css_bytes=resource.content, skip_comments=True, skip_whitespace=True
-        )
-    except Exception:
-        logger.exception("Failed to reed CSS string")
-        return []
-
-    urls = []
-    for rule in rules:
-        tags = rule.content
-        if is_import_node(rule):
-            logger.debug("The node has import")
-            tags = rule.prelude
-        if tags:
-            urls.extend(list(_url_from_tags(tags)))
-    return urls
+def _apply_base_url(discovered_url, base_url):
+    url = urlparse(discovered_url)
+    if url.scheme in ["http", "https"] and url.netloc:
+        return discovered_url
+    return urljoin(base_url, discovered_url)

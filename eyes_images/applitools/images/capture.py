@@ -15,12 +15,10 @@ class EyesImagesScreenshot(EyesScreenshot):
     def __init__(self, image, location=None):
         super(EyesImagesScreenshot, self).__init__(image)
         if location is None:
-            location = Point.zero()
+            location = Point.ZERO()
         argument_guard.is_a(location, Point)
         self._location = location
-        self._bounds = Region.from_(
-            location, dict(width=self._image.width, height=self._image.height)
-        )
+        self._bounds = Region.from_(location, self.image)
 
     def sub_screenshot(self, region, throw_if_clipped=False):
         # type: (Region, bool) -> EyesImagesScreenshot
@@ -65,13 +63,13 @@ class EyesImagesScreenshot(EyesScreenshot):
 
         if from_ == self.SCREENSHOT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
-                result.offset(self._bounds.left, self._bounds.top)
+                result = result.offset(self._bounds.left, self._bounds.top)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
 
         elif from_ == self.SCREENSHOT_AS_IS:
             if to == self.CONTEXT_RELATIVE:
-                result.offset(-self._bounds.left, -self._bounds.top)
+                result = result.offset(-self._bounds.left, -self._bounds.top)
             else:
                 raise CoordinatesTypeConversionError(from_, to)
         else:

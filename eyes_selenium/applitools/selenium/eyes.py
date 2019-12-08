@@ -2,10 +2,11 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import EyesError, SeleniumConfiguration, logger
+from applitools.common import EyesError, logger
+from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
-from applitools.common.utils.general_utils import proxy_to
-from applitools.selenium import eyes_selenium_utils
+from applitools.common.utils.general_utils import all_fields, proxy_to
+from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
 from .fluent import Target
 from .selenium_eyes import SeleniumEyes
@@ -33,7 +34,7 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to("configuration", SeleniumConfiguration.all_fields())
+@proxy_to("configuration", all_fields(Configuration))
 class Eyes(object):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
@@ -43,8 +44,8 @@ class Eyes(object):
     _is_opened = False  # type: bool
 
     def __init__(self, runner=None):
-        # type: (Optional[VisualGridRunner]) -> None
-        self._configuration = SeleniumConfiguration()  # type: SeleniumConfiguration
+        # type: (Optional[VisualGridRunner, ClassicRunner]) -> None
+        self._configuration = Configuration()  # type: Configuration
 
         # backward compatibility with settings server_url
         if isinstance(runner, str):
@@ -52,33 +53,51 @@ class Eyes(object):
             runner = None
 
         if runner is None:
-            self._selenium_eyes = SeleniumEyes(self)
+            self._selenium_eyes = SeleniumEyes(self, None)
         elif isinstance(runner, VisualGridRunner):
             self._runner = runner
-            self._visual_grid_eyes = VisualGridEyes(runner, self)
+            self._visual_grid_eyes = VisualGridEyes(self, runner)
             self._is_visual_grid_eyes = True
+        elif isinstance(runner, ClassicRunner):
+            self._runner = runner
+            self._selenium_eyes = SeleniumEyes(self, runner)
+            self._is_visual_grid_eyes = False
         else:
             raise ValueError("Wrong runner")
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         return self._is_opened
 
-    @property
-    def configuration(self):
-        # type: () -> SeleniumConfiguration
+    def get_configuration(self):
+        # type: () -> Configuration
         return self._configuration
 
-    @configuration.setter
-    def configuration(self, new_conf):
-        # type: (SeleniumConfiguration) -> None
-        argument_guard.is_a(new_conf, SeleniumConfiguration)
-        if self._configuration.api_key and not new_conf.api_key:
-            new_conf.api_key = self._configuration.api_key
-        if self._configuration.server_url and not new_conf.server_url:
-            new_conf.server_url = self._configuration.server_url
-        self._configuration = new_conf
+    def set_configuration(self, configuration):
+        # type: (Configuration) -> None
+        argument_guard.is_a(configuration, Configuration)
+        if self._configuration.api_key and not configuration.api_key:
+            configuration.api_key = self._configuration.api_key
+        if self._configuration.server_url and not configuration.server_url:
+            configuration.server_url = self._configuration.server_url
+        self._configuration = configuration
+
+    configuration = property(get_configuration, set_configuration)
+
+    @property
+    def rotation(self):
+        # type: () -> Optional[int]
+        if self._selenium_eyes and self.driver:
+            return self.driver.rotation
+        return None
+
+    @rotation.setter
+    def rotation(self, rotation):
+        # type: (int) -> None
+        argument_guard.is_a(rotation, int)
+        if self._selenium_eyes and self.driver:
+            self.driver.rotation = rotation
 
     @property
     def base_agent_id(self):
@@ -99,14 +118,21 @@ class Eyes(object):
         return self._current_eyes.full_agent_id
 
     @property
-    def stitch_content(self):
+    def should_stitch_content(self):
         # type: () -> bool
-        return self._current_eyes.stitch_content
+        return self._current_eyes.should_stitch_content
 
     @property
-    def original_frame_chain(self):
-        # type: () -> FrameChain
-        return self._current_eyes.original_frame_chain
+    def original_fc(self):
+        # type: () -> Optional[FrameChain]
+        """ Gets original frame chain
+
+        Before check() call we save original frame chain
+
+        Returns:
+            Frame chain saved before check() call
+        """
+        return self._current_eyes.original_fc
 
     # def rotation(self):
     #     if not self._is_visual_grid_eyes:
@@ -151,17 +177,17 @@ class Eyes(object):
         return None
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         if not self._is_visual_grid_eyes:
-            return self._selenium_eyes.is_debug_screenshot_provided
+            return self._selenium_eyes._debug_screenshot_provided
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.is_debug_screenshot_provided = save
+            self._selenium_eyes._debug_screenshot_provided = save
 
     @position_provider.setter
     def position_provider(self, provider):
@@ -183,7 +209,7 @@ class Eyes(object):
         return None
 
     @cut_provider.setter
-    def cut_provider(self, provider):
+    def cut_provider(self, cutprovider):
         # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         """
         Manually set the the sizes to cut from an image before it's validated.
@@ -192,7 +218,7 @@ class Eyes(object):
         :return:
         """
         if not self._is_visual_grid_eyes:
-            self._selenium_eyes.cut_provider = provider
+            self._selenium_eyes.cut_provider = cutprovider
 
     @property
     def is_cut_provider_explicitly_set(self):
@@ -220,16 +246,16 @@ class Eyes(object):
         return None
 
     @staticmethod
-    def get_viewport_size_static(driver):
+    def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
-        return eyes_selenium_utils.get_viewport_size(driver)
+        return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
     @staticmethod
-    def set_viewport_size_static(driver, size):
+    def set_viewport_size(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
         assert driver is not None
         if size is None:
-            raise ValueError("set_viewport_size_static require `size` parameter")
+            raise ValueError("set_viewport_size require `size` parameter")
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     def add_property(self, name, value):
@@ -281,6 +307,12 @@ class Eyes(object):
             return self.configuration.send_dom
         return False
 
+    @send_dom.setter
+    def send_dom(self, value):
+        # type: (bool) -> None
+        if not self._is_visual_grid_eyes:
+            self.configuration.send_dom = value
+
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         """
@@ -292,30 +324,45 @@ class Eyes(object):
         """
         if self.configuration.is_disabled:
             return MatchResult()
-        if not self.is_opened:
+        if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
         return self._current_eyes.check(name, check_settings)
 
-    def check_window(
-        self, tag=None, match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS
-    ):
-        # type: (Optional[Text], int) -> MatchResult
+    def check_window(self, tag=None, match_timeout=-1, fully=None):
+        # type: (Optional[Text], int, Optional[bool]) -> MatchResult
         """
-        Takes a snapshot of the application under test and matches it with the expected output.
+        Takes a snapshot of the application under test and matches it with the expected
+         output.
 
         :param tag: An optional tag to be associated with the snapshot.
         :param match_timeout:  The amount of time to retry matching (milliseconds)
+        :param fully: Defines that the screenshot will contain the entire window.
         :return: The match results.
         """
         logger.debug("check_window('%s')" % tag)
-        return self.check(tag, Target.window().timeout(match_timeout))
+        return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
+
+    def check_frame(self, frame_reference, tag=None, match_timeout=-1):
+        # type: (FrameReference, Optional[Text], int) -> MatchResult
+        """
+        Check frame.
+
+        :param frame_reference: The name or id of the frame to check. (The same
+                name/id as would be used in a call to driver.switch_to.frame()).
+        :param tag: An optional tag to be associated with the match.
+        :param match_timeout: The amount of time to retry matching. (Milliseconds)
+        :return: The match results.
+        """
+        return self.check(
+            tag, Target.frame(frame_reference).fully().timeout(match_timeout)
+        )
 
     def check_region(
         self,
         region,  # type: Union[Region,Text,List,Tuple,WebElement,EyesWebElement]
         tag=None,  # type: Optional[Text]
-        match_timeout=SeleniumConfiguration.DEFAULT_MATCH_TIMEOUT_MS,  # type: int
+        match_timeout=-1,  # type: int
         stitch_content=False,  # type: bool
     ):
         # type: (...) -> MatchResult
@@ -365,7 +412,8 @@ class Eyes(object):
         logger.debug("check_region_in_frame_by_selector('%s')" % tag)
         return self.check(
             tag,
-            Target.region(region, frame_reference)
+            Target.region(region)
+            .frame(frame_reference)
             .stitch_content(stitch_content)
             .timeout(match_timeout),
         )
@@ -376,7 +424,6 @@ class Eyes(object):
         app_name=None,  # type: Optional[Text]
         test_name=None,  # type: Optional[Text]
         viewport_size=None,  # type: Optional[ViewPort]
-        session_type=None,  # type: Optional[SessionType]
     ):
         # type: (...) -> EyesWebDriver
         """
@@ -388,9 +435,6 @@ class Eyes(object):
         :param test_name: The test name.
         :param viewport_size: The client's viewport size (i.e.,
             the visible part of the document's body) or None to allow any viewport size.
-        :param session_type: The type of test (e.g., Progression for timing tests)
-             or Sequential by default.
-        :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
         if app_name:
@@ -399,9 +443,6 @@ class Eyes(object):
             self.configuration.test_name = test_name
         if viewport_size:
             self.configuration.viewport_size = viewport_size  # type: ignore
-        if session_type:
-            self.configuration.session_type = session_type  # type: ignore
-
         self._init_driver(driver)
         result = self._current_eyes.open(self.driver)
         self._is_opened = True

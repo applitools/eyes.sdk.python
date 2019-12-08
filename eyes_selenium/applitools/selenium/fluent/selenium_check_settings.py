@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import typing
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -19,36 +19,43 @@ from .region import (
     RegionByElement,
 )
 
-if typing.TYPE_CHECKING:
-    from typing import List, Union, Text, Tuple
+if TYPE_CHECKING:
     from applitools.common.visual_grid import VisualGridSelector
-    from applitools.common.utils.custom_types import FrameReference
+    from applitools.common.utils.custom_types import (
+        FrameReference,
+        AnyWebElement,
+        FrameNameOrId,
+        FrameIndex,
+        BySelector,
+        CssSelector,
+        FLOATING_VALUES,
+    )
+
+BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
 
 @attr.s
 class FrameLocator(object):
-    frame_element = attr.ib(default=None)
-    frame_selector = attr.ib(default=None)
-    frame_name_or_id = attr.ib(default=None)
-    frame_index = attr.ib(default=None)
-    scroll_root_selector = attr.ib(default=None)
-    scroll_root_element = attr.ib(default=None)
+    frame_element = attr.ib(default=None)  # type: AnyWebElement
+    frame_selector = attr.ib(default=None)  # type: CssSelector
+    frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
+    frame_index = attr.ib(default=None)  # type: FrameIndex
+    scroll_root_selector = attr.ib(default=None)  # type: CssSelector
+    scroll_root_element = attr.ib(default=None)  # type: AnyWebElement
 
 
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
-    scroll_root_selector = attr.ib(init=False, default=None)
-    target_selector = attr.ib(init=False, default=None)
-    target_element = attr.ib(init=False, default=None)
+    scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
+    target_selector = attr.ib(init=False, default=None)  # type: CssSelector
+    target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     # for Rendering Grid
-    BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
-    region = attr.ib(factory=list)
     selector = attr.ib(default=None)  # type: VisualGridSelector
-    script_hooks = attr.ib(factory=dict)
+    script_hooks = attr.ib(factory=dict)  # type: dict
 
     @property
     def target_provider(self):
@@ -61,20 +68,16 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     @property
     def size_mode(self):
-        target_region = self.target_region
-        target_element = self.target_element
-        stitch_content = self.stitch_content
-        target_selector = self.target_selector
-        if not target_region and not target_element and not target_selector:
-            if stitch_content:
+        if (
+            self.target_region is None
+            and self.target_selector is None
+            and self.target_element is None
+        ):
+            if self.stitch_content:
                 return "full-page"
             return "viewport"
-        if target_region:
-            if stitch_content:
-                return "region"
+        if self.target_region:
             return "region"
-        if stitch_content:
-            return "selector"
         return "selector"
 
 
@@ -94,21 +97,141 @@ def _css_selector_from_(by, value):
 
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
-    values = attr.ib(init=False)  # type: SeleniumCheckSettingsValues
+    values = attr.ib(
+        init=False, factory=SeleniumCheckSettingsValues
+    )  # type: SeleniumCheckSettingsValues
 
     _region = attr.ib(default=None)
     _frame = attr.ib(default=None)
 
-    def __attrs_post_init__(self):
-        # type: () -> None
-        self.values = SeleniumCheckSettingsValues()
-        if self._region:
-            self.region(self._region)
-        if self._frame:
-            self.frame(self._frame)
+    @overload  # noqa
+    def layout(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
 
+    @overload  # noqa
+    def layout(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def layout(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def layout(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def layout(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).layout(*region)
+
+    @overload  # noqa
+    def strict(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def strict(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).strict(*region)
+
+    @overload  # noqa
+    def content(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def content(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def content(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).content(*region)
+
+    @overload  # noqa
+    def ignore(self, *by):
+        # type: (*BySelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *element):
+        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *css_selector):
+        # type: (*CssSelector)  -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *region):
+        # type: (*Region)  -> SeleniumCheckSettings
+        pass
+
+    def ignore(self, *region):  # noqa
+        return super(SeleniumCheckSettings, self).ignore(*region)
+
+    @overload  # noqa
+    def floating(self, max_offset, region):
+        # type: (int, FLOATING_VALUES) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def floating(
+        self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
+    ):
+        # type: (FLOATING_VALUES, int, int, int, int) -> SeleniumCheckSettings
+        pass
+
+    def floating(self, *args):  # noqa
+        return super(SeleniumCheckSettings, self).floating(*args)
+
+    @overload  # noqa
     def region(self, region):
-        # type: (Union[Region, Text, List, Tuple, WebElement, EyesWebElement]) -> CheckSettings
+        # type: (Region) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, css_selector):
+        # type: (CssSelector) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def region(self, by):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    def region(self, region):  # noqa
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
@@ -122,8 +245,27 @@ class SeleniumCheckSettings(CheckSettings):
             raise TypeError("region method called with argument of unknown type!")
         return self
 
-    def frame(self, frame):
-        # type: (FrameReference) -> CheckSettings
+    @overload  # noqa
+    def frame(self, frame_name_or_id):
+        # type: (FrameNameOrId) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, index):
+        # type: (FrameIndex) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def frame(self, by):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    def frame(self, frame):  # noqa
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame
@@ -131,22 +273,31 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
             fl.frame_element = frame
+        elif is_list_or_tuple(frame):
+            by, value = frame
+            selector = _css_selector_from_(by, value)
+            fl.frame_selector = selector
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
         return self
 
+    def before_render_screenshot_hook(self, hook):
+        # type: (Text) -> SeleniumCheckSettings
+        self.values.script_hooks[BEFORE_CAPTURE_SCREENSHOT] = hook
+        return self
+
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
-            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
+            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
             sel = _css_selector_from_(by, val)
-            logger.debug("{name}: IgnoreRegionByCssSelector".format(name=method_name))
+            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionByCssSelector(sel)
         elif is_webelement(region):
-            logger.debug("{name}: IgnoreRegionByElement".format(name=method_name))
+            logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name
@@ -164,11 +315,22 @@ class SeleniumCheckSettings(CheckSettings):
         else:
             self.values.frame_chain[-1].scroll_root_element = element
 
-    def scroll_root_element(self, element_or_selector):
+    @overload  # noqa
+    def scroll_root_element(self, element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def scroll_root_element(self, selector):
+        # type: (CssSelector) -> SeleniumCheckSettings
+        pass
+
+    def scroll_root_element(self, element_or_selector):  # noqa
         if isinstance(element_or_selector, basestring):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
+        return self
 
     def _floating_provider_from(self, region, bounds):
         if is_webelement(region):

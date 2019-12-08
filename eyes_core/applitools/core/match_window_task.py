@@ -1,15 +1,14 @@
 from __future__ import absolute_import
 
-import time
 import typing
 from datetime import datetime
 
-from applitools.common import MatchResult, RunningSession, logger
+from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
 from applitools.common.errors import OutOfBoundsError
-from applitools.common.geometry import Region
+from applitools.common.geometry import Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import image_utils
+from applitools.common.utils import datetime_utils, image_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
@@ -17,7 +16,7 @@ from .fluent import CheckSettings, GetFloatingRegion, GetRegion
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Optional, Union
-    from applitools.common import FloatingMatchSettings, EyesScreenshot
+    from applitools.common import EyesScreenshot
     from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
@@ -41,10 +40,54 @@ def _collect_regions(region_providers, screenshot, eyes):
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
-    # type: (ImageMatchSettings, List[Region],List[VisualGridSelector]) -> ImageMatchSettings
+    # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
-    # TODO: implement function
+    current_counter = current_type_index = 0
+    current_type_region_count = len(region_selectors[0])
+
+    mutable_regions = [
+        [],  # Ignore Regions
+        [],  # Layout Regions
+        [],  # Strict Regions
+        [],  # Content Regions
+        [],  # Floating Regions
+        [],  # Target Element Location
+    ]
+    for region in regions:
+        can_add_region = False
+        while not can_add_region:
+            current_counter += 1
+            if current_counter > current_type_region_count:
+                current_type_index += 1
+                current_type_region_count = len(region_selectors[current_type_index])
+                current_counter = 0
+            else:
+                can_add_region = True
+        mutable_regions[current_type_index].append(region)
+
+    # location = Point.ZERO()
+
+    # If target element location available
+    # if mutable_regions[5]:
+    #     location = mutable_regions[5][0].location
+
+    image_match_settings.ignore = mutable_regions[0]
+    image_match_settings.layout = mutable_regions[1]
+    image_match_settings.strict = mutable_regions[2]
+    image_match_settings.content = mutable_regions[3]
+
+    # TODO: Implement floating regions
+    floating_match_settings = []
+    for i, reg in enumerate(mutable_regions[4]):
+        if reg.area == 0:
+            continue
+        vgs = region_selectors[4][i]
+        gfr = vgs.category
+        if isinstance(gfr, GetFloatingRegion):
+            fms = FloatingMatchSettings(reg, gfr.bounds)
+            floating_match_settings.append(fms)
+    image_match_settings.floating = floating_match_settings
     return image_match_settings
 
 
@@ -77,7 +120,7 @@ class MatchWindowTask(object):
     (including retry and 'ignore mismatch' when needed).
     """
 
-    MATCH_INTERVAL_SEC = 0.5
+    _MATCH_INTERVAL_MS = 500  # ms
 
     def __init__(
         self,
@@ -109,10 +152,12 @@ class MatchWindowTask(object):
 
     @property
     def last_screenshot(self):
+        # type: () -> EyesScreenshot
         return self._last_screenshot
 
     @property
     def last_screenshot_bounds(self):
+        # type: () -> Region
         return self._last_screenshot_bounds
 
     def match_window(
@@ -125,11 +170,11 @@ class MatchWindowTask(object):
         check_settings,  # type: CheckSettings
         retry_timeout_ms,  # type: Num
     ):
+        # type: (...) -> MatchResult
         if retry_timeout_ms is None or retry_timeout_ms < 0:
             retry_timeout_ms = self._default_retry_timeout_ms
         logger.debug("retry_timeout = {} ms".format(retry_timeout_ms))
 
-        retry_timeout_sec = retry_timeout_ms / 1000.0
         screenshot = self._take_screenshot(
             user_inputs,
             region,
@@ -137,7 +182,7 @@ class MatchWindowTask(object):
             should_run_once_on_timeout,
             ignore_mismatch,
             check_settings,
-            retry_timeout_sec,
+            retry_timeout_ms,
         )
         if ignore_mismatch:
             return self._match_result
@@ -154,9 +199,12 @@ class MatchWindowTask(object):
         eyes,  # type: EyesBase
         user_inputs=None,  # type: Optional[UserInputs]
         regions=None,  # type: Optional[List[Region]]
-        region_selectors=None,  # type: Optional[List[VisualGridSelector]]
+        region_selectors=None,  # type: Optional[List[List[VisualGridSelector]]]
         check_settings=None,  # type: Optional[CheckSettings]
+        render_id=None,  # type: Optional[Text]
     ):
+        # type: (...) -> MatchResult
+
         screenshot = app_output.screenshot
         if check_settings and screenshot:
             image_match_settings = collect_regions_from_screenshot(
@@ -179,6 +227,7 @@ class MatchWindowTask(object):
             ignore_mismatch,
             image_match_settings,
             agent_setup,
+            render_id,
         )
 
     def _perform_match(
@@ -189,7 +238,10 @@ class MatchWindowTask(object):
         ignore_mismatch,  # type: bool
         image_match_settings,  # type: ImageMatchSettings
         agent_setup,  # type: Text
+        render_id,  # type: Text
     ):
+        # type: (...) -> MatchResult
+
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
         if screenshot:
@@ -206,20 +258,24 @@ class MatchWindowTask(object):
                 force_mismatch=False,
                 force_match=False,
                 image_match_settings=image_match_settings,
+                render_id=render_id,
             ),
             app_output=app_output,
             tag=name,
             agent_setup=agent_setup,
+            render_id=render_id,
         )
         return self._server_connector.match_window(
             self._running_session, match_window_data
         )
 
     def _update_last_screenshot(self, screenshot):
+        # type: (EyesScreenshot) -> None
         if screenshot:
             self._last_screenshot = screenshot
 
     def _update_bounds(self, region):
+        # type: (Region) -> None
         if region.is_size_empty:
             if self._last_screenshot:
                 self._last_screenshot_bounds = Region(
@@ -237,52 +293,49 @@ class MatchWindowTask(object):
 
     def _take_screenshot(
         self,
-        user_inputs,
-        region,
-        tag,
-        should_run_once_on_timeout,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        should_run_once_on_timeout,  # type: bool
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout,  # type: int
     ):
+        # type: (...) -> EyesScreenshot
+
         time_start = datetime.now()
-        if retry_timeout_sec == 0 or should_run_once_on_timeout:
+        if retry_timeout == 0 or should_run_once_on_timeout:
             if should_run_once_on_timeout:
-                time.sleep(retry_timeout_sec)
+                datetime_utils.sleep(retry_timeout)
 
             screenshot = self._try_take_screenshot(
                 user_inputs, region, tag, ignore_mismatch, check_settings
             )
         else:
             screenshot = self._retry_taking_screenshot(
-                user_inputs,
-                region,
-                tag,
-                ignore_mismatch,
-                check_settings,
-                retry_timeout_sec,
+                user_inputs, region, tag, ignore_mismatch, check_settings, retry_timeout
             )
         time_end = datetime.now()
-        summary_ms = (time_end - time_start).seconds * 1000
+        summary_ms = datetime_utils.to_ms((time_end - time_start).seconds)
         logger.debug(
             "MatchWindowTask._take_screenshot completed in {} ms".format(summary_ms)
         )
         return screenshot
 
     def _try_take_screenshot(
-        self, user_inputs, region, tag, ignore_mismatch, check_settings
+        self,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
     ):
+        # type: (...) -> EyesScreenshot
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = ImageMatchSettings(
-            match_level=check_settings.values.match_level,
-            exact=None,
-            ignore_caret=check_settings.values.ignore_caret,
-            send_dom=check_settings.values.send_dom,
-            use_dom=check_settings.values.use_dom,
-            enable_patterns=check_settings.values.enable_patterns,
-            ignore_displacement=check_settings.values.ignore_displacement,
+        image_match_settings = ImageMatchSettings.create_from_check_settings(
+            check_settings
         )
         self._match_result = self.perform_match(
             app_output,
@@ -297,15 +350,17 @@ class MatchWindowTask(object):
 
     def _retry_taking_screenshot(
         self,
-        user_inputs,
-        region,
-        tag,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout_sec,  # type: int
     ):
+        # type: (...) -> EyesScreenshot
+
         start = datetime.now()  # Start the retry timer.
-        retry = (datetime.now() - start).seconds
+        retry = datetime_utils.to_ms((datetime.now() - start).seconds)
 
         # The match retry loop.
         screenshot = self._taking_screenshot_loop(
@@ -327,20 +382,22 @@ class MatchWindowTask(object):
 
     def _taking_screenshot_loop(
         self,
-        user_inputs,
-        region,
-        tag,
-        ignore_mismatch,
-        check_settings,
-        retry_timeout_sec,
-        retry_sec,
-        start,
-        screenshot=None,
+        user_inputs,  # type: UserInputs
+        region,  # type: Region
+        tag,  # type: Text
+        ignore_mismatch,  # type: bool
+        check_settings,  # type: CheckSettings
+        retry_timeout_ms,  # type: int
+        retry_ms,  # type: int
+        start,  # type: datetime
+        screenshot=None,  # type: Optional[EyesScreenshot]
     ):
-        if retry_sec >= retry_timeout_sec:
+        # type: (...) -> Optional[EyesScreenshot]
+
+        if retry_ms >= retry_timeout_ms:
             return screenshot
 
-        time.sleep(self.MATCH_INTERVAL_SEC)
+        datetime_utils.sleep(self._MATCH_INTERVAL_MS)
 
         new_screenshot = self._try_take_screenshot(
             user_inputs,
@@ -352,15 +409,15 @@ class MatchWindowTask(object):
         if self._match_result.as_expected:
             return new_screenshot
 
-        retry_sec = (start - datetime.now()).seconds
+        retry_ms = (start - datetime.now()).seconds
         return self._taking_screenshot_loop(
             user_inputs,
             region,
             tag,
             ignore_mismatch,
             check_settings,
-            retry_timeout_sec,
-            retry_sec,
+            retry_timeout_ms,
+            retry_ms,
             start,
             new_screenshot,
         )

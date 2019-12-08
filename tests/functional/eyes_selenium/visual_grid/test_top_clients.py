@@ -1,12 +1,13 @@
 import pytest
 
 from applitools.selenium import (
-    Target,
-    BatchInfo,
     BrowserType,
-    DeviceName,
-    ScreenOrientation,
     Configuration,
+    DeviceName,
+    Eyes,
+    ScreenOrientation,
+    Target,
+    logger,
 )
 
 
@@ -15,7 +16,6 @@ def sel_config(test_page_url):
     conf = Configuration()
     conf.test_name = "Top 10 websites - {}".format(test_page_url)
     conf.app_name = "Top Ten Sites"
-    conf.batch = BatchInfo("Python VisualGrid")
     conf.branch_name = "TTS - config branch"
     conf.add_browser(800, 600, BrowserType.CHROME)
     conf.add_browser(700, 500, BrowserType.FIREFOX)
@@ -29,6 +29,36 @@ def sel_config(test_page_url):
     conf.add_device_emulation(DeviceName.iPhone_X)
     conf.add_device_emulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
     return conf
+
+
+@pytest.fixture
+def eyes_vg(vg_runner, sel_config, batch_info, driver, request, test_page_url):
+    app_name = request.node.get_closest_marker("app_name")
+    if app_name:
+        app_name = app_name.args[0]
+    test_name = request.node.get_closest_marker("test_name")
+    if test_name:
+        test_name = test_name.args[0]
+    viewport_size = request.node.get_closest_marker("viewport_size")
+    if viewport_size:
+        viewport_size = viewport_size.args[0]
+    else:
+        viewport_size = None
+
+    eyes = Eyes(vg_runner)
+    eyes.server_url = "https://eyes.applitools.com/"
+    eyes.configuration = sel_config
+    eyes.configuration.batch = batch_info
+    app_name = app_name or eyes.configuration.app_name
+    test_name = test_name or eyes.configuration.test_name
+    viewport_size = viewport_size or eyes.configuration.viewport_size
+
+    driver.get(test_page_url)
+    eyes.open(driver, app_name, test_name, viewport_size)
+    yield eyes
+    logger.debug("closing WebDriver for url {}".format(test_page_url))
+    eyes.close()
+    # TODO: print VG test results
 
 
 @pytest.mark.parametrize(

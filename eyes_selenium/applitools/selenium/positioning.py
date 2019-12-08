@@ -6,7 +6,7 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.common import EyesError, Point, logger
 from applitools.common.geometry import RectangleSize
-from applitools.core import PositionProvider, PositionMomento
+from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
 
@@ -48,22 +48,10 @@ class SeleniumPositionProvider(PositionProvider):
         self._data_attribute_added = False
         logger.debug("Creating {}".format(self.__class__.__name__))
 
-    def __enter__(self):
-        # type: () -> SeleniumPositionProvider
-        if self._driver.is_mobile_app:
-            return self
-        return super(SeleniumPositionProvider, self).__enter__()
-
-    def __exit__(
-        self,
-        exc_type,  # type: Optional[Any]
-        exc_val,  # type: Optional[Any]
-        exc_tb,  # type: Optional[Any]
-    ):
-        # type: (...) -> Union[CSSTranslatePositionProvider, ScrollPositionProvider]
-        if self._driver.is_mobile_app:
-            return self
-        return super(SeleniumPositionProvider, self).__exit__(exc_type, exc_val, exc_tb)
+    def __eq__(self, other):
+        if self.__class__ is other.__class__:
+            return self._scroll_root_element == other._scroll_root_element
+        return False
 
     def get_entire_size(self):
         # type: () -> RectangleSize
@@ -97,76 +85,70 @@ class SeleniumPositionProvider(PositionProvider):
 
 
 class ScrollPositionProvider(SeleniumPositionProvider):
-    _JS_GET_CURRENT_SCROLL_POSITION = """
-var doc = document.documentElement;
-var x = window.scrollX || ((window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0));
-var y = window.scrollY || ((window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0));
-return [x, y]"""
-
     def set_position(self, location):
         # type: (Point) -> Point
         logger.debug(
             "setting position of %s to %s" % (location, self._scroll_root_element)
         )
-        if self._driver.is_mobile_web:
-            scroll_command = "window.scrollTo({0}, {1})".format(location.x, location.y)
-            self._driver.execute_script(scroll_command)
-            self._last_set_position = location
-            return self._last_set_position
-        else:
-            scroll_command = (
-                "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
-                "return (arguments[0].scrollLeft+';'+arguments["
-                "0].scrollTop);" % (location.x, location.y)
-            )
-        self._last_set_position = eyes_selenium_utils.parse_location_string(  # type: ignore
+
+        scroll_command = (
+            "arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; "
+            "return (arguments[0].scrollLeft+';'+arguments["
+            "0].scrollTop);" % (location["x"], location["y"])
+        )
+        self._last_set_position = eyes_selenium_utils.parse_location_string(
             self._driver.execute_script(scroll_command, self._scroll_root_element)
         )
         self._add_data_attribute_to_element()
         return self._last_set_position
-
-    @staticmethod
-    def get_current_position_static(driver, scroll_root_element):
-        # type: (EyesWebDriver, AnyWebElement) -> Point
-        element = eyes_selenium_utils.get_underlying_webelement(scroll_root_element)
-        xy = driver.execute_script(
-            "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
-        )
-        return eyes_selenium_utils.parse_location_string(xy)
 
     def get_current_position(self):
         # type: () -> Point
         """
         The scroll position of the current frame.
         """
-        if self._driver.is_mobile_web:
-            x, y = self._driver.execute_script(
-                self._JS_GET_CURRENT_SCROLL_POSITION, self._scroll_root_element
-            )
-            if x is None or y is None:
-                raise EyesError("Got None as scroll position! ({},{})".format(x, y))
-            return Point(x, y)
-        return self.get_current_position_static(self._driver, self._scroll_root_element)
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
 
 
 class CSSTranslatePositionProvider(SeleniumPositionProvider):
     def __init__(self, driver, scroll_root_element):
         # type: (EyesWebDriver, AnyWebElement) -> None
+        self._last_set_position = Point.ZERO()
         super(CSSTranslatePositionProvider, self).__init__(driver, scroll_root_element)
 
     def get_current_position(self):
         # type: () -> Optional[Point]
-        return self._last_set_position
+        if self._last_set_position:
+            return self._last_set_position
+
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
 
     def set_position(self, location):
         # type: (Point) -> Point
         logger.info(
             "CssTranslatePositionProvider - Setting position to: {}".format(location)
         )
+        negated_location = -location
+
+        # fix for CSS stitching in Chrome 78
         self._driver.execute_script(
             (
-                "document.documentElement.style.transform='translate(-{:d}px,"
-                "-{:d}px';".format(location.x, location.y)
+                "arguments[0].style.transform='translate(10px,-{:d}px';".format(
+                    -location.y
+                )
+            ),
+            self._scroll_root_element,
+        )
+
+        self._driver.execute_script(
+            (
+                "arguments[0].style.transform='translate({:d}px,{:d}px';".format(
+                    negated_location["x"], negated_location["y"]
+                )
             ),
             self._scroll_root_element,
         )
@@ -174,19 +156,16 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
         self._add_data_attribute_to_element()
         return self._last_set_position
 
-    def push_state(self):
-        """
-        Adds the transform to the states list.
-        """
-        transform = self._driver.execute_script(
+    def get_state(self):
+        # type: () -> PositionMemento
+        state = super(CSSTranslatePositionProvider, self).get_state()
+        state.transform = self._driver.execute_script(
             "return arguments[0].style.transform;", self._scroll_root_element
         )
-        self._states.append(
-            PositionMomento(position=self._last_set_position, transform=transform)
-        )
+        return state
 
-    def pop_state(self):
-        state = self._states.pop()
+    def restore_state(self, state):
+        # type: (PositionMemento) -> None
         self._driver.execute_script(
             """\
             var originalTransform = arguments[0].style.transform;\
@@ -196,7 +175,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             ),
             self._scroll_root_element,
         )
-        self._last_set_position = state.position
+        self._last_set_position = None
 
 
 class ElementPositionProvider(SeleniumPositionProvider):
@@ -215,10 +194,10 @@ class ElementPositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
         # type: (Point) -> Point
         logger.debug("Scrolling element to {}".format(location))
-        self._last_set_position = self._element.scroll_to(location)
+        position = self._element.scroll_to(location)
         logger.debug("Done scrolling element!")
         self._add_data_attribute_to_element()
-        return self._last_set_position
+        return position
 
     def get_entire_size(self):
         try:

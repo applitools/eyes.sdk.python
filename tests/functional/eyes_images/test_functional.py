@@ -53,7 +53,6 @@ def test_check_image_with_ignore_region_fluent(eyes):
 
 
 def test_check_image_fluent_cut_provider(eyes):
-    eyes.is_debug_screenshot_provided = True
     eyes.open("images", "TestCheckImage_Fluent_CutProvider")
     eyes.cut_provider = UnscaledFixedCutProvider(200, 100, 100, 50)
     eyes.check(

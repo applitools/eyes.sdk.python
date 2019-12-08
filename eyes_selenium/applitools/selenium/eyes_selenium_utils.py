@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import time
 import typing as tp
 from contextlib import contextmanager
 
@@ -10,9 +9,11 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger
+from applitools.common.utils import datetime_utils
 
 if tp.TYPE_CHECKING:
-    from typing import Text, Optional, Any, Union, Iterator
+    from typing import Text, Optional, Any, Union, Generator, Dict
+    from applitools.core import PositionProvider
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
@@ -101,7 +102,7 @@ _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
-_SLEEP_SEC = 1
+_SLEEP_MS = 1000
 _RETRIES = 3
 
 
@@ -128,6 +129,10 @@ def is_mobile_web(driver):
     if is_mobile and browser_name:
         return True
     return False
+
+
+def is_android(driver):
+    return "android" in driver.desired_capabilities.get("platformName", "").lower()
 
 
 def is_mobile_app(driver):
@@ -191,19 +196,8 @@ def get_viewport_size(driver):
 
     :param driver: The webdriver to use for getting the viewport size.
     """
-
-    if is_mobile_app(driver):
-        # it's expected that on mobile app windows size required and attempt
-        # to get viewport size with JS would raise an exception so just return
-        # windows size directly in this case
-        return get_window_size(driver)
-
-    try:
-        width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
-        return RectangleSize(width=width, height=height)
-    except WebDriverException:
-        logger.warning("Failed to get viewport size. Only window size is available")
-        return get_window_size(driver)
+    width, height = driver.execute_script(_JS_GET_VIEWPORT_SIZE)
+    return RectangleSize(width=width, height=height)
 
 
 def get_window_size(driver):
@@ -228,7 +222,7 @@ def set_browser_size(driver, required_size):
     while True:
         logger.info("Trying to set browser size to: " + str(required_size))
         set_window_size(driver, required_size)
-        time.sleep(_SLEEP_SEC)
+        datetime_utils.sleep(_SLEEP_MS)
         current_size = get_window_size(driver)
         logger.info("Current browser size: " + str(required_size))
 
@@ -349,7 +343,7 @@ def return_to_original_overflow(driver, root_element, origin_overflow):
 def set_overflow(driver, overflow, root_element):
     # type: (EyesWebDriver, Text, AnyWebElement) -> Optional[Text]
     root_element = get_underlying_webelement(root_element)
-    with timeout(0.1):
+    with timeout(100):
         try:
             return driver.execute_script(
                 _JS_SET_OVERFLOW % (overflow, overflow), root_element
@@ -385,9 +379,9 @@ def add_data_scroll_to_element(driver, element):
 
 
 @contextmanager
-def timeout(timeout):
-    # type: (Num) -> Iterator
-    time.sleep(timeout)
+def timeout(timeout_ms):
+    # type: (Num) -> Generator
+    datetime_utils.sleep(timeout_ms)
     yield
 
 
@@ -404,7 +398,7 @@ def is_landscape_orientation(driver):
             original_context = appium_driver.context
             if (
                 len(appium_driver.contexts) > 1
-                and not original_context.uppar() == "NATIVE_APP"
+                and not original_context.upper() == "NATIVE_APP"
             ):
                 appium_driver.switch_to.context("NATIVE_APP")
             else:
@@ -427,12 +421,13 @@ def is_landscape_orientation(driver):
 def get_viewport_size_or_display_size(driver):
     logger.debug("get_viewport_size_or_display_size()")
 
-    try:
-        return get_viewport_size(driver)
-    except Exception as e:
-        logger.warning(
-            "Failed to extract viewport size using Javascript: {}".format(str(e))
-        )
+    if not is_mobile_app(driver):
+        try:
+            return get_viewport_size(driver)
+        except Exception as e:
+            logger.warning(
+                "Failed to extract viewport size using Javascript: {}".format(str(e))
+            )
     # If we failed to extract the viewport size using JS, will use the
     # window size instead.
 
@@ -451,7 +446,9 @@ def get_viewport_size_or_display_size(driver):
 
 
 def parse_location_string(position):
-    # type: (Text) -> Point
+    # type: (Union[Text, Dict]) -> Point
+    if isinstance(position, dict):
+        return Point.from_(position)
     xy = position.split(";")
     if len(xy) != 2:
         raise WebDriverException("Could not get scroll position!")
@@ -465,6 +462,14 @@ def get_current_position(driver, element):
         "return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", element
     )
     return parse_location_string(xy)
+
+
+@contextmanager
+def get_and_restore_state(position_provider):
+    # type: (PositionProvider)-> Generator
+    state = position_provider.get_state()
+    yield state
+    position_provider.restore_state(state)
 
 
 def scroll_root_element_from(driver, container=None):
@@ -493,7 +498,7 @@ def scroll_root_element_from(driver, container=None):
     return scroll_root_element
 
 
-def current_frame_scroll_root_element(driver, scroll_root_element=None):
+def curr_frame_scroll_root_element(driver, scroll_root_element=None):
     # type: (EyesWebDriver, Optional[AnyWebElement]) -> EyesWebElement
     fc = driver.frame_chain.clone()
     cur_frame = fc.peek
@@ -522,9 +527,9 @@ def get_updated_scroll_position(position_provider):
     try:
         sp = position_provider.get_current_position()
         if not sp:
-            sp = Point.zero()
+            sp = Point.ZERO()
     except WebDriverException:
-        sp = Point.zero()
+        sp = Point.ZERO()
 
     return sp
 
@@ -534,12 +539,12 @@ def get_default_content_scroll_position(current_frames, driver):
     if current_frames.size == 0:
 
         scroll_position = get_current_position(
-            driver, current_frame_scroll_root_element(driver)
+            driver, curr_frame_scroll_root_element(driver)
         )
     else:
-        current_fc = driver.eyes.original_frame_chain
+        current_fc = driver.eyes.original_fc
         with driver.switch_to.frames_and_back(current_fc):
             scroll_position = get_current_position(
-                driver, current_frame_scroll_root_element(driver)
+                driver, curr_frame_scroll_root_element(driver)
             )
     return scroll_position

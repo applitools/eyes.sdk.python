@@ -46,9 +46,13 @@ def eyes(request):
 
 
 def test_set_get_scale_ratio(eyes):
+    eyes.scale_ratio = 2.0
     if not eyes._is_visual_grid_eyes:
-        eyes.scale_ratio = 2.0
         assert eyes.scale_ratio == 2.0
+    else:
+        assert eyes.scale_ratio == 0
+
+    if not eyes._is_visual_grid_eyes:
         eyes.scale_ratio = None
         assert eyes.scale_ratio == NullScaleProvider.UNKNOWN_SCALE_RATIO
 
@@ -147,3 +151,14 @@ def test_check_without_open_call(eyes):
 
 def test_eyes_base_abort(eyes):
     eyes.abort()
+
+
+def test_rotation(driver_mock):
+    eyes = Eyes()
+    eyes.rotation = 2
+    assert eyes.rotation is None
+
+    open_and_get_start_session_info(eyes, driver_mock)
+    eyes.rotation = 2
+    assert eyes.rotation == 2
+    assert eyes._driver.rotation == 2

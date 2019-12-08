@@ -1,7 +1,6 @@
 from enum import Enum
 
 import attr
-
 from ua_parser import user_agent_parser
 
 __all__ = ("parse_user_agent_string", "BrowserNames", "OSNames", "UserAgent")
@@ -56,12 +55,13 @@ class BrowserNames(Enum):
     HeadlessChrome = "HeadlessChrome"
     Safari = "Safari"
     Chromium = "Chromium"
+    MobileSafari = "Mobile Safari"
 
 
 class OSNames(Enum):
     Unknown = "Unknown"
     Windows = "Windows"
-    IOS = "IOS"
+    IOS = "iOS"
     Macintosh = "Macintosh"
     ChromeOS = "ChromeOS"
     Android = "Android"

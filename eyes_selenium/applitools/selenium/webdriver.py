@@ -26,6 +26,7 @@ if typing.TYPE_CHECKING:
     from typing import Generator, Text, Optional, List, Dict, Any
     from applitools.common.utils.custom_types import ViewPort, FrameReference
     from .eyes import Eyes
+    from PIL.Image import Image
 
 
 @attr.s
@@ -80,6 +81,7 @@ class _EyesSwitchTo(object):
     """
 
     PARENT_FRAME = 1
+    _position_memento = None
 
     def __init__(self, driver, switch_to):
         # type: (EyesWebDriver, SwitchTo) -> None
@@ -92,7 +94,7 @@ class _EyesSwitchTo(object):
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
-            driver, eyes_selenium_utils.current_frame_scroll_root_element(driver)
+            driver, eyes_selenium_utils.curr_frame_scroll_root_element(driver)
         )
 
     @contextlib.contextmanager
@@ -158,7 +160,7 @@ class _EyesSwitchTo(object):
         """
         Switch to default content.
         """
-        self._driver.frame_chain.clear()
+        del self._driver.frame_chain[:]
         self._switch_to.default_content()
 
     def parent_frame(self):
@@ -175,7 +177,7 @@ class _EyesSwitchTo(object):
         """
         Switch to window.
         """
-        self._driver.frame_chain.clear()
+        del self._driver.frame_chain[:]
         self._switch_to.window(window_name)
 
     def will_switch_to_frame(self, target_frame):
@@ -186,23 +188,22 @@ class _EyesSwitchTo(object):
         :param target_frame: The element about to be switched to.
         """
         argument_guard.not_none(target_frame)
-        pl = target_frame.location
 
         size_and_borders = target_frame.size_and_borders
         borders = size_and_borders.borders
         frame_inner_size = size_and_borders.size
+        bounds = target_frame.bounding_client_rect
 
-        content_location = Point(pl["x"] + borders["left"], pl["y"] + borders["top"])
-        sp = ScrollPositionProvider(
-            self._driver, self._driver.find_element_by_tag_name("html")
+        content_location = Point(
+            bounds["x"] + borders["left"], bounds["y"] + borders["top"]
         )
-        original_location = sp.get_current_position()
-        sp.set_position(original_location)
+        original_location = target_frame.scroll_location
+
         frame = Frame(
-            target_frame,
-            content_location,
-            target_frame.size,
-            frame_inner_size,
+            reference=target_frame,
+            location=content_location,
+            outer_size=RectangleSize.from_(target_frame.size),
+            inner_size=RectangleSize.from_(frame_inner_size),
             parent_scroll_position=original_location,
         )
         self._driver.frame_chain.push(frame)
@@ -217,12 +218,12 @@ class _EyesSwitchTo(object):
             for frame in frame_chain_parent:
                 switch_to.frame(frame.reference)
 
+    @contextlib.contextmanager
     def frames_do_scroll(self, frame_chain):
         self.default_content()
-        root_element = eyes_selenium_utils.current_frame_scroll_root_element(
-            self._driver
-        )
+        root_element = eyes_selenium_utils.curr_frame_scroll_root_element(self._driver)
         scroll_provider = ScrollPositionProvider(self._driver, root_element)
+        self._position_memento = scroll_provider.get_state()
         for frame in frame_chain:
             logger.debug("Scrolling by parent scroll position...")
             frame_location = frame.location
@@ -236,8 +237,9 @@ class _EyesSwitchTo(object):
         return self._driver
 
     def reset_scroll(self):
-        if self._scroll_position.states:
-            self._scroll_position.pop_state()
+        if self._position_memento:
+            self._scroll_position.restore_state(self._position_memento)
+            self._position_memento = None
 
 
 @proxy_to(
@@ -270,6 +272,7 @@ class _EyesSwitchTo(object):
         "location",
         "orientation",
         "file_detector",
+        "session_id",
     ],
 )
 class EyesWebDriver(object):
@@ -301,22 +304,12 @@ class EyesWebDriver(object):
         self._default_content_viewport_size = None  # type: Optional[ViewPort]
 
         self.driver_takes_screenshot = driver.capabilities.get("takesScreenshot", False)
+        self.rotation = None
 
     @property
     def eyes(self):
         # type: () -> Eyes
         return self._eyes
-
-    def get_display_rotation(self):
-        # type: () -> int
-        """
-        Get the rotation of the screenshot.
-
-        :return: The rotation of the screenshot we get from the webdriver in (degrees).
-        """
-        if self.platform_name == "Android" and self._driver.orientation == "LANDSCAPE":
-            return -90
-        return 0
 
     @cached_property
     def platform_name(self):
@@ -351,6 +344,45 @@ class EyesWebDriver(object):
     def is_mobile_app(self):
         return eyes_selenium_utils.is_mobile_app(self._driver)
 
+    @staticmethod
+    def normalize_rotation(driver, image, rotation):
+        # type: (WebDriver, Image, Optional[int]) -> Image
+        """
+        Rotates the image as necessary. The rotation is either manually forced
+        by passing a non-null rotation, or automatically inferred.
+
+        :param driver: The underlying driver which produced the screenshot.
+        :param image: The image to normalize.
+        :param rotation: The degrees by which to rotate the image:
+                         positive values = clockwise rotation,
+                         negative values = counter-clockwise,
+                         0 = force no rotation,
+                         null = rotate automatically as needed.
+        :return: A normalized image.
+        """
+        argument_guard.not_none(driver)
+        argument_guard.not_none(image)
+        normalized_image = image
+        if rotation and rotation != 0:
+            argument_guard.is_a(rotation, int)
+            normalized_image = image_utils.rotate_image(image, rotation)
+        else:  # Do automatic rotation if necessary
+            try:
+                logger.info("Trying to automatically normalize rotation...")
+                if (
+                    eyes_selenium_utils.is_mobile_app(driver)
+                    and eyes_selenium_utils.is_landscape_orientation(driver)
+                    and image.height > image.width
+                ):
+                    # For Android, we need to rotate images to the right,
+                    # and for iOS to the left.
+                    degree = 90 if eyes_selenium_utils.is_android(driver) else -90
+                    normalized_image = image_utils.rotate_image(image, degree)
+            except Exception as e:
+                logger.exception(e)
+                logger.info("Skipped automatic rotation handling.")
+        return normalized_image
+
     def get(self, url):
         # type: (Text) -> Optional[Any]
         """
@@ -360,7 +392,7 @@ class EyesWebDriver(object):
         :return: A driver that navigated to the given url.
         """
         # We're loading a new page, so the frame location resets
-        self._frame_chain.clear()
+        del self._frame_chain[:]
         return self._driver.get(url)
 
     def find_element(self, by=By.ID, value=None):
@@ -549,18 +581,9 @@ class EyesWebDriver(object):
            which is useful in embedded images in HTML.
         """
         screenshot64 = self._driver.get_screenshot_as_base64()
-        display_rotation = self.get_display_rotation()
-        if display_rotation != 0:
-            logger.info("Rotation required.")
-            # num_quadrants = int(-(display_rotation / 90))
-            logger.debug("Done! Creating image object...")
-            screenshot = image_utils.image_from_base64(screenshot64)
-
-            # rotating
-            if display_rotation == -90:
-                screenshot64 = image_utils.get_base64(screenshot.rotate(90))
-            logger.debug("Done! Rotating...")
-
+        screenshot = image_utils.image_from_base64(screenshot64)
+        screenshot = self.normalize_rotation(self._driver, screenshot, self.rotation)
+        screenshot64 = image_utils.get_base64(screenshot)
         return screenshot64
 
     def extract_full_page_width(self):
@@ -664,12 +687,15 @@ class EyesWebDriver(object):
         """
         return self._frame_chain
 
-    def get_default_content_viewport_size(self, force_query=False):
+    def get_default_content_viewport_size(self, force_query=True):
         # type: (bool) -> ViewPort
         """
-        Gets the viewport size.
+        Args:
+            force_query: If true, we will perform the query even if we have a cached
+                         viewport size.
 
-        :return: The viewport size of the most outer frame.
+        Returns:
+            The viewport size of the default content (outer most frame).
         """
         if self._default_content_viewport_size and not force_query:
             return self._default_content_viewport_size

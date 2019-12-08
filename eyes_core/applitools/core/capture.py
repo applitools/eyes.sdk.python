@@ -7,7 +7,8 @@ from applitools.common import AppOutput, EyesScreenshot, Point, Region
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
-    from typing import Optional
+    from PIL.Image import Image
+    from typing import Optional, Callable
     from applitools.core import CheckSettings, EyesBase
 
     T = typing.TypeVar("T", bound=CheckSettings)
@@ -29,7 +30,7 @@ class AppOutputWithScreenshot(object):
 
 @attr.s
 class AppOutputProvider(object):
-    method = attr.ib()
+    method = attr.ib()  # type: Callable
 
     def get_app_output(self, region, last_screenshot, check_settings):
         # type: (Region, EyesScreenshot, T) -> AppOutputWithScreenshot
@@ -43,6 +44,7 @@ class EyesScreenshotFactory(ABC):
 
     @abstractmethod
     def make_screenshot(self, image):
+        # type: (Image) -> EyesScreenshot
         pass
 
 
@@ -56,4 +58,5 @@ class ImageProvider(ABC):
 
     @abstractmethod
     def get_image(self):
+        # type: () -> Image
         pass

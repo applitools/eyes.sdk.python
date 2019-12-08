@@ -3,15 +3,8 @@ from __future__ import absolute_import
 import abc
 import typing
 
-from applitools.common import (
-    AppOutput,
-    BatchInfo,
-    Configuration,
-    RectangleSize,
-    Region,
-    RunningSession,
-    logger,
-)
+from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
+from applitools.common.config import BatchInfo, Configuration
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
@@ -26,8 +19,8 @@ from applitools.common.utils import ABC, argument_guard, general_utils
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
-    NullCutProvider,
     FixedCutProvider,
+    NullCutProvider,
     UnscaledFixedCutProvider,
 )
 from applitools.core.debug import (
@@ -80,14 +73,14 @@ class _EyesBaseAbstract(ABC):
         pass
 
     @abc.abstractmethod
-    def get_viewport_size_static(self):
+    def get_viewport_size(self):
         # type: () -> RectangleSize
         """
         :return: The viewport size of the AUT.
         """
 
     @abc.abstractmethod
-    def set_viewport_size_static(self, size):
+    def set_viewport_size(self, size):
         # type: (ViewPort) -> None
         """
         :param size: The required viewport size.
@@ -124,7 +117,7 @@ class _EyesBaseAbstract(ABC):
 
 
 class EyesBase(_EyesBaseAbstract):
-    MAX_ITERATION = 10
+    _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
     _last_screenshot = None  # type: Optional[EyesScreenshot]
@@ -180,21 +173,21 @@ class EyesBase(_EyesBaseAbstract):
         return self._cut_provider
 
     @cut_provider.setter
-    def cut_provider(self, provider):
-        # type: (Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]) -> None
+    def cut_provider(self, cutprovider):
+        # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         argument_guard.is_in(
-            provider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
+            cutprovider, [FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         )
-        self._cut_provider = provider
+        self._cut_provider = cutprovider
 
     @property
-    def is_debug_screenshot_provided(self):
+    def _debug_screenshot_provided(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
         return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
 
-    @is_debug_screenshot_provided.setter
-    def is_debug_screenshot_provided(self, save):
+    @_debug_screenshot_provided.setter
+    def _debug_screenshot_provided(self, save):
         # type: (bool) -> None
         prev = self._debug_screenshot_provider
         if save:
@@ -222,14 +215,14 @@ class EyesBase(_EyesBaseAbstract):
         )
         return app_env
 
-    @property
-    def configuration(self):
+    def get_configuration(self):
         return self._config_provider
 
-    @configuration.setter
-    def configuration(self, value):
+    def set_configuration(self, configuration):
         # type:(Configuration) -> None
-        self._config_provider = value
+        self._config_provider = configuration
+
+    configuration = property(get_configuration, set_configuration)
 
     @property
     def scale_ratio(self):
@@ -237,10 +230,10 @@ class EyesBase(_EyesBaseAbstract):
         return self._scale_provider.scale_ratio
 
     @scale_ratio.setter
-    def scale_ratio(self, value):
+    def scale_ratio(self, scale_ratio):
         # type: (float) -> None
-        if value:
-            self._scale_provider = FixedScaleProvider(value)
+        if scale_ratio:
+            self._scale_provider = FixedScaleProvider(scale_ratio)
         else:
             self._scale_provider = NullScaleProvider()
 
@@ -283,15 +276,45 @@ class EyesBase(_EyesBaseAbstract):
         self.configuration.properties.append({"name": name, "value": value})
 
     def clear_properties(self):
-        self.configuration.properties.clear()
+        del self.configuration.properties[:]
 
     @property
-    def is_opened(self):
+    def is_open(self):
         # type: () -> bool
         """
         Returns whether the session is currently running.
         """
         return self._is_opened
+
+    @staticmethod
+    def log_session_results_and_raise_exception(raise_ex, results):
+        logger.info("close(): %s" % results)
+        results_url = results.url
+        scenario_id_or_name = results.name
+        app_id_or_name = results.app_name
+        if results.is_unresolved:
+            if results.is_new:
+                logger.info(
+                    "--- New test ended. \n\tPlease approve the new baseline at {}".format(
+                        results_url
+                    )
+                )
+                if raise_ex:
+                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
+            else:
+                logger.info(
+                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
+                )
+                if raise_ex:
+                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
+        elif results.is_failed:
+            logger.info(
+                "--- Failed test ended. \n\tSee details at {}".format(results_url)
+            )
+            if raise_ex:
+                raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+        # Test passed
+        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -333,50 +356,7 @@ class EyesBase(_EyesBaseAbstract):
             )
             results.is_new = is_new_session
             results.url = results_url
-            logger.info("close(): %s" % results)
-
-            if results.is_unresolved:
-                if results.is_new:
-                    instructions = "Please approve the new baseline at " + results_url
-                    logger.info("--- New test ended. " + instructions)
-                    if raise_ex or self.configuration.fail_on_new_test:
-                        message = "'%s' of '%s'. %s" % (
-                            self._session_start_info.scenario_id_or_name,
-                            self._session_start_info.app_id_or_name,
-                            instructions,
-                        )
-                        raise NewTestError(message, results)
-                else:
-                    logger.info(
-                        "--- Failed test ended. \n\tSee details at {}".format(
-                            results_url
-                        )
-                    )
-                    if raise_ex:
-                        raise DiffsFoundError(
-                            "Test '{}' of '{}' detected differences! "
-                            "\n\tSee details at: {}".format(
-                                self._session_start_info.scenario_id_or_name,
-                                self._session_start_info.app_id_or_name,
-                                results_url,
-                            ),
-                            results,
-                        )
-            elif results.is_failed:
-                logger.info(
-                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
-                )
-                if raise_ex:
-                    raise TestFailedError(
-                        "Test '{}' of '{}'. \n\tSee details at: {}".format(
-                            self._session_start_info.scenario_id_or_name,
-                            self._session_start_info.app_id_or_name,
-                            results_url,
-                        ),
-                        results,
-                    )
-            # Test passed
-            logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
+            self.log_session_results_and_raise_exception(raise_ex, results)
 
             return results
         finally:
@@ -490,7 +470,7 @@ class EyesBase(_EyesBaseAbstract):
         self._log_open_base()
 
         retry = 0
-        while retry < self.MAX_ITERATION:
+        while retry < self._MAX_ITERATIONS:
             try:
                 self._validate_session_open()
                 self._init_providers()
@@ -517,15 +497,13 @@ class EyesBase(_EyesBaseAbstract):
         raise EyesError("eyes.open_base() failed")
 
     def _validate_session_open(self):
-        if self.is_opened:
+        if self.is_open:
             self.abort()
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
-        logger.debug(
-            "Eyes server URL is '{}'".format(self._server_connector.server_url)
-        )
-        logger.debug("Timeout = {} ms".format(self.configuration.timeout))
+        logger.debug("Eyes server URL is '{}'".format(self.configuration.server_url))
+        logger.debug("Timeout = {} ms".format(self.configuration._timeout))
         logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(
@@ -582,7 +560,7 @@ class EyesBase(_EyesBaseAbstract):
     def _reset_last_screenshot(self):
         # type: () -> None
         self._last_screenshot = None
-        self._user_inputs = []  # type: UserInputs
+        del self._user_inputs[:]
 
     def _ensure_running_session(self):
         if self._running_session:
@@ -608,10 +586,7 @@ class EyesBase(_EyesBaseAbstract):
         logger.info("Done getting screenshot!")
         if not region.is_size_empty:
             screenshot = screenshot.sub_screenshot(region)
-            self._debug_screenshot_provider.save(screenshot.image, "SUB_SCREENSHOT")
-
-        title = self._title
-        logger.info("Done getting title")
+            self._debug_screenshot_provider.save(screenshot.image, "sub_screenshot")
 
         if not self._dom_url and (
             self.configuration.send_dom or check_settings.values.send_dom
@@ -620,7 +595,9 @@ class EyesBase(_EyesBaseAbstract):
             self._dom_url = self._try_post_dom_snapshot(dom_json)
             logger.info("dom_url: {}".format(self._dom_url))
 
-        app_output = AppOutput(title=title, screenshot64=None, dom_url=self._dom_url)
+        app_output = AppOutput(
+            title=self._title, screenshot64=None, dom_url=self._dom_url
+        )
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done")
         return result
@@ -695,6 +672,23 @@ class EyesBase(_EyesBaseAbstract):
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
+        check_settings = self._process_check_settings_values(check_settings)
+
+        region = region_provider.get_region()
+        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
+
+        result = self._match_window_task.match_window(
+            self._user_inputs,
+            region,
+            tag,
+            self._should_match_once_on_timeout,
+            ignore_mismatch,
+            check_settings,
+            retry_timeout_ms,
+        )
+        return result
+
+    def _process_check_settings_values(self, check_settings):
         get_config_value = general_utils.use_default_if_none_factory(
             self.configuration.default_match_settings, self.configuration
         )
@@ -713,24 +707,11 @@ class EyesBase(_EyesBaseAbstract):
             check_settings = check_settings.ignore_caret(
                 get_config_value("enable_patterns")
             )
-        if check_settings.values.ignore_displacement is None:
-            check_settings = check_settings.ignore_displacement(
-                self.configuration.default_match_settings.ignore_displacement
+        if check_settings.values.ignore_displacements is None:
+            check_settings = check_settings.ignore_displacements(
+                self.configuration.default_match_settings.ignore_displacements
             )
-
-        region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {})".format(region, tag, retry_timeout_ms))
-
-        result = self._match_window_task.match_window(
-            self._user_inputs,
-            region,
-            tag,
-            self._should_match_once_on_timeout,
-            ignore_mismatch,
-            check_settings,
-            retry_timeout_ms,
-        )
-        return result
+        return check_settings
 
     def __ensure_viewport_size(self):
         # type: () -> None
