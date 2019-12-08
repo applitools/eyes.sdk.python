@@ -7,6 +7,7 @@
 - Capturing iframe's with VG [Trello 1356](https://trello.com/c/J5so3FDN)
 - VG test don't run correctly with multiple Eyes [Trello 1329](https://trello.com/c/6KHE8FAO)
 ### Added
+- Match region support in VG
 - Check region support in VisualGrid client [Trello 1360](https://trello.com/c/rFOwfgwA)
 - DomCapture 7.0.22, DomSnapshot 1.4.8 [Trello 1227](https://trello.com/c/d5hmB3gG)
 - ClassicRunner [Trello 1093](https://trello.com/c/DxBia1UC)

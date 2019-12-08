@@ -1,5 +1,7 @@
 import pytest
+from mock import patch
 
+from applitools.common import FloatingBounds, FloatingMatchSettings, MatchWindowData
 from applitools.selenium import Region, StitchMode, Target
 
 pytestmark = [
@@ -33,7 +35,7 @@ def test_check_region_with_ignore_region__fluent(eyes_opened):
     )
 
 
-def test_check_check_window__fluent(eyes_opened):
+def test_check_window__fluent(eyes_opened):
     eyes_opened.check("Fluent - Window", Target.window())
 
 
@@ -81,11 +83,6 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
         "Fluent - Region by element - fully",
         Target.region(element).ignore(ignore_element),
     )
-
-
-def test_check_element_fluent(eyes_opened):
-    element = eyes_opened.driver.find_element_by_id("overflowing-div-image")
-    eyes_opened.check("Fluent - Region by element - fully", Target.region(element))
 
 
 def test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent(
@@ -159,14 +156,12 @@ def test_check_window_with_ignore_by_selector__centered__fluent(eyes_opened):
         "Fluent - Window with ignore region by selector centered",
         Target.window().ignore("#centered"),
     )
-    # TODO: setExpectedIgnoreRegions(new Region(122, 928, 456, 306))
 
 
 def test_check_window_with_ignore_by_selector__stretched__fluent(eyes_opened):
     eyes_opened.check(
         "Fluent - Window with ignore region by selector stretched",
-        Target.region("#stretched"),
-        # TODO: add analog setExpectedIgnoreRegions(new Region(8, 1270, 690, 206))
+        Target.window().ignore("#stretched"),
     )
 
 
@@ -181,10 +176,9 @@ def test_simple_region(eyes_opened):
     eyes_opened.check("Simple Region", Target.window().region(Region(50, 50, 100, 100)))
 
 
-@pytest.mark.parametrize("ignore_displacements", [True])
+@pytest.mark.parametrize("ignore_displacements", [True, False])
 def test_ignore_displacements(eyes_opened, ignore_displacements):
     eyes_opened.check(
         "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
         Target.window().ignore_displacements(ignore_displacements).fully(),
     )
-    # TODO: add analog addExpectedProperty("IgnoreDisplacements", ignoreDisplacements)

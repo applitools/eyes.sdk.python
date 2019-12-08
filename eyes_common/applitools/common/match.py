@@ -41,9 +41,15 @@ class MatchLevel(Enum):
 
 @attr.s
 class MatchResult(object):
-    as_expected = attr.ib(default=None)  # type: Optional[bool]
-    window_id = attr.ib(default=None)  # type: Optional[Text]
-    screenshot = attr.ib(default=None)  # type: Optional[EyesScreenshot]
+    as_expected = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
+    window_id = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    screenshot = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[EyesScreenshot]
 
 
 @attr.s
@@ -140,8 +146,11 @@ class ImageMatchSettings(object):
         )
 
 
-@attr.s
+@attr.s(slots=True)
 class FloatingBounds(object):
+    """A floating bounds defined by max_left_offset, max_up_offset, max_right_offset
+    and max_down_offset"""
+
     max_left_offset = attr.ib(default=0)  # type: int
     max_up_offset = attr.ib(default=0)  # type: int
     max_right_offset = attr.ib(default=0)  # type: int
