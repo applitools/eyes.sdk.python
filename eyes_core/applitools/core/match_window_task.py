@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import typing
 from datetime import datetime
 
-from applitools.common import MatchResult, RunningSession, logger
+from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
 from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Point, Region
 from applitools.common.match import ImageMatchSettings
@@ -16,7 +16,7 @@ from .fluent import CheckSettings, GetFloatingRegion, GetRegion
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Optional, Union
-    from applitools.common import FloatingMatchSettings, EyesScreenshot
+    from applitools.common import EyesScreenshot
     from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
@@ -57,6 +57,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     for region in regions:
         can_add_region = False
         while not can_add_region:
+            current_counter += 1
             if current_counter > current_type_region_count:
                 current_type_index += 1
                 current_type_region_count = len(region_selectors[current_type_index])
@@ -77,13 +78,16 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     image_match_settings.content = mutable_regions[3]
 
     # TODO: Implement floating regions
-    # floating_match_settings = []
-    # for i, reg in enumerate(mutable_regions[4]):
-    #     if reg.area == 0:
-    #         continue
-    #     vgs = region_selectors[4][i]
-    #     if isinstance(vgs.category):
-    #         pass
+    floating_match_settings = []
+    for i, reg in enumerate(mutable_regions[4]):
+        if reg.area == 0:
+            continue
+        vgs = region_selectors[4][i]
+        gfr = vgs.category
+        if isinstance(gfr, GetFloatingRegion):
+            fms = FloatingMatchSettings(reg, gfr.bounds)
+            floating_match_settings.append(fms)
+    image_match_settings.floating = floating_match_settings
     return image_match_settings
 
 
