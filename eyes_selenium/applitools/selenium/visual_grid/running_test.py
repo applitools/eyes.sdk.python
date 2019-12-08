@@ -160,7 +160,7 @@ class RunningTest(object):
 
         def open_task_error(e):
             logger.debug(
-                "render_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
+                "open_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
             self.becomes_completed()
