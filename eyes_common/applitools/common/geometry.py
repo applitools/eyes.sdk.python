@@ -8,6 +8,7 @@ import attr
 from PIL.Image import Image
 
 from . import logger
+from .mixins import DictAccessMixin
 from .utils import argument_guard
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
@@ -23,17 +24,6 @@ __all__ = (
     "RectangleSize",
     "SubregionForStitching",
 )
-
-
-class DictAccessMixin(object):
-    """Make dict-like object from attrs class"""
-
-    def __getitem__(self, item):
-        if isinstance(item, int):
-            item = self.__slots__[item]
-        if item not in self.__slots__:
-            raise KeyError
-        return getattr(self, item)
 
 
 def dx_and_dy(location_or_dx, dy):
@@ -308,6 +298,10 @@ class Region(DictAccessMixin):
         """Sets the top left corner of the region"""
         argument_guard.not_none(point)
         self.left, self.top = point.x, point.y
+
+    @property
+    def area(self):
+        return self.width * self.height
 
     @property
     def bottom_right(self):

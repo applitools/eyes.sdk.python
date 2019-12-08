@@ -1,7 +1,8 @@
 import typing
+from itertools import chain
+from threading import Lock, RLock
 
 import attr
-import tinycss2
 
 from applitools.common import (
     EyesError,
@@ -10,9 +11,11 @@ from applitools.common import (
     RenderStatus,
     RGridDom,
     VGResource,
+    VisualGridSelector,
     logger,
 )
 from applitools.common.utils import datetime_utils, urljoin, urlparse
+from applitools.selenium import css_parser
 
 from .vg_task import VGTask
 
@@ -33,7 +36,9 @@ class RenderTask(VGTask):
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()
-    region_selectors = attr.ib(hash=False, factory=list)
+    region_selectors = attr.ib(
+        hash=False, factory=list
+    )  # type: List[List[VisualGridSelector]]
     size_mode = attr.ib(default=None)
     region_to_check = attr.ib(hash=False, default=None)  # type: Region
     script_hooks = attr.ib(hash=False, default=None)  # type: Optional[Dict]
@@ -47,6 +52,7 @@ class RenderTask(VGTask):
         self.all_blobs = []  # type: List[VGResource]
         self.request_resources = {}  # type: Dict[Text, VGResource]
         self.resource_urls = []  # type: List[Text]
+        self.discovered_resources_lock = RLock()
 
     def perform(self):
         # type: () -> RenderStatusResults
@@ -114,12 +120,27 @@ class RenderTask(VGTask):
 
     def prepare_rg_requests(self, running_test, dom, request_resources):
         # type: (RunningTest, RGridDom, Dict) -> RenderRequest
+        if self.size_mode == "region" and self.region_to_check is None:
+            raise EyesError("Region to check should be present")
+        if self.size_mode == "selector" and not isinstance(
+            self.selector, VisualGridSelector
+        ):
+            raise EyesError("Selector should be present")
+
+        region = None
+        if self.region_to_check:
+            region = dict(
+                x=self.region_to_check.x,
+                y=self.region_to_check.y,
+                width=self.region_to_check.width,
+                height=self.region_to_check.height,
+            )
         r_info = RenderInfo(
             width=running_test.browser_info.width,
             height=running_test.browser_info.height,
             size_mode=self.size_mode,
             selector=self.selector,
-            region=self.region_to_check,
+            region=region,
             emulation_info=running_test.browser_info.emulation_info,
         )
         return RenderRequest(
@@ -132,7 +153,7 @@ class RenderTask(VGTask):
             browser_name=running_test.browser_info.browser_type,
             platform=running_test.browser_info.platform,
             script_hooks=self.script_hooks,
-            selectors_to_find_regions_for=self.region_selectors,
+            selectors_to_find_regions_for=list(chain(*self.region_selectors)),
             send_dom=running_test.configuration.send_dom,
         )
 
@@ -142,22 +163,20 @@ class RenderTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        discovered_resources_urls = []
 
-        for blob in blobs:
-            resource = VGResource.from_blob(blob)
-            if resource.url.rstrip("#") == base_url:
-                continue
-
-            self.all_blobs.append(resource)
-            self.request_resources[resource.url] = resource
-            if resource.content_type == "text/css":
-                urls_from_css = _get_urls_from_css_resource(resource)
-                resource_urls.extend(urls_from_css)
+        def handle_resources(content_type, content):
+            if content_type == "text/css":
+                urls_from_css = css_parser.get_urls_from_css_resource(content)
+                for discovered_url in urls_from_css:
+                    target_url = _apply_base_url(discovered_url, base_url)
+                    with self.discovered_resources_lock:
+                        discovered_resources_urls.append(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
             response = self.eyes_connector.download_resource(link)
-            return VGResource.from_response(link, response)
+            return VGResource.from_response(link, response, on_created=handle_resources)
 
         for f_data in frames:
             f_data["url"] = _apply_base_url(f_data["url"], base_url)
@@ -165,7 +184,17 @@ class RenderTask(VGTask):
                 f_data
             ).resource
 
+        for blob in blobs:
+            resource = VGResource.from_blob(blob, on_created=handle_resources)
+            if resource.url.rstrip("#") == base_url:
+                continue
+
+            self.all_blobs.append(resource)
+            self.request_resources[resource.url] = resource
+
         for r_url in set(resource_urls):
+            self.resource_cache.fetch_and_store(r_url, get_resource)
+        for r_url in discovered_resources_urls:
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.request_resources.update(self.resource_cache)
         return RGridDom(
@@ -218,37 +247,3 @@ def _apply_base_url(discovered_url, base_url):
     if url.scheme in ["http", "https"] and url.netloc:
         return discovered_url
     return urljoin(base_url, discovered_url)
-
-
-def _url_from_tags(tags):
-    for tag in tags:
-        if tag.type == "url":
-            try:
-                url = urlparse(tag.value)
-                if url.scheme in ["http", "https"]:
-                    yield url.geturl()
-            except Exception as e:
-                logger.exception(e)
-
-
-def _get_urls_from_css_resource(resource):
-    def is_import_node(n):
-        return n.type == "at-rule" and n.lower_at_keyword == "import"
-
-    try:
-        rules, encoding = tinycss2.parse_stylesheet_bytes(
-            css_bytes=resource.content, skip_comments=True, skip_whitespace=True
-        )
-    except Exception:
-        logger.exception("Failed to reed CSS string")
-        return []
-
-    urls = []
-    for rule in rules:
-        tags = rule.content
-        if is_import_node(rule):
-            logger.debug("The node has import")
-            tags = rule.prelude
-        if tags:
-            urls.extend(list(_url_from_tags(tags)))
-    return urls

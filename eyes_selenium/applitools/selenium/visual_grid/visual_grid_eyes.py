@@ -209,8 +209,7 @@ class VisualGridEyes(object):
         logger.info("check('{}', check_settings) - begin".format(name))
 
         region_xpaths = self.get_region_xpaths(check_settings)
-        self.region_to_check = None
-        # logger.info("region_xpaths: {}".format(region_xpaths))
+        logger.info("region_xpaths: {}".format(region_xpaths))
         script_result = self.get_script_result()
         try:
             for test in self.test_list:
@@ -222,7 +221,7 @@ class VisualGridEyes(object):
                     script_result=script_result,
                     visual_grid_manager=self.vg_manager,
                     region_selectors=region_xpaths,
-                    region_to_check=self.region_to_check,
+                    region_to_check=check_settings.values.target_region,
                     script_hooks=check_settings.values.script_hooks,
                 )
                 if test.state == "new":
@@ -264,6 +263,8 @@ class VisualGridEyes(object):
                 )
         if raise_ex:
             for test in self.test_list:
+                if test.test_result is None:
+                    raise TestFailedError("Test haven't finished correctly")
                 results = test.test_result
                 scenario_id_or_name = results.name
                 app_id_or_name = results.app_name
@@ -342,23 +343,25 @@ class VisualGridEyes(object):
         check_settings.values.selector = vgs
 
     def get_region_xpaths(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[VisualGridSelector]
+        # type: (SeleniumCheckSettings) -> List[List[VisualGridSelector]]
         element_lists = self.collect_selenium_regions(check_settings)
         frame_chain = self.driver.frame_chain.clone()
-        xpaths = []
-        for elem_region in element_lists:
-            if elem_region.webelement is None:
-                continue
-
-            xpath = self.driver.execute_script(
-                GET_ELEMENT_XPATH_JS, elem_region.webelement
-            )
-            xpaths.append(VisualGridSelector(xpath, "target"))
+        result = []
+        for element_list in element_lists:
+            xpaths = []
+            for elem_region in element_list:
+                if elem_region.webelement is None:
+                    continue
+                xpath = self.driver.execute_script(
+                    GET_ELEMENT_XPATH_JS, elem_region.webelement
+                )
+                xpaths.append(VisualGridSelector(xpath, elem_region.region_provider))
+            result.append(xpaths)
         self.driver.switch_to.frames(frame_chain)
-        return xpaths
+        return result
 
     def collect_selenium_regions(self, check_settings):
-        # type: (SeleniumCheckSettings) -> List[WebElementRegion]
+        # type: (SeleniumCheckSettings) -> List[List[WebElementRegion]]
         ignore_elements = self.get_elements_from_regions(
             check_settings.values.ignore_regions
         )
@@ -381,16 +384,14 @@ class VisualGridEyes(object):
                 element = self.driver.find_element_by_css_selector(target_selector)
 
         targets = [WebElementRegion("target", element)]
-        return list(
-            chain(
-                ignore_elements,
-                layout_elements,
-                strict_elements,
-                content_elements,
-                floating_elements,
-                targets,
-            )
-        )
+        return [
+            ignore_elements,
+            layout_elements,
+            strict_elements,
+            content_elements,
+            floating_elements,
+            targets,
+        ]
 
     def get_elements_from_regions(self, regions_provider):
         # type:(List[GetRegion])->List[WebElementRegion]

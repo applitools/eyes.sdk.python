@@ -26,7 +26,7 @@ def pytest_generate_tests(metafunc):
     if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
         stitches = [dict(stitch_mode=StitchMode.CSS)]
         if "eyes_class" in metafunc.fixturenames:
-            metafunc.parametrize("eyes_class", [lambda: vg_eyes()]),
+            metafunc.parametrize("eyes_class", [vg_eyes]),
 
     if "batch_info" in metafunc.fixturenames:
         b_info = BatchInfo("Python SDK Desktop Sel")

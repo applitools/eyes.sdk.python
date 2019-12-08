@@ -3,9 +3,9 @@ from __future__ import absolute_import
 import typing
 from datetime import datetime
 
-from applitools.common import MatchResult, RunningSession, logger
+from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
 from applitools.common.errors import OutOfBoundsError
-from applitools.common.geometry import Region
+from applitools.common.geometry import Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.utils import datetime_utils, image_utils
@@ -16,7 +16,7 @@ from .fluent import CheckSettings, GetFloatingRegion, GetRegion
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Optional, Union
-    from applitools.common import FloatingMatchSettings, EyesScreenshot
+    from applitools.common import EyesScreenshot
     from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
     from .eyes_base import EyesBase
@@ -40,10 +40,54 @@ def _collect_regions(region_providers, screenshot, eyes):
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
-    # type: (ImageMatchSettings, List[Region],List[VisualGridSelector]) -> ImageMatchSettings
+    # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
-    # TODO: implement function
+    current_counter = current_type_index = 0
+    current_type_region_count = len(region_selectors[0])
+
+    mutable_regions = [
+        [],  # Ignore Regions
+        [],  # Layout Regions
+        [],  # Strict Regions
+        [],  # Content Regions
+        [],  # Floating Regions
+        [],  # Target Element Location
+    ]
+    for region in regions:
+        can_add_region = False
+        while not can_add_region:
+            current_counter += 1
+            if current_counter > current_type_region_count:
+                current_type_index += 1
+                current_type_region_count = len(region_selectors[current_type_index])
+                current_counter = 0
+            else:
+                can_add_region = True
+        mutable_regions[current_type_index].append(region)
+
+    # location = Point.ZERO()
+
+    # If target element location available
+    # if mutable_regions[5]:
+    #     location = mutable_regions[5][0].location
+
+    image_match_settings.ignore = mutable_regions[0]
+    image_match_settings.layout = mutable_regions[1]
+    image_match_settings.strict = mutable_regions[2]
+    image_match_settings.content = mutable_regions[3]
+
+    # TODO: Implement floating regions
+    floating_match_settings = []
+    for i, reg in enumerate(mutable_regions[4]):
+        if reg.area == 0:
+            continue
+        vgs = region_selectors[4][i]
+        gfr = vgs.category
+        if isinstance(gfr, GetFloatingRegion):
+            fms = FloatingMatchSettings(reg, gfr.bounds)
+            floating_match_settings.append(fms)
+    image_match_settings.floating = floating_match_settings
     return image_match_settings
 
 
@@ -155,7 +199,7 @@ class MatchWindowTask(object):
         eyes,  # type: EyesBase
         user_inputs=None,  # type: Optional[UserInputs]
         regions=None,  # type: Optional[List[Region]]
-        region_selectors=None,  # type: Optional[List[VisualGridSelector]]
+        region_selectors=None,  # type: Optional[List[List[VisualGridSelector]]]
         check_settings=None,  # type: Optional[CheckSettings]
         render_id=None,  # type: Optional[Text]
     ):

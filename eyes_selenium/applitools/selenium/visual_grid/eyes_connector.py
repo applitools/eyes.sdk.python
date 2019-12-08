@@ -6,6 +6,8 @@ from applitools.common import (
     EyesError,
     ImageMatchSettings,
     RectangleSize,
+    Region,
+    VisualGridSelector,
     logger,
 )
 from applitools.common.visual_grid import (
@@ -42,6 +44,8 @@ class EyesConnector(EyesBase):
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.configuration = config
         self._server_connector.update_config(config)
+        self._region_selectors = None
+        self._regions = None
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -138,13 +142,21 @@ class EyesConnector(EyesBase):
             self._render_info = self._server_connector.render_info()
         return self._render_info
 
-    def check(self, name, check_settings, check_task_uuid):
-        # type: (str, SeleniumCheckSettings, str) -> MatchResult
+    def check(
+        self,
+        name,  # type: Text
+        check_settings,  # type: SeleniumCheckSettings
+        check_task_uuid,  # type:  Text
+        region_selectors,  # type: List[VisualGridSelector]
+        regions,  # type: List[Region]
+    ):
+        # type:(...)->MatchResult
         self._current_uuid = check_task_uuid
         if name:
             check_settings = check_settings.with_name(name)
         logger.debug("EyesConnector.check({}, {})".format(name, check_task_uuid))
-
+        self._region_selectors = region_selectors
+        self._regions = regions
         check_result = self._check_window_base(
             NULL_REGION_PROVIDER, name, False, check_settings
         )
@@ -184,7 +196,7 @@ class EyesConnector(EyesBase):
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
         app_output = AppOutput(
-            title=self._title,
+            title=tag,
             screenshot64=None,
             screenshot_url=self.render_status.image_location,
             dom_url=self.render_status.dom_location,
@@ -200,5 +212,7 @@ class EyesConnector(EyesBase):
             user_inputs=self._user_inputs,
             check_settings=check_settings,
             render_id=self.render_status.render_id,
+            region_selectors=self._region_selectors,
+            regions=self._regions,
         )
         return result

@@ -4,18 +4,17 @@ from enum import Enum
 
 import attr
 
-from .geometry import RectangleSize
+from .geometry import RectangleSize, Region
 from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
 from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Dict, Optional
+    from typing import List, Text, Dict, Optional, Callable
     from requests import Response
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
-    from .geometry import Region
 
 __all__ = (
     "RenderStatus",
@@ -44,11 +43,26 @@ class RenderStatus(Enum):
     INTERNAL_FAILURE = "internal failure"
 
 
+@attr.s
+class VGRegion(object):
+    x = attr.ib(metadata={JsonInclude.THIS: True})
+    y = attr.ib(metadata={JsonInclude.THIS: True})
+    width = attr.ib(metadata={JsonInclude.THIS: True})
+    height = attr.ib(metadata={JsonInclude.THIS: True})
+    error = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+
+    def to_region(self):
+        return Region(self.x, self.y, self.width, self.height)
+
+    def offset(self, dx, dy):
+        return self.to_region().offset(dx, dy)
+
+
 @attr.s(frozen=True)
 class RenderingInfo(object):
-    service_url = attr.ib()  # type: Text
-    access_token = attr.ib(repr=False)  # type: Text
-    results_url = attr.ib()  # type: Text
+    service_url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    access_token = attr.ib(repr=False, metadata={JsonInclude.THIS: True})  # type: Text
+    results_url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
 
 
 class ScreenOrientation(Enum):
@@ -223,25 +237,42 @@ class VGResource(object):
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
+    _handle_func = attr.ib(default=None)
 
     def __hash__(self):
         return self.hash
 
     def __attrs_post_init__(self):
         self.hash = general_utils.get_sha256_hash(self.content)
+        if callable(self._handle_func):
+            self._handle_func()
 
     @classmethod
-    def from_blob(cls, blob):
-        # type: (Dict) -> VGResource
+    def from_blob(cls, blob, on_created=None):
+        # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
-        return cls(blob.get("url"), blob.get("type"), content)
+        content_type = blob.get("type")
+        return cls(
+            blob.get("url"),
+            content_type,
+            content,
+            handle_func=lambda: on_created(content_type, content),
+        )
 
     @classmethod
-    def from_response(cls, url, response):
-        # type: (Text, Response) -> VGResource
+    def from_response(cls, url, response, on_created=None):
+        # type: (Text, Response, Callable) -> VGResource
+        content_type = response.headers["Content-Type"]
+        content = response.content
         if not response.ok:
-            return cls(url, "application/empty-response", b"")
-        return cls(url, response.headers["Content-Type"], response.content)
+            content_type = "application/empty-response"
+            content = b""
+        return cls(
+            url,
+            content_type,
+            content,
+            handle_func=lambda: on_created(content_type, content),
+        )
 
 
 @attr.s
@@ -259,7 +290,7 @@ class RenderRequest(object):
     )  # type: Dict
     selectors_to_find_regions_for = attr.ib(
         factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List
+    )  # type: List[VisualGridSelector]
     send_dom = attr.ib(
         default=False, metadata={JsonInclude.NON_NONE: True}
     )  # type: bool
@@ -279,13 +310,23 @@ class RenderRequest(object):
 
 @attr.s(hash=True)
 class RunningRender(object):
-    render_id = attr.ib(default=None)  # type: Optional[Text]
-    job_id = attr.ib(default=None)  # type: Optional[Text]
+    render_id = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    job_id = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
     render_status = attr.ib(
-        default=None, converter=attr.converters.optional(RenderStatus)
+        default=None,
+        converter=attr.converters.optional(RenderStatus),
+        metadata={JsonInclude.THIS: True},
     )  # type: RenderStatus
-    need_more_resources = attr.ib(default=None, hash=False)  # type: List[Text]
-    need_more_dom = attr.ib(default=None, hash=False)  # type: bool
+    need_more_resources = attr.ib(
+        default=None, hash=False, metadata={JsonInclude.THIS: True}
+    )  # type: List[Text]
+    need_more_dom = attr.ib(
+        default=None, hash=False, metadata={JsonInclude.THIS: True}
+    )  # type: bool
 
 
 @attr.s
@@ -294,21 +335,38 @@ class RenderStatusResults(object):
         default=None,
         type=RenderStatus,
         converter=attr.converters.optional(RenderStatus),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[RenderStatus]
-    dom_location = attr.ib(default=None)  # type: Optional[Text]
-    user_agent = attr.ib(default=None)  # type: Optional[Text]
-    image_location = attr.ib(default=None)  # type: Optional[Text]
-    os = attr.ib(default=None)  # type: Optional[Text]
+    dom_location = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    user_agent = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    image_location = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    os = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
     error = attr.ib(
         default=None,
         type=RenderStatus,
         converter=attr.converters.optional(RenderStatus),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[RenderStatus]
-    selector_regions = attr.ib(default=None)  # type: List[Region]
+    selector_regions = attr.ib(
+        factory=list, type=VGRegion, metadata={JsonInclude.THIS: True}
+    )  # type: List[VGRegion]
     device_size = attr.ib(
         default=None,
         type=RectangleSize,
         converter=attr.converters.optional(RectangleSize.from_),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]
-    retry_count = attr.ib(default=None)  # type: Optional[int]
-    render_id = attr.ib(default=None)  # type: Optional[Text]
+    retry_count = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[int]
+    render_id = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
