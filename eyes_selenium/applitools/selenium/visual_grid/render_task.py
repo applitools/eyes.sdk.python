@@ -1,8 +1,8 @@
 import typing
 from itertools import chain
+from threading import Lock, RLock
 
 import attr
-import tinycss2
 
 from applitools.common import (
     EyesError,
@@ -51,6 +51,7 @@ class RenderTask(VGTask):
         self.all_blobs = []  # type: List[VGResource]
         self.request_resources = {}  # type: Dict[Text, VGResource]
         self.resource_urls = []  # type: List[Text]
+        self.discovered_resources_lock = RLock()
 
     def perform(self):
         # type: () -> RenderStatusResults
@@ -161,22 +162,20 @@ class RenderTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        discovered_resources_urls = []
 
-        for blob in blobs:
-            resource = VGResource.from_blob(blob)
-            if resource.url.rstrip("#") == base_url:
-                continue
-
-            self.all_blobs.append(resource)
-            self.request_resources[resource.url] = resource
-            if resource.content_type == "text/css":
-                urls_from_css = _get_urls_from_css_resource(resource)
-                resource_urls.extend(urls_from_css)
+        def handle_resources(urls_to_fetch, url):
+            for discovered_url in urls_to_fetch:
+                target_url = _apply_base_url(discovered_url, url)
+                with self.discovered_resources_lock:
+                    discovered_resources_urls.append(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
             response = self.eyes_connector.download_resource(link)
-            return VGResource.from_response(link, response)
+            return VGResource.from_response(
+                link, response, on_resources_fetched=handle_resources
+            )
 
         for f_data in frames:
             f_data["url"] = _apply_base_url(f_data["url"], base_url)
@@ -184,7 +183,17 @@ class RenderTask(VGTask):
                 f_data
             ).resource
 
+        for blob in blobs:
+            resource = VGResource.from_blob(blob, on_resources_fetched=handle_resources)
+            if resource.url.rstrip("#") == base_url:
+                continue
+
+            self.all_blobs.append(resource)
+            self.request_resources[resource.url] = resource
+
         for r_url in set(resource_urls):
+            self.resource_cache.fetch_and_store(r_url, get_resource)
+        for r_url in discovered_resources_urls:
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.request_resources.update(self.resource_cache)
         return RGridDom(
@@ -237,37 +246,3 @@ def _apply_base_url(discovered_url, base_url):
     if url.scheme in ["http", "https"] and url.netloc:
         return discovered_url
     return urljoin(base_url, discovered_url)
-
-
-def _url_from_tags(tags):
-    for tag in tags:
-        if tag.type == "url":
-            try:
-                url = urlparse(tag.value)
-                if url.scheme in ["http", "https"]:
-                    yield url.geturl()
-            except Exception as e:
-                logger.exception(e)
-
-
-def _get_urls_from_css_resource(resource):
-    def is_import_node(n):
-        return n.type == "at-rule" and n.lower_at_keyword == "import"
-
-    try:
-        rules, encoding = tinycss2.parse_stylesheet_bytes(
-            css_bytes=resource.content, skip_comments=True, skip_whitespace=True
-        )
-    except Exception:
-        logger.exception("Failed to reed CSS string")
-        return []
-
-    urls = []
-    for rule in rules:
-        tags = rule.content
-        if is_import_node(rule):
-            logger.debug("The node has import")
-            tags = rule.prelude
-        if tags:
-            urls.extend(list(_url_from_tags(tags)))
-    return urls

@@ -4,6 +4,7 @@ from enum import Enum
 
 import attr
 
+from . import css_parser
 from .geometry import RectangleSize, Region
 from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
@@ -11,7 +12,7 @@ from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Dict, Optional
+    from typing import List, Text, Dict, Optional, Callable
     from requests import Response
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
@@ -237,25 +238,45 @@ class VGResource(object):
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
+    _handle_discovered_func = attr.ib(default=None)
 
     def __hash__(self):
         return self.hash
 
     def __attrs_post_init__(self):
         self.hash = general_utils.get_sha256_hash(self.content)
+        self.lookup_for_css_resources()
 
     @classmethod
-    def from_blob(cls, blob):
-        # type: (Dict) -> VGResource
+    def from_blob(cls, blob, on_resources_fetched=None):
+        # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
-        return cls(blob.get("url"), blob.get("type"), content)
+        return cls(
+            blob.get("url"),
+            blob.get("type"),
+            content,
+            handle_discovered_func=on_resources_fetched,
+        )
 
     @classmethod
-    def from_response(cls, url, response):
-        # type: (Text, Response) -> VGResource
+    def from_response(cls, url, response, on_resources_fetched=None):
+        # type: (Text, Response, Callable) -> VGResource
+        content_type = response.headers["Content-Type"]
+        content = response.content
         if not response.ok:
-            return cls(url, "application/empty-response", b"")
-        return cls(url, response.headers["Content-Type"], response.content)
+            content_type = "application/empty-response"
+            content = b""
+        return cls(
+            url, content_type, content, handle_discovered_func=on_resources_fetched
+        )
+
+    def lookup_for_css_resources(self):
+        if self.content_type == "text/css" and callable(self._handle_discovered_func):
+            urls_from_css = css_parser.get_urls_from_css_resource(self.content)
+            self._handle_discovered_func(urls_from_css, self.url)
+
+    def on_resources_fetched(self, func):
+        self._handle_discovered_func = func
 
 
 @attr.s
