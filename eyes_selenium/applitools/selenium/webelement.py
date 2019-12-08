@@ -7,7 +7,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
-from applitools.common.geometry import Region
+from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import proxy_to
 
 from . import eyes_selenium_utils
@@ -15,7 +15,6 @@ from . import eyes_selenium_utils
 if tp.TYPE_CHECKING:
     from typing import Optional, Text
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.common.geometry import Point
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -164,7 +163,7 @@ class EyesWebElement(object):
             left, width = 0, max(0, width + left)
         if top < 0:
             top, height = 0, max(0, height + top)
-        return Region(left, top, width, height)
+        return Region(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE)
 
     @property
     def location(self):
@@ -185,6 +184,12 @@ class EyesWebElement(object):
     @property
     def size(self):
         return self._element.size
+
+    @property
+    def scroll_location(self):
+        # type: () -> Point
+        pos = self.driver.execute_script(_JS_GET_SCROLL_POSITION, self.element)
+        return eyes_selenium_utils.parse_location_string(pos)
 
     @property
     def id(self):
@@ -230,7 +235,7 @@ class EyesWebElement(object):
         """
         Clicks and element.
         """
-        self._driver._eyes.add_mouse_trigger_by_element("click", self)
+        self._driver.eyes.add_mouse_trigger_by_element("click", self)
         self._element.click()
 
     def send_keys(self, *value):
@@ -325,7 +330,7 @@ class EyesWebElement(object):
         # type: (Point) -> Point
         """Scrolls to the specified location inside the element."""
         position = self._driver.execute_script(
-            _JS_SCROLL_TO_FORMATTED_STR.format(location.x, location.y)
+            _JS_SCROLL_TO_FORMATTED_STR.format(location["x"], location["y"])
             + _JS_GET_SCROLL_POSITION,
             self._element,
         )
@@ -344,6 +349,20 @@ class EyesWebElement(object):
             top=int(ret_val[3].rstrip("px")),
             right=int(ret_val[4].rstrip("px")),
             bottom=int(ret_val[5].rstrip("px")),
+        )
+
+    @property
+    def bounding_client_rect(self):
+        left, top, width, height = self.driver.execute_script(
+            "var r = arguments[0].getBoundingClientRect();"
+            "return r.left+';'+r.top+';'+r.width+';'+r.height;",
+            self._element,
+        ).split(";")
+        return dict(
+            x=math.ceil(float(left)),
+            y=math.ceil(float(top)),
+            width=math.ceil(float(width)),
+            height=math.ceil(float(height)),
         )
 
     def __str__(self):

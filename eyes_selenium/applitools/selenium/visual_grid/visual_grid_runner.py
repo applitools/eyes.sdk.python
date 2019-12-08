@@ -5,20 +5,24 @@ import sys
 import threading
 import typing
 from concurrent.futures import ThreadPoolExecutor
-from time import sleep
 
 from applitools.common import (
     DiffsFoundError,
     EyesError,
     NewTestError,
     TestFailedError,
-    TestResultSummary,
+    TestResultContainer,
+    TestResults,
+    TestResultsSummary,
     logger,
 )
-from applitools.selenium.visual_grid.resource_cache import ResourceCache
+from applitools.common.utils import datetime_utils, iteritems
+from applitools.core import EyesRunner
+
+from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import Optional, List, Dict
     from applitools.common import RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
@@ -28,27 +32,36 @@ if typing.TYPE_CHECKING:
     )
 
 
-class VisualGridRunner(object):
+class VisualGridRunner(EyesRunner):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
-        self.concurrent_sessions = concurrent_sessions
+        super(VisualGridRunner, self).__init__()
+        self._all_test_result = {}  # type: Dict[RunningTest, TestResults]
+
         kwargs = {}
         if sys.version_info >= (3, 6):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
-        self.executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
-        self._rendering_info = None  # type: Optional[RenderingInfo]
-        self.resource_cache = ResourceCache()
-        self.put_cache = ResourceCache()
+        self.resource_cache = ResourceCache()  # type:ResourceCache
+        self.put_cache = ResourceCache()  # type:ResourceCache
         self.all_eyes = []  # type: List[VisualGridEyes]
-        self.test_result = None
-        self.still_running = True
-        self.future_to_task = ResourceCache()
+        self.still_running = True  # type: bool
+
+        self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
+        self._rendering_info = None  # type: Optional[RenderingInfo]
+        self._future_to_task = ResourceCache()  # type:ResourceCache
         thread = threading.Thread(target=self.run, args=())
         thread.setName(self.__class__.__name__)
         thread.daemon = True
         thread.start()
-        self.thread = thread
+        self._thread = thread
+
+    def __del__(self):
+        self.stop()
+
+    def aggregate_result(self, test, test_result):
+        # type: (RunningTest, TestResults) -> None
+        self._all_test_result[test] = test_result
 
     def render_info(self, eyes_connector):
         # type: (EyesConnector) -> RenderingInfo
@@ -69,19 +82,19 @@ class VisualGridRunner(object):
                 task = self.task_queue.pop()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
-                sleep(1)
+                datetime_utils.sleep(1000)
                 continue
-            future = self.executor.submit(lambda task: task(), task)
-            self.future_to_task[future] = task
+            future = self._executor.submit(lambda task: task(), task)
+            self._future_to_task[future] = task
 
     def stop(self):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
         while sum(r.score for r in self.all_running_tests) > 0:
-            sleep(0.5)
+            datetime_utils.sleep(500)
         self.still_running = False
-        for future in concurrent.futures.as_completed(self.future_to_task):
-            task = self.future_to_task[future]
+        for future in concurrent.futures.as_completed(self._future_to_task):
+            task = self._future_to_task[future]
             try:
                 future.result()
             except Exception as exc:
@@ -91,52 +104,42 @@ class VisualGridRunner(object):
 
         self.put_cache.executor.shutdown()
         self.resource_cache.executor.shutdown()
-        self.executor.shutdown()
-        self.thread.join()
+        self._executor.shutdown()
+        self._thread.join()
 
-    def process_test_list(self, test_list, raise_ex):
+    def get_all_test_results_impl(self, should_raise_exception=True):
+        # type: (bool) -> TestResultsSummary
         while True:
-            completed_states = [
-                test.state for test in test_list if test.state == "completed"
-            ]
-            if len(completed_states) == len(test_list):
+            states = list(set([t.state for t in self.all_running_tests]))
+            if len(states) == 1 and states[0] == "completed":
                 break
-            sleep(0.5)
-        self.stop()
-        logger.close()
+            datetime_utils.sleep(500)
 
-        for test in test_list:
-            if test.pending_exceptions:
-                raise EyesError(
-                    "During test execution above exception raised. \n {}".join(
-                        test.pending_exceptions
-                    )
+        all_results = []
+        for test, test_result in iteritems(self._all_test_result):
+            exception = None
+            if test.test_result is None:
+                exception = TestFailedError("Test haven't finished correctly")
+            scenario_id_or_name = test_result.name
+            app_id_or_name = test_result.app_name
+            if test_result and test_result.is_unresolved and not test_result.is_new:
+                exception = DiffsFoundError(
+                    test_result, scenario_id_or_name, app_id_or_name
                 )
-        if raise_ex:
-            for test in test_list:
-                results = test.test_result
-                msg = "Test '{}' of '{}'. \n\tSee details at: {}".format(
-                    results.name, results.app_name, results.url
+            if test_result and test_result.is_new:
+                exception = NewTestError(
+                    test_result, scenario_id_or_name, app_id_or_name
                 )
-                if results.is_unresolved and not results.is_new:
-                    raise DiffsFoundError(msg, results)
-                if results.is_new:
-                    raise NewTestError(msg, results)
-                if results.is_failed:
-                    raise TestFailedError(msg, results)
-        return test_list
-
-    def get_all_test_results(self, raise_ex=True):
-        # type: (bool) -> TestResultSummary
-        while not any(e.is_opened for e in self.all_eyes):
-            sleep(0.5)
-        test_list = self.process_test_list(
-            [test for e in self.all_eyes for test in e.test_list], raise_ex
-        )
-        for e in self.all_eyes:
-            e._is_opened = False
-        exceptions = [exp for t in test_list for exp in t.pending_exceptions]
-        return TestResultSummary([t.test_result for t in test_list], len(exceptions))
+            if test_result and test_result.is_failed:
+                exception = TestFailedError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            all_results.append(
+                TestResultContainer(test_result, test.browser_info, exception)
+            )
+            if exception and should_raise_exception:
+                raise exception
+        return TestResultsSummary(all_results)
 
     @property
     def all_running_tests(self):

@@ -4,9 +4,10 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     EyesError,
+    ImageMatchSettings,
     RectangleSize,
     Region,
-    SeleniumConfiguration,
+    VisualGridSelector,
     logger,
 )
 from applitools.common.visual_grid import (
@@ -16,10 +17,10 @@ from applitools.common.visual_grid import (
     RunningRender,
     VGResource,
 )
-from applitools.core import NULL_REGION_PROVIDER, EyesBase
+from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 from applitools.core.capture import AppOutputWithScreenshot
+from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
-from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
     from typing import Text, List, Dict, Any, Optional
@@ -33,7 +34,7 @@ if typing.TYPE_CHECKING:
 
 class EyesConnector(EyesBase):
     def __init__(self, browser_info, config):
-        # type: (RenderBrowserInfo,SeleniumConfiguration) -> None
+        # type: (RenderBrowserInfo, Configuration) -> None
         super(EyesConnector, self).__init__()
         self.device = None
         self.device_size = None
@@ -43,9 +44,11 @@ class EyesConnector(EyesBase):
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.configuration = config
         self._server_connector.update_config(config)
+        self._region_selectors = None
+        self._regions = None
 
     def open(self, config):
-        # type: (SeleniumConfiguration) -> None
+        # type: (Configuration) -> None
         """Starts a new test without setting the viewport size of the AUT."""
         logger.info(
             "opening EyesConnector with viewport size: {}".format(
@@ -71,7 +74,7 @@ class EyesConnector(EyesBase):
         return self._server_connector.download_resource(url)
 
     def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> bool
+        # type: (RunningRender, VGResource) -> Text
         return self._server_connector.render_put_resource(running_render, resource)
 
     def render(self, *render_requests):
@@ -94,10 +97,10 @@ class EyesConnector(EyesBase):
     def _try_capture_dom(self):
         return None
 
-    def get_viewport_size_static(self):
+    def get_viewport_size(self):
         return None
 
-    def set_viewport_size_static(self, size):
+    def set_viewport_size(self, size):
         return None
 
     def _get_viewport_size(self):
@@ -117,8 +120,8 @@ class EyesConnector(EyesBase):
 
     @property
     def _title(self):
-        # type: () -> Optional[Any]
-        return None
+        # type: () -> Text
+        return ""
 
     @property
     def _environment(self):
@@ -139,13 +142,21 @@ class EyesConnector(EyesBase):
             self._render_info = self._server_connector.render_info()
         return self._render_info
 
-    def check(self, name, check_settings, check_task_uuid):
-        # type: (str, SeleniumCheckSettings, str) -> MatchResult
+    def check(
+        self,
+        name,  # type: Text
+        check_settings,  # type: SeleniumCheckSettings
+        check_task_uuid,  # type:  Text
+        region_selectors,  # type: List[VisualGridSelector]
+        regions,  # type: List[Region]
+    ):
+        # type:(...)->MatchResult
         self._current_uuid = check_task_uuid
         if name:
             check_settings = check_settings.with_name(name)
         logger.debug("EyesConnector.check({}, {})".format(name, check_task_uuid))
-
+        self._region_selectors = region_selectors
+        self._regions = regions
         check_result = self._check_window_base(
             NULL_REGION_PROVIDER, name, False, check_settings
         )
@@ -172,15 +183,36 @@ class EyesConnector(EyesBase):
             )
         return status
 
-    def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
-        # type: (Region,EyesWebDriverScreenshot,SeleniumCheckSettings)->AppOutputWithScreenshot
-        title = self._title
-        logger.debug("render_task.uuid: {}".format(self._current_uuid))
+    def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
+        # type: (RegionProvider, Text, bool, SeleniumCheckSettings) -> MatchResult
+        # Update retry timeout if it wasn't specified.
+        retry_timeout_ms = -1  # type: int
+        if check_settings:
+            retry_timeout_ms = check_settings.values.timeout
+
+        check_settings = self._process_check_settings_values(check_settings)
+
+        region = region_provider.get_region()
+        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
+
         app_output = AppOutput(
-            title=title,
+            title=tag,
             screenshot64=None,
             screenshot_url=self.render_status.image_location,
             dom_url=self.render_status.dom_location,
         )
-        result = AppOutputWithScreenshot(app_output, None)
+        result = self._match_window_task.perform_match(
+            app_output=AppOutputWithScreenshot(app_output, None),
+            name=tag,
+            ignore_mismatch=ignore_mismatch,
+            image_match_settings=ImageMatchSettings.create_from_check_settings(
+                check_settings
+            ),
+            eyes=self,
+            user_inputs=self._user_inputs,
+            check_settings=check_settings,
+            render_id=self.render_status.render_id,
+            region_selectors=self._region_selectors,
+            regions=self._regions,
+        )
         return result

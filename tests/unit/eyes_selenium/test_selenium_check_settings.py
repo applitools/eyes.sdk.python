@@ -1,11 +1,11 @@
-import pytest
-from mock import MagicMock
+from appium.webdriver import WebElement as AppiumWebElement
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
-from appium.webdriver import WebElement as AppiumWebElement
 
-from applitools.selenium import Region, EyesWebElement
+import pytest
+from applitools.selenium import EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
+from mock import MagicMock
 
 
 def get_cs_from_method(method_name, *args):
@@ -34,7 +34,7 @@ def test_check_region_and_frame_with_unsupported_input():
     with pytest.raises(TypeError):
         cs = get_cs_from_method("region", 12355)
     with pytest.raises(TypeError):
-        cs = get_cs_from_method("frame", [By.XPATH, "some"])
+        cs = get_cs_from_method("frame", set())
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -47,6 +47,10 @@ def test_check_frame(method_name="frame"):
     frame_reference = "frame-name-or-id"
     cs = get_cs_from_method(method_name, frame_reference)
     assert cs.values.frame_chain[0].frame_name_or_id == frame_reference
+
+    frame_id = "#some"
+    cs = get_cs_from_method(method_name, frame_id)
+    assert cs.values.frame_chain[0].frame_name_or_id == frame_id
 
     frame_index = 3
     cs = get_cs_from_method(method_name, frame_index)
@@ -151,3 +155,9 @@ def test_match_regions_with_by_values(method_name):
     assert regions[3].selector == "tag_name"
     assert regions[4].selector == "css_selector"
     assert regions[5].selector == "xpath"
+
+
+def test_before_render_screenshot_hook():
+    cs = SeleniumCheckSettings()
+    cs.before_render_screenshot_hook("some hook")
+    assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"

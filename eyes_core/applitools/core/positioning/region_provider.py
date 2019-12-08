@@ -1,4 +1,5 @@
 import typing as tp
+from typing import Callable, Union
 
 import attr
 
@@ -16,7 +17,7 @@ class RegionProvider(ABC):
     used.
     """
 
-    _region = attr.ib()
+    _region = attr.ib()  # type: Union[Region, Callable]
 
     def get_region(self, eyes_screenshot=None):
         # type: (tp.Optional[EyesScreenshot]) -> Region
@@ -34,7 +35,7 @@ class RegionProvider(ABC):
 
 @attr.s
 class NullRegionProvider(RegionProvider):
-    _region = attr.ib(init=False, factory=Region.create_empty_region)
+    _region = attr.ib(init=False, factory=Region.EMPTY)  # type: Region
 
 
 NULL_REGION_PROVIDER = NullRegionProvider()

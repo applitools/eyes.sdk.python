@@ -31,6 +31,7 @@ class GetRegion(ABC):
 class GetFloatingRegion(GetRegion):
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
+        # type: (EyesBase, EyesScreenshot) -> List
         pass
 
 

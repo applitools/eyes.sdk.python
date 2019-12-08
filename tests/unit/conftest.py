@@ -1,11 +1,10 @@
 from typing import Optional, Text
 
-import mock
-import pytest
-from mock import MagicMock
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
+import mock
+import pytest
 from applitools.common import (
     AppEnvironment,
     AppOutput,
@@ -20,6 +19,7 @@ from applitools.common import (
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
+from mock import MagicMock
 
 
 @pytest.fixture

@@ -1,16 +1,18 @@
 import abc
-import typing
+from typing import TYPE_CHECKING, TypeVar
 
 import attr
 
 from .geometry import CoordinatesType, Region
 from .utils import ABC, argument_guard
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from PIL.Image import Image
     from .geometry import Point
 
 __all__ = ("EyesScreenshot",)
+
+Self = TypeVar("Self", bound="EyesScreenshot")  # typedef
 
 
 @attr.s
@@ -23,11 +25,12 @@ class EyesScreenshot(ABC):
 
     @property
     def image(self):
+        # type: () -> Image
         return self._image
 
     @abc.abstractmethod
     def sub_screenshot(self, region, throw_if_clipped=False):
-        # type: (Region, bool) -> EyesScreenshot
+        # type: (Self, Region, bool) -> Self
         """
         Returns a part of the screenshot based on the given region.
 
@@ -92,14 +95,18 @@ class EyesScreenshot(ABC):
         argument_guard.not_none(region)
         argument_guard.is_a(region, Region)
         if region.is_size_empty:
-            return Region.create_empty_region()
+            return Region.EMPTY()
 
         argument_guard.not_none(from_)
         argument_guard.not_none(to)
 
         updated_location = self.convert_location(region.location, from_, to)
         return Region(
-            updated_location.x, updated_location.y, region.width, region.height
+            updated_location.x,
+            updated_location.y,
+            region.width,
+            region.height,
+            coordinates_type=to,
         )
 
     @property

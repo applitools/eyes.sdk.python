@@ -30,9 +30,9 @@ install_requires = [
     "selenium>=2.53.0,<4",
     "Pillow>=5.0,<7.0",  # 7 and above doesnt support python 2
     # uses for check if the mobile platform is used in the test
-    "Appium-Python-Client>=0.31,<0.39",
+    "Appium-Python-Client>=0.4,<0.47",
     "ua_parser==0.8",
-    "attrs >= 18,<19",
+    "attrs>=18,<=19.2",
     "transitions>=0.6,<0.7",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'

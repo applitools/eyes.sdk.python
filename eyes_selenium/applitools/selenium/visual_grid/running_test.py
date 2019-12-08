@@ -1,9 +1,9 @@
 import typing
 
 import attr
+from transitions import Machine
 
 from applitools.common import Region, logger
-from transitions import Machine
 
 from .render_task import RenderTask
 from .vg_task import VGTask
@@ -12,11 +12,11 @@ if typing.TYPE_CHECKING:
     from typing import List, Optional, Dict, Any, Text
     from applitools.common import (
         TestResults,
-        SeleniumConfiguration,
         VisualGridSelector,
         RenderBrowserInfo,
         RenderStatusResults,
     )
+    from applitools.common.selenium import Configuration
     from applitools.selenium.fluent import SeleniumCheckSettings
     from .visual_grid_runner import VisualGridRunner
     from .eyes_connector import EyesConnector
@@ -46,18 +46,27 @@ TRANSITIONS = [
 ]
 
 
-@attr.s(hash=True)
+@attr.s(hash=True, str=False)
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
-    configuration = attr.ib(hash=False, repr=False)  # type: SeleniumConfiguration
+    configuration = attr.ib(hash=False, repr=False)  # type: Configuration
     browser_info = attr.ib()  # type: RenderBrowserInfo
     # listener = attr.ib()  # type:
     region_selectors = attr.ib(
         init=False, factory=list, hash=False
-    )  # type: List[VisualGridSelector]
+    )  # type: List[List[VisualGridSelector]]
+    regions = attr.ib(init=False, factory=list, hash=False)
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     task_to_future_mapping = attr.ib(init=False, factory=dict, hash=False)
+    test_uuid = attr.ib(init=False)
+    on_results = attr.ib(init=False, hash=False)
+    state = attr.ib(init=False, hash=False)
+
+    def __str__(self):
+        return "RunningTest: state={} uuid={}".format(
+            self.state, format(self.test_uuid)
+        )
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -91,6 +100,9 @@ class RunningTest(object):
         )
         self.machine = machine
 
+    def on_results_received(self, func):
+        self.on_results = func
+
     @property
     def queue(self):
         # type: () -> List
@@ -110,6 +122,8 @@ class RunningTest(object):
             return self.close_queue
         elif self.state == COMPLETED:
             return []
+        else:
+            raise TypeError("Unsupported state")
 
     @property
     def score(self):
@@ -126,6 +140,8 @@ class RunningTest(object):
             return len(self.close_queue)
         elif self.state == COMPLETED:
             return 0
+        else:
+            raise TypeError("Unsupported state")
 
     def open(self):
         # type: () -> None
@@ -144,9 +160,10 @@ class RunningTest(object):
 
         def open_task_error(e):
             logger.debug(
-                "render_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
+                "open_task_error: task.uuid: {}\n{}".format(open_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
+            self.becomes_completed()
 
         open_task.on_task_succeeded(open_task_succeeded)
         open_task.on_task_error(open_task_error)
@@ -160,8 +177,8 @@ class RunningTest(object):
         script_result,  # type: Dict[str, Any]
         visual_grid_manager,  # type: VisualGridRunner
         region_selectors,
-        size_mode,
         region_to_check,
+        script_hooks,
     ):
         # type: (...) -> None
         logger.debug("RunningTest %s , %s" % (tag, check_settings))
@@ -170,13 +187,16 @@ class RunningTest(object):
             tag,
             visual_grid_manager,
             region_selectors,
-            size_mode,
             region_to_check,
+            script_hooks,
+            check_settings,
         )
 
         def check_run():
             logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
-            self.eyes.check(tag, check_settings, render_task.uuid)
+            self.eyes.check(
+                tag, check_settings, render_task.uuid, region_selectors, self.regions
+            )
 
         check_task = VGTask(
             "perform check {} {}".format(tag, check_settings), check_run
@@ -197,18 +217,20 @@ class RunningTest(object):
 
     def _render_task(
         self,
-        script_result,
-        tag,
-        visual_grid_manager,
-        region_selectors,
-        size_mode,
-        region_to_check,
+        script_result,  # type: Dict[Text, Any]
+        tag,  # type: Text
+        visual_grid_manager,  # type: VisualGridRunner
+        region_selectors,  # type: List
+        region_to_check,  # type: Region
+        script_hooks,  # type: Dict[Text, Any]
+        check_settings,
     ):
-        # type: (Dict[str, Any],Text,VisualGridRunner,List,Region,Optional[Any])->RenderTask
+        # type: (...)->RenderTask
+        short_description = "{} of {}".format(
+            self.configuration.test_name, self.configuration.app_name
+        )
         render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(
-                self.configuration.short_description, tag
-            ),
+            name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
             running_test=self,
             resource_cache=visual_grid_manager.resource_cache,
@@ -216,9 +238,11 @@ class RunningTest(object):
             rendering_info=visual_grid_manager.render_info(self.eyes),
             eyes_connector=self.eyes,
             region_selectors=region_selectors,
-            size_mode=size_mode,
+            size_mode=check_settings.values.size_mode,
             region_to_check=region_to_check,
+            script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
+            selector=check_settings.values.selector,
         )
         logger.debug("RunningTest %s" % render_task.name)
 
@@ -229,6 +253,11 @@ class RunningTest(object):
             )
             if render_status:
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
+                for vgr in render_status.selector_regions:
+                    if vgr.error:
+                        logger.error(vgr.error)
+                    else:
+                        self.regions.append(vgr.to_region())
             self.watch_render[render_task] = True
             if self.all_tasks_completed(self.watch_render):
                 self.becomes_rendered()
@@ -238,6 +267,7 @@ class RunningTest(object):
                 "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
+            self.becomes_completed()
 
         render_task.on_task_succeeded(render_task_succeeded)
         render_task.on_task_error(render_task_error)
@@ -259,6 +289,8 @@ class RunningTest(object):
         def close_task_succeeded(test_result):
             logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
             self.test_result = test_result
+            if callable(self.on_results):
+                self.on_results(test_result)
 
         def close_task_completed():
             # type: () -> None

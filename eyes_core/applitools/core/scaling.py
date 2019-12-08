@@ -1,33 +1,17 @@
 from __future__ import absolute_import
 
-from applitools.common import logger
-from applitools.common.utils import ABC
+from typing import TYPE_CHECKING
 
-__all__ = (
-    "FixedScaleProvider",
-    "NullScaleProvider",
-    "ContextBasedScaleProvider",
-    "ScaleProvider",
-)
+from applitools.common import ScaleProvider, logger
 
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import ViewPort
 
-class ScaleProvider(ABC):
-    UNKNOWN_SCALE_RATIO = 0.0
-
-    def __init__(self, *args, **kwargs):
-        self._scale_ratio = self.UNKNOWN_SCALE_RATIO
-        self.device_pixel_ratio = 1
-
-    @property
-    def scale_ratio(self):
-        return self._scale_ratio
-
-    def update_scale_ratio(self, image_to_scale_width):
-        pass
+__all__ = ("FixedScaleProvider", "NullScaleProvider", "ContextBasedScaleProvider")
 
 
 class FixedScaleProvider(ScaleProvider):
-    def __init__(self, scale_ratio):
+    def __init__(self, scale_ratio, *args, **kwargs):
         super(FixedScaleProvider, self).__init__(scale_ratio)
         self._scale_ratio = scale_ratio
 
@@ -35,7 +19,7 @@ class FixedScaleProvider(ScaleProvider):
 class NullScaleProvider(FixedScaleProvider):
     UNKNOWN_SCALE_RATIO = 1.0
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(NullScaleProvider, self).__init__(self.UNKNOWN_SCALE_RATIO)
 
 
@@ -45,10 +29,10 @@ class ContextBasedScaleProvider(ScaleProvider):
 
     def __init__(
         self,
-        top_level_context_entire_size,
-        viewport_size,
-        device_pixel_ratio,
-        is_mobile_device,
+        top_level_context_entire_size,  # type: ViewPort
+        viewport_size,  # type: ViewPort
+        device_pixel_ratio,  # type: float
+        is_mobile_device,  # type: bool
     ):
         super(ContextBasedScaleProvider, self).__init__()
         self.top_level_context_entire_size = top_level_context_entire_size
@@ -62,13 +46,17 @@ class ContextBasedScaleProvider(ScaleProvider):
 
     @staticmethod
     def get_scale_ratio_to_viewport(
-        viewport_width, image_to_scale_width, current_scale_ratio
+        viewport_width,  # type: float
+        image_to_scale_width,  # type: float
+        current_scale_ratio,  # type: float
     ):
+        # type: (...) -> float
         scaled_image_width = round(image_to_scale_width * viewport_width)
         from_scaled_to_viewport_ratio = viewport_width / scaled_image_width
         return current_scale_ratio * from_scaled_to_viewport_ratio
 
     def update_scale_ratio(self, image_to_scale_width):
+        # type: (float) -> None
         viewport_width = self.viewport_size["width"]
         dces_width = self.top_level_context_entire_size["width"]
 

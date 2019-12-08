@@ -1,10 +1,11 @@
-import pytest
 from selenium.webdriver.common.by import By
 
+import pytest
 from applitools.selenium import StitchMode, Target
 
 
-@pytest.mark.skip("Depending on Fluent API. Not implemented yet")
+@pytest.mark.platform("Linux")
+@pytest.mark.skip
 def test_wix_site(eyes, driver):
     eyes.match_timeout = 0
     eyes.force_full_page_screenshot = False
@@ -14,14 +15,14 @@ def test_wix_site(eyes, driver):
         "https://eventstest.wixsite.com/events-page-e2e/events/ba837913-7dad-41b9-b530-6c2cbfc4c265"
     )
     iframe_id = "TPAMultiSection_j5ocg4p8iframe"
-    driver.switch_to().frame(iframe_id)
+    driver.switch_to.frame(iframe_id)
     # click register button
-    driver.find_element(By.CSS_SELECTOR, "[data-hook=get-tickets-button]").click()
+    driver.find_element_by_css_selector("[data-hook=get-tickets-button]").click()
     # add one ticket
-    driver.find_element(By.CSS_SELECTOR, "[data-hook=plus-button]").click()
+    driver.find_element_by_css_selector("[data-hook=plus-button]").click()
     # just an example, where it make us some problems with scrolling to top of the frame.
     # eyes.check_region(By.CSS_SELECTOR, "[data-hook=plus-button]");
-    eyes.check("", Target.region([By.CSS_SELECTOR, "[data-hook=plus-button]"]))
+    eyes.check("", Target.region("[data-hook=plus-button]"))
     eyes.close()
 
 
@@ -35,7 +36,9 @@ def test_w3schools_iframe(eyes, driver):
         viewport_size={"width": 800, "height": 600},
     )
     driver.get("https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_iframe")
-    eyes.check("Entire Frame", Target.region((By.TAG_NAME, "body"), "iframeResult"))
+    eyes.check(
+        "Entire Frame", Target.frame("iframeResult").region([By.TAG_NAME, "body"])
+    )
     eyes.close()
 
 
@@ -85,6 +88,7 @@ def test_zachs_app(eyes, driver):
     eyes.close()
 
 
+@pytest.mark.platform("Linux")
 @pytest.mark.eyes(
     hide_scrollbars=True, stitch_mode=StitchMode.Scroll, wait_before_screenshots=1
 )

@@ -6,6 +6,7 @@ from .capture import (
 )
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
 from .eyes_base import EyesBase
+from .eyes_runner import EyesRunner
 from .fluent import (
     CheckSettings,
     CheckSettingsValues,
@@ -21,9 +22,9 @@ from .positioning import (
     NULL_REGION_PROVIDER,
     InvalidPositionProvider,
     NullRegionProvider,
+    PositionMemento,
     PositionProvider,
     RegionProvider,
-    PositionMomento,
 )
 from .scaling import (
     ContextBasedScaleProvider,
@@ -44,7 +45,7 @@ __all__ = (
     "ScaleProvider",
     "EyesBase",
     "PositionProvider",
-    "PositionMomento",
+    "PositionMemento",
     "InvalidPositionProvider",
     "RegionProvider",
     "FixedCutProvider",
@@ -65,4 +66,5 @@ __all__ = (
     "AppOutputProvider",
     "EyesScreenshotFactory",
     "ImageProvider",
+    "EyesRunner",
 )

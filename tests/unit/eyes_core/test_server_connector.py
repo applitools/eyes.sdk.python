@@ -10,7 +10,6 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     BatchInfo,
-    EyesError,
     ImageMatchSettings,
     MatchLevel,
     MatchWindowData,
@@ -19,7 +18,7 @@ from applitools.common import (
     SessionStartInfo,
     TestResults,
 )
-from applitools.common.config.configuration import DEFAULT_SERVER_URL, Configuration
+from applitools.common.config import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
@@ -214,8 +213,10 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
         force_match=False,
         force_mismatch=False,
         image_match_settings=SESSION_START_INFO_OBJ.default_match_settings,
+        render_id=None,
     ),
     agent_setup="Agent setup",
+    render_id=None,
 )
 
 
@@ -305,7 +306,7 @@ def test_stop_session(started_connector):
 
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
-    new_timeout_sec = new_timeout / 1000.0
+    new_timeout_sec = int(new_timeout / 1000.0)
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
     conf = Configuration(

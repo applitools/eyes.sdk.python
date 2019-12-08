@@ -89,6 +89,9 @@ class FrameChain(tp.Sequence[Frame]):
     def __getitem__(self, item):
         return self._frames[item]
 
+    def __delitem__(self, item):
+        del self._frames[item]
+
     def __len__(self):
         # type: () -> int
         return len(self._frames)
@@ -107,7 +110,7 @@ class FrameChain(tp.Sequence[Frame]):
 
     def clear(self):
         # type: () -> None
-        self._frames = []
+        del self._frames[:]
 
     @property
     def size(self):
@@ -133,9 +136,9 @@ class FrameChain(tp.Sequence[Frame]):
     @property
     def current_frame_offset(self):
         # type: () -> Point
-        location = Point.zero()
+        location = Point.ZERO()
         for frame in self:
-            location.offset_by_location(frame.location)
+            location = location.offset(frame.location)
         return location
 
     @property

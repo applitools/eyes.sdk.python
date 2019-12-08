@@ -1,13 +1,22 @@
-from .app_output import AppOutput
-from .capture import EyesScreenshot
-from .config import (
-    BatchInfo,
-    BrowserType,
-    Configuration,
-    SeleniumConfiguration,
-    StitchMode,
+from . import (  # noqa
+    app_output,
+    capture,
+    config,
+    errors,
+    geometry,
+    logger,
+    match,
+    match_window_data,
+    metadata,
+    selenium,
+    server,
+    test_results,
+    visual_grid,
 )
-from .errors import (
+from .app_output import AppOutput  # noqa
+from .capture import EyesScreenshot  # noqa
+from .config import BatchInfo, Configuration  # noqa
+from .errors import (  # noqa
     CoordinatesTypeConversionError,
     DiffsFoundError,
     EyesError,
@@ -16,9 +25,15 @@ from .errors import (
     OutOfBoundsError,
     TestFailedError,
 )
-from .geometry import EMPTY_REGION, CoordinatesType, Point, RectangleSize, Region
-from .logger import FileLogger, NullLogger, StdoutLogger
-from .match import (
+from .geometry import (  # noqa
+    CoordinatesType,
+    Point,
+    RectangleSize,
+    Region,
+    SubregionForStitching,
+)
+from .logger import FileLogger, NullLogger, StdoutLogger  # noqa
+from .match import (  # noqa
     ExactMatchSettings,
     FloatingBounds,
     FloatingMatchSettings,
@@ -26,11 +41,13 @@ from .match import (
     MatchLevel,
     MatchResult,
 )
-from .match_window_data import MatchWindowData, Options
-from .metadata import AppEnvironment, RunningSession, SessionStartInfo
-from .server import FailureReports, SessionType
-from .test_results import TestResults, TestResultSummary
-from .visual_grid import (
+from .match_window_data import MatchWindowData, Options  # noqa
+from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
+from .scale_provider import ScaleProvider
+from .selenium import StitchMode  # noqa
+from .server import FailureReports, SessionType  # noqa
+from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
+from .visual_grid import (  # noqa
     ChromeEmulationInfo,
     DeviceName,
     EmulationDevice,
@@ -49,7 +66,6 @@ from .visual_grid import (
 
 __all__ = (
     logger.__all__  # noqa
-    + config.__all__  # noqa
     + errors.__all__  # noqa
     + geometry.__all__  # noqa
     + match.__all__  # noqa
@@ -60,5 +76,5 @@ __all__ = (
     + test_results.__all__  # noqa
     + visual_grid.__all__  # noqa
     + server.__all__  # noqa
-    + ("logger", "StitchMode")  # noqa
+    + ("logger", "StitchMode", "ScaleProvider")  # noqa
 )

@@ -1,9 +1,13 @@
 import enum
 import json
 import re
+from collections import defaultdict
 from datetime import datetime
+from typing import Dict, Text
 
 import attr
+
+from applitools.common import logger
 
 from .compat import iteritems
 
@@ -13,7 +17,11 @@ def to_json(val):
 
 
 def _fields_from_attr(cls):
-    return [field.name for field in attr.fields(cls)]
+    return [
+        field.name
+        for field in attr.fields(cls)
+        if JsonInclude.THIS in field.metadata.keys()
+    ]
 
 
 def _klasses_from_attr(cls):
@@ -37,23 +45,27 @@ def attr_from_json(content, cls):
         return params
 
     def obj_came(obj):
-        params = make_snake(dict(obj))
-        for kls, fields in iteritems(klasses):
-            if len(klasses) == 1:
-                cleaned_params = {
-                    key: val for key, val in iteritems(params) if key in fields
-                }
-                return kls(**cleaned_params)
+        def cleaned_params(params, fields):
+            return {key: val for key, val in iteritems(params) if key in fields}
 
-            coincidence = 0
+        params = make_snake(dict(obj))
+        convidenced = defaultdict(int)
+        for kls, fields in iteritems(klasses):
+            fields = tuple(fields)
+            if len(klasses) == 1:
+                return kls(**cleaned_params(params, fields))
+            if set(params.keys()) == set(fields):
+                return kls(**cleaned_params(params, fields))
+
             for key in params.keys():
                 if key in fields:
-                    coincidence += 1
-            if coincidence >= 2:
-                cleaned_params = {
-                    key: val for key, val in iteritems(params) if key in fields
-                }
-                return kls(**cleaned_params)
+                    convidenced[(kls, fields)] += 1
+        try:
+            kls, fields = sorted(convidenced, reverse=True)[0]
+            return kls(**cleaned_params(params, fields))
+        except IndexError:
+            logger.error("Failed to convert: {} to any class".format(obj))
+            return params
 
     instance = json.loads(content, object_hook=obj_came)
     return instance
@@ -64,7 +76,7 @@ def attr_from_response(response, cls):
 
 
 # Uses for replacing of regular attr.name to specified in metadata
-REPLACE_TO_DICT = dict()
+REPLACE_TO_DICT = dict()  # type: Dict[Text, Text]
 
 
 class _CamelCasedDict(dict):

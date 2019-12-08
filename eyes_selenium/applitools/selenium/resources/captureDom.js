@@ -1,4 +1,5 @@
-// @applitools/dom-snapshot@7.0.10
+/* @applitools/dom-capture@7.0.22 */
+
 function __captureDom() {
   var captureDom = (function () {
   'use strict';
@@ -108,10 +109,10 @@ function __captureDom() {
     parseCss,
     CSSImportRule,
     absolutizeUrl,
-    fetchCss,
+    getCssFromCache,
     unfetchedToken,
   }) {
-    return async function getBundledCssFromCssText(cssText, resourceUrl) {
+    return function getBundledCssFromCssText(cssText, resourceUrl) {
       let unfetchedResources;
       let bundledCss = '';
 
@@ -120,12 +121,12 @@ function __captureDom() {
         for (const rule of Array.from(styleSheet.cssRules)) {
           if (rule instanceof CSSImportRule) {
             const nestedUrl = absolutizeUrl(rule.href, resourceUrl);
-            const nestedResource = await fetchCss(nestedUrl);
+            const nestedResource = getCssFromCache(nestedUrl);
             if (nestedResource !== undefined) {
               const {
                 bundledCss: nestedCssText,
                 unfetchedResources: nestedUnfetchedResources,
-              } = await getBundledCssFromCssText(nestedResource, nestedUrl);
+              } = getBundledCssFromCssText(nestedResource, nestedUrl);
 
               nestedUnfetchedResources && (unfetchedResources = new Set(nestedUnfetchedResources));
               bundledCss = `${nestedCssText}${bundledCss}`;
@@ -169,7 +170,7 @@ function __captureDom() {
   function makeFetchCss(fetch) {
     return async function fetchCss(url) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {cache: 'force-cache'});
         if (response.ok) {
           return await response.text();
         }
@@ -182,8 +183,24 @@ function __captureDom() {
 
   var fetchCss = makeFetchCss;
 
-  function makeExtractCssFromNode({fetchCss, absolutizeUrl}) {
-    return async function extractCssFromNode(node, baseUrl) {
+  var getHrefAttr = function getHrefAttr(node) {
+    const attr = Array.from(node.attributes).find(attr => attr.name.toLowerCase() === 'href');
+    return attr && attr.value;
+  };
+
+  var isLinkToStyleSheet = function isLinkToStyleSheet(node) {
+    return (
+      node.nodeName &&
+      node.nodeName.toUpperCase() === 'LINK' &&
+      node.attributes &&
+      Array.from(node.attributes).find(
+        attr => attr.name.toLowerCase() === 'rel' && attr.value.toLowerCase() === 'stylesheet',
+      )
+    );
+  };
+
+  function makeExtractCssFromNode({getCssFromCache, absolutizeUrl}) {
+    return function extractCssFromNode(node, baseUrl) {
       let cssText, resourceUrl, isUnfetched;
       if (isStyleElement(node)) {
         cssText = Array.from(node.childNodes)
@@ -192,7 +209,7 @@ function __captureDom() {
         resourceUrl = baseUrl;
       } else if (isLinkToStyleSheet(node)) {
         resourceUrl = absolutizeUrl(getHrefAttr(node), baseUrl);
-        cssText = await fetchCss(resourceUrl);
+        cssText = getCssFromCache(resourceUrl);
         if (cssText === undefined) {
           isUnfetched = true;
         }
@@ -205,35 +222,19 @@ function __captureDom() {
     return node.nodeName && node.nodeName.toUpperCase() === 'STYLE';
   }
 
-  function getHrefAttr(node) {
-    const attr = Array.from(node.attributes).find(attr => attr.name.toLowerCase() === 'href');
-    return attr && attr.value;
-  }
-
-  function isLinkToStyleSheet(node) {
-    return (
-      node.nodeName &&
-      node.nodeName.toUpperCase() === 'LINK' &&
-      node.attributes &&
-      Array.from(node.attributes).find(
-        attr => attr.name.toLowerCase() === 'rel' && attr.value.toLowerCase() === 'stylesheet',
-      )
-    );
-  }
-
   var extractCssFromNode = makeExtractCssFromNode;
 
   function makeCaptureNodeCss({extractCssFromNode, getBundledCssFromCssText, unfetchedToken}) {
-    return async function captureNodeCss(node, baseUrl) {
-      const {resourceUrl, cssText, isUnfetched} = await extractCssFromNode(node, baseUrl);
+    return function captureNodeCss(node, baseUrl) {
+      const {resourceUrl, cssText, isUnfetched} = extractCssFromNode(node, baseUrl);
 
       let unfetchedResources;
       let bundledCss = '';
       if (cssText) {
-        const {
-          bundledCss: nestedCss,
-          unfetchedResources: nestedUnfetched,
-        } = await getBundledCssFromCssText(cssText, resourceUrl);
+        const {bundledCss: nestedCss, unfetchedResources: nestedUnfetched} = getBundledCssFromCssText(
+          cssText,
+          resourceUrl,
+        );
 
         bundledCss += nestedCss;
         unfetchedResources = new Set(nestedUnfetched);
@@ -251,28 +252,140 @@ function __captureDom() {
     ELEMENT: 1,
     TEXT: 3,
   };
+
+  var nodeTypes = {NODE_TYPES};
+
+  const {NODE_TYPES: NODE_TYPES$1} = nodeTypes;
+
+
+
+
+
+  function makePrefetchAllCss(fetchCss) {
+    return async function prefetchAllCss(doc = document) {
+      const cssMap = {};
+      const start = Date.now();
+      const promises = [];
+      doFetchAllCssFromFrame(doc, cssMap, promises);
+      await Promise.all(promises);
+      console.log('[prefetchAllCss]', Date.now() - start);
+
+      return function fetchCssSync(url) {
+        return cssMap[url];
+      };
+
+      async function fetchNodeCss(node, baseUrl, cssMap) {
+        let cssText, resourceUrl;
+        if (isLinkToStyleSheet(node)) {
+          resourceUrl = absolutizeUrl_1(getHrefAttr(node), baseUrl);
+          cssText = await fetchCss(resourceUrl);
+          if (cssText !== undefined) {
+            cssMap[resourceUrl] = cssText;
+          }
+        }
+        if (cssText) {
+          await fetchBundledCss(cssText, resourceUrl, cssMap);
+        }
+      }
+
+      async function fetchBundledCss(cssText, resourceUrl, cssMap) {
+        try {
+          const styleSheet = parseCss_1(cssText);
+          const promises = [];
+          for (const rule of Array.from(styleSheet.cssRules)) {
+            if (rule instanceof CSSImportRule) {
+              promises.push(
+                (async () => {
+                  const nestedUrl = absolutizeUrl_1(rule.href, resourceUrl);
+                  const cssText = await fetchCss(nestedUrl);
+                  cssMap[nestedUrl] = cssText;
+                  if (cssText !== undefined) {
+                    await fetchBundledCss(cssText, nestedUrl, cssMap);
+                  }
+                })(),
+              );
+            }
+          }
+          await Promise.all(promises);
+        } catch (ex) {
+          console.log(`error during fetchBundledCss, resourceUrl=${resourceUrl}`, ex);
+        }
+      }
+
+      function doFetchAllCssFromFrame(frameDoc, cssMap, promises) {
+        fetchAllCssFromNode(frameDoc.documentElement);
+
+        function fetchAllCssFromNode(node) {
+          promises.push(fetchNodeCss(node, frameDoc.location.href, cssMap));
+
+          switch (node.nodeType) {
+            case NODE_TYPES$1.ELEMENT: {
+              const tagName = node.tagName.toUpperCase();
+              if (tagName === 'IFRAME') {
+                return fetchAllCssFromIframe(node);
+              } else {
+                return fetchAllCssFromElement(node);
+              }
+            }
+          }
+        }
+
+        async function fetchAllCssFromElement(el) {
+          Array.prototype.map.call(el.childNodes, fetchAllCssFromNode);
+        }
+
+        async function fetchAllCssFromIframe(el) {
+          fetchAllCssFromElement(el);
+          try {
+            doFetchAllCssFromFrame(el.contentDocument, cssMap, promises);
+          } catch (ex) {
+            console.log(ex);
+          }
+        }
+      }
+    };
+  }
+
+  var prefetchAllCss = makePrefetchAllCss;
+
+  const {NODE_TYPES: NODE_TYPES$2} = nodeTypes;
+
   const API_VERSION = '1.0.0';
 
   async function captureFrame(
     {styleProps, rectProps, ignoredTagNames} = defaultDomProps,
     doc = document,
+    addStats = false,
   ) {
-    const start = Date.now();
+    const performance = {total: {}, prefetchCss: {}, doCaptureFrame: {}, waitForImages: {}};
+    function startTime(obj) {
+      obj.startTime = Date.now();
+    }
+    function endTime(obj) {
+      obj.endTime = Date.now();
+      obj.ellapsedTime = obj.endTime - obj.startTime;
+    }
+    const promises = [];
+    startTime(performance.total);
     const unfetchedResources = new Set();
     const iframeCors = [];
     const iframeToken = '@@@@@';
     const unfetchedToken = '#####';
     const separator = '-----';
 
-    const fetchCss$$1 = fetchCss(fetch);
+    startTime(performance.prefetchCss);
+    const prefetchAllCss$$1 = prefetchAllCss(fetchCss(fetch));
+    const getCssFromCache = await prefetchAllCss$$1(doc);
+    endTime(performance.prefetchCss);
+
     const getBundledCssFromCssText$$1 = getBundledCssFromCssText({
       parseCss: parseCss_1,
       CSSImportRule,
-      fetchCss: fetchCss$$1,
+      getCssFromCache,
       absolutizeUrl: absolutizeUrl_1,
       unfetchedToken,
     });
-    const extractCssFromNode$$1 = extractCssFromNode({fetchCss: fetchCss$$1, absolutizeUrl: absolutizeUrl_1});
+    const extractCssFromNode$$1 = extractCssFromNode({getCssFromCache, absolutizeUrl: absolutizeUrl_1});
     const captureNodeCss$$1 = captureNodeCss({
       extractCssFromNode: extractCssFromNode$$1,
       getBundledCssFromCssText: getBundledCssFromCssText$$1,
@@ -280,7 +393,13 @@ function __captureDom() {
     });
 
     // Note: Change the API_VERSION when changing json structure.
-    const capturedFrame = await doCaptureFrame(doc);
+    startTime(performance.doCaptureFrame);
+    const capturedFrame = doCaptureFrame(doc);
+    endTime(performance.doCaptureFrame);
+
+    startTime(performance.waitForImages);
+    await Promise.all(promises);
+    endTime(performance.waitForImages);
     capturedFrame.version = API_VERSION;
 
     const iframePrefix = iframeCors.length ? `${iframeCors.join('\n')}\n` : '';
@@ -294,10 +413,20 @@ function __captureDom() {
       iframeStartToken: `"${iframeToken}`,
       iframeEndToken: `${iframeToken}"`,
     });
+
+    endTime(performance.total);
+
+    function stats() {
+      if (!addStats) {
+        return '';
+      }
+      return `\n${separator}\n${JSON.stringify(performance)}`;
+    }
+
     const ret = `${metaPrefix}\n${unfetchedPrefix}${separator}\n${iframePrefix}${separator}\n${JSON.stringify(
     capturedFrame,
-  )}`;
-    console.log('[captureFrame]', Date.now() - start);
+  )}${stats()}`;
+    console.log('[captureFrame]', JSON.stringify(performance));
     return ret;
 
     function filter(x) {
@@ -315,16 +444,16 @@ function __captureDom() {
       };
     }
 
-    async function doCaptureFrame(frameDoc) {
+    function doCaptureFrame(frameDoc) {
       const bgImages = new Set();
       let bundledCss = '';
-      const ret = await captureNode(frameDoc.documentElement);
+      const ret = captureNode(frameDoc.documentElement);
       ret.css = bundledCss;
-      ret.images = await getImageSizes_1({bgImages});
+      promises.push(getImageSizes_1({bgImages}).then(images => (ret.images = images)));
       return ret;
 
-      async function captureNode(node) {
-        const {bundledCss: nodeCss, unfetchedResources: nodeUnfetched} = await captureNodeCss$$1(
+      function captureNode(node) {
+        const {bundledCss: nodeCss, unfetchedResources: nodeUnfetched} = captureNodeCss$$1(
           node,
           frameDoc.location.href,
         );
@@ -332,15 +461,15 @@ function __captureDom() {
         if (nodeUnfetched) for (const elem of nodeUnfetched) unfetchedResources.add(elem);
 
         switch (node.nodeType) {
-          case NODE_TYPES.TEXT: {
+          case NODE_TYPES$2.TEXT: {
             return captureTextNode(node);
           }
-          case NODE_TYPES.ELEMENT: {
+          case NODE_TYPES$2.ELEMENT: {
             const tagName = node.tagName.toUpperCase();
             if (tagName === 'IFRAME') {
-              return await iframeToJSON(node);
+              return iframeToJSON(node);
             } else {
-              return await await elementToJSON(node);
+              return elementToJSON(node);
             }
           }
           default: {
@@ -349,10 +478,8 @@ function __captureDom() {
         }
       }
 
-      async function elementToJSON(el) {
-        const childNodes = (await Promise.all(
-          Array.prototype.map.call(el.childNodes, captureNode),
-        )).filter(filter);
+      function elementToJSON(el) {
+        const childNodes = Array.prototype.map.call(el.childNodes, captureNode).filter(filter);
 
         const tagName = el.tagName.toUpperCase();
         if (ignoredTagNames.indexOf(tagName) > -1) return null;
@@ -362,6 +489,13 @@ function __captureDom() {
 
         const style = {};
         for (const p of styleProps) style[p] = computedStyle.getPropertyValue(p);
+        if (!style['border-width']) {
+          style['border-width'] = `${computedStyle.getPropertyValue(
+          'border-top-width',
+        )} ${computedStyle.getPropertyValue('border-right-width')} ${computedStyle.getPropertyValue(
+          'border-bottom-width',
+        )} ${computedStyle.getPropertyValue('border-left-width')}`;
+        }
 
         const rect = {};
         for (const p of rectProps) rect[p] = boundingClientRect[p];
@@ -387,20 +521,31 @@ function __captureDom() {
         };
       }
 
-      async function iframeToJSON(el) {
-        const obj = await elementToJSON(el);
+      function iframeToJSON(el) {
+        const obj = elementToJSON(el);
+        let doc;
         try {
-          if (el.contentDocument) {
-            obj.childNodes = [await doCaptureFrame(el.contentDocument)];
+          doc = el.contentDocument;
+        } catch (ex) {
+          markFrameAsCors();
+          return obj;
+        }
+        try {
+          if (doc) {
+            obj.childNodes = [doCaptureFrame(el.contentDocument)];
           } else {
-            const xpath = genXpath_1(el);
-            iframeCors.push(xpath);
-            obj.childNodes = [`${iframeToken}${xpath}${iframeToken}`];
+            markFrameAsCors();
           }
         } catch (ex) {
           console.log('error in iframeToJSON', ex);
         }
         return obj;
+
+        function markFrameAsCors() {
+          const xpath = genXpath_1(el);
+          iframeCors.push(xpath);
+          obj.childNodes = [`${iframeToken}${xpath}${iframeToken}`];
+        }
       }
     }
   }
