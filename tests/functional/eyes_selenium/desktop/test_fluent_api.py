@@ -1,7 +1,7 @@
 import pytest
 from mock import patch
 
-from applitools.common import MatchWindowData
+from applitools.common import FloatingBounds, FloatingMatchSettings, MatchWindowData
 from applitools.selenium import Region, StitchMode, Target
 
 pytestmark = [
@@ -56,10 +56,19 @@ def test_check_window_with_ignore_by_selector__fluent(eyes_opened):
 
 
 def test_check_window_with_floating_by_selector__fluent(eyes_opened):
-    eyes_opened.check(
-        "Fluent - Window with floating region by selector",
-        Target.window().floating("#overflowing-div", 3, 3, 20, 30),
-    )
+    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
+
+        eyes_opened.check(
+            "Fluent - Window with floating region by selector",
+            Target.window().floating("#overflowing-div", 3, 3, 20, 30),
+        )
+
+        eyes_opened.close(False)
+        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
+        ims = match_window_data.options.image_match_settings
+        assert ims.floating == [
+            FloatingMatchSettings(Region(8, 80, 304, 184), FloatingBounds(20, 3, 30, 3))
+        ]
 
 
 def test_check_window_with_floating_by_region__fluent(eyes_opened):
