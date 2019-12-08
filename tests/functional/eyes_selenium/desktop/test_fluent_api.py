@@ -56,19 +56,10 @@ def test_check_window_with_ignore_by_selector__fluent(eyes_opened):
 
 
 def test_check_window_with_floating_by_selector__fluent(eyes_opened):
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-
-        eyes_opened.check(
-            "Fluent - Window with floating region by selector",
-            Target.window().floating("#overflowing-div", 3, 3, 20, 30),
-        )
-
-        eyes_opened.close(False)
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-        ims = match_window_data.options.image_match_settings
-        assert ims.floating == [
-            FloatingMatchSettings(Region(8, 80, 304, 184), FloatingBounds(20, 3, 30, 3))
-        ]
+    eyes_opened.check(
+        "Fluent - Window with floating region by selector",
+        Target.window().floating("#overflowing-div", 3, 3, 20, 30),
+    )
 
 
 def test_check_window_with_floating_by_region__fluent(eyes_opened):
@@ -161,30 +152,17 @@ def test_check_scrollable_modal(eyes_opened):
 
 
 def test_check_window_with_ignore_by_selector__centered__fluent(eyes_opened):
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-
-        eyes_opened.check(
-            "Fluent - Window with ignore region by selector centered",
-            Target.window().ignore("#centered"),
-        )
-
-        eyes_opened.close(False)
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-        ims = match_window_data.options.image_match_settings
-        assert ims.ignore == [Region(122, 928, 456, 306)]
+    eyes_opened.check(
+        "Fluent - Window with ignore region by selector centered",
+        Target.window().ignore("#centered"),
+    )
 
 
 def test_check_window_with_ignore_by_selector__stretched__fluent(eyes_opened):
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-        eyes_opened.check(
-            "Fluent - Window with ignore region by selector stretched",
-            Target.window().ignore("#stretched"),
-        )
-
-        eyes_opened.close(False)
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-        ims = match_window_data.options.image_match_settings
-        assert ims.ignore == [Region(8, 1270, 690, 206)]
+    eyes_opened.check(
+        "Fluent - Window with ignore region by selector stretched",
+        Target.window().ignore("#stretched"),
+    )
 
 
 def test_check_region_by_selector_after_manual_scroll__fluent(eyes_opened):
