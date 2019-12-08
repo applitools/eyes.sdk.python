@@ -263,6 +263,8 @@ class VisualGridEyes(object):
                 )
         if raise_ex:
             for test in self.test_list:
+                if test.test_result is None:
+                    raise TestFailedError("Test haven't finished correctly")
                 results = test.test_result
                 scenario_id_or_name = results.name
                 app_id_or_name = results.app_name

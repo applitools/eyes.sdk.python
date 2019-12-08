@@ -114,18 +114,20 @@ class VisualGridRunner(EyesRunner):
 
         all_results = []
         for test, test_result in iteritems(self._all_test_result):
+            exception = None
+            if test.test_result is None:
+                exception = TestFailedError("Test haven't finished correctly")
             scenario_id_or_name = test_result.name
             app_id_or_name = test_result.app_name
-            exception = None
-            if test_result.is_unresolved and not test_result.is_new:
+            if test_result and test_result.is_unresolved and not test_result.is_new:
                 exception = DiffsFoundError(
                     test_result, scenario_id_or_name, app_id_or_name
                 )
-            if test_result.is_new:
+            if test_result and test_result.is_new:
                 exception = NewTestError(
                     test_result, scenario_id_or_name, app_id_or_name
                 )
-            if test_result.is_failed:
+            if test_result and test_result.is_failed:
                 exception = TestFailedError(
                     test_result, scenario_id_or_name, app_id_or_name
                 )
