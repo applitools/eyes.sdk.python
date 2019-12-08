@@ -15,6 +15,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.utils import datetime_utils, urljoin, urlparse
+from applitools.selenium import css_parser
 
 from .vg_task import VGTask
 
@@ -164,18 +165,18 @@ class RenderTask(VGTask):
         frames = data.get("frames", [])
         discovered_resources_urls = []
 
-        def handle_resources(urls_to_fetch, url):
-            for discovered_url in urls_to_fetch:
-                target_url = _apply_base_url(discovered_url, url)
-                with self.discovered_resources_lock:
-                    discovered_resources_urls.append(target_url)
+        def handle_resources(content_type, content):
+            if content_type == "text/css":
+                urls_from_css = css_parser.get_urls_from_css_resource(content)
+                for discovered_url in urls_from_css:
+                    target_url = _apply_base_url(discovered_url, base_url)
+                    with self.discovered_resources_lock:
+                        discovered_resources_urls.append(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
             response = self.eyes_connector.download_resource(link)
-            return VGResource.from_response(
-                link, response, on_resources_fetched=handle_resources
-            )
+            return VGResource.from_response(link, response, on_created=handle_resources)
 
         for f_data in frames:
             f_data["url"] = _apply_base_url(f_data["url"], base_url)
@@ -184,7 +185,7 @@ class RenderTask(VGTask):
             ).resource
 
         for blob in blobs:
-            resource = VGResource.from_blob(blob, on_resources_fetched=handle_resources)
+            resource = VGResource.from_blob(blob, on_created=handle_resources)
             if resource.url.rstrip("#") == base_url:
                 continue
 

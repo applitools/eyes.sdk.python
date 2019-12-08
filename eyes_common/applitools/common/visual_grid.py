@@ -4,7 +4,6 @@ from enum import Enum
 
 import attr
 
-from . import css_parser
 from .geometry import RectangleSize, Region
 from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
@@ -238,28 +237,30 @@ class VGResource(object):
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
-    _handle_discovered_func = attr.ib(default=None)
+    _handle_func = attr.ib(default=None)
 
     def __hash__(self):
         return self.hash
 
     def __attrs_post_init__(self):
         self.hash = general_utils.get_sha256_hash(self.content)
-        self.lookup_for_css_resources()
+        if callable(self._handle_func):
+            self._handle_func()
 
     @classmethod
-    def from_blob(cls, blob, on_resources_fetched=None):
+    def from_blob(cls, blob, on_created=None):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
+        content_type = blob.get("type")
         return cls(
             blob.get("url"),
-            blob.get("type"),
+            content_type,
             content,
-            handle_discovered_func=on_resources_fetched,
+            handle_func=lambda: on_created(content_type, content),
         )
 
     @classmethod
-    def from_response(cls, url, response, on_resources_fetched=None):
+    def from_response(cls, url, response, on_created=None):
         # type: (Text, Response, Callable) -> VGResource
         content_type = response.headers["Content-Type"]
         content = response.content
@@ -267,16 +268,11 @@ class VGResource(object):
             content_type = "application/empty-response"
             content = b""
         return cls(
-            url, content_type, content, handle_discovered_func=on_resources_fetched
+            url,
+            content_type,
+            content,
+            handle_func=lambda: on_created(content_type, content),
         )
-
-    def lookup_for_css_resources(self):
-        if self.content_type == "text/css" and callable(self._handle_discovered_func):
-            urls_from_css = css_parser.get_urls_from_css_resource(self.content)
-            self._handle_discovered_func(urls_from_css, self.url)
-
-    def on_resources_fetched(self, func):
-        self._handle_discovered_func = func
 
 
 @attr.s
