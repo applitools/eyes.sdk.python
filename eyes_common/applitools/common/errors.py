@@ -33,13 +33,17 @@ class TestFailedError(Exception):
     Indicates that a test did not pass (i.e., test either failed or is a new test).
     """
 
-    def __init__(self, test_results, scenario_id_or_name, app_id_or_name):
-        super(TestFailedError, self).__init__(
-            "'{}' of '{}'. See details at {}".format(
+    def __init__(
+        self, test_results=None, scenario_id_or_name=None, app_id_or_name=None
+    ):
+        if all([test_results, scenario_id_or_name, app_id_or_name]):
+            msg = "'{}' of '{}'. See details at {}".format(
                 scenario_id_or_name, app_id_or_name, test_results.url
             )
-        )
-        self._test_results = test_results
+            self._test_results = test_results
+        else:
+            msg = test_results
+        super(TestFailedError, self).__init__(msg)
 
 
 class NewTestError(TestFailedError):
