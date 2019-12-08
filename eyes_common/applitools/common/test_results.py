@@ -29,8 +29,8 @@ class TestResultsStatus(Enum):
 
 @attr.s
 class SessionUrls(object):
-    batch = attr.ib(default=None)  # type: Text
-    session = attr.ib(default=None)  # type: Text
+    batch = attr.ib(default=None, metadata={JsonInclude.THIS: True})  # type: Text
+    session = attr.ib(default=None, metadata={JsonInclude.THIS: True})  # type: Text
 
 
 @attr.s
@@ -106,7 +106,9 @@ class TestResults(object):
     none_matches = attr.ib(
         default=0, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: int
-    is_new = attr.ib(default=None, repr=False)  # type: Optional[bool]
+    is_new = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
 
     url = attr.ib(
         init=False, default=None, metadata={JsonInclude.THIS: True}
@@ -118,34 +120,67 @@ class TestResults(object):
     name = attr.ib(
         default=None, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: Text
-    secret_token = attr.ib(default=None, repr=False)  # type: Text
-    id = attr.ib(default=None, repr=False)  # type: Text
-    app_name = attr.ib(default=None, repr=False)  # type: Text
-    batch_name = attr.ib(default=None, repr=False)  # type: Text
-    batch_id = attr.ib(default=None, repr=False)  # type: Text
-    branch_name = attr.ib(default=None, repr=False)  # type: Text
-    host_os = attr.ib(default=None, repr=False)  # type: Text
-    host_app = attr.ib(default=None, repr=False)  # type: Text
+    secret_token = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    id = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    app_name = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    batch_name = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    batch_id = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    branch_name = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    host_os = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    host_app = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
     host_display_size = attr.ib(
-        default=None, repr=False, type=RectangleSize
+        default=None, repr=False, type=RectangleSize, metadata={JsonInclude.THIS: True}
     )  # type: RectangleSize
     # started_at = attr.ib(
     #     default=None,
     #     repr=False,
     #     converter=lambda d: datetime.strptime(d, "%Y-%m-%dT%H:%M:%S.%fZ"),
     # )  # type: datetime
-    started_at = attr.ib(default=None, repr=False)  # type: Text
-    duration = attr.ib(default=None, repr=False)  # type: int
-    is_different = attr.ib(default=None, repr=False)  # type: bool
-    is_aborted = attr.ib(default=None, repr=False)  # type: bool
-    app_urls = attr.ib(default=None, repr=False, type=SessionUrls)  # type: SessionUrls
-    api_urls = attr.ib(default=None, repr=False, type=SessionUrls)  # type: SessionUrls
+    started_at = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
+    duration = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    is_different = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: bool
+    is_aborted = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: bool
+    app_urls = attr.ib(
+        default=None, repr=False, type=SessionUrls, metadata={JsonInclude.THIS: True}
+    )  # type: SessionUrls
+    api_urls = attr.ib(
+        default=None, repr=False, type=SessionUrls, metadata={JsonInclude.THIS: True}
+    )  # type: SessionUrls
     steps_info = attr.ib(
-        default=None, repr=False, type=List[StepInfo]
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: List[StepInfo]
-    baseline_id = attr.ib(default=None, repr=False)  # type: Text
+    baseline_id = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Text
     default_match_settings = attr.ib(
-        default=None, repr=False, type=ImageMatchSettings
+        default=None,
+        repr=False,
+        type=ImageMatchSettings,
+        metadata={JsonInclude.THIS: True},
     )  # type: ImageMatchSettings
 
     @property

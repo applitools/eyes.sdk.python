@@ -65,7 +65,7 @@ def attr_from_json(content, cls):
             return kls(**cleaned_params(params, fields))
         except IndexError:
             logger.error("Failed to convert: {} to any class".format(obj))
-            return obj
+            return params
 
     instance = json.loads(content, object_hook=obj_came)
     return instance
