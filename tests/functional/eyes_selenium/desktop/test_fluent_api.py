@@ -1,5 +1,7 @@
 import pytest
+from mock import patch
 
+from applitools.common import MatchWindowData
 from applitools.selenium import Region, StitchMode, Target
 
 pytestmark = [
@@ -150,19 +152,30 @@ def test_check_scrollable_modal(eyes_opened):
 
 
 def test_check_window_with_ignore_by_selector__centered__fluent(eyes_opened):
-    eyes_opened.check(
-        "Fluent - Window with ignore region by selector centered",
-        Target.window().ignore("#centered"),
-    )
-    # TODO: setExpectedIgnoreRegions(new Region(122, 928, 456, 306))
+    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
+
+        eyes_opened.check(
+            "Fluent - Window with ignore region by selector centered",
+            Target.window().ignore("#centered"),
+        )
+
+        eyes_opened.close(False)
+        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
+        ims = match_window_data.options.image_match_settings
+        assert ims.ignore == [Region(122, 928, 456, 306)]
 
 
 def test_check_window_with_ignore_by_selector__stretched__fluent(eyes_opened):
-    eyes_opened.check(
-        "Fluent - Window with ignore region by selector stretched",
-        Target.window().ignore("#stretched"),
-        # TODO: add analog setExpectedIgnoreRegions(new Region(8, 1270, 690, 206))
-    )
+    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
+        eyes_opened.check(
+            "Fluent - Window with ignore region by selector stretched",
+            Target.window().ignore("#stretched"),
+        )
+
+        eyes_opened.close(False)
+        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
+        ims = match_window_data.options.image_match_settings
+        assert ims.ignore == [Region(8, 1270, 690, 206)]
 
 
 def test_check_region_by_selector_after_manual_scroll__fluent(eyes_opened):
@@ -178,8 +191,14 @@ def test_simple_region(eyes_opened):
 
 @pytest.mark.parametrize("ignore_displacements", [True])
 def test_ignore_displacements(eyes_opened, ignore_displacements):
-    eyes_opened.check(
-        "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
-        Target.window().ignore_displacements(ignore_displacements).fully(),
-    )
-    # TODO: add analog addExpectedProperty("IgnoreDisplacements", ignoreDisplacements)
+    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
+
+        eyes_opened.check(
+            "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
+            Target.window().ignore_displacements(ignore_displacements).fully(),
+        )
+
+        eyes_opened.close(False)
+        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
+        ims = match_window_data.options.image_match_settings
+        assert ims.ignore_displacements == ignore_displacements
