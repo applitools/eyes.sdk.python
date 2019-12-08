@@ -198,16 +198,9 @@ def test_simple_region(eyes_opened):
     eyes_opened.check("Simple Region", Target.window().region(Region(50, 50, 100, 100)))
 
 
-@pytest.mark.parametrize("ignore_displacements", [True])
+@pytest.mark.parametrize("ignore_displacements", [True, False])
 def test_ignore_displacements(eyes_opened, ignore_displacements):
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-
-        eyes_opened.check(
-            "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
-            Target.window().ignore_displacements(ignore_displacements).fully(),
-        )
-
-        eyes_opened.close(False)
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-        ims = match_window_data.options.image_match_settings
-        assert ims.ignore_displacements == ignore_displacements
+    eyes_opened.check(
+        "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
+        Target.window().ignore_displacements(ignore_displacements).fully(),
+    )
