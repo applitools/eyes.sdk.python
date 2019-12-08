@@ -1,4 +1,4 @@
-## [Unreleased] - 2019-*-*
+## [4.1.0] - 2019-12-9
 ## Fixed
 - app_urls and api_urls were always None in TestResults
 - Validation error when passing RectangleSize as viewport_size in Configuration
