@@ -56,6 +56,9 @@ class VisualGridRunner(EyesRunner):
         thread.start()
         self._thread = thread
 
+    def __del__(self):
+        self.stop()
+
     def aggregate_result(self, test, test_result):
         # type: (RunningTest, TestResults) -> None
         self._all_test_result[test] = test_result
