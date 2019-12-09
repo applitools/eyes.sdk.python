@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import abc
 import typing
+from copy import deepcopy
 
 from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
 from applitools.common.config import BatchInfo, Configuration
@@ -216,13 +217,18 @@ class EyesBase(_EyesBaseAbstract):
         return app_env
 
     def get_configuration(self):
-        return self._config_provider
+        # type:() -> Configuration
+        """Returns clone of configuration instance"""
+        return deepcopy(self._config_provider)
 
     def set_configuration(self, configuration):
         # type:(Configuration) -> None
-        self._config_provider = configuration
+        """Clone configuration instance and set it"""
+        self._config_provider = deepcopy(configuration)
 
-    configuration = property(get_configuration, set_configuration)
+    configuration = property(
+        get_configuration, set_configuration
+    )  # type: Configuration
 
     @property
     def scale_ratio(self):

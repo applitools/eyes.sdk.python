@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import typing
+from copy import deepcopy
 
 from applitools.common import EyesError, logger
 from applitools.common.selenium import Configuration
@@ -72,18 +73,21 @@ class Eyes(object):
 
     def get_configuration(self):
         # type: () -> Configuration
-        return self._configuration
+        return deepcopy(self._configuration)
 
     def set_configuration(self, configuration):
         # type: (Configuration) -> None
         argument_guard.is_a(configuration, Configuration)
+        configuration = deepcopy(configuration)
         if self._configuration.api_key and not configuration.api_key:
             configuration.api_key = self._configuration.api_key
         if self._configuration.server_url and not configuration.server_url:
             configuration.server_url = self._configuration.server_url
         self._configuration = configuration
 
-    configuration = property(get_configuration, set_configuration)
+    configuration = property(
+        get_configuration, set_configuration
+    )  # type: Configuration
 
     @property
     def rotation(self):
