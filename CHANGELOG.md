@@ -1,3 +1,6 @@
+## Fixed
+- eyes.configuration used to return configuration instance instead clone [Trello 1378](https://trello.com/c/WtnHxRzD)
+
 ## [4.1.0] - 2019-12-9
 ## Fixed
 - app_urls and api_urls were always None in TestResults
