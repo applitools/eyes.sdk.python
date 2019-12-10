@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import abc
 import typing
+from copy import deepcopy
 
 from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
 from applitools.common.config import BatchInfo, Configuration
@@ -27,6 +28,7 @@ from applitools.core.debug import (
     FileDebugScreenshotProvider,
     NullDebugScreenshotProvider,
 )
+from applitools.core.eyes_mixins import EyesConfigurationMixin
 
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
@@ -37,20 +39,12 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
     from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
-    from typing import Optional, Text, Union
+    from typing import Optional, Text, Union, Any
 
 __all__ = ("EyesBase",)
 
 
 class _EyesBaseAbstract(ABC):
-    @property
-    @abc.abstractmethod
-    def configuration(self):
-        # type: () -> Configuration
-        """
-        Returns Eyes configuration
-        """
-
     @abc.abstractmethod
     def _try_capture_dom(self):
         # type: () -> Text
@@ -116,7 +110,7 @@ class _EyesBaseAbstract(ABC):
         pass
 
 
-class EyesBase(_EyesBaseAbstract):
+class EyesBase(_EyesBaseAbstract, EyesConfigurationMixin, ABC):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
@@ -131,7 +125,7 @@ class EyesBase(_EyesBaseAbstract):
     _render = False
     _cut_provider = None
     _should_get_title = False  # type: bool
-
+    _config_cls = Configuration
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -152,7 +146,7 @@ class EyesBase(_EyesBaseAbstract):
         Creates a new (possibly disabled) Eyes instance that
         interacts with the Eyes server.
         """
-        self._config_provider = Configuration()
+        super(EyesBase, self).__init__()
         self._server_connector = ServerConnector()  # type: ServerConnector
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
@@ -214,15 +208,6 @@ class EyesBase(_EyesBaseAbstract):
             inferred=self._inferred_environment,
         )
         return app_env
-
-    def get_configuration(self):
-        return self._config_provider
-
-    def set_configuration(self, configuration):
-        # type:(Configuration) -> None
-        self._config_provider = configuration
-
-    configuration = property(get_configuration, set_configuration)
 
     @property
     def scale_ratio(self):
@@ -415,7 +400,7 @@ class EyesBase(_EyesBaseAbstract):
         :raise EyesError: If the session was already open.
         """
         logger.open_()
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
 
@@ -423,20 +408,20 @@ class EyesBase(_EyesBaseAbstract):
             raise EyesError("Server connector not set.")
 
         # If there's no default application name, one must be provided for the current test.
-        if self.configuration.app_name is None:
+        if self.configure.app_name is None:
             argument_guard.not_none(app_name)
-            self.configuration.app_name = app_name
+            self.configure.app_name = app_name
 
         argument_guard.not_none(test_name)
-        self.configuration.test_name = test_name
+        self.configure.test_name = test_name
 
         logger.info("\nAgent: {}\n".format(self.full_agent_id))
         logger.info(
             "open_base(%s, %s, %s, %s)"
-            % (app_name, test_name, viewport_size, self.configuration.failure_reports)
+            % (app_name, test_name, viewport_size, self.configure.failure_reports)
         )
-        self.configuration.session_type = session_type
-        self.configuration.viewport_size = viewport_size
+        self.configure.session_type = session_type
+        self.configure.viewport_size = viewport_size
 
         self._open_base()
 

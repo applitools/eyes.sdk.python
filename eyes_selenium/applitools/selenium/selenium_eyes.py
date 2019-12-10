@@ -13,7 +13,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.geometry import Point
-from applitools.common.selenium import Configuration, StitchMode
+from applitools.common.selenium import StitchMode
 from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -128,11 +128,6 @@ class SeleniumEyes(EyesBase):
         self._runner = runner if runner else ClassicRunner()
 
     @property
-    def configuration(self):
-        # type: () -> Configuration
-        return self._config_provider.configuration
-
-    @property
     def original_fc(self):
         # type: () -> FrameChain
         return self._original_fc
@@ -150,8 +145,8 @@ class SeleniumEyes(EyesBase):
     @property
     def should_scrollbars_be_hidden(self):
         # type: () -> bool
-        return self.configuration.hide_scrollbars or (
-            self.configuration.stitch_mode == StitchMode.CSS and self._stitch_content
+        return self.configure.hide_scrollbars or (
+            self.configure.stitch_mode == StitchMode.CSS and self._stitch_content
         )
 
     @property
@@ -169,7 +164,7 @@ class SeleniumEyes(EyesBase):
 
     def open(self, driver):
         # type: (AnyWebDriver) -> EyesWebDriver
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("open(): ignored (disabled)")
             return driver
         self._driver = driver
@@ -226,7 +221,7 @@ class SeleniumEyes(EyesBase):
         return False
 
     def _create_position_provider(self, scroll_root_element):
-        stitch_mode = self.configuration.stitch_mode
+        stitch_mode = self.configure.stitch_mode
         logger.info(
             "initializing position provider. stitch_mode: {}".format(stitch_mode)
         )
@@ -408,7 +403,7 @@ class SeleniumEyes(EyesBase):
                     self._check_frame_or_element = True
                     display_style = element.get_computed_style("display")
 
-                    if self.configuration.hide_scrollbars:
+                    if self.configure.hide_scrollbars:
                         element.hide_scrollbars()
 
                     size_and_borders = element.size_and_borders
@@ -459,7 +454,7 @@ class SeleniumEyes(EyesBase):
                     logger.exception(e)
                     raise e
                 finally:
-                    if self.configuration.hide_scrollbars:
+                    if self.configure.hide_scrollbars:
                         element.return_to_original_overflow()
                     self._check_frame_or_element = False
                     self._region_to_check = None
@@ -588,7 +583,7 @@ class SeleniumEyes(EyesBase):
         :param action: Mouse action (click, double click etc.)
         :param element: The element on which the action was performed.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("add_mouse_trigger: Ignoring %s (disabled)" % action)
             return
         # Triggers are activated on the last checked window.
@@ -616,7 +611,7 @@ class SeleniumEyes(EyesBase):
         :param element: The element to which the text was sent.
         :param text: The trigger's text.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("add_text_trigger: Ignoring '%s' (disabled)" % text)
             return
         # Triggers are activated on the last checked window.
@@ -636,14 +631,14 @@ class SeleniumEyes(EyesBase):
         logger.debug("add_text_trigger: Added %s" % trigger)
 
     def _get_viewport_size(self):
-        size = self.configuration.viewport_size
+        size = self.configure.viewport_size
         if size is None:
             size = self.driver.get_default_content_viewport_size()
         return size
 
     def _ensure_viewport_size(self):
-        if self.configuration.viewport_size is None:
-            self.configuration.viewport_size = (
+        if self.configure.viewport_size is None:
+            self.configure.viewport_size = (
                 self.driver.get_default_content_viewport_size()
             )
 
@@ -671,11 +666,11 @@ class SeleniumEyes(EyesBase):
             finally:
                 # Just in case the user catches this error
                 self.driver.switch_to.frames(original_frame)
-        self.configuration.viewport_size = RectangleSize(size["width"], size["height"])
+        self.configure.viewport_size = RectangleSize(size["width"], size["height"])
 
     @property
     def _environment(self):
-        os = self.configuration.host_os
+        os = self.configure.host_os
         # If no host OS was set, check for mobile OS.
         device_info = "Desktop"
         if os is None:
@@ -701,8 +696,8 @@ class SeleniumEyes(EyesBase):
                 logger.info("No mobile OS detected.")
         app_env = AppEnvironment(
             os,
-            hosting_app=self.configuration.host_app,
-            display_size=self.configuration.viewport_size,
+            hosting_app=self.configure.host_app,
+            display_size=self.configure.viewport_size,
             inferred=self._inferred_environment,
             device_info=device_info,
         )
@@ -757,7 +752,7 @@ class SeleniumEyes(EyesBase):
         try:
             self._scale_provider = ContextBasedScaleProvider(
                 top_level_context_entire_size=self._driver.get_entire_page_size(),
-                viewport_size=self.configuration.viewport_size,
+                viewport_size=self.configure.viewport_size,
                 device_pixel_ratio=device_pixel_ratio,
                 is_mobile_device=False,  # TODO: fix scaling for mobile
             )  # type: ScaleProvider
@@ -809,13 +804,13 @@ class SeleniumEyes(EyesBase):
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
-            self.configuration.wait_before_screenshots,
+            self.configure.wait_before_screenshots,
             self._debug_screenshot_provider,
             self._screenshot_factory,
             origin_provider,
             scale_provider,
             self._cut_provider,
-            self.configuration.stitch_overlap,
+            self.configure.stitch_overlap,
             self._image_provider,
             self._region_position_compensation,
         )
@@ -823,7 +818,7 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _try_hide_caret(self):
         active_element = None
-        if self.configuration.hide_caret and not self.driver.is_mobile_app:
+        if self.configure.hide_caret and not self.driver.is_mobile_app:
             try:
                 active_element = self.driver.execute_script(
                     "var activeElement = document.activeElement; activeElement "
@@ -833,7 +828,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning("Cannot hide caret! \n{}".format(e))
         yield
 
-        if self.configuration.hide_caret and not self.driver.is_mobile_app:
+        if self.configure.hide_caret and not self.driver.is_mobile_app:
             try:
                 self.driver.execute_script("arguments[0].focus();", active_element)
             except WebDriverException as e:
@@ -851,7 +846,7 @@ class SeleniumEyes(EyesBase):
             if self._check_frame_or_element and not self.driver.is_mobile_app:
                 self._last_screenshot = self._entire_element_screenshot(scale_provider)
             elif (
-                self.configuration.force_full_page_screenshot or self._stitch_content
+                self.configure.force_full_page_screenshot or self._stitch_content
             ) and not self.driver.is_mobile_app:
                 self._last_screenshot = self._full_page_screenshot(scale_provider)
             else:
@@ -921,7 +916,7 @@ class SeleniumEyes(EyesBase):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
-            datetime_utils.sleep(self.configuration.wait_before_screenshots)
+            datetime_utils.sleep(self.configure.wait_before_screenshots)
             image = self._get_scaled_cropped_image(scale_provider)
             if not self._is_check_region and not self._driver.is_mobile_platform:
                 # Some browsers return always full page screenshot (IE).

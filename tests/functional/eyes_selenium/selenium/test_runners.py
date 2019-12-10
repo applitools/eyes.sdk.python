@@ -4,6 +4,20 @@ from applitools.common import BatchInfo, StitchMode
 from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner, logger
 
 
+def test_classic_runner_works_normally(driver):
+    classic_runner = ClassicRunner()
+    eyes = Eyes(classic_runner)
+    eyes.open(
+        driver,
+        "Applitools Eyes Java SDK",
+        "Classic Runner Test",
+        dict(width=1200, height=800),
+    )
+    eyes.check("Step 1", Target.window())
+    eyes.close(False)
+    print(classic_runner.get_all_test_results())
+
+
 def test_classic_runner_raise_exception(driver):
     classic_runner = ClassicRunner()
     eyes = Eyes(classic_runner)
