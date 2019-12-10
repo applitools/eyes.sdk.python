@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING
 
-from applitools.common import TestResultContainer
+from applitools.common import TestResultContainer, TestResultsSummary
 from applitools.core import EyesBase, EyesRunner
 
 if TYPE_CHECKING:
     from typing import Optional, List
-    from applitools.common import TestResults, TestResultsSummary
+    from applitools.common import TestResults
 
 
 class ClassicRunner(EyesRunner):
