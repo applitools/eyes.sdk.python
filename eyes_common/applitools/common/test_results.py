@@ -294,7 +294,7 @@ result summary {{
     missing={missing}
     matches={matches}
 }}""".format(
-            all_results=self._all_results,
+            all_results="\n".join(map(str, self._all_results)),
             passed=self._passed,
             unresolved=self._unresolved,
             failed=self._failed,
