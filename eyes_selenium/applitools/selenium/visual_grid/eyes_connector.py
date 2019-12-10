@@ -42,7 +42,7 @@ class EyesConnector(EyesBase):
         self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
-        self.configuration = config
+        self.set_configuration(config)
         self._server_connector.update_config(config)
         self._region_selectors = None
         self._regions = None
