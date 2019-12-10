@@ -1,6 +1,6 @@
 import os
 import uuid
-from copy import copy
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict, List, Optional, Text, Union
 
@@ -141,4 +141,4 @@ class Configuration(object):
 
     def clone(self):
         # type: () -> Configuration
-        return copy(self)
+        return deepcopy(self)

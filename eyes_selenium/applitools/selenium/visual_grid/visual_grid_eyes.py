@@ -91,7 +91,7 @@ class VisualGridEyes(object):
         return self._driver
 
     @property
-    def configuration(self):
+    def configure(self):
         # type: () -> Configuration
         return self._config_provider.configuration
 
@@ -111,7 +111,7 @@ class VisualGridEyes(object):
         Gets the agent id, which identifies the current library using the SDK.
 
         """
-        agent_id = self.configuration.agent_id
+        agent_id = self.configure.agent_id
         if agent_id is None:
             return self.base_agent_id
         return "{} [{}]".format(agent_id, self.base_agent_id)
@@ -123,32 +123,32 @@ class VisualGridEyes(object):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self.configuration.properties.append({"name": name, "value": value})
+        self.configure.properties.append({"name": name, "value": value})
 
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return driver
         logger.open_()
         argument_guard.not_none(driver)
-        logger.debug("VisualGridEyes.open(%s)" % self.configuration)
+        logger.debug("VisualGridEyes.open(%s)" % self.configure)
 
         self._driver = driver
-        browsers_info = self.configuration.browsers_info
+        browsers_info = self.configure.browsers_info
 
-        if self.configuration.viewport_size:
-            self._set_viewport_size(self.configuration.viewport_size)
+        if self.configure.viewport_size:
+            self._set_viewport_size(self.configure.viewport_size)
         elif browsers_info:
             viewports = [bi.viewport_size for bi in browsers_info]
             if viewports:
-                self.configuration.viewport_size = viewports[0]
+                self.configure.viewport_size = viewports[0]
         else:
-            self.configuration.viewport_size = self._get_viewport_size()
+            self.configure.viewport_size = self._get_viewport_size()
 
         for b_info in browsers_info:
             test = RunningTest(
-                self._create_vgeyes_connector(b_info), self.configuration, b_info
+                self._create_vgeyes_connector(b_info), self.configure, b_info
             )
             test.on_results_received(
                 lambda r: self.vg_manager.aggregate_result(test, r)
@@ -197,13 +197,13 @@ class VisualGridEyes(object):
 
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> bool
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return False
         argument_guard.is_a(check_settings, CheckSettings)
         logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
         self._try_set_target_selector(check_settings)
 
-        self.configuration.send_dom = check_settings.values.send_dom
+        self.configure.send_dom = check_settings.values.send_dom
 
         check_settings = self._update_check_settings(check_settings)
         logger.info("check('{}', check_settings) - begin".format(name))
@@ -238,7 +238,7 @@ class VisualGridEyes(object):
 
     def close(self, raise_ex=True):  # noqa
         # type: (Optional[bool]) -> Optional[TestResults]
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("close(): ignored (disabled)")
             return TestResults()
         if not self.test_list:
@@ -284,7 +284,7 @@ class VisualGridEyes(object):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("abort(): ignored (disabled)")
             return
         for test in self.test_list:
@@ -302,22 +302,22 @@ class VisualGridEyes(object):
         ignore_displacements = check_settings.values.ignore_displacements
 
         if match_level is None:
-            check_settings = check_settings.match_level(self.configuration.match_level)
+            check_settings = check_settings.match_level(self.configure.match_level)
         if fully is None:
-            fps = self.configuration.force_full_page_screenshot
+            fps = self.configure.force_full_page_screenshot
             check_settings = check_settings.fully(True if fps is None else fps)
         if send_dom is None:
-            send = self.configuration.send_dom
+            send = self.configure.send_dom
             check_settings = check_settings.send_dom(True if send is None else send)
         if ignore_displacements is None:
             check_settings = check_settings.ignore_displacements(
-                self.configuration.ignore_displacements
+                self.configure.ignore_displacements
             )
         return check_settings
 
     def _create_vgeyes_connector(self, b_info):
         # type: (RenderBrowserInfo) -> EyesConnector
-        vgeyes_connector = EyesConnector(b_info, self.configuration.clone())
+        vgeyes_connector = EyesConnector(b_info, self.configure.clone())
         if b_info.emulation_info:
             vgeyes_connector.device = b_info.emulation_info.device_name
 

@@ -143,7 +143,7 @@ class SafariScreenshotImageProvider(ImageProvider):
 
         logger.info("logical viewport size: {}".format(original_viewport_size))
 
-        force_full_page_screenshot = self._eyes.configuration.force_full_page_screenshot
+        force_full_page_screenshot = self._eyes.configure.force_full_page_screenshot
         if force_full_page_screenshot is not None:
             if not force_full_page_screenshot:
                 current_frame_chain = self._eyes.driver.frame_chain  # type: FrameChain

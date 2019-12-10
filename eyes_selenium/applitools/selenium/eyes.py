@@ -6,6 +6,7 @@ from applitools.common import EyesError, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
+from applitools.core.eyes_mixins import EyesConfigurationMixin
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
 from .fluent import Target
@@ -34,22 +35,23 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to("configuration", all_fields(Configuration))
-class Eyes(object):
+@proxy_to("configure", all_fields(Configuration))
+class Eyes(EyesConfigurationMixin):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
     _is_opened = False  # type: bool
+    _config_cls = Configuration
 
     def __init__(self, runner=None):
         # type: (Optional[VisualGridRunner, ClassicRunner]) -> None
-        self._configuration = Configuration()  # type: Configuration
+        super(Eyes, self).__init__()
 
         # backward compatibility with settings server_url
         if isinstance(runner, str):
-            self.configuration.server_url = runner
+            self.configure.server_url = runner
             runner = None
 
         if runner is None:
@@ -69,21 +71,6 @@ class Eyes(object):
     def is_open(self):
         # type: () -> bool
         return self._is_opened
-
-    def get_configuration(self):
-        # type: () -> Configuration
-        return self._configuration
-
-    def set_configuration(self, configuration):
-        # type: (Configuration) -> None
-        argument_guard.is_a(configuration, Configuration)
-        if self._configuration.api_key and not configuration.api_key:
-            configuration.api_key = self._configuration.api_key
-        if self._configuration.server_url and not configuration.server_url:
-            configuration.server_url = self._configuration.server_url
-        self._configuration = configuration
-
-    configuration = property(get_configuration, set_configuration)
 
     @property
     def rotation(self):
@@ -304,14 +291,14 @@ class Eyes(object):
     def send_dom(self):
         # type: () -> bool
         if not self._is_visual_grid_eyes:
-            return self.configuration.send_dom
+            return self.configure.send_dom
         return False
 
     @send_dom.setter
     def send_dom(self, value):
         # type: (bool) -> None
         if not self._is_visual_grid_eyes:
-            self.configuration.send_dom = value
+            self.configure.send_dom = value
 
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
@@ -322,7 +309,7 @@ class Eyes(object):
         :param check_settings: target which area of the window to check.
         :return: The match results.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return MatchResult()
         if not self.is_open:
             self.abort()
@@ -406,7 +393,7 @@ class Eyes(object):
         :return: None
         """
         # TODO: remove this disable
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
             return MatchResult()
         logger.debug("check_region_in_frame_by_selector('%s')" % tag)
@@ -438,11 +425,11 @@ class Eyes(object):
         :raise EyesError: If the session was already open.
         """
         if app_name:
-            self.configuration.app_name = app_name
+            self.configure.app_name = app_name
         if test_name:
-            self.configuration.test_name = test_name
+            self.configure.test_name = test_name
         if viewport_size:
-            self.configuration.viewport_size = viewport_size  # type: ignore
+            self.configure.viewport_size = viewport_size  # type: ignore
         self._init_driver(driver)
         result = self._current_eyes.open(self.driver)
         self._is_opened = True
