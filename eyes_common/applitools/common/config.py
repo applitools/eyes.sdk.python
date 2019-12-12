@@ -1,5 +1,5 @@
 import uuid
-from copy import deepcopy
+from copy import copy
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -277,4 +277,4 @@ class Configuration(object):
 
     def clone(self):
         # type: () -> Configuration
-        return deepcopy(self)
+        return copy(self)
