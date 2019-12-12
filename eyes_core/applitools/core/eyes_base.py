@@ -685,11 +685,11 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                 get_config_value("ignore_caret")
             )
         if check_settings.values.send_dom is None:
-            check_settings = check_settings.ignore_caret(get_config_value("send_dom"))
+            check_settings = check_settings.send_dom(get_config_value("send_dom"))
         if check_settings.values.use_dom is None:
-            check_settings = check_settings.ignore_caret(get_config_value("use_dom"))
+            check_settings = check_settings.use_dom(get_config_value("use_dom"))
         if check_settings.values.enable_patterns is None:
-            check_settings = check_settings.ignore_caret(
+            check_settings = check_settings.enable_patterns(
                 get_config_value("enable_patterns")
             )
         if check_settings.values.ignore_displacements is None:
