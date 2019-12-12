@@ -28,9 +28,9 @@ class Eyes(EyesBase):
     @property
     def full_agent_id(self):
         # type: () -> Text
-        if self.agent_id is None:
+        if self.configure.agent_id is None:
             return self.base_agent_id
-        return "%s [%s]" % (self.agent_id, self.base_agent_id)
+        return "%s [%s]" % (self.configure.agent_id, self.base_agent_id)
 
     @property
     def base_agent_id(self):
