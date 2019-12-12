@@ -37,10 +37,13 @@ class EyesConfigurationMixin(object):
 
     @property
     def configuration(self):
-        logger.deprecation("Use `configure` instead")
+        logger.deprecation("`configuration` is deprecated. Use `configure` instead")
         return self.configure
 
     @configuration.setter
     def configuration(self, configuration):
-        logger.deprecation("Use `set_configuration` instead")
+        logger.deprecation(
+            "Assign to `configuration` is deprecated. "
+            "Use `set_configuration` instead"
+        )
         self.set_configuration(configuration)
