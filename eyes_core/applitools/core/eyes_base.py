@@ -110,7 +110,7 @@ class _EyesBaseAbstract(ABC):
         pass
 
 
-class EyesBase(_EyesBaseAbstract, EyesConfigurationMixin, ABC):
+class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]

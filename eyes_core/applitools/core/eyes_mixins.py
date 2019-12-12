@@ -15,7 +15,7 @@ class EyesConfigurationMixin(object):
     def get_configuration(self):
         # type:() -> ConfigType
         """Returns clone of configuration instance"""
-        if isinstance(self._config_provider, Configuration):
+        if isinstance(self._config_provider, self._config_cls):
             return self._config_provider.clone()
         return self._config_provider.configure.clone()
 
