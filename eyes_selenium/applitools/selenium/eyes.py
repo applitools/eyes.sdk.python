@@ -67,6 +67,19 @@ class Eyes(EyesConfigurationMixin):
         else:
             raise ValueError("Wrong runner")
 
+    def get_configuration(self):
+        # type:() -> Configuration
+        return super(Eyes, self).get_configuration()
+
+    def set_configuration(self, configuration):
+        # type:(Configuration) -> None
+        return super(Eyes, self).set_configuration()
+
+    @property
+    def configure(self):
+        # type:() -> Configuration
+        return super(Eyes, self).configure
+
     @property
     def is_open(self):
         # type: () -> bool

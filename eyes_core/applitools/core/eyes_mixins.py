@@ -1,26 +1,21 @@
-from typing import Union, TYPE_CHECKING
-from applitools.common import logger
-
-if TYPE_CHECKING:
-    from applitools.common import Configuration
-    from applitools.common.selenium import Configuration as SeleniumConfiguration
-
-    ConfigType = Union[Configuration, SeleniumConfiguration]  # typedef
+from applitools.common import logger, Configuration
 
 
 class EyesConfigurationMixin(object):
+    _config_cls = Configuration
+
     def __init__(self):
-        self._config_provider = self._config_cls()  # type: ConfigType
+        self._config_provider = self._config_cls()
 
     def get_configuration(self):
-        # type:() -> ConfigType
+        # type:() -> Configuration
         """Returns clone of configuration instance"""
         if isinstance(self._config_provider, self._config_cls):
             return self._config_provider.clone()
         return self._config_provider.configure.clone()
 
     def set_configuration(self, configuration):
-        # type:(ConfigType) -> None
+        # type:(Configuration) -> None
         """Clone configuration instance and set it"""
         old_configuration = self._config_provider
         if isinstance(old_configuration, self._config_cls):
@@ -35,7 +30,7 @@ class EyesConfigurationMixin(object):
 
     @property
     def configure(self):
-        # type:() -> ConfigType
+        # type:() -> Configuration
         if isinstance(self._config_provider, self._config_cls):
             return self._config_provider
         return self._config_provider.configure
