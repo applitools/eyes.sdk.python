@@ -1,4 +1,4 @@
-from applitools.selenium import Eyes, Configuration
+from applitools.selenium import Configuration, Eyes
 
 
 def test_double_eyes_with_new_configuration():
@@ -16,12 +16,12 @@ def test_double_eyes_with_new_configuration():
 def test_double_eyes_with_configuration_from_eyes():
     eyes1 = Eyes()
     eyes2 = Eyes()
-    eyes1.configuration.test_name = "Test1"
-    conf = eyes1.configuration
-    eyes2.configuration = conf
-    eyes2.configuration.test_name = "Test2"
-    assert eyes1.configuration.test_name == "Test1"
-    assert eyes2.configuration.test_name == "Test2"
+    eyes1.configure.test_name = "Test1"
+    conf = eyes1.configure
+    eyes2.set_configuration(conf)
+    eyes2.configure.test_name = "Test2"
+    assert eyes1.configure.test_name == "Test1"
+    assert eyes2.configure.test_name == "Test2"
 
 
 def test_get_set_configuration():

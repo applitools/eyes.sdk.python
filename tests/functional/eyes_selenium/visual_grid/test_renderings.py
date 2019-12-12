@@ -28,7 +28,7 @@ def test_mobile_only(driver, batch_info):
 
     sconf.add_device_emulation(DeviceName.Galaxy_S5)
 
-    eyes.configuration = sconf
+    eyes.set_configuration(sconf)
     eyes.open(driver)
     driver.get(
         "https://applitools.github.io/demo/TestPages/DynamicResolution/mobile.html"
@@ -72,7 +72,7 @@ def test_viewports_test(driver, batch_info):
     sconf.add_browser(700, 500, BrowserType.IE_10)
     sconf.add_browser(1200, 800, BrowserType.IE_10)
     # sconf.add_browser(1600, 1200, BrowserType.IE_10)
-    eyes.configuration = sconf
+    eyes.set_configuration(sconf)
 
     eyes.open(driver)
     driver.get("https://www.applitools.com")
@@ -137,7 +137,7 @@ def test_special_rendering(url, test_name, batch_info, driver):
     sconf.add_browser(1200, 800, BrowserType.CHROME)
     sconf.add_browser(1200, 800, BrowserType.FIREFOX)
 
-    eyes.configuration = sconf
+    eyes.set_configuration(sconf)
     eyes.open(driver)
     driver.get(url)
     datetime_utils.sleep(500)
