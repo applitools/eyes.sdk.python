@@ -202,9 +202,9 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         """
 
         app_env = AppEnvironment(
-            os=self.configuration.host_os,
-            hosting_app=self.configuration.host_app,
-            display_size=self.configuration.viewport_size,
+            os=self.configure.host_os,
+            hosting_app=self.configure.host_app,
+            display_size=self.configure.viewport_size,
             inferred=self._inferred_environment,
         )
         return app_env
@@ -243,9 +243,9 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
         :return: The agent id.
         """
-        if self.configuration.agent_id is None:
+        if self.configure.agent_id is None:
             return self.base_agent_id
-        return "{0} [{1}]".format(self.configuration.agent_id, self.base_agent_id)
+        return "{0} [{1}]".format(self.configure.agent_id, self.base_agent_id)
 
     @property
     def agent_setup(self):
@@ -258,10 +258,10 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self.configuration.properties.append({"name": name, "value": value})
+        self.configure.properties.append({"name": name, "value": value})
 
     def clear_properties(self):
-        del self.configuration.properties[:]
+        del self.configure.properties[:]
 
     @property
     def is_open(self):
@@ -309,7 +309,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("close(): ignored (disabled)")
             return None
         try:
@@ -332,8 +332,8 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             results_url = self._running_session.url
 
             logger.info("close(): Ending server session...")
-            should_save = (is_new_session and self.configuration.save_new_tests) or (
-                (not is_new_session) and self.configuration.save_failed_tests
+            should_save = (is_new_session and self.configure.save_new_tests) or (
+                (not is_new_session) and self.configure.save_failed_tests
             )
             logger.debug("close(): automatically save session? %s" % should_save)
             results = self._server_connector.stop_session(
@@ -353,7 +353,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("abort(): ignored (disabled)")
             return
         try:
@@ -448,7 +448,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._cut_provider = NullCutProvider()
 
     def _open_base(self):
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
         logger.open_()
@@ -464,7 +464,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
                 self._before_open()
                 try:
-                    if self.configuration.viewport_size:
+                    if self.configure.viewport_size:
                         self._ensure_running_session()
                 except Exception as e:
                     logger.exception(e)
@@ -487,29 +487,27 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
-        logger.debug("Eyes server URL is '{}'".format(self.configuration.server_url))
-        logger.debug("Timeout = {} ms".format(self.configuration._timeout))
-        logger.debug("match_timeout = {} ms".format(self.configuration.match_timeout))
+        logger.debug("Eyes server URL is '{}'".format(self.configure.server_url))
+        logger.debug("Timeout = {} ms".format(self.configure._timeout))
+        logger.debug("match_timeout = {} ms".format(self.configure.match_timeout))
         logger.debug(
             "Default match settings = '{}' ".format(
-                self.configuration.default_match_settings
+                self.configure.default_match_settings
             )
         )
-        logger.debug(
-            "FailureReports = '{}' ".format(self.configuration.failure_reports)
-        )
+        logger.debug("FailureReports = '{}' ".format(self.configure.failure_reports))
 
     def _create_session_start_info(self):
         # type: () -> None
         self._session_start_info = SessionStartInfo(
             agent_id=self.full_agent_id,
-            session_type=self.configuration.session_type,
-            app_id_or_name=self.configuration.app_name,
+            session_type=self.configure.session_type,
+            app_id_or_name=self.configure.app_name,
             ver_id=None,
-            scenario_id_or_name=self.configuration.test_name,
-            batch_info=self.configuration.batch,
-            baseline_env_name=self.configuration.baseline_env_name,
-            environment_name=self.configuration.environment_name,
+            scenario_id_or_name=self.configure.test_name,
+            batch_info=self.configure.batch,
+            baseline_env_name=self.configure.baseline_env_name,
+            environment_name=self.configure.environment_name,
             environment=self._environment,
             default_match_settings=self.configuration.default_match_settings,
             branch_name=self.configuration.branch_name,
@@ -517,7 +515,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             baseline_branch_name=self.configuration.baseline_branch_name,
             save_diffs=self.configuration.save_diffs,
             render=self._render,
-            properties=self.configuration.properties,
+            properties=self.configure.properties,
         )
 
     def _start_session(self):
@@ -526,13 +524,13 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self.__ensure_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
-        if self.configuration.batch is None:
+        if self.configure.batch is None:
             logger.info("No Batch set")
-            self.configuration.batch = BatchInfo()
+            self.configure.batch = BatchInfo()
         else:
-            logger.info("Batch is {}".format(self.configuration.batch))
+            logger.info("Batch is {}".format(self.configure.batch))
 
-        self._server_connector.update_config(self.configuration)
+        self._server_connector.update_config(self.get_configuration())
         self._create_session_start_info()
         # Actually start the session.
         self._running_session = self._server_connector.start_session(
@@ -557,7 +555,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self._match_window_task = MatchWindowTask(
             self._server_connector,
             self._running_session,
-            self.configuration.match_timeout,
+            self.configure.match_timeout,
             eyes=self,
             app_output_provider=output_provider,
         )
@@ -572,7 +570,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._debug_screenshot_provider.save(screenshot.image, "sub_screenshot")
 
         if not self._dom_url and (
-            self.configuration.send_dom or check_settings.values.send_dom
+            self.configure.send_dom or check_settings.values.send_dom
         ):
             dom_json = self._try_capture_dom()
             self._dom_url = self._try_post_dom_snapshot(dom_json)
@@ -599,7 +597,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
         # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             return MatchResult(as_expected=True)
 
@@ -624,7 +622,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._should_match_once_on_timeout = True
             if self._running_session and not self._running_session.is_new_session:
                 logger.info("Window mismatch %s" % tag)
-                if self.configuration.failure_reports == FailureReports.IMMEDIATE:
+                if self.configure.failure_reports == FailureReports.IMMEDIATE:
                     raise TestFailedError(
                         "Mismatch found in '%s' of '%s'"
                         % (
@@ -673,7 +671,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
     def _process_check_settings_values(self, check_settings):
         get_config_value = general_utils.use_default_if_none_factory(
-            self.configuration.default_match_settings, self.configuration
+            self.configure.default_match_settings, self.configure
         )
         # Set defaults if necessary
         if check_settings.values.match_level is None:
@@ -692,7 +690,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             )
         if check_settings.values.ignore_displacements is None:
             check_settings = check_settings.ignore_displacements(
-                self.configuration.default_match_settings.ignore_displacements
+                self.configure.default_match_settings.ignore_displacements
             )
         return check_settings
 
@@ -703,12 +701,12 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         """
         if not self._is_viewport_size_set:
             try:
-                if self.configuration.viewport_size is None:
+                if self.configure.viewport_size is None:
                     # TODO: ignore if viewport_size settled explicitly
                     target_size = self._get_viewport_size()
-                    self.configuration.viewport_size = target_size
+                    self.configure.viewport_size = target_size
                 else:
-                    target_size = self.configuration.viewport_size
+                    target_size = self.configure.viewport_size
                     self._set_viewport_size(target_size)
                 self._is_viewport_size_set = True
             except Exception as e:

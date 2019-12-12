@@ -58,11 +58,11 @@ class Eyes(EyesBase):
 
     def _get_viewport_size(self):
         # type: () -> RectangleSize
-        return self.configuration.viewport_size
+        return self.configure.viewport_size
 
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        self.configuration.viewport_size = size  # type: ignore
+        self.configure.viewport_size = size  # type: ignore
 
     def _ensure_viewport_size(self):
         pass
@@ -81,7 +81,7 @@ class Eyes(EyesBase):
 
     def check(self, name, check_settings):
         # type: (Text, ImagesCheckSettings) -> bool
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return False
         if name:
             check_settings = check_settings.with_name(name)
@@ -89,14 +89,14 @@ class Eyes(EyesBase):
             name = check_settings.values.name
 
         image = check_settings.values.image
-        if self.configuration.viewport_size is None:
-            self.configuration.viewport_size = RectangleSize.from_(image)
+        if self.configure.viewport_size is None:
+            self.configure.viewport_size = RectangleSize.from_(image)
 
         return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
         # type: (Union[Image.Image, Text], Optional[Text], bool) -> Optional[bool]
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return None
         logger.info(
             "check_image(Image {}, tag {}, ignore_mismatch {}".format(
@@ -109,7 +109,7 @@ class Eyes(EyesBase):
 
     def check_region(self, image, region, tag=None, ignore_mismatch=False):
         # type: (Image.Image, Region, Optional[Text], bool) -> Optional[bool]
-        if self.configuration.is_disabled:
+        if self.configure.is_disabled:
             return None
         logger.info(
             "check_region(Image {}, region {}, tag {}, ignore_mismatch {}".format(
@@ -137,7 +137,7 @@ class Eyes(EyesBase):
             self.debug_screenshot_provider.save(image, "cut")
 
         self._screenshot = EyesImagesScreenshot(image)
-        if not self.configuration.viewport_size:
+        if not self.configure.viewport_size:
             self._set_viewport_size(
                 RectangleSize(width=image.width, height=image.height)
             )
