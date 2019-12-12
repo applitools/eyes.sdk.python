@@ -129,12 +129,6 @@ class Configuration(object):
         raise ValueError("Wrong viewport type settled")
 
     @property
-    def is_dom_send(self):
-        # type: () -> bool
-        logger.deprecation("Use is_send_dom instead")
-        return self.is_send_dom
-
-    @property
     def is_send_dom(self):
         # type: () -> bool
         return self.send_dom
