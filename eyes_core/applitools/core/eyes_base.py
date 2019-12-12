@@ -515,8 +515,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             branch_name=self.configuration.branch_name,
             parent_branch_name=self.configuration.parent_branch_name,
             baseline_branch_name=self.configuration.baseline_branch_name,
-            compare_with_parent_branch=self.configuration.compare_with_parent_branch,
-            ignore_baseline=self.configuration.ignore_baseline,
             save_diffs=self.configuration.save_diffs,
             render=self._render,
             properties=self.configuration.properties,

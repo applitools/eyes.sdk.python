@@ -87,10 +87,6 @@ class SessionStartInfo(object):
     branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     parent_branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     baseline_branch_name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    compare_with_parent_branch = attr.ib(
-        metadata={JsonInclude.THIS: True}
-    )  # type: bool
-    ignore_baseline = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     save_diffs = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     render = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     properties = attr.ib(metadata={JsonInclude.THIS: True})  # type: list
