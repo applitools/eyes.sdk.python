@@ -73,7 +73,7 @@ class Eyes(EyesConfigurationMixin):
 
     def set_configuration(self, configuration):
         # type:(Configuration) -> None
-        return super(Eyes, self).set_configuration()
+        return super(Eyes, self).set_configuration(configuration)
 
     @property
     def configure(self):
