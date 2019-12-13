@@ -36,54 +36,34 @@ def test_config_envs():
 @pytest.mark.parametrize("conf", [Configuration(), SeleniumConfiguration()])
 def test_set_value_to_conf(conf):
     batch = BatchInfo()
-    conf.set_batch(batch).set_branch_name("branch name").set_agent_id(
-        "agent id"
-    ).set_parent_branch_name("parent branch name").set_baseline_branch_name(
-        "baseline branch name"
-    ).set_baseline_env_name(
-        "baseline env name"
-    ).set_environment_name(
-        "env name"
-    ).set_save_diffs(
-        True
-    ).set_app_name(
-        "app name"
-    ).set_test_name(
-        "test name"
-    ).set_viewport_size(
-        {"width": 400, "height": 300}
-    ).set_session_type(
-        SessionType.PROGRESSION
-    ).set_ignore_caret(
-        False
-    ).set_host_app(
-        "host app"
-    ).set_host_os(
-        "host os"
-    ).set_match_timeout(
-        100000
-    ).set_match_level(
-        MatchLevel.EXACT
-    ).set_ignore_displacements(
-        True
-    ).set_save_new_tests(
-        False
-    ).set_save_failed_tests(
-        True
-    ).set_failure_reports(
-        FailureReports.IMMEDIATE
-    ).set_send_dom(
-        True
-    ).set_use_dom(
-        True
-    ).set_enable_patterns(
-        True
-    ).set_stitch_overlap(
-        100
-    ).set_api_key(
-        "api key"
-    ).set_server_url(
-        "https://server.url"
+    (
+        conf.set_batch(batch)
+        .set_branch_name("branch name")
+        .set_agent_id("agent id")
+        .set_parent_branch_name("parent branch name")
+        .set_baseline_branch_name("baseline branch name")
+        .set_baseline_env_name("baseline env name")
+        .set_environment_name("env name")
+        .set_save_diffs(True)
+        .set_app_name("app name")
+        .set_test_name("test name")
+        .set_viewport_size({"width": 400, "height": 300})
+        .set_session_type(SessionType.PROGRESSION)
+        .set_ignore_caret(False)
+        .set_host_app("host app")
+        .set_host_os("host os")
+        .set_match_timeout(100000)
+        .set_match_level(MatchLevel.EXACT)
+        .set_ignore_displacements(True)
+        .set_save_new_tests(False)
+        .set_save_failed_tests(True)
+        .set_failure_reports(FailureReports.IMMEDIATE)
+        .set_send_dom(True)
+        .set_use_dom(True)
+        .set_enable_patterns(True)
+        .set_stitch_overlap(100)
+        .set_api_key("api key")
+        .set_server_url("https://server.url")
     )
     assert conf.batch == batch
     assert conf.server_url == "https://server.url"
