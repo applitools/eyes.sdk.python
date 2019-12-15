@@ -1,6 +1,11 @@
+## [4.1.2] - 2019-12-15
+## Added
+- Fluent interface for Configuration [Trello 1407](https://trello.com/c/KUCeFzik)
+## Fixed
+- Call of eyes.get_configuration() raises exception [Trello 1405](https://trello.com/c/QUiQG4RI)
 ## [4.1.1] - 2019-12-10
 ## Fixed
-- eyes.get_configuration() was returning configuration instance instead of clone [Trello 1378](https://trello.com/c/WtnHxRzD)
+- eyes get/set_configuration() was returning configuration instance instead of clone [Trello 1378](https://trello.com/c/WtnHxRzD)
 - Classic Runner get_all_test_results() Throws type error [Trello 1381](https://trello.com/c/kJJBEu4M)
 ## [4.1.0] - 2019-12-9
 ## Fixed

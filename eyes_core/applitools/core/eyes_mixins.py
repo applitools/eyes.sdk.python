@@ -1,26 +1,21 @@
-from typing import Union, TYPE_CHECKING
-from applitools.common import logger
-
-if TYPE_CHECKING:
-    from applitools.common import Configuration
-    from applitools.common.selenium import Configuration as SeleniumConfiguration
-
-    ConfigType = Union[Configuration, SeleniumConfiguration]  # typedef
+from applitools.common import logger, Configuration
 
 
 class EyesConfigurationMixin(object):
+    _config_cls = Configuration
+
     def __init__(self):
-        self._config_provider = self._config_cls()  # type: ConfigType
+        self._config_provider = self._config_cls()
 
     def get_configuration(self):
-        # type:() -> ConfigType
+        # type:() -> Configuration
         """Returns clone of configuration instance"""
-        if isinstance(self._config_provider, Configuration):
+        if isinstance(self._config_provider, self._config_cls):
             return self._config_provider.clone()
         return self._config_provider.configure.clone()
 
     def set_configuration(self, configuration):
-        # type:(ConfigType) -> None
+        # type:(Configuration) -> None
         """Clone configuration instance and set it"""
         old_configuration = self._config_provider
         if isinstance(old_configuration, self._config_cls):
@@ -35,17 +30,20 @@ class EyesConfigurationMixin(object):
 
     @property
     def configure(self):
-        # type:() -> ConfigType
+        # type:() -> Configuration
         if isinstance(self._config_provider, self._config_cls):
             return self._config_provider
         return self._config_provider.configure
 
     @property
     def configuration(self):
-        logger.deprecation("Use `configure` instead")
+        logger.deprecation("`configuration` is deprecated. Use `configure` instead")
         return self.configure
 
     @configuration.setter
     def configuration(self, configuration):
-        logger.deprecation("Use `set_configuration` instead")
+        logger.deprecation(
+            "Assign to `configuration` is deprecated. "
+            "Use `set_configuration` instead"
+        )
         self.set_configuration(configuration)

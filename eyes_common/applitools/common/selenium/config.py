@@ -36,6 +36,31 @@ class Configuration(ConfigurationBase):
     is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
+    def set_force_full_page_screenshot(self, force_full_page_screenshot):
+        # type: (bool) -> Configuration
+        self.force_full_page_screenshot = force_full_page_screenshot
+        return self
+
+    def set_wait_before_screenshots(self, wait_before_screenshots):
+        # type: (int) -> Configuration
+        self.wait_before_screenshots = wait_before_screenshots
+        return self
+
+    def set_stitch_mode(self, stitch_mode):
+        # type: (StitchMode) -> Configuration
+        self.stitch_mode = stitch_mode
+        return self
+
+    def set_hide_scrollbars(self, hide_scrollbars):
+        # type: (bool) -> Configuration
+        self.hide_scrollbars = hide_scrollbars
+        return self
+
+    def set_hide_caret(self, hide_caret):
+        # type: (bool) -> Configuration
+        self.hide_caret = hide_caret
+        return self
+
     @overload  # noqa
     def add_browser(self, render_info):
         # type: (RenderBrowserInfo) -> Configuration
