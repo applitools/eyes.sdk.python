@@ -15,7 +15,7 @@ from applitools.selenium import (
 def vg_eyes():
     vgr = VisualGridRunner(1)
     eyes = Eyes(vgr)
-    eyes.configuration.add_browser(700, 460, BrowserType.CHROME)
+    eyes.configure.add_browser(700, 460, BrowserType.CHROME)
     return eyes
 
 

@@ -18,7 +18,7 @@ def eyes(request, eyes_class, batch_info):
     # TODO: allow to setup logger level through pytest option
     # logger.set_logger(StdoutLogger())
     eyes = eyes_class()
-    eyes.configuration.batch = batch_info
+    eyes.configure.batch = batch_info
     eyes.configure.hide_scrollbars = True
     eyes.configure.save_new_tests = False
     eyes.configure.hide_caret = True

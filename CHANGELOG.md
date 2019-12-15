@@ -1,3 +1,6 @@
+## [4.1.2] - 2019-12-15
+## Added
+- Fluent interface for Configuration [Trello 1407](https://trello.com/c/KUCeFzik)
 ## Fixed
 - Call of eyes.get_configuration() raises exception [Trello 1405](https://trello.com/c/QUiQG4RI)
 ## [4.1.1] - 2019-12-10
