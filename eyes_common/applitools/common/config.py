@@ -1,18 +1,22 @@
-import os
 import uuid
-from copy import deepcopy
+from copy import copy
 from datetime import datetime
-from typing import Dict, List, Optional, Text, Union
+from typing import TYPE_CHECKING
 
 import attr
 
-from applitools.common import logger
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
+
+if TYPE_CHECKING:
+    from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar
+    from applitools.common.utils.custom_types import ViewPort
+
+    Self = TypeVar("Self", bound="Configuration")  # typedef
 
 __all__ = ("BatchInfo", "Configuration")
 
@@ -76,13 +80,9 @@ class Configuration(object):
         default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(default=SessionType.SEQUENTIAL)  # type: SessionType
-    ignore_baseline = attr.ib(default=None)  # type: Optional[bool]
-    ignore_caret = attr.ib(default=False)  # type: bool
-    compare_with_parent_branch = attr.ib(default=None)  # type: Optional[bool]
     host_app = attr.ib(default=None)  # type: Optional[Text]
     host_os = attr.ib(default=None)  # type: Optional[Text]
     properties = attr.ib(factory=list)  # type: List[Dict[Text, Text]]
-    hide_scrollbars = attr.ib(default=False)  # type: bool
     match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT_MS)  # type: int # ms
     match_level = attr.ib(
         default=MatchLevel.STRICT, converter=MatchLevel
@@ -108,6 +108,148 @@ class Configuration(object):
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
+    def set_batch(self, batch):
+        # type: (Self, BatchInfo) -> Self
+        argument_guard.is_a(batch, BatchInfo)
+        self.batch = batch
+        return self
+
+    def set_branch_name(self, branch_name):
+        # type: (Self, Text) -> Self
+        self.branch_name = branch_name
+        return self
+
+    def set_agent_id(self, agent_id):
+        # type: (Self, Text) -> Self
+        self.agent_id = agent_id
+        return self
+
+    def set_parent_branch_name(self, parent_branch_name):
+        # type: (Self, Text) -> Self
+        self.parent_branch_name = parent_branch_name
+        return self
+
+    def set_baseline_branch_name(self, baseline_branch_name):
+        # type: (Self, Text) -> Self
+        self.baseline_branch_name = baseline_branch_name
+        return self
+
+    def set_baseline_env_name(self, baseline_env_name):
+        # type: (Self, Text) -> Self
+        self.baseline_env_name = baseline_env_name
+        return self
+
+    def set_environment_name(self, environment_name):
+        # type: (Self, Text) -> Self
+        self.environment_name = environment_name
+        return self
+
+    def set_save_diffs(self, save_diffs):
+        # type: (Self, bool) -> Self
+        self.save_diffs = save_diffs
+        return self
+
+    def set_app_name(self, app_name):
+        # type: (Self, Text) -> Self
+        self.app_name = app_name
+        return self
+
+    def set_test_name(self, test_name):
+        # type: (Self, Text) -> Self
+        self.test_name = test_name
+        return self
+
+    def set_viewport_size(self, viewport_size):
+        # type: (Self, ViewPort) -> Self
+        self.viewport_size = viewport_size
+        return self
+
+    def set_session_type(self, session_type):
+        # type: (Self, SessionType) -> Self
+        self.session_type = session_type
+        return self
+
+    @property
+    def ignore_caret(self):
+        # type: () -> bool
+        ignore = self.default_match_settings.ignore_caret
+        return True if ignore is None else ignore
+
+    def set_ignore_caret(self, ignore_caret):
+        # type: (Self, bool) -> Self
+        self.default_match_settings.ignore_caret = ignore_caret
+        return self
+
+    def set_host_app(self, host_app):
+        # type: (Self, Text) -> Self
+        self.host_app = host_app
+        return self
+
+    def set_host_os(self, host_os):
+        # type: (Self, Text) -> Self
+        self.host_os = host_os
+        return self
+
+    def set_match_timeout(self, match_timeout):
+        # type: (Self, int) -> Self
+        self.match_timeout = match_timeout
+        return self
+
+    def set_match_level(self, match_level):
+        # type: (Self, MatchLevel) -> Self
+        self.match_level = match_level
+        return self
+
+    def set_ignore_displacements(self, ignore_displacements):
+        # type: (Self, bool) -> Self
+        self.ignore_displacements = ignore_displacements
+        return self
+
+    def set_save_new_tests(self, save_new_tests):
+        # type: (Self, bool) -> Self
+        self.save_new_tests = save_new_tests
+        return self
+
+    def set_save_failed_tests(self, save_failed_tests):
+        # type: (Self, bool) -> Self
+        self.save_failed_tests = save_failed_tests
+        return self
+
+    def set_failure_reports(self, failure_reports):
+        # type: (Self, FailureReports) -> Self
+        self.failure_reports = failure_reports
+        return self
+
+    def set_send_dom(self, send_dom):
+        # type: (Self, bool) -> Self
+        self.send_dom = send_dom
+        return self
+
+    def set_use_dom(self, use_dom):
+        # type: (Self, bool) -> Self
+        self.use_dom = use_dom
+        return self
+
+    def set_enable_patterns(self, enable_patterns):
+        # type: (Self, bool) -> Self
+        self.enable_patterns = enable_patterns
+        return self
+
+    def set_stitch_overlap(self, stitch_overlap):
+        # type: (Self, int) -> Self
+        self.stitch_overlap = stitch_overlap
+        return self
+
+    def set_api_key(self, api_key):
+        # type: (Self, Text) -> Self
+        self.api_key = api_key
+        return self
+
+    def set_server_url(self, server_url):
+        # type: (Self, Text) -> Self
+        self.server_url = server_url
+        return self
+
     @match_timeout.validator
     def _validate1(self, attribute, value):
         if 0 < value < MINIMUM_MATCH_TIMEOUT_MS:
@@ -129,16 +271,10 @@ class Configuration(object):
         raise ValueError("Wrong viewport type settled")
 
     @property
-    def is_dom_send(self):
-        # type: () -> bool
-        logger.deprecation("Use is_send_dom instead")
-        return self.is_send_dom
-
-    @property
     def is_send_dom(self):
         # type: () -> bool
         return self.send_dom
 
     def clone(self):
         # type: () -> Configuration
-        return deepcopy(self)
+        return copy(self)

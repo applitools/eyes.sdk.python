@@ -93,7 +93,7 @@ class VisualGridEyes(object):
     @property
     def configure(self):
         # type: () -> Configuration
-        return self._config_provider.configuration
+        return self._config_provider.configure
 
     @property
     def base_agent_id(self):
