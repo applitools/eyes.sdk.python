@@ -59,7 +59,7 @@ class CheckSettings(object):
     )  # type: CheckSettingsValues
 
     def layout(self, *regions):
-        # type: (*Region)  -> Self
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         self.values.match_level = MatchLevel.LAYOUT
         if not regions:
@@ -75,7 +75,7 @@ class CheckSettings(object):
         return self
 
     def strict(self, *regions):
-        # type: (*Region)  -> Self
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         self.values.match_level = MatchLevel.STRICT
         if not regions:
@@ -86,7 +86,7 @@ class CheckSettings(object):
         return self
 
     def content(self, *regions):
-        # type: (*Region)  -> Self
+        # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         self.values.match_level = MatchLevel.CONTENT
         if not regions:
@@ -97,7 +97,7 @@ class CheckSettings(object):
         return self
 
     def ignore(self, *regions):
-        # type: (*Region)  -> Self
+        # type: (Self, *Region)  -> Self
         """ Adds one or more ignore regions. """
         self.values.ignore_regions = self.__regions(
             regions, method_name="ignore_regions"
@@ -106,14 +106,14 @@ class CheckSettings(object):
 
     @overload  # noqa
     def floating(self, max_offset, region):
-        # type: (int, Region) -> Self
+        # type: (Self, int, Region) -> Self
         pass
 
     @overload  # noqa
     def floating(
         self, region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
     ):
-        # type: (Region, int, int, int, int) -> Self
+        # type: (Self, Region, int, int, int, int) -> Self
         pass
 
     def floating(self, *args):  # noqa
@@ -157,7 +157,7 @@ class CheckSettings(object):
         return self
 
     def send_dom(self, senddom=True):
-        # type: (bool) -> Self
+        # type: (Self, bool) -> Self
         """
          Defines whether to send the document DOM or not.
         """
@@ -165,7 +165,7 @@ class CheckSettings(object):
         return self
 
     def use_dom(self, use=True):
-        # type: (bool) -> Self
+        # type: (Self, bool) -> Self
         """
          Defines useDom for enabling the match algorithm to use dom.
         """
@@ -173,42 +173,42 @@ class CheckSettings(object):
         return self
 
     def enable_patterns(self, enable=True):
-        # type: (bool) -> Self
+        # type: (Self, bool) -> Self
         self.values.enable_patterns = enable
         return self
 
     def ignore_displacements(self, should_ignore=True):
-        # type: (bool) -> Self
+        # type: (Self, bool) -> Self
         self.values.ignore_displacements = should_ignore
         return self
 
     def match_level(self, match_level):
-        # type: (MatchLevel)  -> Self
+        # type: (Self, MatchLevel)  -> Self
         self.values.match_level = match_level
         return self
 
     def ignore_caret(self, ignore=True):
-        # type: (bool)  -> Self
+        # type: (Self, bool)  -> Self
         self.values.ignore_caret = ignore
         return self
 
     def fully(self, fully=True):
-        # type: (bool)  -> Self
+        # type: (Self, bool)  -> Self
         self.values.stitch_content = fully
         return self
 
     def with_name(self, name):
-        # type: (Text)  -> Self
+        # type: (Self, Text)  -> Self
         self.values.name = name
         return self
 
     def stitch_content(self, stitch_content=True):
-        # type: (bool)  -> Self
+        # type: (Self, bool)  -> Self
         self.values.stitch_content = stitch_content
         return self
 
     def timeout(self, timeout):
-        # type: (int)  -> Self
+        # type: (Self, int)  -> Self
         self.values.timeout = timeout
         return self
 

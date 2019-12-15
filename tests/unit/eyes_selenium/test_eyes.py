@@ -11,8 +11,7 @@ from applitools.core import (
     NullScaleProvider,
     UnscaledFixedCutProvider,
 )
-from applitools.selenium import Eyes, Target
-from applitools.selenium.visual_grid import VisualGridRunner
+from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 
 
 def open_and_get_start_session_info(eyes, driver):
@@ -38,7 +37,7 @@ def pytest_generate_tests(metafunc):
 @pytest.fixture(scope="function")
 def eyes(request):
     if request.param == "selenium":
-        return Eyes()
+        return Eyes(ClassicRunner())
     elif request.param == "visual_grid":
         return Eyes(VisualGridRunner())
     else:
@@ -61,18 +60,18 @@ def test_match_level(eyes):
     assert eyes.match_level == MatchLevel.STRICT
     eyes.match_level = MatchLevel.EXACT
     assert eyes.match_level == MatchLevel.EXACT
-    assert eyes.configuration.match_level == MatchLevel.EXACT
+    assert eyes.configure.match_level == MatchLevel.EXACT
     eyes.match_level = MatchLevel.LAYOUT
     assert eyes.match_level == MatchLevel.LAYOUT
-    assert eyes.configuration.match_level == MatchLevel.LAYOUT
+    assert eyes.configure.match_level == MatchLevel.LAYOUT
 
 
 def test_stitch_mode(eyes):
     assert eyes.stitch_mode == StitchMode.Scroll
-    assert eyes.configuration.stitch_mode == StitchMode.Scroll
+    assert eyes.configure.stitch_mode == StitchMode.Scroll
     eyes.stitch_mode = StitchMode.CSS
     assert eyes.stitch_mode == StitchMode.CSS
-    assert eyes.configuration.stitch_mode == StitchMode.CSS
+    assert eyes.configure.stitch_mode == StitchMode.CSS
 
 
 def test_config_overwriting(eyes):
@@ -80,18 +79,18 @@ def test_config_overwriting(eyes):
     eyes2 = Eyes()
     eyes2.host_app = "Host2"
     assert eyes.host_app != eyes2.host_app
-    assert eyes.configuration.host_app != eyes2.configuration.host_app
+    assert eyes.configure.host_app != eyes2.configure.host_app
 
-    eyes.configuration.host_app = "Other Host1"
-    eyes2.configuration.host_app = "Other Host2"
+    eyes.configure.host_app = "Other Host1"
+    eyes2.configure.host_app = "Other Host2"
     assert eyes.host_app != eyes2.host_app
-    assert eyes.configuration.host_app != eyes2.configuration.host_app
+    assert eyes.configure.host_app != eyes2.configure.host_app
 
 
 def test_baseline_name(eyes, driver_mock):
     eyes.baseline_branch_name = "Baseline"
     assert eyes.baseline_branch_name == "Baseline"
-    assert eyes.configuration.baseline_branch_name == "Baseline"
+    assert eyes.configure.baseline_branch_name == "Baseline"
 
     if not eyes._visual_grid_eyes:
         session_info = open_and_get_start_session_info(eyes, driver_mock)
@@ -101,7 +100,7 @@ def test_baseline_name(eyes, driver_mock):
 def test_branch_name(eyes, driver_mock):
     eyes.branch_name = "Branch"
     assert eyes.branch_name == "Branch"
-    assert eyes.configuration.branch_name == "Branch"
+    assert eyes.configure.branch_name == "Branch"
 
     if not eyes._visual_grid_eyes:
         session_info = open_and_get_start_session_info(eyes, driver_mock)
@@ -111,7 +110,7 @@ def test_branch_name(eyes, driver_mock):
 def test_baseline_env_name(eyes, driver_mock):
     eyes.baseline_env_name = "Baseline Env"
     assert eyes.baseline_env_name == "Baseline Env"
-    assert eyes.configuration.baseline_env_name == "Baseline Env"
+    assert eyes.configure.baseline_env_name == "Baseline Env"
 
     if not eyes._visual_grid_eyes:
         session_info = open_and_get_start_session_info(eyes, driver_mock)

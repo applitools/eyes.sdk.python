@@ -128,8 +128,8 @@ class EyesConnector(EyesBase):
         # type: () -> AppEnvironment
         status = list(self._render_statuses.values())[0]
         app_env = AppEnvironment(
-            os=self.configuration.host_os,
-            hosting_app=self.configuration.host_app,
+            os=self.configure.host_os,
+            hosting_app=self.configure.host_app,
             display_size=status.device_size,
             inferred="useragent: {}".format(status.user_agent),
             device_info=self.device,
