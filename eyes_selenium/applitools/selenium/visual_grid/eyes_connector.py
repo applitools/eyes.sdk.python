@@ -126,6 +126,7 @@ class EyesConnector(EyesBase):
     @property
     def _environment(self):
         # type: () -> AppEnvironment
+        # TODO: test with render_status prop
         status = list(self._render_statuses.values())[0]
         app_env = AppEnvironment(
             os=self.configure.host_os,
@@ -195,14 +196,9 @@ class EyesConnector(EyesBase):
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
-        app_output = AppOutput(
-            title=tag,
-            screenshot64=None,
-            screenshot_url=self.render_status.image_location,
-            dom_url=self.render_status.dom_location,
-        )
+        app_output = self._get_app_output_with_screenshot(None, None, check_settings)
         result = self._match_window_task.perform_match(
-            app_output=AppOutputWithScreenshot(app_output, None),
+            app_output=app_output,
             name=tag,
             ignore_mismatch=ignore_mismatch,
             image_match_settings=ImageMatchSettings.create_from_check_settings(
@@ -215,4 +211,16 @@ class EyesConnector(EyesBase):
             region_selectors=self._region_selectors,
             regions=self._regions,
         )
+        return result
+
+    def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
+        # type: (None, None, SeleniumCheckSettings)->AppOutputWithScreenshot
+        logger.debug("render_task.uuid: {}".format(self._current_uuid))
+        app_output = AppOutput(
+            title=self._title,
+            screenshot64=None,
+            screenshot_url=self.render_status.image_location,
+            dom_url=self.render_status.dom_location,
+        )
+        result = AppOutputWithScreenshot(app_output, None)
         return result
