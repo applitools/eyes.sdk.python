@@ -280,6 +280,13 @@ class VisualGridEyes(object):
             return TestResults()
         return all_results[0]
 
+    def abort_async(self):
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        for test in self.test_list:
+            test.abort()
+
     def abort(self):
         """
         If a test is running, aborts it. Otherwise, does nothing.
@@ -287,8 +294,14 @@ class VisualGridEyes(object):
         if self.configure.is_disabled:
             logger.debug("abort(): ignored (disabled)")
             return
-        for test in self.test_list:
-            test.abort()
+        while True:
+            states = list(set([t.state for t in self.test_list]))
+            if len(states) == 1 and states[0] == "completed":
+                break
+            datetime_utils.sleep(500)
+
+        self._is_opened = False
+        self.abort_async()
 
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")

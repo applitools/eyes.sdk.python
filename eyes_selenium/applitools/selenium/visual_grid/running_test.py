@@ -3,7 +3,7 @@ import typing
 import attr
 from transitions import Machine
 
-from applitools.common import Region, logger
+from applitools.common import Region, logger, RenderStatus
 
 from .render_task import RenderTask
 from .vg_task import VGTask
@@ -211,7 +211,12 @@ class RunningTest(object):
             if self.all_tasks_completed(self.watch_task):
                 self.becomes_tested()
 
+        def check_task_error(e):
+            logger.debug("check_task_error: task.uuid: {}".format(check_task.uuid))
+            self.pending_exceptions.append(e)
+
         check_task.on_task_completed(check_task_completed)
+        check_task.on_task_error(check_task_error)
         self.task_queue.insert(0, check_task)
         self.watch_task[check_task] = False
 
@@ -266,8 +271,20 @@ class RunningTest(object):
             logger.debug(
                 "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
             )
+            # TODO: what is status is None
+            status = render_task.render_status
+            if not status.device_size:
+                status.device_size = self.browser_info.viewport_size
+            self.eyes.render_status_for_task(render_task.uuid, status)
             self.pending_exceptions.append(e)
-            self.becomes_completed()
+            del self.task_queue[:]
+            del self.open_queue[:]
+            del self.close_queue[:]
+            self.watch_open = {}
+            self.watch_task = {}
+            self.watch_close = {}
+            self.abort()
+            self.becomes_tested()
 
         render_task.on_task_succeeded(render_task_succeeded)
         render_task.on_task_error(render_task_error)
@@ -280,39 +297,81 @@ class RunningTest(object):
         if self.state == NEW:
             self.becomes_completed()
             return None
+        elif self.state in [NOT_RENDERED, RENDERED, OPENED, TESTED]:
+            close_task = VGTask(
+                "close {}".format(self.browser_info), lambda: self.eyes.close(False)
+            )
+            logger.debug("RunningTest %s" % close_task.name)
 
-        close_task = VGTask(
-            "close {}".format(self.browser_info), lambda: self.eyes.close(False)
-        )
-        logger.debug("RunningTest %s" % close_task.name)
+            def close_task_succeeded(test_result):
+                logger.debug(
+                    "close_task_succeeded: task.uuid: {}".format(close_task.uuid)
+                )
+                self.test_result = test_result
+                if callable(self.on_results):
+                    self.on_results(test_result)
 
-        def close_task_succeeded(test_result):
-            logger.debug("close_task_succeeded: task.uuid: {}".format(close_task.uuid))
+            def close_task_completed():
+                # type: () -> None
+                logger.debug(
+                    "close_task_completed: task.uuid: {}".format(close_task.uuid)
+                )
+                self.watch_close[close_task] = True
+                if self.all_tasks_completed(self.watch_close):
+                    self.becomes_completed()
+
+            def close_task_error(e):
+                logger.debug(
+                    "close_task_error: task.uuid: {}\n{}".format(
+                        close_task.uuid, str(e)
+                    )
+                )
+                self.pending_exceptions.append(e)
+
+            close_task.on_task_succeeded(close_task_succeeded)
+            close_task.on_task_completed(close_task_completed)
+            close_task.on_task_error(close_task_error)
+            self.close_queue.append(close_task)
+            self.watch_close[close_task] = False
+
+    def abort(self):
+        if self.state == NEW:
+            self.becomes_completed()
+            return None
+
+        def ensure_and_abort():
+            self.eyes._ensure_running_session()
+            return self.eyes.abort()
+
+        abort_task = VGTask("abort {}".format(self.browser_info), ensure_and_abort)
+        logger.debug("RunningTest %s" % abort_task.name)
+
+        def abort_task_succeeded(test_result):
+            logger.debug("abort_task_succeeded: task.uuid: {}".format(abort_task.uuid))
             self.test_result = test_result
             if callable(self.on_results):
                 self.on_results(test_result)
 
-        def close_task_completed():
+        def abort_task_completed():
             # type: () -> None
-            logger.debug("close_task_completed: task.uuid: {}".format(close_task.uuid))
-            self.watch_close[close_task] = True
+            logger.debug("abort_task_completed: task.uuid: {}".format(abort_task.uuid))
+            self.watch_close[abort_task] = True
             if self.all_tasks_completed(self.watch_close):
                 self.becomes_completed()
 
-        def close_task_error(e):
+        def abort_task_error(e):
             logger.debug(
-                "close_task_error: task.uuid: {}\n{}".format(close_task.uuid, str(e))
+                "abort_task_error: task.uuid: {}\n{}".format(abort_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
+            self.becomes_completed()
 
-        close_task.on_task_succeeded(close_task_succeeded)
-        close_task.on_task_completed(close_task_completed)
-        close_task.on_task_error(close_task_error)
-        self.close_queue.append(close_task)
-        self.watch_close[close_task] = False
+        abort_task.on_task_succeeded(abort_task_succeeded)
+        abort_task.on_task_completed(abort_task_completed)
+        abort_task.on_task_error(abort_task_error)
 
-    def abort(self):
-        self.eyes.abort()
+        self.close_queue.append(abort_task)
+        self.watch_close[abort_task] = False
 
     def all_tasks_completed(self, watch):
         # type: (Dict) -> bool

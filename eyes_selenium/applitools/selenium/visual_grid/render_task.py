@@ -45,6 +45,9 @@ class RenderTask(VGTask):
     agent_id = attr.ib(default=None)  # type: Optional[Text]
     selector = attr.ib(hash=False, default=None)  # type: Optional[VisualGridSelector]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
+    render_status = attr.ib(
+        init=False, default=None, hash=False, repr=False
+    )  # type:Optional[RenderStatusResults]
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -235,6 +238,7 @@ class RenderTask(VGTask):
                     or False
                 )
             )
+        self.render_status = statuses[0]
         if statuses[0].status == RenderStatus.ERROR:
             raise EyesError(
                 "Got error during rendering: \n\t{}".format(statuses[0].error)

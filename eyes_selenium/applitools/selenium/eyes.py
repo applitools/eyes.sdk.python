@@ -472,6 +472,12 @@ class Eyes(EyesConfigurationMixin):
         """
         self._current_eyes.abort()
 
+    def abort_async(self):
+        if self._is_visual_grid_eyes:
+            return self._visual_grid_eyes.abort_async()
+        else:
+            return self._selenium_eyes.abort()
+
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")
         self.abort()
