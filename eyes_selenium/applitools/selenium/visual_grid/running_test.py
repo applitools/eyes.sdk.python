@@ -237,7 +237,6 @@ class RunningTest(object):
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
-            running_test=self,
             resource_cache=visual_grid_manager.resource_cache,
             put_cache=visual_grid_manager.put_cache,
             rendering_info=visual_grid_manager.render_info(self.eyes),
@@ -250,41 +249,55 @@ class RunningTest(object):
             selector=check_settings.values.selector,
         )
         logger.debug("RunningTest %s" % render_task.name)
+        render_index = render_task.add_running_test(self)
 
-        def render_task_succeeded(render_status):
-            # type: (RenderStatusResults) -> None
+        def render_task_succeeded(render_statuses):
+            # type: (List[RenderStatusResults]) -> None
             logger.debug(
                 "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
             )
+            logger.debug(
+                "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
+            )
+            render_status = render_statuses[render_index]
             if render_status:
+                if not render_status.device_size:
+                    render_status.device_size = self.browser_info.viewport_size
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
-                for vgr in render_status.selector_regions:
-                    if vgr.error:
-                        logger.error(vgr.error)
-                    else:
-                        self.regions.append(vgr.to_region())
-            self.watch_render[render_task] = True
-            if self.all_tasks_completed(self.watch_render):
-                self.becomes_rendered()
+                if render_status.status == RenderStatus.RENDERED:
+                    for vgr in render_status.selector_regions:
+                        if vgr.error:
+                            logger.error(vgr.error)
+                        else:
+                            self.regions.append(vgr.to_region())
+                    self.watch_render[render_task] = True
+                    if self.all_tasks_completed(self.watch_render):
+                        self.becomes_rendered()
+                elif render_status and render_status.status == RenderStatus.ERROR:
+                    self.watch_render[render_task] = True
+                    del self.task_queue[:]
+                    del self.open_queue[:]
+                    del self.close_queue[:]
+                    self.watch_open = {}
+                    self.watch_task = {}
+                    self.watch_close = {}
+                    self.abort()
+                    if self.all_tasks_completed(self.watch_render):
+                        self.becomes_tested()
+            else:
+                logger.error(
+                    "Wrong render status! Render returned status {}".format(
+                        render_status
+                    )
+                )
+                self.becomes_completed()
 
         def render_task_error(e):
             logger.debug(
                 "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
             )
-            # TODO: what is status is None
-            status = render_task.render_status
-            if not status.device_size:
-                status.device_size = self.browser_info.viewport_size
-            self.eyes.render_status_for_task(render_task.uuid, status)
             self.pending_exceptions.append(e)
-            del self.task_queue[:]
-            del self.open_queue[:]
-            del self.close_queue[:]
-            self.watch_open = {}
-            self.watch_task = {}
-            self.watch_close = {}
-            self.abort()
-            self.becomes_tested()
+            self.becomes_completed()
 
         render_task.on_task_succeeded(render_task_succeeded)
         render_task.on_task_error(render_task_error)
