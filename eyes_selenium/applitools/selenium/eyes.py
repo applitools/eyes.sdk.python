@@ -134,10 +134,6 @@ class Eyes(EyesConfigurationMixin):
         """
         return self._current_eyes.original_fc
 
-    # def rotation(self):
-    #     if not self._is_visual_grid_eyes:
-    #         return self._selenium_eyes.rotation
-
     @property
     def device_pixel_ratio(self):
         # type: () -> int
