@@ -81,9 +81,9 @@ class EyesConnector(EyesBase):
         # type: (*RenderRequest) -> List[RunningRender]
         return self._server_connector.render(*render_requests)
 
-    def render_status_by_id(self, render_id):
-        # type: (Text) -> List[RenderStatusResults]
-        return self._server_connector.render_status_by_id(render_id)
+    def render_status_by_id(self, *render_ids):
+        # type: (*Text) -> List[RenderStatusResults]
+        return self._server_connector.render_status_by_id(*render_ids)
 
     def download_resource(self, url):
         # type: (Text) -> Response
