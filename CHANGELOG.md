@@ -1,3 +1,8 @@
+## [4.1.3] - 2019-12-20
+## Fixed
+- Python SDK was abort_async [Trello 1090](https://trello.com/c/SCsMv6JN)
+- (selenium) Not working switching to previous context after check [Trello 1262](https://trello.com/c/YoGEYS09)
+- (visualgrid) Test should be aborted if rendering failed [Trello 46](https://trello.com/c/diOQDnzi)
 ## [4.1.2] - 2019-12-15
 ## Added
 - Fluent interface for Configuration [Trello 1407](https://trello.com/c/KUCeFzik)

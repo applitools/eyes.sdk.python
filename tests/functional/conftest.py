@@ -22,7 +22,6 @@ def eyes(request, eyes_class, batch_info):
     eyes.configure.hide_scrollbars = True
     eyes.configure.save_new_tests = False
     eyes.configure.hide_caret = True
-    eyes._debug_screenshot_provided = True
     # configure eyes options through @pytest.mark.eyes() marker
     eyes_mark_opts = request.node.get_closest_marker("eyes")
     eyes_mark_opts = eyes_mark_opts.kwargs if eyes_mark_opts else {}

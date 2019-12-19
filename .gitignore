@@ -192,5 +192,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
 /eyes_selenium/node_modules/
 logs/
+
+.vscode/

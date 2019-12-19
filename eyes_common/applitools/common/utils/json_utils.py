@@ -1,7 +1,7 @@
 import enum
 import json
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 from datetime import datetime
 from typing import Dict, Text
 
@@ -61,7 +61,7 @@ def attr_from_json(content, cls):
                 if key in fields:
                     convidenced[(kls, fields)] += 1
         try:
-            kls, fields = sorted(convidenced, reverse=True)[0]
+            (kls, fields), _ = Counter(convidenced).most_common()[0]
             return kls(**cleaned_params(params, fields))
         except IndexError:
             logger.error("Failed to convert: {} to any class".format(obj))
