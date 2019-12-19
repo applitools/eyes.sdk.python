@@ -1,5 +1,6 @@
 ## Fixed
-- Not working switching to previous context after check [Trello 1262](https://trello.com/c/YoGEYS09)
+- (selenium) Not working switching to previous context after check [Trello 1262](https://trello.com/c/YoGEYS09)
+- (visualgrid) Test should be aborted if rendering failed [Trello 46](https://trello.com/c/diOQDnzi)
 ## [4.1.2] - 2019-12-15
 ## Added
 - Fluent interface for Configuration [Trello 1407](https://trello.com/c/KUCeFzik)
