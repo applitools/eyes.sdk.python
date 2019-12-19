@@ -278,6 +278,8 @@ class SeleniumEyes(EyesBase):
         self._scroll_root_element = None
         if self._position_memento:
             self._position_provider.restore_state(self._position_memento)
+
+        self.driver.switch_to.frames(self._original_fc)
         self._position_provider = None
         self._original_fc = None
         logger.debug("check - done!")
