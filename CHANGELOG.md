@@ -1,3 +1,4 @@
+## [4.1.3] - 2019-12-20
 ## Fixed
 - Python SDK was abort_async [Trello 1090](https://trello.com/c/SCsMv6JN)
 - (selenium) Not working switching to previous context after check [Trello 1262](https://trello.com/c/YoGEYS09)
