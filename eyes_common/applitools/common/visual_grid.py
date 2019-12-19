@@ -45,11 +45,11 @@ class RenderStatus(Enum):
 
 @attr.s
 class VGRegion(object):
-    x = attr.ib(metadata={JsonInclude.THIS: True})
-    y = attr.ib(metadata={JsonInclude.THIS: True})
-    width = attr.ib(metadata={JsonInclude.THIS: True})
-    height = attr.ib(metadata={JsonInclude.THIS: True})
-    error = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    x = attr.ib(default=None, metadata={JsonInclude.THIS: True})
+    y = attr.ib(default=None, metadata={JsonInclude.THIS: True})
+    width = attr.ib(default=None, metadata={JsonInclude.THIS: True})
+    height = attr.ib(default=None, metadata={JsonInclude.THIS: True})
+    error = attr.ib(default=None, metadata={JsonInclude.THIS: True})
 
     def to_region(self):
         return Region(self.x, self.y, self.width, self.height)
@@ -350,11 +350,8 @@ class RenderStatusResults(object):
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     error = attr.ib(
-        default=None,
-        type=RenderStatus,
-        converter=attr.converters.optional(RenderStatus),
-        metadata={JsonInclude.THIS: True},
-    )  # type: Optional[RenderStatus]
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
     selector_regions = attr.ib(
         factory=list, type=VGRegion, metadata={JsonInclude.THIS: True}
     )  # type: List[VGRegion]

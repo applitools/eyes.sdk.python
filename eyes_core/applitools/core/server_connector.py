@@ -442,4 +442,5 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
+        # TODO: improve parser to handle similar names
         return json_utils.attr_from_response(response, RenderStatusResults)

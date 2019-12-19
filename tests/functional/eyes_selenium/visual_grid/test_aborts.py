@@ -22,7 +22,7 @@ def test_abort_when_not_rendered(driver, vg_runner, batch_info):
         eyes.open(driver)
         eyes.check("", Target.window())
         eyes.close_async()
-        all_results = vg_runner.get_all_test_results()
+        all_results = vg_runner.get_all_test_results(False)
 
 
 def test_abort_async_on_vg(driver, vg_runner, batch_info):
@@ -36,4 +36,4 @@ def test_abort_async_on_vg(driver, vg_runner, batch_info):
     eyes.check("", Target.window())
     eyes.close_async()
     eyes.abort_async()
-    all_results = vg_runner.get_all_test_results()
+    all_results = vg_runner.get_all_test_results(False)

@@ -212,7 +212,7 @@ class RenderTask(VGTask):
             while True:
                 try:
                     statuses = self.eyes_connector.render_status_by_id(
-                        [rq.render_id for rq in requests]
+                        *[rq.render_id for rq in requests]
                     )
                 except Exception as e:
                     logger.exception(e)
