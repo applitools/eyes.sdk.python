@@ -228,6 +228,7 @@ class VisualGridEyes(object):
                     test.becomes_not_rendered()
         except Exception as e:
             logger.exception(e)
+            self.abort()
             for test in self.test_list:
                 test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
@@ -280,15 +281,19 @@ class VisualGridEyes(object):
             return TestResults()
         return all_results[0]
 
+    def abort_async(self):
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        for test in self.test_list:
+            test.abort()
+
     def abort(self):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.configure.is_disabled:
-            logger.debug("abort(): ignored (disabled)")
-            return
-        for test in self.test_list:
-            test.abort()
+        self._is_opened = False
+        self.abort_async()
 
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")

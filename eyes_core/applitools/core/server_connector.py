@@ -419,9 +419,9 @@ class ServerConnector(object):
         response.raise_for_status()
         return response
 
-    def render_status_by_id(self, render_id):
-        # type: (Text) -> List[RenderStatusResults]
-        argument_guard.not_none(render_id)
+    def render_status_by_id(self, *render_ids):
+        # type: (*Text) -> List[RenderStatusResults]
+        argument_guard.not_none(render_ids)
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
@@ -434,7 +434,7 @@ class ServerConnector(object):
             url,
             use_api_key=False,
             headers=headers,
-            data=json.dumps([render_id]),
+            data=json.dumps(render_ids),
         )
         if not response.ok:
             raise EyesError(
@@ -442,4 +442,5 @@ class ServerConnector(object):
                     response.status_code, response.content
                 )
             )
+        # TODO: improve parser to handle similar names
         return json_utils.attr_from_response(response, RenderStatusResults)
