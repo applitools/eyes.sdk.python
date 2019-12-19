@@ -113,3 +113,27 @@ def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
     )
     eyes.check_window()
     eyes.close()
+
+
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+def test_switch_back_to_frame_after_check(eyes, driver):
+    eyes_driver = eyes.open(
+        driver,
+        "Python Selenium",
+        "TestSwitchBackToFrameAfterCheck",
+        {"width": 800, "height": 600},
+    )
+
+    # switch driver context to frame
+    frame = driver.find_element_by_css_selector("body > iframe")
+    eyes_driver.switch_to.frame(frame)
+
+    # locate element inside the frame - succeed
+    eyes_driver.find_element_by_css_selector("#inner-frame-div")
+
+    # take screenshot
+    eyes.check("step name", Target.window())
+
+    # locate the same element inside the frame - failed
+    eyes_driver.find_element_by_css_selector("#inner-frame-div")
+    eyes.close()
