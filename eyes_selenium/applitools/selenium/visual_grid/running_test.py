@@ -348,8 +348,8 @@ class RunningTest(object):
             self.watch_close[close_task] = False
 
     def abort(self):
-        if self.state == NEW:
-            self.becomes_completed()
+        # skip call of abort() in tests where close() already called
+        if self.close_queue:
             return None
 
         def ensure_and_abort():
