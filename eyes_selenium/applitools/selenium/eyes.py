@@ -134,10 +134,6 @@ class Eyes(EyesConfigurationMixin):
         """
         return self._current_eyes.original_fc
 
-    # def rotation(self):
-    #     if not self._is_visual_grid_eyes:
-    #         return self._selenium_eyes.rotation
-
     @property
     def device_pixel_ratio(self):
         # type: () -> int
@@ -471,6 +467,12 @@ class Eyes(EyesConfigurationMixin):
         If a test is running, aborts it. Otherwise, does nothing.
         """
         self._current_eyes.abort()
+
+    def abort_async(self):
+        if self._is_visual_grid_eyes:
+            return self._visual_grid_eyes.abort_async()
+        else:
+            return self._selenium_eyes.abort()
 
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")

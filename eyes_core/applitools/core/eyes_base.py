@@ -349,7 +349,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             logger.close()
 
     def abort(self):
-        # type: () -> None
+        # type: () -> Optional[TestResults]
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
@@ -360,12 +360,18 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._reset_last_screenshot()
 
             if self._running_session:
+                results_url = self._running_session.url
+
                 logger.debug("abort(): Aborting session...")
                 try:
-                    self._server_connector.stop_session(
+                    logger.info(
+                        "--- Test aborted. \n\tSee details at {}".format(results_url)
+                    )
+                    results = self._server_connector.stop_session(
                         self._running_session, True, False
                     )
-                    logger.info("--- Test aborted.")
+                    results.url = results_url
+                    return results
                 except EyesError as e:
                     logger.info("Failed to abort server session: %s " % e)
                     pass

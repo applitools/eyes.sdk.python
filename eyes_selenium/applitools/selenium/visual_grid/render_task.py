@@ -31,7 +31,6 @@ class RenderTask(VGTask):
     MAX_ITERATIONS = 100
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
-    running_test = attr.ib()  # type: RunningTest
     resource_cache = attr.ib(hash=False, repr=False)
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
@@ -45,6 +44,9 @@ class RenderTask(VGTask):
     agent_id = attr.ib(default=None)  # type: Optional[Text]
     selector = attr.ib(hash=False, default=None)  # type: Optional[VisualGridSelector]
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
+    running_tests = attr.ib(
+        init=False, hash=False, factory=list
+    )  # type: List[RunningTest]
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -63,9 +65,7 @@ class RenderTask(VGTask):
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
 
-        requests = []
-        rq = self.prepare_data_for_rg(self.script)
-        requests.append(rq)
+        requests = self.prepare_data_for_rg(self.script)
         fetch_fails = 0
         render_requests = None
         while True:
@@ -78,48 +78,42 @@ class RenderTask(VGTask):
                 datetime_utils.sleep(1500)
             if not render_requests:
                 continue
+            need_more_dom = need_more_resources = False
+            for i, running_render in enumerate(render_requests):
+                requests[i].render_id = running_render.render_id
+                need_more_dom = running_render.need_more_dom
+                need_more_resources = (
+                    running_render.render_status == RenderStatus.NEED_MORE_RESOURCE
+                )
 
-            running_render = render_requests[0]
-            rq.render_id = running_render.render_id
-            need_more_dom = running_render.need_more_dom
-            need_more_resources = (
-                running_render.render_status == RenderStatus.NEED_MORE_RESOURCE
-            )
+                dom_resource = requests[i].dom.resource
+
+                if need_more_resources:
+                    for url in running_render.need_more_resources:
+                        self.put_cache.fetch_and_store(url, get_and_put_resource)
+
+                if need_more_dom:
+                    self.eyes_connector.render_put_resource(
+                        running_render, dom_resource
+                    )
             still_running = (
                 need_more_resources
                 or need_more_dom
                 or fetch_fails > self.MAX_FAILS_COUNT
             )
-
-            dom_resource = rq.dom.resource
-
-            if need_more_resources:
-                for url in running_render.need_more_resources:
-                    self.put_cache.fetch_and_store(url, get_and_put_resource)
-
-            if need_more_dom:
-                self.eyes_connector.render_put_resource(running_render, dom_resource)
-
             if not still_running:
                 break
 
-        statuses = self.poll_render_status(rq)
-        if statuses and statuses[0].status == RenderStatus.ERROR:
-            raise EyesError(
-                "Render failed for {} with the message: {}".format(
-                    statuses[0].status, statuses[0].error
-                )
-            )
-        return statuses[0]
+        return self.poll_render_status(requests)
 
     def prepare_data_for_rg(self, data):
-        # type: (Dict) -> RenderRequest
+        # type: (Dict) -> List[RenderRequest]
         self.request_resources = {}
         dom = self.parse_frame_dom_resources(data)
-        return self.prepare_rg_requests(self.running_test, dom, self.request_resources)
+        return self.prepare_rg_requests(dom, self.request_resources)
 
-    def prepare_rg_requests(self, running_test, dom, request_resources):
-        # type: (RunningTest, RGridDom, Dict) -> RenderRequest
+    def prepare_rg_requests(self, dom, request_resources):
+        # type: (RGridDom, Dict) -> List[RenderRequest]
         if self.size_mode == "region" and self.region_to_check is None:
             raise EyesError("Region to check should be present")
         if self.size_mode == "selector" and not isinstance(
@@ -127,35 +121,40 @@ class RenderTask(VGTask):
         ):
             raise EyesError("Selector should be present")
 
+        requests = []
         region = None
-        if self.region_to_check:
-            region = dict(
-                x=self.region_to_check.x,
-                y=self.region_to_check.y,
-                width=self.region_to_check.width,
-                height=self.region_to_check.height,
+        for running_test in self.running_tests:
+            if self.region_to_check:
+                region = dict(
+                    x=self.region_to_check.x,
+                    y=self.region_to_check.y,
+                    width=self.region_to_check.width,
+                    height=self.region_to_check.height,
+                )
+            r_info = RenderInfo(
+                width=running_test.browser_info.width,
+                height=running_test.browser_info.height,
+                size_mode=self.size_mode,
+                selector=self.selector,
+                region=region,
+                emulation_info=running_test.browser_info.emulation_info,
             )
-        r_info = RenderInfo(
-            width=running_test.browser_info.width,
-            height=running_test.browser_info.height,
-            size_mode=self.size_mode,
-            selector=self.selector,
-            region=region,
-            emulation_info=running_test.browser_info.emulation_info,
-        )
-        return RenderRequest(
-            webhook=self.rendering_info.results_url,
-            agent_id=self.agent_id,
-            url=dom.url,
-            dom=dom,
-            resources=request_resources,
-            render_info=r_info,
-            browser_name=running_test.browser_info.browser_type,
-            platform=running_test.browser_info.platform,
-            script_hooks=self.script_hooks,
-            selectors_to_find_regions_for=list(chain(*self.region_selectors)),
-            send_dom=running_test.configuration.send_dom,
-        )
+            requests.append(
+                RenderRequest(
+                    webhook=self.rendering_info.results_url,
+                    agent_id=self.agent_id,
+                    url=dom.url,
+                    dom=dom,
+                    resources=request_resources,
+                    render_info=r_info,
+                    browser_name=running_test.browser_info.browser_type,
+                    platform=running_test.browser_info.platform,
+                    script_hooks=self.script_hooks,
+                    selectors_to_find_regions_for=list(chain(*self.region_selectors)),
+                    send_dom=running_test.configuration.send_dom,
+                )
+            )
+        return requests
 
     def parse_frame_dom_resources(self, data):
         # type: (Dict) -> RGridDom
@@ -201,12 +200,10 @@ class RenderTask(VGTask):
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
 
-    def poll_render_status(self, render_request):
-        # type: (RenderRequest) -> List[RenderStatusResults]
+    def poll_render_status(self, requests):
+        # type: (List[RenderRequest]) -> List[RenderStatusResults]
         iterations = 0
         statuses = []  # type: List[RenderStatusResults]
-        if not render_request.render_id:
-            raise EyesError("RenderStatus: Got empty renderId!")
         fails_count = 0
         finished = False
         while True:
@@ -215,7 +212,7 @@ class RenderTask(VGTask):
             while True:
                 try:
                     statuses = self.eyes_connector.render_status_by_id(
-                        render_request.render_id
+                        *[rq.render_id for rq in requests]
                     )
                 except Exception as e:
                     logger.exception(e)
@@ -235,11 +232,17 @@ class RenderTask(VGTask):
                     or False
                 )
             )
-        if statuses[0].status == RenderStatus.ERROR:
-            raise EyesError(
-                "Got error during rendering: \n\t{}".format(statuses[0].error)
-            )
         return statuses
+
+    def add_running_test(self, running_test):
+        # type: (RunningTest) -> int
+        if running_test in self.running_tests:
+            raise EyesError(
+                "The running test {} already exists in the render "
+                "task".format(running_test)
+            )
+        self.running_tests.append(running_test)
+        return len(self.running_tests) - 1
 
 
 def _apply_base_url(discovered_url, base_url):
