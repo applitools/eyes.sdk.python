@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from lxml import etree
 
 import tinycss2
 
@@ -47,3 +48,22 @@ def get_urls_from_css_resource(bytes_text):
         if tags:
             urls.extend(list(_url_from_tags(tags)))
     return urls
+
+
+def get_urls_from_svg_resource(content):
+    # type: (bytes) -> List[Text]
+    htmlparser = etree.XMLParser()
+    xml = etree.HTML(content, htmlparser)
+    root = xml.getroottree()
+    nodes = root.xpath(".//*[@href]") + root.xpath(
+        ".//*[@xlink:href]", namespaces={"xlink": "http://www.w3.org/1999/xlink"}
+    )
+    urls_from_svg = []
+    for node in nodes:
+        # node.attrib could contains href w key with namespace
+        key = [key for key in node.attrib.keys() if key.endswith("href")][0]
+        url = node.attrib[key]
+        if url.startswith("data:") and url.startswith("javascript:"):
+            continue
+        urls_from_svg.append(url)
+    return urls_from_svg
