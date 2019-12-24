@@ -52,8 +52,8 @@ def get_urls_from_css_resource(bytes_text):
 
 def get_urls_from_svg_resource(content):
     # type: (bytes) -> List[Text]
-    htmlparser = etree.XMLParser()
-    xml = etree.HTML(content, htmlparser)
+    xmlparser = etree.XMLParser(recover=True, ns_clean=True, remove_comments=True)
+    xml = etree.HTML(content, xmlparser)
     root = xml.getroottree()
     nodes = root.xpath(".//*[@href]") + root.xpath(
         ".//*[@xlink:href]", namespaces={"xlink": "http://www.w3.org/1999/xlink"}

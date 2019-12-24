@@ -26,3 +26,8 @@ def test_parse_valid_svg_with_links():
 def test_parse_valid_svg_with_bom():
     content = get_resource("ios.svg")
     parsers.get_urls_from_svg_resource(content)
+
+
+def test_parse_invalid_svg_with_comment_on_top():
+    content = get_resource("fa-regular-400.svg")
+    parsers.get_urls_from_svg_resource(content)
