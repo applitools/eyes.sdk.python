@@ -277,6 +277,9 @@ class Eyes(EyesConfigurationMixin):
         :param action: Mouse action (click, double click etc.)
         :param element: The element on which the action was performed.
         """
+        if self.configure.is_disabled:
+            logger.debug("add_mouse_trigger: Ignoring %s (disabled)" % action)
+            return
         if not self._is_visual_grid_eyes:
             self._selenium_eyes.add_mouse_trigger_by_element(action, element)
 
@@ -288,6 +291,9 @@ class Eyes(EyesConfigurationMixin):
         :param element: The element to which the text was sent.
         :param text: The trigger's text.
         """
+        if self.configure.is_disabled:
+            logger.debug("add_text_trigger: Ignoring '%s' (disabled)" % text)
+            return
         if not self._is_visual_grid_eyes:
             self._selenium_eyes.add_text_trigger_by_element(element, text)
 
@@ -350,6 +356,7 @@ class Eyes(EyesConfigurationMixin):
         :param match_timeout: The amount of time to retry matching. (Milliseconds)
         :return: The match results.
         """
+        logger.debug("check_frame('%s')" % tag)
         return self.check(
             tag, Target.frame(frame_reference).fully().timeout(match_timeout)
         )
@@ -375,6 +382,7 @@ class Eyes(EyesConfigurationMixin):
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: The match results.
         """
+        logger.debug("check_region('%s')" % tag)
         return self.check(
             tag,
             Target.region(region).timeout(match_timeout).stitch_content(stitch_content),
@@ -420,7 +428,7 @@ class Eyes(EyesConfigurationMixin):
         test_name=None,  # type: Optional[Text]
         viewport_size=None,  # type: Optional[ViewPort]
     ):
-        # type: (...) -> EyesWebDriver
+        # type: (...) -> Optional[EyesWebDriver]
         """
         Starts a test.
 
@@ -432,6 +440,9 @@ class Eyes(EyesConfigurationMixin):
             the visible part of the document's body) or None to allow any viewport size.
         :raise EyesError: If the session was already open.
         """
+        if self.configure.is_disabled:
+            logger.info("open(): ignored (disabled)")
+            return
         if app_name:
             self.configure.app_name = app_name
         if test_name:
@@ -451,11 +462,17 @@ class Eyes(EyesConfigurationMixin):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
+        if self.configure.is_disabled:
+            logger.info("close(): ignored (disabled)")
+            return
         result = self._current_eyes.close(raise_ex)
         self._is_opened = False
         return result
 
     def close_async(self):
+        if self.configure.is_disabled:
+            logger.info("close_async(): ignored (disabled)")
+            return
         if self._is_visual_grid_eyes:
             self._visual_grid_eyes.close_async()
         else:
@@ -465,9 +482,15 @@ class Eyes(EyesConfigurationMixin):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
+        if self.configure.is_disabled:
+            logger.info("abort(): ignored (disabled)")
+            return
         self._current_eyes.abort()
 
     def abort_async(self):
+        if self.configure.is_disabled:
+            logger.info("abort_async(): ignored (disabled)")
+            return
         if self._is_visual_grid_eyes:
             return self._visual_grid_eyes.abort_async()
         else:
