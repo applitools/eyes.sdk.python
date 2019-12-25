@@ -144,3 +144,19 @@ def test_special_rendering(url, test_name, batch_info, driver):
     eyes.check(test_name, Target.window().fully())
     eyes.close(False)
     all_results = runner.get_all_test_results(False)
+
+
+def test_svg_parsing(driver, eyes, batch_info, vg_runner):
+    driver.get("https://danielschwartz85.github.io/static-test-page2/index.html")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            test_name="TestSvgParsing",
+            app_name="Visual Grid Render Test",
+            batch=batch_info,
+        ).add_browser(1200, 800, BrowserType.CHROME)
+    )
+    eyes.open(driver)
+    eyes.check_window()
+    eyes.close_async()
+    all_results = vg_runner.get_all_test_results(False)

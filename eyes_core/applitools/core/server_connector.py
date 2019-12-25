@@ -416,7 +416,6 @@ class ServerConnector(object):
         response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
         if response.status_code == requests.codes.not_acceptable:
             response = requests.get(url, timeout=timeout_sec, verify=False)
-        response.raise_for_status()
         return response
 
     def render_status_by_id(self, *render_ids):

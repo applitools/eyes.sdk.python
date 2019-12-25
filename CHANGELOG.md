@@ -1,3 +1,5 @@
+### Added
+- Support SVG resource fetching [Trello 193](https://trello.com/c/nZdODyjL)
 ## [4.1.3] - 2019-12-20
 ## Fixed
 - Python SDK was abort_async [Trello 1090](https://trello.com/c/SCsMv6JN)
