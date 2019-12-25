@@ -1,7 +1,6 @@
 import typing
 from itertools import chain
-from threading import Lock, RLock
-
+from threading import RLock
 import attr
 
 from applitools.common import (
@@ -15,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.utils import datetime_utils, urljoin, urlparse
-from applitools.selenium import css_parser
+from applitools.selenium import parsers
 
 from .vg_task import VGTask
 
@@ -165,12 +164,15 @@ class RenderTask(VGTask):
         discovered_resources_urls = []
 
         def handle_resources(content_type, content):
-            if content_type == "text/css":
-                urls_from_css = css_parser.get_urls_from_css_resource(content)
-                for discovered_url in urls_from_css:
-                    target_url = _apply_base_url(discovered_url, base_url)
-                    with self.discovered_resources_lock:
-                        discovered_resources_urls.append(target_url)
+            urls_from_css, urls_from_svg = [], []
+            if content_type.startswith("text/css"):
+                urls_from_css = parsers.get_urls_from_css_resource(content)
+            if content_type.startswith("image/svg"):
+                urls_from_svg = parsers.get_urls_from_svg_resource(content)
+            for discovered_url in urls_from_css + urls_from_svg:
+                target_url = _apply_base_url(discovered_url, base_url)
+                with self.discovered_resources_lock:
+                    discovered_resources_urls.append(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
