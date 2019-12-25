@@ -34,6 +34,7 @@ install_requires = [
     "ua_parser==0.8",
     "attrs>=18,<=19.2",
     "transitions>=0.6,<0.7",
+    "lxml>=4.4,<5",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
