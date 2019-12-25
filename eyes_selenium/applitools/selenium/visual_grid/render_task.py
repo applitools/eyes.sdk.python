@@ -13,7 +13,7 @@ from applitools.common import (
     VisualGridSelector,
     logger,
 )
-from applitools.common.utils import datetime_utils, urljoin, urlparse
+from applitools.common.utils import datetime_utils, urljoin, urlparse, iteritems
 from applitools.selenium import parsers
 
 from .vg_task import VGTask
@@ -193,11 +193,14 @@ class RenderTask(VGTask):
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls):
+        for r_url in set(resource_urls + discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
-        for r_url in discovered_resources_urls:
-            self.resource_cache.fetch_and_store(r_url, get_resource)
-        self.request_resources.update(self.resource_cache)
+
+        for r_url, val in iteritems(self.resource_cache):
+            if val is None:
+                val = VGResource.EMPTY(r_url)
+            self.request_resources[r_url] = val
+
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )

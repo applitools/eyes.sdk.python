@@ -23,13 +23,10 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def _process_future(self, val):
         if isinstance(val, Future):
             try:
-                val = val.result()
-            except HTTPError as e:
-                logger.error("Resource haven't been downloaded.")
-                logger.exception(e)
+                return val.result()
             except Exception as e:
-                self.executor.shutdown()
-                raise e
+                logger.exception(e)
+                return None
         return val
 
     def get(self, k, default=None):
