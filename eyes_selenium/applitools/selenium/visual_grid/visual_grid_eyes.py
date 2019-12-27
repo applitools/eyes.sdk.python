@@ -68,7 +68,6 @@ class WebElementRegion(object):
 class VisualGridEyes(object):
     vg_manager = None  # type: VisualGridRunner
     _config_provider = None
-    _is_opened = False
     _driver = None
     rendering_info = None
     is_check_timer_timeout = False
@@ -81,10 +80,6 @@ class VisualGridEyes(object):
         self.vg_manager = runner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
-
-    @property
-    def is_open(self):
-        return self._is_opened
 
     @property
     def driver(self):
@@ -153,7 +148,6 @@ class VisualGridEyes(object):
             )
             test.test_uuid = self._test_uuid
             self.test_list.append(test)
-        self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
@@ -246,8 +240,6 @@ class VisualGridEyes(object):
                 break
             datetime_utils.sleep(500)
 
-        self._is_opened = False
-
         for test in self.test_list:
             if test.pending_exceptions:
                 raise EyesError(
@@ -285,7 +277,6 @@ class VisualGridEyes(object):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        self._is_opened = False
         self.abort_async()
 
     def abort_if_not_closed(self):
