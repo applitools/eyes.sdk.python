@@ -401,7 +401,6 @@ class Eyes(EyesConfigurationMixin):
         :param stitch_content: If `True`, stitch the internal content of the region
         :return: None
         """
-        # TODO: remove this disable
         if self.configure.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
             return MatchResult()
