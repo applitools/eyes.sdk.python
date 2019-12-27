@@ -465,6 +465,8 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close(): ignored (disabled)")
             return
+        if not self._is_opened:
+            raise EyesError("Eyes not open")
         result = self._current_eyes.close(raise_ex)
         self._is_opened = False
         return result
@@ -473,6 +475,8 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close_async(): ignored (disabled)")
             return
+        if not self._is_opened:
+            raise EyesError("Eyes not open")
         if self._is_visual_grid_eyes:
             self._visual_grid_eyes.close_async()
         else:
@@ -485,7 +489,12 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("abort(): ignored (disabled)")
             return
-        self._current_eyes.abort()
+        if not self._is_opened:
+            raise EyesError("Eyes not open")
+
+        result = self._current_eyes.abort()
+        self._is_opened = False
+        return result
 
     def abort_async(self):
         if self.configure.is_disabled:
