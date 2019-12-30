@@ -128,8 +128,6 @@ class VisualGridEyes(object):
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
-        if self.configure.is_disabled:
-            return driver
         logger.open_()
         argument_guard.not_none(driver)
         logger.debug("VisualGridEyes.open(%s)" % self.configure)
@@ -196,9 +194,7 @@ class VisualGridEyes(object):
         return script_result
 
     def check(self, name, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> bool
-        if self.configure.is_disabled:
-            return False
+        # type: (Text, SeleniumCheckSettings) -> None
         argument_guard.is_a(check_settings, CheckSettings)
         logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
         self._try_set_target_selector(check_settings)
@@ -239,9 +235,6 @@ class VisualGridEyes(object):
 
     def close(self, raise_ex=True):  # noqa
         # type: (Optional[bool]) -> Optional[TestResults]
-        if self.configure.is_disabled:
-            logger.debug("close(): ignored (disabled)")
-            return TestResults()
         if not self.test_list:
             return TestResults()
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)

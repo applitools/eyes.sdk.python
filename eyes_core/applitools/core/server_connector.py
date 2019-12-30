@@ -407,7 +407,6 @@ class ServerConnector(object):
     @datetime_utils.retry()
     def download_resource(self, url):
         # type: (Text) -> Response
-        # TODO: Fixme retry mech
         logger.debug("Fetching {}...".format(url))
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Accept-Encoding"] = "identity"
