@@ -1,20 +1,21 @@
+import pytest
 from mock import patch
 
 from applitools.common import RenderStatus, RenderStatusResults
-from applitools.selenium import (
-    BrowserType,
-    Eyes,
-    Target,
-)
+from applitools.selenium import BrowserType, Eyes, Target, Configuration
 
 
-def test_abort_when_not_rendered(driver, vg_runner, batch_info):
+@pytest.fixture
+def conf(batch_info):
+    return Configuration(
+        app_name="Visual Grid Render Test", batch=batch_info
+    ).add_browser(1200, 800, BrowserType.CHROME)
+
+
+def test_abort_when_not_rendered(driver, vg_runner, conf):
     eyes = Eyes(vg_runner)
-    eyes.configure.test_name = "TestAbortWhenNotRendering"
-    eyes.configure.app_name = "Visual Grid Render Test"
-    eyes.configure.batch = batch_info
-    eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    driver.get("https://fb.com")
+    eyes.set_configuration(conf.set_test_name("TestAbortWhenNotRendering"))
+    driver.get("https://demo.applitools.com")
     with patch(
         "applitools.core.server_connector.ServerConnector.render_status_by_id"
     ) as rsbi:
@@ -25,13 +26,10 @@ def test_abort_when_not_rendered(driver, vg_runner, batch_info):
         all_results = vg_runner.get_all_test_results(False)
 
 
-def test_abort_async_on_vg(driver, vg_runner, batch_info):
+def test_abort_async_on_vg(driver, vg_runner, conf):
     eyes = Eyes(vg_runner)
-    eyes.configure.test_name = "TestAbortAsync"
-    eyes.configure.app_name = "Visual Grid Render Test"
-    eyes.configure.batch = batch_info
-    eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    driver.get("https://fb.com")
+    eyes.set_configuration(conf.set_test_name("TestAbortAsync"))
+    driver.get("https://demo.applitools.com")
     eyes.open(driver)
     eyes.check("", Target.window())
     eyes.close_async()
