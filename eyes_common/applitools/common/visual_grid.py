@@ -248,6 +248,10 @@ class VGResource(object):
             self._handle_func()
 
     @classmethod
+    def EMPTY(cls, url):
+        return cls(url, "application/empty-response", b"")
+
+    @classmethod
     def from_blob(cls, blob, on_created=None):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
@@ -262,11 +266,11 @@ class VGResource(object):
     @classmethod
     def from_response(cls, url, response, on_created=None):
         # type: (Text, Response, Callable) -> VGResource
+        if not response.ok:
+            return VGResource.EMPTY(url)
+
         content_type = response.headers["Content-Type"]
         content = response.content
-        if not response.ok:
-            content_type = "application/empty-response"
-            content = b""
         return cls(
             url,
             content_type,
