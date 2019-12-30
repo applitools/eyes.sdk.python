@@ -29,6 +29,7 @@ def eyes_opened(eyes, running_session, session_start_info):
             1, 2, 3, 4, 3, 4, 5, 6, 2, status="unresolved"
         )
     )
+    eyes._is_opened = True
     return eyes
 
 
@@ -74,8 +75,7 @@ def test_eyes_close_not_opened(eyes):
 
 def test_eyes_close_opened_but_not_session_running(eyes_opened):
     eyes_opened._current_eyes._running_session = None
-    test_results = eyes_opened.close()
-    assert test_results == TestResults()
+    eyes_opened.close()
 
 
 def test_eyes_close_old_test_unresolved(eyes_opened_unresolved_old):

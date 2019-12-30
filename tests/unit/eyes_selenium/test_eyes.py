@@ -149,6 +149,7 @@ def test_check_without_open_call(eyes):
 
 
 def test_eyes_base_abort(eyes):
+    eyes._is_opened = True
     eyes.abort()
 
 
