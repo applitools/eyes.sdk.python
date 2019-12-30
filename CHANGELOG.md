@@ -1,3 +1,4 @@
+## [4.1.4] - 2019-12-30
 ### Added
 - Support SVG resource fetching [Trello 193](https://trello.com/c/nZdODyjL)
 ## [4.1.3] - 2019-12-20
