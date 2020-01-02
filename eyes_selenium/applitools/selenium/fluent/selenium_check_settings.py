@@ -81,7 +81,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
         return "selector"
 
 
-def _css_selector_from_(by, value):
+def _css_selector_or_xpath_from_(by, value):
     if by == By.ID:
         value = "#%s" % value
     elif by == By.CLASS_NAME:
@@ -236,7 +236,7 @@ class SeleniumCheckSettings(CheckSettings):
             self.values.target_region = region
         elif is_list_or_tuple(region):
             by, value = region
-            self.values.target_selector = _css_selector_from_(by, value)
+            self.values.target_selector = _css_selector_or_xpath_from_(by, value)
         elif isinstance(region, basestring):
             self.values.target_selector = region
         elif is_webelement(region):
@@ -275,7 +275,7 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_element = frame
         elif is_list_or_tuple(frame):
             by, value = frame
-            selector = _css_selector_from_(by, value)
+            selector = _css_selector_or_xpath_from_(by, value)
             fl.frame_selector = selector
         else:
             raise TypeError("frame method called with argument of unknown type!")
@@ -293,7 +293,7 @@ class SeleniumCheckSettings(CheckSettings):
             return RegionByCssSelector(region)
         if is_list_or_tuple(region):
             by, val = region
-            sel = _css_selector_from_(by, val)
+            sel = _css_selector_or_xpath_from_(by, val)
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionByCssSelector(sel)
         elif is_webelement(region):
@@ -341,7 +341,7 @@ class SeleniumCheckSettings(CheckSettings):
             return FloatingRegionByCssSelector(region, bounds)
         if is_list_or_tuple(region):
             by, value = region
-            selector = _css_selector_from_(by, value)
+            selector = _css_selector_or_xpath_from_(by, value)
             logger.debug("floating: FloatingRegionByCssSelector")
             return FloatingRegionByCssSelector(selector, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
