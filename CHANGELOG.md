@@ -1,24 +1,25 @@
-### Added
-- Fix broken By.XPATH select in fluent interface [Trello 1452](https://trello.com/c/R0bFRpSc)
+### Fixed
+- Handling setoverflow [Trello 1448](https://trello.com/c/cIgjp0z6)
+- Broken By.XPATH select in fluent interface [Trello 1452](https://trello.com/c/R0bFRpSc)
 ## [4.1.4] - 2019-12-30
 ### Added
 - Support SVG resource fetching [Trello 193](https://trello.com/c/nZdODyjL)
 ## [4.1.3] - 2019-12-20
-## Fixed
+### Fixed
 - Python SDK was abort_async [Trello 1090](https://trello.com/c/SCsMv6JN)
 - (selenium) Not working switching to previous context after check [Trello 1262](https://trello.com/c/YoGEYS09)
 - (visualgrid) Test should be aborted if rendering failed [Trello 46](https://trello.com/c/diOQDnzi)
 ## [4.1.2] - 2019-12-15
-## Added
+### Added
 - Fluent interface for Configuration [Trello 1407](https://trello.com/c/KUCeFzik)
-## Fixed
+### Fixed
 - Call of eyes.get_configuration() raises exception [Trello 1405](https://trello.com/c/QUiQG4RI)
 ## [4.1.1] - 2019-12-10
-## Fixed
+### Fixed
 - eyes get/set_configuration() was returning configuration instance instead of clone [Trello 1378](https://trello.com/c/WtnHxRzD)
 - Classic Runner get_all_test_results() Throws type error [Trello 1381](https://trello.com/c/kJJBEu4M)
 ## [4.1.0] - 2019-12-9
-## Fixed
+### Fixed
 - app_urls and api_urls were always None in TestResults
 - Validation error when passing RectangleSize as viewport_size in Configuration
 - CSS scrolling in chrome 78. [Trello 1206](https://trello.com/c/euVqe1Sv)
