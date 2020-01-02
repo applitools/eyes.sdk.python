@@ -859,7 +859,9 @@ class SeleniumEyes(EyesBase):
 
         elem_position_provider = self._element_position_provider
         if elem_position_provider is None:
-            scroll_root_element = self.driver.find_element_by_tag_name("html")
+            scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+                self.driver, self.scroll_root_element
+            )
             elem_position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
@@ -982,7 +984,7 @@ class SeleniumEyes(EyesBase):
                 state = position_provider.get_state()
                 position_provider.set_position(element_location)
 
-        yield
+        yield position_provider
         if self._target_element and position_provider and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
