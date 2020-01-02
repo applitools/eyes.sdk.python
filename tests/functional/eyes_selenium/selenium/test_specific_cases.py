@@ -1,4 +1,5 @@
 import pytest
+from selenium.webdriver.common.by import By
 
 from applitools.selenium import Region, StitchMode, Target
 
@@ -136,4 +137,17 @@ def test_switch_back_to_frame_after_check(eyes, driver):
 
     # locate the same element inside the frame - failed
     eyes_driver.find_element_by_css_selector("#inner-frame-div")
+    eyes.close()
+
+
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+def test_region_selector_in_check_fluent_interface(eyes, driver):
+    eyes_driver = eyes.open(
+        driver,
+        "Python Selenium",
+        "TestRegionSelectorInCheckFluentInterface",
+        {"width": 800, "height": 600},
+    )
+    eyes.check("By CSS Selector", Target.region([By.CSS_SELECTOR, "#overflowing-div"]))
+    eyes.check("By XPATH", Target.region([By.XPATH, '//*[@id="overflowing-div"]']))
     eyes.close()
