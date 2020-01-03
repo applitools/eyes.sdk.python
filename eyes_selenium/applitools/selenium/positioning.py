@@ -175,7 +175,7 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             ),
             self._scroll_root_element,
         )
-        self._last_set_position = None
+        self._last_set_position = state.position
 
 
 class ElementPositionProvider(SeleniumPositionProvider):
