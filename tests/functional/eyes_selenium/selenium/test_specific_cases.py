@@ -145,7 +145,7 @@ def test_region_selector_in_check_fluent_interface(eyes, driver):
     eyes_driver = eyes.open(
         driver,
         "Python Selenium",
-        "TestSelectorInCheckFluentInterface",
+        "TestRegionSelectorInCheckFluentInterface",
         {"width": 800, "height": 600},
     )
     eyes.check("By CSS Selector", Target.region([By.CSS_SELECTOR, "#overflowing-div"]))
