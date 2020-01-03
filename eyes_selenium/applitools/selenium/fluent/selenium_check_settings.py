@@ -36,7 +36,7 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 @attr.s
 class FrameLocator(object):
     frame_element = attr.ib(default=None)  # type: AnyWebElement
-    frame_selector = attr.ib(default=None)  # type: CssSelector
+    frame_selector = attr.ib(default=None)  # type: ByLocator
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
     scroll_root_selector = attr.ib(default=None)  # type: CssSelector
