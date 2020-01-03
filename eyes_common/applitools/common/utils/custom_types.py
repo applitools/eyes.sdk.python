@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     RegionOrElement = Union[EyesWebElement, Region]  # typedef
 
     SeleniumBy = Text
-    BySelector = List[SeleniumBy, Text]  # typedef
+    ByLocator = List[SeleniumBy, Text]  # typedef
     CssSelector = Text  # typedef
-    REGION_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
-    FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
+    REGION_VALUES = Union[Region, CssSelector, AnyWebElement, ByLocator]  # typedef
+    FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, ByLocator]  # typedef

@@ -489,9 +489,8 @@ def scroll_root_element_from(driver, container=None):
             if not scroll_root_element:
                 scroll_root_selector = container.scroll_root_selector  # type: ignore
                 if scroll_root_selector:
-                    scroll_root_element = driver.find_element_by_css_selector(
-                        scroll_root_selector
-                    )
+                    by, value = scroll_root_selector
+                    scroll_root_element = driver.find_element(by, value)
                 else:
                     scroll_root_element = root_html()
     return scroll_root_element
