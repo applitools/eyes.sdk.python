@@ -81,20 +81,13 @@ def test_check_region_with_elements(method_name="region"):
     assert cs.values.target_element == appium_element
 
 
-def test_check_region_with_by_params(method_name="region"):
-    selector_or_xpath = ".cssSelector_or_XPATH"
-    cs = get_cs_from_method(method_name, [By.NAME, "some-name"])
-    assert cs.values.target_selector == [By.NAME, "some-name"]
-    cs = get_cs_from_method(method_name, [By.ID, "ident"])
-    assert cs.values.target_selector == [By.ID, "ident"]
-    cs = get_cs_from_method(method_name, [By.CLASS_NAME, "class_name"])
-    assert cs.values.target_selector == [By.CLASS_NAME, "class_name"]
-    cs = get_cs_from_method(method_name, [By.TAG_NAME, "tag_name"])
-    assert cs.values.target_selector == [By.TAG_NAME, "tag_name"]
-    cs = get_cs_from_method(method_name, [By.CSS_SELECTOR, selector_or_xpath])
-    assert cs.values.target_selector == [By.CSS_SELECTOR, selector_or_xpath]
-    cs = get_cs_from_method(method_name, [By.XPATH, selector_or_xpath])
-    assert cs.values.target_selector == [By.XPATH, selector_or_xpath]
+@pytest.mark.parametrize(
+    "by", [By.NAME, By.ID, By.CLASS_NAME, By.TAG_NAME, By.CSS_SELECTOR, By.XPATH]
+)
+def test_check_region_with_by_params(by, method_name="region"):
+    value = "Selector"
+    cs = get_cs_from_method(method_name, [by, value])
+    assert cs.values.target_selector == [by, value]
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
