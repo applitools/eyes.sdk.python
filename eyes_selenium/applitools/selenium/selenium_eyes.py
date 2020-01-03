@@ -1,7 +1,7 @@
 import contextlib
 import typing
 
-from selenium.common.exceptions import WebDriverException, InvalidSelectorException
+from selenium.common.exceptions import WebDriverException
 
 from applitools.common import (
     AppEnvironment,
