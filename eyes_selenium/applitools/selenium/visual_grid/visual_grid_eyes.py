@@ -331,7 +331,8 @@ class VisualGridEyes(object):
         if element is None:
             target_selector = check_settings.values.target_selector
             if target_selector:
-                element = self.driver.find_element_by_css_selector(target_selector)
+                by, value = target_selector
+                element = self.driver.find_element(by, value)
 
         if element is None:
             return None
@@ -379,7 +380,8 @@ class VisualGridEyes(object):
         if element is None:
             target_selector = check_settings.values.target_selector
             if target_selector:
-                element = self.driver.find_element_by_css_selector(target_selector)
+                by, value = target_selector
+                element = self.driver.find_element(by, value)
 
         targets = [WebElementRegion("target", element)]
         return [

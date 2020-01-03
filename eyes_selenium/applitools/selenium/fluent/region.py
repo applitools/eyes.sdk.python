@@ -14,12 +14,10 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (
-    "RegionBy",
+    "RegionByLocator",
     "RegionByElement",
-    "RegionByCssSelector",
-    "FloatingRegionBy",
+    "FloatingRegionByLocator",
     "FloatingRegionByElement",
-    "FloatingRegionByCssSelector",
 )
 
 
@@ -78,7 +76,7 @@ class RegionByElement(GetSeleniumRegion):
 
 
 @attr.s
-class RegionBy(GetSeleniumRegion):
+class RegionByLocator(GetSeleniumRegion):
     """
     :param by: The "by" part of a selenium selector for an element which
                represents the ignore region
@@ -91,19 +89,6 @@ class RegionBy(GetSeleniumRegion):
 
     def _element(self, driver):
         return driver.find_element(self.by, self.value)
-
-
-@attr.s
-class RegionByCssSelector(GetSeleniumRegion):
-    """
-    :ivar selector: The css selector for an element which represents the inner region.
-    :ivar bounds: The outer rectangle bounding the inner region.
-    """
-
-    selector = attr.ib()
-
-    def _element(self, driver):
-        return driver.find_element_by_css_selector(self.selector)
 
 
 @attr.s
@@ -121,7 +106,7 @@ class FloatingRegionByElement(GetSeleniumFloatingRegion):
 
 
 @attr.s
-class FloatingRegionBy(GetSeleniumFloatingRegion):
+class FloatingRegionByLocator(GetSeleniumFloatingRegion):
     """
     :ivar by: The selenium By
     :ivar value: The css selector for an element which represents the inner region.
@@ -134,17 +119,3 @@ class FloatingRegionBy(GetSeleniumFloatingRegion):
 
     def _element(self, driver):
         return driver.find_element(self.by, self.value)
-
-
-@attr.s
-class FloatingRegionByCssSelector(GetSeleniumFloatingRegion):
-    """
-    :ivar selector: The css selector for an element which represents the inner region.
-    :ivar bounds: The outer rectangle bounding the inner region.
-    """
-
-    selector = attr.ib()  # type: str
-    bounds = attr.ib()  # type: FloatingBounds
-
-    def _element(self, driver):
-        return driver.find_element_by_css_selector(self.selector)

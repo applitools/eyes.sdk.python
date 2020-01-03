@@ -1,9 +1,7 @@
 from .region import (
-    FloatingRegionBy,
-    FloatingRegionByCssSelector,
+    FloatingRegionByLocator,
     FloatingRegionByElement,
-    RegionBy,
-    RegionByCssSelector,
+    RegionByLocator,
     RegionByElement,
 )
 from .selector import SelectorByElement, SelectorByLocator
@@ -14,12 +12,10 @@ __all__ = (
     "Target",
     "SeleniumCheckSettings",
     "FrameLocator",
-    "RegionBy",
+    "RegionByLocator",
     "RegionByElement",
-    "RegionByCssSelector",
-    "FloatingRegionBy",
+    "FloatingRegionByLocator",
     "FloatingRegionByElement",
-    "FloatingRegionByCssSelector",
     "SelectorByElement",
     "SelectorByLocator",
 )
