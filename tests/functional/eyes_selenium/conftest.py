@@ -392,7 +392,7 @@ def pytest_runtest_setup(item):
         platforms = platform_marker.args
         cmd_platform = platform_env.split()[0]  # remove platform version
         if cmd_platform and cmd_platform not in platforms:
-            pytest.skip("test requires platform %s" % cmd_platform)
+            pytest.skip("test runs on platforms: %s" % " ".join(platforms))
 
     browser_marker = item.get_closest_marker("browser")
     browsers_env = os.getenv("TEST_BROWSERS", "").split(",")

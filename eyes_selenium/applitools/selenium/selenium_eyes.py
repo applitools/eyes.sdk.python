@@ -1,7 +1,7 @@
 import contextlib
 import typing
 
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, InvalidSelectorException
 
 from applitools.common import (
     AppEnvironment,
@@ -786,7 +786,9 @@ class SeleniumEyes(EyesBase):
         target_element = check_settings.values.target_element
         target_selector = check_settings.values.target_selector
         if not target_element and target_selector:
-            target_element = self._driver.find_element_by_css_selector(target_selector)
+            by, value = target_selector
+            target_element = self._driver.find_element(by, value)
+
         if target_element and not isinstance(target_element, EyesWebElement):
             target_element = EyesWebElement(target_element, self.driver)
         return target_element

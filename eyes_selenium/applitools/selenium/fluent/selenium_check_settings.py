@@ -13,20 +13,19 @@ from applitools.selenium.fluent import SelectorByElement, SelectorByLocator
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
-    FloatingRegionByCssSelector,
     FloatingRegionByElement,
-    RegionByCssSelector,
     RegionByElement,
+    RegionByLocator,
+    FloatingRegionByLocator,
 )
 
 if TYPE_CHECKING:
     from applitools.common.visual_grid import VisualGridSelector
     from applitools.common.utils.custom_types import (
-        FrameReference,
         AnyWebElement,
         FrameNameOrId,
         FrameIndex,
-        BySelector,
+        ByLocator,
         CssSelector,
         FLOATING_VALUES,
     )
@@ -37,7 +36,7 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 @attr.s
 class FrameLocator(object):
     frame_element = attr.ib(default=None)  # type: AnyWebElement
-    frame_selector = attr.ib(default=None)  # type: CssSelector
+    frame_selector = attr.ib(default=None)  # type: ByLocator
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
     scroll_root_selector = attr.ib(default=None)  # type: CssSelector
@@ -49,7 +48,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
-    target_selector = attr.ib(init=False, default=None)  # type: CssSelector
+    target_selector = attr.ib(init=False, default=None)  # type: ByLocator
     target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
@@ -81,20 +80,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
         return "selector"
 
 
-def _css_selector_from_(by, value):
-    if by == By.ID:
-        value = "#%s" % value
-    elif by == By.CLASS_NAME:
-        value = ".%s" % value
-    elif by == By.NAME:
-        value = '[name="%s"]' % value
-    elif by in [By.XPATH, By.CSS_SELECTOR, By.TAG_NAME]:
-        value = value
-    else:
-        raise TypeError("By {} is not supported".format(by))
-    return value
-
-
 @attr.s
 class SeleniumCheckSettings(CheckSettings):
     values = attr.ib(
@@ -106,7 +91,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def layout(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+        # type: (*ByLocator)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -129,7 +114,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def strict(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+        # type: (*ByLocator)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -152,7 +137,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def content(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+        # type: (*ByLocator)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -175,7 +160,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def ignore(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+        # type: (*ByLocator)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -228,7 +213,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def region(self, by):
-        # type: (BySelector) -> SeleniumCheckSettings
+        # type: (ByLocator) -> SeleniumCheckSettings
         pass
 
     def region(self, region):  # noqa
@@ -236,9 +221,9 @@ class SeleniumCheckSettings(CheckSettings):
             self.values.target_region = region
         elif is_list_or_tuple(region):
             by, value = region
-            self.values.target_selector = _css_selector_from_(by, value)
+            self.values.target_selector = [by, value]
         elif isinstance(region, basestring):
-            self.values.target_selector = region
+            self.values.target_selector = [By.CSS_SELECTOR, region]
         elif is_webelement(region):
             self.values.target_element = region
         else:
@@ -262,7 +247,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def frame(self, by):
-        # type: (BySelector) -> SeleniumCheckSettings
+        # type: (ByLocator) -> SeleniumCheckSettings
         pass
 
     def frame(self, frame):  # noqa
@@ -275,8 +260,7 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_element = frame
         elif is_list_or_tuple(frame):
             by, value = frame
-            selector = _css_selector_from_(by, value)
-            fl.frame_selector = selector
+            fl.frame_selector = [by, value]
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
@@ -290,12 +274,11 @@ class SeleniumCheckSettings(CheckSettings):
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionByCssSelector(region)
+            return RegionByLocator(By.CSS_SELECTOR, region)
         if is_list_or_tuple(region):
             by, val = region
-            sel = _css_selector_from_(by, val)
-            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionByCssSelector(sel)
+            logger.debug("{name}: RegionByLocator".format(name=method_name))
+            return RegionByLocator(by, val)
         elif is_webelement(region):
             logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region)
@@ -303,11 +286,11 @@ class SeleniumCheckSettings(CheckSettings):
             region, method_name
         )
 
-    def _set_scroll_root_selector(self, selector):
+    def _set_scroll_root_selector(self, by, value):
         if len(self.values.frame_chain) == 0:
-            self.values.scroll_root_selector = selector
+            self.values.scroll_root_selector = [by, value]
         else:
-            self.values.frame_chain[-1].scroll_root_selector = selector
+            self.values.frame_chain[-1].scroll_root_selector = [by, value]
 
     def _set_scroll_root_element(self, element):
         if len(self.values.frame_chain) == 0:
@@ -325,9 +308,17 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (CssSelector) -> SeleniumCheckSettings
         pass
 
+    @overload  # noqa
+    def scroll_root_element(self, by):
+        # type: (ByLocator) -> SeleniumCheckSettings
+        pass
+
     def scroll_root_element(self, element_or_selector):  # noqa
         if isinstance(element_or_selector, basestring):
-            self._set_scroll_root_selector(element_or_selector)
+            self._set_scroll_root_selector(By.CSS_SELECTOR, element_or_selector)
+        elif is_list_or_tuple(element_or_selector):
+            by, value = element_or_selector
+            self._set_scroll_root_selector(by, value)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
         return self
@@ -338,12 +329,11 @@ class SeleniumCheckSettings(CheckSettings):
             return FloatingRegionByElement(region, bounds)
         if isinstance(region, basestring):
             logger.debug("floating: FloatingRegionByCssSelector")
-            return FloatingRegionByCssSelector(region, bounds)
+            return FloatingRegionByLocator(By.CSS_SELECTOR, region, bounds)
         if is_list_or_tuple(region):
             by, value = region
-            selector = _css_selector_from_(by, value)
-            logger.debug("floating: FloatingRegionByCssSelector")
-            return FloatingRegionByCssSelector(selector, bounds)
+            logger.debug("floating: FloatingRegionByLocator")
+            return FloatingRegionByLocator(by, value, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
         )

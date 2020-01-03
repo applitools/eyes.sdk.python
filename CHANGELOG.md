@@ -1,5 +1,6 @@
 ### Fixed
 - Handling setoverflow [Trello 1448](https://trello.com/c/cIgjp0z6)
+- Broken By.XPATH select in fluent interface [Trello 1452](https://trello.com/c/R0bFRpSc)
 ## [4.1.4] - 2019-12-30
 ### Added
 - Support SVG resource fetching [Trello 193](https://trello.com/c/nZdODyjL)
