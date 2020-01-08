@@ -8,7 +8,7 @@ from applitools.core.fluent import GetSelector
 
 if typing.TYPE_CHECKING:
     from applitools.selenium import Eyes, eyes_selenium_utils
-    from applitools.common.utils.custom_types import AnyWebElement, ByLocator
+    from applitools.common.utils.custom_types import AnyWebElement, BySelector
 
 __all__ = ("SelectorByElement", "SelectorByLocator")
 
@@ -34,7 +34,7 @@ class SelectorByElement(GetSelector):
 
 @attr.s
 class SelectorByLocator(GetSelector):
-    _sel = attr.ib()  # type: ByLocator
+    _sel = attr.ib()  # type: BySelector
 
     def get_selector(self, eyes):
         # type: (Eyes) -> Text

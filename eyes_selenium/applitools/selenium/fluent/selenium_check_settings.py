@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         AnyWebElement,
         FrameNameOrId,
         FrameIndex,
-        ByLocator,
+        BySelector,
         CssSelector,
         FLOATING_VALUES,
     )
@@ -36,7 +36,7 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 @attr.s
 class FrameLocator(object):
     frame_element = attr.ib(default=None)  # type: AnyWebElement
-    frame_selector = attr.ib(default=None)  # type: ByLocator
+    frame_selector = attr.ib(default=None)  # type: BySelector
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
     scroll_root_selector = attr.ib(default=None)  # type: CssSelector
@@ -48,7 +48,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
-    target_selector = attr.ib(init=False, default=None)  # type: ByLocator
+    target_selector = attr.ib(init=False, default=None)  # type: BySelector
     target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
@@ -91,7 +91,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def layout(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -114,7 +114,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def strict(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -137,7 +137,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def content(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -160,7 +160,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def ignore(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -213,7 +213,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def region(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def region(self, region):  # noqa
@@ -247,7 +247,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def frame(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def frame(self, frame):  # noqa
@@ -310,7 +310,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def scroll_root_element(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def scroll_root_element(self, element_or_selector):  # noqa
