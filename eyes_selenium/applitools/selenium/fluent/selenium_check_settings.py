@@ -14,8 +14,8 @@ from applitools.selenium.webelement import EyesWebElement
 from .region import (
     FloatingRegionByElement,
     RegionByElement,
-    RegionByLocator,
-    FloatingRegionByLocator,
+    RegionBySelector,
+    FloatingRegionBySelector,
 )
 
 if TYPE_CHECKING:
@@ -264,11 +264,11 @@ class SeleniumCheckSettings(CheckSettings):
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionByLocator(By.CSS_SELECTOR, region)
+            return RegionBySelector(By.CSS_SELECTOR, region)
         if is_list_or_tuple(region):
             by, val = region
-            logger.debug("{name}: RegionByLocator".format(name=method_name))
-            return RegionByLocator(by, val)
+            logger.debug("{name}: RegionBySelector".format(name=method_name))
+            return RegionBySelector(by, val)
         elif is_webelement(region):
             logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region)
@@ -319,11 +319,11 @@ class SeleniumCheckSettings(CheckSettings):
             return FloatingRegionByElement(region, bounds)
         if isinstance(region, basestring):
             logger.debug("floating: FloatingRegionByCssSelector")
-            return FloatingRegionByLocator(By.CSS_SELECTOR, region, bounds)
+            return FloatingRegionBySelector(By.CSS_SELECTOR, region, bounds)
         if is_list_or_tuple(region):
             by, value = region
-            logger.debug("floating: FloatingRegionByLocator")
-            return FloatingRegionByLocator(by, value, bounds)
+            logger.debug("floating: FloatingRegionBySelector")
+            return FloatingRegionBySelector(by, value, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
         )
