@@ -1,4 +1,13 @@
-from applitools.common import BatchInfo, MatchLevel, Region, logger
+from applitools.common import (
+    BatchInfo,
+    MatchLevel,
+    Region,
+    logger,
+    RectangleSize,
+    TestResults,
+    TestResultContainer,
+    TestResultsSummary,
+)
 from applitools.core.cut import (
     FixedCutProvider,
     NullCutProvider,
@@ -18,4 +27,8 @@ __all__ = (
     "FixedCutProvider",
     "UnscaledFixedCutProvider",
     "NullCutProvider",
+    "RectangleSize",
+    "TestResults",
+    "TestResultContainer",
+    "TestResultsSummary",
 )
