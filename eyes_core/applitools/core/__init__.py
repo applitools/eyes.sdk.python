@@ -14,7 +14,6 @@ from .fluent import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
-    GetSelector,
     RegionByRectangle,
 )
 from .match_window_task import MatchWindowTask

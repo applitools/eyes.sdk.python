@@ -6,7 +6,6 @@ from .region import (
     GetRegion,
     RegionByRectangle,
 )
-from .selector import GetSelector
 
 __all__ = (
     "CheckSettings",
@@ -16,5 +15,4 @@ __all__ = (
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
-    "GetSelector",
 )

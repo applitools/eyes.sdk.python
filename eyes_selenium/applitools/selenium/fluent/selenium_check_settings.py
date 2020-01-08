@@ -9,7 +9,6 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Region, logger
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
-from applitools.selenium.fluent import SelectorByElement, SelectorByLocator
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
@@ -55,15 +54,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
-
-    @property
-    def target_provider(self):
-        target_selector = self.target_selector
-        target_element = self.target_element
-        if target_selector:
-            return SelectorByLocator(target_selector)
-        elif target_element:
-            return SelectorByElement(target_element)
 
     @property
     def size_mode(self):
