@@ -5,6 +5,10 @@ from applitools.common import (
     ScreenOrientation,
     StdoutLogger,
     logger,
+    RectangleSize,
+    TestResults,
+    TestResultContainer,
+    TestResultsSummary,
 )
 from applitools.common.config import BatchInfo  # noqa
 from applitools.common.selenium import BrowserType, Configuration, StitchMode  # noqa
@@ -42,4 +46,8 @@ __all__ = (
     "NullCutProvider",
     "UnscaledFixedCutProvider",
     "ClassicRunner",
+    "RectangleSize",
+    "TestResults",
+    "TestResultContainer",
+    "TestResultsSummary",
 )
