@@ -1,9 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
-import multiprocessing as mp
 import typing as tp
 from collections import OrderedDict
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import requests
 import tinycss2
@@ -242,8 +242,8 @@ def _get_frame_bundled_css(driver):
     ]
 
     if len(raw_css_nodes) > 5:
-        pool = mp.Pool(processes=mp.cpu_count() * 2)
-        results = pool.map(_process_raw_css_node, raw_css_nodes)
+        with ThreadPoolExecutor() as executor:
+            results = executor.map(_process_raw_css_node, raw_css_nodes)
     else:
         results = [_process_raw_css_node(node) for node in raw_css_nodes]
     return "".join(results)
@@ -254,7 +254,7 @@ def _process_raw_css_node(node, minimize_css=True):
 
     @datetime_utils.retry()
     def get_css(url):
-        if url.startswith("blob:"):
+        if url.startswith("blob:") or url.startswith("data:"):
             logger.warning("Passing blob URL: {}".format(url))
             return ""
         return requests.get(url, timeout=CSS_DOWNLOAD_TIMEOUT).text.strip()
