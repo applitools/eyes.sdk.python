@@ -26,30 +26,32 @@ DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
-@attr.s
+@attr.s(init=False)
 class BatchInfo(object):
     """
     A batch of tests.
     """
 
-    name = attr.ib(
-        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_NAME"),
-        metadata={JsonInclude.THIS: True},
-    )  # type: Optional[Text]
-    started_at = attr.ib(
-        factory=lambda: datetime.now(UTC), metadata={JsonInclude.THIS: True}
-    )  # type: datetime
+    name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    started_at = attr.ib(metadata={JsonInclude.THIS: True})  # type: datetime
     sequence_name = attr.ib(
-        init=False,
-        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE"),
         metadata={JsonInclude.NAME: "batchSequenceName"},
     )  # type: Optional[Text]
-    id = attr.ib(
-        init=False,
-        converter=str,
-        factory=lambda: get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4())),
-        metadata={JsonInclude.THIS: True},
-    )  # type: Text
+    id = attr.ib(converter=str, metadata={JsonInclude.THIS: True},)  # type: Text
+
+    def __init__(self, name=None, started_at=None, sequence_name=None):
+        # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
+        self.id = get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
+        self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
+        self.started_at = datetime.now(UTC)
+        self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
+
+        if name:
+            self.name = name
+        if started_at:
+            self.started_at = started_at
+        if sequence_name:
+            self.sequence_name = sequence_name
 
     def with_batch_id(self, id):
         # type: (Text) -> BatchInfo

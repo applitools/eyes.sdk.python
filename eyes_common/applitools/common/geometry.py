@@ -54,12 +54,17 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
-@attr.s(slots=True, cmp=False, hash=True)
+@attr.s(slots=True, cmp=False, hash=True, init=False)
 class RectangleSize(DictAccessMixin):
     """Represents a 2D size"""
 
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
+
+    def __init__(self, width, height):
+        # type: (int, int) -> None
+        self.width = width
+        self.height = height
 
     def __str__(self):
         return "RectangleSize({width} x {height})".format(
@@ -93,16 +98,17 @@ class RectangleSize(DictAccessMixin):
         return cls(width=obj.width, height=obj.height)
 
 
-@attr.s(slots=True, cmp=False)
+@attr.s(slots=True, cmp=False, init=False)
 class Point(DictAccessMixin):
     """A location in a two-dimensional plane."""
 
-    x = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
-    y = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
+    x = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    y = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+
+    def __init__(self, x, y):
+        # type: (int, int) -> None
+        self.x = x
+        self.y = y
 
     def __str__(self):
         return "Point({x} x {y})".format(x=self.x, y=self.y)
@@ -194,25 +200,30 @@ class Point(DictAccessMixin):
         )
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, init=False)
 class Region(DictAccessMixin):
     """A rectangle identified by left,top, width, height."""
 
-    left = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
-    top = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
-    width = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
-    height = attr.ib(
-        converter=round_converter, metadata={JsonInclude.THIS: True}
-    )  # type: int
-    coordinates_type = attr.ib(
-        default=CoordinatesType.SCREENSHOT_AS_IS, metadata={JsonInclude.THIS: True}
-    )  # type: CoordinatesType
+    left = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    top = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    width = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    height = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    coordinates_type = attr.ib(metadata={JsonInclude.THIS: True})
+
+    def __init__(
+        self,
+        left,  # type: int
+        top,  # type: int
+        width,  # type: int
+        height,  # type: int
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
+    ):
+        # type: (...) -> None
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+        self.coordinates_type = coordinates_type
 
     def __str__(self):
         return "Region({left}, {top}, {width} x {height}, {type})".format(
@@ -611,7 +622,7 @@ class Region(DictAccessMixin):
 
 @attr.s
 class SubregionForStitching(object):
-    scroll_to = attr.ib()
-    paste_physical_location = attr.ib()
-    physical_crop_area = attr.ib()
-    logical_crop_area = attr.ib()
+    scroll_to = attr.ib()  # type: Point
+    paste_physical_location = attr.ib()  # type: Point
+    physical_crop_area = attr.ib()  # type: Region
+    logical_crop_area = attr.ib()  # type: Region
