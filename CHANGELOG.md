@@ -1,7 +1,7 @@
-## [4.1.6] - 2012-01-08
+## [4.1.6] - 2020-01-08
 ### Fixed
 - Multiple instances opening on Windows [Trello 1457](https://trello.com/c/noYzDV70)
-## [4.1.5] - 2012-01-08
+## [4.1.5] - 2020-01-08
 ### Fixed
 - Wrong screenshot location when using .fully() [Trello 1455](https://trello.com/c/veMyZsyg)
 - Handling setoverflow [Trello 1448](https://trello.com/c/cIgjp0z6)
