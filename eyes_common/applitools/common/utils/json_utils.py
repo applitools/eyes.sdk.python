@@ -64,7 +64,7 @@ def attr_from_json(content, cls):
             (kls, fields), _ = Counter(convidenced).most_common()[0]
             return kls(**cleaned_params(params, fields))
         except IndexError:
-            logger.error("Failed to convert: {} to any class".format(obj))
+            logger.warning("Failed to convert: {} to any class".format(obj))
             return params
 
     instance = json.loads(content, object_hook=obj_came)
