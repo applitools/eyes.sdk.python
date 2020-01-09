@@ -54,7 +54,7 @@ class CoordinatesType(Enum):
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
 
 
-@attr.s(slots=True, cmp=False, hash=True, init=False)
+@attr.s(slots=True, eq=False, hash=True, init=False)
 class RectangleSize(DictAccessMixin):
     """Represents a 2D size"""
 
@@ -98,7 +98,7 @@ class RectangleSize(DictAccessMixin):
         return cls(width=obj.width, height=obj.height)
 
 
-@attr.s(slots=True, cmp=False, init=False)
+@attr.s(slots=True, eq=False, init=False)
 class Point(DictAccessMixin):
     """A location in a two-dimensional plane."""
 
