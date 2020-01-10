@@ -17,9 +17,9 @@ from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 from applitools.selenium import (
     BatchInfo,
     Eyes,
-    EyesWebDriver,
     StitchMode,
     eyes_selenium_utils,
+    Configuration,
     logger,
 )
 from applitools.selenium.__version__ import __version__
@@ -65,6 +65,16 @@ def underscore_to_camelcase(text):
     return re.sub(r"(?:^|_)([a-z])", lambda m: m.group(1).upper(), text)
 
 
+@pytest.fixture
+def eyes_config_base():
+    return (
+        Configuration()
+        .set_hide_scrollbars(True)
+        .set_save_new_tests(False)
+        .set_hide_caret(True)
+    )
+
+
 @pytest.fixture(scope="function")
 def eyes_opened(request, eyes, driver):
     viewport_size = request.node.get_closest_marker("viewport_size")
@@ -88,31 +98,7 @@ def eyes_opened(request, eyes, driver):
 
     eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
     yield eyes
-    results = eyes.close()
-    print(results)
-
-
-@pytest.fixture(scope="function")
-def eyes_for_class(request, eyes_opened):
-    # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
-
-    request.cls.eyes = eyes_opened
-    request.cls.driver = eyes_opened.driver
-    yield
-
-
-@pytest.fixture(scope="function")
-def driver_for_class(request, driver):
-    viewport_size = request.node.get_closest_marker("viewport_size").args[0]
-
-    driver = EyesWebDriver(driver, MagicMock(Eyes))
-    driver.quit = MagicMock()
-    if viewport_size:
-        eyes_selenium_utils.set_browser_size(driver, viewport_size)
-    request.cls.driver = driver
-
-    yield
-    driver.quit()
+    eyes.close(False)
 
 
 @pytest.yield_fixture(scope="function")
@@ -300,7 +286,7 @@ SUPPORTED_BROWSERS = set(
 
 
 def _get_capabilities(platform_name=None, browser_name=None, headless=False):
-    platform = SUPPORTED_PLATFORMS_DICT[platform_name]
+    platform = SUPPORTED_PLATFORMS_DICT[platform_name.strip('"')]
     if platform.is_appium_based:
         capabilities = [platform.platform_capabilities()]
     else:

@@ -15,8 +15,8 @@ def setup_and_teardown():
     visual_grid_eyes.DOM_EXTRACTION_TIMEOUT = original_timeout
 
 
-def test_timeout(driver, vg_runner, batch_info):
-    eyes = Eyes(vg_runner)
+def test_timeout(driver, eyes_runner, batch_info):
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.com/helloworld")
     eyes.batch = batch_info
     eyes.open(
@@ -24,12 +24,12 @@ def test_timeout(driver, vg_runner, batch_info):
     )
     eyes.check("", Target.window().with_name("Test"))
     eyes.close()
-    vg_runner.get_all_test_results()
+    eyes_runner.get_all_test_results()
 
 
-def test_timeout2(driver, vg_runner, batch_info):
+def test_timeout2(driver, eyes_runner, batch_info):
     visual_grid_eyes.DOM_EXTRACTION_TIMEOUT = 1
-    eyes = Eyes(vg_runner)
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.com/helloworld")
     conf = Configuration(
         batch=batch_info, app_name="Test Timeouts", test_name="Test Timeouts"
@@ -48,5 +48,5 @@ def test_timeout2(driver, vg_runner, batch_info):
     with pytest.raises(EyesError) as e:
         eyes.check("", Target.window().with_name("Test"))
         eyes.close()
-        vg_runner.get_all_test_results()
+        eyes_runner.get_all_test_results()
         assert "Domsnapshot Timed out" in str(e)

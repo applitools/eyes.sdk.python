@@ -32,7 +32,7 @@ def sel_config(test_page_url):
 
 
 @pytest.fixture
-def eyes_vg(vg_runner, sel_config, batch_info, driver, request, test_page_url):
+def eyes_vg(eyes_runner, sel_config, batch_info, driver, request, test_page_url):
     app_name = request.node.get_closest_marker("app_name")
     if app_name:
         app_name = app_name.args[0]
@@ -45,7 +45,7 @@ def eyes_vg(vg_runner, sel_config, batch_info, driver, request, test_page_url):
     else:
         viewport_size = None
 
-    eyes = Eyes(vg_runner)
+    eyes = Eyes(eyes_runner)
     eyes.server_url = "https://eyes.applitools.com/"
     eyes.configuration = sel_config
     eyes.configuration.batch = batch_info

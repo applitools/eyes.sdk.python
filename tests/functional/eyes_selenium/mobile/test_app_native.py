@@ -16,7 +16,7 @@ import pytest
         "deviceOrientation": "portrait",
     }
 )
-@pytest.mark.eyes(hide_scrollbars=False)
+@pytest.mark.eyes_config(hide_scrollbars=False)
 def test_android_native(eyes, driver):
     eyes.open(driver, "Contacts!", "My first Appium Python test!")
     eyes.check_window("Contact list!")
@@ -38,7 +38,7 @@ def test_android_native(eyes, driver):
         "deviceOrientation": "portrait",
     }
 )
-@pytest.mark.eyes(hide_scrollbars=False)
+@pytest.mark.eyes_config(hide_scrollbars=False)
 def test_ios_native(eyes, driver):
     eyes.open(driver, "Contacts!", "My first Appium Python test!")
     eyes.check_window("Contact list!")

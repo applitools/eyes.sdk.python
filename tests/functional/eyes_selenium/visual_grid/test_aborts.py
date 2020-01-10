@@ -8,8 +8,7 @@ from applitools.selenium import (
 )
 
 
-def test_abort_when_not_rendered(driver, vg_runner, batch_info):
-    eyes = Eyes(vg_runner)
+def test_abort_when_not_rendered(driver, eyes, batch_info):
     eyes.configure.test_name = "TestAbortWhenNotRendering"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info

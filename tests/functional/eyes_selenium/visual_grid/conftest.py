@@ -11,10 +11,9 @@ def pytest_generate_tests(metafunc):
     os.environ["APPLITOOLS_BATCH_NAME"] = "Python SDK VisualGridTests"
 
 
-@pytest.fixture(scope="function")
-def vg_runner():
-    vg = VisualGridRunner(10)
-    return vg
+@pytest.fixture(scope="session")
+def eyes_runner_class():
+    return lambda: VisualGridRunner(10)
 
 
 @pytest.fixture
