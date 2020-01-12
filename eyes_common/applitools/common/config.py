@@ -41,7 +41,7 @@ class BatchInfo(object):
 
     def __init__(self, name=None, started_at=None, sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
-        self.id = get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
+        self.id = get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4())) # type: Text
         self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
         self.started_at = datetime.now(UTC)
         self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
