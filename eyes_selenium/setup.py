@@ -32,7 +32,7 @@ install_requires = [
     # uses for check if the mobile platform is used in the test
     "Appium-Python-Client>=0.4,<0.47",
     "ua_parser==0.8",
-    "attrs>=19,<=19.3",
+    "attrs>=19,<20",
     "transitions>=0.6,<0.7",
     "lxml>=4.4,<5",
 ]
