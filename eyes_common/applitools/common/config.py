@@ -39,9 +39,11 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     id = attr.ib(converter=str, metadata={JsonInclude.THIS: True},)  # type: Text
 
-    def __init__(self, name=None, started_at=None, sequence_name=None):
+    def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
-        self.id = get_env_with_prefix("APPLITOOLS_BATCH_ID", str(uuid.uuid4())) # type: Text
+        self.id = get_env_with_prefix(
+            "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
+        )  # type: Text
         self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
         self.started_at = datetime.now(UTC)
         self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
@@ -50,8 +52,8 @@ class BatchInfo(object):
             self.name = name
         if started_at:
             self.started_at = started_at
-        if sequence_name:
-            self.sequence_name = sequence_name
+        if batch_sequence_name:
+            self.sequence_name = batch_sequence_name
 
     def with_batch_id(self, id):
         # type: (Text) -> BatchInfo
