@@ -19,7 +19,8 @@ def test_check_region_with_bad_selector(driver, eyes_runner):
         eyes_runner.get_all_test_results()
 
 
-def test_check_region_with_bad_ignore_selector(driver, eyes):
+def test_check_region_with_bad_ignore_selector(driver, eyes_runner):
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver, "Applitools Eyes Python SDK", "TestCheckRegionWithBadIgnoreSelector_VG"
@@ -32,9 +33,12 @@ def test_check_region_with_bad_ignore_selector(driver, eyes):
             "var p = document.querySelector('body>p:nth-of-type(14)'); p.parentNode.removeChild(p);"
         ),
     )
+    eyes.close()
+    eyes_runner.get_all_test_results(False)
 
 
-def test_check_region_with_bad_selector_before_valid_check(driver, eyes):
+def test_check_region_with_bad_selector_before_valid_check(driver, eyes_runner):
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -47,3 +51,4 @@ def test_check_region_with_bad_selector_before_valid_check(driver, eyes):
         eyes.check_region("#modal-content")
 
         eyes.close_async()
+        eyes_runner.get_all_test_results()

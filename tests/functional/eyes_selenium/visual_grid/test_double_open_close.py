@@ -1,7 +1,8 @@
 from applitools.selenium import Eyes, Target
 
 
-def test_double_open_check_close(driver, eyes, eyes_runner):
+def test_double_open_check_close(driver, eyes_runner):
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -25,7 +26,8 @@ def test_double_open_check_close(driver, eyes, eyes_runner):
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async(driver, eyes, eyes_runner):
+def test_double_open_check_close_async(driver, eyes_runner):
+    eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
