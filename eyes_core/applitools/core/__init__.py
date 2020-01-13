@@ -59,7 +59,6 @@ __all__ = (
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
-    "GetSelector",
     "ServerConnector",
     "AppOutputWithScreenshot",
     "AppOutputProvider",
