@@ -102,8 +102,8 @@ class RectangleSize(DictAccessMixin):
 class Point(DictAccessMixin):
     """A location in a two-dimensional plane."""
 
-    x = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
-    y = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
+    x = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True}) # type: int
+    y = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True}) # type: int
 
     def __init__(self, x, y):
         # type: (int, int) -> None
@@ -204,11 +204,11 @@ class Point(DictAccessMixin):
 class Region(DictAccessMixin):
     """A rectangle identified by left,top, width, height."""
 
-    left = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
-    top = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
-    width = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
-    height = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})
-    coordinates_type = attr.ib(metadata={JsonInclude.THIS: True})
+    left = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True}) # type: int
+    top = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})  # type: int
+    width = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})  # type: int
+    height = attr.ib(converter=round_converter, metadata={JsonInclude.THIS: True})  # type: int
+    coordinates_type = attr.ib(metadata={JsonInclude.THIS: True}) # type: CoordinatesType
 
     def __init__(
         self,
