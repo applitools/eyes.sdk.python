@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         CssSelector,
         AnyWebElement,
-        ByLocator,
+        BySelector,
         FrameNameOrId,
         FrameIndex,
     )
@@ -50,7 +50,7 @@ class Target(CheckTarget):
     @staticmethod  # noqa
     @overload
     def region(by_selector):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa
@@ -78,7 +78,7 @@ class Target(CheckTarget):
     @staticmethod  # noqa
     @overload
     def frame(frame_by_selector):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa

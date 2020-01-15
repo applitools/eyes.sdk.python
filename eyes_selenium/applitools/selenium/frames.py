@@ -72,7 +72,7 @@ class Frame(object):
         return self.original_overflow
 
 
-@attr.s(slots=True, init=False, cmp=False)
+@attr.s(slots=True, init=False, eq=False)
 class FrameChain(tp.Sequence[Frame]):
     _frames = attr.ib()
 
