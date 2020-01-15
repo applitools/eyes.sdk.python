@@ -34,7 +34,7 @@ from applitools.common.visual_grid import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Any, Optional, Dict, Tuple
+    from typing import Text, List, Any, Optional, Dict, Tuple, Callable
     from applitools.common.utils.custom_types import Num
 
 # Prints out all data sent/received through 'requests'
@@ -60,6 +60,7 @@ class _RequestCommunicator(object):
     server_url = attr.ib(default=None)  # type: Text
 
     def request(self, method, url_resource, use_api_key=True, **kwargs):
+        # type: (Callable, Text, bool, **Any) -> Response
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
@@ -87,6 +88,7 @@ class _RequestCommunicator(object):
         return response
 
     def long_request(self, method, url_resource, **kwargs):
+        # type: (Callable, Text, **Any) -> Response
         headers = kwargs.get("headers", self.headers).copy()
         headers["Eyes-Expect"] = "202+location"
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
