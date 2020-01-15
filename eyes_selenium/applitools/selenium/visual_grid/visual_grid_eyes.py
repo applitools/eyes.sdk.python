@@ -14,6 +14,7 @@ from applitools.common import (
     TestFailedError,
     TestResults,
     logger,
+    RectangleSize,
 )
 from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
@@ -133,18 +134,9 @@ class VisualGridEyes(object):
         logger.debug("VisualGridEyes.open(%s)" % self.configure)
 
         self._driver = driver
-        browsers_info = self.configure.browsers_info
+        self._set_viewport_size()
 
-        if self.configure.viewport_size:
-            self._set_viewport_size(self.configure.viewport_size)
-        elif browsers_info:
-            viewports = [bi.viewport_size for bi in browsers_info]
-            if viewports:
-                self.configure.viewport_size = viewports[0]
-        else:
-            self.configure.viewport_size = self._get_viewport_size()
-
-        for b_info in browsers_info:
+        for b_info in self.configure.browsers_info:
             test = RunningTest(
                 self._create_vgeyes_connector(b_info), self.configure, b_info
             )
@@ -408,7 +400,19 @@ class VisualGridEyes(object):
         argument_guard.not_none(self.driver)
         return eyes_selenium_utils.get_viewport_size(self.driver)
 
-    def _set_viewport_size(self, viewport_size):
+    def _set_viewport_size(self):
+        viewport_size = self.configure.viewport_size
+
+        if viewport_size is None:
+            for render_bi in self.configure.browsers_info:
+                if not render_bi.emulation_info:
+                    viewport_size = RectangleSize(render_bi.width, render_bi.height)
+                    break
+
+        if viewport_size is None:
+            viewport_size = self._get_viewport_size()
+
+        self.configure.viewport_size = viewport_size
         try:
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
