@@ -25,8 +25,8 @@ if TYPE_CHECKING:
     UserInputs = List[ActionTrigger]  # typedef
     RegionOrElement = Union[EyesWebElement, Region]  # typedef
 
-    SeleniumBy = Text
-    ByLocator = List[SeleniumBy, Text]  # typedef
+    SeleniumBy = Text  # typedef
+    BySelector = List[SeleniumBy, Text]  # typedef
     CssSelector = Text  # typedef
-    REGION_VALUES = Union[Region, CssSelector, AnyWebElement, ByLocator]  # typedef
-    FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, ByLocator]  # typedef
+    REGION_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef
+    FLOATING_VALUES = Union[Region, CssSelector, AnyWebElement, BySelector]  # typedef

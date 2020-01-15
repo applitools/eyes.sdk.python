@@ -14,9 +14,9 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (
-    "RegionByLocator",
+    "RegionBySelector",
     "RegionByElement",
-    "FloatingRegionByLocator",
+    "FloatingRegionBySelector",
     "FloatingRegionByElement",
 )
 
@@ -76,7 +76,7 @@ class RegionByElement(GetSeleniumRegion):
 
 
 @attr.s
-class RegionByLocator(GetSeleniumRegion):
+class RegionBySelector(GetSeleniumRegion):
     """
     :param by: The "by" part of a selenium selector for an element which
                represents the ignore region
@@ -106,7 +106,7 @@ class FloatingRegionByElement(GetSeleniumFloatingRegion):
 
 
 @attr.s
-class FloatingRegionByLocator(GetSeleniumFloatingRegion):
+class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     """
     :ivar by: The selenium By
     :ivar value: The css selector for an element which represents the inner region.

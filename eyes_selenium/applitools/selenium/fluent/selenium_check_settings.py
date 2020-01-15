@@ -9,14 +9,13 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Region, logger
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
-from applitools.selenium.fluent import SelectorByElement, SelectorByLocator
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
     FloatingRegionByElement,
     RegionByElement,
-    RegionByLocator,
-    FloatingRegionByLocator,
+    RegionBySelector,
+    FloatingRegionBySelector,
 )
 
 if TYPE_CHECKING:
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
         AnyWebElement,
         FrameNameOrId,
         FrameIndex,
-        ByLocator,
+        BySelector,
         CssSelector,
         FLOATING_VALUES,
     )
@@ -36,7 +35,7 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 @attr.s
 class FrameLocator(object):
     frame_element = attr.ib(default=None)  # type: AnyWebElement
-    frame_selector = attr.ib(default=None)  # type: ByLocator
+    frame_selector = attr.ib(default=None)  # type: BySelector
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
     scroll_root_selector = attr.ib(default=None)  # type: CssSelector
@@ -48,22 +47,13 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
-    target_selector = attr.ib(init=False, default=None)  # type: ByLocator
+    target_selector = attr.ib(init=False, default=None)  # type: BySelector
     target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
     frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
 
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
-
-    @property
-    def target_provider(self):
-        target_selector = self.target_selector
-        target_element = self.target_element
-        if target_selector:
-            return SelectorByLocator(target_selector)
-        elif target_element:
-            return SelectorByElement(target_element)
 
     @property
     def size_mode(self):
@@ -91,7 +81,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def layout(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -114,7 +104,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def strict(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -137,7 +127,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def content(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -160,7 +150,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def ignore(self, *by):
-        # type: (*ByLocator)  -> SeleniumCheckSettings
+        # type: (*BySelector)  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -213,7 +203,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def region(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def region(self, region):  # noqa
@@ -247,7 +237,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def frame(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def frame(self, frame):  # noqa
@@ -274,11 +264,11 @@ class SeleniumCheckSettings(CheckSettings):
     def _region_provider_from(self, region, method_name):
         if isinstance(region, basestring):
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionByLocator(By.CSS_SELECTOR, region)
+            return RegionBySelector(By.CSS_SELECTOR, region)
         if is_list_or_tuple(region):
             by, val = region
-            logger.debug("{name}: RegionByLocator".format(name=method_name))
-            return RegionByLocator(by, val)
+            logger.debug("{name}: RegionBySelector".format(name=method_name))
+            return RegionBySelector(by, val)
         elif is_webelement(region):
             logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region)
@@ -310,7 +300,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def scroll_root_element(self, by):
-        # type: (ByLocator) -> SeleniumCheckSettings
+        # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def scroll_root_element(self, element_or_selector):  # noqa
@@ -329,11 +319,11 @@ class SeleniumCheckSettings(CheckSettings):
             return FloatingRegionByElement(region, bounds)
         if isinstance(region, basestring):
             logger.debug("floating: FloatingRegionByCssSelector")
-            return FloatingRegionByLocator(By.CSS_SELECTOR, region, bounds)
+            return FloatingRegionBySelector(By.CSS_SELECTOR, region, bounds)
         if is_list_or_tuple(region):
             by, value = region
-            logger.debug("floating: FloatingRegionByLocator")
-            return FloatingRegionByLocator(by, value, bounds)
+            logger.debug("floating: FloatingRegionBySelector")
+            return FloatingRegionBySelector(by, value, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
         )
