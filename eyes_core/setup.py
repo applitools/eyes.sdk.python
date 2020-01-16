@@ -25,9 +25,9 @@ def get_version(package_name):
 
 install_requires = [
     "eyes-common=={}".format(get_version("core")),
-    "attrs>=19,<=19.3",
+    "attrs>=19,<20",
     "Pillow>=5.0.0,<7.0.0",  # 7 and above doesnt support python 2
-    "requests>=2.1.0,<2.22.0",
+    "requests>=2.22.0",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
@@ -40,14 +40,12 @@ setup(
     version=get_version("core"),
     packages=find_packages(),
     url="http://www.applitools.com",
-    license="Apache License, Version 2.0",
     author="Applitools Team",
     author_email="team@applitools.com",
     description="Applitools Python SDK. Core package",
     long_description=read("README.rst"),
     long_description_content_type="text/x-rst",
     classifiers=[
-        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
