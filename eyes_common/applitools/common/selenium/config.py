@@ -100,9 +100,11 @@ class Configuration(ConfigurationBase):
         # type: () -> List[RenderBrowserInfo]
         if self._browsers_info:
             return self._browsers_info
-        browser_info = RenderBrowserInfo(
-            viewport_size=self.viewport_size,
-            browser_type=BrowserType.CHROME,
-            baseline_env_name=self.baseline_env_name,
-        )
-        return [browser_info]
+        if self.viewport_size:
+            browser_info = RenderBrowserInfo(
+                viewport_size=self.viewport_size,
+                browser_type=BrowserType.CHROME,
+                baseline_env_name=self.baseline_env_name,
+            )
+            return [browser_info]
+        return []
