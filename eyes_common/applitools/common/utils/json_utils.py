@@ -64,9 +64,7 @@ def attr_from_json(content, cls):
             (kls, fields), _ = Counter(convidenced).most_common()[0]
             return kls(**cleaned_params(params, fields))
         except IndexError:
-            logger.debug(
-                "Failed to convert: {} to any class. Use raw object".format(obj)
-            )
+            # Failed to convert any class. Use raw object instead
             return params
 
     instance = json.loads(content, object_hook=obj_came)
