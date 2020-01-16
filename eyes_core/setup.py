@@ -27,7 +27,7 @@ install_requires = [
     "eyes-common=={}".format(get_version("core")),
     "attrs>=19,<20",
     "Pillow>=5.0.0,<7.0.0",  # 7 and above doesnt support python 2
-    "requests>=2.1.0,<2.22.0",
+    "requests>=2.22.0",
 ]
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
