@@ -1,3 +1,5 @@
+### Fixed
+- Infinite loop during render when opened without viewport size [#90](https://github.com/applitools/eyes.sdk.python/pull/90)
 ## [4.1.6] - 2020-01-08
 ### Fixed
 - Multiple instances opening on Windows [Trello 1457](https://trello.com/c/noYzDV70)
