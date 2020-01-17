@@ -66,39 +66,45 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 def pytest_runtest_makereport(item, call):
     outcome = yield
     result = outcome.get_result()
-
-    if result.when == "teardown":
-        passed = result.outcome == "passed"
-        group = "selenium"
-        test_name = item.name
-        parameters = None
-
-        # if eyes_selenium/visual_grid tests or desktop VG tests
-        if item.fspath.dirname.endswith("visual_grid") or strtobool(
-            os.getenv("TEST_RUN_ON_VG", "False")
+    passed = result.outcome == "passed"
+    group = "selenium"
+    test_name = item.name
+    parameters = None
+    if result.when == "call":
+        if (
+            item.fspath.dirname.endswith("eyes_images")
+            or item.fspath.dirname.endswith("selenium")
+            or item.fspath.purebasename == "test_mobile"
         ):
-            test_name = item.originalname
-            parameters = dict(mode="VisualGrid")
-
-        # if eyes_images tests
-        if item.fspath.dirname.endswith("eyes_images"):
-            group = "images"
-
-        # if eyes_selenium/mobile/test_mobile.py
-        if item.fspath.purebasename == "test_mobile":
-            test_name = item.originalname
-            (
-                device_name,
-                platform_version,
-                device_orientation,
-                page,
-            ) = item.callspec.id.split("-")
-            parameters = dict(
-                device_name=device_name,
-                platform_version=platform_version,
-                device_orientation=device_orientation,
-                page=page,
+            # if eyes_images tests
+            if item.fspath.dirname.endswith("eyes_images"):
+                group = "images"
+            # if eyes_selenium/mobile/test_mobile.py
+            if item.fspath.purebasename == "test_mobile":
+                test_name = item.originalname
+                (
+                    device_name,
+                    platform_version,
+                    device_orientation,
+                    page,
+                ) = item.callspec.id.split("-")
+                parameters = dict(
+                    device_name=device_name,
+                    platform_version=platform_version,
+                    device_orientation=device_orientation,
+                    page=page,
+                )
+            send_result_report(
+                test_name=test_name, passed=passed, parameters=parameters, group=group
             )
-        send_result_report(
-            test_name=test_name, passed=passed, parameters=parameters, group=group
-        )
+    elif result.when == "teardown":
+        # if eyes_selenium/visual_grid tests or desktop VG tests
+        if item.fspath.dirname.endswith("visual_grid") or item.fspath.dirname.endswith(
+            "desktop"
+        ):
+            if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
+                test_name = item.originalname
+                parameters = dict(mode="VisualGrid")
+            send_result_report(
+                test_name=test_name, passed=passed, parameters=parameters, group=group
+            )
