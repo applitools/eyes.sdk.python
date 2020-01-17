@@ -29,27 +29,35 @@ REPORT_DATA = {
 }
 
 
-def prepare_result_data_for_makereport(test_name, passed):
+def prepare_result_data_for_makereport(test_name, passed, parameters):
     test_name = underscore_to_camelcase(test_name)
-    return dict(test_name=test_name, passed=passed)
+    result = dict(test_name=test_name, passed=passed)
+    if parameters:
+        result["parameters"] = parameters
+    params_index_start = test_name.find("[")
+    if params_index_start == -1:
+        return result
 
-
-def prepare_result_data_for_runner(test_name, passed, browser):
+    test_params = test_name[params_index_start + 1 : -1]
+    test_name = test_name[:params_index_start]
+    browser = "Chrome"
+    if test_params.find("chrome") == -1:
+        browser = "Firefox"
     stitching = "css"
-    if test_name.endswith("_Scroll"):
-        test_name = test_name.rstrip("_Scroll")
+    if test_params.find("CSS") == -1:
         stitching = "scroll"
-    parameters = dict(browser=browser, stitching=stitching)
+    return dict(
+        test_name=test_name,
+        passed=passed,
+        parameters=dict(browser=browser, stitching=stitching),
+    )
 
-    if test_name.endswith("_VG"):
-        test_name = test_name.rstrip("_VG")
-        parameters = dict(mode="VisualGrid")
-    return dict(test_name=test_name, passed=passed, parameters=parameters)
 
-
-def send_result_report(results, group="selenium"):
+def send_result_report(test_name, passed, parameters=None, group="selenium"):
     report_data = copy(REPORT_DATA)
-    report_data["results"] = results
+    report_data["results"] = prepare_result_data_for_makereport(
+        test_name, passed, parameters
+    )
     report_data["group"] = group
     r = requests.post(urljoin(REPORT_BASE_URL, "/result"), data=json.dumps(report_data))
     print("Result report send: {} - {}".format(r.status_code, r.text))

@@ -1,13 +1,11 @@
 import os
+from distutils.util import strtobool
 
 import pytest
 
 from applitools.common import BatchInfo, StdoutLogger, logger, Configuration
 from applitools.common.utils import iteritems
-from tests.utils import (
-    prepare_result_data_for_runner,
-    send_result_report,
-)
+from tests.utils import send_result_report
 
 logger.set_logger(StdoutLogger())
 
@@ -23,15 +21,6 @@ def eyes_runner(eyes_runner_class):
     yield runner
     if runner:
         results_summary = runner.get_all_test_results(False)
-        results = [
-            prepare_result_data_for_runner(
-                trc.test_results.name,
-                trc.test_results.is_passed,
-                trc.test_results.host_app.lower(),
-            )
-            for trc in results_summary
-        ]
-        send_result_report(results, group="selenium")
         print(results_summary)
 
 
@@ -71,3 +60,30 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    result = outcome.get_result()
+
+    if result.when == "teardown":
+        passed = result.outcome == "passed"
+        group = "selenium"
+        test_name = item.name
+        parameters = None
+
+        # if eyes_selenium/visual_grid tests or desktop VG tests
+        if item.fspath.dirname.endswith("visual_grid") or strtobool(
+            os.getenv("TEST_RUN_ON_VG", "False")
+        ):
+            test_name = item.originalname
+            parameters = dict(mode="VisualGrid")
+
+        # if eyes_images tests
+        if item.fspath.dirname.endswith("eyes_images"):
+            group = "images"
+
+        send_result_report(
+            test_name=test_name, passed=passed, parameters=parameters, group=group
+        )

@@ -3,7 +3,7 @@ import os
 import pytest
 
 from applitools.selenium import BatchInfo, VisualGridRunner
-from tests.utils import prepare_result_data_for_makereport, send_result_report
+from tests.utils import send_result_report
 
 
 def pytest_generate_tests(metafunc):
@@ -21,19 +21,3 @@ def vg_runner():
 @pytest.fixture
 def batch_info():
     return BatchInfo("Python SDK VisualGridTests")
-
-
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    result = outcome.get_result()
-
-    if result.when in ["call", "teardown"]:
-        passed = result.outcome == "passed"
-        if call.excinfo:
-            passed = False
-        res = prepare_result_data_for_makereport(
-            test_name=item.originalname, passed=passed
-        )
-        res["parameters"] = dict(mode="VisualGrid")
-        send_result_report([res], group="selenium")
