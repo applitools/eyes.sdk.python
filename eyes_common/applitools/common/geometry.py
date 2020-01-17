@@ -558,7 +558,7 @@ class Region(DictAccessMixin):
                     physical_crop_area,
                     logical_crop_area,
                 )
-                logger.info("adding subregion - {}".format(subregion))
+                logger.debug("adding subregion - {}".format(subregion))
                 sub_regions.append(subregion)
 
                 current_left += delta_x
