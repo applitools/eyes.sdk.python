@@ -71,40 +71,46 @@ def pytest_runtest_makereport(item, call):
     test_name = item.name
     parameters = None
     if result.when == "call":
-        if (
+        # For tests where eyes.close() inside test body
+        if not (
             item.fspath.dirname.endswith("eyes_images")
             or item.fspath.dirname.endswith("selenium")
             or item.fspath.purebasename == "test_mobile"
         ):
-            # if eyes_images tests
-            if item.fspath.dirname.endswith("eyes_images"):
-                group = "images"
-            # if eyes_selenium/mobile/test_mobile.py
-            if item.fspath.purebasename == "test_mobile":
-                test_name = item.originalname
-                (
-                    device_name,
-                    platform_version,
-                    device_orientation,
-                    page,
-                ) = item.callspec.id.split("-")
-                parameters = dict(
-                    device_name=device_name,
-                    platform_version=platform_version,
-                    device_orientation=device_orientation,
-                    page=page,
-                )
-            send_result_report(
-                test_name=test_name, passed=passed, parameters=parameters, group=group
+            return
+
+        # if eyes_images tests
+        if item.fspath.dirname.endswith("eyes_images"):
+            group = "images"
+        # if eyes_selenium/mobile/test_mobile.py
+        if item.fspath.purebasename == "test_mobile":
+            test_name = item.originalname
+            (
+                device_name,
+                platform_version,
+                device_orientation,
+                page,
+            ) = item.callspec.id.split("-")
+            parameters = dict(
+                device_name=device_name,
+                platform_version=platform_version,
+                device_orientation=device_orientation,
+                page=page,
             )
+        send_result_report(
+            test_name=test_name, passed=passed, parameters=parameters, group=group
+        )
     elif result.when == "teardown":
-        # if eyes_selenium/visual_grid tests or desktop VG tests
-        if item.fspath.dirname.endswith("visual_grid") or item.fspath.dirname.endswith(
-            "desktop"
+        # For tests where eyes.close() inside fixture
+        if not (
+            item.fspath.dirname.endswith("visual_grid")
+            or item.fspath.dirname.endswith("desktop")
         ):
-            if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-                test_name = item.originalname
-                parameters = dict(mode="VisualGrid")
-            send_result_report(
-                test_name=test_name, passed=passed, parameters=parameters, group=group
-            )
+            return
+
+        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
+            test_name = item.originalname
+            parameters = dict(mode="VisualGrid")
+        send_result_report(
+            test_name=test_name, passed=passed, parameters=parameters, group=group
+        )
