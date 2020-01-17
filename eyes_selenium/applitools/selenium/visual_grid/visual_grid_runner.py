@@ -107,7 +107,7 @@ class VisualGridRunner(EyesRunner):
         self._executor.shutdown()
         self._thread.join()
 
-    def _get_all_test_results_impl(self, should_raise_exception=True):
+    def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         while True:
             states = list(set([t.state for t in self.all_running_tests]))
