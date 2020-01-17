@@ -19,13 +19,7 @@ REPORT_DATA = {
     "id": os.getenv("TRAVIS_COMMIT", str(uuid.uuid4())),
     "sandbox": bool(strtobool(os.getenv("SANDBOX", "True"))),
     "mandatory": False,
-    "results": [
-        # {
-        #     "test_name": "TestDuplicatedIFrames",
-        #     "parameters": {"browser": "chrome", "stitching": "css"},
-        #     "passed": True,
-        # },
-    ],
+    "results": [],
 }
 
 
@@ -55,7 +49,7 @@ def prepare_result_data(test_name, passed, parameters):
 
 def send_result_report(test_name, passed, parameters=None, group="selenium"):
     report_data = copy(REPORT_DATA)
-    report_data["results"] = prepare_result_data(test_name, passed, parameters)
+    report_data["results"] = [prepare_result_data(test_name, passed, parameters)]
     report_data["group"] = group
     r = requests.post(urljoin(REPORT_BASE_URL, "/result"), data=json.dumps(report_data))
     print("Result report send: {} - {}".format(r.status_code, r.text))
