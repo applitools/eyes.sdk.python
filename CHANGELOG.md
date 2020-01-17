@@ -1,3 +1,4 @@
+## [4.1.7] - 2020-01-17
 ### Fixed
 - Dependencies warning at runtime [Trello 1476](https://trello.com/c/Rmqo8HPM)
 - Infinite loop during render when opened without viewport size [#90](https://github.com/applitools/eyes.sdk.python/pull/90)
