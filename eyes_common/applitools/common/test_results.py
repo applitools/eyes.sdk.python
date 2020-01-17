@@ -280,6 +280,7 @@ class TestResultsSummary(object):
         return iter(self._all_results)
 
     def __getitem__(self, item):
+        # type: (int) -> TestResultContainer
         return self._all_results[item]
 
     def __str__(self):

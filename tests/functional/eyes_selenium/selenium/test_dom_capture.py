@@ -2,18 +2,41 @@ import json
 import os
 import time
 from collections import OrderedDict
+from mock import MagicMock
 
 import pytest
 from selenium.webdriver.common.by import By
 
 from applitools.common import Point
-from applitools.selenium import eyes_selenium_utils
+from applitools.selenium import eyes_selenium_utils, EyesWebDriver, Eyes
 from applitools.selenium.capture import dom_capture
+
+
+@pytest.fixture(scope="function")
+def eyes_for_class(request, eyes_opened):
+    # TODO: implement eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
+
+    request.cls.eyes = eyes_opened
+    request.cls.driver = eyes_opened.driver
+    yield
+
+
+@pytest.fixture(scope="function")
+def driver_for_class(request, driver):
+    viewport_size = request.node.get_closest_marker("viewport_size").args[0]
+
+    driver = EyesWebDriver(driver, MagicMock(Eyes))
+    driver.quit = MagicMock()
+    if viewport_size:
+        eyes_selenium_utils.set_browser_size(driver, viewport_size)
+    request.cls.driver = driver
+
+    yield
+    driver.quit()
 
 
 @pytest.mark.usefixtures("driver_for_class")
 @pytest.mark.browser("chrome")
-@pytest.mark.platform("Linux")
 @pytest.mark.viewport_size({"width": 800, "height": 600})
 class TestDomCaptureUnit(object):
     cur_dir = os.path.abspath(__file__).rpartition("/")[0]
@@ -139,12 +162,12 @@ class TestDomCaptureUnit(object):
 @pytest.mark.skip("Only for local testing because changes always")
 class TestDynamicPages(object):
     @pytest.mark.test_page_url("https://www.nbcnews.com/")
-    @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
+    @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
     def test_nbc_news(self):
         self.eyes.check_window("NBC News Test")
 
     @pytest.mark.test_page_url("https://www.ebay.com/")
-    @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
+    @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
     def test_ebay(self):
         self.eyes.check_window("ebay Test")
         self.driver.find_element(by=By.LINK_TEXT, value="Electronics").click()
@@ -153,7 +176,7 @@ class TestDynamicPages(object):
         self.eyes.check_window("ebay Test - Electroincs > Smart Home")
 
     @pytest.mark.test_page_url("https://www.aliexpress.com/")
-    @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
+    @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
     def test_aliexpress(self):
         self.eyes.check_window("AliExpress Test")
 
@@ -161,7 +184,7 @@ class TestDynamicPages(object):
         "https://www.bestbuy.com/site/apple-macbook-pro-13-display-intel-core-i5-8-gb-memory-256gb-flash-storage"
         "-silver/6936477.p?skuId=6936477"
     )
-    @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
+    @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
     def test_bestbuy(self):
         self.driver.find_elements(by=By.CSS_SELECTOR, value=".us-link")[0].click()
         self.eyes.check_window("BestBuy Test")
@@ -176,14 +199,14 @@ class TestCustomersPages(object):
         "https://www.amazon.com/stream/cd7be774-51ef-4dfe-8e97-1fdec7357113/ref=strm_theme_kitchen?asCursor"
         "=WyIxLjgiLCJ0czEiLCIxNTM1NTQyMjAwMDAwIiwiIiwiUzAwMTc6MDpudWxsIiwiUzAwMTc6MjoxIiwiUzAwMTc6MDotMSIsIiIsIiIsIjAiLCJzdWI0IiwiMTUzNTU5NDQwMDAwMCIsImhmMS1zYXZlcyIsIjE1MzU2MDE2MDAwMDAiLCJ2MSIsIjE1MzU2MDUyMDQyMzgiLCIiLCIwIiwidjEiLCIxNTM1NTg1NDAwMDAwIl0%3D&asCacheIndex=0&asYOffset=-321&asMod=1"
     )
-    @pytest.mark.eyes(send_dom=True)
+    @pytest.mark.eyes_config(send_dom=True)
     def test_amazon_special_page(self):
         self.eyes.check_window("Amazon")
 
     @pytest.mark.test_page_url(
         "https://www.staples.com/Staples-Manila-File-Folders-Letter-3-Tab-Assorted-Position-100-Box/product_116657"
     )
-    @pytest.mark.eyes(send_dom=True)
+    @pytest.mark.eyes_config(send_dom=True)
     def test_staples_special_page(self):
         self.eyes.check_window("Staples")
 
@@ -192,18 +215,18 @@ class TestCustomersPages(object):
         "-1FCAEoggJCAlhYSDNYBGhqiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid"
         "=ce4701a88873eed9fbb22893b9c6eae4;city=-2600941;from_idr=1&;ilp=1;d_dcp=1"
     )
-    @pytest.mark.eyes(send_dom=True)
+    @pytest.mark.eyes_config(send_dom=True)
     def test_booking_special_page(self):
         self.eyes.check_window("Booking")
 
     @pytest.mark.test_page_url(
         "https://www.games-workshop.com/en-US/The-Beast-Arises-Omnibus-1-2018"
     )
-    @pytest.mark.eyes(send_dom=True)
+    @pytest.mark.eyes_config(send_dom=True)
     def test_game_workshop_special_page(self):
         self.eyes.check_window("Games Workshop")
 
-    @pytest.mark.eyes(send_dom=True, force_full_page_screenshot=True)
+    @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
     @pytest.mark.viewport_size({"width": 800, "height": 600})
     @pytest.mark.test_page_url(
         "https://nikita-andreev.github.io/applitools/dom_capture.html?aaa"
