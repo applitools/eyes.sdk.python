@@ -162,7 +162,7 @@ def run_tests_on_CI(c, tests):
     if not browsers:
         raise ValueError("`TEST_BROWSERS` env variable should be set")
 
-    pattern = "pytest {par} {tests} --ignore={tests}/test_client_sites.py".format(
+    pattern = "pytest {par} {tests} --ignore={tests}/test_dom_capture.py --ignore={tests}/test_client_sites.py".format(
         par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
     )
 

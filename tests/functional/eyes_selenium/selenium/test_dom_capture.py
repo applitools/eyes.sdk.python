@@ -37,7 +37,6 @@ def driver_for_class(request, driver):
 
 @pytest.mark.usefixtures("driver_for_class")
 @pytest.mark.browser("chrome")
-@pytest.mark.platform("Linux")
 @pytest.mark.viewport_size({"width": 800, "height": 600})
 class TestDomCaptureUnit(object):
     cur_dir = os.path.abspath(__file__).rpartition("/")[0]
