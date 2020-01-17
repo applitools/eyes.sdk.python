@@ -34,6 +34,11 @@ def prepare_result_data(test_name, passed, parameters):
 
     test_params = test_name[params_index_start + 1 : -1]
     test_name = test_name[:params_index_start]
+    if test_params.find("StitchMode") == -1:
+        # if not desktop tests
+        result["test_name"] = test_name
+        return result
+
     browser = "Chrome"
     if test_params.find("chrome") == -1:
         browser = "Firefox"

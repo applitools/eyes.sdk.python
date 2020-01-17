@@ -84,6 +84,21 @@ def pytest_runtest_makereport(item, call):
         if item.fspath.dirname.endswith("eyes_images"):
             group = "images"
 
+        # if eyes_selenium/mobile/test_mobile.py
+        if item.fspath.purebasename == "test_mobile":
+            test_name = item.originalname
+            (
+                device_name,
+                platform_version,
+                device_orientation,
+                page,
+            ) = item.callspec.id.split("-")
+            parameters = dict(
+                device_name=device_name,
+                platform_version=platform_version,
+                device_orientation=device_orientation,
+                page=page,
+            )
         send_result_report(
             test_name=test_name, passed=passed, parameters=parameters, group=group
         )
