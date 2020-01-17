@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from applitools.images import BatchInfo, Eyes

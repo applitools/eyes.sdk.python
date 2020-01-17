@@ -179,7 +179,7 @@ class FullPageCaptureAlgorithm(object):
         # type: (...) -> Image
         logger.info("enter: scale_ratio {}".format(scale_ratio))
         for part_region in screenshot_parts:
-            logger.info("Part: {}".format(part_region))
+            logger.debug("Part: {}".format(part_region))
             # Scroll to the part's top/left
             part_region_location = part_region.scroll_to.offset(
                 original_stitch_state.position
@@ -219,7 +219,7 @@ class FullPageCaptureAlgorithm(object):
                 scaled_cropped_part_image, self._debug_msg("scaled_cropped_part_image")
             )
 
-            logger.info("pasting part at {}".format(target_position))
+            logger.debug("pasting part at {}".format(target_position))
 
             stitched_image.paste(
                 scaled_cropped_part_image, box=(target_position.x, target_position.y)

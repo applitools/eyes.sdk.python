@@ -3,6 +3,7 @@ import os
 import pytest
 
 from applitools.selenium import BatchInfo, VisualGridRunner
+from tests.utils import send_result_report
 
 
 def pytest_generate_tests(metafunc):

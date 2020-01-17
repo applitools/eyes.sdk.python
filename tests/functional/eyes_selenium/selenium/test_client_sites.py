@@ -23,11 +23,11 @@ def test_wix_site(eyes, driver):
     # just an example, where it make us some problems with scrolling to top of the frame.
     # eyes.check_region(By.CSS_SELECTOR, "[data-hook=plus-button]");
     eyes.check("", Target.region("[data-hook=plus-button]"))
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.platform("Linux", "Windows", "macOS")
-@pytest.mark.eyes(match_timeout=0, force_full_page_screenshot=False)
+@pytest.mark.eyes_config(match_timeout=0, force_full_page_screenshot=False)
 def test_w3schools_iframe(eyes, driver):
     driver = eyes.open(
         driver,
@@ -39,22 +39,22 @@ def test_w3schools_iframe(eyes, driver):
     eyes.check(
         "Entire Frame", Target.frame("iframeResult").region([By.TAG_NAME, "body"])
     )
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.platform("Linux")
-@pytest.mark.eyes(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
+@pytest.mark.eyes_config(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 def test_omnicomprgroup(eyes, driver):
     driver = eyes.open(
         driver, "Python SDK", "TestOmnicomprgroup_FPS", {"width": 800, "height": 600}
     )
     driver.get("https://www.omnicomprgroup.com/")
     eyes.check_window()
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.platform("Linux")
-@pytest.mark.eyes(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
+@pytest.mark.eyes_config(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 def test_nationalgeographic(eyes, driver):
     driver = eyes.open(
         driver,
@@ -66,11 +66,11 @@ def test_nationalgeographic(eyes, driver):
         "https://www.nationalgeographic.com/photography/proof/2016/05/omar-diop-refugee-mbororo-portraits/?disableAds=true"
     )
     eyes.check_window()
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.platform("Linux")
-@pytest.mark.eyes(send_dom=False, stitch_mode=StitchMode.CSS)
+@pytest.mark.eyes_config(send_dom=False, stitch_mode=StitchMode.CSS)
 def test_zachs_app(eyes, driver):
     driver.get("https://www.goodrx.com/xarelto/what-is")
     eyes.open(
@@ -85,11 +85,11 @@ def test_zachs_app(eyes, driver):
     warnings_ele = driver.find_element_by_xpath('//*[@id="warnings"]/..')
     eyes.check("warnings", Target.region(warnings_ele).fully())
 
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.platform("Linux")
-@pytest.mark.eyes(
+@pytest.mark.eyes_config(
     hide_scrollbars=True, stitch_mode=StitchMode.Scroll, wait_before_screenshots=1
 )
 def test_duo_v3_default(eyes, driver):
@@ -98,4 +98,4 @@ def test_duo_v3_default(eyes, driver):
     )
     driver = eyes.open(driver, "region", "test region", {"width": 1000, "height": 800})
     eyes.check("Frame", Target.frame("duo_iframe"))
-    eyes.close()
+    eyes.close(False)
