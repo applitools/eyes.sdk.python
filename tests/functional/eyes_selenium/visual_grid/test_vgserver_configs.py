@@ -4,8 +4,8 @@ from applitools.common import EyesError
 from applitools.selenium import Configuration, Eyes
 
 
-def test_vgdouble_close_no_check(driver, eyes_runner, batch_info):
-    eyes = Eyes(eyes_runner)
+def test_vgdouble_close_no_check(driver, vg_runner, batch_info):
+    eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(app_name="app", test_name="test", batch=batch_info)
     )

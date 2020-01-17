@@ -4,8 +4,8 @@ from selenium.common.exceptions import NoSuchElementException
 from applitools.selenium import Eyes, Target
 
 
-def test_check_region_with_bad_selector(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_check_region_with_bad_selector(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -16,11 +16,11 @@ def test_check_region_with_bad_selector(driver, eyes_runner):
     with pytest.raises(NoSuchElementException):
         eyes.check_region("#element_that_does_not_exist")
         eyes.close_async()
-        eyes_runner.get_all_test_results()
+        vg_runner.get_all_test_results()
 
 
-def test_check_region_with_bad_ignore_selector(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_check_region_with_bad_ignore_selector(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver, "Applitools Eyes Python SDK", "TestCheckRegionWithBadIgnoreSelector_VG"
@@ -34,11 +34,11 @@ def test_check_region_with_bad_ignore_selector(driver, eyes_runner):
         ),
     )
     eyes.close()
-    eyes_runner.get_all_test_results(False)
+    vg_runner.get_all_test_results()
 
 
-def test_check_region_with_bad_selector_before_valid_check(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_check_region_with_bad_selector_before_valid_check(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -51,4 +51,4 @@ def test_check_region_with_bad_selector_before_valid_check(driver, eyes_runner):
         eyes.check_region("#modal-content")
 
         eyes.close_async()
-        eyes_runner.get_all_test_results()
+        vg_runner.get_all_test_results()

@@ -1,32 +1,15 @@
-import json
 import os
-import uuid
-from distutils.util import strtobool
-from urllib.parse import urljoin
 
 import pytest
-import requests
 
 from applitools.common import BatchInfo, StdoutLogger, logger, Configuration
 from applitools.common.utils import iteritems
+from tests.utils import (
+    prepare_result_data_for_runner,
+    send_result_report,
+)
 
 logger.set_logger(StdoutLogger())
-
-REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
-REPORT_DATA = {
-    "sdk": "python",
-    "group": "selenium",
-    "id": os.getenv("TRAVIS_COMMIT", str(uuid.uuid4())),
-    "sandbox": bool(strtobool(os.getenv("SANDBOX", "True"))),
-    "mandatory": False,
-    "results": [
-        # {
-        #     "test_name": "TestDuplicatedIFrames",
-        #     "parameters": {"browser": "chrome", "stitching": "css"},
-        #     "passed": True,
-        # },
-    ],
-}
 
 
 @pytest.fixture(scope="session")
@@ -39,30 +22,17 @@ def eyes_runner(eyes_runner_class):
     runner = eyes_runner_class()
     yield runner
     if runner:
-        all_results = runner.get_all_test_results(False)
-        for trc in all_results:
-            passed = trc.test_results.is_passed
-            test_name = trc.test_results.name
-            browser = trc.test_results.host_app.lower()
-            stitching = "css"
-            if test_name.endswith("_Scroll"):
-                test_name = test_name.rstrip("_Scroll")
-                stitching = "scroll"
-            parameters = dict(browser=browser, stitching=stitching)
-
-            if test_name.endswith("_VG"):
-                test_name = test_name.rstrip("_Scroll")
-                parameters = dict(mode="VisualGrid")
-
-            REPORT_DATA["results"].append(
-                dict(test_name=test_name, passed=passed, parameters=parameters)
+        results_summary = runner.get_all_test_results(False)
+        results = [
+            prepare_result_data_for_runner(
+                trc.test_results.name,
+                trc.test_results.is_passed,
+                trc.test_results.host_app.lower(),
             )
-        r = requests.post(
-            urljoin(REPORT_BASE_URL, "/result"), data=json.dumps(REPORT_DATA)
-        )
-        print(all_results)
-        print("Report status: {}".format(r.status_code))
-        print("Response: {}".format(r.text))
+            for trc in results_summary
+        ]
+        send_result_report(results, group="selenium")
+        print(results_summary)
 
 
 @pytest.fixture

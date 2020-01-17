@@ -8,8 +8,8 @@ from applitools.selenium import (
 )
 
 
-def test_abort_when_not_rendered(driver, eyes_runner, batch_info):
-    eyes = Eyes(eyes_runner)
+def test_abort_when_not_rendered(driver, vg_runner, batch_info):
+    eyes = Eyes(vg_runner)
     eyes.configure.test_name = "TestAbortWhenNotRendering"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
@@ -22,11 +22,11 @@ def test_abort_when_not_rendered(driver, eyes_runner, batch_info):
         eyes.open(driver)
         eyes.check("", Target.window())
         eyes.close_async()
-        all_results = eyes_runner.get_all_test_results(False)
+        all_results = vg_runner.get_all_test_results(False)
 
 
-def test_abort_async_on_vg(driver, eyes_runner, batch_info):
-    eyes = Eyes(eyes_runner)
+def test_abort_async_on_vg(driver, vg_runner, batch_info):
+    eyes = Eyes(vg_runner)
     eyes.configure.test_name = "TestAbortAsync"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
@@ -36,4 +36,4 @@ def test_abort_async_on_vg(driver, eyes_runner, batch_info):
     eyes.check("", Target.window())
     eyes.close_async()
     eyes.abort_async()
-    all_results = eyes_runner.get_all_test_results(False)
+    all_results = vg_runner.get_all_test_results(False)

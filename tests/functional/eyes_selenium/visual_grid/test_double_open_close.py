@@ -1,8 +1,8 @@
 from applitools.selenium import Eyes, Target
 
 
-def test_double_open_check_close(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_double_open_check_close(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -22,12 +22,12 @@ def test_double_open_check_close(driver, eyes_runner):
     eyes.check("Step 2", Target.window().fully().ignore_displacements(False))
     eyes.close(False)
 
-    all_test_results = eyes_runner.get_all_test_results(False)
+    all_test_results = vg_runner.get_all_test_results(False)
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_double_open_check_close_async(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
@@ -47,12 +47,12 @@ def test_double_open_check_close_async(driver, eyes_runner):
     eyes.check("Step 2", Target.window().fully().ignore_displacements(False))
     eyes.close_async()
 
-    all_test_results = eyes_runner.get_all_test_results(False)
+    all_test_results = vg_runner.get_all_test_results(False)
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_with_different_instances(driver, eyes_runner):
-    eyes1 = Eyes(eyes_runner)
+def test_double_open_check_close_with_different_instances(driver, vg_runner):
+    eyes1 = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
         driver,
@@ -63,7 +63,7 @@ def test_double_open_check_close_with_different_instances(driver, eyes_runner):
     eyes1.check("Step 1", Target.window().fully().ignore_displacements(False))
     eyes1.close(False)
 
-    eyes2 = Eyes(eyes_runner)
+    eyes2 = Eyes(vg_runner)
     eyes2.open(
         driver,
         "Applitools Eyes Python SDK",
@@ -73,12 +73,12 @@ def test_double_open_check_close_with_different_instances(driver, eyes_runner):
     eyes2.check("Step 2", Target.window().fully().ignore_displacements(False))
     eyes2.close(False)
 
-    all_test_results = eyes_runner.get_all_test_results(False)
+    all_test_results = vg_runner.get_all_test_results(False)
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async_with_different_instances(driver, eyes_runner):
-    eyes1 = Eyes(eyes_runner)
+def test_double_open_check_close_async_with_different_instances(driver, vg_runner):
+    eyes1 = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
         driver,
@@ -89,7 +89,7 @@ def test_double_open_check_close_async_with_different_instances(driver, eyes_run
     eyes1.check("Step 1", Target.window().fully().ignore_displacements(False))
     eyes1.close_async()
 
-    eyes2 = Eyes(eyes_runner)
+    eyes2 = Eyes(vg_runner)
     eyes2.open(
         driver,
         "Applitools Eyes Python SDK",
@@ -99,5 +99,5 @@ def test_double_open_check_close_async_with_different_instances(driver, eyes_run
     eyes2.check("Step 2", Target.window().fully().ignore_displacements(False))
     eyes2.close_async()
 
-    all_test_results = eyes_runner.get_all_test_results(False)
+    all_test_results = vg_runner.get_all_test_results(False)
     assert len(all_test_results.all_results) == 2

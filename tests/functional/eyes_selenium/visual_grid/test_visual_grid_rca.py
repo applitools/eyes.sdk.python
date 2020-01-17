@@ -5,19 +5,19 @@ from applitools.selenium import Eyes, BatchInfo, Target
 batch_info = BatchInfo("Test Visual Grid RCA")
 
 
-def test_VG_RCA_config(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_VG_RCA_config(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     eyes.batch = batch_info
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     eyes.open(driver, "Test Visual Grid", "Test RCA Config")
     eyes.send_dom = True
     eyes.check("", Target.window())
     eyes.close()
-    eyes_runner.get_all_test_results()
+    vg_runner.get_all_test_results()
 
 
-def test_VG_RCA_fluent(driver, eyes_runner):
-    eyes = Eyes(eyes_runner)
+def test_VG_RCA_fluent(driver, vg_runner):
+    eyes = Eyes(vg_runner)
     eyes.batch = batch_info
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     driver.switch_to.frame("iframe")
@@ -28,4 +28,4 @@ def test_VG_RCA_fluent(driver, eyes_runner):
     eyes.send_dom = True
     eyes.check("", Target.window().send_dom(True))
     eyes.close()
-    eyes_runner.get_all_test_results()
+    vg_runner.get_all_test_results()
