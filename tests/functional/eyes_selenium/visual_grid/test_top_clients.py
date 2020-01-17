@@ -64,18 +64,10 @@ def eyes_vg(vg_runner, sel_config, batch_info, driver, request, test_page_url):
 @pytest.mark.parametrize(
     "test_page_url",
     [
-        # "https://www.google.com/",
-        # "http://allatra.tv/",
-        # "http://opzharp.ru/",
-        # "http://www.sage.co.uk/",
-        # "https://www.wikipedia.org/",
-        # "https://www.instagram.com/",
-        # "https://youtube.com/",
         # "http://applitools-vg-test.surge.sh/test.html"
         "https://demo.applitools.com"
     ],
 )
-@pytest.mark.viewport_size(dict(width=600, height=600))
 def test_top_sites(eyes_vg, test_page_url):
     eyes_vg.check("Step1 - " + test_page_url, Target.window().send_dom(True))
     eyes_vg.check(
