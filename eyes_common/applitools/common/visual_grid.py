@@ -174,6 +174,12 @@ class RenderBrowserInfo(object):
             BrowserType.EDGE,
         ]:
             return "windows"
+        elif self.browser_type in [
+            BrowserType.SAFARI,
+            BrowserType.SAFARI_ONE_VERSION_BACK,
+            BrowserType.SAFARI_TWO_VERSION_BACK,
+        ]:
+            return "mac os x"
         return "linux"
 
 
