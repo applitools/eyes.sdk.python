@@ -14,7 +14,7 @@ def test_abort_when_not_rendered(driver, vg_runner, batch_info):
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    driver.get("https://fb.com")
+    driver.get("https://demo.applitools.com")
     with patch(
         "applitools.core.server_connector.ServerConnector.render_status_by_id"
     ) as rsbi:
@@ -31,9 +31,8 @@ def test_abort_async_on_vg(driver, vg_runner, batch_info):
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    driver.get("https://fb.com")
+    driver.get("https://demo.applitools.com")
     eyes.open(driver)
     eyes.check("", Target.window())
-    eyes.close_async()
     eyes.abort_async()
     all_results = vg_runner.get_all_test_results(False)
