@@ -1,6 +1,6 @@
+## [4.1.8] - 2020-01-20
 ### Updated
 - Visual Grid: Added older versions support for Chrome, Firefox and Safari browsers. [Trello 1479](https://trello.com/c/kwsR1zql)
-
 ## [4.1.7] - 2020-01-17
 ### Fixed
 - Dependencies warning at runtime [Trello 1476](https://trello.com/c/Rmqo8HPM)
