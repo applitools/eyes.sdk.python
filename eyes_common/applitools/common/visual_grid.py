@@ -177,7 +177,7 @@ class RenderBrowserInfo(object):
         elif self.browser_type in [
             BrowserType.SAFARI,
             BrowserType.SAFARI_ONE_VERSION_BACK,
-            BrowserType.SAFARI_TWO_VERSION_BACK,
+            BrowserType.SAFARI_TWO_VERSIONS_BACK,
         ]:
             return "mac os x"
         return "linux"
