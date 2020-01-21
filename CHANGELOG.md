@@ -1,3 +1,8 @@
+## [4.1.9] - 2020-01-21
+### Fixed
+- Typo in BrowserType
+- Prevent to download resources with urls that starts from `data:`
+- Creating VGResource with Python 2
 ## [4.1.8] - 2020-01-20
 ### Updated
 - Visual Grid: Added older versions support for Chrome, Firefox and Safari browsers. [Trello 1479](https://trello.com/c/kwsR1zql)
