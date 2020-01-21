@@ -155,7 +155,7 @@ class RenderTask(VGTask):
             )
         return requests
 
-    def parse_frame_dom_resources(self, data):
+    def parse_frame_dom_resources(self, data):  # noqa
         # type: (Dict) -> RGridDom
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
