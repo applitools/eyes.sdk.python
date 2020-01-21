@@ -176,6 +176,9 @@ class RenderTask(VGTask):
 
         def get_resource(link):
             # type: (Text) -> VGResource
+            if link.startswith("data:"):
+                # resource already in blob
+                return VGResource.EMPTY(link)
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response, on_created=handle_resources)
 
