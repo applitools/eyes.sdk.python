@@ -58,9 +58,7 @@ def is_url_with_scheme(url):
 
 
 def get_sha256_hash(content):
-    m = hashlib.sha256()
-    m.update(content)
-    return "".join(["%02x" % b for b in m.digest()])
+    return hashlib.sha256(content).hexdigest()
 
 
 def set_query_parameter(url, param_name, param_value):
