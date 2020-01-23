@@ -295,7 +295,7 @@ def test_match_window_with_image_uploading(started_connector, server_status):
     rendering_info = RenderingInfo(
         access_token="some access",
         service_url="https://render-wus.applitools.com",
-        results_url="https://eyespublicwustemp.blob.core.windows.net/temp/__random__?sv=2017-04-17&sr=c&sig=aAArw3au%2FbUv7WgLZudCEOOumHVwZEt5pWWakV8BO1w%3D&se=2020-01-24T13%3A23%3A49Z&sp=w&accessKey=ESHMdY9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
+        results_url="https://eyespublicwustemp.blob.core.windows.net/temp/__random__?sv=2017-04-17&sr=c&sig=aAArw3au%",
     )
     with patch(
         "applitools.core.server_connector.ServerConnector.render_info",
@@ -305,14 +305,18 @@ def test_match_window_with_image_uploading(started_connector, server_status):
             with patch("requests.post", side_effect=mocked_requests_post):
 
                 if server_status in [200, 201]:
-                    started_connector.match_window(
-                        RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-                    )
+                    started_connector.match_window(RUNNING_SESSION_OBJ, data)
                 else:
                     with pytest.raises(EyesError):
-                        started_connector.match_window(
-                            RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-                        )
+                        started_connector.match_window(RUNNING_SESSION_OBJ, data)
+
+    if server_status in [200, 201]:
+        target_url = data.app_output.screenshot_url
+        assert target_url.startswith(
+            "https://eyespublicwustemp.blob.core.windows.net/temp/"
+        )
+        assert target_url.endswith("?sv=2017-04-17&sr=c&sig=aAArw3au%")
+        assert "__random__" not in target_url
 
 
 def test_post_dom_snapshot(started_connector):
