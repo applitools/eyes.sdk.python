@@ -35,9 +35,9 @@ class BatchInfo(object):
     name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     started_at = attr.ib(metadata={JsonInclude.THIS: True})  # type: datetime
     sequence_name = attr.ib(
-        metadata={JsonInclude.NAME: "batchSequenceName"},
+        metadata={JsonInclude.NAME: "batchSequenceName"}
     )  # type: Optional[Text]
-    id = attr.ib(converter=str, metadata={JsonInclude.THIS: True},)  # type: Text
+    id = attr.ib(converter=str, metadata={JsonInclude.THIS: True})  # type: Text
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
@@ -64,7 +64,7 @@ class BatchInfo(object):
 
 @attr.s
 class Configuration(object):
-    batch = attr.ib(default=None)  # type: Optional[BatchInfo]
+    batch = attr.ib(factory=BatchInfo)  # type: BatchInfo
     branch_name = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_BRANCH", None)
     )  # type: Optional[Text]
