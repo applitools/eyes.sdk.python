@@ -10,9 +10,7 @@ __all__ = ("AppOutput",)
 @attr.s
 class AppOutput(object):
     title = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    screenshot_bytes = attr.ib(
-        repr=False, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[bytes]
+    screenshot_bytes = attr.ib(repr=False)  # type: Optional[bytes]
     screenshot_url = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Text]
