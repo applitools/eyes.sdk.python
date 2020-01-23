@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import json
 import math
-import time
 import typing
+import uuid
 from struct import pack
 
 import attr
@@ -271,6 +271,62 @@ class ServerConnector(object):
         self._is_session_started = False
         return test_results
 
+    def _try_upload_image(self, data):
+        # type: (MatchWindowData) -> bool
+        if data.app_output.screenshot_url:
+            return True
+        screenshot64 = data.app_output.screenshot64
+        if screenshot64 is None:
+            raise EyesError("Screenshot has not been taken!")
+        data.app_output.screenshot64 = None
+        image = image_utils.image_from_base64(screenshot64)
+        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+        rendering_info = self.render_info()
+
+        if rendering_info and rendering_info.results_url:
+            try:
+                image_target_url = rendering_info.results_url
+                guid = uuid.uuid4()
+                image_target_url = image_target_url.replace("__random__", str(guid))
+                logger.info("uploading image to {}".format(image_target_url))
+                retries_left = 3
+                wait = 500
+                while retries_left >= 0:
+                    try:
+                        status_code = self._upload_image(
+                            screenshot_bytes, rendering_info, image_target_url
+                        )
+                        if status_code in [200, 201]:
+                            data.app_output.screenshot_url = image_target_url
+                            return True
+                        if status_code < 500:
+                            break
+                    except Exception as e:
+                        if retries_left == 0:
+                            raise e
+                    datetime_utils.sleep(wait)
+                    wait *= 2
+                    wait = min([10000, wait])
+                    retries_left -= 1
+            except Exception as e:
+                logger.error("Error uploading image")
+                logger.exception(e)
+
+    def _upload_image(self, screenshot_bytes, rendering_info, image_target_url):
+        # type: (bytes, RenderingInfo, Text) -> int
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "image/png"
+        headers["Content-Length"] = str(len(screenshot_bytes))
+        headers["Media-Type"] = "image/png"
+        headers["X-Auth-Token"] = rendering_info.access_token
+        headers["x-ms-blob-type"] = "BlockBlob"
+
+        response = requests.put(
+            image_target_url, data=screenshot_bytes, headers=headers
+        )
+        logger.info("Upload Status Code: {}".format(response.status_code))
+        return response.status_code
+
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """
@@ -287,6 +343,11 @@ class ServerConnector(object):
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
             raise EyesError("Session not started")
+
+        if not self._try_upload_image(match_data):
+            raise EyesError(
+                "MatchWindow failed: could not upload image to storage service."
+            )
 
         data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
