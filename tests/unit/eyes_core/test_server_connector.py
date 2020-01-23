@@ -325,9 +325,11 @@ def test_request_with_changed_values(configured_connector):
 
 
 def test_long_request(configured_connector):
-    with patch("requests.get", side_effect=mocked_requests_get):
-        with patch("requests.delete", side_effect=mocked_requests_delete):
-            r = configured_connector._com.long_request(requests.get, LONG_REQUEST_URL)
+    with patch("requests.Session.get", side_effect=mocked_requests_get):
+        with patch("requests.Session.delete", side_effect=mocked_requests_delete):
+            r = configured_connector._com.long_request(
+                configured_connector._com.client_session.get, LONG_REQUEST_URL
+            )
             assert r.status_code == 200
 
 
