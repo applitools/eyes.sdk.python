@@ -181,6 +181,7 @@ class ServerConnector(object):
         """
         self._render_info = None  # type: Optional[RenderingInfo]
         self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
+        self._client_session = requests.Session()
 
     def update_config(self, conf):
         if conf.api_key is None:
@@ -234,7 +235,7 @@ class ServerConnector(object):
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.request(
-            requests.post, url_resource=self.API_SESSIONS_RUNNING, data=data
+            self._client_session.post, url_resource=self.API_SESSIONS_RUNNING, data=data
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
@@ -258,7 +259,7 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._com.long_request(
-            requests.delete,
+            self._client_session.delete,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
@@ -266,6 +267,8 @@ class ServerConnector(object):
 
         test_results = json_utils.attr_from_response(response, TestResults)
         logger.debug("stop_session(): parsed response: {}".format(test_results))
+
+        self._client_session.close()
 
         # mark that session isn't started
         self._is_session_started = False
@@ -294,7 +297,7 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/octet-stream"
         # TODO: allow to send images as base64
         response = self._com.long_request(
-            requests.post,
+            self._client_session.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
             headers=headers,
@@ -318,7 +321,7 @@ class ServerConnector(object):
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
         response = self._com.request(
-            requests.post,
+            self._client_session.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
             data=dom_bytes,
             headers=headers,
@@ -334,7 +337,7 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._com.request(
-            requests.get, self.RENDER_INFO_PATH, headers=headers
+            self._client_session.get, self.RENDER_INFO_PATH, headers=headers
         )
         if not response.ok:
             raise EyesError(
@@ -359,7 +362,11 @@ class ServerConnector(object):
 
         data = json_utils.to_json(render_requests)
         response = self._com.request(
-            requests.post, url, use_api_key=False, headers=headers, data=data
+            self._client_session.post,
+            url_resource=url,
+            use_api_key=False,
+            headers=headers,
+            data=data
         )
         if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
@@ -390,7 +397,7 @@ class ServerConnector(object):
             self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
         )
         response = self._com.request(
-            requests.put,
+            self._client_session.put,
             url,
             use_api_key=False,
             headers=headers,
@@ -414,9 +421,13 @@ class ServerConnector(object):
         headers["Accept-Encoding"] = "identity"
 
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
-        response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
+        response = self._client_session.get(
+            url, headers=headers, timeout=timeout_sec, verify=False
+        )
         if response.status_code == requests.codes.not_acceptable:
-            response = requests.get(url, timeout=timeout_sec, verify=False)
+            response = self._client_session.get(
+                url, timeout=timeout_sec, verify=False
+            )
         return response
 
     def render_status_by_id(self, *render_ids):
@@ -430,7 +441,7 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = self._render_info.access_token
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
         response = self._com.request(
-            requests.post,
+            self._client_session.post,
             url,
             use_api_key=False,
             headers=headers,
