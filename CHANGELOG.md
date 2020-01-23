@@ -1,3 +1,5 @@
+### Fixed
+- Same test on different browsers (VG) are splitted to different batches if batch name isn't configured explicitly [Trello 1498](https://trello.com/c/IuKjOQQG)
 ## [4.1.9] - 2020-01-21
 ### Fixed
 - Typo in BrowserType
