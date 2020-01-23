@@ -271,18 +271,19 @@ class ServerConnector(object):
         screenshot_bytes = data.app_output.screenshot_bytes
         if screenshot_bytes is None:
             raise EyesError("Screenshot has not been taken!")
-        data.app_output.screenshot_bytes = None
-        rendering_info = self.render_info()
 
+        rendering_info = self.render_info()
         if rendering_info and rendering_info.results_url:
             try:
                 image_target_url = rendering_info.results_url
                 guid = uuid.uuid4()
                 image_target_url = image_target_url.replace("__random__", str(guid))
                 logger.info("uploading image to {}".format(image_target_url))
-                return self._upload_image(
+                if self._upload_image(
                     screenshot_bytes, rendering_info, image_target_url
-                )
+                ):
+                    data.app_output.screenshot_url = image_target_url
+                    return True
             except Exception as e:
                 logger.error("Error uploading image")
                 logger.exception(e)
