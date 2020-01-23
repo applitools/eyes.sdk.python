@@ -1,5 +1,6 @@
 import json
 import os
+from copy import copy
 from typing import Any
 
 import pytest
@@ -10,6 +11,7 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     BatchInfo,
+    EyesError,
     ImageMatchSettings,
     MatchLevel,
     MatchWindowData,
@@ -216,6 +218,7 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     agent_setup="Agent setup",
     render_id=None,
 )
+IMAGE_BASE_64 = "iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAAFi0lEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBXA/yTAAFLZiwOAAAAAElFTkSuQmCC"
 
 
 def test_set_get_server_url():
@@ -274,14 +277,42 @@ def test_start_session(configured_connector):
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        with patch(
-            "applitools.core.server_connector.prepare_match_data",
-            return_value=b"Some value",
-        ):
-            match = started_connector.match_window(
-                RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-            )
+        match = started_connector.match_window(
+            RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+        )
     assert match.as_expected
+
+
+@pytest.mark.parametrize("server_status", [500, 200, 201, 400, 404])
+def test_match_window_with_image_uploading(started_connector, server_status):
+    #  type: (ServerConnector, int) -> None
+    data = copy(MATCH_WINDOW_DATA_OBJ)
+    data.app_output.screenshot_url = None
+    data.app_output.screenshot64 = IMAGE_BASE_64
+    rendering_info = RenderingInfo(
+        access_token="some access",
+        service_url="https://render-wus.applitools.com",
+        results_url="https://eyespublicwustemp.blob.core.windows.net/temp/__random__?sv=2017-04-17&sr=c&sig=aAArw3au%2FbUv7WgLZudCEOOumHVwZEt5pWWakV8BO1w%3D&se=2020-01-24T13%3A23%3A49Z&sp=w&accessKey=ESHMdY9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
+    )
+    with patch(
+        "applitools.core.server_connector.ServerConnector.render_info",
+        return_value=rendering_info,
+    ):
+        with patch(
+            "applitools.core.server_connector.ServerConnector._upload_image",
+            return_value=server_status,
+        ):
+            with patch("requests.post", side_effect=mocked_requests_post):
+
+                if server_status in [200, 201]:
+                    started_connector.match_window(
+                        RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+                    )
+                else:
+                    with pytest.raises(EyesError):
+                        started_connector.match_window(
+                            RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+                        )
 
 
 def test_post_dom_snapshot(started_connector):
