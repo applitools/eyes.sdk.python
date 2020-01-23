@@ -138,18 +138,11 @@ class _RequestCommunicator(object):
 
 def prepare_match_data(match_data):
     # type: (MatchWindowData) -> bytes
-    screenshot64 = match_data.app_output.screenshot64
-    if screenshot64:
-        match_data.app_output.screenshot64 = None
-        image = image_utils.image_from_base64(screenshot64)
-        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
-    else:
-        screenshot_bytes = b""
     match_data_json = json_utils.to_json(match_data)
     logger.debug("MatchWindowData {}".format(match_data_json))
     match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
     match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-    body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+    body = match_data_size_bytes + match_data_json_bytes
     return body
 
 
@@ -353,7 +346,6 @@ class ServerConnector(object):
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
-        # TODO: allow to send images as base64
         response = self._com.long_request(
             requests.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
