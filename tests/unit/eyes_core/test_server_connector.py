@@ -266,7 +266,7 @@ def test_is_session_started_False(configured_connector):
 
 def test_start_session(configured_connector):
     # type: (ServerConnector) -> None
-    with patch("requests.post", side_effect=mocked_requests_post):
+    with patch("requests.Session.post", side_effect=mocked_requests_post):
         running_session = configured_connector.start_session(SESSION_START_INFO_OBJ)
     assert running_session.id == RUNNING_SESSION_DATA_RESPONSE_ID
     assert running_session.session_id == RUNNING_SESSION_DATA_RESPONSE_SESSION_ID
@@ -277,7 +277,7 @@ def test_start_session(configured_connector):
 
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.post", side_effect=mocked_requests_post):
+    with patch("requests.Session.post", side_effect=mocked_requests_post):
         match = started_connector.match_window(
             RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
         )
@@ -301,8 +301,8 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         "applitools.core.server_connector.ServerConnector.render_info",
         return_value=rendering_info,
     ):
-        with patch("requests.put", return_value=MockResponse(None, server_status)):
-            with patch("requests.post", side_effect=mocked_requests_post):
+        with patch("requests.Session.put", return_value=MockResponse(None, server_status)):
+            with patch("requests.Session.post", side_effect=mocked_requests_post):
 
                 if server_status in [200, 201]:
                     started_connector.match_window(RUNNING_SESSION_OBJ, data)
@@ -321,14 +321,14 @@ def test_match_window_with_image_uploading(started_connector, server_status):
 
 def test_post_dom_snapshot(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.post", side_effect=mocked_requests_post):
+    with patch("requests.Session.post", side_effect=mocked_requests_post):
         dom_url = started_connector.post_dom_snapshot("{HTML: []")
     assert dom_url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 
 def test_stop_session(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.delete", side_effect=mocked_requests_delete):
+    with patch("requests.Session.delete", side_effect=mocked_requests_delete):
         respo = started_connector.stop_session(
             RUNNING_SESSION_OBJ, is_aborted=False, save=False
         )
@@ -347,7 +347,7 @@ def test_request_with_changed_values(configured_connector):
     )
     configured_connector.update_config(conf)
 
-    with patch("requests.post") as mocked_post:
+    with patch("requests.Session.post") as mocked_post:
         with patch(
             "applitools.core.server_connector.json_utils.attr_from_response",
             return_value=RUNNING_SESSION_OBJ,
@@ -367,6 +367,6 @@ def test_long_request(configured_connector):
 
 
 def test_get_rendering_info(started_connector):
-    with patch("requests.get", side_effect=mocked_requests_get):
+    with patch("requests.Session.get", side_effect=mocked_requests_get):
         render_info = started_connector.render_info()
     assert render_info == RENDERING_OBJ
