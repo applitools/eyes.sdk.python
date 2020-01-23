@@ -22,6 +22,7 @@ from applitools.common import (
 )
 from applitools.common.config import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
+from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.common.visual_grid import RenderingInfo
@@ -203,7 +204,7 @@ STOP_SESSION_OBJ = attr_from_json(STOP_SESSION_DATA, TestResults)
 MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     ignore_mismatch=False,
     user_inputs=[],
-    app_output=AppOutput(title="Title", screenshot64=None, screenshot_url="http"),
+    app_output=AppOutput(title="Title", screenshot_bytes=None, screenshot_url="http"),
     tag="Tag",
     options=Options(
         name="Opt name",
@@ -288,7 +289,9 @@ def test_match_window_with_image_uploading(started_connector, server_status):
     #  type: (ServerConnector, int) -> None
     data = copy(MATCH_WINDOW_DATA_OBJ)
     data.app_output.screenshot_url = None
-    data.app_output.screenshot64 = IMAGE_BASE_64
+    data.app_output.screenshot_bytes = image_utils.get_bytes(
+        image_utils.image_from_base64(IMAGE_BASE_64)
+    )
     rendering_info = RenderingInfo(
         access_token="some access",
         service_url="https://render-wus.applitools.com",

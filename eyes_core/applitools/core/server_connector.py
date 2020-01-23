@@ -268,12 +268,10 @@ class ServerConnector(object):
         # type: (MatchWindowData) -> bool
         if data.app_output.screenshot_url:
             return True
-        screenshot64 = data.app_output.screenshot64
-        if screenshot64 is None:
+        screenshot_bytes = data.app_output.screenshot_bytes
+        if screenshot_bytes is None:
             raise EyesError("Screenshot has not been taken!")
-        data.app_output.screenshot64 = None
-        image = image_utils.image_from_base64(screenshot64)
-        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
+        data.app_output.screenshot_bytes = None
         rendering_info = self.render_info()
 
         if rendering_info and rendering_info.results_url:
