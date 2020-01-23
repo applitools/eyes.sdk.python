@@ -530,11 +530,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self.__ensure_viewport_size()
 
         # initialization of Eyes parameters if empty from ENV variables
-        if self.configure.batch is None:
-            logger.info("No Batch set")
-            self.configure.batch = BatchInfo()
-        else:
-            logger.info("Batch is {}".format(self.configure.batch))
+        logger.info("Batch is {}".format(self.configure.batch))
 
         self._server_connector.update_config(self.get_configuration())
         self._create_session_start_info()
