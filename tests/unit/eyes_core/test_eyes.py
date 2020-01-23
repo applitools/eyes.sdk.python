@@ -1,3 +1,7 @@
+import os
+
+import mock
+
 from applitools.selenium import Configuration, Eyes
 
 
@@ -36,6 +40,7 @@ def test_get_set_configuration():
     assert id(eyes.configure) != conf
 
 
+@mock.patch.dict(os.environ, {})
 def test_same_config_with_no_batch_with_multiple_eyes():
     conf = Configuration().set_app_name("boodleAI").set_test_name("Test 5")
     eyes1 = Eyes()
