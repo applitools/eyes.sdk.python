@@ -282,31 +282,16 @@ class ServerConnector(object):
                 guid = uuid.uuid4()
                 image_target_url = image_target_url.replace("__random__", str(guid))
                 logger.info("uploading image to {}".format(image_target_url))
-                retries_left = 3
-                wait = 500
-                while retries_left >= 0:
-                    try:
-                        status_code = self._upload_image(
-                            screenshot_bytes, rendering_info, image_target_url
-                        )
-                        if status_code in [200, 201]:
-                            data.app_output.screenshot_url = image_target_url
-                            return True
-                        if status_code < 500:
-                            break
-                    except Exception as e:
-                        if retries_left == 0:
-                            raise e
-                    datetime_utils.sleep(wait)
-                    wait *= 2
-                    wait = min([10000, wait])
-                    retries_left -= 1
+                return self._upload_image(
+                    screenshot_bytes, rendering_info, image_target_url
+                )
             except Exception as e:
                 logger.error("Error uploading image")
                 logger.exception(e)
 
+    @datetime_utils.retry(delays=(0.5, 1, 10), exception=EyesError, report=logger.debug)
     def _upload_image(self, screenshot_bytes, rendering_info, image_target_url):
-        # type: (bytes, RenderingInfo, Text) -> int
+        # type: (bytes, RenderingInfo, Text) -> bool
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "image/png"
         headers["Content-Length"] = str(len(screenshot_bytes))
@@ -314,11 +299,20 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = rendering_info.access_token
         headers["x-ms-blob-type"] = "BlockBlob"
 
+        timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
         response = requests.put(
-            image_target_url, data=screenshot_bytes, headers=headers
+            image_target_url,
+            data=screenshot_bytes,
+            headers=headers,
+            timeout=timeout_sec,
+            verify=False,
         )
-        logger.info("Upload Status Code: {}".format(response.status_code))
-        return response.status_code
+        if response.status_code in [requests.codes.ok, requests.codes.created]:
+            logger.info("Upload Status Code: {}".format(response.status_code))
+            return True
+        raise EyesError(
+            "Failed to Upload Image. Status Code: {}".format(response.status_code)
+        )
 
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
@@ -459,7 +453,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @datetime_utils.retry()
+    @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
     def download_resource(self, url):
         # type: (Text) -> Response
         logger.debug("Fetching {}...".format(url))

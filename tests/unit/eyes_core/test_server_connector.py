@@ -298,10 +298,7 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         "applitools.core.server_connector.ServerConnector.render_info",
         return_value=rendering_info,
     ):
-        with patch(
-            "applitools.core.server_connector.ServerConnector._upload_image",
-            return_value=server_status,
-        ):
+        with patch("requests.put", return_value=MockResponse(None, server_status)):
             with patch("requests.post", side_effect=mocked_requests_post):
 
                 if server_status in [200, 201]:
