@@ -34,3 +34,14 @@ def test_get_set_configuration():
     eyes.set_configuration(conf)
     assert eyes.configure.test_name == "Test1"
     assert id(eyes.configure) != conf
+
+
+def test_same_config_with_no_batch_with_multiple_eyes():
+    conf = Configuration().set_app_name("boodleAI").set_test_name("Test 5")
+    eyes1 = Eyes()
+    eyes2 = Eyes()
+    eyes1.set_configuration(conf)
+    eyes2.set_configuration(conf)
+    assert eyes1.configure.batch
+    assert eyes2.configure.batch
+    assert eyes1.configure.batch == eyes2.configure.batch
