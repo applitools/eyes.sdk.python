@@ -1,3 +1,5 @@
+### Added
+- Uploading images directly to data storage server [Trello 1461](https://trello.com/c/1V5X9O37)
 ## [4.1.9] - 2020-01-21
 ### Fixed
 - Typo in BrowserType
