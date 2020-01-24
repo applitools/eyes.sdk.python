@@ -92,6 +92,25 @@ def _request_check(*args, **kwargs):
         raise ValueError("URL must be present")
 
 
+def mocked_client_session_request(self, *args, **kwargs):
+    http_method = args[0]
+    args = args[1:]
+    if not isinstance(http_method, str):
+        raise DeprecationWarning('Use text instead!')
+
+    if http_method == 'get':
+        return mocked_requests_get(*args, **kwargs)
+    if http_method == 'post':
+        return mocked_requests_post(*args, **kwargs)
+    if http_method == 'delete':
+        return mocked_requests_delete(*args, **kwargs)
+
+    raise NotImplementedError(
+        "MockClientSession does not have implementation for {} method"
+        .format(http_method.upper())
+    )
+
+
 def mocked_requests_delete(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
@@ -260,10 +279,10 @@ def test_is_session_started_False(configured_connector):
     assert not configured_connector.is_session_started
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_start_session(configured_connector):
     # type: (ServerConnector) -> None
-    with patch("requests.Session.post", side_effect=mocked_requests_post):
-        running_session = configured_connector.start_session(SESSION_START_INFO_OBJ)
+    running_session = configured_connector.start_session(SESSION_START_INFO_OBJ)
     assert running_session.id == RUNNING_SESSION_DATA_RESPONSE_ID
     assert running_session.session_id == RUNNING_SESSION_DATA_RESPONSE_SESSION_ID
     assert running_session.batch_id == RUNNING_SESSION_DATA_RESPONSE_BATCH_ID
@@ -271,32 +290,32 @@ def test_start_session(configured_connector):
     assert running_session.url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.Session.post", side_effect=mocked_requests_post):
-        with patch(
-            "applitools.core.server_connector.prepare_match_data",
-            return_value=b"Some value",
-        ):
-            match = started_connector.match_window(
-                RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-            )
+    with patch(
+        "applitools.core.server_connector.prepare_match_data",
+        return_value=b"Some value",
+    ):
+        match = started_connector.match_window(
+            RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+        )
     assert match.as_expected
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_post_dom_snapshot(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.Session.post", side_effect=mocked_requests_post):
-        dom_url = started_connector.post_dom_snapshot("{HTML: []")
+    dom_url = started_connector.post_dom_snapshot("{HTML: []")
     assert dom_url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_stop_session(started_connector):
     #  type: (ServerConnector) -> None
-    with patch("requests.Session.delete", side_effect=mocked_requests_delete):
-        respo = started_connector.stop_session(
-            RUNNING_SESSION_OBJ, is_aborted=False, save=False
-        )
+    respo = started_connector.stop_session(
+        RUNNING_SESSION_OBJ, is_aborted=False, save=False
+    )
     assert respo == attr_from_json(STOP_SESSION_DATA, TestResults)
     # should be False after stop_session
     assert not started_connector.is_session_started
@@ -312,28 +331,27 @@ def test_request_with_changed_values(configured_connector):
     )
     configured_connector.update_config(conf)
 
-    with patch("requests.Session.post") as mocked_post:
+    with patch("applitools.core.server_connector.ClientSession.request") as mocked_request:
         with patch(
             "applitools.core.server_connector.json_utils.attr_from_response",
             return_value=RUNNING_SESSION_OBJ,
         ):
             configured_connector.start_session(SESSION_START_INFO_OBJ)
 
-    assert mocked_post.call_args[1]["timeout"] == new_timeout_sec
-    assert mocked_post.call_args[1]["params"]["apiKey"] == new_api_key
-    assert new_server_url in mocked_post.call_args[0][0]
+    assert mocked_request.call_args[1]["timeout"] == new_timeout_sec
+    assert mocked_request.call_args[1]["params"]["apiKey"] == new_api_key
+    assert new_server_url in mocked_request.call_args[0][1]
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_long_request(configured_connector):
-    with patch("requests.Session.get", side_effect=mocked_requests_get):
-        with patch("requests.Session.delete", side_effect=mocked_requests_delete):
-            r = configured_connector._com.long_request(
-                configured_connector._com.client_session.get, LONG_REQUEST_URL
-            )
-            assert r.status_code == 200
+    r = configured_connector._com.long_request(
+        'get', LONG_REQUEST_URL
+    )
+    assert r.status_code == 200
 
 
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 def test_get_rendering_info(started_connector):
-    with patch("requests.Session.get", side_effect=mocked_requests_get):
-        render_info = started_connector.render_info()
+    render_info = started_connector.render_info()
     assert render_info == RENDERING_OBJ

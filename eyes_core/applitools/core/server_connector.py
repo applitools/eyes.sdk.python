@@ -49,6 +49,66 @@ __all__ = ("ServerConnector",)
 
 
 @attr.s
+class ClientSession(object):
+    """ A proxy to requests.Session """
+
+    _session = attr.ib(factory=requests.Session)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def close(self):
+        self._session.close()
+
+    def request(self, method, url,
+                params=None, data=None, headers=None, cookies=None, files=None,
+                auth=None, timeout=None, allow_redirects=True, proxies=None,
+                hooks=None, stream=None, verify=None, cert=None, json=None):
+        return self._session.request(
+            method=method,
+            url=url,
+            params=params,
+            data=data,
+            headers=headers,
+            cookies=cookies,
+            files=files,
+            auth=auth,
+            timeout=timeout,
+            allow_redirects=allow_redirects,
+            proxies=proxies,
+            hooks=hooks,
+            stream=stream,
+            verify=verify,
+            cert=cert,
+            json=json,
+        )
+
+    def get(self, url, **kwargs):
+        return self.request('GET', url, **kwargs)
+
+    def options(self, url, **kwargs):
+        return self.request('OPTIONS', url, **kwargs)
+
+    def head(self, url, **kwargs):
+        return self.request('HEAD', url, **kwargs)
+
+    def post(self, url, data=None, json=None, **kwargs):
+        return self.request('POST', url, data=data, json=json, **kwargs)
+
+    def put(self, url, data=None, **kwargs):
+        return self.request('PUT', url, data=data, **kwargs)
+
+    def patch(self, url, data=None, **kwargs):
+        return self.request('PATCH', url, data=data, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.request('DELETE', url, **kwargs)
+
+
+@attr.s
 class _RequestCommunicator(object):
     LONG_REQUEST_DELAY_MS = 2000  # type: int
     MAX_LONG_REQUEST_DELAY_MS = 10000  # type: int
@@ -58,7 +118,7 @@ class _RequestCommunicator(object):
     timeout_ms = attr.ib(default=None)  # type: int
     api_key = attr.ib(default=None)  # type: Text
     server_url = attr.ib(default=None)  # type: Text
-    client_session = attr.ib(factory=requests.Session)
+    client_session = attr.ib(factory=ClientSession)
 
     def close_session(self):
         """
@@ -67,7 +127,7 @@ class _RequestCommunicator(object):
         self.client_session.close()
 
     def request(self, method, url_resource, use_api_key=True, **kwargs):
-        # type: (Callable, Text, bool, **Any) -> Response
+        # type: (Text, Text, bool, **Any) -> Response
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
@@ -80,7 +140,8 @@ class _RequestCommunicator(object):
         timeout_sec = kwargs.get("timeout", None)
         if timeout_sec is None:
             timeout_sec = datetime_utils.to_sec(self.timeout_ms)
-        response = method(
+        response = self.client_session.request(
+            method,
             url_resource,
             data=kwargs.get("data", None),
             verify=False,
@@ -95,7 +156,7 @@ class _RequestCommunicator(object):
         return response
 
     def long_request(self, method, url_resource, **kwargs):
-        # type: (Callable, Text, **Any) -> Response
+        # type: (Text, Text, **Any) -> Response
         headers = kwargs.get("headers", self.headers).copy()
         headers["Eyes-Expect"] = "202+location"
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
@@ -116,7 +177,7 @@ class _RequestCommunicator(object):
             # delete url that was used before
             url = response.headers["Location"]
             return self.request(
-                self.client_session.delete,
+                'delete',
                 url,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
@@ -134,7 +195,7 @@ class _RequestCommunicator(object):
 
         datetime_utils.sleep(delay)
         response = self.request(
-            self.client_session.get,
+            'get',
             url,
             headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
         )
@@ -179,15 +240,21 @@ class ServerConnector(object):
 
     _is_session_started = False
 
-    def __init__(self):
-        # type: () -> None
+    def __init__(self, client_session=None):
+        # type: (ClientSession) -> None
         """
         Ctor.
 
-        :param server_url: The url of the Applitools server.
+        :param client_session: session for communication with server.
         """
         self._render_info = None  # type: Optional[RenderingInfo]
-        self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
+        if client_session:
+            self._com = _RequestCommunicator(
+                headers=ServerConnector.DEFAULT_HEADERS,
+                client_session=client_session,
+            )
+        else:
+            self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
     def update_config(self, conf):
         if conf.api_key is None:
@@ -246,7 +313,7 @@ class ServerConnector(object):
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.request(
-            self.client_session.post, url_resource=self.API_SESSIONS_RUNNING, data=data
+            'post', url_resource=self.API_SESSIONS_RUNNING, data=data
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
@@ -270,7 +337,7 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._com.long_request(
-            self.client_session.delete,
+            'delete',
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
@@ -308,7 +375,7 @@ class ServerConnector(object):
         headers["Content-Type"] = "application/octet-stream"
         # TODO: allow to send images as base64
         response = self._com.long_request(
-            self.client_session.post,
+            'post',
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
             headers=headers,
@@ -332,7 +399,7 @@ class ServerConnector(object):
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
         response = self._com.request(
-            self.client_session.post,
+            'post',
             url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
             data=dom_bytes,
             headers=headers,
@@ -348,7 +415,7 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._com.request(
-            self.client_session.get, self.RENDER_INFO_PATH, headers=headers
+            'get', self.RENDER_INFO_PATH, headers=headers
         )
         if not response.ok:
             raise EyesError(
@@ -373,7 +440,7 @@ class ServerConnector(object):
 
         data = json_utils.to_json(render_requests)
         response = self._com.request(
-            self.client_session.post,
+            'post',
             url_resource=url,
             use_api_key=False,
             headers=headers,
@@ -408,7 +475,7 @@ class ServerConnector(object):
             self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
         )
         response = self._com.request(
-            self.client_session.put,
+            'put',
             url,
             use_api_key=False,
             headers=headers,
@@ -452,7 +519,7 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = self._render_info.access_token
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
         response = self._com.request(
-            self.client_session.post,
+            'post',
             url,
             use_api_key=False,
             headers=headers,
