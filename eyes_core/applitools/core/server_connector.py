@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import json
 import math
-import time
 import typing
+import uuid
 from struct import pack
 
 import attr
@@ -138,18 +138,11 @@ class _RequestCommunicator(object):
 
 def prepare_match_data(match_data):
     # type: (MatchWindowData) -> bytes
-    screenshot64 = match_data.app_output.screenshot64
-    if screenshot64:
-        match_data.app_output.screenshot64 = None
-        image = image_utils.image_from_base64(screenshot64)
-        screenshot_bytes = image_utils.get_bytes(image)  # type: bytes
-    else:
-        screenshot_bytes = b""
     match_data_json = json_utils.to_json(match_data)
     logger.debug("MatchWindowData {}".format(match_data_json))
     match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
     match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-    body = match_data_size_bytes + match_data_json_bytes + screenshot_bytes
+    body = match_data_size_bytes + match_data_json_bytes
     return body
 
 
@@ -271,6 +264,55 @@ class ServerConnector(object):
         self._is_session_started = False
         return test_results
 
+    def _try_upload_image(self, data):
+        # type: (MatchWindowData) -> bool
+        if data.app_output.screenshot_url:
+            return True
+        screenshot_bytes = data.app_output.screenshot_bytes
+        if screenshot_bytes is None:
+            raise EyesError("Screenshot has not been taken!")
+
+        rendering_info = self.render_info()
+        if rendering_info and rendering_info.results_url:
+            try:
+                image_target_url = rendering_info.results_url
+                guid = uuid.uuid4()
+                image_target_url = image_target_url.replace("__random__", str(guid))
+                logger.info("uploading image to {}".format(image_target_url))
+                if self._upload_image(
+                    screenshot_bytes, rendering_info, image_target_url
+                ):
+                    data.app_output.screenshot_url = image_target_url
+                    return True
+            except Exception as e:
+                logger.error("Error uploading image")
+                logger.exception(e)
+
+    @datetime_utils.retry(delays=(0.5, 1, 10), exception=EyesError, report=logger.debug)
+    def _upload_image(self, screenshot_bytes, rendering_info, image_target_url):
+        # type: (bytes, RenderingInfo, Text) -> bool
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "image/png"
+        headers["Content-Length"] = str(len(screenshot_bytes))
+        headers["Media-Type"] = "image/png"
+        headers["X-Auth-Token"] = rendering_info.access_token
+        headers["x-ms-blob-type"] = "BlockBlob"
+
+        timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
+        response = requests.put(
+            image_target_url,
+            data=screenshot_bytes,
+            headers=headers,
+            timeout=timeout_sec,
+            verify=False,
+        )
+        if response.status_code in [requests.codes.ok, requests.codes.created]:
+            logger.info("Upload Status Code: {}".format(response.status_code))
+            return True
+        raise EyesError(
+            "Failed to Upload Image. Status Code: {}".format(response.status_code)
+        )
+
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """
@@ -288,11 +330,15 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
+        if not self._try_upload_image(match_data):
+            raise EyesError(
+                "MatchWindow failed: could not upload image to storage service."
+            )
+
         data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
-        # TODO: allow to send images as base64
         response = self._com.long_request(
             requests.post,
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
@@ -406,7 +452,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @datetime_utils.retry()
+    @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
     def download_resource(self, url):
         # type: (Text) -> Response
         logger.debug("Fetching {}...".format(url))

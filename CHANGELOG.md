@@ -1,3 +1,5 @@
+### Added
+- Uploading images directly to data storage server [Trello 1461](https://trello.com/c/1V5X9O37)
 ### Fixed
 - Same test on different browsers (VG) are splitted to different batches if batch name isn't configured explicitly [Trello 1498](https://trello.com/c/IuKjOQQG)
 ## [4.1.9] - 2020-01-21

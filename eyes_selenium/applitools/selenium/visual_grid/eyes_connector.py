@@ -218,7 +218,7 @@ class EyesConnector(EyesBase):
         logger.debug("render_task.uuid: {}".format(self._current_uuid))
         app_output = AppOutput(
             title=self._title,
-            screenshot64=None,
+            screenshot_bytes=None,
             screenshot_url=self.render_status.image_location,
             dom_url=self.render_status.dom_location,
         )
