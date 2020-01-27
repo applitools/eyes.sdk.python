@@ -45,15 +45,15 @@ For smother development experience install Invoke for task run first
 
 Install pre-commit hook
 ***********************
-We're using `pre-commit <https://github.com/pre-commit/pre-commit>`_ for check and format code before commit. For
+Install `pre-commit <https://pre-commit.com/#installation>`_ for check and format code before commit. For
 manage hooks you could use invoke:
 
 ::
 
     # installing of git hooks
-    inv install-precommit-hook
+    pre-commit install
     # removing of git hooks
-    inv remove-precommit-hook
+    pre-commit uninstall
 
 
 Testing
@@ -62,6 +62,5 @@ Testing
 For local testing, for example, images sdk
 
 ::
-
     inv install-packages --core --images
-    inv test-run --images
+    tox -e images

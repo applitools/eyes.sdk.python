@@ -579,7 +579,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             logger.info("dom_url: {}".format(self._dom_url))
 
         app_output = AppOutput(
-            title=self._title, screenshot64=None, dom_url=self._dom_url
+            title=self._title, screenshot_bytes=None, dom_url=self._dom_url
         )
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done")

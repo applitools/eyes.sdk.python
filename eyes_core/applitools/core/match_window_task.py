@@ -245,7 +245,7 @@ class MatchWindowTask(object):
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
         if screenshot:
-            app_output.screenshot64 = image_utils.get_base64(screenshot.image)
+            app_output.screenshot_bytes = image_utils.get_bytes(screenshot.image)
 
         match_window_data = MatchWindowData(
             ignore_mismatch=ignore_mismatch,

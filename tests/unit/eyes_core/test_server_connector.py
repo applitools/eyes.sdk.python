@@ -1,5 +1,6 @@
 import json
 import os
+from copy import copy
 from typing import Any
 
 import pytest
@@ -10,6 +11,7 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     BatchInfo,
+    EyesError,
     ImageMatchSettings,
     MatchLevel,
     MatchWindowData,
@@ -20,6 +22,7 @@ from applitools.common import (
 )
 from applitools.common.config import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
+from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.common.visual_grid import RenderingInfo
@@ -201,7 +204,7 @@ STOP_SESSION_OBJ = attr_from_json(STOP_SESSION_DATA, TestResults)
 MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     ignore_mismatch=False,
     user_inputs=[],
-    app_output=AppOutput(title="Title", screenshot64=None, screenshot_url="http"),
+    app_output=AppOutput(title="Title", screenshot_bytes=None, screenshot_url="http"),
     tag="Tag",
     options=Options(
         name="Opt name",
@@ -216,6 +219,7 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     agent_setup="Agent setup",
     render_id=None,
 )
+IMAGE_BASE_64 = "iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAAFi0lEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBXA/yTAAFLZiwOAAAAAElFTkSuQmCC"
 
 
 def test_set_get_server_url():
@@ -274,14 +278,45 @@ def test_start_session(configured_connector):
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
     with patch("requests.post", side_effect=mocked_requests_post):
-        with patch(
-            "applitools.core.server_connector.prepare_match_data",
-            return_value=b"Some value",
-        ):
-            match = started_connector.match_window(
-                RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-            )
+        match = started_connector.match_window(
+            RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
+        )
     assert match.as_expected
+
+
+@pytest.mark.parametrize("server_status", [500, 200, 201, 400, 404])
+def test_match_window_with_image_uploading(started_connector, server_status):
+    #  type: (ServerConnector, int) -> None
+    data = copy(MATCH_WINDOW_DATA_OBJ)
+    data.app_output.screenshot_url = None
+    data.app_output.screenshot_bytes = image_utils.get_bytes(
+        image_utils.image_from_base64(IMAGE_BASE_64)
+    )
+    rendering_info = RenderingInfo(
+        access_token="some access",
+        service_url="https://render-wus.applitools.com",
+        results_url="https://eyespublicwustemp.blob.core.windows.net/temp/__random__?sv=2017-04-17&sr=c&sig=aAArw3au%",
+    )
+    with patch(
+        "applitools.core.server_connector.ServerConnector.render_info",
+        return_value=rendering_info,
+    ):
+        with patch("requests.put", return_value=MockResponse(None, server_status)):
+            with patch("requests.post", side_effect=mocked_requests_post):
+
+                if server_status in [200, 201]:
+                    started_connector.match_window(RUNNING_SESSION_OBJ, data)
+                else:
+                    with pytest.raises(EyesError):
+                        started_connector.match_window(RUNNING_SESSION_OBJ, data)
+
+    if server_status in [200, 201]:
+        target_url = data.app_output.screenshot_url
+        assert target_url.startswith(
+            "https://eyespublicwustemp.blob.core.windows.net/temp/"
+        )
+        assert target_url.endswith("?sv=2017-04-17&sr=c&sig=aAArw3au%")
+        assert "__random__" not in target_url
 
 
 def test_post_dom_snapshot(started_connector):

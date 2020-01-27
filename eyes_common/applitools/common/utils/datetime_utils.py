@@ -123,11 +123,13 @@ def retry(delays=(0, 100, 500), exception=Exception, report=lambda *args: None):
                 except exception as problem:
                     problems.append(problem)
                     if delay is None:
-                        report("retryable failed definitely:", problems)
+                        report("retryable failed definitely: {}".format(problems))
                         raise
                     else:
                         report(
-                            "retryable failed:", problem, "-- delaying for %ds" % delay
+                            "retryable failed: {} -- delaying for {}".format(
+                                problem, delay
+                            )
                         )
                         sleep(delay)
 
