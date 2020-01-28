@@ -1,3 +1,4 @@
+## [4.1.10] - 2020-01-28
 ### Added
 - Uploading images directly to data storage server [Trello 1461](https://trello.com/c/1V5X9O37)
 ### Fixed
