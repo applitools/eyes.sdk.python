@@ -67,6 +67,8 @@ class MockResponse(object):
     def __init__(self, json_data, status_code, headers=None):
         self.json_data = json_data
         self.status_code = status_code
+        if headers is None:
+            headers = {}
         self.headers = headers
 
     def raise_for_status(self):
@@ -390,6 +392,14 @@ def test_long_request(configured_connector):
         'get', LONG_REQUEST_URL
     )
     assert r.status_code == 200
+
+
+@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+def test_long_request_on_start_session(configured_connector):
+    r = configured_connector._com.long_request(
+        'post', RUNNING_SESSION_URL
+    )
+    assert r.status_code == 201
 
 
 @patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
