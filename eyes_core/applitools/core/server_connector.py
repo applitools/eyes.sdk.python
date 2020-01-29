@@ -226,7 +226,7 @@ class ServerConnector(object):
         """
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
-        response = self._com.request(
+        response = self._com.long_request(
             requests.post, url_resource=self.API_SESSIONS_RUNNING, data=data
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
