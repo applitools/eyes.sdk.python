@@ -97,7 +97,10 @@ class _RequestCommunicator(object):
         return self._long_request_check_status(response)
 
     def _long_request_check_status(self, response):
-        if response.status_code == requests.codes.ok:
+        if (
+            response.status_code == requests.codes.ok
+            or "Location" not in response.headers
+        ):
             # request ends successful
             return response
         elif response.status_code == requests.codes.accepted:
@@ -142,8 +145,7 @@ def prepare_match_data(match_data):
     logger.debug("MatchWindowData {}".format(match_data_json))
     match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
     match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-    body = match_data_size_bytes + match_data_json_bytes
-    return body
+    return match_data_size_bytes + match_data_json_bytes
 
 
 class ServerConnector(object):
