@@ -67,6 +67,8 @@ class MockResponse(object):
     def __init__(self, json_data, status_code, headers=None):
         self.json_data = json_data
         self.status_code = status_code
+        if headers is None:
+            headers = {}
         self.headers = headers
 
     def raise_for_status(self):
@@ -364,6 +366,16 @@ def test_long_request(configured_connector):
         with patch("requests.delete", side_effect=mocked_requests_delete):
             r = configured_connector._com.long_request(requests.get, LONG_REQUEST_URL)
             assert r.status_code == 200
+
+
+def test_long_request_on_start_session(configured_connector):
+    with patch("requests.get", side_effect=mocked_requests_get):
+        with patch("requests.post", side_effect=mocked_requests_post):
+            with patch("requests.delete", side_effect=mocked_requests_delete):
+                r = configured_connector._com.long_request(
+                    requests.post, RUNNING_SESSION_URL
+                )
+                assert r.status_code == 201
 
 
 def test_get_rendering_info(started_connector):
