@@ -303,7 +303,7 @@ def test_match_window(started_connector):
     assert match.as_expected
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+#@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
 @pytest.mark.parametrize("server_status", [500, 200, 201, 400, 404])
 def test_match_window_with_image_uploading(started_connector, server_status):
     #  type: (ServerConnector, int) -> None
@@ -321,11 +321,19 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         "applitools.core.server_connector.ServerConnector.render_info",
         return_value=rendering_info,
     ):
-        if server_status in [200, 201]:
-            started_connector.match_window(RUNNING_SESSION_OBJ, data)
-        else:
-            with pytest.raises(EyesError):
-                started_connector.match_window(RUNNING_SESSION_OBJ, data)
+        with patch(
+            "applitools.core.server_connector.ClientSession.put",
+            return_value=MockResponse(None, server_status)
+        ):
+            with patch(
+                "applitools.core.server_connector.ClientSession.post",
+                side_effect=mocked_requests_post,
+            ):
+                if server_status in [200, 201]:
+                    started_connector.match_window(RUNNING_SESSION_OBJ, data)
+                else:
+                    with pytest.raises(EyesError):
+                        started_connector.match_window(RUNNING_SESSION_OBJ, data)
 
     if server_status in [200, 201]:
         target_url = data.app_output.screenshot_url

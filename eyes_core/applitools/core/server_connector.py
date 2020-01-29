@@ -63,28 +63,24 @@ class ClientSession(object):
     def close(self):
         self._session.close()
 
-    def request(self, method, url,
-                params=None, data=None, headers=None, cookies=None, files=None,
-                auth=None, timeout=None, allow_redirects=True, proxies=None,
-                hooks=None, stream=None, verify=None, cert=None, json=None):
-        return self._session.request(
-            method=method,
-            url=url,
-            params=params,
-            data=data,
-            headers=headers,
-            cookies=cookies,
-            files=files,
-            auth=auth,
-            timeout=timeout,
-            allow_redirects=allow_redirects,
-            proxies=proxies,
-            hooks=hooks,
-            stream=stream,
-            verify=verify,
-            cert=cert,
-            json=json,
-        )
+    def request(self, method, url, **kwargs):
+        # type: (Text, Text, **Any) -> Response
+
+        # refactored to "if" tree for easier monkey-patching during testing
+        if method == 'get':
+            return self.get(url, **kwargs)
+        if method == 'options':
+            return self.options(url, **kwargs)
+        if method == 'head':
+            return self.head(url, **kwargs)
+        if method == 'post':
+            return self.post(url, **kwargs)
+        if method == 'put':
+            return self.put(url, **kwargs)
+        if method == 'patch':
+            return self.patch(url, **kwargs)
+        if method == 'delete':
+            return self.delete(url, **kwargs)
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -380,7 +376,8 @@ class ServerConnector(object):
         headers["x-ms-blob-type"] = "BlockBlob"
 
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
-        response = requests.put(
+        response = self.client_session.request(
+            'put',
             image_target_url,
             data=screenshot_bytes,
             headers=headers,
