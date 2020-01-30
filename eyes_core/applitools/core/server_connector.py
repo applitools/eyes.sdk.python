@@ -65,6 +65,7 @@ class ClientSession(object):
 
     def request(self, method, url, **kwargs):
         # type: (Text, Text, **Any) -> Response
+        method = method.lower()
 
         # refactored to "if" tree for easier monkey-patching during testing
         if method == 'get':
@@ -81,28 +82,29 @@ class ClientSession(object):
             return self.patch(url, **kwargs)
         if method == 'delete':
             return self.delete(url, **kwargs)
+
         raise ValueError('Unknown HTTP method: {}'.format(method))
 
     def get(self, url, **kwargs):
-        return self.request('GET', url, **kwargs)
+        return self._session.get(url, **kwargs)
 
     def options(self, url, **kwargs):
-        return self.request('OPTIONS', url, **kwargs)
+        return self._session.options(url, **kwargs)
 
     def head(self, url, **kwargs):
-        return self.request('HEAD', url, **kwargs)
+        return self._session.head(url, **kwargs)
 
     def post(self, url, data=None, json=None, **kwargs):
-        return self.request('POST', url, data=data, json=json, **kwargs)
+        return self._session.post(url, data=data, json=json, **kwargs)
 
     def put(self, url, data=None, **kwargs):
-        return self.request('PUT', url, data=data, **kwargs)
+        return self._session.put(url, data=data, **kwargs)
 
     def patch(self, url, data=None, **kwargs):
-        return self.request('PATCH', url, data=data, **kwargs)
+        return self._session.patch(url, data=data, **kwargs)
 
     def delete(self, url, **kwargs):
-        return self.request('DELETE', url, **kwargs)
+        return self._session.delete(url, **kwargs)
 
 
 @attr.s
