@@ -166,7 +166,7 @@ class _RequestCommunicator(object):
             response.status_code == requests.codes.ok
             or "Location" not in response.headers
         ):
-            # request ends successful
+            # request ends successful or it doesn't support Long request
             return response
         elif response.status_code == requests.codes.accepted:
             # long request here; calling received url to know that request was processed
@@ -191,7 +191,7 @@ class _RequestCommunicator(object):
             self.MAX_LONG_REQUEST_DELAY_MS,
             math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
         )
-        logger.debug("Still running... Retrying in {} ms".format(delay))
+        logger.debug("Long request. Still running... Retrying in {} ms".format(delay))
 
         datetime_utils.sleep(delay)
         response = self.request(
@@ -460,7 +460,7 @@ class ServerConnector(object):
         logger.debug("render_info() called.")
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
-        response = self._com.request(
+        response = self._com.long_request(
             'get', self.RENDER_INFO_PATH, headers=headers
         )
         if not response.ok:
