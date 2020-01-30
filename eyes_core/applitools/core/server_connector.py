@@ -65,44 +65,46 @@ class ClientSession(object):
 
     def request(self, method, url, **kwargs):
         # type: (Text, Text, **Any) -> Response
+        method = method.lower()
 
         # refactored to "if" tree for easier monkey-patching during testing
-        if method == 'get':
+        if method == "get":
             return self.get(url, **kwargs)
-        if method == 'options':
+        if method == "options":
             return self.options(url, **kwargs)
-        if method == 'head':
+        if method == "head":
             return self.head(url, **kwargs)
-        if method == 'post':
+        if method == "post":
             return self.post(url, **kwargs)
-        if method == 'put':
+        if method == "put":
             return self.put(url, **kwargs)
-        if method == 'patch':
+        if method == "patch":
             return self.patch(url, **kwargs)
-        if method == 'delete':
+        if method == "delete":
             return self.delete(url, **kwargs)
-        raise ValueError('Unknown HTTP method: {}'.format(method))
+
+        raise ValueError("Unknown HTTP method: {}".format(method))
 
     def get(self, url, **kwargs):
-        return self.request('GET', url, **kwargs)
+        return self._session.get(url, **kwargs)
 
     def options(self, url, **kwargs):
-        return self.request('OPTIONS', url, **kwargs)
+        return self._session.options(url, **kwargs)
 
     def head(self, url, **kwargs):
-        return self.request('HEAD', url, **kwargs)
+        return self._session.head(url, **kwargs)
 
     def post(self, url, data=None, json=None, **kwargs):
-        return self.request('POST', url, data=data, json=json, **kwargs)
+        return self._session.post(url, data=data, json=json, **kwargs)
 
     def put(self, url, data=None, **kwargs):
-        return self.request('PUT', url, data=data, **kwargs)
+        return self._session.put(url, data=data, **kwargs)
 
     def patch(self, url, data=None, **kwargs):
-        return self.request('PATCH', url, data=data, **kwargs)
+        return self._session.patch(url, data=data, **kwargs)
 
     def delete(self, url, **kwargs):
-        return self.request('DELETE', url, **kwargs)
+        return self._session.delete(url, **kwargs)
 
 
 @attr.s
@@ -177,7 +179,7 @@ class _RequestCommunicator(object):
             # delete url that was used before
             url = response.headers["Location"]
             return self.request(
-                'delete',
+                "delete",
                 url,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
@@ -195,9 +197,7 @@ class _RequestCommunicator(object):
 
         datetime_utils.sleep(delay)
         response = self.request(
-            'get',
-            url,
-            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
+            "get", url, headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
         )
         if response.status_code != requests.codes.ok:
             return response
@@ -242,8 +242,7 @@ class ServerConnector(object):
         self._render_info = None  # type: Optional[RenderingInfo]
         if client_session:
             self._com = _RequestCommunicator(
-                headers=ServerConnector.DEFAULT_HEADERS,
-                client_session=client_session,
+                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
             )
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
@@ -305,7 +304,7 @@ class ServerConnector(object):
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.long_request(
-            'post', url_resource=self.API_SESSIONS_RUNNING, data=data
+            "post", url_resource=self.API_SESSIONS_RUNNING, data=data
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
@@ -329,7 +328,7 @@ class ServerConnector(object):
 
         params = {"aborted": is_aborted, "updateBaseline": save}
         response = self._com.long_request(
-            'delete',
+            "delete",
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             params=params,
             headers=ServerConnector.DEFAULT_HEADERS,
@@ -380,7 +379,7 @@ class ServerConnector(object):
 
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
         response = self.client_session.request(
-            'put',
+            "put",
             image_target_url,
             data=screenshot_bytes,
             headers=headers,
@@ -421,7 +420,7 @@ class ServerConnector(object):
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/octet-stream"
         response = self._com.long_request(
-            'post',
+            "post",
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
             data=data,
             headers=headers,
@@ -445,7 +444,7 @@ class ServerConnector(object):
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
 
         response = self._com.request(
-            'post',
+            "post",
             url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
             data=dom_bytes,
             headers=headers,
@@ -460,9 +459,7 @@ class ServerConnector(object):
         logger.debug("render_info() called.")
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
-        response = self._com.long_request(
-            'get', self.RENDER_INFO_PATH, headers=headers
-        )
+        response = self._com.long_request("get", self.RENDER_INFO_PATH, headers=headers)
         if not response.ok:
             raise EyesError(
                 "Cannot get render info: \n Status: {}, Content: {}".format(
@@ -486,11 +483,7 @@ class ServerConnector(object):
 
         data = json_utils.to_json(render_requests)
         response = self._com.request(
-            'post',
-            url_resource=url,
-            use_api_key=False,
-            headers=headers,
-            data=data
+            "post", url_resource=url, use_api_key=False, headers=headers, data=data
         )
         if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
@@ -521,7 +514,7 @@ class ServerConnector(object):
             self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
         )
         response = self._com.request(
-            'put',
+            "put",
             url,
             use_api_key=False,
             headers=headers,
@@ -549,9 +542,7 @@ class ServerConnector(object):
             url, headers=headers, timeout=timeout_sec, verify=False
         )
         if response.status_code == requests.codes.not_acceptable:
-            response = self.client_session.get(
-                url, timeout=timeout_sec, verify=False
-            )
+            response = self.client_session.get(url, timeout=timeout_sec, verify=False)
         return response
 
     def render_status_by_id(self, *render_ids):
@@ -565,7 +556,7 @@ class ServerConnector(object):
         headers["X-Auth-Token"] = self._render_info.access_token
         url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
         response = self._com.request(
-            'post',
+            "post",
             url,
             use_api_key=False,
             headers=headers,
