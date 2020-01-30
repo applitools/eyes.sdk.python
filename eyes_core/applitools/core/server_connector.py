@@ -81,6 +81,7 @@ class ClientSession(object):
             return self.patch(url, **kwargs)
         if method == 'delete':
             return self.delete(url, **kwargs)
+        raise ValueError('Unknown HTTP method: {}'.format(method))
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
