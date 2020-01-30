@@ -81,6 +81,7 @@ class ClientSession(object):
             return self.patch(url, **kwargs)
         if method == 'delete':
             return self.delete(url, **kwargs)
+        raise ValueError('Unknown HTTP method: {}'.format(method))
 
     def get(self, url, **kwargs):
         return self.request('GET', url, **kwargs)
@@ -232,7 +233,7 @@ class ServerConnector(object):
     _is_session_started = False
 
     def __init__(self, client_session=None):
-        # type: (ClientSession) -> None
+        # type: (Optional[ClientSession]) -> None
         """
         Ctor.
 
@@ -287,7 +288,7 @@ class ServerConnector(object):
 
     @property
     def client_session(self):
-        # type: () -> requests.Session
+        # type: () -> ClientSession
         return self._com.client_session
 
     # TODO: Add Proxy
