@@ -1,3 +1,6 @@
+## [4.1.11] - 2020-01-30
+### Updated
+- Use start_session and render_info as long requests
 ## [4.1.10] - 2020-01-28
 ### Added
 - Uploading images directly to data storage server [Trello 1461](https://trello.com/c/1V5X9O37)
