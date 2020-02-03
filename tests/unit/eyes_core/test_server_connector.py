@@ -102,18 +102,19 @@ def mocked_client_session_request(self, *args, **kwargs):
     http_method = args[0]
     args = args[1:]
     if not isinstance(http_method, str):
-        raise DeprecationWarning('Use text instead!')
+        raise DeprecationWarning("Use text instead!")
 
-    if http_method == 'get':
+    if http_method == "get":
         return mocked_requests_get(*args, **kwargs)
-    if http_method == 'post':
+    if http_method == "post":
         return mocked_requests_post(*args, **kwargs)
-    if http_method == 'delete':
+    if http_method == "delete":
         return mocked_requests_delete(*args, **kwargs)
 
     raise NotImplementedError(
-        "MockClientSession does not have implementation for {} method"
-        .format(http_method.upper())
+        "MockClientSession does not have implementation for {} method".format(
+            http_method.upper()
+        )
     )
 
 
@@ -243,9 +244,11 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
 )
 IMAGE_BASE_64 = "iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAAFi0lEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBXA/yTAAFLZiwOAAAAAElFTkSuQmCC"
 
-ALLOWED_HTTP_METHODS = ['head', 'options', 'get', 'post', 'put', 'patch', 'delete']
+ALLOWED_HTTP_METHODS = ["head", "options", "get", "post", "put", "patch", "delete"]
 ALLOWED_HTTP_METHODS += [m.upper() for m in ALLOWED_HTTP_METHODS]
-FAKE_HTTP_METHODS = ['4hdy6sh', ]
+FAKE_HTTP_METHODS = [
+    "4hdy6sh",
+]
 
 
 def test_set_get_server_url():
@@ -290,7 +293,10 @@ def test_is_session_started_False(configured_connector):
     assert not configured_connector.is_session_started
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_start_session(configured_connector):
     # type: (ServerConnector) -> None
     running_session = configured_connector.start_session(SESSION_START_INFO_OBJ)
@@ -301,12 +307,13 @@ def test_start_session(configured_connector):
     assert running_session.url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_match_window(started_connector):
     #  type: (ServerConnector) -> None
-    match = started_connector.match_window(
-        RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ
-    )
+    match = started_connector.match_window(RUNNING_SESSION_OBJ, MATCH_WINDOW_DATA_OBJ)
     assert match.as_expected
 
 
@@ -329,7 +336,7 @@ def test_match_window_with_image_uploading(started_connector, server_status):
     ):
         with patch(
             "applitools.core.server_connector.ClientSession.put",
-            return_value=MockResponse(None, server_status)
+            return_value=MockResponse(None, server_status),
         ):
             with patch(
                 "applitools.core.server_connector.ClientSession.post",
@@ -350,14 +357,20 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         assert "__random__" not in target_url
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_post_dom_snapshot(started_connector):
     #  type: (ServerConnector) -> None
     dom_url = started_connector.post_dom_snapshot("{HTML: []")
     assert dom_url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_stop_session(started_connector):
     #  type: (ServerConnector) -> None
     respo = started_connector.stop_session(
@@ -378,7 +391,9 @@ def test_request_with_changed_values(configured_connector):
     )
     configured_connector.update_config(conf)
 
-    with patch("applitools.core.server_connector.ClientSession.request") as mocked_request:
+    with patch(
+        "applitools.core.server_connector.ClientSession.request"
+    ) as mocked_request:
         with patch(
             "applitools.core.server_connector.json_utils.attr_from_response",
             return_value=RUNNING_SESSION_OBJ,
@@ -390,35 +405,40 @@ def test_request_with_changed_values(configured_connector):
     assert new_server_url in mocked_request.call_args[0][1]
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_long_request(configured_connector):
-    r = configured_connector._com.long_request(
-        'get', LONG_REQUEST_URL
-    )
+    r = configured_connector._com.long_request("get", LONG_REQUEST_URL)
     assert r.status_code == 200
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_long_request_on_start_session(configured_connector):
-    r = configured_connector._com.long_request(
-        'post', RUNNING_SESSION_URL
-    )
+    r = configured_connector._com.long_request("post", RUNNING_SESSION_URL)
     assert r.status_code == 201
 
 
-@patch("applitools.core.server_connector.ClientSession.request", new=mocked_client_session_request)
+@patch(
+    "applitools.core.server_connector.ClientSession.request",
+    new=mocked_client_session_request,
+)
 def test_get_rendering_info(started_connector):
     render_info = started_connector.render_info()
     assert render_info == RENDERING_OBJ
 
 
-@patch("requests.request", return_value=MockResponse(None, 200))
+@patch("requests.Session.request", return_value=MockResponse(None, 200))
 @pytest.mark.parametrize("http_method", ALLOWED_HTTP_METHODS + FAKE_HTTP_METHODS)
 def test_http_methods(configured_connector, http_method):
     client_session = ClientSession()
     if http_method in ALLOWED_HTTP_METHODS:
-        r = client_session.request(http_method, 'http://httpbin.org/anything')
+        r = client_session.request(http_method, "http://httpbin.org/anything")
         assert r.status_code == 200
     else:
         with pytest.raises(ValueError):
-            client_session.request(http_method, 'http://httpbin.org/anything')
+            client_session.request(http_method, "http://httpbin.org/anything")
