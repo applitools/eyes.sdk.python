@@ -39,6 +39,12 @@ class MatchLevel(Enum):
     EXACT = "Exact"
 
 
+class AccessibilityLevel(Enum):
+    NONE = "None"
+    AA = "AA"
+    AAA = "AAA"
+
+
 @attr.s
 class MatchResult(object):
     as_expected = attr.ib(
@@ -141,6 +147,11 @@ class ImageMatchSettings(object):
     floating_match_settings = attr.ib(
         factory=list, metadata={JsonInclude.THIS: True}
     )  # type: List[FloatingMatchSettings]
+    # TODO: implement accessibility region
+    accessibility = attr.ib(factory=list)  # type: List
+    accessibility_level = attr.ib(
+        default=AccessibilityLevel.NONE
+    )  # type: AccessibilityLevel
 
     @classmethod
     def create_from(cls, other):
