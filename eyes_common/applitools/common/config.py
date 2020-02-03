@@ -78,6 +78,7 @@ class Configuration(object):
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     environment_name = attr.ib(default=None)  # type: Optional[Text]
     save_diffs = attr.ib(default=None)  # type: bool
+    send_dom = attr.ib(default=True)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     viewport_size = attr.ib(
@@ -112,14 +113,6 @@ class Configuration(object):
     @enable_patterns.setter
     def enable_patterns(self, value):
         self.default_match_settings.enable_patterns = value
-
-    @property
-    def send_dom(self):
-        return self.default_match_settings.send_dom
-
-    @send_dom.setter
-    def send_dom(self, value):
-        self.default_match_settings.send_dom = value
 
     @property
     def use_dom(self):
@@ -209,8 +202,7 @@ class Configuration(object):
     @property
     def ignore_caret(self):
         # type: () -> bool
-        ignore = self.default_match_settings.ignore_caret
-        return True if ignore is None else ignore
+        return self.default_match_settings.ignore_caret
 
     def set_ignore_caret(self, ignore_caret):
         # type: (Self, bool) -> Self
