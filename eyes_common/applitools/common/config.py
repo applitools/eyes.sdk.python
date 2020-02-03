@@ -78,7 +78,6 @@ class Configuration(object):
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     environment_name = attr.ib(default=None)  # type: Optional[Text]
     save_diffs = attr.ib(default=None)  # type: bool
-    send_dom = attr.ib(default=True)  # type: bool
     app_name = attr.ib(default=None)  # type: Optional[Text]
     test_name = attr.ib(default=None)  # type: Optional[Text]
     viewport_size = attr.ib(
@@ -93,6 +92,7 @@ class Configuration(object):
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
+    send_dom = attr.ib(default=True)  # type: bool
     default_match_settings = attr.ib(
         factory=ImageMatchSettings
     )  # type: ImageMatchSettings

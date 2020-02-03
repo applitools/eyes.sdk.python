@@ -72,10 +72,10 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     # if mutable_regions[5]:
     #     location = mutable_regions[5][0].location
 
-    image_match_settings.ignore = mutable_regions[0]
-    image_match_settings.layout = mutable_regions[1]
-    image_match_settings.strict = mutable_regions[2]
-    image_match_settings.content = mutable_regions[3]
+    image_match_settings.ignore_regions = mutable_regions[0]
+    image_match_settings.layout_regions = mutable_regions[1]
+    image_match_settings.strict_regions = mutable_regions[2]
+    image_match_settings.content_regions = mutable_regions[3]
 
     # TODO: Implement floating regions
     floating_match_settings = []
@@ -87,7 +87,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         if isinstance(gfr, GetFloatingRegion):
             fms = FloatingMatchSettings(reg, gfr.bounds)
             floating_match_settings.append(fms)
-    image_match_settings.floating = floating_match_settings
+    image_match_settings.floating_match_settings = floating_match_settings
     return image_match_settings
 
 
@@ -96,19 +96,19 @@ def collect_regions_from_screenshot(
 ):
     # type: (CheckSettings, ImageMatchSettings, EyesScreenshot, EyesBase) -> ImageMatchSettings
 
-    image_match_settings.ignore = _collect_regions(  # type: ignore
+    image_match_settings.ignore_regions = _collect_regions(  # type: ignore
         check_settings.values.ignore_regions, screenshot, eyes
     )
-    image_match_settings.layout = _collect_regions(  # type: ignore
+    image_match_settings.layout_regions = _collect_regions(  # type: ignore
         check_settings.values.layout_regions, screenshot, eyes
     )
-    image_match_settings.strict = _collect_regions(  # type: ignore
+    image_match_settings.strict_regions = _collect_regions(  # type: ignore
         check_settings.values.strict_regions, screenshot, eyes
     )
-    image_match_settings.content = _collect_regions(  # type: ignore
+    image_match_settings.content_regions = _collect_regions(  # type: ignore
         check_settings.values.content_regions, screenshot, eyes
     )
-    image_match_settings.floating = _collect_regions(  # type: ignore
+    image_match_settings.floating_match_settings = _collect_regions(  # type: ignore
         check_settings.values.floating_regions, screenshot, eyes
     )
     return image_match_settings
@@ -334,9 +334,10 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = ImageMatchSettings.create_from_check_settings(
-            check_settings
+        image_match_settings = ImageMatchSettings.create_from(
+            self._eyes.configure.default_match_settings
         )
+        image_match_settings.update_by_check_settings(check_settings)
         self._match_result = self.perform_match(
             app_output,
             tag,

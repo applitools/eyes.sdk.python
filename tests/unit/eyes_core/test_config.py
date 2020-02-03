@@ -15,11 +15,7 @@ def test_set_get_values_present_in_image_match_settings(config):
 
     config.set_ignore_caret(True)
     assert config.ignore_caret
-    assert config.default_match_settings.match_level
-
-    config.send_dom = True
-    assert config.send_dom
-    assert config.default_match_settings.send_dom
+    assert config.default_match_settings.ignore_caret
 
     config.use_dom = True
     assert config.use_dom

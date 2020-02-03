@@ -3,7 +3,6 @@ import threading
 import typing
 import uuid
 from collections import OrderedDict
-from itertools import chain
 
 import attr
 
