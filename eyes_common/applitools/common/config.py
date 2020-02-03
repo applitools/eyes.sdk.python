@@ -94,7 +94,7 @@ class Configuration(object):
     save_failed_tests = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
     default_match_settings = attr.ib(
-        default=ImageMatchSettings()
+        factory=ImageMatchSettings
     )  # type: ImageMatchSettings
     stitch_overlap = attr.ib(default=5)  # type: int
 
