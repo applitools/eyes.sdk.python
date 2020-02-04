@@ -170,13 +170,6 @@ class ImageMatchSettings(object):
             ignore_displacements=other.ignore_displacements,
         )
 
-    def update_by_check_settings(self, check_settings):
-        self.match_level = check_settings.values.match_level
-        self.ignore_caret = check_settings.values.ignore_caret
-        self.use_dom = check_settings.values.use_dom
-        self.enable_patterns = check_settings.values.enable_patterns
-        self.ignore_displacements = check_settings.values.ignore_displacements
-
 
 @attr.s(slots=True)
 class FloatingBounds(object):

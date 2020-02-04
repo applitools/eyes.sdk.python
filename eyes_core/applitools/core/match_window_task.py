@@ -147,17 +147,17 @@ class MatchWindowTask(object):
         self._app_output_provider = app_output_provider
         self._default_retry_timeout_ms = retry_timeout_ms  # type: Num
 
-        self._match_result = None  # type: MatchResult
+        self._match_result = None  # type: Optional[MatchResult]
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
 
-    def create_image_match_settings(self, check_settings):
+    @staticmethod
+    def create_image_match_settings(check_settings, eyes):
+        # type: (CheckSettings, EyesBase)-> ImageMatchSettings
         get_config_value = general_utils.use_default_if_none_factory(
-            default_obj=self._eyes.configure.default_match_settings,
+            default_obj=eyes.configure.default_match_settings,
             obj=check_settings.values,
         )
-        img = ImageMatchSettings.create_from(
-            self._eyes.configure.default_match_settings
-        )
+        img = ImageMatchSettings.create_from(eyes.configure.default_match_settings)
         # Set defaults if necessary
         img.match_level = get_config_value("match_level")
         img.ignore_carett = get_config_value("ignore_caret")
@@ -350,7 +350,9 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = self.create_image_match_settings(check_settings)
+        image_match_settings = self.create_image_match_settings(
+            check_settings, self._eyes
+        )
         self._match_result = self.perform_match(
             app_output,
             tag,

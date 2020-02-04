@@ -66,20 +66,6 @@ class _EyesBaseAbstract(ABC):
         # type: (...) -> EyesScreenshot
         pass
 
-    @abc.abstractmethod
-    def get_viewport_size(self):
-        # type: () -> RectangleSize
-        """
-        :return: The viewport size of the AUT.
-        """
-
-    @abc.abstractmethod
-    def set_viewport_size(self, size):
-        # type: (ViewPort) -> None
-        """
-        :param size: The required viewport size.
-        """
-
     @property
     @abc.abstractmethod
     def _title(self):

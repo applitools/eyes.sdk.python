@@ -196,7 +196,7 @@ class EyesConnector(EyesBase):
 
         app_output = self._get_app_output_with_screenshot(None, None, check_settings)
         image_match_settings = self._match_window_task.create_image_match_settings(
-            check_settings
+            check_settings, self
         )
         return self._match_window_task.perform_match(
             app_output=app_output,
