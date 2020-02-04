@@ -153,17 +153,20 @@ class MatchWindowTask(object):
     @staticmethod
     def create_image_match_settings(check_settings, eyes, screenshot=None):
         # type: (CheckSettings, EyesBase, Options[EyesScreenshot])-> ImageMatchSettings
-        get_config_value = general_utils.use_default_if_none_factory(
-            default_obj=eyes.configure.default_match_settings,
-            obj=check_settings.values,
-        )
         img = ImageMatchSettings.create_from(eyes.configure.default_match_settings)
+
         # Set defaults if necessary
-        img.match_level = get_config_value("match_level")
-        img.ignore_carett = get_config_value("ignore_caret")
-        img.use_dom = get_config_value("use_dom")
-        img.enable_patterns = get_config_value("enable_patterns")
-        img.ignore_displacements = get_config_value("ignore_displacements")
+        if check_settings.values.match_level is not None:
+            img.match_level = check_settings.values.match_level
+        if check_settings.values.ignore_caret is not None:
+            img.ignore_caret = check_settings.values.ignore_caret
+        if check_settings.values.use_dom is not None:
+            img.use_dom = check_settings.values.use_dom
+        if check_settings.values.enable_patterns is not None:
+            img.enable_patterns = check_settings.values.enable_patterns
+        if check_settings.values.ignore_displacements is not None:
+            img.ignore_displacements = check_settings.values.ignore_displacements
+
         if screenshot:
             img = collect_regions_from_screenshot(check_settings, img, screenshot, eyes)
         return img
