@@ -150,10 +150,10 @@ class ImageMatchSettings(object):
         metadata={JsonInclude.NAME: "Floating"}
     )  # type: Optional[List[FloatingMatchSettings]]
     # TODO: implement accessibility region
-    accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
-    accessibility_level = attr.ib(
-        metadata={JsonInclude.THIS: True}
-    )  # type: AccessibilityLevel
+    # accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
+    # accessibility_level = attr.ib(
+    #     metadata={JsonInclude.THIS: True}
+    # )  # type: AccessibilityLevel
 
     def __init__(self, match_level=MatchLevel.STRICT, exact=None, use_dom=False):
         # type: (MatchLevel, Optional[ExactMatchSettings], bool) -> None
@@ -163,8 +163,8 @@ class ImageMatchSettings(object):
 
         self.ignore_caret = False
         self.ignore_displacements = self.enable_patterns = None
-        self.accessibility = []
-        self.accessibility_level = AccessibilityLevel.NONE
+        # self.accessibility = []
+        # self.accessibility_level = AccessibilityLevel.NONE
         if exact:
             self.strict_regions = self.content_regions = None
             self.layout_regions = self.ignore_regions = None
@@ -175,7 +175,6 @@ class ImageMatchSettings(object):
             self.content_regions = []
             self.layout_regions = []
             self.floating_match_settings = []
-            self.accessibility = []
 
     @classmethod
     def create_from(cls, other):
