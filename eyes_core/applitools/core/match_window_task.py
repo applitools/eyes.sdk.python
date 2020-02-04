@@ -8,7 +8,7 @@ from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import datetime_utils, image_utils
+from applitools.common.utils import datetime_utils, image_utils, general_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
@@ -149,6 +149,22 @@ class MatchWindowTask(object):
 
         self._match_result = None  # type: MatchResult
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
+
+    def create_image_match_settings(self, check_settings):
+        get_config_value = general_utils.use_default_if_none_factory(
+            default_obj=self._eyes.configure.default_match_settings,
+            obj=check_settings.values,
+        )
+        img = ImageMatchSettings.create_from(
+            self._eyes.configure.default_match_settings
+        )
+        # Set defaults if necessary
+        img.match_level = get_config_value("match_level")
+        img.ignore_carett = get_config_value("ignore_caret")
+        img.use_dom = get_config_value("use_dom")
+        img.enable_patterns = get_config_value("enable_patterns")
+        img.ignore_displacements = get_config_value("ignore_displacements")
+        return img
 
     @property
     def last_screenshot(self):
@@ -334,10 +350,7 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = ImageMatchSettings.create_from(
-            self._eyes.configure.default_match_settings
-        )
-        image_match_settings.update_by_check_settings(check_settings)
+        image_match_settings = self.create_image_match_settings(check_settings)
         self._match_result = self.perform_match(
             app_output,
             tag,

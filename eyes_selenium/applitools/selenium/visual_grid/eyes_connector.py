@@ -191,16 +191,13 @@ class EyesConnector(EyesBase):
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
-        check_settings = self._process_check_settings_values(check_settings)
-
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
         app_output = self._get_app_output_with_screenshot(None, None, check_settings)
-        image_match_settings = ImageMatchSettings.create_from(
-            self.configure.default_match_settings
+        image_match_settings = self._match_window_task.create_image_match_settings(
+            check_settings
         )
-        image_match_settings.update_by_check_settings(check_settings)
         return self._match_window_task.perform_match(
             app_output=app_output,
             name=tag,
