@@ -202,7 +202,8 @@ class Configuration(object):
     @property
     def ignore_caret(self):
         # type: () -> bool
-        return self.default_match_settings.ignore_caret
+        ignore = self.default_match_settings.ignore_caret
+        return True if ignore is None else ignore
 
     def set_ignore_caret(self, ignore_caret):
         # type: (Self, bool) -> Self
