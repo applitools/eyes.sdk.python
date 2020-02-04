@@ -279,6 +279,11 @@ class Configuration(object):
         self.server_url = server_url
         return self
 
+    def set_default_match_settings(self, default_match_settings):
+        # type: (Self, ImageMatchSettings) -> Self
+        self.default_match_settings = default_match_settings
+        return self
+
     @match_timeout.validator
     def _validate1(self, attribute, value):
         if 0 < value < MINIMUM_MATCH_TIMEOUT_MS:
