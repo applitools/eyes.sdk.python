@@ -118,63 +118,50 @@ class ExactMatchSettings(object):
         )
 
 
-@attr.s(init=False)
+@attr.s
 class ImageMatchSettings(object):
     """
     Encapsulates match settings for the a session.
     """
 
-    match_level = attr.ib(metadata={JsonInclude.THIS: True})  # type: MatchLevel
+    match_level = attr.ib(
+        default=MatchLevel.STRICT, metadata={JsonInclude.THIS: True}
+    )  # type: MatchLevel
     exact = attr.ib(
-        type=ExactMatchSettings, metadata={JsonInclude.THIS: True}
+        default=None, type=ExactMatchSettings, metadata={JsonInclude.THIS: True}
     )  # type: Optional[ExactMatchSettings]
-    ignore_caret = attr.ib(metadata={JsonInclude.THIS: True})  # type:bool
-    use_dom = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[bool]
-    enable_patterns = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[bool]
+    ignore_caret = attr.ib(
+        default=False, metadata={JsonInclude.THIS: True}
+    )  # type:bool
+    use_dom = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
+    enable_patterns = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
     ignore_displacements = attr.ib(
-        metadata={JsonInclude.THIS: True}
+        default=False, metadata={JsonInclude.THIS: True}
     )  # type:Optional[bool]
     ignore_regions = attr.ib(
-        metadata={JsonInclude.NAME: "Ignore"}
+        factory=list, metadata={JsonInclude.NAME: "Ignore"}
     )  # type: Optional[List[Region]]
     layout_regions = attr.ib(
-        metadata={JsonInclude.NAME: "Layout"}
+        factory=list, metadata={JsonInclude.NAME: "Layout"}
     )  # type: Optional[List[Region]]
     strict_regions = attr.ib(
-        metadata={JsonInclude.NAME: "Strict"}
+        factory=list, metadata={JsonInclude.NAME: "Strict"}
     )  # type: Optional[List[Region]]
     content_regions = attr.ib(
-        metadata={JsonInclude.NAME: "Content"}
+        factory=list, metadata={JsonInclude.NAME: "Content"}
     )  # type: Optional[List[Region]]
     floating_match_settings = attr.ib(
-        metadata={JsonInclude.NAME: "Floating"}
+        factory=list, metadata={JsonInclude.NAME: "Floating"}
     )  # type: Optional[List[FloatingMatchSettings]]
     # TODO: implement accessibility region
     # accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
     # accessibility_level = attr.ib(
     #     metadata={JsonInclude.THIS: True}
     # )  # type: AccessibilityLevel
-
-    def __init__(self, match_level=MatchLevel.STRICT, exact=None, use_dom=False):
-        # type: (MatchLevel, Optional[ExactMatchSettings], bool) -> None
-        self.match_level = match_level
-        self.exact = exact
-        self.use_dom = use_dom
-
-        self.ignore_caret = False
-        self.ignore_displacements = self.enable_patterns = None
-        # self.accessibility = []
-        # self.accessibility_level = AccessibilityLevel.NONE
-        if exact:
-            self.strict_regions = self.content_regions = None
-            self.layout_regions = self.ignore_regions = None
-            self.floating_match_settings = None
-        else:
-            self.strict_regions = []
-            self.ignore_regions = []
-            self.content_regions = []
-            self.layout_regions = []
-            self.floating_match_settings = []
 
     @classmethod
     def create_from(cls, other):

@@ -109,11 +109,11 @@ def test_image_match_settings_serialization(
         serialized_img["exact"]["matchThreshold"]
         == exact_match_settings.match_threshold
     )
-    assert serialized_img["Ignore"] is None
-    assert serialized_img["Layout"] is None
-    assert serialized_img["Strict"] is None
-    assert serialized_img["Content"] is None
-    assert serialized_img["Floating"] is None
+    # assert serialized_img["Ignore"] is None
+    # assert serialized_img["Layout"] is None
+    # assert serialized_img["Strict"] is None
+    # assert serialized_img["Content"] is None
+    # assert serialized_img["Floating"] is None
     # assert serialized_img["accessibility"] == []
 
 
