@@ -151,8 +151,8 @@ class MatchWindowTask(object):
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
 
     @staticmethod
-    def create_image_match_settings(check_settings, eyes):
-        # type: (CheckSettings, EyesBase)-> ImageMatchSettings
+    def create_image_match_settings(check_settings, eyes, screenshot=None):
+        # type: (CheckSettings, EyesBase, Options[EyesScreenshot])-> ImageMatchSettings
         get_config_value = general_utils.use_default_if_none_factory(
             default_obj=eyes.configure.default_match_settings,
             obj=check_settings.values,
@@ -164,6 +164,8 @@ class MatchWindowTask(object):
         img.use_dom = get_config_value("use_dom")
         img.enable_patterns = get_config_value("enable_patterns")
         img.ignore_displacements = get_config_value("ignore_displacements")
+        if screenshot:
+            img = collect_regions_from_screenshot(check_settings, img, screenshot, eyes)
         return img
 
     @property
