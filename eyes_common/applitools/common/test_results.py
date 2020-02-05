@@ -171,7 +171,7 @@ class TestResults(object):
         default=None, repr=False, type=SessionUrls, metadata={JsonInclude.THIS: True}
     )  # type: SessionUrls
     steps_info = attr.ib(
-        default=None, repr=False, metadata={JsonInclude.THIS: True}
+        default=None, repr=False, type=StepInfo, metadata={JsonInclude.THIS: True}
     )  # type: List[StepInfo]
     baseline_id = attr.ib(
         default=None, repr=False, metadata={JsonInclude.THIS: True}
