@@ -132,7 +132,7 @@ class Configuration(object):
 
     @property
     def ignore_displacements(self):
-        return self.default_match_settings.match_level
+        return self.default_match_settings.ignore_displacements
 
     @ignore_displacements.setter
     def ignore_displacements(self, value):
