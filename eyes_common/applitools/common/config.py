@@ -38,6 +38,7 @@ class BatchInfo(object):
         metadata={JsonInclude.NAME: "batchSequenceName"}
     )  # type: Optional[Text]
     id = attr.ib(converter=str, metadata={JsonInclude.THIS: True})  # type: Text
+    notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
@@ -47,6 +48,7 @@ class BatchInfo(object):
         self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
         self.started_at = datetime.now(UTC)
         self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
+        self.notify_on_completion = get_env_with_prefix("APPLITOOLS_BATCH_NOTIFY")
 
         if name:
             self.name = name
