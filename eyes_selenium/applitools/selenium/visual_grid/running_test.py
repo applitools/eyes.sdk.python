@@ -390,4 +390,4 @@ class RunningTest(object):
         # type: (Dict) -> bool
         if self.state == "completed":
             return True
-        return all(state for state in watch.values())
+        return all(watch.values())

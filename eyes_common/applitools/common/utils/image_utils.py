@@ -74,8 +74,7 @@ def scale_image(image, scale):
     scale_width = int(math.ceil(image.width * scale_ratio))
     scale_height = int(math.ceil(scale_width * image_ratio))
     image = image.convert("RGBA")
-    scaled_image = image.resize((scale_width, scale_height), resample=Image.BICUBIC)
-    return scaled_image
+    return image.resize((scale_width, scale_height), resample=Image.BICUBIC)
 
 
 def get_base64(image):
@@ -143,7 +142,7 @@ def crop_image(image, region_to_crop):
     if image_region != region_to_crop:
         logger.warning("requested cropped area overflows image boundaries.")
 
-    cropped_image = image.crop(
+    return image.crop(
         box=(
             image_region.left,
             image_region.top,
@@ -151,7 +150,6 @@ def crop_image(image, region_to_crop):
             image_region.bottom,
         )
     )
-    return cropped_image
 
 
 def rotate_image(image, rotate):

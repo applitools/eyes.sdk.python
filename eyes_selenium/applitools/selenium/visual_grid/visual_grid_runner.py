@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
     DiffsFoundError,
-    EyesError,
     NewTestError,
     TestFailedError,
     TestResultContainer,
@@ -108,9 +107,8 @@ class VisualGridRunner(EyesRunner):
         self._thread.join()
 
     def get_all_test_results_impl(self, should_raise_exception=True):
-        # type: (bool) -> TestResultsSummary
         while True:
-            states = list(set([t.state for t in self.all_running_tests]))
+            states = list(set(t.state for t in self.all_running_tests))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(500)

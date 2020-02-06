@@ -31,8 +31,7 @@ def _region_from_element(element, screenshot):
         )
     else:
         adjusted_location = Point(location["x"], location["y"])
-    region = Region.from_(adjusted_location, size)
-    return region
+    return Region.from_(adjusted_location, size)
 
 
 class GetSeleniumRegion(GetRegion):

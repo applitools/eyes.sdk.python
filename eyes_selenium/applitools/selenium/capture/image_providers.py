@@ -144,21 +144,20 @@ class SafariScreenshotImageProvider(ImageProvider):
         logger.info("logical viewport size: {}".format(original_viewport_size))
 
         force_full_page_screenshot = self._eyes.configure.force_full_page_screenshot
-        if force_full_page_screenshot is not None:
-            if not force_full_page_screenshot:
-                current_frame_chain = self._eyes.driver.frame_chain  # type: FrameChain
+        if force_full_page_screenshot is not None and not force_full_page_screenshot:
+            current_frame_chain = self._eyes.driver.frame_chain  # type: FrameChain
 
-                if len(current_frame_chain) == 0:
-                    position_provider = ScrollPositionProvider(
-                        self._eyes.driver,
-                        self._eyes.driver.find_element_by_tag_name("html"),
-                    )
-                    loc = position_provider.get_current_position()
-                else:
-                    loc = current_frame_chain.default_content_scroll_position
+            if len(current_frame_chain) == 0:
+                position_provider = ScrollPositionProvider(
+                    self._eyes.driver,
+                    self._eyes.driver.find_element_by_tag_name("html"),
+                )
+                loc = position_provider.get_current_position()
+            else:
+                loc = current_frame_chain.default_content_scroll_position
 
-                loc = loc.scale(scale_ratio)
-                image = image_utils.crop_image(image, Region.from_(loc, viewport_size))
+            loc = loc.scale(scale_ratio)
+            image = image_utils.crop_image(image, Region.from_(loc, viewport_size))
         return image
 
 

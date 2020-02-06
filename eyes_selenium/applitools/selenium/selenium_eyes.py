@@ -581,7 +581,7 @@ class SeleniumEyes(EyesBase):
         if self._last_screenshot is None:
             logger.debug("add_mouse_trigger: Ignoring %s (no screenshot)" % action)
             return
-        if not self._driver.frame_chain == self._last_screenshot.frame_chain:
+        if self._driver.frame_chain != self._last_screenshot.frame_chain:
             logger.debug("add_mouse_trigger: Ignoring %s (different frame)" % action)
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
@@ -606,7 +606,7 @@ class SeleniumEyes(EyesBase):
         if self._last_screenshot is None:
             logger.debug("add_text_trigger: Ignoring '%s' (no screenshot)" % text)
             return
-        if not self._driver.frame_chain == self._last_screenshot.frame_chain:
+        if self._driver.frame_chain != self._last_screenshot.frame_chain:
             logger.debug("add_text_trigger: Ignoring %s (different frame)" % text)
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
@@ -682,14 +682,13 @@ class SeleniumEyes(EyesBase):
                 logger.info("Setting OS: " + os)
             else:
                 logger.info("No mobile OS detected.")
-        app_env = AppEnvironment(
+        return AppEnvironment(
             os,
             hosting_app=self.configure.host_app,
             display_size=self.configure.viewport_size,
             inferred=self._inferred_environment,
             device_info=device_info,
         )
-        return app_env
 
     @property
     def _title(self):
@@ -910,7 +909,7 @@ class SeleniumEyes(EyesBase):
         with self._ensure_element_visible(self._target_element):
             datetime_utils.sleep(self.configure.wait_before_screenshots)
             image = self._get_scaled_cropped_image(scale_provider)
-            if not self._is_check_region and not self._driver.is_mobile_platform:
+            if not (self._is_check_region or self._driver.is_mobile_platform):
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
@@ -942,8 +941,7 @@ class SeleniumEyes(EyesBase):
                 logger.warning(str(e))
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)
-        viewport_bounds = Region.from_(location, self._get_viewport_size())
-        return viewport_bounds
+        return Region.from_(location, self._get_viewport_size())
 
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):

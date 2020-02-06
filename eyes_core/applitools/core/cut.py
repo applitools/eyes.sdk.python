@@ -48,14 +48,12 @@ class CutProvider(ABC):
 
 class FixedCutProvider(CutProvider):
     def scale(self, scale_ratio):
-        # type: (float) -> FixedCutProvider
-        cut_provider = FixedCutProvider(
+        return FixedCutProvider(
             math.ceil(self.header * scale_ratio),
             math.ceil(self.footer * scale_ratio),
             math.ceil(self.left * scale_ratio),
             math.ceil(self.right * scale_ratio),
         )
-        return cut_provider
 
 
 class UnscaledFixedCutProvider(CutProvider):
@@ -64,10 +62,7 @@ class UnscaledFixedCutProvider(CutProvider):
         if isinstance(self, NullCutProvider):
             return self
 
-        cut_provider = UnscaledFixedCutProvider(
-            self.header, self.footer, self.left, self.right
-        )
-        return cut_provider
+        return UnscaledFixedCutProvider(self.header, self.footer, self.left, self.right)
 
 
 class NullCutProvider(UnscaledFixedCutProvider):

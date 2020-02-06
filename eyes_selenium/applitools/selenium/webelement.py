@@ -223,11 +223,10 @@ class EyesWebElement(object):
         """
         # Get result from the original implementation of the underlying driver.
         results = self._original_methods["find_elements"](by, value)
-        # Wrap all returned elements.
         if results:
-            updated_results = []
-            for element in results:
-                updated_results.append(EyesWebElement(element, self._driver))
+            updated_results = [
+                EyesWebElement(element, self._driver) for element in results
+            ]
             results = updated_results
         return results
 

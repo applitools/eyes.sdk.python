@@ -25,8 +25,7 @@ def _fields_from_attr(cls):
 
 
 def _klasses_from_attr(cls):
-    klasses = {}
-    klasses[cls] = _fields_from_attr(cls)
+    klasses = {cls: _fields_from_attr(cls)}
     for field in attr.fields(cls):
         if field.type and attr.has(field.type):
             klasses[field.type] = _fields_from_attr(field.type)
@@ -99,9 +98,7 @@ def _filter(attr_, value):
     if attr_.name.startswith("_"):
         return False
     if attr_.metadata.get(JsonInclude.NON_NONE):
-        if value is None:
-            return False
-        return True
+        return value is not None
     if attr_.metadata.get(JsonInclude.THIS):
         return True
     if attr_.metadata.get(JsonInclude.NAME):

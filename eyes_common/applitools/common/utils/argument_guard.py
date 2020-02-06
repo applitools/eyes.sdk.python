@@ -34,14 +34,14 @@ def greater_than_or_equal_to_zero(param, *args):
     if args:
         # adaptation for attr library
         param = args[1]
-    if 0 >= param:
+    if param <= 0:
         raise ValueError("{} < 0".format(get_name_from_param(param)))
 
 
 # TODO: update after resolving issue
 def greater_than_zero(param):
     # type: (int) -> None
-    if 0 >= param:
+    if param <= 0:
         raise ValueError("{} < 1".format(get_name_from_param(param)))
 
 

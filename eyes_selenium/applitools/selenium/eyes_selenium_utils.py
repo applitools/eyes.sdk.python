@@ -125,9 +125,7 @@ def is_mobile_web(driver):
     platform_name = driver.desired_capabilities.get("platformName", "").lower()
     browser_name = driver.desired_capabilities.get("browserName", "").lower()
     is_mobile = "android" in platform_name or "ios" in platform_name
-    if is_mobile and browser_name:
-        return True
-    return False
+    return bool(is_mobile and browser_name)
 
 
 def is_android(driver):
@@ -147,9 +145,7 @@ def is_mobile_app(driver):
         for param in ["app", "appActivity", "appPackage", "bundleId", "appName"]
     )
     is_mobile = "android" in platform_name or "ios" in platform_name
-    if is_mobile and is_app and not browser_name:
-        return True
-    return False
+    return is_mobile and is_app and not browser_name
 
 
 def get_underlying_driver(driver):
@@ -295,8 +291,7 @@ def set_viewport_size(driver, required_size):
             abs(curr_width_change) <= width_diff
             and abs(curr_height_change) <= height_diff
         ):
-            if abs(curr_width_change) <= width_diff:
-                curr_width_change += width_step
+            curr_width_change += width_step
             if abs(curr_height_change) <= height_diff:
                 curr_height_change += height_step
 
@@ -385,36 +380,34 @@ def timeout(timeout_ms):
 
 
 def is_landscape_orientation(driver):
-    if is_mobile_web(driver):
-        # could be AppiumRemoteWebDriver
-        appium_driver = get_underlying_driver(
-            driver
-        )  # type: tp.Union[AppiumWebDriver, WebDriver]
+    if not is_mobile_web(driver):
+        return
+    # could be AppiumRemoteWebDriver
+    appium_driver = get_underlying_driver(
+        driver
+    )  # type: tp.Union[AppiumWebDriver, WebDriver]
 
-        try:
-            # We must be in native context in order to ask for orientation,
-            # because of an Appium bug.
-            original_context = appium_driver.context
-            if (
-                len(appium_driver.contexts) > 1
-                and not original_context.upper() == "NATIVE_APP"
-            ):
-                appium_driver.switch_to.context("NATIVE_APP")
-            else:
-                original_context = None
-        except WebDriverException:
+    try:
+        # We must be in native context in order to ask for orientation,
+        # because of an Appium bug.
+        original_context = appium_driver.context
+        if len(appium_driver.contexts) > 1 and original_context.upper() != "NATIVE_APP":
+            appium_driver.switch_to.context("NATIVE_APP")
+        else:
             original_context = None
+    except WebDriverException:
+        original_context = None
 
-        try:
-            orieintation = appium_driver.orientation
-            return orieintation.lower() == "landscape"
-        except WebDriverException:
-            logger.warning("Couldn't get device orientation. Assuming Portrait.")
-        finally:
-            if original_context is not None:
-                appium_driver.switch_to.context(original_context)
+    try:
+        orieintation = appium_driver.orientation
+        return orieintation.lower() == "landscape"
+    except WebDriverException:
+        logger.warning("Couldn't get device orientation. Assuming Portrait.")
+    finally:
+        if original_context is not None:
+            appium_driver.switch_to.context(original_context)
 
-        return False
+    return False
 
 
 def get_viewport_size_or_display_size(driver):

@@ -28,7 +28,7 @@ class EyesImagesScreenshot(EyesScreenshot):
         sub_screenshot_region = self.intersected_region(region, self.SCREENSHOT_AS_IS)
 
         if sub_screenshot_region.is_size_empty and (
-            throw_if_clipped or not sub_screenshot_region.size == region.size
+            throw_if_clipped or sub_screenshot_region.size != region.size
         ):
             raise OutOfBoundsError(
                 "Region [{}] is out of screenshot bounds [{}]".format(
@@ -61,17 +61,8 @@ class EyesImagesScreenshot(EyesScreenshot):
         if from_ == to:
             return result
 
-        if from_ == self.SCREENSHOT_AS_IS:
-            if to == self.CONTEXT_RELATIVE:
-                result = result.offset(self._bounds.left, self._bounds.top)
-            else:
-                raise CoordinatesTypeConversionError(from_, to)
-
-        elif from_ == self.SCREENSHOT_AS_IS:
-            if to == self.CONTEXT_RELATIVE:
-                result = result.offset(-self._bounds.left, -self._bounds.top)
-            else:
-                raise CoordinatesTypeConversionError(from_, to)
+        if from_ == self.SCREENSHOT_AS_IS and to == self.CONTEXT_RELATIVE:
+            result = result.offset(self._bounds.left, self._bounds.top)
         else:
             raise CoordinatesTypeConversionError(from_, to)
 

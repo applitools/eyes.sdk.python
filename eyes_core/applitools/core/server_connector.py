@@ -426,8 +426,7 @@ class ServerConnector(object):
             data=data,
             headers=headers,
         )
-        match_result = json_utils.attr_from_response(response, MatchResult)
-        return match_result
+        return json_utils.attr_from_response(response, MatchResult)
 
     def post_dom_snapshot(self, dom_json):
         # type: (Text) -> Optional[Text]

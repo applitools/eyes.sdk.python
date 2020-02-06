@@ -4,10 +4,6 @@ from typing import TYPE_CHECKING, Optional
 from applitools.common import Point, Region, logger
 from applitools.common.utils import image_utils
 from applitools.selenium import eyes_selenium_utils
-from applitools.selenium.eyes_selenium_utils import (
-    get_cur_position_provider,
-    get_updated_scroll_position,
-)
 
 if TYPE_CHECKING:
     from PIL import Image
@@ -44,11 +40,7 @@ def cut_to_viewport_size_if_required(driver, image):
     # So we cut such images to viewport size
 
     cur_position = driver.eyes._original_scroll_position
-    if cur_position:
-        top = cur_position.y
-    else:
-        top = 0
-
+    top = cur_position.y if cur_position else 0
     screenshot_type = update_screenshot_type(None, image, driver)
     if screenshot_type != ScreenshotType.VIEWPORT:
         viewport_size = driver.eyes.viewport_size

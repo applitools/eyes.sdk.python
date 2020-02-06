@@ -187,13 +187,12 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         :return: The current application environment.
         """
 
-        app_env = AppEnvironment(
+        return AppEnvironment(
             os=self.configure.host_os,
             hosting_app=self.configure.host_app,
             display_size=self.configure.viewport_size,
             inferred=self._inferred_environment,
         )
-        return app_env
 
     @property
     def scale_ratio(self):
@@ -360,7 +359,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                     return results
                 except EyesError as e:
                     logger.info("Failed to abort server session: %s " % e)
-                    pass
                 finally:
                     self._running_session = None
         finally:
@@ -644,7 +642,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
-        result = self._match_window_task.match_window(
+        return self._match_window_task.match_window(
             self._user_inputs,
             region,
             tag,
@@ -653,24 +651,24 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             check_settings,
             retry_timeout_ms,
         )
-        return result
 
     def __ensure_viewport_size(self):
         # type: () -> None
         """
         Assign the viewport size we need to be in the default content frame.
         """
-        if not self._is_viewport_size_set:
-            try:
-                if self.configure.viewport_size is None:
-                    # TODO: ignore if viewport_size settled explicitly
-                    target_size = self._get_viewport_size()
-                    self.configure.viewport_size = target_size
-                else:
-                    target_size = self.configure.viewport_size
-                    self._set_viewport_size(target_size)
-                self._is_viewport_size_set = True
-            except Exception as e:
-                logger.warning("Viewport has not been setup. {}".format(e))
-                self._is_viewport_size_set = False
-                raise e
+        if self._is_viewport_size_set:
+            return
+        try:
+            if self.configure.viewport_size is None:
+                # TODO: ignore if viewport_size settled explicitly
+                target_size = self._get_viewport_size()
+                self.configure.viewport_size = target_size
+            else:
+                target_size = self.configure.viewport_size
+                self._set_viewport_size(target_size)
+            self._is_viewport_size_set = True
+        except Exception as e:
+            logger.warning("Viewport has not been setup. {}".format(e))
+            self._is_viewport_size_set = False
+            raise e

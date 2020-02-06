@@ -475,7 +475,9 @@ class Region(DictAccessMixin):
         while not is_bottom_edge:
             current_scroll_top = scroll_y + max_sub_region_size.height
             if current_scroll_top >= self.height:
-                if not is_top_edge:
+                if is_top_edge:
+                    current_logical_height = self.height - current_top
+                else:
                     scroll_y = self.height - current_logical_height
                     current_logical_height = self.height - current_top
                     current_top = (
@@ -485,8 +487,6 @@ class Region(DictAccessMixin):
                         - logical_overlap
                         + scale_ratio_offset
                     )
-                else:
-                    current_logical_height = self.height - current_top
                 is_bottom_edge = True
 
             scroll_x = current_left = 0
@@ -500,7 +500,9 @@ class Region(DictAccessMixin):
             while not is_right_edge:
                 current_scroll_right = scroll_x + max_sub_region_size.width
                 if current_scroll_right >= self.width:
-                    if not is_left_edge:
+                    if is_left_edge:
+                        current_logical_width = self.width - current_left
+                    else:
                         scroll_x = self.width - current_logical_width
                         current_logical_width = self.width - current_left
                         current_left = (
@@ -510,8 +512,6 @@ class Region(DictAccessMixin):
                             - logical_overlap
                             + scale_ratio_offset
                         )
-                    else:
-                        current_logical_width = self.width - current_left
                     is_right_edge = True
 
                 physical_crop_area = Region.from_(physical_rect_in_screenshot)
