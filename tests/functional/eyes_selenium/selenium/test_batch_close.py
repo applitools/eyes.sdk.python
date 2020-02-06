@@ -11,7 +11,7 @@ def batch_close_enabled(batch_info):
 
 
 def test_batch_close(eyes, driver):
-    driver.get("https://www.facebook.com/")
-    eyes.open(driver, "TestAp", "TestName")
+    driver.get("https://demo.applitools.com")
+    eyes.open(driver, "TestBatchNotificationApp", "TestBatchClose")
     eyes.check_window()
     eyes.close(False)
