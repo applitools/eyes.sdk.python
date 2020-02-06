@@ -1,9 +1,9 @@
-from typing import Text, List, Union
+from typing import Text, List, Union, Optional
 
 import attr
 import requests
 
-from applitools.common import EyesError
+from applitools.common import EyesError, BatchInfo
 from applitools.common.config import DEFAULT_SERVER_URL
 from applitools.common.utils import urljoin
 from applitools.common.utils.general_utils import get_env_with_prefix
@@ -11,9 +11,9 @@ from applitools.common.utils.general_utils import get_env_with_prefix
 
 @attr.s
 class _EnabledBatchClose(object):
-    _ids = attr.ib()
-    _server_url = attr.ib()
-    _api_key = attr.ib()
+    _ids = attr.ib()  # type: List[BatchInfo]
+    _server_url = attr.ib()  # type: Text
+    _api_key = attr.ib()  # type: Text
 
     def close(self):
         if get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES") in [
@@ -35,8 +35,10 @@ class _EnabledBatchClose(object):
 
 @attr.s
 class BatchClose(object):
-    api_key = attr.ib(factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None))
-    server_url = attr.ib(default=DEFAULT_SERVER_URL)
+    api_key = attr.ib(
+        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
+    )  # type: Optional[Text]
+    server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
 
     def set_url(self, url):
         self.server_url = url
