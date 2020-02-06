@@ -9,6 +9,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
+from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -48,7 +49,9 @@ class BatchInfo(object):
         self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
         self.started_at = datetime.now(UTC)
         self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
-        self.notify_on_completion = get_env_with_prefix("APPLITOOLS_BATCH_NOTIFY")
+        self.notify_on_completion = str2bool(
+            get_env_with_prefix("APPLITOOLS_BATCH_NOTIFY")
+        )
 
         if name:
             self.name = name

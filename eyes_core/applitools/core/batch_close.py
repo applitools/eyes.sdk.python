@@ -6,6 +6,7 @@ import requests
 from applitools.common import EyesError, BatchInfo
 from applitools.common.config import DEFAULT_SERVER_URL
 from applitools.common.utils import urljoin
+from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 
@@ -19,11 +20,7 @@ class _EnabledBatchClose(object):
         if self._api_key is None:
             print("WARNING: BatchClose wont be done cause no APPLITOOLS_API_KEY is set")
             return
-        dont_close_batches = get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")
-        if dont_close_batches and dont_close_batches.lower() in [
-            "1",
-            "true",
-        ]:
+        if str2bool(get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")):
             print("APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true.")
             return
         for batch_id in self._ids:
