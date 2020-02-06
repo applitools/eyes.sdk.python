@@ -9,7 +9,7 @@ from applitools.common.utils.general_utils import get_env_with_prefix
 
 
 @attr.s
-class EnabledBatchClose(object):
+class _EnabledBatchClose(object):
     _ids = attr.ib()
     _server_url = attr.ib()
     _api_key = attr.ib()
@@ -46,7 +46,7 @@ class BatchClose(object):
         return self
 
     def set_batch_ids(self, *ids):
-        # type: (Union[*Text, List[Text]]) -> EnabledBatchClose
+        # type: (Union[*Text, List[Text]]) -> _EnabledBatchClose
         if isinstance(ids[0], list):
             ids = ids[0]
         if self.api_key is None:
@@ -54,4 +54,4 @@ class BatchClose(object):
                 "API key not set! Log in to https://applitools.com to obtain your"
                 " API Key and use 'api_key' to set it."
             )
-        return EnabledBatchClose(ids, self.server_url, self.api_key)
+        return _EnabledBatchClose(ids, self.server_url, self.api_key)
