@@ -3,7 +3,7 @@ from typing import Text, List, Union
 import attr
 import requests
 
-from applitools.common import logger, EyesError
+from applitools.common import EyesError
 from applitools.common.utils import urljoin
 from applitools.common.utils.general_utils import get_env_with_prefix
 
@@ -20,18 +20,16 @@ class EnabledBatchClose(object):
             "true",
             "True",
         ]:
-            logger.info(
-                "APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true."
-            )
+            print("APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true.")
             return
         for batch_id in self._ids:
-            logger.info("called with {}".format(batch_id))
+            print("close batch called with {}".format(batch_id))
             url = urljoin(
                 self._server_url,
                 "api/sessions/batches/{}/close/bypointerid".format(batch_id),
             )
             res = requests.delete(url, params={"apiKey": self._api_key}, verify=False)
-            logger.info("delete batch is done with {} status".format(res.status_code))
+            print("delete batch is done with {} status".format(res.status_code))
 
 
 @attr.s
