@@ -4,6 +4,7 @@ import attr
 import requests
 
 from applitools.common import EyesError
+from applitools.common.config import DEFAULT_SERVER_URL
 from applitools.common.utils import urljoin
 from applitools.common.utils.general_utils import get_env_with_prefix
 
@@ -35,7 +36,7 @@ class _EnabledBatchClose(object):
 @attr.s
 class BatchClose(object):
     api_key = attr.ib(factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None))
-    server_url = attr.ib(default="https://eyesapi.applitools.com")
+    server_url = attr.ib(default=DEFAULT_SERVER_URL)
 
     def set_url(self, url):
         self.server_url = url
