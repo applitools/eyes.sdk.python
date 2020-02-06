@@ -16,10 +16,13 @@ class _EnabledBatchClose(object):
     _api_key = attr.ib()  # type: Text
 
     def close(self):
-        if get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES") in [
+        if self._api_key is None:
+            print("WARNING: BatchClose wont be done cause no APPLITOOLS_API_KEY is set")
+            return
+        dont_close_batches = get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")
+        if dont_close_batches and dont_close_batches.lower() in [
             "1",
             "true",
-            "True",
         ]:
             print("APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true.")
             return
@@ -52,9 +55,4 @@ class BatchClose(object):
         # type: (Union[*Text, List[Text]]) -> _EnabledBatchClose
         if isinstance(ids[0], list):
             ids = ids[0]
-        if self.api_key is None:
-            raise EyesError(
-                "API key not set! Log in to https://applitools.com to obtain your"
-                " API Key and use 'api_key' to set it."
-            )
         return _EnabledBatchClose(ids, self.server_url, self.api_key)
