@@ -4,8 +4,8 @@ from applitools.core import BatchClose
 
 
 @pytest.fixture(autouse=True)
-def batch_close_enabled(eyes_config):
-    batch_enabled = BatchClose().set_batch_ids(eyes_config.batch.id)
+def batch_close_enabled(batch_info):
+    batch_enabled = BatchClose().set_batch_ids(batch_info.id)
     yield
     batch_enabled.close()
 
