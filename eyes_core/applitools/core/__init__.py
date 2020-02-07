@@ -33,6 +33,7 @@ from .scaling import (
 )
 from .server_connector import ServerConnector
 from .triggers import MouseTrigger, TextTrigger
+from .batch_close import BatchClose
 
 __all__ = (
     "TextTrigger",
@@ -65,4 +66,5 @@ __all__ = (
     "EyesScreenshotFactory",
     "ImageProvider",
     "EyesRunner",
+    "BatchClose",
 )

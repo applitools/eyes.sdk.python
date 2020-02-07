@@ -34,7 +34,7 @@ def eyes_config(eyes_config_base):
     return eyes_config_base
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def batch_info():
     return BatchInfo(os.getenv("APPLITOOLS_BATCH_NAME", "Python SDK"))
 

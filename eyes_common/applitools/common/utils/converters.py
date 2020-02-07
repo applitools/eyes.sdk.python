@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from datetime import datetime
 from enum import Enum
-from typing import Union
+from typing import Union, Text
 
 
 def value_from_enum(e):
@@ -18,3 +18,10 @@ def isoformat(d):
 def round_converter(x):
     # type: (float) -> int
     return int(round(x))
+
+
+def str2bool(v):
+    # type: (Text) -> bool
+    if v is None:
+        return False
+    return v.lower() in ("yes", "true", "t", "1")
