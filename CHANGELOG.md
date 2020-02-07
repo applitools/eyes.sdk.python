@@ -1,3 +1,9 @@
+# [4.1.12] - 2020-01-07
+## Update
+- Pin Appium Python Client to 4+ version
+- The ServerConnector now utilize HTTP Session [GitHub 101](https://github.com/applitools/eyes.sdk.python/pull/101)
+## Fixed
+- Wrong object inside TestsResults.steps_info
 ### Added
 - Batch Notifications [Trello 1380](https://trello.com/c/gare3CuF)
 
