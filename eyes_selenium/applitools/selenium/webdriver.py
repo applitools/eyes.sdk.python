@@ -303,7 +303,7 @@ class EyesWebDriver(object):
         self._default_content_viewport_size = None  # type: Optional[ViewPort]
 
         self.driver_takes_screenshot = driver.capabilities.get("takesScreenshot", False)
-        self.rotation = None
+        self.rotation = None  # type: Optional[int]
 
     @property
     def eyes(self):
@@ -363,7 +363,6 @@ class EyesWebDriver(object):
         argument_guard.not_none(image)
         normalized_image = image
         if rotation and rotation != 0:
-            argument_guard.is_a(rotation, int)
             normalized_image = image_utils.rotate_image(image, rotation)
         else:  # Do automatic rotation if necessary
             try:

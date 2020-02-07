@@ -98,10 +98,10 @@ class Eyes(EyesConfigurationMixin):
 
     @rotation.setter
     def rotation(self, rotation):
-        # type: (int) -> None
-        argument_guard.is_a(rotation, int)
+        # type: (Union[int,float]) -> None
+        argument_guard.is_in(rotation, [int, float])
         if self._selenium_eyes and self.driver:
-            self.driver.rotation = rotation
+            self.driver.rotation = int(rotation)
 
     @property
     def base_agent_id(self):

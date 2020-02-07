@@ -43,6 +43,7 @@ def test_set_env_params_in_batch_info():
             "APPLITOOLS_BATCH_NAME": "name",
             "APPLITOOLS_BATCH_ID": "id",
             "APPLITOOLS_BATCH_SEQUENCE": "sequence name",
+            "APPLITOOLS_BATCH_NOTIFY": "true",
         },
     ):
         bi = BatchInfo()
@@ -50,3 +51,4 @@ def test_set_env_params_in_batch_info():
     assert bi.name == "name"
     assert bi.id == "id"
     assert bi.sequence_name == "sequence name"
+    assert bi.notify_on_completion == True

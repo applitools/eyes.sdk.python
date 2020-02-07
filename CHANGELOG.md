@@ -1,5 +1,7 @@
 ### Fixed
 - DefaultMatchSettings being overridden incorrectly by ImageMatchSettings [Trello 1495](https://trello.com/c/KEbWXavV)
+### Added
+- Batch Notifications [Trello 1380](https://trello.com/c/gare3CuF)
 
 ## [4.1.11] - 2020-01-30
 ### Updated
