@@ -46,11 +46,11 @@ def test_perform_match_with_no_regions(
         match_window_data.options.image_match_settings.match_level == MatchLevel.STRICT
     )
     assert match_window_data.user_inputs == []
-    assert ims.ignore == []
-    assert ims.layout == []
-    assert ims.strict == []
-    assert ims.content == []
-    assert ims.floating == []
+    assert ims.ignore_regions == []
+    assert ims.layout_regions == []
+    assert ims.strict_regions == []
+    assert ims.content_regions == []
+    assert ims.floating_match_settings == []
 
 
 def test_perform_match_collect_regions_from_screenshot(
@@ -78,11 +78,11 @@ def test_perform_match_collect_regions_from_screenshot(
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
         ims = match_window_data.options.image_match_settings
 
-    assert ims.content == [content_region]
+    assert ims.content_regions == [content_region]
     assert ims.match_level == MatchLevel.CONTENT
-    assert ims.ignore == [ignore_region]
+    assert ims.ignore_regions == [ignore_region]
 
-    assert ims.floating == [
+    assert ims.floating_match_settings == [
         FloatingMatchSettings(
             region=floating_region,
             bounds=FloatingBounds(

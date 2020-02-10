@@ -93,19 +93,13 @@ class Configuration(object):
     host_os = attr.ib(default=None)  # type: Optional[Text]
     properties = attr.ib(factory=list)  # type: List[Dict[Text, Text]]
     match_timeout = attr.ib(default=DEFAULT_MATCH_TIMEOUT_MS)  # type: int # ms
-    match_level = attr.ib(
-        default=MatchLevel.STRICT, converter=MatchLevel
-    )  # type: MatchLevel
     is_disabled = attr.ib(default=False)  # type: bool
-    ignore_displacements = attr.ib(default=False)  # type: bool
     save_new_tests = attr.ib(default=True)  # type: bool
     save_failed_tests = attr.ib(default=False)  # type: bool
     failure_reports = attr.ib(default=FailureReports.ON_CLOSE)  # type: FailureReports
     send_dom = attr.ib(default=True)  # type: bool
-    use_dom = attr.ib(default=False)  # type: bool
-    enable_patterns = attr.ib(default=False)  # type: bool
     default_match_settings = attr.ib(
-        default=ImageMatchSettings()
+        factory=ImageMatchSettings
     )  # type: ImageMatchSettings
     stitch_overlap = attr.ib(default=5)  # type: int
 
@@ -116,6 +110,38 @@ class Configuration(object):
         factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
+
+    @property
+    def enable_patterns(self):
+        return self.default_match_settings.enable_patterns
+
+    @enable_patterns.setter
+    def enable_patterns(self, value):
+        self.default_match_settings.enable_patterns = value
+
+    @property
+    def use_dom(self):
+        return self.default_match_settings.use_dom
+
+    @use_dom.setter
+    def use_dom(self, value):
+        self.default_match_settings.use_dom = value
+
+    @property
+    def match_level(self):
+        return self.default_match_settings.match_level
+
+    @match_level.setter
+    def match_level(self, value):
+        self.default_match_settings.match_level = value
+
+    @property
+    def ignore_displacements(self):
+        return self.default_match_settings.ignore_displacements
+
+    @ignore_displacements.setter
+    def ignore_displacements(self, value):
+        self.default_match_settings.ignore_displacements = value
 
     def set_batch(self, batch):
         # type: (Self, BatchInfo) -> Self
@@ -257,6 +283,11 @@ class Configuration(object):
     def set_server_url(self, server_url):
         # type: (Self, Text) -> Self
         self.server_url = server_url
+        return self
+
+    def set_default_match_settings(self, default_match_settings):
+        # type: (Self, ImageMatchSettings) -> Self
+        self.default_match_settings = default_match_settings
         return self
 
     @match_timeout.validator

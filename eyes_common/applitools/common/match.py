@@ -39,6 +39,12 @@ class MatchLevel(Enum):
     EXACT = "Exact"
 
 
+class AccessibilityLevel(Enum):
+    NONE = "None"
+    AA = "AA"
+    AAA = "AAA"
+
+
 @attr.s
 class MatchResult(object):
     as_expected = attr.ib(
@@ -88,10 +94,28 @@ class ExactMatchSettings(object):
     Encapsulates settings for the :py:class:`MatchLevel.EXACT`.
     """
 
-    min_diff_intensity = attr.ib()  # type: int
-    min_diff_width = attr.ib()  # type: int
-    min_diff_height = attr.ib()  # type: int
-    match_threshold = attr.ib()  # type: float
+    min_diff_intensity = attr.ib(
+        default=0, metadata={JsonInclude.NON_NONE: True}
+    )  # type: int
+    min_diff_width = attr.ib(
+        default=0, metadata={JsonInclude.NON_NONE: True}
+    )  # type: int
+    min_diff_height = attr.ib(
+        default=0, metadata={JsonInclude.NON_NONE: True}
+    )  # type: int
+    match_threshold = attr.ib(
+        default=0, metadata={JsonInclude.NON_NONE: True}
+    )  # type: float
+
+    @classmethod
+    def create_from(cls, other):
+        # type: (ExactMatchSettings) -> ExactMatchSettings
+        return ExactMatchSettings(
+            min_diff_intensity=other.min_diff_intensity,
+            min_diff_width=other.min_diff_width,
+            min_diff_height=other.min_diff_height,
+            match_threshold=other.match_threshold,
+        )
 
 
 @attr.s
@@ -109,41 +133,54 @@ class ImageMatchSettings(object):
     ignore_caret = attr.ib(
         default=False, metadata={JsonInclude.THIS: True}
     )  # type:bool
-    send_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})  # type:bool
-    use_dom = attr.ib(default=False, metadata={JsonInclude.THIS: True})  # type:bool
+    use_dom = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
     enable_patterns = attr.ib(
-        default=False, metadata={JsonInclude.THIS: True}
-    )  # type:bool
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[bool]
     ignore_displacements = attr.ib(
         default=False, metadata={JsonInclude.THIS: True}
-    )  # type:bool
-
-    ignore = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[Region]
-    layout = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[Region]
-    strict = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[Region]
-    content = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[Region]
-    floating = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[Region]
+    )  # type:Optional[bool]
+    ignore_regions = attr.ib(
+        factory=list, metadata={JsonInclude.NAME: "Ignore"}
+    )  # type: Optional[List[Region]]
+    layout_regions = attr.ib(
+        factory=list, metadata={JsonInclude.NAME: "Layout"}
+    )  # type: Optional[List[Region]]
+    strict_regions = attr.ib(
+        factory=list, metadata={JsonInclude.NAME: "Strict"}
+    )  # type: Optional[List[Region]]
+    content_regions = attr.ib(
+        factory=list, metadata={JsonInclude.NAME: "Content"}
+    )  # type: Optional[List[Region]]
+    floating_match_settings = attr.ib(
+        factory=list, metadata={JsonInclude.NAME: "Floating"}
+    )  # type: Optional[List[FloatingMatchSettings]]
+    # TODO: implement accessibility region
+    # accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
+    # accessibility_level = attr.ib(
+    #     metadata={JsonInclude.THIS: True}
+    # )  # type: AccessibilityLevel
 
     @classmethod
-    def create_from_check_settings(cls, check_settings):
-        return ImageMatchSettings(
-            match_level=check_settings.values.match_level,
-            ignore_caret=check_settings.values.ignore_caret,
-            send_dom=check_settings.values.send_dom,
-            use_dom=check_settings.values.use_dom,
-            enable_patterns=check_settings.values.enable_patterns,
-            ignore_displacements=check_settings.values.ignore_displacements,
+    def create_from(cls, other):
+        # type: (ImageMatchSettings) -> ImageMatchSettings
+        img = ImageMatchSettings(
+            match_level=other.match_level,
+            exact=ExactMatchSettings.create_from(other.exact) if other.exact else None,
+            use_dom=other.use_dom,
         )
+        img.ignore_caret = other.ignore_caret
+        img.ignore_regions = other.ignore_regions
+        img.layout_regions = other.layout_regions
+        img.strict_regions = other.strict_regions
+        img.content_regions = other.content_regions
+        img.floating_match_settings = other.floating_match_settings
+        img.enable_patterns = other.enable_patterns
+        img.ignore_displacements = other.ignore_displacements
+
+        return img
 
 
 @attr.s(slots=True)

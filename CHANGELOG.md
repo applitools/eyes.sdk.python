@@ -1,3 +1,6 @@
+### Fixed
+- DefaultMatchSettings being overridden incorrectly by ImageMatchSettings [Trello 1495](https://trello.com/c/KEbWXavV)
+
 # [4.1.12] - 2020-01-07
 ## Update
 - Pin Appium Python Client to 4+ version

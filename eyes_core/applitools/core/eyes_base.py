@@ -66,20 +66,6 @@ class _EyesBaseAbstract(ABC):
         # type: (...) -> EyesScreenshot
         pass
 
-    @abc.abstractmethod
-    def get_viewport_size(self):
-        # type: () -> RectangleSize
-        """
-        :return: The viewport size of the AUT.
-        """
-
-    @abc.abstractmethod
-    def set_viewport_size(self, size):
-        # type: (ViewPort) -> None
-        """
-        :param size: The required viewport size.
-        """
-
     @property
     @abc.abstractmethod
     def _title(self):
@@ -655,8 +641,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
-        check_settings = self._process_check_settings_values(check_settings)
-
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
@@ -670,31 +654,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             retry_timeout_ms,
         )
         return result
-
-    def _process_check_settings_values(self, check_settings):
-        get_config_value = general_utils.use_default_if_none_factory(
-            self.configure.default_match_settings, self.configure
-        )
-        # Set defaults if necessary
-        if check_settings.values.match_level is None:
-            check_settings = check_settings.match_level(get_config_value("match_level"))
-        if check_settings.values.ignore_caret is None:
-            check_settings = check_settings.ignore_caret(
-                get_config_value("ignore_caret")
-            )
-        if check_settings.values.send_dom is None:
-            check_settings = check_settings.send_dom(get_config_value("send_dom"))
-        if check_settings.values.use_dom is None:
-            check_settings = check_settings.use_dom(get_config_value("use_dom"))
-        if check_settings.values.enable_patterns is None:
-            check_settings = check_settings.enable_patterns(
-                get_config_value("enable_patterns")
-            )
-        if check_settings.values.ignore_displacements is None:
-            check_settings = check_settings.ignore_displacements(
-                self.configure.default_match_settings.ignore_displacements
-            )
-        return check_settings
 
     def __ensure_viewport_size(self):
         # type: () -> None
