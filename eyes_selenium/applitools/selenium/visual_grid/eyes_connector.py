@@ -191,19 +191,18 @@ class EyesConnector(EyesBase):
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
-        check_settings = self._process_check_settings_values(check_settings)
-
         region = region_provider.get_region()
         logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
 
         app_output = self._get_app_output_with_screenshot(None, None, check_settings)
-        result = self._match_window_task.perform_match(
+        image_match_settings = self._match_window_task.create_image_match_settings(
+            check_settings, self
+        )
+        return self._match_window_task.perform_match(
             app_output=app_output,
             name=tag,
             ignore_mismatch=ignore_mismatch,
-            image_match_settings=ImageMatchSettings.create_from_check_settings(
-                check_settings
-            ),
+            image_match_settings=image_match_settings,
             eyes=self,
             user_inputs=self._user_inputs,
             check_settings=check_settings,
@@ -211,7 +210,6 @@ class EyesConnector(EyesBase):
             region_selectors=self._region_selectors,
             regions=self._regions,
         )
-        return result
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
         # type: (None, None, SeleniumCheckSettings)->AppOutputWithScreenshot

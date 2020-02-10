@@ -8,7 +8,7 @@ from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import datetime_utils, image_utils
+from applitools.common.utils import datetime_utils, image_utils, general_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
@@ -72,10 +72,10 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     # if mutable_regions[5]:
     #     location = mutable_regions[5][0].location
 
-    image_match_settings.ignore = mutable_regions[0]
-    image_match_settings.layout = mutable_regions[1]
-    image_match_settings.strict = mutable_regions[2]
-    image_match_settings.content = mutable_regions[3]
+    image_match_settings.ignore_regions = mutable_regions[0]
+    image_match_settings.layout_regions = mutable_regions[1]
+    image_match_settings.strict_regions = mutable_regions[2]
+    image_match_settings.content_regions = mutable_regions[3]
 
     # TODO: Implement floating regions
     floating_match_settings = []
@@ -87,7 +87,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         if isinstance(gfr, GetFloatingRegion):
             fms = FloatingMatchSettings(reg, gfr.bounds)
             floating_match_settings.append(fms)
-    image_match_settings.floating = floating_match_settings
+    image_match_settings.floating_match_settings = floating_match_settings
     return image_match_settings
 
 
@@ -96,19 +96,19 @@ def collect_regions_from_screenshot(
 ):
     # type: (CheckSettings, ImageMatchSettings, EyesScreenshot, EyesBase) -> ImageMatchSettings
 
-    image_match_settings.ignore = _collect_regions(  # type: ignore
+    image_match_settings.ignore_regions = _collect_regions(  # type: ignore
         check_settings.values.ignore_regions, screenshot, eyes
     )
-    image_match_settings.layout = _collect_regions(  # type: ignore
+    image_match_settings.layout_regions = _collect_regions(  # type: ignore
         check_settings.values.layout_regions, screenshot, eyes
     )
-    image_match_settings.strict = _collect_regions(  # type: ignore
+    image_match_settings.strict_regions = _collect_regions(  # type: ignore
         check_settings.values.strict_regions, screenshot, eyes
     )
-    image_match_settings.content = _collect_regions(  # type: ignore
+    image_match_settings.content_regions = _collect_regions(  # type: ignore
         check_settings.values.content_regions, screenshot, eyes
     )
-    image_match_settings.floating = _collect_regions(  # type: ignore
+    image_match_settings.floating_match_settings = _collect_regions(  # type: ignore
         check_settings.values.floating_regions, screenshot, eyes
     )
     return image_match_settings
@@ -147,8 +147,29 @@ class MatchWindowTask(object):
         self._app_output_provider = app_output_provider
         self._default_retry_timeout_ms = retry_timeout_ms  # type: Num
 
-        self._match_result = None  # type: MatchResult
+        self._match_result = None  # type: Optional[MatchResult]
         self._last_screenshot = None  # type: Optional[EyesScreenshot]
+
+    @staticmethod
+    def create_image_match_settings(check_settings, eyes, screenshot=None):
+        # type: (CheckSettings, EyesBase, Options[EyesScreenshot])-> ImageMatchSettings
+        img = ImageMatchSettings.create_from(eyes.configure.default_match_settings)
+
+        # Set defaults if necessary
+        if check_settings.values.match_level is not None:
+            img.match_level = check_settings.values.match_level
+        if check_settings.values.ignore_caret is not None:
+            img.ignore_caret = check_settings.values.ignore_caret
+        if check_settings.values.use_dom is not None:
+            img.use_dom = check_settings.values.use_dom
+        if check_settings.values.enable_patterns is not None:
+            img.enable_patterns = check_settings.values.enable_patterns
+        if check_settings.values.ignore_displacements is not None:
+            img.ignore_displacements = check_settings.values.ignore_displacements
+
+        if screenshot:
+            img = collect_regions_from_screenshot(check_settings, img, screenshot, eyes)
+        return img
 
     @property
     def last_screenshot(self):
@@ -334,8 +355,8 @@ class MatchWindowTask(object):
         app_output = self._app_output_provider.get_app_output(
             region, self._last_screenshot, check_settings
         )
-        image_match_settings = ImageMatchSettings.create_from_check_settings(
-            check_settings
+        image_match_settings = self.create_image_match_settings(
+            check_settings, self._eyes
         )
         self._match_result = self.perform_match(
             app_output,

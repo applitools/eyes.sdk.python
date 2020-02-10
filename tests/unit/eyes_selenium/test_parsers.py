@@ -1,15 +1,6 @@
 from applitools.selenium import parsers
 
-from os import path
-
-tests_dir = path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
-
-
-def get_resource(name):
-    resource_dir = path.join(tests_dir, "resources")
-    pth = path.join(resource_dir, name)
-    with open(pth, "rb") as f:
-        return f.read()
+from tests.utils import get_resource
 
 
 def test_parse_valid_svg():

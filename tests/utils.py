@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from copy import copy
+from os import path
 
 from distutils.util import strtobool
 from typing import Text, Dict
@@ -21,6 +22,7 @@ REPORT_DATA = {
     "mandatory": False,
     "results": [],
 }
+TESTS_DIR = path.dirname(path.abspath(__file__))
 
 
 def prepare_result_data(test_name, passed, parameters):
@@ -71,3 +73,10 @@ def get_session_results(api_key, results):
         verify=False,
     )
     return resp.json()
+
+
+def get_resource(name):
+    resource_dir = path.join(TESTS_DIR, "resources")
+    pth = path.join(resource_dir, name)
+    with open(pth, "rb") as f:
+        return f.read()
