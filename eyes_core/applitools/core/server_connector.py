@@ -161,6 +161,7 @@ class _RequestCommunicator(object):
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
         kwargs["headers"] = headers
         response = self.request(method, url_resource, **kwargs)
+        logger.debug("Long request `{}` for {}".format(method, response.url))
         return self._long_request_check_status(response)
 
     def _long_request_check_status(self, response):
