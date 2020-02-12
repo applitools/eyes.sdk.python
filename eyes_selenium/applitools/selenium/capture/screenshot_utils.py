@@ -73,10 +73,12 @@ def calc_frame_location_in_screenshot(driver, frame_chain, screenshot_type):
     location_in_screenshot = Point.from_(first_frame.location)
 
     # We only need to consider the scroll of the default content if the screenshot is a
-    # viewport screenshot.If this is a full page screenshot, the frame location will not
-    # change anyway.
+    # viewport screenshot. If this is a full page screenshot, the frame location will
+    # not change anyway.
     if screenshot_type == ScreenshotType.VIEWPORT:
-        location_in_screenshot = location_in_screenshot.offset(-window_scroll)
+        location_in_screenshot = location_in_screenshot.offset(
+            Point(-window_scroll.x, 0)
+        )
 
     # For inner frames we must calculate the scroll
     inner_frames = frame_chain[1:]
