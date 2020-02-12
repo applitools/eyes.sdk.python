@@ -1,3 +1,4 @@
+# [4.1.14] - 2020-02-12
 ### Fixed
 - Python SDK crashed on get RenderInfo with new server version [Trello 1555](https://trello.com/c/8DppLbN7)
 
