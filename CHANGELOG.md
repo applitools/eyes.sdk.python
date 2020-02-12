@@ -1,5 +1,8 @@
+### Updated
+- Allow to set api_key and server_url after set_batch_ids in BatchClose [GitHub 106](https://github.com/applitools/eyes.sdk.python/pull/106)
 ### Fixed
 - DefaultMatchSettings being overridden incorrectly by ImageMatchSettings [Trello 1495](https://trello.com/c/KEbWXavV)
+- "Got an empty screenshot window!" with viewport screenshot [GitHub 107](https://github.com/applitools/eyes.sdk.python/pull/107)
 
 # [4.1.12] - 2020-01-07
 ## Update
