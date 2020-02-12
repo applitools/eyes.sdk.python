@@ -13,11 +13,21 @@ from applitools.common.utils.general_utils import get_env_with_prefix
 @attr.s
 class _EnabledBatchClose(object):
     _ids = attr.ib()  # type: List[BatchInfo]
-    _server_url = attr.ib()  # type: Text
-    _api_key = attr.ib()  # type: Text
+    server_url = attr.ib()  # type: Text
+    api_key = attr.ib()  # type: Text
+
+    def set_url(self, url):
+        # type: (Text) -> _EnabledBatchClose
+        self.server_url = url
+        return self
+
+    def set_api_key(self, api_key):
+        # type: (Text) -> _EnabledBatchClose
+        self.api_key = api_key
+        return self
 
     def close(self):
-        if self._api_key is None:
+        if self.api_key is None:
             print("WARNING: BatchClose wont be done cause no APPLITOOLS_API_KEY is set")
             return
         if str2bool(get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")):
@@ -26,10 +36,10 @@ class _EnabledBatchClose(object):
         for batch_id in self._ids:
             print("close batch called with {}".format(batch_id))
             url = urljoin(
-                self._server_url,
+                self.server_url,
                 "api/sessions/batches/{}/close/bypointerid".format(batch_id),
             )
-            res = requests.delete(url, params={"apiKey": self._api_key}, verify=False)
+            res = requests.delete(url, params={"apiKey": self.api_key}, verify=False)
             print("delete batch is done with {} status".format(res.status_code))
 
 
@@ -41,10 +51,12 @@ class BatchClose(object):
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
 
     def set_url(self, url):
+        # type: (Text) -> BatchClose
         self.server_url = url
         return self
 
     def set_api_key(self, api_key):
+        # type: (Text) -> BatchClose
         self.api_key = api_key
         return self
 
