@@ -1,10 +1,14 @@
+### Fixed
+- Python SDK crashed on get RenderInfo with new server version [Trello 1555](https://trello.com/c/8DppLbN7)
+
+# [4.1.13] - 2020-02-12
 ### Updated
 - Allow to set api_key and server_url after set_batch_ids in BatchClose [GitHub 106](https://github.com/applitools/eyes.sdk.python/pull/106)
 ### Fixed
 - DefaultMatchSettings being overridden incorrectly by ImageMatchSettings [Trello 1495](https://trello.com/c/KEbWXavV)
 - "Got an empty screenshot window!" with viewport screenshot [GitHub 107](https://github.com/applitools/eyes.sdk.python/pull/107)
 
-# [4.1.12] - 2020-01-07
+# [4.1.12] - 2020-02-07
 ## Update
 - Pin Appium Python Client to 4+ version
 - The ServerConnector now utilize HTTP Session [GitHub 101](https://github.com/applitools/eyes.sdk.python/pull/101)

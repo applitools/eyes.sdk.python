@@ -65,7 +65,8 @@ def custom_eyes_server():
 
 
 class MockResponse(object):
-    def __init__(self, json_data, status_code, headers=None):
+    def __init__(self, url, json_data, status_code, headers=None):
+        self.url = url
         self.json_data = json_data
         self.status_code = status_code
         if headers is None:
@@ -122,36 +123,36 @@ def mocked_requests_delete(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA_RESPONSE_ID):
-        return MockResponse(STOP_SESSION_DATA, 200)
+        return MockResponse(url, STOP_SESSION_DATA, 200)
     elif url == LONG_REQUEST_RESPONSE_URL:
-        return MockResponse({}, 200)
-    return MockResponse(None, 404)
+        return MockResponse(url, {}, 200)
+    return MockResponse(url, None, 404)
 
 
 def mocked_requests_get(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == RENDER_INFO_PATH_URL:
-        return MockResponse(RENDERING_INFO_DATA, 200)
+        return MockResponse(url, RENDERING_INFO_DATA, 200)
     if url == LONG_REQUEST_URL:
-        return MockResponse(None, 202, {"Location": LONG_REQUEST_RESPONSE_URL})
+        return MockResponse(url, None, 202, {"Location": LONG_REQUEST_RESPONSE_URL})
     if url == LONG_REQUEST_RESPONSE_URL:
-        return MockResponse(None, 201, {"Location": LONG_REQUEST_RESPONSE_URL})
-    return MockResponse(None, 404)
+        return MockResponse(url, None, 201, {"Location": LONG_REQUEST_RESPONSE_URL})
+    return MockResponse(url, None, 404)
 
 
 def mocked_requests_post(*args, **kwargs):
     _request_check(*args, **kwargs)
     url = args[0]
     if url == RUNNING_SESSION_URL:
-        return MockResponse(RUNNING_SESSION_DATA_RESPONSE, 201)
+        return MockResponse(url, RUNNING_SESSION_DATA_RESPONSE, 201)
     elif url == urljoin(RUNNING_SESSION_URL, RUNNING_SESSION_DATA_RESPONSE_ID):
-        return MockResponse('{"asExpected": true}', 200)
+        return MockResponse(url, '{"asExpected": true}', 200)
     elif url == RUNNING_SESSION_DATA_URL:
         return MockResponse(
-            {}, 200, headers={"Location": RUNNING_SESSION_DATA_RESPONSE_URL}
+            url, {}, 200, headers={"Location": RUNNING_SESSION_DATA_RESPONSE_URL}
         )
-    return MockResponse(None, 404)
+    return MockResponse(url, None, 404)
 
 
 SESSION_START_INFO_DATA = """
@@ -336,7 +337,7 @@ def test_match_window_with_image_uploading(started_connector, server_status):
     ):
         with patch(
             "applitools.core.server_connector.ClientSession.put",
-            return_value=MockResponse(None, server_status),
+            return_value=MockResponse(None, None, server_status),
         ):
             with patch(
                 "applitools.core.server_connector.ClientSession.post",
@@ -432,7 +433,7 @@ def test_get_rendering_info(started_connector):
     assert render_info == RENDERING_OBJ
 
 
-@patch("requests.Session.request", return_value=MockResponse(None, 200))
+@patch("requests.Session.request", return_value=MockResponse(None, None, 200))
 @pytest.mark.parametrize("http_method", ALLOWED_HTTP_METHODS + FAKE_HTTP_METHODS)
 def test_http_methods(configured_connector, http_method):
     client_session = ClientSession()
@@ -442,3 +443,23 @@ def test_http_methods(configured_connector, http_method):
     else:
         with pytest.raises(ValueError):
             client_session.request(http_method, "http://httpbin.org/anything")
+
+
+@pytest.mark.parametrize(
+    "render_json",
+    [
+        '{"ServiceUrl": "url","AccessToken": "token","ResultsUrl": "result"}',
+        '{"ServiceUrl": "url","StitchingServiceUrl": "stitching"}',
+        '{"ServiceUrl": "url","ResultsUrl": "result"}',
+    ],
+)
+def test_parse_render_info_no_error(render_json):
+    ri = attr_from_json(render_json, RenderingInfo,)
+    if ri.service_url:
+        assert ri.service_url == "url"
+    if ri.access_token:
+        assert ri.access_token == "token"
+    if ri.results_url:
+        assert ri.results_url == "result"
+    if ri.stitching_service_url:
+        assert ri.stitching_service_url == "stitching"
