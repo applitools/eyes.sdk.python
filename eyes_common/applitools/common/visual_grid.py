@@ -60,9 +60,18 @@ class VGRegion(object):
 
 @attr.s(frozen=True)
 class RenderingInfo(object):
-    service_url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    access_token = attr.ib(repr=False, metadata={JsonInclude.THIS: True})  # type: Text
-    results_url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    service_url = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    access_token = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    results_url = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
+    stitching_service_url = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Text]
 
 
 class ScreenOrientation(Enum):
