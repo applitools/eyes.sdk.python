@@ -52,7 +52,6 @@ def test_eyes_none_runner(driver):
 def test_eyes_runner(driver, runner):
     eyes = Eyes(runner)
     eyes2 = Eyes(runner)
-    eyes.server_url = "https://eyes.applitools.com/"
 
     eyes.send_dom = True
     eyes2.send_dom = False
