@@ -89,7 +89,7 @@ def sleep(time_ms, msg=None, verbose=True):
     """
     time.sleep(to_sec(time_ms))
     if verbose:
-        logger.debug("Sleep for {} ms | {}".format(time_ms, msg if msg else ""))
+        logger.debug("Sleep for {} ms {}".format(time_ms, msg if msg else ""))
 
 
 def timeit(method):
