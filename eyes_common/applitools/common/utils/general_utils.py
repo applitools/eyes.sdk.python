@@ -122,7 +122,8 @@ def all_fields(obj):
     """
     if attr.has(obj):
         return list(attr.fields_dict(obj).keys())
-    return []
+    else:
+        return [f for f in vars(obj) if not f.startswith("_")]
 
 
 def get_env_with_prefix(env_name, default=None):

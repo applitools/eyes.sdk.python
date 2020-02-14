@@ -14,7 +14,7 @@ from applitools.common import RectangleSize, logger
 from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
-from applitools.common.utils.general_utils import proxy_to
+from applitools.common.utils.general_utils import proxy_to, all_fields
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
@@ -72,7 +72,7 @@ class FrameResolver(object):
         return frame_ref
 
 
-@proxy_to("_switch_to", ["alert", "active_element"])
+@proxy_to("_switch_to", all_fields(SwitchTo))
 class _EyesSwitchTo(object):
     """
     Wraps :py:class:`selenium.webdriver.remote.switch_to.SwitchTo` object, so we can
@@ -241,39 +241,7 @@ class _EyesSwitchTo(object):
             self._position_memento = None
 
 
-@proxy_to(
-    "_driver",
-    [
-        "application_cache",
-        "current_url",
-        "current_window_handle",
-        "desired_capabilities",
-        "log_types",
-        "name",
-        "page_source",
-        "title",
-        "window_handles",
-        "switch_to",
-        "mobile",
-        "current_context",
-        "context",
-        "current_activity",
-        "network_connection",
-        "available_ime_engines",
-        "active_ime_engine",
-        "device_time",
-        "w3c",
-        "contexts",
-        "current_package",
-        "battery_info",
-        "location",
-        "battery_info",
-        "location",
-        "orientation",
-        "file_detector",
-        "session_id",
-    ],
-)
+@proxy_to("_driver", all_fields(WebDriver))
 class EyesWebDriver(object):
     """
     A wrapper for selenium web driver which creates wrapped elements,
@@ -309,6 +277,10 @@ class EyesWebDriver(object):
     def eyes(self):
         # type: () -> Eyes
         return self._eyes
+
+    @property
+    def session_id(self):
+        return self._driver.session_id
 
     @cached_property
     def platform_name(self):

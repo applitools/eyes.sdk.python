@@ -5,16 +5,16 @@ import typing as tp
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.geometry import CoordinatesType, Point, Region
-from applitools.common.utils.general_utils import proxy_to
+from applitools.common.utils.general_utils import proxy_to, all_fields
 
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
     from typing import Optional, Text
-    from selenium.webdriver.remote.webelement import WebElement
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -73,43 +73,7 @@ _JS_GET_SIZE_AND_BORDER_WIDTHS = """
 )
 
 
-@proxy_to(
-    "_element",
-    [
-        "tag_name",
-        "text",
-        "submit",
-        "clear",
-        "get_property",
-        "get_attribute",
-        "is_selected",
-        "is_enabled",
-        "find_element_by_id",
-        "find_elements_by_id",
-        "find_element_by_name",
-        "find_elements_by_name",
-        "find_element_by_link_text",
-        "find_elements_by_link_text",
-        "find_element_by_partial_link_text",
-        "find_elements_by_partial_link_text",
-        "find_element_by_tag_name",
-        "find_elements_by_tag_name",
-        "find_element_by_xpath",
-        "find_elements_by_xpath",
-        "find_element_by_class_name",
-        "find_elements_by_class_name",
-        "find_element_by_css_selector",
-        "find_elements_by_css_selector",
-        "is_displayed",
-        "location_once_scrolled_into_view",
-        "parent",
-        "screenshot_as_base64",
-        "screenshot_as_png",
-        "screenshot",
-        "location_in_view",
-        "anonymous_children",
-    ],
-)
+@proxy_to("_element", all_fields(WebElement))
 class EyesWebElement(object):
     """
     A wrapper for selenium web element. This enables eyes to be notified
