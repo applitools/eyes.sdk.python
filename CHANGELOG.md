@@ -1,3 +1,6 @@
+## Fixed
+- execute_script of EyesWebDriver not work with EyesWebElement [Trello 112](https://trello.com/c/OrdYpmTj)
+
 # [4.1.14] - 2020-02-12
 ### Fixed
 - Python SDK crashed on get RenderInfo with new server version [Trello 1555](https://trello.com/c/8DppLbN7)
