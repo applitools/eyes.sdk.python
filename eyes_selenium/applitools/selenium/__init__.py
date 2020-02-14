@@ -18,6 +18,7 @@ from applitools.core.cut import (  # noqa
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
+from applitools.core.batch_close import BatchClose
 
 from .classic_runner import ClassicRunner  # noqa
 from .eyes import Eyes  # noqa
@@ -50,4 +51,5 @@ __all__ = (
     "TestResults",
     "TestResultContainer",
     "TestResultsSummary",
+    "BatchClose",
 )
