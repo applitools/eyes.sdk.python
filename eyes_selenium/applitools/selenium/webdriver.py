@@ -717,6 +717,14 @@ class EyesWebDriver(object):
         return _EyesSwitchTo(self, self._driver.switch_to)
 
     def execute_script(self, script, *args):
+        def extract_origin_webelement(value):
+            if isinstance(value, EyesWebElement):
+                return value.element
+            elif isinstance(value, list) or isinstance(value, tuple):
+                return list(extract_origin_webelement(item) for item in value)
+            return value
+
+        args = extract_origin_webelement(args)
         return self._driver.execute_script(script, *args)
 
     def get_window_size(self, windowHandle="current"):
