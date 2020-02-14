@@ -98,7 +98,7 @@ def eyes_opened(request, eyes, driver):
 
     eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
     yield eyes
-    eyes.close(False)
+    print(eyes.close(False))
 
 
 @pytest.yield_fixture(scope="function")

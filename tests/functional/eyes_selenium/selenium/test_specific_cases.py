@@ -1,7 +1,13 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.selenium import Region, StitchMode, Target
+from applitools.selenium import (
+    Region,
+    StitchMode,
+    Target,
+    EyesWebElement,
+    EyesWebDriver,
+)
 
 
 @pytest.mark.platform("Linux")
@@ -151,3 +157,15 @@ def test_region_selector_in_check_fluent_interface(eyes, driver):
     eyes.check("By CSS Selector", Target.region([By.CSS_SELECTOR, "#overflowing-div"]))
     eyes.check("By XPATH", Target.region([By.XPATH, '//*[@id="overflowing-div"]']))
     eyes.close()
+
+
+@pytest.mark.platform("Linux")
+@pytest.mark.browser("chrome")
+def test_execute_script_with_eyes_webelement(driver, eyes):
+    elem = driver.find_element_by_tag_name("html")
+    e_elem = EyesWebElement(elem, driver)
+    driver.execute_script("arguments[0].scrollIntoView();", elem)
+
+    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver.execute_script("arguments[0].scrollIntoView();", elem)
+    eyes_driver.execute_script("arguments[0].scrollIntoView();", e_elem)

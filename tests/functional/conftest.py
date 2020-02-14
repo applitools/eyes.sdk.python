@@ -20,8 +20,7 @@ def eyes_runner(eyes_runner_class):
     runner = eyes_runner_class()
     yield runner
     if runner:
-        results_summary = runner.get_all_test_results(False)
-        print(results_summary)
+        print(runner.get_all_test_results(False))
 
 
 @pytest.fixture
