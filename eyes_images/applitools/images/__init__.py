@@ -13,6 +13,7 @@ from applitools.core.cut import (
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
+from applitools.core.batch_close import BatchClose
 from applitools.images.fluent import Target
 
 from .eyes import Eyes
@@ -31,4 +32,5 @@ __all__ = (
     "TestResults",
     "TestResultContainer",
     "TestResultsSummary",
+    "BatchClose",
 )
