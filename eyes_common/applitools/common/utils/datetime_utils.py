@@ -1,3 +1,4 @@
+from typing import Optional
 import itertools
 import time
 from datetime import datetime, timedelta, tzinfo
