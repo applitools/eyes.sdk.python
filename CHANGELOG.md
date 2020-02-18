@@ -1,6 +1,7 @@
 ## Fixed
 - execute_script of EyesWebDriver not work with EyesWebElement [Trello 112](https://trello.com/c/OrdYpmTj)
 - The `TypeError: integer argument expected, got float` was raised in some cases  [Trello 1536](https://trello.com/c/ZgU3wMR8)
+- Set is_disabled cause an error [Trello 611](https://trello.com/c/eZBMTKHK)
 
 # [4.1.14] - 2020-02-12
 ### Fixed
