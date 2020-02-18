@@ -439,7 +439,9 @@ class SeleniumEyes(EyesBase):
                         )
 
                     if not self._effective_viewport.is_size_empty:
-                        self._region_to_check.intersect(self._effective_viewport)
+                        self._region_to_check = self._region_to_check.intersect(
+                            self._effective_viewport
+                        )
 
                     result = self._check_window_base(
                         NULL_REGION_PROVIDER, name, False, check_settings
@@ -521,7 +523,7 @@ class SeleniumEyes(EyesBase):
             )
             position_provider.set_position(child_frame.location)
             reg = Region.from_(Point.ZERO(), child_frame.inner_size)
-            self._effective_viewport.intersect(reg)
+            self._effective_viewport = self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(current_fc)
         return current_fc
 
