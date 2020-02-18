@@ -107,7 +107,7 @@ class EyesImagesScreenshot(EyesScreenshot):
         intersected_region = self.convert_region_location(
             region, region.coordinates_type, self.CONTEXT_RELATIVE
         )
-        intersected_region.intersect(self._bounds)
+        intersected_region = intersected_region.intersect(self._bounds)
 
         if region.is_size_empty:
             return region

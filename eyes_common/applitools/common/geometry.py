@@ -431,7 +431,7 @@ class Region(DictAccessMixin):
         )
 
     def intersect(self, other):
-        # type: (Region) -> None
+        # type: (Region) -> Region
         # If the regions don't overlap, the intersection is empty
         """
         Args:
@@ -446,9 +446,10 @@ class Region(DictAccessMixin):
         intersection_bottom = (
             self.bottom if self.bottom <= other.bottom else other.bottom
         )
-        self.left, self.top = intersection_left, intersection_top
-        self.width = intersection_right - intersection_left
-        self.height = intersection_bottom - intersection_top
+        left, top = intersection_left, intersection_top
+        width = intersection_right - intersection_left
+        height = intersection_bottom - intersection_top
+        return Region(left, top, width, height, self.coordinates_type)
 
     def get_sub_regions(  # noqa
         self,

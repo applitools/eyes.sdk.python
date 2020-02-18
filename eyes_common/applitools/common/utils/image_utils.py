@@ -132,7 +132,7 @@ def crop_image(image, region_to_crop):
     argument_guard.is_a(region_to_crop, Region)
 
     image_region = Region.from_(image)
-    image_region.intersect(region_to_crop)
+    image_region = image_region.intersect(region_to_crop)
     if image_region.is_size_empty:
         logger.warning(
             "requested cropped area results in zero-size image! "
