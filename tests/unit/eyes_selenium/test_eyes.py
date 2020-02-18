@@ -33,16 +33,6 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
 
 
-@pytest.fixture(scope="function")
-def eyes(request):
-    if request.param == "selenium":
-        return Eyes(ClassicRunner())
-    elif request.param == "visual_grid":
-        return Eyes(VisualGridRunner())
-    else:
-        raise ValueError("invalid internal test config")
-
-
 def test_set_get_scale_ratio(eyes):
     eyes.scale_ratio = 2.0
     if eyes._is_visual_grid_eyes:

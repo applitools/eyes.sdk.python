@@ -6,7 +6,6 @@ from appium import webdriver as appium_webdriver
 from selenium.common.exceptions import WebDriverException
 
 from applitools.common import BatchInfo, StitchMode, logger
-from tests.utils import send_result_report
 
 
 def pytest_generate_tests(metafunc):
