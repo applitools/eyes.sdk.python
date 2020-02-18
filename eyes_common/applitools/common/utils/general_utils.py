@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import hashlib
+import inspect
 import os
 import typing
 
@@ -93,7 +94,10 @@ def proxy_to(proxy_obj_name, fields):
         if name in fields:
             proxy_obj = getattr(self, proxy_obj_name)
             return getattr(proxy_obj, name)
-        raise AttributeError("{} has not attr {}".format(self.__class__.__name__, name))
+        module_with_class = "{}::{}".format(
+            inspect.getfile(self.__class__), self.__class__.__name__
+        )
+        raise AttributeError("{} has not attr `{}`".format(module_with_class, name))
 
     def __setattr__(self, key, value):
         if key in fields:

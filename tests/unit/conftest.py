@@ -17,6 +17,8 @@ from applitools.common import (
     SessionStartInfo,
     SessionType,
 )
+from applitools.selenium import Eyes, ClassicRunner, VisualGridRunner
+from applitools.images import Eyes as EyesImages
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
@@ -104,6 +106,18 @@ def app_output_provider(image, app_output_with_screenshot):
         lambda region, last_screenshot, check_settings: app_output_with_screenshot
     )
     return apo
+
+
+@pytest.fixture(scope="function")
+def eyes(request):
+    if request.param == "images":
+        return EyesImages()
+    elif request.param == "selenium":
+        return Eyes(ClassicRunner())
+    elif request.param == "visual_grid":
+        return Eyes(VisualGridRunner())
+    else:
+        raise ValueError("invalid internal test config")
 
 
 @pytest.fixture(scope="function")
