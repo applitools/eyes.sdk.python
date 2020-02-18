@@ -58,8 +58,12 @@ class CoordinatesType(Enum):
 class RectangleSize(DictAccessMixin):
     """Represents a 2D size"""
 
-    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
+    width = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    height = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type:int
 
     def __init__(self, width, height):
         # type: (int, int) -> None
