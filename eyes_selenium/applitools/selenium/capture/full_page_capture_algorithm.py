@@ -220,9 +220,8 @@ class FullPageCaptureAlgorithm(object):
             )
 
             logger.debug("pasting part at {}".format(target_position))
-
-            stitched_image.paste(
-                scaled_cropped_part_image, box=(target_position.x, target_position.y)
+            image_utils.paste_image(
+                stitched_image, scaled_cropped_part_image, target_position
             )
             self.debug_screenshot_provider.save(
                 stitched_image, self._debug_msg("stitched_image")
@@ -343,6 +342,6 @@ class FullPageCaptureAlgorithm(object):
         # Handling a specific case where the region is actually larger than
         # the screenshot (e.g., when body width/height are set to 100%, and
         # an internal div is set to value which is larger than the viewport).
-        region_in_screenshot.intersect(Region.from_(image))
+        region_in_screenshot = region_in_screenshot.intersect(Region.from_(image))
         logger.info("Region after intersect: {}".format(region_in_screenshot))
         return region_in_screenshot

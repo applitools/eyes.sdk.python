@@ -58,8 +58,12 @@ class CoordinatesType(Enum):
 class RectangleSize(DictAccessMixin):
     """Represents a 2D size"""
 
-    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
+    width = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type: int
+    height = attr.ib(
+        converter=round_converter, metadata={JsonInclude.THIS: True}
+    )  # type:int
 
     def __init__(self, width, height):
         # type: (int, int) -> None
@@ -339,12 +343,12 @@ class Region(DictAccessMixin):
 
     @property
     def size(self):
-        # type: () -> ViewPort
+        # type: () -> RectangleSize
         """
         Returns:
             The size of the region.
         """
-        return dict(width=self.width, height=self.height)
+        return RectangleSize(width=self.width, height=self.height)
 
     def clone(self):
         # type: () -> Region
@@ -427,7 +431,7 @@ class Region(DictAccessMixin):
         )
 
     def intersect(self, other):
-        # type: (Region) -> None
+        # type: (Region) -> Region
         # If the regions don't overlap, the intersection is empty
         """
         Args:
@@ -442,9 +446,10 @@ class Region(DictAccessMixin):
         intersection_bottom = (
             self.bottom if self.bottom <= other.bottom else other.bottom
         )
-        self.left, self.top = intersection_left, intersection_top
-        self.width = intersection_right - intersection_left
-        self.height = intersection_bottom - intersection_top
+        left, top = intersection_left, intersection_top
+        width = intersection_right - intersection_left
+        height = intersection_bottom - intersection_top
+        return Region(left, top, width, height, self.coordinates_type)
 
     def get_sub_regions(  # noqa
         self,
@@ -554,9 +559,9 @@ class Region(DictAccessMixin):
 
                 subregion = SubregionForStitching(
                     Point(scroll_x, scroll_y),
-                    paste_point,
-                    physical_crop_area,
-                    logical_crop_area,
+                    Point.from_(paste_point),
+                    Region.from_(physical_crop_area),
+                    Region.from_(logical_crop_area),
                 )
                 logger.debug("adding subregion - {}".format(subregion))
                 sub_regions.append(subregion)

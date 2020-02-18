@@ -107,7 +107,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self.frame_window = Region.from_(
                 self._frame_location_in_screenshot, self.image
             )
-        self.frame_window.intersect(Region.from_(self.image))
+        self.frame_window = self.frame_window.intersect(Region.from_(self.image))
 
     def _validate_frame_window(self):
         # type: () -> None
@@ -270,10 +270,10 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             original_coordinates_type == self.CONTEXT_AS_IS
             or original_coordinates_type == self.CONTEXT_RELATIVE
         ):
-            intersected_region.intersect(self.frame_window)
+            intersected_region = intersected_region.intersect(self.frame_window)
         # If the request is screenshot based, we intersect with the image
         elif original_coordinates_type == self.SCREENSHOT_AS_IS:
-            intersected_region.intersect(
+            intersected_region = intersected_region.intersect(
                 Region(0, 0, self.image.width, self.image.height)
             )
         else:
