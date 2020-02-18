@@ -220,9 +220,8 @@ class FullPageCaptureAlgorithm(object):
             )
 
             logger.debug("pasting part at {}".format(target_position))
-
-            stitched_image.paste(
-                scaled_cropped_part_image, box=(target_position.x, target_position.y)
+            image_utils.paste_image(
+                stitched_image, scaled_cropped_part_image, target_position
             )
             self.debug_screenshot_provider.save(
                 stitched_image, self._debug_msg("stitched_image")

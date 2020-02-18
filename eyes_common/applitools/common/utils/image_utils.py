@@ -12,7 +12,7 @@ from PIL import Image
 
 from applitools.common import logger
 from applitools.common.errors import EyesError
-from applitools.common.geometry import Region
+from applitools.common.geometry import Region, Point
 from applitools.common.scale_provider import ScaleProvider
 
 from . import argument_guard
@@ -152,6 +152,21 @@ def crop_image(image, region_to_crop):
         )
     )
     return cropped_image
+
+
+def paste_image(base_image, part_image, position):
+    # type: (Image.Image, Image.Image, Point) -> Image.Image
+    argument_guard.is_a(base_image, Image.Image)
+    argument_guard.is_a(part_image, Image.Image)
+    argument_guard.is_a(position, Point)
+
+    try:
+        base_image.paste(part_image, box=(position.x, position.y))
+    except TypeError as e:
+        logger.exception(e)
+        logger.debug("Convert position values to integer")
+        base_image.paste(part_image, box=(int(position.x), int(position.y)))
+    return base_image
 
 
 def rotate_image(image, rotate):
