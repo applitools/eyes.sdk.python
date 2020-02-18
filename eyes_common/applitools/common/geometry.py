@@ -343,12 +343,12 @@ class Region(DictAccessMixin):
 
     @property
     def size(self):
-        # type: () -> ViewPort
+        # type: () -> RectangleSize
         """
         Returns:
             The size of the region.
         """
-        return dict(width=self.width, height=self.height)
+        return RectangleSize(width=self.width, height=self.height)
 
     def clone(self):
         # type: () -> Region
@@ -558,9 +558,9 @@ class Region(DictAccessMixin):
 
                 subregion = SubregionForStitching(
                     Point(scroll_x, scroll_y),
-                    paste_point,
-                    physical_crop_area,
-                    logical_crop_area,
+                    Point.from_(paste_point),
+                    Region.from_(physical_crop_area),
+                    Region.from_(logical_crop_area),
                 )
                 logger.debug("adding subregion - {}".format(subregion))
                 sub_regions.append(subregion)
