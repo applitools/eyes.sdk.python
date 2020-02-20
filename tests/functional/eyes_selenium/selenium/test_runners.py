@@ -1,12 +1,21 @@
 import pytest
 
-from applitools.common import BatchInfo, StitchMode
-from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner, logger
+from applitools.selenium import (
+    ClassicRunner,
+    Eyes,
+    Target,
+    VisualGridRunner,
+    logger,
+    Configuration,
+    BatchInfo,
+    StitchMode,
+)
 
 
 def test_classic_runner_works_normally(driver):
     classic_runner = ClassicRunner()
     eyes = Eyes(classic_runner)
+    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
         driver,
         "Applitools Eyes Java SDK",
@@ -46,27 +55,28 @@ def test_eyes_none_runner(driver):
 
 @pytest.mark.parametrize(
     "runner",
-    [VisualGridRunner(10), ClassicRunner()],
+    [ClassicRunner()],
     ids=lambda o: "VG" if isinstance(o, VisualGridRunner) else "CR",
 )
 def test_eyes_runner(driver, runner):
     eyes = Eyes(runner)
     eyes2 = Eyes(runner)
-
-    eyes.send_dom = True
-    eyes2.send_dom = False
-    eyes.stitch_mode = StitchMode.CSS
-    eyes2.stitch_mode = StitchMode.CSS
-
     batch_info = BatchInfo("Runner Testing")
-    batch_info.id = "RCA_Batch_ID"
-    eyes.batch_info = batch_info
-    eyes2.batch_info = batch_info
-
+    config = (
+        Configuration()
+        .set_send_dom(True)
+        .set_hide_scrollbars(True)
+        .set_stitch_mode(StitchMode.CSS)
+        .set_batch(batch_info)
+    )
+    eyes.set_configuration(config)
+    eyes2.set_configuration(config)
     driver.get(
         "http://applitools.github.io/demo/TestPages/VisualGridTestPage/index.html"
     )
-
+    eyes.add_property(
+        "Runner", "VisualGrid" if isinstance(runner, VisualGridRunner) else "Selenium"
+    )
     eyes.open(
         driver,
         "Applitools Eyes Java SDK",
