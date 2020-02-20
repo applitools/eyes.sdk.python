@@ -16,6 +16,7 @@ from applitools.common.geometry import Region, Point
 from applitools.common.scale_provider import ScaleProvider
 
 from . import argument_guard
+from .converters import round_converter
 
 __all__ = (
     "image_from_file",
@@ -165,7 +166,9 @@ def paste_image(base_image, part_image, position):
     except TypeError as e:
         logger.exception(e)
         logger.debug("Convert position values to integer")
-        base_image.paste(part_image, box=(int(position.x), int(position.y)))
+        base_image.paste(
+            part_image, box=(round_converter(position.x), round_converter(position.y))
+        )
     return base_image
 
 
