@@ -130,7 +130,7 @@ class _RequestCommunicator(object):
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
-        url_resource = urljoin(self.server_url, url_resource)
+        url_resource = urljoin(self.server_url.rstrip("/"), url_resource)
         params = {}
         if use_api_key:
             params["apiKey"] = self.api_key

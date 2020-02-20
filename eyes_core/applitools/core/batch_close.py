@@ -36,7 +36,7 @@ class _EnabledBatchClose(object):
         for batch_id in self._ids:
             print("close batch called with {}".format(batch_id))
             url = urljoin(
-                self.server_url,
+                self.server_url.rstrip("/"),
                 "api/sessions/batches/{}/close/bypointerid".format(batch_id),
             )
             res = requests.delete(url, params={"apiKey": self.api_key}, verify=False)
