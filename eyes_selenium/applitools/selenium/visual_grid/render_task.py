@@ -74,7 +74,9 @@ class RenderTask(VGTask):
             except Exception as e:
                 logger.exception(e)
                 fetch_fails += 1
-                datetime_utils.sleep(1500)
+                datetime_utils.sleep(
+                    1500, msg="/render throws exception... sleeping for 1.5s"
+                )
             if not render_requests:
                 continue
             need_more_dom = need_more_resources = False
@@ -224,11 +226,13 @@ class RenderTask(VGTask):
                     )
                 except Exception as e:
                     logger.exception(e)
-                    datetime_utils.sleep(1000)
+                    datetime_utils.sleep(
+                        1000, msg="/render-status throws exception... sleeping for 1s"
+                    )
                     fails_count += 1
                 finally:
                     iterations += 1
-                    datetime_utils.sleep(500)
+                    datetime_utils.sleep(1500, msg="Rendering...")
                 if statuses or 0 < fails_count < 3:
                     break
             finished = bool(

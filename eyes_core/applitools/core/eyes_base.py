@@ -259,7 +259,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
     @staticmethod
     def log_session_results_and_raise_exception(raise_ex, results):
-        logger.info("close(): %s" % results)
+        logger.info("close({}): {}".format(raise_ex, results))
         results_url = results.url
         scenario_id_or_name = results.name
         app_id_or_name = results.app_name

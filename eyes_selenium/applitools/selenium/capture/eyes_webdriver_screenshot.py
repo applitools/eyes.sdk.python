@@ -26,7 +26,7 @@ from applitools.selenium.capture.screenshot_utils import (
 from applitools.selenium.frames import FrameChain
 
 if typing.TYPE_CHECKING:
-    from typing import Union
+    from typing import Union, Optional
     from PIL import Image
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.positioning import SeleniumPositionProvider
@@ -35,14 +35,14 @@ if typing.TYPE_CHECKING:
 @attr.s
 class EyesWebDriverScreenshot(EyesScreenshot):
 
-    _driver = attr.ib()
-    _image = attr.ib()
-    _screenshot_type = attr.ib()
-    _frame_location_in_screenshot = attr.ib()
-    _current_frame_scroll_position = attr.ib(default=None)
-    frame_window = attr.ib(default=None)
-    region_window = attr.ib(default=Region(0, 0, 0, 0))
-    _frame_chain = attr.ib(init=False)
+    _driver = attr.ib()  # type: EyesWebDriver
+    _image = attr.ib()  # type: Image.Image
+    _screenshot_type = attr.ib()  # type: ScreenshotType
+    _frame_location_in_screenshot = attr.ib()  # type: Point
+    _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
+    frame_window = attr.ib(default=None)  # type: Region
+    region_window = attr.ib(default=Region(0, 0, 0, 0))  # type: Region
+    _frame_chain = attr.ib(init=False)  # type: FrameChain
 
     @classmethod
     def create_viewport(cls, driver, image):
