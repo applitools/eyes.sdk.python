@@ -438,8 +438,7 @@ class Region(DictAccessMixin):
             other:
         """
         if not self.overlaps(other):
-            self.make_empty()
-            return
+            return Region.EMPTY()
         intersection_left = self.left if self.left >= other.left else other.left
         intersection_top = self.top if self.top >= other.top else other.top
         intersection_right = self.right if self.right <= other.right else other.right
