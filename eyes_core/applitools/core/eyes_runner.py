@@ -14,4 +14,5 @@ class EyesRunner(ABC):
 
     def get_all_test_results(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
+        logger.debug("get_all_test_results({}) called".format(should_raise_exception))
         return self.get_all_test_results_impl(should_raise_exception)

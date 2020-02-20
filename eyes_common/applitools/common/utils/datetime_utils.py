@@ -1,7 +1,7 @@
 import itertools
 import time
 from datetime import datetime, timedelta, tzinfo
-from typing import Text, Union
+from typing import Text, Union, Optional
 
 from applitools.common import logger
 
@@ -77,8 +77,8 @@ def to_ms(seconds):
     return int(seconds * 1000)
 
 
-def sleep(time_ms):
-    # type: (int) -> None
+def sleep(time_ms, msg=None, verbose=True):
+    # type: (int, Optional[Text], bool) -> None
     """Make program sleep for a specified time
 
     The main API uses milliseconds but python internally uses seconds.
@@ -88,7 +88,8 @@ def sleep(time_ms):
         time_ms: time in milliseconds
     """
     time.sleep(to_sec(time_ms))
-    logger.debug("Sleep for {} ms".format(time_ms))
+    if verbose:
+        logger.debug("Sleep for {} ms | {}".format(time_ms, msg if msg else ""))
 
 
 def timeit(method):
