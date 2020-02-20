@@ -82,7 +82,7 @@ class VisualGridRunner(EyesRunner):
                 task = self.task_queue.pop()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
-                datetime_utils.sleep(1000)
+                datetime_utils.sleep(1000, msg="Waiting for task")
                 continue
             future = self._executor.submit(lambda task: task(), task)
             self._future_to_task[future] = task
@@ -91,7 +91,7 @@ class VisualGridRunner(EyesRunner):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
         while sum(r.score for r in self.all_running_tests) > 0:
-            datetime_utils.sleep(500)
+            datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
         for future in concurrent.futures.as_completed(self._future_to_task):
             task = self._future_to_task[future]
@@ -113,7 +113,9 @@ class VisualGridRunner(EyesRunner):
             states = list(set([t.state for t in self.all_running_tests]))
             if len(states) == 1 and states[0] == "completed":
                 break
-            datetime_utils.sleep(500)
+            datetime_utils.sleep(
+                500, msg="Waiting for state completed in get_all_test_results_impl",
+            )
 
         all_results = []
         for test, test_result in iteritems(self._all_test_result):
