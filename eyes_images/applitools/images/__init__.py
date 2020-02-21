@@ -7,6 +7,7 @@ from applitools.common import (
     TestResults,
     TestResultContainer,
     TestResultsSummary,
+    Configuration,
 )
 from applitools.core.cut import (
     FixedCutProvider,
@@ -33,4 +34,5 @@ __all__ = (
     "TestResultContainer",
     "TestResultsSummary",
     "BatchClose",
+    "Configuration",
 )
