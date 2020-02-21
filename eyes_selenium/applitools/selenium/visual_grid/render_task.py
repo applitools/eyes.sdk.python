@@ -94,6 +94,8 @@ class RenderTask(VGTask):
                 datetime_utils.sleep(
                     1500, msg="/render throws exception... sleeping for 1.5s"
                 )
+            if fetch_fails > self.MAX_FAILS_COUNT:
+                raise EyesError("Render is failed. Max count retries reached")
             if not render_requests:
                 logger.error("running_renders is null")
                 continue
@@ -268,6 +270,10 @@ class RenderTask(VGTask):
                 finally:
                     iterations += 1
                     datetime_utils.sleep(1500, msg="Rendering...")
+                if iterations > self.MAX_ITERATIONS:
+                    raise EyesError(
+                        "Max iterations in poll_render_status has been reached"
+                    )
                 if statuses or 0 < fails_count < 3:
                     break
             finished = bool(
