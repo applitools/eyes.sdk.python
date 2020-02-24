@@ -10,6 +10,7 @@ from .compat import (  # type: ignore # noqa
     urlparse,
     urlsplit,
     urlunsplit,
+    quote_plus,
 )
 from .datetime_utils import (  # type: ignore # noqa
     UTC,

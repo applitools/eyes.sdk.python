@@ -3,16 +3,15 @@ from typing import Text, List, Union, Optional
 import attr
 import requests
 
-from applitools.common import EyesError, BatchInfo
 from applitools.common.config import DEFAULT_SERVER_URL
-from applitools.common.utils import urljoin
+from applitools.common.utils import urljoin, quote_plus
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 
 @attr.s
 class _EnabledBatchClose(object):
-    _ids = attr.ib()  # type: List[BatchInfo]
+    _ids = attr.ib()  # type: List[Text]
     server_url = attr.ib()  # type: Text
     api_key = attr.ib()  # type: Text
 
@@ -37,7 +36,9 @@ class _EnabledBatchClose(object):
             print("close batch called with {}".format(batch_id))
             url = urljoin(
                 self.server_url.rstrip("/"),
-                "api/sessions/batches/{}/close/bypointerid".format(batch_id),
+                "api/sessions/batches/{}/close/bypointerid".format(
+                    quote_plus(batch_id)
+                ),
             )
             res = requests.delete(url, params={"apiKey": self.api_key}, verify=False)
             print("delete batch is done with {} status".format(res.status_code))
