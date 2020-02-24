@@ -232,7 +232,7 @@ class VisualGridEyes(object):
         self.close_async()
 
         while True:
-            states = list(set([t.state for t in self.test_list]))
+            states = list(set(t.state for t in self.test_list))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
