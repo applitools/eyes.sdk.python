@@ -49,14 +49,14 @@ class VisualGridRunner(EyesRunner):
         self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
         self._rendering_info = None  # type: Optional[RenderingInfo]
         self._future_to_task = ResourceCache()  # type:ResourceCache
-        thread = threading.Thread(target=self.run, args=())
+        thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
         thread.daemon = True
         thread.start()
         self._thread = thread
 
     def __del__(self):
-        self.stop()
+        self._stop()
 
     def aggregate_result(self, test, test_result):
         # type: (RunningTest, TestResults) -> None
@@ -74,11 +74,11 @@ class VisualGridRunner(EyesRunner):
         self._rendering_info = eyes.rendering_info
         logger.debug("VisualGridRunner.open(%s)" % eyes)
 
-    def run(self):
+    def _run(self):
         logger.debug("VisualGridRunner.run()")
         while self.still_running:
             try:
-                task = self.task_queue.pop()
+                task = self._task_queue.pop()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
                 datetime_utils.sleep(1000, msg="Waiting for task")
@@ -86,10 +86,10 @@ class VisualGridRunner(EyesRunner):
             future = self._executor.submit(lambda task: task(), task)
             self._future_to_task[future] = task
 
-    def stop(self):
+    def _stop(self):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
-        while sum(r.score for r in self.get_all_running_tests()) > 0:
+        while sum(r.score for r in self._get_all_running_tests()) > 0:
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
         for future in concurrent.futures.as_completed(self._future_to_task):
@@ -109,7 +109,7 @@ class VisualGridRunner(EyesRunner):
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         while True:
-            states = list(set(t.state for t in self.get_all_running_tests()))
+            states = list(set(t.state for t in self._get_all_running_tests()))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
@@ -148,30 +148,22 @@ class VisualGridRunner(EyesRunner):
                 raise exception
         return TestResultsSummary(all_results)
 
-    @property
-    def all_running_tests(self):
-        logger.deprecation("Use get_all_running_tests")
-        return self.get_all_running_tests()
-
-    @property
-    def all_running_tests_by_score(self):
-        logger.deprecation("Use get_all_running_tests_by_score")
-        return self.get_all_running_tests_by_score()
-
-    def get_all_running_tests(self):
+    def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
         return list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
 
-    def get_all_running_tests_by_score(self):
+    def _get_all_running_tests_by_score(self):
         # type: () -> List[RunningTest]
         return sorted(
-            self.get_all_running_tests(), key=operator.attrgetter("score"), reverse=True
+            self._get_all_running_tests(),
+            key=operator.attrgetter("score"),
+            reverse=True,
         )
 
     @property
-    def task_queue(self):
+    def _task_queue(self):
         # type: () -> List[VGTask]
-        tests_to_run = self.get_all_running_tests_by_score()
+        tests_to_run = self._get_all_running_tests_by_score()
         if tests_to_run:
             test_to_run = tests_to_run[0]
             queue = test_to_run.queue
