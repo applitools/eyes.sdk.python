@@ -236,7 +236,7 @@ class VisualGridEyes(object):
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
-                500, msg="Waiting for state completed in VisualGridEyes.close"
+                1500, msg="Waiting for state completed in VisualGridEyes.close"
             )
 
         self._is_opened = False
