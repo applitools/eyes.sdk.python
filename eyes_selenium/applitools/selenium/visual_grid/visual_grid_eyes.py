@@ -243,7 +243,7 @@ class VisualGridEyes(object):
 
         for test in self.test_list:
             if test.pending_exceptions:
-                raise EyesError(
+                logger.error(
                     "During test execution above exception raised. \n {:s}".join(
                         str(e) for e in test.pending_exceptions
                     )

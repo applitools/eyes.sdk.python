@@ -119,6 +119,12 @@ class VisualGridRunner(EyesRunner):
 
         all_results = []
         for test, test_result in iteritems(self._all_test_result):
+            if test.pending_exceptions:
+                logger.error(
+                    "During test execution above exception raised. \n {:s}".join(
+                        str(e) for e in test.pending_exceptions
+                    )
+                )
             exception = None
             if test.test_result is None:
                 exception = TestFailedError("Test haven't finished correctly")
