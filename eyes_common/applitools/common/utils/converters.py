@@ -26,8 +26,3 @@ def str2bool(v):
     if v is None:
         return False
     return v.lower() in ("yes", "true", "t", "1")
-
-
-def encode_for_url(v):
-    # type: (Text) -> Text
-    return quote_plus(str(v))

@@ -9,7 +9,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
-from applitools.common.utils.converters import str2bool, encode_for_url
+from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -38,7 +38,7 @@ class BatchInfo(object):
     sequence_name = attr.ib(
         metadata={JsonInclude.NAME: "batchSequenceName"}
     )  # type: Optional[Text]
-    _id = attr.ib(metadata={JsonInclude.NAME: "id"})  # type: Text
+    id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
@@ -60,18 +60,10 @@ class BatchInfo(object):
         if batch_sequence_name:
             self.sequence_name = batch_sequence_name
 
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self.with_batch_id(id)
-
     def with_batch_id(self, id):
         # type: (Text) -> BatchInfo
         argument_guard.not_none(id)
-        self._id = encode_for_url(id)
+        self.id = str(id)
         return self
 
 
