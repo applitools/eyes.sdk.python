@@ -90,7 +90,7 @@ class VisualGridRunner(EyesRunner):
     def stop(self):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
-        while sum(r.score for r in self.all_running_tests) > 0:
+        while sum(r.score for r in self.get_all_running_tests()) > 0:
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
         for future in concurrent.futures.as_completed(self._future_to_task):
@@ -110,7 +110,7 @@ class VisualGridRunner(EyesRunner):
     def get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         while True:
-            states = list(set([t.state for t in self.all_running_tests]))
+            states = list(set([t.state for t in self.get_all_running_tests()]))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
@@ -145,20 +145,28 @@ class VisualGridRunner(EyesRunner):
 
     @property
     def all_running_tests(self):
-        # type: ()-> List[RunningTest]
-        return list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+        logger.deprecation("Use get_all_running_tests")
+        return self.get_all_running_tests()
 
     @property
     def all_running_tests_by_score(self):
+        logger.deprecation("Use get_all_running_tests_by_score")
+        return self.get_all_running_tests_by_score()
+
+    def get_all_running_tests(self):
+        # type: ()-> List[RunningTest]
+        return list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+
+    def get_all_running_tests_by_score(self):
         # type: () -> List[RunningTest]
         return sorted(
-            self.all_running_tests, key=operator.attrgetter("score"), reverse=True
+            self.get_all_running_tests(), key=operator.attrgetter("score"), reverse=True
         )
 
     @property
     def task_queue(self):
         # type: () -> List[VGTask]
-        tests_to_run = self.all_running_tests_by_score
+        tests_to_run = self.get_all_running_tests_by_score()
         if tests_to_run:
             test_to_run = tests_to_run[0]
             queue = test_to_run.queue
