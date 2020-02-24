@@ -1,9 +1,12 @@
+import json
 import os
 import uuid
 from datetime import datetime
 
 from applitools.common.config import BatchInfo
 from mock import patch
+
+from applitools.common.utils import json_utils
 
 
 def test_create_batch_info(monkeypatch):
@@ -59,3 +62,18 @@ def test_encode_id_field():
     encoded_id = "2020-02-24T15%3A51%3A08.098515"
     bi = BatchInfo().with_batch_id(raw_id)
     assert bi.id == encoded_id
+    bi = BatchInfo()
+    bi.id = raw_id
+    assert bi.id == encoded_id
+
+
+def test_serialization_of_batch_info():
+    bi = BatchInfo(name="Name", batch_sequence_name="BatchName").with_batch_id(
+        "custom-id"
+    )
+    res = json.loads(json_utils.to_json(bi))
+    print(res)
+    assert res["name"] == "Name"
+    assert res["batchSequenceName"] == "BatchName"
+    assert res["notifyOnCompletion"] == False
+    assert res["id"] == "custom-id"
