@@ -25,7 +25,11 @@ from .vg_task import VGTask
 if typing.TYPE_CHECKING:
     from typing import Callable, Dict, Any, Text, List, Optional
     from applitools.common import RenderStatusResults, Region
-    from applitools.selenium.visual_grid import RunningTest, EyesConnector
+    from applitools.selenium.visual_grid import (
+        RunningTest,
+        EyesConnector,
+        ResourceCache,
+    )
 
 
 @attr.s(hash=True)
@@ -34,7 +38,7 @@ class RenderTask(VGTask):
     MAX_ITERATIONS = 100
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
-    resource_cache = attr.ib(hash=False, repr=False)
+    resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()
@@ -67,6 +71,11 @@ class RenderTask(VGTask):
 
         def get_and_put_resource(url, running_render):
             # type: (str, RunningRender) -> VGResource
+            logger.debug(
+                "get_and_put_resource({0:.20}, render_id={1}) call".format(
+                    url, running_render.render_id
+                )
+            )
             resource = self.request_resources.get(url)
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
@@ -77,6 +86,7 @@ class RenderTask(VGTask):
         already_force_putted = False
         while True:
             try:
+                self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
             except Exception as e:
                 logger.exception(e)
@@ -178,6 +188,7 @@ class RenderTask(VGTask):
 
     def parse_frame_dom_resources(self, data):  # noqa
         # type: (Dict) -> RGridDom
+        logger.debug("parse_frame_dom_resources() call")
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
@@ -185,6 +196,7 @@ class RenderTask(VGTask):
         discovered_resources_urls = []
 
         def handle_resources(content_type, content):
+            logger.debug("handle_resources({0}) call".format(content_type))
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
@@ -197,6 +209,7 @@ class RenderTask(VGTask):
 
         def get_resource(link):
             # type: (Text) -> VGResource
+            logger.debug("get_resource({0}) call".format(link))
             if link.startswith("data:"):
                 # resource already in blob
                 return VGResource.EMPTY(link)
@@ -220,6 +233,7 @@ class RenderTask(VGTask):
         for r_url in set(resource_urls + discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
 
+        self.resource_cache.process_all()
         for r_url, val in iteritems(self.resource_cache):
             if val is None:
                 val = VGResource.EMPTY(r_url)
@@ -231,6 +245,7 @@ class RenderTask(VGTask):
 
     def poll_render_status(self, requests):
         # type: (List[RenderRequest]) -> List[RenderStatusResults]
+        logger.debug("poll_render_status call with Requests {}".format(requests))
         iterations = 0
         statuses = []  # type: List[RenderStatusResults]
         fails_count = 0
