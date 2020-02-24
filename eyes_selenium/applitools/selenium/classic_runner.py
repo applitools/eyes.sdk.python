@@ -14,7 +14,7 @@ class ClassicRunner(EyesRunner):
         self._all_test_result = []  # type: List[TestResults]
         self.exception = None  # type: Optional[Exception]
 
-    def get_all_test_results_impl(self, should_raise_exception=True):
+    def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         if should_raise_exception and self.exception:
             raise self.exception
