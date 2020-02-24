@@ -86,6 +86,7 @@ class RenderTask(VGTask):
         already_force_putted = False
         while True:
             try:
+                self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
             except Exception as e:
                 logger.exception(e)
@@ -232,6 +233,7 @@ class RenderTask(VGTask):
         for r_url in set(resource_urls + discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
 
+        self.resource_cache.process_all()
         for r_url, val in iteritems(self.resource_cache):
             if val is None:
                 val = VGResource.EMPTY(r_url)
