@@ -36,7 +36,7 @@ def test_batch_info_with_date():
 
 def test_create_batch_with_batch_id():
     bi = BatchInfo("My name").with_batch_id("custom id")
-    assert bi.id == "custom id"
+    assert bi.id == "custom+id"
 
 
 def test_set_env_params_in_batch_info():
