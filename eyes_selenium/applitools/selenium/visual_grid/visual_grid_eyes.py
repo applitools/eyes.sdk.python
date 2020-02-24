@@ -233,6 +233,7 @@ class VisualGridEyes(object):
 
         while True:
             states = list(set(t.state for t in self.test_list))
+            logger.debug("Current test states: \n {}".format(states))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(

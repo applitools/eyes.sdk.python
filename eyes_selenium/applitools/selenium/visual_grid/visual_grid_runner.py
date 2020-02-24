@@ -110,6 +110,7 @@ class VisualGridRunner(EyesRunner):
         # type: (bool) -> TestResultsSummary
         while True:
             states = list(set(t.state for t in self._get_all_running_tests()))
+            logger.debug("Current test states: \n {}".format(states))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
