@@ -65,6 +65,9 @@ def test_encode_id_field():
     bi = BatchInfo()
     bi.id = raw_id
     assert bi.id == encoded_id
+    with patch.dict(os.environ, {"APPLITOOLS_BATCH_ID": "some id"}):
+        bi = BatchInfo()
+        assert bi.id == "some+id"
 
 
 def test_serialization_of_batch_info():
