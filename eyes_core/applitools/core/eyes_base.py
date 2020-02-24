@@ -274,7 +274,9 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                     raise NewTestError(results, scenario_id_or_name, app_id_or_name)
             else:
                 logger.info(
-                    "--- Failed test ended. \n\tSee details at {}".format(results_url)
+                    "--- Differences are found. \n\tSee details at {}".format(
+                        results_url
+                    )
                 )
                 if raise_ex:
                     raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
@@ -284,8 +286,8 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             )
             if raise_ex:
                 raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
-        # Test passed
-        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
+        else:
+            logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
