@@ -50,9 +50,8 @@ else:
         parse_qs,
         urlsplit,
         urlunsplit,
-        quote_plus,
     )  # noqa
-    from urllib import urlencode  # noqa
+    from urllib import urlencode, quote_plus  # noqa
     from Queue import Queue  # noqa
 
     basestring = basestring
