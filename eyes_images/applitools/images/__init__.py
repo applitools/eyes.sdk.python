@@ -8,6 +8,8 @@ from applitools.common import (
     TestResultContainer,
     TestResultsSummary,
     Configuration,
+    StdoutLogger,
+    FileLogger,
 )
 from applitools.core.cut import (
     FixedCutProvider,
@@ -25,6 +27,8 @@ __all__ = (
     "Region",
     "MatchLevel",
     "logger",
+    "StdoutLogger",
+    "FileLogger",
     "Target",
     "FixedCutProvider",
     "UnscaledFixedCutProvider",
