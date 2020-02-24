@@ -63,3 +63,6 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
             self[url] = self.executor.submit(func_to_run, url)
             return True
         return False
+
+    def process_all(self):
+        return [url for url in self]
