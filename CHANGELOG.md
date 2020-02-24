@@ -1,3 +1,5 @@
+## Fixed
+- Batch notification is not working if batch id contains some non URL-compatible symbols [Trello 1567](https://trello.com/c/hCPqs80W)
 # [4.1.15] - 2020-02-20
 ## Fixed
 - execute_script of EyesWebDriver not work with EyesWebElement [Trello 112](https://trello.com/c/OrdYpmTj)
