@@ -36,7 +36,7 @@ def test_batch_info_with_date():
 
 def test_create_batch_with_batch_id():
     bi = BatchInfo("My name").with_batch_id("custom id")
-    assert bi.id == "custom+id"
+    assert bi.id == "custom id"
 
 
 def test_set_env_params_in_batch_info():
@@ -59,15 +59,14 @@ def test_set_env_params_in_batch_info():
 
 def test_encode_id_field():
     raw_id = "2020-02-24T15:51:08.098515"
-    encoded_id = "2020-02-24T15%3A51%3A08.098515"
     bi = BatchInfo().with_batch_id(raw_id)
-    assert bi.id == encoded_id
+    assert bi.id == raw_id
     bi = BatchInfo()
     bi.id = raw_id
-    assert bi.id == encoded_id
+    assert bi.id == raw_id
     with patch.dict(os.environ, {"APPLITOOLS_BATCH_ID": "some id"}):
         bi = BatchInfo()
-        assert bi.id == "some+id"
+        assert bi.id == "some id"
 
 
 def test_serialization_of_batch_info():
