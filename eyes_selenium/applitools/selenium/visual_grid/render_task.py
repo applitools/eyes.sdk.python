@@ -256,9 +256,8 @@ class RenderTask(VGTask):
                     break
             finished = bool(
                 statuses
-                and statuses[0] is not None
                 and (
-                    statuses[0].status != RenderStatus.RENDERING
+                    all(s.status != RenderStatus.RENDERING for s in statuses)
                     or iterations > self.MAX_ITERATIONS
                     or False
                 )

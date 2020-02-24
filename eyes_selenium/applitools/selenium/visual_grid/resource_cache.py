@@ -3,8 +3,6 @@ import threading
 import typing
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from requests import HTTPError
-
 from applitools.common import VGResource, logger
 
 
