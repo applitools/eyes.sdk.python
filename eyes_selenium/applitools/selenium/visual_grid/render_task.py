@@ -1,4 +1,5 @@
 import typing
+from functools import partial
 from itertools import chain
 from threading import RLock
 import attr
@@ -12,8 +13,11 @@ from applitools.common import (
     VGResource,
     VisualGridSelector,
     logger,
+    RunningRender,
 )
 from applitools.common.utils import datetime_utils, urljoin, urlparse, iteritems
+from applitools.common.utils.converters import str2bool
+from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium import parsers
 
 from .vg_task import VGTask
@@ -46,6 +50,9 @@ class RenderTask(VGTask):
     running_tests = attr.ib(
         init=False, hash=False, factory=list
     )  # type: List[RunningTest]
+    is_force_put_needed = attr.ib(
+        default=str2bool(get_env_with_prefix("APPLITOOLS_UFG_FORCE_PUT_RESOURCES"))
+    )  # type: bool
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -55,11 +62,11 @@ class RenderTask(VGTask):
         self.resource_urls = []  # type: List[Text]
         self.discovered_resources_lock = RLock()
 
-    def perform(self):
-        # type: () -> RenderStatusResults
+    def perform(self):  # noqa
+        # type: () -> List[RenderStatusResults]
 
-        def get_and_put_resource(url):
-            # type: (str) -> VGResource
+        def get_and_put_resource(url, running_render):
+            # type: (str, RunningRender) -> VGResource
             resource = self.request_resources.get(url)
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
@@ -67,8 +74,8 @@ class RenderTask(VGTask):
         requests = self.prepare_data_for_rg(self.script)
         fetch_fails = 0
         render_requests = None
+        already_force_putted = False
         while True:
-
             try:
                 render_requests = self.eyes_connector.render(*requests)
             except Exception as e:
@@ -78,6 +85,7 @@ class RenderTask(VGTask):
                     1500, msg="/render throws exception... sleeping for 1.5s"
                 )
             if not render_requests:
+                logger.error("running_renders is null")
                 continue
             need_more_dom = need_more_resources = False
             for i, running_render in enumerate(render_requests):
@@ -86,12 +94,23 @@ class RenderTask(VGTask):
                 need_more_resources = (
                     running_render.render_status == RenderStatus.NEED_MORE_RESOURCE
                 )
-
+                get_and_put_resource_wtih_render = partial(
+                    get_and_put_resource, running_render=running_render
+                )
                 dom_resource = requests[i].dom.resource
+
+                if self.is_force_put_needed and not already_force_putted:
+                    for url in self.request_resources:
+                        self.put_cache.fetch_and_store(
+                            url, get_and_put_resource_wtih_render
+                        )
+                    already_force_putted = True
 
                 if need_more_resources:
                     for url in running_render.need_more_resources:
-                        self.put_cache.fetch_and_store(url, get_and_put_resource)
+                        self.put_cache.fetch_and_store(
+                            url, get_and_put_resource_wtih_render
+                        )
 
                 if need_more_dom:
                     self.eyes_connector.render_put_resource(
