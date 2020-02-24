@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
     DiffsFoundError,
-    EyesError,
     NewTestError,
     TestFailedError,
     TestResultContainer,
