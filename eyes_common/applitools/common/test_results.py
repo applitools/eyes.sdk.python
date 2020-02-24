@@ -35,14 +35,14 @@ class SessionUrls(object):
 
 @attr.s
 class StepInfo(object):
-    @attr.s
+    @attr.s(repr_ns="StepInfo")
     class AppUrls(object):
         step = attr.ib(default=None, metadata={JsonInclude.THIS: True})  # type: Text
         step_editor = attr.ib(
             default=None, metadata={JsonInclude.THIS: True}
         )  # type: Text
 
-    @attr.s
+    @attr.s(repr_ns="StepInfo")
     class ApiUrls(object):
         baseline_image = attr.ib(
             default=None, metadata={JsonInclude.THIS: True}
