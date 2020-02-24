@@ -25,7 +25,11 @@ from .vg_task import VGTask
 if typing.TYPE_CHECKING:
     from typing import Callable, Dict, Any, Text, List, Optional
     from applitools.common import RenderStatusResults, Region
-    from applitools.selenium.visual_grid import RunningTest, EyesConnector
+    from applitools.selenium.visual_grid import (
+        RunningTest,
+        EyesConnector,
+        ResourceCache,
+    )
 
 
 @attr.s(hash=True)
@@ -34,7 +38,7 @@ class RenderTask(VGTask):
     MAX_ITERATIONS = 100
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
-    resource_cache = attr.ib(hash=False, repr=False)
+    resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()
