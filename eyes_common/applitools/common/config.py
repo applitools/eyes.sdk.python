@@ -27,7 +27,7 @@ DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 
-@attr.s(init=False)
+@attr.s(init=False, slots=True)
 class BatchInfo(object):
     """
     A batch of tests.
@@ -38,7 +38,7 @@ class BatchInfo(object):
     sequence_name = attr.ib(
         metadata={JsonInclude.NAME: "batchSequenceName"}
     )  # type: Optional[Text]
-    id = attr.ib(converter=str, metadata={JsonInclude.THIS: True})  # type: Text
+    id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):

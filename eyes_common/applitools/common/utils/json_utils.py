@@ -96,7 +96,7 @@ class _CamelCasedDict(dict):
 
 
 def _filter(attr_, value):
-    if attr_.name.startswith("_"):
+    if attr_.name.startswith("_") and not attr_.metadata.get(JsonInclude.NAME):
         return False
     if attr_.metadata.get(JsonInclude.NON_NONE):
         if value is None:
