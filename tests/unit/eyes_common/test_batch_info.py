@@ -52,3 +52,10 @@ def test_set_env_params_in_batch_info():
     assert bi.id == "id"
     assert bi.sequence_name == "sequence name"
     assert bi.notify_on_completion == True
+
+
+def test_encode_id_field():
+    raw_id = "2020-02-24T15:51:08.098515"
+    encoded_id = "2020-02-24T15%3A51%3A08.098515"
+    bi = BatchInfo().with_batch_id(raw_id)
+    assert bi.id == encoded_id
