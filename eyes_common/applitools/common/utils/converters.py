@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from datetime import datetime
 from enum import Enum
 from typing import Union, Text
+from .compat import quote_plus
 
 
 def value_from_enum(e):

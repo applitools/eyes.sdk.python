@@ -14,6 +14,7 @@ __all__ = (
     "iteritems",
     "urlparse",
     "urljoin",
+    "quote_plus",
     "Queue",
     "gzip_compress",
     "range",
@@ -34,6 +35,7 @@ if PY3:
         parse_qs,
         urlsplit,
         urlunsplit,
+        quote_plus,
     )  # noqa
     from gzip import compress as gzip_compress  # noqa
     from queue import Queue  # noqa
@@ -42,8 +44,14 @@ if PY3:
     ABC = abc.ABC
     range = range  # type: ignore
 else:
-    from urlparse import urlparse, urljoin, parse_qs, urlsplit, urlunsplit  # noqa
-    from urllib import urlencode  # noqa
+    from urlparse import (
+        urlparse,
+        urljoin,
+        parse_qs,
+        urlsplit,
+        urlunsplit,
+    )  # noqa
+    from urllib import urlencode, quote_plus  # noqa
     from Queue import Queue  # noqa
 
     basestring = basestring
