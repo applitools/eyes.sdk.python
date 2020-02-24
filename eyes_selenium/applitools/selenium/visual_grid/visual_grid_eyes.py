@@ -232,18 +232,18 @@ class VisualGridEyes(object):
         self.close_async()
 
         while True:
-            states = list(set([t.state for t in self.test_list]))
+            states = list(set(t.state for t in self.test_list))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
-                500, msg="Waiting for state completed in VisualGridEyes.close"
+                1500, msg="Waiting for state completed in VisualGridEyes.close"
             )
 
         self._is_opened = False
 
         for test in self.test_list:
             if test.pending_exceptions:
-                raise EyesError(
+                logger.error(
                     "During test execution above exception raised. \n {:s}".join(
                         str(e) for e in test.pending_exceptions
                     )
