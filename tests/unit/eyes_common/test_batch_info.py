@@ -57,7 +57,7 @@ def test_set_env_params_in_batch_info():
     assert bi.notify_on_completion == True
 
 
-def test_encode_id_field():
+def test_set_batch_id_in_different_ways():
     raw_id = "2020-02-24T15:51:08.098515"
     bi = BatchInfo().with_batch_id(raw_id)
     assert bi.id == raw_id
