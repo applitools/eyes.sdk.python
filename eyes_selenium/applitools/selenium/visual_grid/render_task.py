@@ -67,6 +67,11 @@ class RenderTask(VGTask):
 
         def get_and_put_resource(url, running_render):
             # type: (str, RunningRender) -> VGResource
+            logger.debug(
+                "get_and_put_resource({0:.20}, render_id={1}) call".format(
+                    url, running_render.render_id
+                )
+            )
             resource = self.request_resources.get(url)
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
@@ -178,6 +183,7 @@ class RenderTask(VGTask):
 
     def parse_frame_dom_resources(self, data):  # noqa
         # type: (Dict) -> RGridDom
+        logger.debug("parse_frame_dom_resources() call")
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
@@ -185,6 +191,7 @@ class RenderTask(VGTask):
         discovered_resources_urls = []
 
         def handle_resources(content_type, content):
+            logger.debug("handle_resources({0}) call".format(content_type))
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
@@ -197,6 +204,7 @@ class RenderTask(VGTask):
 
         def get_resource(link):
             # type: (Text) -> VGResource
+            logger.debug("get_resource({0}) call".format(link))
             if link.startswith("data:"):
                 # resource already in blob
                 return VGResource.EMPTY(link)
@@ -231,6 +239,7 @@ class RenderTask(VGTask):
 
     def poll_render_status(self, requests):
         # type: (List[RenderRequest]) -> List[RenderStatusResults]
+        logger.debug("poll_render_status call with Requests {}".format(requests))
         iterations = 0
         statuses = []  # type: List[RenderStatusResults]
         fails_count = 0

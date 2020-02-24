@@ -40,15 +40,27 @@ class VGTask(object):
         res = None
         try:
             if callable(self.func_to_run):
+                logger.debug(
+                    "VGTask().func_to_run: {}".format(self.func_to_run.__name__)
+                )
                 res = self.func_to_run()
             if callable(self.callback):
+                logger.debug("VGTask().callback: {}".format(self.callback.__name__))
                 self.callback(res)
         except Exception as e:
             logger.error("Failed to execute task! \n\t %s" % self.name)
             logger.exception(e)
             if callable(self.error_callback):
+                logger.debug(
+                    "VGTask().error_callback: {}".format(self.error_callback.__name__)
+                )
                 self.error_callback(e)
         finally:
             if callable(self.complete_callback):
+                logger.debug(
+                    "VGTask().complete_callback: {}".format(
+                        self.complete_callback.__name__
+                    )
+                )
                 self.complete_callback()
         return res
