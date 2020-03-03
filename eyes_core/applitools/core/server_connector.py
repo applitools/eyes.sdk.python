@@ -440,20 +440,10 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
-
-        response = self._com.request(
-            "post",
-            url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
-            data=dom_bytes,
-            headers=headers,
+        return self._try_upload_data(
+            dom_bytes, "application/octet-stream", "application/json"
         )
-        dom_url = None
-        if response.ok:
-            dom_url = response.headers["Location"]
-        return dom_url
 
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
