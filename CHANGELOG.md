@@ -1,3 +1,6 @@
+## Updated
+- DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
+
 # [4.1.16] - 2020-02-24
 ## Fixed
 - Batch notification is not working if batch id contains some non URL-compatible symbols [Trello 1567](https://trello.com/c/hCPqs80W)
