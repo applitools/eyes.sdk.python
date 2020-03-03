@@ -362,9 +362,9 @@ def test_match_window_with_image_uploading(started_connector, server_status):
     "applitools.core.server_connector.ClientSession.request",
     new=mocked_client_session_request,
 )
-def test_post_dom_snapshot(started_connector):
+def test_post_dom_capture(started_connector):
     #  type: (ServerConnector) -> None
-    dom_url = started_connector.post_dom_snapshot("{HTML: []")
+    dom_url = started_connector.post_dom_capture("{HTML: []")
     assert dom_url == RUNNING_SESSION_DATA_RESPONSE_URL
 
 

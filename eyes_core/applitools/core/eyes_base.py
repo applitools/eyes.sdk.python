@@ -563,7 +563,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self.configure.send_dom or check_settings.values.send_dom
         ):
             dom_json = self._try_capture_dom()
-            self._dom_url = self._try_post_dom_snapshot(dom_json)
+            self._dom_url = self._try_post_dom_capture(dom_json)
             logger.info("dom_url: {}".format(self._dom_url))
 
         app_output = AppOutput(
@@ -621,7 +621,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                         )
                     )
 
-    def _try_post_dom_snapshot(self, dom_json):
+    def _try_post_dom_capture(self, dom_json):
         # type: (Text) -> Optional[Text]
         """
         In case DOM data is valid uploads it to the server and return URL where it stored.
@@ -629,7 +629,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         if dom_json is None:
             return None
         try:
-            return self._server_connector.post_dom_snapshot(dom_json)
+            return self._server_connector.post_dom_capture(dom_json)
         except Exception as e:
             logger.warning(
                 "Couldn't send DOM Json. Passing...\n Got next error: {}".format(e)

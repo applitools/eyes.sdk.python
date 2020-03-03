@@ -429,7 +429,7 @@ class ServerConnector(object):
         match_result = json_utils.attr_from_response(response, MatchResult)
         return match_result
 
-    def post_dom_snapshot(self, dom_json):
+    def post_dom_capture(self, dom_json):
         # type: (Text) -> Optional[Text]
         """
         Upload the DOM of the tested page.
