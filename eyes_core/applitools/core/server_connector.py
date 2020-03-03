@@ -407,15 +407,16 @@ class ServerConnector(object):
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
             raise EyesError("Session not started")
-
-        screenshot_url = self._try_upload_data(
-            match_data.app_output.screenshot_bytes, "image/png", "image/png"
-        )
-        if screenshot_url is None:
+        app_output = match_data.app_output
+        # when screenshot_url is present we don't need to upload again
+        if app_output.screenshot_url is None:
+            app_output.screenshot_url = self._try_upload_data(
+                match_data.app_output.screenshot_bytes, "image/png", "image/png"
+            )
+        if app_output.screenshot_url is None:
             raise EyesError(
                 "MatchWindow failed: could not upload image to storage service."
             )
-        match_data.app_output.screenshot_url = screenshot_url
         data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
@@ -426,8 +427,7 @@ class ServerConnector(object):
             data=data,
             headers=headers,
         )
-        match_result = json_utils.attr_from_response(response, MatchResult)
-        return match_result
+        return json_utils.attr_from_response(response, MatchResult)
 
     def post_dom_capture(self, dom_json):
         # type: (Text) -> Optional[Text]
