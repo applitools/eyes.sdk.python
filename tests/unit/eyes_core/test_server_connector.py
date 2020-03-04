@@ -358,14 +358,18 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         assert "__random__" not in target_url
 
 
-@patch(
-    "applitools.core.server_connector.ClientSession.request",
-    new=mocked_client_session_request,
-)
-def test_post_dom_snapshot(started_connector):
+def test_post_dom_capture(started_connector):
     #  type: (ServerConnector) -> None
-    dom_url = started_connector.post_dom_snapshot("{HTML: []")
-    assert dom_url == RUNNING_SESSION_DATA_RESPONSE_URL
+    with patch(
+        "applitools.core.server_connector.ServerConnector.render_info",
+        return_value=RENDERING_OBJ,
+    ):
+        with patch(
+            "applitools.core.server_connector.ServerConnector._upload_data",
+            return_value=True,
+        ):
+            dom_url = started_connector.post_dom_capture("{HTML: []")
+            assert dom_url == RENDERING_OBJ.results_url
 
 
 @patch(
