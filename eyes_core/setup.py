@@ -25,7 +25,7 @@ def get_version(package_name):
 
 install_requires = [
     "eyes-common=={}".format(get_version("core")),
-    "attrs>=19,<20",
+    "attrs>=19.2.0,<20",
     "Pillow>=5.0.0,<7.0.0",  # 7 and above doesnt support python 2
     "requests>=2.22.0",
 ]
