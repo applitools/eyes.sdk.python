@@ -1,5 +1,7 @@
 ## Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
+## Fixed
+- Requirements issue with attrs [Trello 1578](https://trello.com/c/sR56FqO7)
 
 # [4.1.16] - 2020-02-24
 ## Fixed
