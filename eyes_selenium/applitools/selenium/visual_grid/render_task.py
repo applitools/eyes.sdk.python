@@ -230,14 +230,14 @@ class RenderTask(VGTask):
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls + discovered_resources_urls):
+        for r_url in resource_urls:
             self.resource_cache.fetch_and_store(r_url, get_resource)
-
         self.resource_cache.process_all()
-        for r_url, val in iteritems(self.resource_cache):
-            if val is None:
-                val = VGResource.EMPTY(r_url)
-            self.request_resources[r_url] = val
+
+        # discovered urls becomes available after resources processed
+        for r_url in discovered_resources_urls:
+            self.resource_cache.fetch_and_store(r_url, get_resource)
+        self.resource_cache.process_all()
 
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources

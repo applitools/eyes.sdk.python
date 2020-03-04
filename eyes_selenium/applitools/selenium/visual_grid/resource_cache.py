@@ -4,6 +4,7 @@ import typing
 from concurrent.futures import Future, ThreadPoolExecutor
 
 from applitools.common import VGResource, logger
+from applitools.common.utils import iteritems
 
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
@@ -65,4 +66,8 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
         return False
 
     def process_all(self):
-        return [url for url in self]
+        for r_url, val in iteritems(self):
+            if val is None:
+                val = VGResource.EMPTY(r_url)
+            self[r_url] = val
+        return self
