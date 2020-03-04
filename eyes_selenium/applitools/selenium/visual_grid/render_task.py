@@ -72,7 +72,7 @@ class RenderTask(VGTask):
         def get_and_put_resource(url, running_render):
             # type: (str, RunningRender) -> VGResource
             logger.debug(
-                "get_and_put_resource({0:.20}, render_id={1}) call".format(
+                "get_and_put_resource({0}, render_id={1}) call".format(
                     url, running_render.render_id
                 )
             )
