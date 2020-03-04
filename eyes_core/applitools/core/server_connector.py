@@ -344,45 +344,42 @@ class ServerConnector(object):
         self._is_session_started = False
         return test_results
 
-    def _try_upload_image(self, data):
-        # type: (MatchWindowData) -> bool
-        if data.app_output.screenshot_url:
-            return True
-        screenshot_bytes = data.app_output.screenshot_bytes
-        if screenshot_bytes is None:
-            raise EyesError("Screenshot has not been taken!")
+    def _try_upload_data(self, bytes_data, content_type, media_type):
+        # type: (bytes, Text, Text) -> Optional[Text]
+        argument_guard.not_none(bytes_data)
 
         rendering_info = self.render_info()
         if rendering_info and rendering_info.results_url:
             try:
-                image_target_url = rendering_info.results_url
+                target_url = rendering_info.results_url
                 guid = uuid.uuid4()
-                image_target_url = image_target_url.replace("__random__", str(guid))
-                logger.info("uploading image to {}".format(image_target_url))
-                if self._upload_image(
-                    screenshot_bytes, rendering_info, image_target_url
+                target_url = target_url.replace("__random__", str(guid))
+                logger.info("uploading {} to {}".format(media_type, target_url))
+                if self._upload_data(
+                    bytes_data, rendering_info, target_url, content_type, media_type
                 ):
-                    data.app_output.screenshot_url = image_target_url
-                    return True
+                    return target_url
             except Exception as e:
-                logger.error("Error uploading image")
+                logger.error("Error uploading {}".format(media_type))
                 logger.exception(e)
 
     @datetime_utils.retry(delays=(0.5, 1, 10), exception=EyesError, report=logger.debug)
-    def _upload_image(self, screenshot_bytes, rendering_info, image_target_url):
-        # type: (bytes, RenderingInfo, Text) -> bool
+    def _upload_data(
+        self, data_bytes, rendering_info, target_url, content_type, media_type
+    ):
+        # type: (bytes, RenderingInfo, Text, Text, Text) -> bool
         headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "image/png"
-        headers["Content-Length"] = str(len(screenshot_bytes))
-        headers["Media-Type"] = "image/png"
+        headers["Content-Type"] = content_type
+        headers["Content-Length"] = str(len(data_bytes))
+        headers["Media-Type"] = media_type
         headers["X-Auth-Token"] = rendering_info.access_token
         headers["x-ms-blob-type"] = "BlockBlob"
 
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
         response = self.client_session.request(
             "put",
-            image_target_url,
-            data=screenshot_bytes,
+            target_url,
+            data=data_bytes,
             headers=headers,
             timeout=timeout_sec,
             verify=False,
@@ -410,12 +407,16 @@ class ServerConnector(object):
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
             raise EyesError("Session not started")
-
-        if not self._try_upload_image(match_data):
+        app_output = match_data.app_output
+        # when screenshot_url is present we don't need to upload again
+        if app_output.screenshot_url is None:
+            app_output.screenshot_url = self._try_upload_data(
+                match_data.app_output.screenshot_bytes, "image/png", "image/png"
+            )
+        if app_output.screenshot_url is None:
             raise EyesError(
                 "MatchWindow failed: could not upload image to storage service."
             )
-
         data = prepare_match_data(match_data)
         # Using the default headers, but modifying the "content type" to binary
         headers = ServerConnector.DEFAULT_HEADERS.copy()
@@ -426,10 +427,9 @@ class ServerConnector(object):
             data=data,
             headers=headers,
         )
-        match_result = json_utils.attr_from_response(response, MatchResult)
-        return match_result
+        return json_utils.attr_from_response(response, MatchResult)
 
-    def post_dom_snapshot(self, dom_json):
+    def post_dom_capture(self, dom_json):
         # type: (Text) -> Optional[Text]
         """
         Upload the DOM of the tested page.
@@ -440,20 +440,10 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
 
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/octet-stream"
         dom_bytes = gzip_compress(dom_json.encode("utf-8"))
-
-        response = self._com.request(
-            "post",
-            url_resource=urljoin(self.API_SESSIONS_RUNNING, "data"),
-            data=dom_bytes,
-            headers=headers,
+        return self._try_upload_data(
+            dom_bytes, "application/octet-stream", "application/json"
         )
-        dom_url = None
-        if response.ok:
-            dom_url = response.headers["Location"]
-        return dom_url
 
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
