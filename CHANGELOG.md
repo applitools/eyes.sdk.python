@@ -1,5 +1,6 @@
 ## Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
+- Dom capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
 ## Fixed
 - Requirements issue with attrs [Trello 1578](https://trello.com/c/sR56FqO7)
 
