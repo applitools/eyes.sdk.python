@@ -1,3 +1,4 @@
+# [4.1.17] - 2020-03-05
 ## Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
 - Dom capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
