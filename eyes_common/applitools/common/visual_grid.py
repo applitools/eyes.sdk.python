@@ -271,11 +271,12 @@ class VGResource(object):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
+        url = blob.get("url")
         return cls(
-            blob.get("url"),
+            url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content),
+            handle_func=lambda: on_created(content_type, content, url),
         )
 
     @classmethod
@@ -290,7 +291,7 @@ class VGResource(object):
             url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content),
+            handle_func=lambda: on_created(content_type, content, url),
         )
 
 

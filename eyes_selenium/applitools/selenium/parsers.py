@@ -4,7 +4,6 @@ from lxml import etree
 import tinycss2
 
 from applitools.common import logger
-from applitools.common.utils import urlparse
 
 if TYPE_CHECKING:
     from typing import List, Text
@@ -14,9 +13,7 @@ def _url_from_tags(tags):
     for tag in tags:
         if tag.type == "url":
             try:
-                url = urlparse(tag.value)
-                if url.scheme in ["http", "https"]:
-                    yield url.geturl()
+                yield tag.value
             except Exception as e:
                 logger.exception(e)
 
