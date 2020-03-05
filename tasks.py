@@ -29,6 +29,10 @@ def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
 
 @task(pre=[clean])
 def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
+    git_status = c.run("git status", hide=True)
+    if "Changes not staged for commit" in git_status.stdout:
+        raise Exception("Working directory should be clean")
+
     packages = list(
         _packages_resolver(
             common, core, selenium, images, full_path=True, path_as_str=True
