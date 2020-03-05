@@ -142,7 +142,7 @@ def mypy_check(c, common=False, core=False, selenium=False, images=False):
 def retrieve_js(c):
     for pack in _packages_resolver(selenium=True, full_path=True):
         with c.cd(pack):
-            c.run("npm update", echo=True)
+            c.run("npm update --save", echo=True)
         move_js_resources_to(pack)
 
 
