@@ -70,5 +70,5 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
             if val is None:
                 logger.debug("No response for {}".format(r_url))
                 val = VGResource.EMPTY(r_url)
-            self[r_url] = val
+                self[r_url] = val
         return self
