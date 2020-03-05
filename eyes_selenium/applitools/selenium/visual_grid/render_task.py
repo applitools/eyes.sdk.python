@@ -72,7 +72,7 @@ class RenderTask(VGTask):
         def get_and_put_resource(url, running_render):
             # type: (str, RunningRender) -> VGResource
             logger.debug(
-                "get_and_put_resource({0:.20}, render_id={1}) call".format(
+                "get_and_put_resource({0}, render_id={1}) call".format(
                     url, running_render.render_id
                 )
             )
@@ -195,7 +195,7 @@ class RenderTask(VGTask):
         frames = data.get("frames", [])
         discovered_resources_urls = []
 
-        def handle_resources(content_type, content):
+        def handle_resources(content_type, content, resource_url):
             logger.debug("handle_resources({0}) call".format(content_type))
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
@@ -203,7 +203,7 @@ class RenderTask(VGTask):
             if content_type.startswith("image/svg"):
                 urls_from_svg = parsers.get_urls_from_svg_resource(content)
             for discovered_url in urls_from_css + urls_from_svg:
-                target_url = _apply_base_url(discovered_url, base_url)
+                target_url = _apply_base_url(discovered_url, base_url, resource_url)
                 with self.discovered_resources_lock:
                     discovered_resources_urls.append(target_url)
 
@@ -232,13 +232,14 @@ class RenderTask(VGTask):
 
         for r_url in set(resource_urls + discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
-
         self.resource_cache.process_all()
-        for r_url, val in iteritems(self.resource_cache):
-            if val is None:
-                val = VGResource.EMPTY(r_url)
-            self.request_resources[r_url] = val
 
+        # some discovered urls becomes available only after resources processed
+        for r_url in set(discovered_resources_urls):
+            self.resource_cache.fetch_and_store(r_url, get_resource)
+        self.resource_cache.process_all()
+
+        self.request_resources.update(self.resource_cache)
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
@@ -290,8 +291,10 @@ class RenderTask(VGTask):
         return len(self.running_tests) - 1
 
 
-def _apply_base_url(discovered_url, base_url):
+def _apply_base_url(discovered_url, base_url, resource_url=None):
     url = urlparse(discovered_url)
     if url.scheme in ["http", "https"] and url.netloc:
         return discovered_url
+    if resource_url and urlparse(resource_url).netloc != urlparse(base_url).netloc:
+        base_url = resource_url
     return urljoin(base_url, discovered_url)

@@ -3,6 +3,7 @@
 - Dom capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
 ## Fixed
 - Requirements issue with attrs [Trello 1578](https://trello.com/c/sR56FqO7)
+- VG not rendering properly with external css which contain relative resources [Trello 1619](https://trello.com/c/F2jfilLk)
 
 # [4.1.16] - 2020-02-24
 ## Fixed

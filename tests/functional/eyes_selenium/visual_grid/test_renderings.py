@@ -160,3 +160,21 @@ def test_svg_parsing(driver, eyes, batch_info, vg_runner):
     eyes.check_window()
     eyes.close_async()
     all_results = vg_runner.get_all_test_results(False)
+
+
+def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner):
+    driver.get(
+        "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
+    )
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            test_name="TestCssRelativeUrlOnAnotherDomain",
+            app_name="Visual Grid Render Test",
+            batch=batch_info,
+        ).add_browser(1200, 800, BrowserType.CHROME)
+    )
+    eyes.open(driver)
+    eyes.check_window()
+    eyes.close_async()
+    all_results = vg_runner.get_all_test_results()
