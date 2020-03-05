@@ -1,3 +1,6 @@
+## Updated
+- Dom snapshot updated to *3.3.3* [Trello 1586](https://trello.com/c/ZS0Wb1FN)
+
 # [4.1.17] - 2020-03-05
 ## Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
