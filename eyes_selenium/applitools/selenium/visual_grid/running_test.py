@@ -322,7 +322,7 @@ class RunningTest(object):
                 )
                 self.test_result = test_result
                 if callable(self.on_results):
-                    self.on_results(test_result)
+                    self.on_results(test=self, test_result=test_result)
 
             def close_task_completed():
                 # type: () -> None
