@@ -1,3 +1,7 @@
+# [4.1.18] - 2020-03-06
+## Fixed
+- Non consistent execution of tests with VG [Trello 1623](https://trello.com/c/2s6WMVKn)
+- get_all_test_results return always one TestResults object
 ## Updated
 - Dom snapshot updated to *3.3.3* [Trello 1586](https://trello.com/c/ZS0Wb1FN)
 
