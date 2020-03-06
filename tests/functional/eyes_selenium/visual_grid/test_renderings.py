@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import pytest
 
-from applitools.common import RectangleSize, logger
+from applitools.common import RectangleSize, logger, ScreenOrientation
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
@@ -172,9 +172,19 @@ def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner)
             test_name="TestCssRelativeUrlOnAnotherDomain",
             app_name="Visual Grid Render Test",
             batch=batch_info,
-        ).add_browser(1200, 800, BrowserType.CHROME)
+        )
+        .add_browser(1200, 800, BrowserType.CHROME)
+        .add_browser(700, 600, BrowserType.FIREFOX)
+        .add_browser(1200, 600, BrowserType.FIREFOX)
+        .add_browser(1200, 600, BrowserType.EDGE)
+        .add_browser(1200, 600, BrowserType.IE_11)
+        .add_browser(1200, 600, BrowserType.IE_10)
+        .add_device_emulation(DeviceName.iPhone_X, ScreenOrientation.PORTRAIT)
+        .add_device_emulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
+        .add_device_emulation(DeviceName.iPad)
     )
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    all_results = vg_runner.get_all_test_results()
+    all_results = vg_runner.get_all_test_results(False)
+    assert len(all_results) == 9

@@ -448,6 +448,8 @@ class ServerConnector(object):
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
+        if self._render_info:
+            return self._render_info
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = "application/json"
         response = self._com.long_request("get", self.RENDER_INFO_PATH, headers=headers)

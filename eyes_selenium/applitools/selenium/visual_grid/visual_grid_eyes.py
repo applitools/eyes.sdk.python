@@ -78,7 +78,7 @@ class VisualGridEyes(object):
         self._config_provider = config_provider
         self._elements = []
         argument_guard.not_none(runner)
-        self.vg_manager = runner
+        self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
 
@@ -139,9 +139,7 @@ class VisualGridEyes(object):
             test = RunningTest(
                 self._create_vgeyes_connector(b_info), self.configure, b_info
             )
-            test.on_results_received(
-                lambda r: self.vg_manager.aggregate_result(test, r)
-            )
+            test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
             self.test_list.append(test)
         self._is_opened = True
