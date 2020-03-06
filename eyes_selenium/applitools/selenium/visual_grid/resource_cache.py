@@ -66,9 +66,11 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
         return False
 
     def process_all(self):
-        for r_url, val in iteritems(self):
-            if val is None:
-                logger.debug("No response for {}".format(r_url))
-                val = VGResource.EMPTY(r_url)
-                self[r_url] = val
+        with self.lock:
+            for r_url in self:
+                val = self.get(r_url)
+                if val is None:
+                    logger.debug("No response for {}".format(r_url))
+                    val = VGResource.EMPTY(r_url)
+                    self[r_url] = val
         return self
