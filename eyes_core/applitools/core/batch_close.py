@@ -62,7 +62,7 @@ class BatchClose(object):
         return self
 
     def set_batch_ids(self, *ids):
-        # type: (Union[*Text, List[Text]]) -> _EnabledBatchClose
+        # type: (Union[Text, List[Text]]) -> _EnabledBatchClose
         if isinstance(ids[0], list):
             ids = ids[0]
         return _EnabledBatchClose(ids, self.server_url, self.api_key)
