@@ -239,7 +239,7 @@ class RunningTest(object):
             script=script_result,
             resource_cache=visual_grid_manager.resource_cache,
             put_cache=visual_grid_manager.put_cache,
-            rendering_info=visual_grid_manager.render_info(self.eyes),
+            rendering_info=self.eyes.render_info(),
             eyes_connector=self.eyes,
             region_selectors=region_selectors,
             size_mode=check_settings.values.size_mode,
@@ -322,7 +322,7 @@ class RunningTest(object):
                 )
                 self.test_result = test_result
                 if callable(self.on_results):
-                    self.on_results(test_result)
+                    self.on_results(test=self, test_result=test_result)
 
             def close_task_completed():
                 # type: () -> None
