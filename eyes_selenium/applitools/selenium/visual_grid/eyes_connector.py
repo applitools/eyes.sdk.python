@@ -139,9 +139,7 @@ class EyesConnector(EyesBase):
 
     def render_info(self):
         # type: () -> RenderingInfo
-        if self._render_info is None:
-            self._render_info = self._server_connector.render_info()
-        return self._render_info
+        return self._server_connector.render_info()
 
     def check(
         self,
