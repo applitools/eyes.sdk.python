@@ -239,7 +239,7 @@ class RunningTest(object):
             script=script_result,
             resource_cache=visual_grid_manager.resource_cache,
             put_cache=visual_grid_manager.put_cache,
-            rendering_info=visual_grid_manager.render_info(self.eyes),
+            rendering_info=self.eyes.render_info(),
             eyes_connector=self.eyes,
             region_selectors=region_selectors,
             size_mode=check_settings.values.size_mode,

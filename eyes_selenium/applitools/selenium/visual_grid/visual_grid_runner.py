@@ -47,7 +47,6 @@ class VisualGridRunner(EyesRunner):
         self.still_running = True  # type: bool
 
         self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
-        self._rendering_info = None  # type: Optional[RenderingInfo]
         self._future_to_task = ResourceCache()  # type:ResourceCache
         thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
@@ -60,18 +59,14 @@ class VisualGridRunner(EyesRunner):
 
     def aggregate_result(self, test, test_result):
         # type: (RunningTest, TestResults) -> None
+        logger.debug(
+            "aggregate_result({}, {}) called".format(test.test_uuid, test_result)
+        )
         self._all_test_result[test] = test_result
-
-    def render_info(self, eyes_connector):
-        # type: (EyesConnector) -> RenderingInfo
-        if self._rendering_info is None:
-            self._rendering_info = eyes_connector.render_info()
-        return self._rendering_info
 
     def open(self, eyes):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
-        self._rendering_info = eyes.rendering_info
         logger.debug("VisualGridRunner.open(%s)" % eyes)
 
     def _run(self):

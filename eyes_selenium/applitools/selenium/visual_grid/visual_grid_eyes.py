@@ -78,7 +78,7 @@ class VisualGridEyes(object):
         self._config_provider = config_provider
         self._elements = []
         argument_guard.not_none(runner)
-        self.vg_manager = runner
+        self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
 
