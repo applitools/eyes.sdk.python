@@ -55,3 +55,10 @@ def pytest_generate_tests(metafunc):
     if not strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
         if "stitch_mode" in metafunc.fixturenames:
             metafunc.parametrize("stitch_mode", [StitchMode.CSS, StitchMode.Scroll])
+
+
+def pytest_runtest_setup(item):
+    if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
+        selenium_only = item.get_closest_marker("selenium_only")
+        if selenium_only:
+            pytest.skip("This test only supported by Selenium")
