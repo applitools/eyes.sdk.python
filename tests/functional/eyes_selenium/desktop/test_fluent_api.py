@@ -39,6 +39,7 @@ def test_check_window__fluent(eyes_opened):
     eyes_opened.check("Fluent - Window", Target.window())
 
 
+@pytest.mark.selenium_only
 def test_scrollbars_hidden_and_returned__fluent(eyes_opened):
     eyes_opened.check("Fluent - Window (Before)", Target.window().fully())
     eyes_opened.check(

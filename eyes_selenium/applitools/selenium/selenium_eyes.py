@@ -276,7 +276,8 @@ class SeleniumEyes(EyesBase):
         if self._position_memento:
             self._position_provider.restore_state(self._position_memento)
 
-        self.driver.switch_to.frames(self._original_fc)
+        if not self.driver.is_mobile_app:
+            self.driver.switch_to.frames(self._original_fc)
         self._position_provider = None
         self._original_fc = None
         logger.debug("check - done!")

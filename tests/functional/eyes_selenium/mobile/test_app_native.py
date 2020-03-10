@@ -18,8 +18,8 @@ import pytest
 )
 @pytest.mark.eyes_config(hide_scrollbars=False)
 def test_android_native(eyes, driver):
-    eyes.open(driver, "Contacts!", "My first Appium Python test!")
-    eyes.check_window("Contact list!")
+    eyes.open(driver, "Mobile Native Tests", "Android Native App 1")
+    eyes.check_window("Contact list")
     eyes.close()
 
 
@@ -40,6 +40,6 @@ def test_android_native(eyes, driver):
 )
 @pytest.mark.eyes_config(hide_scrollbars=False)
 def test_ios_native(eyes, driver):
-    eyes.open(driver, "Contacts!", "My first Appium Python test!")
-    eyes.check_window("Contact list!")
+    eyes.open(driver, "Mobile Native Tests", "My first Appium Python test!")
+    eyes.check_window("Contact list")
     eyes.close()
