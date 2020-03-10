@@ -1,3 +1,6 @@
+## Fixed
+- Appium Native tests fail with error [Trello 1590](https://trello.com/c/gG26XQLH)
+
 # [4.1.18] - 2020-03-06
 ## Fixed
 - Non consistent execution of tests with VG [Trello 1623](https://trello.com/c/2s6WMVKn)

@@ -31,5 +31,4 @@ def webdriver_module():
     }
 )
 def test_selenium_and_appium_work(eyes_opened):
-    with pytest.raises(NewTestError):
-        eyes_opened.check_window("Home")
+    eyes_opened.check_window("Home")
