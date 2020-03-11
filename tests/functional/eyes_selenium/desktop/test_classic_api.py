@@ -16,7 +16,7 @@ def test_check_window(eyes_opened):
 
 
 def test_check_window_fully(eyes_opened):
-    eyes_opened.check_window("Full Window", fully=True)
+    eyes_opened.check_window("Full Window Che", fully=True)
 
 
 def test_check_window_viewport(eyes_opened):
