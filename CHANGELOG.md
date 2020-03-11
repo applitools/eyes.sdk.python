@@ -1,3 +1,4 @@
+# [4.1.19] - 2020-03-11
 ## Fixed
 - Appium Native tests fail with error [Trello 1590](https://trello.com/c/gG26XQLH)
 
