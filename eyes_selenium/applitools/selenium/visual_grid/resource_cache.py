@@ -19,26 +19,29 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __str__(self):
         return str(self.cache_map)[:25]
 
-    def _process_future(self, val):
+    def _process_future(self, url, val):
         if isinstance(val, Future):
             try:
                 return val.result()
             except Exception as e:
-                logger.exception(e)
+                logger.debug(
+                    "We got an exception for following URL: {}."
+                    "\n  See details below: \n{}".format(url, str(e))
+                )
                 return None
         return val
 
     def get(self, k, default=None):
         with self.lock:
             val = self.cache_map.get(k, default)
-            val = self._process_future(val)
+            val = self._process_future(k, val)
             self[k] = val
         return val
 
     def __getitem__(self, item):
         with self.lock:
             val = self.cache_map[item]
-            val = self._process_future(val)
+            val = self._process_future(item, val)
             self[item] = val
         return val
 
