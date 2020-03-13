@@ -124,6 +124,7 @@ def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
 
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 def test_switch_back_to_frame_after_check(eyes, driver):
+    eyes.configure.save_new_tests = True
     eyes_driver = eyes.open(
         driver,
         "Python Selenium",
@@ -148,6 +149,7 @@ def test_switch_back_to_frame_after_check(eyes, driver):
 
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 def test_region_selector_in_check_fluent_interface(eyes, driver):
+    eyes.configure.save_new_tests = True
     eyes_driver = eyes.open(
         driver,
         "Python Selenium",
