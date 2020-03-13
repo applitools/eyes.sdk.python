@@ -4,6 +4,7 @@ from enum import Enum
 
 import attr
 
+from . import logger
 from .geometry import RectangleSize, Region
 from .selenium.misc import BrowserType
 from .utils import general_utils, json_utils
@@ -283,6 +284,11 @@ class VGResource(object):
     def from_response(cls, url, response, on_created=None):
         # type: (Text, Response, Callable) -> VGResource
         if not response.ok:
+            logger.debug(
+                "We've got response code {} {} for URL {}".format(
+                    response.status_code, response.reason, url
+                )
+            )
             return VGResource.EMPTY(url)
 
         content_type = response.headers["Content-Type"]

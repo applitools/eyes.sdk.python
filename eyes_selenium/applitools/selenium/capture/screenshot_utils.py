@@ -22,7 +22,7 @@ class ScreenshotType(Enum):
 def update_screenshot_type(screenshot_type, image, driver):
     # type: ( Optional[ScreenshotType], Image, EyesWebDriver) -> ScreenshotType
     if screenshot_type is None:
-        viewport_size = driver.eyes.viewport_size
+        viewport_size = driver.eyes.configure.viewport_size
         scale_viewport = driver.eyes.should_stitch_content
 
         if scale_viewport:
@@ -51,7 +51,7 @@ def cut_to_viewport_size_if_required(driver, image):
 
     screenshot_type = update_screenshot_type(None, image, driver)
     if screenshot_type != ScreenshotType.VIEWPORT:
-        viewport_size = driver.eyes.viewport_size
+        viewport_size = driver.eyes.configure.viewport_size
         image = image_utils.crop_image(
             image,
             region_to_crop=Region(

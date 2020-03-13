@@ -33,17 +33,18 @@ if typing.TYPE_CHECKING:
 
 
 class EyesConnector(EyesBase):
-    def __init__(self, browser_info, config):
-        # type: (RenderBrowserInfo, Configuration) -> None
+    def __init__(self, browser_info, config, ua_string, rendering_info):
+        # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
         super(EyesConnector, self).__init__()
         self.device = None
+        if browser_info.emulation_info:
+            self.device = browser_info.emulation_info.device_name
         self.device_size = None
-
         self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
-        self._server_connector.update_config(config)
+        self._server_connector.update_config(config, rendering_info, ua_string)
         self._region_selectors = None
         self._regions = None
 
@@ -68,10 +69,6 @@ class EyesConnector(EyesBase):
 
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
-
-    def get_resource(self, url):
-        # type: (Text) -> Response
-        return self._server_connector.download_resource(url)
 
     def render_put_resource(self, running_render, resource):
         # type: (RunningRender, VGResource) -> Text
