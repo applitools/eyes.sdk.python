@@ -259,8 +259,6 @@ class ServerConnector(object):
         self._com.api_key = conf.api_key
         self._com.timeout_ms = conf._timeout
         self._render_info = render_info
-        if self._render_info is None:
-            self.render_info()
         self._ua_string = ua_string
 
     @property
