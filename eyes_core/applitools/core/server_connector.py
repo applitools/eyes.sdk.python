@@ -241,6 +241,7 @@ class ServerConnector(object):
         :param client_session: session for communication with server.
         """
         self._render_info = None  # type: Optional[RenderingInfo]
+        self._ua_string = None  # type: Optional[RenderingInfo]
         if client_session:
             self._com = _RequestCommunicator(
                 headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
@@ -248,7 +249,7 @@ class ServerConnector(object):
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
-    def update_config(self, conf):
+    def update_config(self, conf, render_info=None, ua_string=None):
         if conf.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
@@ -257,6 +258,10 @@ class ServerConnector(object):
         self._com.server_url = conf.server_url
         self._com.api_key = conf.api_key
         self._com.timeout_ms = conf._timeout
+        self._render_info = render_info
+        if self._render_info is None:
+            self.render_info()
+        self._ua_string = ua_string
 
     @property
     def server_url(self):
@@ -526,10 +531,13 @@ class ServerConnector(object):
     @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
     def download_resource(self, url):
         # type: (Text) -> Response
-        logger.debug("Fetching {}...".format(url))
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Accept-Encoding"] = "identity"
-
+        headers = {
+            "Accept-Encoding": "identity",
+            "Accept-Language": "*",
+        }
+        if self._ua_string:
+            headers["User-Agent"] = self._ua_string
+        logger.debug("Fetching URL {}\nwith headers {}".format(url, headers))
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
         response = self.client_session.get(
             url, headers=headers, timeout=timeout_sec, verify=False
