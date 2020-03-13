@@ -1,3 +1,4 @@
+# [4.1.20] - 2020-03-13
 ## Fixed
 - Missing useragent in headers during downloading of resources for VG [Trello 1646](https://trello.com/c/QvI2Ba21)
 
