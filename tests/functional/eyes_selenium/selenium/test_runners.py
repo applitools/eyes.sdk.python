@@ -18,7 +18,7 @@ def test_classic_runner_works_normally(driver):
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
         driver,
-        "Applitools Eyes Java SDK",
+        "Applitools Eyes Python SDK",
         "Classic Runner Test",
         dict(width=1200, height=800),
     )
@@ -61,32 +61,30 @@ def test_eyes_none_runner(driver):
 def test_eyes_runner(driver, runner):
     eyes = Eyes(runner)
     eyes2 = Eyes(runner)
-    batch_info = BatchInfo("Runner Testing")
     config = (
         Configuration()
         .set_send_dom(True)
         .set_hide_scrollbars(True)
         .set_stitch_mode(StitchMode.CSS)
-        .set_batch(batch_info)
+        .set_save_new_tests(True)
     )
     eyes.set_configuration(config)
     eyes2.set_configuration(config)
     driver.get(
         "http://applitools.github.io/demo/TestPages/VisualGridTestPage/index.html"
     )
-    eyes.add_property(
-        "Runner", "VisualGrid" if isinstance(runner, VisualGridRunner) else "Selenium"
-    )
+    runner_name = "VisualGrid" if isinstance(runner, VisualGridRunner) else "Selenium"
+    eyes.add_property("Runner", runner_name)
     eyes.open(
         driver,
-        "Applitools Eyes Java SDK",
-        "Classic Runner Test",
+        "Applitools Eyes Python SDK",
+        "{} Runner Test".format(runner_name),
         dict(width=1200, height=800),
     )
     eyes2.open(
         driver,
-        "Applitools Eyes Java SDK",
-        "Classic Runner 2 Test",
+        "Applitools Eyes Python SDK",
+        "{} Runner 2 Test".format(runner_name),
         dict(width=1200, height=800),
     )
 
