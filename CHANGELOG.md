@@ -1,3 +1,6 @@
+## Fixed
+- Missing useragent in headers during downloading of resources for VG [Trello 1646](https://trello.com/c/QvI2Ba21)
+
 # [4.1.19] - 2020-03-11
 ## Fixed
 - Appium Native tests fail with error [Trello 1590](https://trello.com/c/gG26XQLH)
@@ -12,7 +15,7 @@
 # [4.1.17] - 2020-03-05
 ## Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
-- Dom capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
+- DOM capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
 ## Fixed
 - Requirements issue with attrs [Trello 1578](https://trello.com/c/sR56FqO7)
 - VG not rendering properly with external css which contain relative resources [Trello 1619](https://trello.com/c/F2jfilLk)
