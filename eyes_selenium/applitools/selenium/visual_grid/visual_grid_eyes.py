@@ -135,9 +135,12 @@ class VisualGridEyes(object):
         self._driver = driver
         self._set_viewport_size()
 
+        ua_string = self._driver.execute_script("return navigator.userAgent").replace(
+            "useragent:", ""
+        )
         for b_info in self.configure.browsers_info:
             test = RunningTest(
-                self._create_vgeyes_connector(b_info), self.configure, b_info
+                self._create_vgeyes_connector(b_info, ua_string), self.configure, b_info
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
@@ -305,16 +308,13 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info):
-        # type: (RenderBrowserInfo) -> EyesConnector
-        vgeyes_connector = EyesConnector(b_info, self.configure.clone())
-        if b_info.emulation_info:
-            vgeyes_connector.device = b_info.emulation_info.device_name
-
+    def _create_vgeyes_connector(self, b_info, ua_string):
+        # type: (RenderBrowserInfo, Text) -> EyesConnector
+        vgeyes_connector = EyesConnector(
+            b_info, self.configure.clone(), ua_string, self.rendering_info
+        )
         if self.rendering_info is None:
             self.rendering_info = vgeyes_connector.render_info()
-        if self.rendering_info:
-            vgeyes_connector._server_connector._render_info = self.rendering_info
         return vgeyes_connector
 
     def _try_set_target_selector(self, check_settings):
