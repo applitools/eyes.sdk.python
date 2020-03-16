@@ -9,6 +9,7 @@ from struct import pack
 import attr
 import requests
 from requests import Response
+from requests.adapters import HTTPAdapter
 from requests.packages import urllib3  # noqa
 
 from applitools.common import RunningSession, logger
@@ -48,11 +49,14 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
 __all__ = ("ServerConnector",)
 
 
-@attr.s
 class ClientSession(object):
     """ A proxy to requests.Session """
 
-    _session = attr.ib(factory=requests.Session)
+    def __init__(self):
+        self._session = requests.Session()
+        adapter = HTTPAdapter(pool_connections=10, pool_maxsize=100)
+        self._session.mount("http://", adapter)
+        self._session.mount("https://", adapter)
 
     def __enter__(self):
         return self
