@@ -55,16 +55,8 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         [],  # Target Element Location
     ]
     for region in regions:
-        can_add_region = False
-        while not can_add_region:
-            current_counter += 1
-            if current_counter > current_type_region_count:
-                current_type_index += 1
-                current_type_region_count = len(region_selectors[current_type_index])
-                current_counter = 0
-            else:
-                can_add_region = True
         mutable_regions[current_type_index].append(region)
+        current_type_index += 1
 
     # location = Point.ZERO()
 
@@ -77,7 +69,6 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     image_match_settings.strict_regions = mutable_regions[2]
     image_match_settings.content_regions = mutable_regions[3]
 
-    # TODO: Implement floating regions
     floating_match_settings = []
     for i, reg in enumerate(mutable_regions[4]):
         if reg.area == 0:
