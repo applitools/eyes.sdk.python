@@ -52,7 +52,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
-    current_counter = current_type_index = 0
+    current_counter = current_type_index = -1
     current_type_region_count = len(region_selectors[0])
 
     mutable_regions = [
@@ -70,7 +70,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
             if current_counter > current_type_region_count:
                 current_type_index += 1
                 current_type_region_count = len(region_selectors[current_type_index])
-                current_counter = 0
+                current_counter = -1
             else:
                 can_add_region = True
         mutable_regions[current_type_index].append(region)
