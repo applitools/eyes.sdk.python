@@ -40,12 +40,11 @@ def _collect_regions(region_providers, screenshot, eyes):
 
 
 def filter_empty_entries(regions, location):
-    for i, region in enumerate(regions[:]):
-        if region.area == 0:
-            regions.pop(i)
-        else:
-            region.offset(-location)
-    return regions
+    return [
+        region.offset(-location)
+        for i, region in enumerate(regions[:])
+        if region.area != 0
+    ]
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
