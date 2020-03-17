@@ -157,6 +157,8 @@ class EyesConnector(EyesBase):
             NULL_REGION_PROVIDER, name, False, check_settings
         )
         self._current_uuid = None
+        self._region_selectors = []
+        self._regions = []
         return check_result
 
     def close(self, raise_ex=True):

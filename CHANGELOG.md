@@ -1,3 +1,6 @@
+## Fixed
+- Issue With VG Capturing After Element Check [Trello 1639](https://trello.com/c/tPRpKuOX)
+
 # [4.1.21] - 2020-03-16
 ## Fixed
 - Handling Data URL in CSS [Trello 1656](https://trello.com/c/DlBLzq0R)

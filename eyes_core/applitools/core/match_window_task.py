@@ -39,11 +39,20 @@ def _collect_regions(region_providers, screenshot, eyes):
     return collected
 
 
+def filter_empty_entries(regions, location):
+    for i, region in enumerate(regions[:]):
+        if region.area == 0:
+            regions.pop(i)
+        else:
+            region.offset(-location)
+    return regions
+
+
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
     # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
-    current_counter = current_type_index = 0
+    current_counter = current_type_index = -1
     current_type_region_count = len(region_selectors[0])
 
     mutable_regions = [
@@ -61,23 +70,31 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
             if current_counter > current_type_region_count:
                 current_type_index += 1
                 current_type_region_count = len(region_selectors[current_type_index])
-                current_counter = 0
+                current_counter = -1
             else:
                 can_add_region = True
         mutable_regions[current_type_index].append(region)
 
-    # location = Point.ZERO()
+    location = Point.ZERO()
 
     # If target element location available
-    # if mutable_regions[5]:
-    #     location = mutable_regions[5][0].location
+    selector_regions_index = len(mutable_regions) - 1
+    if mutable_regions[selector_regions_index]:
+        location = mutable_regions[selector_regions_index][0].location
 
-    image_match_settings.ignore_regions = mutable_regions[0]
-    image_match_settings.layout_regions = mutable_regions[1]
-    image_match_settings.strict_regions = mutable_regions[2]
-    image_match_settings.content_regions = mutable_regions[3]
+    image_match_settings.ignore_regions = filter_empty_entries(
+        mutable_regions[0], location
+    )
+    image_match_settings.layout_regions = filter_empty_entries(
+        mutable_regions[1], location
+    )
+    image_match_settings.strict_regions = filter_empty_entries(
+        mutable_regions[2], location
+    )
+    image_match_settings.content_regions = filter_empty_entries(
+        mutable_regions[3], location
+    )
 
-    # TODO: Implement floating regions
     floating_match_settings = []
     for i, reg in enumerate(mutable_regions[4]):
         if reg.area == 0:
