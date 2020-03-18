@@ -54,7 +54,7 @@ def test_perform_match_with_no_regions(
 
 
 def test_perform_match_collect_regions_from_screenshot(
-    mwt, app_output_with_screenshot, image_match_settings, eyes_base_mock
+    mwt, app_output_with_screenshot, eyes_base_mock
 ):
     ignore_region = Region(5, 6, 7, 8)
     max_offset = 25
@@ -65,6 +65,9 @@ def test_perform_match_collect_regions_from_screenshot(
         .ignore(ignore_region)
         .floating(max_offset, floating_region)
         .content(content_region)
+    )
+    image_match_settings = mwt.create_image_match_settings(
+        check_settings, eyes_base_mock
     )
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
