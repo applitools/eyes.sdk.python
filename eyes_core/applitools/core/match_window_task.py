@@ -61,8 +61,9 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     for selectors_count, m_specific_regions in zip(r_selector_counts, mutable_regions):
         if selectors_count == 0:
             continue
-        m_specific_regions.extend(regions[prev_count : selectors_count + 1])
-        prev_count = selectors_count
+        next_count = prev_count + selectors_count
+        m_specific_regions.extend(regions[prev_count:next_count])
+        prev_count = next_count
 
     location = Point.ZERO()
 
