@@ -4,6 +4,7 @@ from applitools.selenium import (
     BrowserType,
     Target,
 )
+from tests.utils import get_session_results
 
 
 def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runner):
@@ -25,7 +26,23 @@ def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runne
         ),
     )
     eyes.check(
-        "Step 3", Target.window().layout("body > div > div > form > div:nth-child(1)"),
+        "Step 3", Target.window().ignore("body > div > div > form > div:nth-child(1)"),
     )
     eyes.close_async()
-    res = vg_runner.get_all_test_results()
+    trc = vg_runner.get_all_test_results().all_results[0]
+    session_results = get_session_results(eyes.api_key, trc.test_results)
+    actual_output = session_results["actualAppOutput"]
+    assert len(actual_output[1]["imageMatchSettings"]["layout"]) == 1
+    assert actual_output[1]["imageMatchSettings"]["layout"][0] == {
+        "left": 80,
+        "top": 322,
+        "width": 290,
+        "height": 62,
+    }
+    assert len(actual_output[2]["imageMatchSettings"]["ignore"]) == 1
+    assert actual_output[2]["imageMatchSettings"]["ignore"][0] == {
+        "left": 367,
+        "top": 322,
+        "width": 290,
+        "height": 62,
+    }
