@@ -1,5 +1,6 @@
 ## Fixed
 - Issue With VG Capturing After Element Check [Trello 1639](https://trello.com/c/tPRpKuOX)
+- VG Ignore region in the wrong coordinates [Trello 1654](https://trello.com/c/OvhH1p91)
 
 # [4.1.21] - 2020-03-16
 ## Fixed
