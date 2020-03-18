@@ -40,20 +40,13 @@ def _collect_regions(region_providers, screenshot, eyes):
 
 
 def filter_empty_entries(regions, location):
-    for i, region in enumerate(regions[:]):
-        if region.area == 0:
-            regions.pop(i)
-        else:
-            region.offset(-location)
-    return regions
+    return [region.offset(-location) for region in regions if region.area != 0]
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
     # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
-    current_counter = current_type_index = -1
-    current_type_region_count = len(region_selectors[0])
 
     mutable_regions = [
         [],  # Ignore Regions
@@ -63,17 +56,14 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         [],  # Floating Regions
         [],  # Target Element Location
     ]
-    for region in regions:
-        can_add_region = False
-        while not can_add_region:
-            current_counter += 1
-            if current_counter > current_type_region_count:
-                current_type_index += 1
-                current_type_region_count = len(region_selectors[current_type_index])
-                current_counter = -1
-            else:
-                can_add_region = True
-        mutable_regions[current_type_index].append(region)
+    r_selector_counts = [len(r) for r in region_selectors]  # mapping of
+    prev_count = 0
+    for selectors_count, m_specific_regions in zip(r_selector_counts, mutable_regions):
+        if selectors_count == 0:
+            continue
+        next_count = prev_count + selectors_count
+        m_specific_regions.extend(regions[prev_count:next_count])
+        prev_count = next_count
 
     location = Point.ZERO()
 
@@ -183,6 +173,8 @@ class MatchWindowTask(object):
             img.enable_patterns = check_settings.values.enable_patterns
         if check_settings.values.ignore_displacements is not None:
             img.ignore_displacements = check_settings.values.ignore_displacements
+        if check_settings.values.match_level is not None:
+            img.match_level = check_settings.values.match_level
 
         if screenshot:
             img = collect_regions_from_screenshot(check_settings, img, screenshot, eyes)
@@ -252,9 +244,6 @@ class MatchWindowTask(object):
             image_match_settings = collect_regions_from_selectors(
                 image_match_settings, regions, region_selectors
             )
-
-        if check_settings and check_settings.values.match_level is not None:
-            image_match_settings.match_level = check_settings.values.match_level
 
         user_inputs = user_inputs or []
         agent_setup = self._eyes.agent_setup

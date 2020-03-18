@@ -7,8 +7,10 @@ from applitools.common import (
     MatchLevel,
     MatchWindowData,
     Region,
+    VisualGridSelector,
 )
 from applitools.core import CheckSettings, MatchWindowTask
+from applitools.core.match_window_task import collect_regions_from_selectors
 
 
 @pytest.fixture
@@ -53,8 +55,48 @@ def test_perform_match_with_no_regions(
     assert ims.floating_match_settings == []
 
 
+def test_collect_regions_from_selectors(mwt, eyes_base_mock):
+    REGIONS = [
+        Region(1, 1, 1, 1),
+        Region(2, 2, 2, 2),
+        Region(3, 3, 3, 3),
+        Region(4, 4, 4, 4),
+        Region(5, 5, 5, 5),
+        Region(6, 6, 6, 6),
+    ]
+    REGIONS_SELECTORS = [
+        [VisualGridSelector(".selector1", "some")],
+        [],
+        [
+            VisualGridSelector(".selector2", "some"),
+            VisualGridSelector(".selector3", "some"),
+        ],
+        [
+            VisualGridSelector(".selector3", "some"),
+            VisualGridSelector(".selector3", "some"),
+            VisualGridSelector(".selector3", "some"),
+        ],
+        [],
+        [],
+    ]
+    check_settings = CheckSettings()
+    image_match_settings = mwt.create_image_match_settings(
+        check_settings, eyes_base_mock
+    )
+    img = collect_regions_from_selectors(
+        image_match_settings, REGIONS, REGIONS_SELECTORS
+    )
+    assert img.ignore_regions == [Region(1, 1, 1, 1)]
+    assert img.strict_regions == [Region(2, 2, 2, 2), Region(3, 3, 3, 3)]
+    assert img.content_regions == [
+        Region(4, 4, 4, 4),
+        Region(5, 5, 5, 5),
+        Region(6, 6, 6, 6),
+    ]
+
+
 def test_perform_match_collect_regions_from_screenshot(
-    mwt, app_output_with_screenshot, image_match_settings, eyes_base_mock
+    mwt, app_output_with_screenshot, eyes_base_mock
 ):
     ignore_region = Region(5, 6, 7, 8)
     max_offset = 25
@@ -65,6 +107,9 @@ def test_perform_match_collect_regions_from_screenshot(
         .ignore(ignore_region)
         .floating(max_offset, floating_region)
         .content(content_region)
+    )
+    image_match_settings = mwt.create_image_match_settings(
+        check_settings, eyes_base_mock
     )
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(

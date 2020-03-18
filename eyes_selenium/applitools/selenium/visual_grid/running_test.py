@@ -1,4 +1,5 @@
 import typing
+from collections import defaultdict
 
 import attr
 from transitions import Machine
@@ -55,10 +56,9 @@ class RunningTest(object):
     region_selectors = attr.ib(
         init=False, factory=list, hash=False
     )  # type: List[List[VisualGridSelector]]
-    regions = attr.ib(init=False, factory=list, hash=False)
+    regions = attr.ib(init=False, factory=lambda: defaultdict(list), hash=False)
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
-    task_to_future_mapping = attr.ib(init=False, factory=dict, hash=False)
     test_uuid = attr.ib(init=False)
     on_results = attr.ib(init=False, hash=False)
     state = attr.ib(init=False, hash=False)
@@ -195,7 +195,11 @@ class RunningTest(object):
         def check_run():
             logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
             self.eyes.check(
-                tag, check_settings, render_task.uuid, region_selectors, self.regions
+                tag,
+                check_settings,
+                render_task.uuid,
+                region_selectors,
+                self.regions[render_task],
             )
 
         check_task = VGTask(
@@ -269,7 +273,7 @@ class RunningTest(object):
                         if vgr.error:
                             logger.error(vgr.error)
                         else:
-                            self.regions.append(vgr.to_region())
+                            self.regions[render_task].append(vgr.to_region())
                     self.watch_render[render_task] = True
                     if self.all_tasks_completed(self.watch_render):
                         self.becomes_rendered()
@@ -390,4 +394,4 @@ class RunningTest(object):
         # type: (Dict) -> bool
         if self.state == "completed":
             return True
-        return all(state for state in watch.values())
+        return all(watch.values())
