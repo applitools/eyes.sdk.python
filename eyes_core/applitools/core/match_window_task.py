@@ -182,6 +182,8 @@ class MatchWindowTask(object):
             img.enable_patterns = check_settings.values.enable_patterns
         if check_settings.values.ignore_displacements is not None:
             img.ignore_displacements = check_settings.values.ignore_displacements
+        if check_settings.values.match_level is not None:
+            img.match_level = check_settings.values.match_level
 
         if screenshot:
             img = collect_regions_from_screenshot(check_settings, img, screenshot, eyes)
@@ -251,9 +253,6 @@ class MatchWindowTask(object):
             image_match_settings = collect_regions_from_selectors(
                 image_match_settings, regions, region_selectors
             )
-
-        if check_settings and check_settings.values.match_level is not None:
-            image_match_settings.match_level = check_settings.values.match_level
 
         user_inputs = user_inputs or []
         agent_setup = self._eyes.agent_setup
