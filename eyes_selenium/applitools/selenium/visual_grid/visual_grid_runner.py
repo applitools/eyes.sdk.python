@@ -112,7 +112,7 @@ class VisualGridRunner(EyesRunner):
                 1500, msg="Waiting for state completed in get_all_test_results_impl",
             )
         # finish processing of all tasks and shutdown threads
-        self.stop()
+        self._stop()
 
         all_results = []
         for test, test_result in iteritems(self._all_test_results):
