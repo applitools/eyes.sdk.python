@@ -234,6 +234,9 @@ class VisualGridEyes(object):
 
         while True:
             states = [t.state for t in self.test_list]
+            if not states:
+                # probably some exception is happened during execution
+                break
             counter = Counter(states)
             logger.debug("Current test states: \n {}".format(counter))
             states = list(set(states))
