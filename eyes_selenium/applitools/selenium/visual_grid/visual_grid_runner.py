@@ -4,6 +4,7 @@ import operator
 import sys
 import threading
 import typing
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
@@ -104,8 +105,10 @@ class VisualGridRunner(EyesRunner):
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
         while True:
-            states = list(set(t.state for t in self._get_all_running_tests()))
-            logger.debug("Current test states: \n {}".format(states))
+            states = [t.state for t in self._get_all_running_tests()]
+            counter = Counter(states)
+            logger.debug("Current test states: \n {}".format(counter))
+            states = list(set(states))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(

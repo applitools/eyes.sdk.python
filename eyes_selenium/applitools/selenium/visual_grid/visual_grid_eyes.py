@@ -2,7 +2,7 @@ import json
 import threading
 import typing
 import uuid
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 import attr
 
@@ -233,8 +233,10 @@ class VisualGridEyes(object):
         self.close_async()
 
         while True:
-            states = list(set(t.state for t in self.test_list))
-            logger.debug("Current test states: \n {}".format(states))
+            states = [t.state for t in self.test_list]
+            counter = Counter(states)
+            logger.debug("Current test states: \n {}".format(counter))
+            states = list(set(states))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
