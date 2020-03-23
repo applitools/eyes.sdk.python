@@ -89,13 +89,21 @@ class RenderTask(VGTask):
                 self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
             except Exception as e:
-                logger.exception(e)
+                logger.error(
+                    "Raised an exception during rendering:"
+                    "\n\t {} \n\n "
+                    "Requests: \n\t{}".format(str(e), requests)
+                )
                 fetch_fails += 1
                 datetime_utils.sleep(
                     1500, msg="/render throws exception... sleeping for 1.5s"
                 )
             if fetch_fails > self.MAX_FAILS_COUNT:
-                raise EyesError("Render is failed. Max count retries reached")
+                raise EyesError(
+                    "Render is failed. Max count retries reached for {}".format(
+                        requests
+                    )
+                )
             if not render_requests:
                 logger.error("running_renders is null")
                 continue
@@ -198,7 +206,9 @@ class RenderTask(VGTask):
         discovered_resources_urls = []
 
         def handle_resources(content_type, content, resource_url):
-            logger.debug("handle_resources({0}) call".format(content_type))
+            logger.debug(
+                "handle_resources({0}, {1}) call".format(content_type, resource_url)
+            )
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
@@ -239,6 +249,7 @@ class RenderTask(VGTask):
         # some discovered urls becomes available only after resources processed
         for r_url in set(discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
+        # TODO: check missing resources
         self.resource_cache.process_all()
 
         self.request_resources.update(self.resource_cache)
