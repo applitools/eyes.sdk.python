@@ -537,11 +537,9 @@ class ServerConnector(object):
             headers["User-Agent"] = self._ua_string
         logger.debug("Fetching URL {}\nwith headers {}".format(url, headers))
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
-        response = self.client_session.get(
-            url, headers=headers, timeout=timeout_sec, verify=False
-        )
+        response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
         if response.status_code == requests.codes.not_acceptable:
-            response = self.client_session.get(url, timeout=timeout_sec, verify=False)
+            response = requests.get(url, timeout=timeout_sec, verify=False)
         return response
 
     def render_status_by_id(self, *render_ids):
