@@ -301,6 +301,6 @@ def _apply_base_url(discovered_url, base_url, resource_url=None):
     url = urlparse(discovered_url)
     if url.scheme in ["http", "https"] and url.netloc:
         return discovered_url
-    if resource_url and urlparse(resource_url).netloc != urlparse(base_url).netloc:
+    if resource_url:
         base_url = resource_url
     return urljoin(base_url, discovered_url)
