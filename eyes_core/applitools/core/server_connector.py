@@ -21,7 +21,6 @@ from applitools.common.utils import (
     argument_guard,
     datetime_utils,
     gzip_compress,
-    image_utils,
     json_utils,
     urljoin,
 )
@@ -123,7 +122,8 @@ class _RequestCommunicator(object):
         """
         Closes all adapters and as such the client session.
         """
-        self.client_session.close()
+        if hasattr(self.client_session, "close"):
+            self.client_session.close()
 
     def request(self, method, url_resource, use_api_key=True, **kwargs):
         # type: (Text, Text, bool, **Any) -> Response
@@ -242,12 +242,17 @@ class ServerConnector(object):
         """
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[RenderingInfo]
-        if client_session:
-            self._com = _RequestCommunicator(
-                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
-            )
-        else:
-            self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
+
+        # temporary disable HTTP persistence feature
+        self._com = _RequestCommunicator(
+            headers=ServerConnector.DEFAULT_HEADERS, client_session=requests
+        )
+        # if client_session:
+        #     self._com = _RequestCommunicator(
+        #       headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
+        #     )
+        # else:
+        #     self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
     def update_config(self, conf, render_info=None, ua_string=None):
         if conf.api_key is None:
