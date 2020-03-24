@@ -33,8 +33,7 @@ from applitools.common.visual_grid import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Any, Optional, Dict, Tuple, Callable
-    from applitools.common.utils.custom_types import Num
+    from typing import Text, List, Any, Optional, Dict, Union
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -51,7 +50,9 @@ __all__ = ("ServerConnector",)
 class ClientSession(object):
     """ A proxy to requests.Session """
 
-    _session = attr.ib(factory=requests.Session)
+    _session = attr.ib(
+        factory=requests.Session
+    )  # type: Union[requests, requests.Session]
 
     def __enter__(self):
         return self
@@ -60,7 +61,8 @@ class ClientSession(object):
         self.close()
 
     def close(self):
-        self._session.close()
+        if isinstance(self._session, requests.Session):
+            self._session.close()
 
     def request(self, method, url, **kwargs):
         # type: (Text, Text, **Any) -> Response
@@ -122,8 +124,7 @@ class _RequestCommunicator(object):
         """
         Closes all adapters and as such the client session.
         """
-        if hasattr(self.client_session, "close"):
-            self.client_session.close()
+        self.client_session.close()
 
     def request(self, method, url_resource, use_api_key=True, **kwargs):
         # type: (Text, Text, bool, **Any) -> Response
@@ -243,16 +244,15 @@ class ServerConnector(object):
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[RenderingInfo]
 
-        # temporary disable HTTP persistence feature
-        self._com = _RequestCommunicator(
-            headers=ServerConnector.DEFAULT_HEADERS, client_session=requests
-        )
-        # if client_session:
-        #     self._com = _RequestCommunicator(
-        #       headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
-        #     )
-        # else:
-        #     self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
+        # FIXME: temporary disable HTTP persistence feature
+        client_session = ClientSession(requests)
+
+        if client_session:
+            self._com = _RequestCommunicator(
+                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
+            )
+        else:
+            self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
     def update_config(self, conf, render_info=None, ua_string=None):
         if conf.api_key is None:
