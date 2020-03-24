@@ -15,7 +15,7 @@ from applitools.common import (
     logger,
     RunningRender,
 )
-from applitools.common.utils import datetime_utils, urljoin, urlparse, iteritems
+from applitools.common.utils import datetime_utils, apply_base_url
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium import parsers
@@ -218,7 +218,7 @@ class RenderTask(VGTask):
                 if discovered_url.startswith("data:"):
                     # resource already in blob
                     continue
-                target_url = _apply_base_url(discovered_url, base_url, resource_url)
+                target_url = apply_base_url(discovered_url, base_url, resource_url)
                 with self.discovered_resources_lock:
                     discovered_resources_urls.append(target_url)
 
@@ -229,7 +229,7 @@ class RenderTask(VGTask):
             return VGResource.from_response(link, response, on_created=handle_resources)
 
         for f_data in frames:
-            f_data["url"] = _apply_base_url(f_data["url"], base_url)
+            f_data["url"] = apply_base_url(f_data["url"], base_url)
             self.request_resources[f_data["url"]] = self.parse_frame_dom_resources(
                 f_data
             ).resource
@@ -306,12 +306,3 @@ class RenderTask(VGTask):
             )
         self.running_tests.append(running_test)
         return len(self.running_tests) - 1
-
-
-def _apply_base_url(discovered_url, base_url, resource_url=None):
-    url = urlparse(discovered_url)
-    if url.scheme in ["http", "https"] and url.netloc:
-        return discovered_url
-    if resource_url:
-        base_url = resource_url
-    return urljoin(base_url, discovered_url)

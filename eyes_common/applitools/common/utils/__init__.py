@@ -18,5 +18,11 @@ from .datetime_utils import (  # type: ignore # noqa
     to_rfc1123_datetime,
 )
 from .general_utils import cached_property  # noqa
+from .url_utils import apply_base_url, is_url_with_scheme, is_absolute_url  # noqa
 
-__all__ = compat.__all__ + ("image_utils", "argument_guard", "datetime_utils")  # noqa
+
+__all__ = (
+    compat.__all__
+    + url_utils.__all__
+    + ("image_utils", "argument_guard", "datetime_utils")
+)  # noqa

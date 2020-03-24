@@ -9,7 +9,7 @@ import requests
 import tinycss2
 
 from applitools.common import logger
-from applitools.common.utils import datetime_utils, general_utils
+from applitools.common.utils import datetime_utils, is_url_with_scheme, is_absolute_url
 from applitools.common.utils.compat import urljoin
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider
@@ -232,7 +232,7 @@ def _loop(driver, dom_tree):
 def _get_frame_bundled_css(driver):
     # type: (EyesWebDriver) -> tp.Text
     base_url = driver.current_url  # type: ignore
-    if not general_utils.is_absolute_url(base_url):
+    if not is_absolute_url(base_url):
         logger.info("Base URL is not an absolute URL!")
 
     cssom_results = driver.execute_script(_CAPTURE_CSSOM_SCRIPT)
@@ -320,11 +320,7 @@ def _parse_and_serialize_css(node, text, minimize=False):
 
 def _make_url(base_url, value):
     # type: (tp.Text, tp.Text) -> tp.Text
-    if general_utils.is_absolute_url(
-        value
-    ) and not general_utils.is_url_with_scheme(  # noqa
-        value
-    ):
+    if is_absolute_url(value) and not is_url_with_scheme(value):  # noqa
         url = urljoin("http://", value)
     else:
         url = urljoin(base_url, value)

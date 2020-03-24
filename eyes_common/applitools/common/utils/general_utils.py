@@ -7,7 +7,7 @@ import typing
 
 import attr
 
-from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
+from .compat import parse_qs, urlencode, urlsplit, urlunsplit
 
 """
 General purpose utilities.
@@ -48,14 +48,6 @@ def cached_property(f):
             return x
 
     return property(get)
-
-
-def is_absolute_url(url):
-    return bool(urlparse(url).netloc)
-
-
-def is_url_with_scheme(url):
-    return bool(urlparse(url).scheme)
 
 
 def get_sha256_hash(content):
