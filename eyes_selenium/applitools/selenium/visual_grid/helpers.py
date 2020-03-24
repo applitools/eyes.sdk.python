@@ -46,20 +46,23 @@ def collect_test_results(tests, should_raise_exception):
                 )
             )
         exception = None
-        if test.test_result is None:
+        if test_result:
+            scenario_id_or_name = test_result.name
+            app_id_or_name = test_result.app_name
+            if test_result.is_unresolved and not test_result.is_new:
+                exception = DiffsFoundError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            if test_result.is_new:
+                exception = NewTestError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+            if test_result.is_failed:
+                exception = TestFailedError(
+                    test_result, scenario_id_or_name, app_id_or_name
+                )
+        else:
             exception = TestFailedError("Test haven't finished correctly")
-        scenario_id_or_name = test_result.name
-        app_id_or_name = test_result.app_name
-        if test_result and test_result.is_unresolved and not test_result.is_new:
-            exception = DiffsFoundError(
-                test_result, scenario_id_or_name, app_id_or_name
-            )
-        if test_result and test_result.is_new:
-            exception = NewTestError(test_result, scenario_id_or_name, app_id_or_name)
-        if test_result and test_result.is_failed:
-            exception = TestFailedError(
-                test_result, scenario_id_or_name, app_id_or_name
-            )
         all_results.append(
             TestResultContainer(test_result, test.browser_info, exception)
         )
