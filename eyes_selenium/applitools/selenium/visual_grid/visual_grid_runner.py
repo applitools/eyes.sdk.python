@@ -110,13 +110,14 @@ class VisualGridRunner(EyesRunner):
                 # probably some exception is happened during execution
                 break
             counter = Counter(states)
-            logger.debug("Current test states: \n {}".format(counter))
+            logger.info("Current test states: \n {}".format(counter))
             states = list(set(states))
             if len(states) == 1 and states[0] == "completed":
                 break
             datetime_utils.sleep(
                 1500, msg="Waiting for state completed in get_all_test_results_impl",
             )
+        logger.info("Closing all related threads...")
         # finish processing of all tasks and shutdown threads
         self._stop()
 

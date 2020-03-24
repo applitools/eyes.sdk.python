@@ -238,7 +238,7 @@ class VisualGridEyes(object):
                 # probably some exception is happened during execution
                 break
             counter = Counter(states)
-            logger.debug("Current test states: \n {}".format(counter))
+            logger.info("Current test states: \n {}".format(counter))
             states = list(set(states))
             if len(states) == 1 and states[0] == "completed":
                 break
