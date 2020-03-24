@@ -22,7 +22,7 @@ from .url_utils import apply_base_url, is_url_with_scheme, is_absolute_url  # no
 
 
 __all__ = (
-    compat.__all__
-    + url_utils.__all__
+    compat.__all__  # noqa
+    + url_utils.__all__  # noqa
     + ("image_utils", "argument_guard", "datetime_utils")
-)  # noqa
+)
