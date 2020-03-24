@@ -1,7 +1,7 @@
 import typing
 from functools import partial
 from itertools import chain
-from threading import RLock
+from threading import Lock
 import attr
 
 from applitools.common import (
@@ -64,7 +64,6 @@ class RenderTask(VGTask):
         self.all_blobs = []  # type: List[VGResource]
         self.request_resources = {}  # type: Dict[Text, VGResource]
         self.resource_urls = []  # type: List[Text]
-        self.discovered_resources_lock = RLock()
 
     def perform(self):  # noqa
         # type: () -> List[RenderStatusResults]
@@ -203,6 +202,8 @@ class RenderTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        discovered_resources_urls = set()
+        discovered_resources_lock = Lock()
 
         def handle_resources(content_type, content, resource_url):
             logger.debug(
@@ -213,15 +214,13 @@ class RenderTask(VGTask):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
             if content_type.startswith("image/svg"):
                 urls_from_svg = parsers.get_urls_from_svg_resource(content)
-            with self.discovered_resources_lock:
-                for discovered_url in urls_from_css + urls_from_svg:
-                    if discovered_url.startswith("data:") or discovered_url.startswith(
-                        "#"
-                    ):
-                        # resource already in blob or not relevant
-                        continue
-                    target_url = apply_base_url(discovered_url, base_url, resource_url)
-                    self.resource_cache.fetch_and_store(target_url, get_resource)
+            for discovered_url in urls_from_css + urls_from_svg:
+                if discovered_url.startswith("data:") or discovered_url.startswith("#"):
+                    # resource already in blob or not relevant
+                    continue
+                target_url = apply_base_url(discovered_url, base_url, resource_url)
+                with discovered_resources_lock:
+                    discovered_resources_urls.add(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
@@ -243,11 +242,22 @@ class RenderTask(VGTask):
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls):
+        for r_url in set(resource_urls).union(discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.resource_cache.process_all()
 
-        self.request_resources.update(self.resource_cache)
+        # some discovered urls becomes available only after resources processed
+        for r_url in discovered_resources_urls:
+            self.resource_cache.fetch_and_store(r_url, get_resource)
+
+        # TODO: check missing resources
+        for r_url in set(resource_urls).union(discovered_resources_urls):
+            val = self.resource_cache[r_url]
+            if val is None:
+                logger.debug("No response for {}".format(r_url))
+                continue
+            self.request_resources[r_url] = self.resource_cache[r_url]
+
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
