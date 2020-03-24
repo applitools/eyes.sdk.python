@@ -4,30 +4,23 @@ import operator
 import sys
 import threading
 import typing
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
-    DiffsFoundError,
-    NewTestError,
-    TestFailedError,
-    TestResultContainer,
     TestResults,
     TestResultsSummary,
     logger,
 )
-from applitools.common.utils import datetime_utils, iteritems
+from applitools.common.utils import datetime_utils
 from applitools.core import EyesRunner
-
+from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Dict
-    from applitools.common import RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
         VisualGridEyes,
-        EyesConnector,
         VGTask,
     )
 
@@ -104,54 +97,17 @@ class VisualGridRunner(EyesRunner):
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        while True:
-            states = [t.state for t in self._get_all_running_tests()]
-            if not states:
-                # probably some exception is happened during execution
-                break
-            counter = Counter(states)
-            logger.info("Current test states: \n {}".format(counter))
-            states = list(set(states))
-            if len(states) == 1 and states[0] == "completed":
-                break
-            datetime_utils.sleep(
-                1500, msg="Waiting for state completed in get_all_test_results_impl",
-            )
-        logger.info("Closing all related threads...")
+        wait_till_tests_completed(self._get_all_running_tests)
+
         # finish processing of all tasks and shutdown threads
         self._stop()
 
-        all_results = []
-        for test, test_result in iteritems(self._all_test_results):
-            if test.pending_exceptions:
-                logger.error(
-                    "During test execution above exception raised. \n {:s}".join(
-                        str(e) for e in test.pending_exceptions
-                    )
-                )
-            exception = None
-            if test.test_result is None:
-                exception = TestFailedError("Test haven't finished correctly")
-            scenario_id_or_name = test_result.name
-            app_id_or_name = test_result.app_name
-            if test_result and test_result.is_unresolved and not test_result.is_new:
-                exception = DiffsFoundError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            if test_result and test_result.is_new:
-                exception = NewTestError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            if test_result and test_result.is_failed:
-                exception = TestFailedError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            all_results.append(
-                TestResultContainer(test_result, test.browser_info, exception)
-            )
-            if exception and should_raise_exception:
-                raise exception
-        return TestResultsSummary(all_results)
+        all_results = collect_test_results(
+            self._all_test_results, should_raise_exception
+        )
+        result = TestResultsSummary(all_results)
+        logger.info(result)
+        return result
 
     def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
