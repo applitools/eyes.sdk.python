@@ -215,8 +215,8 @@ class RenderTask(VGTask):
             if content_type.startswith("image/svg"):
                 urls_from_svg = parsers.get_urls_from_svg_resource(content)
             for discovered_url in urls_from_css + urls_from_svg:
-                if discovered_url.startswith("data:"):
-                    # resource already in blob
+                if discovered_url.startswith("data:") or discovered_url.startswith("#"):
+                    # resource already in blob or not relevant
                     continue
                 target_url = apply_base_url(discovered_url, base_url, resource_url)
                 with self.discovered_resources_lock:
