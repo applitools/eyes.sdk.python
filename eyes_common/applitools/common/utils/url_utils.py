@@ -11,10 +11,10 @@ def is_url_with_scheme(url):
     return bool(urlparse(url).scheme)
 
 
-def apply_base_url(discovered_url, base_url, resource_url=None):
+def apply_base_url(discovered_url, site_base_url, resource_url=None):
     url = urlparse(discovered_url)
     if url.scheme in ["http", "https"] and url.netloc:
         return discovered_url
-    if resource_url:
-        base_url = resource_url
-    return urljoin(base_url, discovered_url)
+    if resource_url and is_url_with_scheme(resource_url):
+        site_base_url = resource_url
+    return urljoin(site_base_url, discovered_url)
