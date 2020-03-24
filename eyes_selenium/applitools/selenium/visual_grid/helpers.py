@@ -24,13 +24,10 @@ def wait_till_tests_completed(test_provider):
         return test_provider()
 
     while True:
-        states = [t.state for t in get_tests(test_provider)]
+        states = list(set(t.state for t in get_tests(test_provider)))
         if not states:
             # probably some exception is happened during execution
             break
-        counter = Counter(states)
-        logger.info("Current test states: \n {}".format(counter))
-        states = list(set(states))
         if len(states) == 1 and states[0] == "completed":
             break
         datetime_utils.sleep(

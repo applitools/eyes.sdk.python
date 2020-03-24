@@ -137,3 +137,16 @@ def get_env_with_prefix(env_name, default=None):
             if value:
                 return value
     return default
+
+
+def counted(f):
+    """
+    Decorator that tracks how many times the function is called
+    """
+
+    def wrapped(*args, **kwargs):
+        wrapped.calls += 1
+        return f(*args, **kwargs)
+
+    wrapped.calls = 0
+    return wrapped

@@ -239,9 +239,7 @@ class VisualGridEyes(object):
         )
         if not all_results:
             return TestResults()
-        result = all_results[0].test_results
-        logger.info(str(result))
-        return result
+        return all_results[0].test_results
 
     def abort_async(self):
         """

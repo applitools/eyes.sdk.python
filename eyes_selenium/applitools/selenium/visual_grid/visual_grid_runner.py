@@ -4,6 +4,7 @@ import operator
 import sys
 import threading
 import typing
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
@@ -11,7 +12,7 @@ from applitools.common import (
     TestResultsSummary,
     logger,
 )
-from applitools.common.utils import datetime_utils
+from applitools.common.utils import datetime_utils, iteritems, counted
 from applitools.core import EyesRunner
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import ResourceCache
@@ -105,13 +106,21 @@ class VisualGridRunner(EyesRunner):
         all_results = collect_test_results(
             self._all_test_results, should_raise_exception
         )
-        result = TestResultsSummary(all_results)
-        logger.info(result)
-        return result
+        return TestResultsSummary(all_results)
 
+    @counted
     def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
-        return list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+        tests = list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+        if not bool(self._get_all_running_tests.calls % 15):
+            # print state every 15 call
+            counter = Counter(t.state for t in tests)
+            logger.info(
+                "Current tests states: \n{}".format(
+                    "\n".join(["\t{} - {}".format(t, c) for t, c in iteritems(counter)])
+                )
+            )
+        return tests
 
     def _get_all_running_tests_by_score(self):
         # type: () -> List[RunningTest]
