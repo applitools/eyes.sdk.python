@@ -203,7 +203,6 @@ class RenderTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         blobs = data.get("blobs", [])
         frames = data.get("frames", [])
-        discovered_resources_urls = []
 
         def handle_resources(content_type, content, resource_url):
             logger.debug(
@@ -214,13 +213,15 @@ class RenderTask(VGTask):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
             if content_type.startswith("image/svg"):
                 urls_from_svg = parsers.get_urls_from_svg_resource(content)
-            for discovered_url in urls_from_css + urls_from_svg:
-                if discovered_url.startswith("data:") or discovered_url.startswith("#"):
-                    # resource already in blob or not relevant
-                    continue
-                target_url = apply_base_url(discovered_url, base_url, resource_url)
-                with self.discovered_resources_lock:
-                    discovered_resources_urls.append(target_url)
+            with self.discovered_resources_lock:
+                for discovered_url in urls_from_css + urls_from_svg:
+                    if discovered_url.startswith("data:") or discovered_url.startswith(
+                        "#"
+                    ):
+                        # resource already in blob or not relevant
+                        continue
+                    target_url = apply_base_url(discovered_url, base_url, resource_url)
+                    self.resource_cache.fetch_and_store(target_url, get_resource)
 
         def get_resource(link):
             # type: (Text) -> VGResource
@@ -242,14 +243,8 @@ class RenderTask(VGTask):
             self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls + discovered_resources_urls):
+        for r_url in set(resource_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
-        self.resource_cache.process_all()
-
-        # some discovered urls becomes available only after resources processed
-        for r_url in set(discovered_resources_urls):
-            self.resource_cache.fetch_and_store(r_url, get_resource)
-        # TODO: check missing resources
         self.resource_cache.process_all()
 
         self.request_resources.update(self.resource_cache)
