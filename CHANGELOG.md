@@ -1,3 +1,6 @@
+## Fixed
+- VG tests hang intermittently [Trello 1566](https://trello.com/c/kU2EaDiE)
+
 # [4.1.22] - 2020-03-18
 ## Fixed
 - Issue With VG Capturing After Element Check [Trello 1639](https://trello.com/c/tPRpKuOX)

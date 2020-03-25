@@ -7,7 +7,7 @@ import typing
 
 import attr
 
-from .compat import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
+from .compat import parse_qs, urlencode, urlsplit, urlunsplit
 
 """
 General purpose utilities.
@@ -48,14 +48,6 @@ def cached_property(f):
             return x
 
     return property(get)
-
-
-def is_absolute_url(url):
-    return bool(urlparse(url).netloc)
-
-
-def is_url_with_scheme(url):
-    return bool(urlparse(url).scheme)
 
 
 def get_sha256_hash(content):
@@ -145,3 +137,16 @@ def get_env_with_prefix(env_name, default=None):
             if value:
                 return value
     return default
+
+
+def counted(f):
+    """
+    Decorator that tracks how many times the function is called
+    """
+
+    def wrapped(*args, **kwargs):
+        wrapped.calls += 1
+        return f(*args, **kwargs)
+
+    wrapped.calls = 0
+    return wrapped

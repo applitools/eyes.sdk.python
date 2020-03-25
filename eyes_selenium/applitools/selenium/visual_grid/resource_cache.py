@@ -4,7 +4,6 @@ import typing
 from concurrent.futures import Future, ThreadPoolExecutor
 
 from applitools.common import VGResource, logger
-from applitools.common.utils import iteritems
 
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
@@ -22,27 +21,21 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def _process_future(self, url, val):
         if isinstance(val, Future):
             try:
-                return val.result()
+                val = val.result()
             except Exception as e:
                 logger.debug(
                     "We got an exception for following URL: {}"
                     "\n  See details below: \n{}".format(url, str(e))
                 )
-                return None
-        return val
-
-    def get(self, k, default=None):
-        with self.lock:
-            val = self.cache_map.get(k, default)
-            val = self._process_future(k, val)
-            self[k] = val
+                val = None
+            finally:
+                self.cache_map[url] = val
         return val
 
     def __getitem__(self, item):
         with self.lock:
             val = self.cache_map[item]
-            val = self._process_future(item, val)
-            self[item] = val
+            self._process_future(item, val)
         return val
 
     def __setitem__(self, key, value):
@@ -70,10 +63,4 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
 
     def process_all(self):
         with self.lock:
-            for r_url in self:
-                val = self.get(r_url)
-                if val is None:
-                    logger.debug("No response for {}".format(r_url))
-                    val = VGResource.EMPTY(r_url)
-                    self[r_url] = val
-        return self
+            return [self[r_url] for r_url in self]

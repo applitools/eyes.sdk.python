@@ -1,7 +1,7 @@
 import typing
 from functools import partial
 from itertools import chain
-from threading import RLock
+from threading import Lock
 import attr
 
 from applitools.common import (
@@ -15,7 +15,7 @@ from applitools.common import (
     logger,
     RunningRender,
 )
-from applitools.common.utils import datetime_utils, urljoin, urlparse, iteritems
+from applitools.common.utils import datetime_utils, apply_base_url
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium import parsers
@@ -61,10 +61,7 @@ class RenderTask(VGTask):
     def __attrs_post_init__(self):
         # type: () -> None
         self.func_to_run = self.perform  # type: Callable
-        self.all_blobs = []  # type: List[VGResource]
         self.request_resources = {}  # type: Dict[Text, VGResource]
-        self.resource_urls = []  # type: List[Text]
-        self.discovered_resources_lock = RLock()
 
     def perform(self):  # noqa
         # type: () -> List[RenderStatusResults]
@@ -89,10 +86,20 @@ class RenderTask(VGTask):
                 self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
             except Exception as e:
-                logger.exception(e)
+                logger.error(
+                    "Raised an exception during rendering:"
+                    "\n\t {} \n\n "
+                    "Requests: \n\t{}".format(str(e), requests)
+                )
                 fetch_fails += 1
                 datetime_utils.sleep(
                     1500, msg="/render throws exception... sleeping for 1.5s"
+                )
+            if fetch_fails > self.MAX_FAILS_COUNT:
+                raise EyesError(
+                    "Render is failed. Max count retries reached for {}".format(
+                        requests
+                    )
                 )
             if not render_requests:
                 logger.error("running_renders is null")
@@ -191,24 +198,27 @@ class RenderTask(VGTask):
         logger.debug("parse_frame_dom_resources() call")
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
-        blobs = data.get("blobs", [])
+        all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
-        discovered_resources_urls = []
+        discovered_resources_urls = set()
+        discovered_resources_lock = Lock()
 
         def handle_resources(content_type, content, resource_url):
-            logger.debug("handle_resources({0}) call".format(content_type))
+            logger.debug(
+                "handle_resources({0}, {1}) call".format(content_type, resource_url)
+            )
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
             if content_type.startswith("image/svg"):
                 urls_from_svg = parsers.get_urls_from_svg_resource(content)
             for discovered_url in urls_from_css + urls_from_svg:
-                if discovered_url.startswith("data:"):
-                    # resource already in blob
+                if discovered_url.startswith("data:") or discovered_url.startswith("#"):
+                    # resource already in blob or not relevant
                     continue
-                target_url = _apply_base_url(discovered_url, base_url, resource_url)
-                with self.discovered_resources_lock:
-                    discovered_resources_urls.append(target_url)
+                target_url = apply_base_url(discovered_url, base_url, resource_url)
+                with discovered_resources_lock:
+                    discovered_resources_urls.add(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
@@ -217,29 +227,31 @@ class RenderTask(VGTask):
             return VGResource.from_response(link, response, on_created=handle_resources)
 
         for f_data in frames:
-            f_data["url"] = _apply_base_url(f_data["url"], base_url)
+            f_data["url"] = apply_base_url(f_data["url"], base_url)
             self.request_resources[f_data["url"]] = self.parse_frame_dom_resources(
                 f_data
             ).resource
 
-        for blob in blobs:
+        for blob in all_blobs:
             resource = VGResource.from_blob(blob, on_created=handle_resources)
             if resource.url.rstrip("#") == base_url:
                 continue
-
-            self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls + discovered_resources_urls):
+        for r_url in set(resource_urls).union(discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
         self.resource_cache.process_all()
 
         # some discovered urls becomes available only after resources processed
-        for r_url in set(discovered_resources_urls):
+        for r_url in discovered_resources_urls:
             self.resource_cache.fetch_and_store(r_url, get_resource)
-        self.resource_cache.process_all()
 
-        self.request_resources.update(self.resource_cache)
+        for r_url in set(resource_urls).union(discovered_resources_urls):
+            val = self.resource_cache[r_url]
+            if val is None:
+                logger.debug("No response for {}".format(r_url))
+                continue
+            self.request_resources[r_url] = self.resource_cache[r_url]
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
@@ -268,6 +280,10 @@ class RenderTask(VGTask):
                 finally:
                     iterations += 1
                     datetime_utils.sleep(1500, msg="Rendering...")
+                if iterations > self.MAX_ITERATIONS:
+                    raise EyesError(
+                        "Max iterations in poll_render_status has been reached"
+                    )
                 if statuses or 0 < fails_count < 3:
                     break
             finished = bool(
@@ -289,12 +305,3 @@ class RenderTask(VGTask):
             )
         self.running_tests.append(running_test)
         return len(self.running_tests) - 1
-
-
-def _apply_base_url(discovered_url, base_url, resource_url=None):
-    url = urlparse(discovered_url)
-    if url.scheme in ["http", "https"] and url.netloc:
-        return discovered_url
-    if resource_url and urlparse(resource_url).netloc != urlparse(base_url).netloc:
-        base_url = resource_url
-    return urljoin(base_url, discovered_url)
