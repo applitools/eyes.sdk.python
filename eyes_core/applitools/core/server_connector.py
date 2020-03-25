@@ -4,7 +4,6 @@ import json
 import math
 import typing
 import uuid
-from struct import pack
 
 import attr
 import requests
@@ -204,15 +203,6 @@ class _RequestCommunicator(object):
         if response.status_code != requests.codes.ok:
             return response
         return self._long_request_loop(url, delay)
-
-
-def prepare_match_data(match_data):
-    # type: (MatchWindowData) -> bytes
-    match_data_json = json_utils.to_json(match_data)
-    logger.debug("MatchWindowData {}".format(match_data_json))
-    match_data_json_bytes = match_data_json.encode("utf-8")  # type: bytes
-    match_data_size_bytes = pack(">L", len(match_data_json_bytes))  # type: bytes
-    return match_data_size_bytes + match_data_json_bytes
 
 
 class ServerConnector(object):
@@ -422,10 +412,8 @@ class ServerConnector(object):
             raise EyesError(
                 "MatchWindow failed: could not upload image to storage service."
             )
-        data = prepare_match_data(match_data)
-        # Using the default headers, but modifying the "content type" to binary
+        data = json_utils.to_json(match_data)
         headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/octet-stream"
         response = self._com.long_request(
             "post",
             url_resource=urljoin(self.API_SESSIONS_RUNNING, running_session.id),
