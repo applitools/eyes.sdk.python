@@ -61,9 +61,7 @@ class RenderTask(VGTask):
     def __attrs_post_init__(self):
         # type: () -> None
         self.func_to_run = self.perform  # type: Callable
-        self.all_blobs = []  # type: List[VGResource]
         self.request_resources = {}  # type: Dict[Text, VGResource]
-        self.resource_urls = []  # type: List[Text]
 
     def perform(self):  # noqa
         # type: () -> List[RenderStatusResults]
@@ -200,7 +198,7 @@ class RenderTask(VGTask):
         logger.debug("parse_frame_dom_resources() call")
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
-        blobs = data.get("blobs", [])
+        all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
         discovered_resources_urls = set()
         discovered_resources_lock = Lock()
@@ -234,12 +232,10 @@ class RenderTask(VGTask):
                 f_data
             ).resource
 
-        for blob in blobs:
+        for blob in all_blobs:
             resource = VGResource.from_blob(blob, on_created=handle_resources)
             if resource.url.rstrip("#") == base_url:
                 continue
-
-            self.all_blobs.append(resource)
             self.request_resources[resource.url] = resource
 
         for r_url in set(resource_urls).union(discovered_resources_urls):
