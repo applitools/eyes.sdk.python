@@ -244,9 +244,6 @@ class ServerConnector(object):
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[RenderingInfo]
 
-        # FIXME: temporary disable HTTP persistence feature
-        client_session = ClientSession(requests)
-
         if client_session:
             self._com = _RequestCommunicator(
                 headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,

@@ -250,14 +250,12 @@ class RenderTask(VGTask):
         for r_url in discovered_resources_urls:
             self.resource_cache.fetch_and_store(r_url, get_resource)
 
-        # TODO: check missing resources
         for r_url in set(resource_urls).union(discovered_resources_urls):
             val = self.resource_cache[r_url]
             if val is None:
                 logger.debug("No response for {}".format(r_url))
                 continue
             self.request_resources[r_url] = self.resource_cache[r_url]
-
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
         )
