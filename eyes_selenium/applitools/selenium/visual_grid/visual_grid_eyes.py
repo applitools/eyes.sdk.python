@@ -7,21 +7,19 @@ from collections import OrderedDict
 import attr
 
 from applitools.common import (
-    DiffsFoundError,
     EyesError,
-    NewTestError,
-    TestFailedError,
     TestResults,
     logger,
     RectangleSize,
 )
-from applitools.common.utils import argument_guard, datetime_utils
+from applitools.common.utils import argument_guard
 from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from .eyes_connector import EyesConnector
+from .helpers import collect_test_results, wait_till_tests_completed
 from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
 
@@ -232,42 +230,16 @@ class VisualGridEyes(object):
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
 
-        while True:
-            states = list(set(t.state for t in self.test_list))
-            logger.debug("Current test states: \n {}".format(states))
-            if len(states) == 1 and states[0] == "completed":
-                break
-            datetime_utils.sleep(
-                1500, msg="Waiting for state completed in VisualGridEyes.close"
-            )
+        wait_till_tests_completed(self.test_list)
 
         self._is_opened = False
 
-        for test in self.test_list:
-            if test.pending_exceptions:
-                logger.error(
-                    "During test execution above exception raised. \n {:s}".join(
-                        str(e) for e in test.pending_exceptions
-                    )
-                )
-        if raise_ex:
-            for test in self.test_list:
-                if test.test_result is None:
-                    raise TestFailedError("Test haven't finished correctly")
-                results = test.test_result
-                scenario_id_or_name = results.name
-                app_id_or_name = results.app_name
-                if results.is_unresolved and not results.is_new:
-                    raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
-                if results.is_new:
-                    raise NewTestError(results, scenario_id_or_name, app_id_or_name)
-                if results.is_failed:
-                    raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
-
-        all_results = [t.test_result for t in self.test_list if t.test_result]
+        all_results = collect_test_results(
+            {t: t.test_result for t in self.test_list}, raise_ex
+        )
         if not all_results:
             return TestResults()
-        return all_results[0]
+        return all_results[0].test_results
 
     def abort_async(self):
         """

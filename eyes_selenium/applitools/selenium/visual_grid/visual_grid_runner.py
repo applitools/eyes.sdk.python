@@ -4,29 +4,24 @@ import operator
 import sys
 import threading
 import typing
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import (
-    DiffsFoundError,
-    NewTestError,
-    TestFailedError,
-    TestResultContainer,
     TestResults,
     TestResultsSummary,
     logger,
 )
-from applitools.common.utils import datetime_utils, iteritems
+from applitools.common.utils import datetime_utils, iteritems, counted
 from applitools.core import EyesRunner
-
+from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Dict
-    from applitools.common import RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
         VisualGridEyes,
-        EyesConnector,
         VGTask,
     )
 
@@ -35,7 +30,7 @@ class VisualGridRunner(EyesRunner):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
         super(VisualGridRunner, self).__init__()
-        self._all_test_result = {}  # type: Dict[RunningTest, TestResults]
+        self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
         if sys.version_info >= (3, 6):
@@ -62,7 +57,7 @@ class VisualGridRunner(EyesRunner):
         logger.debug(
             "aggregate_result({}, {}) called".format(test.test_uuid, test_result)
         )
-        self._all_test_result[test] = test_result
+        self._all_test_results[test] = test_result
 
     def open(self, eyes):
         # type: (VisualGridEyes) -> None
@@ -103,50 +98,29 @@ class VisualGridRunner(EyesRunner):
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        while True:
-            states = list(set(t.state for t in self._get_all_running_tests()))
-            logger.debug("Current test states: \n {}".format(states))
-            if len(states) == 1 and states[0] == "completed":
-                break
-            datetime_utils.sleep(
-                1500, msg="Waiting for state completed in get_all_test_results_impl",
-            )
+        wait_till_tests_completed(self._get_all_running_tests)
 
-        all_results = []
-        for test, test_result in iteritems(self._all_test_result):
-            if test.pending_exceptions:
-                logger.error(
-                    "During test execution above exception raised. \n {:s}".join(
-                        str(e) for e in test.pending_exceptions
-                    )
-                )
-            exception = None
-            if test.test_result is None:
-                exception = TestFailedError("Test haven't finished correctly")
-            scenario_id_or_name = test_result.name
-            app_id_or_name = test_result.app_name
-            if test_result and test_result.is_unresolved and not test_result.is_new:
-                exception = DiffsFoundError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            if test_result and test_result.is_new:
-                exception = NewTestError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            if test_result and test_result.is_failed:
-                exception = TestFailedError(
-                    test_result, scenario_id_or_name, app_id_or_name
-                )
-            all_results.append(
-                TestResultContainer(test_result, test.browser_info, exception)
-            )
-            if exception and should_raise_exception:
-                raise exception
+        # finish processing of all tasks and shutdown threads
+        self._stop()
+
+        all_results = collect_test_results(
+            self._all_test_results, should_raise_exception
+        )
         return TestResultsSummary(all_results)
 
+    @counted
     def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
-        return list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+        tests = list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
+        if not bool(self._get_all_running_tests.calls % 15):
+            # print state every 15 call
+            counter = Counter(t.state for t in tests)
+            logger.info(
+                "Current tests states: \n{}".format(
+                    "\n".join(["\t{} - {}".format(t, c) for t, c in iteritems(counter)])
+                )
+            )
+        return tests
 
     def _get_all_running_tests_by_score(self):
         # type: () -> List[RunningTest]

@@ -21,7 +21,6 @@ from applitools.common.utils import (
     argument_guard,
     datetime_utils,
     gzip_compress,
-    image_utils,
     json_utils,
     urljoin,
 )
@@ -34,8 +33,7 @@ from applitools.common.visual_grid import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Any, Optional, Dict, Tuple, Callable
-    from applitools.common.utils.custom_types import Num
+    from typing import Text, List, Any, Optional, Dict, Union
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -52,7 +50,9 @@ __all__ = ("ServerConnector",)
 class ClientSession(object):
     """ A proxy to requests.Session """
 
-    _session = attr.ib(factory=requests.Session)
+    _session = attr.ib(
+        factory=requests.Session
+    )  # type: Union[requests, requests.Session]
 
     def __enter__(self):
         return self
@@ -61,7 +61,8 @@ class ClientSession(object):
         self.close()
 
     def close(self):
-        self._session.close()
+        if isinstance(self._session, requests.Session):
+            self._session.close()
 
     def request(self, method, url, **kwargs):
         # type: (Text, Text, **Any) -> Response
@@ -242,6 +243,7 @@ class ServerConnector(object):
         """
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[RenderingInfo]
+
         if client_session:
             self._com = _RequestCommunicator(
                 headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
@@ -537,11 +539,9 @@ class ServerConnector(object):
             headers["User-Agent"] = self._ua_string
         logger.debug("Fetching URL {}\nwith headers {}".format(url, headers))
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
-        response = self.client_session.get(
-            url, headers=headers, timeout=timeout_sec, verify=False
-        )
+        response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
         if response.status_code == requests.codes.not_acceptable:
-            response = self.client_session.get(url, timeout=timeout_sec, verify=False)
+            response = requests.get(url, timeout=timeout_sec, verify=False)
         return response
 
     def render_status_by_id(self, *render_ids):
