@@ -1,3 +1,4 @@
+# [4.1.23] - 2020-03-25
 ## Fixed
 - VG tests hang intermittently [Trello 1566](https://trello.com/c/kU2EaDiE)
 
