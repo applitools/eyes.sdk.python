@@ -31,7 +31,7 @@ def test_check_frame_in_frame__fully__fluent(eyes_opened):
 
 def test_check_region_in_frame__fluent(eyes_opened):
     eyes_opened.check(
-        "Fluent - Region in Frame in Frame",
+        "Fluent - Region in Frame",
         Target.frame("frame1").region([By.ID, "inner-frame-div"]).fully(),
     )
 
