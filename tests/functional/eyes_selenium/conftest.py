@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import os
 import re
 import sys
@@ -7,7 +9,6 @@ from distutils.util import strtobool
 from itertools import chain
 
 import pytest
-from mock import MagicMock
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
@@ -15,10 +16,8 @@ from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
 from applitools.selenium import (
-    BatchInfo,
     Eyes,
     StitchMode,
-    eyes_selenium_utils,
     Configuration,
     logger,
 )

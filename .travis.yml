@@ -60,7 +60,7 @@ jobs:
           addons:
               chrome: stable
           env:
-              - TOX_ENV=desktop
+              - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 3.6
