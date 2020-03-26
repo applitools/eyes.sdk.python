@@ -65,7 +65,7 @@ def test_check_window_with_floating_by_selector__fluent(eyes_opened):
 
 def test_check_window_with_floating_by_region__fluent(eyes_opened):
     eyes_opened.check(
-        "Fluent - Window with floating region by selector",
+        "Fluent - Window with floating region by region",
         Target.window().floating(Region(10, 10, 10, 10), 3, 3, 20, 30),
     )
 
