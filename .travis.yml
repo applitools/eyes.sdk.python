@@ -56,6 +56,13 @@ jobs:
               - TOX_ENV=desktop
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+        - python: 2.7
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
         - python: 3.6
           addons:
               chrome: stable

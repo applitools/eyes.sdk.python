@@ -1,3 +1,6 @@
+## Fixed
+- Tests doesn't work with Python 2 when coded region is used [Trello 1684](https://trello.com/c/K1Bv5OK7) [GH #146](https://github.com/applitools/eyes.sdk.python/pull/146)
+
 # [4.1.23] - 2020-03-25
 ## Fixed
 - VG tests hang intermittently [Trello 1566](https://trello.com/c/kU2EaDiE)

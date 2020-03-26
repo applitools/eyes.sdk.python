@@ -153,6 +153,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return self._frame_chain
 
     def location_in_screenshot(self, location, coordinates_type):
+        # type: (Point, CoordinatesType) -> Point
         location = self.convert_location(
             location, coordinates_type, self.SCREENSHOT_AS_IS
         )
@@ -165,24 +166,26 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return location
 
     def sub_screenshot(self, region, throw_if_clipped=False):
+        # type: (Region, bool) -> EyesWebDriverScreenshot
         # We calculate intersection based on as-is coordinates.
         as_is_sub_screenshot_region = self.intersected_region(
             region, self.SCREENSHOT_AS_IS
         )
-        if as_is_sub_screenshot_region.is_size_empty or (
-            throw_if_clipped and not as_is_sub_screenshot_region.size == region.size
+        if (
+            as_is_sub_screenshot_region.is_size_empty
+            or throw_if_clipped
+            and as_is_sub_screenshot_region.size != region.size
         ):
             raise OutOfBoundsError(
                 "Region [%s] is out of screenshot bounds [%s]"
                 % (region, self.frame_window)
             )
         sub_image = image_utils.get_image_part(self.image, as_is_sub_screenshot_region)
-        result = EyesWebDriverScreenshot.from_screenshot(
+        return EyesWebDriverScreenshot.from_screenshot(
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
         )
-        return result
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
     SCREENSHOT_AS_IS = CoordinatesType.SCREENSHOT_AS_IS
@@ -207,17 +210,19 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             and self._screenshot_type == ScreenshotType.ENTIRE_FRAME
         ):
             if (
-                from_ == self.CONTEXT_RELATIVE or from_ == self.CONTEXT_AS_IS
-            ) and to == self.SCREENSHOT_AS_IS:
+                from_ in [self.CONTEXT_RELATIVE, self.CONTEXT_AS_IS]
+                and to == self.SCREENSHOT_AS_IS
+            ):
                 # If this is not a sub-screenshot, this will have no effect.
                 result = result.offset(self._frame_location_in_screenshot)
                 # If this is not a region subscreenshot, this will have no effect.
                 result = result.offset(
                     -self.region_window.left, -self.region_window.top
                 )
-            elif from_ == self.SCREENSHOT_AS_IS and (
-                to == self.CONTEXT_RELATIVE or to == self.CONTEXT_AS_IS
-            ):
+            elif from_ == self.SCREENSHOT_AS_IS and to in [
+                self.CONTEXT_RELATIVE,
+                self.CONTEXT_AS_IS,
+            ]:
                 result = result.offset(-self._frame_location_in_screenshot)
             return result
 
@@ -266,10 +271,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             region, original_coordinates_type, self.SCREENSHOT_AS_IS
         )
         #  If the request was context based, we intersect with the frame window.
-        if (
-            original_coordinates_type == self.CONTEXT_AS_IS
-            or original_coordinates_type == self.CONTEXT_RELATIVE
-        ):
+        if original_coordinates_type in [self.CONTEXT_AS_IS, self.CONTEXT_RELATIVE]:
             intersected_region = intersected_region.intersect(self.frame_window)
         # If the request is screenshot based, we intersect with the image
         elif original_coordinates_type == self.SCREENSHOT_AS_IS:
