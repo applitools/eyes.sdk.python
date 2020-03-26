@@ -258,7 +258,7 @@ def warning(msg):
 
     :param msg: The message that will be written to the log.
     """
-    warnings.warn(msg)
+    warnings.warn(msg, stacklevel=2)
 
 
 def deprecation(msg):
