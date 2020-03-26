@@ -273,6 +273,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         #  If the request was context based, we intersect with the frame window.
         if original_coordinates_type in [self.CONTEXT_AS_IS, self.CONTEXT_RELATIVE]:
             intersected_region = intersected_region.intersect(self.frame_window)
+        # If the request is screenshot based, we intersect with the image
         elif original_coordinates_type == self.SCREENSHOT_AS_IS:
             intersected_region = intersected_region.intersect(
                 Region(0, 0, self.image.width, self.image.height)
