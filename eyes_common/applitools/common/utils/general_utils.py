@@ -134,6 +134,19 @@ def all_fields(obj):
         return [f for f in vars(obj) if not f.startswith("_")]
 
 
+def all_attrs(obj):
+    # type: (Any) -> List[Text]
+    """Get all public attributes from the object. Methods and fields.
+
+    Args:
+        obj: any kind object
+
+    Returns:
+        list of attributes and methods names
+    """
+    return [f for f in dir(obj) if not f.startswith("_")]
+
+
 def get_env_with_prefix(env_name, default=None):
     # type: (Text, Optional[Text]) -> Optional[Text]
     """
