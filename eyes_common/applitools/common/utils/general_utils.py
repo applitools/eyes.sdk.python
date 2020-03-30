@@ -71,11 +71,14 @@ def set_query_parameter(url, param_name, param_value):
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
 
-def proxy_to(proxy_obj_name, fields):
-    # type: (Text, List[Text]) -> Callable
+def proxy_to(proxy_obj_name, fields=None):
+    # type: (Text, Optional[List[Text]]) -> Callable
     """
     Adds to decorated class __getter__ and __setter__ methods that allow to access
-    attributes from proxy_object in the parent class
+    attributes from proxy_object in the parent class.
+
+    :exception Decorator should be used only on highest class in hierarchy otherwise the
+    RuntimeError will happen because recursion.
 
     :param proxy_obj_name: The name of the proxy object that has decorated class.
     :param fields:
@@ -83,7 +86,8 @@ def proxy_to(proxy_obj_name, fields):
     """
 
     def __getattr__(self, name):
-        if name in fields:
+        _fields = fields or self._proxy_to_fields or []
+        if name in _fields:
             proxy_obj = getattr(self, proxy_obj_name)
             return getattr(proxy_obj, name)
         module_with_class = "{}::{}".format(
@@ -92,15 +96,23 @@ def proxy_to(proxy_obj_name, fields):
         raise AttributeError("{} has not attr `{}`".format(module_with_class, name))
 
     def __setattr__(self, key, value):
-        if key in fields:
+        _fields = fields or self._proxy_to_fields or []
+        if key in _fields:
             proxy_obj = getattr(self, proxy_obj_name)
             setattr(proxy_obj, key, value)
         else:
             super(self.__class__, self).__setattr__(key, value)
 
+    def __dir__(self):
+        _fields = fields or self._proxy_to_fields or []
+        origin_fields = super(self.__class__, self).__dir__()
+        return list(origin_fields) + _fields
+
     def dec(cls):
+        cls._proxy_to_fields = None
         cls.__getattr__ = __getattr__
         cls.__setattr__ = __setattr__
+        cls.__dir__ = __dir__
         return cls
 
     return dec
@@ -120,6 +132,19 @@ def all_fields(obj):
         return list(attr.fields_dict(obj).keys())
     else:
         return [f for f in vars(obj) if not f.startswith("_")]
+
+
+def all_attrs(obj):
+    # type: (Any) -> List[Text]
+    """Get all public attributes from the object. Methods and fields.
+
+    Args:
+        obj: any kind object
+
+    Returns:
+        list of attributes and methods names
+    """
+    return [f for f in dir(obj) if not f.startswith("_")]
 
 
 def get_env_with_prefix(env_name, default=None):

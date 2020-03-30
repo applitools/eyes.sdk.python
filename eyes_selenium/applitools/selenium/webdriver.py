@@ -14,7 +14,7 @@ from applitools.common import RectangleSize, logger
 from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
-from applitools.common.utils.general_utils import proxy_to, all_fields
+from applitools.common.utils.general_utils import proxy_to, all_attrs
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils
@@ -72,7 +72,7 @@ class FrameResolver(object):
         return frame_ref
 
 
-@proxy_to("_switch_to", all_fields(SwitchTo))
+@proxy_to("_switch_to")
 class _EyesSwitchTo(object):
     """
     Wraps :py:class:`selenium.webdriver.remote.switch_to.SwitchTo` object, so we can
@@ -90,6 +90,7 @@ class _EyesSwitchTo(object):
         :param driver: EyesWebDriver instance.
         :param switch_to: Selenium switchTo object.
         """
+        self._proxy_to_fields = all_attrs(switch_to.__class__)
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
@@ -241,7 +242,7 @@ class _EyesSwitchTo(object):
             self._position_memento = None
 
 
-@proxy_to("_driver", all_fields(WebDriver))
+@proxy_to("_driver")
 class EyesWebDriver(object):
     """
     A wrapper for selenium web driver which creates wrapped elements,
@@ -263,6 +264,7 @@ class EyesWebDriver(object):
         :param eyes: A Eyes sdk instance.
         :param stitch_mode: How to stitch a page (default is with scrolling).
         """
+        self._proxy_to_fields = all_attrs(driver.__class__)
         self._driver = driver
         self._eyes = eyes
         # List of frames the user switched to, and the current offset,
