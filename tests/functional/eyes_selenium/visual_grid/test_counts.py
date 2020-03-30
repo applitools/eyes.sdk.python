@@ -6,11 +6,12 @@ from applitools.selenium import (
     Eyes,
     Target,
 )
+
 pytestmark = [
     pytest.mark.platform("Linux"),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
-    pytest.mark.test_page_url("https://applitools.com/helloworld")
+    pytest.mark.test_page_url("https://applitools.com/helloworld"),
 ]
 
 
@@ -23,7 +24,9 @@ def eyes(vg_runner, batch_info):
 
 def test_vg_tests_count_1(eyes, batch_info, driver):
     eyes.batch = batch_info
-    eyes.open(driver, "Test Count", "Test_VGTestsCount_1", {"width": 640, "height": 480})
+    eyes.open(
+        driver, "Test Count", "Test_VGTestsCount_1", {"width": 640, "height": 480}
+    )
     eyes.check("Test", Target.window())
     eyes.close()
     results_summary = eyes._runner.get_all_test_results()
@@ -85,7 +88,9 @@ def test_vg_tests_count_5(eyes, batch_info, driver):
         .add_browser(1024, 768, BrowserType.CHROME)
     )
     eyes.set_configuration(config)
-    eyes.open(driver, "Test Count", "Test_VGTestsCount_5", {"width": 640, "height": 480})
+    eyes.open(
+        driver, "Test Count", "Test_VGTestsCount_5", {"width": 640, "height": 480}
+    )
     eyes.check("Test", Target.window())
     eyes.close()
     results_summary = eyes._runner.get_all_test_results()

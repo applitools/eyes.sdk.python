@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort
 
 
-@proxy_to("configuration", all_fields(Configuration))
+@proxy_to("configure", all_fields(Configuration))
 class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]

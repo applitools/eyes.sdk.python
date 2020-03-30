@@ -73,7 +73,7 @@ _JS_GET_SIZE_AND_BORDER_WIDTHS = """
 )
 
 
-@proxy_to("_element", all_fields(WebElement))
+@proxy_to("_element")
 class EyesWebElement(object):
     """
     A wrapper for selenium web element. This enables eyes to be notified
@@ -91,6 +91,7 @@ class EyesWebElement(object):
         """
         if isinstance(element, EyesWebElement):
             element = element._element
+        self._proxy_to_fields = all_fields(element.__class__)
         self._element = element  # type: WebElement
         self._driver = driver  # type: EyesWebDriver
 
