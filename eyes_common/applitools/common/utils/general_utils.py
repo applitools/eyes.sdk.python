@@ -100,10 +100,16 @@ def proxy_to(proxy_obj_name, fields=None):
         else:
             super(self.__class__, self).__setattr__(key, value)
 
+    def __dir__(self):
+        _fields = fields or getattr(self, "_proxy_to_fields")
+        origin_fields = super(self.__class__, self).__dir__()
+        return list(origin_fields) + _fields
+
     def dec(cls):
         cls._proxy_to_fields = []
         cls.__getattr__ = __getattr__
         cls.__setattr__ = __setattr__
+        cls.__dir__ = __dir__
         return cls
 
     return dec
