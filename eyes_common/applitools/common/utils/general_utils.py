@@ -71,8 +71,8 @@ def set_query_parameter(url, param_name, param_value):
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
 
-def proxy_to(proxy_obj_name, fields):
-    # type: (Text, List[Text]) -> Callable
+def proxy_to(proxy_obj_name, fields=None):
+    # type: (Text, Optional[List[Text]]) -> Callable
     """
     Adds to decorated class __getter__ and __setter__ methods that allow to access
     attributes from proxy_object in the parent class
@@ -83,7 +83,8 @@ def proxy_to(proxy_obj_name, fields):
     """
 
     def __getattr__(self, name):
-        if name in fields:
+        _fields = fields or getattr(self, "_proxy_to_fields")
+        if name in _fields:
             proxy_obj = getattr(self, proxy_obj_name)
             return getattr(proxy_obj, name)
         module_with_class = "{}::{}".format(
@@ -92,13 +93,15 @@ def proxy_to(proxy_obj_name, fields):
         raise AttributeError("{} has not attr `{}`".format(module_with_class, name))
 
     def __setattr__(self, key, value):
-        if key in fields:
+        _fields = fields or getattr(self, "_proxy_to_fields")
+        if key in _fields:
             proxy_obj = getattr(self, proxy_obj_name)
             setattr(proxy_obj, key, value)
         else:
             super(self.__class__, self).__setattr__(key, value)
 
     def dec(cls):
+        cls._proxy_to_fields = []
         cls.__getattr__ = __getattr__
         cls.__setattr__ = __setattr__
         return cls
