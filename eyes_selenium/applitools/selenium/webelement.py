@@ -91,7 +91,7 @@ class EyesWebElement(object):
         """
         if isinstance(element, EyesWebElement):
             element = element._element
-        self._proxy_to_fields = all_fields(element.__class__)
+        self._proxy_to_fields = all_fields(element)
         self._element = element  # type: WebElement
         self._driver = driver  # type: EyesWebDriver
 
