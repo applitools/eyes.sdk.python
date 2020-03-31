@@ -90,7 +90,7 @@ class _EyesSwitchTo(object):
         :param driver: EyesWebDriver instance.
         :param switch_to: Selenium switchTo object.
         """
-        self._proxy_to_fields = all_attrs(switch_to.__class__)
+        self._proxy_to_fields = all_attrs(switch_to)
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
         self._scroll_position = ScrollPositionProvider(
@@ -264,7 +264,7 @@ class EyesWebDriver(object):
         :param eyes: A Eyes sdk instance.
         :param stitch_mode: How to stitch a page (default is with scrolling).
         """
-        self._proxy_to_fields = all_attrs(driver.__class__)
+        self._proxy_to_fields = all_attrs(driver)
         self._driver = driver
         self._eyes = eyes
         # List of frames the user switched to, and the current offset,
