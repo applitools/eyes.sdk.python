@@ -116,52 +116,47 @@ def pytest_runtest_makereport(item, call):
         )
 
 
-#if (os.getenv("TRAVIS_COMMIT", " ") != " "):
-def pytest_collection_modifyitems(items):
-    skip = pytest.mark.skip(reason="Skipping this test because it's still fail")
-    failed_tests = get_failed_tests_from_file()
-    for item in items:
-        if item.fspath.basename in failed_tests:
-            if item.originalname in failed_tests[item.fspath.basename]:
-                if failed_tests[item.fspath.basename][item.originalname] is None:
-                    item.add_marker(skip)
-                    continue
+if (os.getenv("TRAVIS_COMMIT", " ") != " "):
+    def pytest_collection_modifyitems(items):
+        skip = pytest.mark.skip(reason="Skipping this test because it's still fail")
+        failed_tests = get_failed_tests_from_file()
+        for item in items:
+            if item.fspath.basename in failed_tests:
+                if item.originalname in failed_tests[item.fspath.basename]:
+                    if failed_tests[item.fspath.basename][item.originalname] is None:
+                        item.add_marker(skip)
+                        continue
 
-                if os.getenv("TEST_PLATFORM") == "Linux":
-                    set_skip_for_linux_platform(item, failed_tests, skip)
-                        #item.add_marker(skip)
-                if os.getenv("TEST_PLATFORM") in ["iOS", "Android"]:
-                    set_skip_for_mobile_platform(item, failed_tests, skip)
-                        #item.add_marker(skip)
+                    if os.getenv("TEST_PLATFORM") == "Linux":
+                        set_skip_for_linux_platform(item, failed_tests, skip)
+                    if os.getenv("TEST_PLATFORM") in ["iOS", "Android"]:
+                        set_skip_for_mobile_platform(item, failed_tests, skip)
 
 
-def get_failed_tests_from_file():
-    #with open('tests/functional/resources/failedTestsSuite.yaml') as f:
-    with open('../../resources/failedTestsSuite.yaml') as f:
-        failed_tests = yaml.load(f, Loader=yaml.Loader)
-        return failed_tests
+    def get_failed_tests_from_file():
+        with open('tests/functional/resources/failedTestsSuite.yaml') as f:
+            failed_tests = yaml.load(f, Loader=yaml.Loader)
+            return failed_tests
 
 
-def set_skip_for_linux_platform(item, failed_tests, skip):
-    if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-        if 'VG' in failed_tests[item.fspath.basename][item.originalname][
-            'stitch_mode']:
-            item.add_marker(skip)
-    else:
-        if item.callspec.params['stitch_mode'].value in \
-            failed_tests[item.fspath.basename][item.originalname]['stitch_mode']:
-            item.add_marker(skip)
-    #return False
+    def set_skip_for_linux_platform(item, failed_tests, skip):
+        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
+            if 'VG' in failed_tests[item.fspath.basename][item.originalname][
+                'stitch_mode']:
+                item.add_marker(skip)
+        else:
+            if item.callspec.params['stitch_mode'].value in \
+                failed_tests[item.fspath.basename][item.originalname]['stitch_mode']:
+                item.add_marker(skip)
 
 
-def set_skip_for_mobile_platform(item, failed_tests, skip):
-    for excludedItem in failed_tests[item.fspath.basename][item.originalname]:
-        if item.callspec.params['mobile_eyes']['deviceName'] in excludedItem \
-            and item.callspec.params['mobile_eyes']['deviceOrientation'] \
-            in excludedItem \
-            and item.callspec.params['mobile_eyes']['platformVersion'] \
-            in excludedItem \
-            and str(item.callspec.params['mobile_eyes']['fully']) in excludedItem \
-            and item.callspec.params['page'] in excludedItem:
-            item.add_marker(skip)
-    #return False
+    def set_skip_for_mobile_platform(item, failed_tests, skip):
+        for excludedItem in failed_tests[item.fspath.basename][item.originalname]:
+            if item.callspec.params['mobile_eyes']['deviceName'] in excludedItem \
+                and item.callspec.params['mobile_eyes']['deviceOrientation'] \
+                in excludedItem \
+                and item.callspec.params['mobile_eyes']['platformVersion'] \
+                in excludedItem \
+                and str(item.callspec.params['mobile_eyes']['fully']) in excludedItem \
+                and item.callspec.params['page'] in excludedItem:
+                item.add_marker(skip)
