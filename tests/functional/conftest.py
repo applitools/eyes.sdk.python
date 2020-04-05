@@ -141,12 +141,11 @@ if (os.getenv("TRAVIS_COMMIT", " ") != " "):
 
     def set_skip_for_linux_platform(item, failed_tests, skip):
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-            if 'VG' in failed_tests[item.fspath.basename][item.originalname][
-                'stitch_mode']:
+            if 'VG' in failed_tests[item.fspath.basename][item.originalname][0]:
                 item.add_marker(skip)
         else:
             if item.callspec.params['stitch_mode'].value in \
-                failed_tests[item.fspath.basename][item.originalname]['stitch_mode']:
+                failed_tests[item.fspath.basename][item.originalname][0]:
                 item.add_marker(skip)
 
 
