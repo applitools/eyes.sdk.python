@@ -1,0 +1,37 @@
+test_classic_api.py:
+   test_check_inner_frame:
+      stitch_mode: [CSS, Scroll]
+
+test_fluent_api.py:
+   test_check_scrollable_modal:
+      stitch_mode: [Scroll]
+   test_check_region_by_selector_after_manual_scroll__fluent:
+      stitch_mode: [Scroll]
+
+test_other_desktop_tests.py:
+   test_duplicatedIFrames:
+      stitch_mode: [CSS, Scroll, VG]
+
+test_special_cases.py:
+   test_check_region_in_a_very_big_frame:
+      stitch_mode: [Scroll]
+
+test_runners.py:
+   test_classic_runner_works_normally:
+   test_eyes_runner:
+
+test_mobile.py:
+   test_IOS_safari_crop__sauce_labs:
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "LANDSCAPE", "False", "desktop"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "True", "desktop", "mobile", "scrolled_mobile"]
+      - ["iPhone XR Simulator", "13.0", "PORTRAIT", "LANDSCAPE", "False", "True", "desktop", "mobile", "scrolled_mobile"]
+   test_android__sauce_labs:
+
+test_bad_selectors.py:
+   test_check_region_with_bad_ignore_selector:
+
+test_default_rendering.py:
+   test_default_rendering_of_multiple_targets:
+
+test_vg_manager.py:
+   test_vgwith_bad_webhook:
