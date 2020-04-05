@@ -1,3 +1,7 @@
+test_specific_cases.py:
+   test_switch_back_to_frame_after_check:
+   test_region_selector_in_check_fluent_interface:
+
 test_classic_api.py:
    test_check_inner_frame:
       stitch_mode: [CSS, Scroll]
@@ -26,6 +30,9 @@ test_mobile.py:
       - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "True", "desktop", "mobile", "scrolled_mobile"]
       - ["iPhone XR Simulator", "13.0", "PORTRAIT", "LANDSCAPE", "False", "True", "desktop", "mobile", "scrolled_mobile"]
    test_android__sauce_labs:
+
+test_app_native.py:
+   test_ios_native:
 
 test_bad_selectors.py:
    test_check_region_with_bad_ignore_selector:
