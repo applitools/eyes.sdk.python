@@ -520,7 +520,9 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         # initialization of Eyes parameters if empty from ENV variables
         logger.info("Batch is {}".format(self.configure.batch))
 
-        self._server_connector.update_config(self.get_configuration())
+        self._server_connector.update_config(
+            self.get_configuration(), self.full_agent_id
+        )
         self._create_session_start_info()
         # Actually start the session.
         self._running_session = self._server_connector.start_session(
