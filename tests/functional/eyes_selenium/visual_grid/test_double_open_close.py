@@ -65,7 +65,9 @@ def test_double_open_check_close_async(driver, eyes_runner, test_name_suffix):
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_with_different_instances(driver, eyes_runner, test_name_suffix):
+def test_double_open_check_close_with_different_instances(
+    driver, eyes_runner, test_name_suffix
+):
     eyes1 = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
@@ -91,7 +93,9 @@ def test_double_open_check_close_with_different_instances(driver, eyes_runner, t
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async_with_different_instances(driver, eyes_runner, test_name_suffix):
+def test_double_open_check_close_async_with_different_instances(
+    driver, eyes_runner, test_name_suffix
+):
     eyes1 = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(

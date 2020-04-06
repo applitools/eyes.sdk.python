@@ -144,7 +144,7 @@ def driver(request, browser_config, webdriver_module):
                     browser = webdriver_class(
                         executable_path=driver_manager_class().install(), options=options
                     )
-                    break;
+                    break
                 except Exception as e:
                     print("Tried to start browser. It was exception {}".format(e))
                     time.sleep(1.0)
