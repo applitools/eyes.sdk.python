@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import typing
+import time
 from collections import namedtuple
 from distutils.util import strtobool
 from itertools import chain
@@ -137,9 +138,16 @@ def driver(request, browser_config, webdriver_module):
             options = options()
             options.headless = bool(headless)
         if driver_manager_class:
-            browser = webdriver_class(
-                executable_path=driver_manager_class().install(), options=options
-            )
+            counter = 0
+            while counter < 5:
+                try:
+                    browser = webdriver_class(
+                        executable_path=driver_manager_class().install(), options=options
+                    )
+                    break;
+                except Exception as e:
+                    print("Tried to start browser. It was exception {}".format(e))
+                    time.sleep(0.5)
         else:
             browser = webdriver_class()
 
