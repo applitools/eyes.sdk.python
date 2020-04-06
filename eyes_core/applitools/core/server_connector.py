@@ -246,7 +246,7 @@ class ServerConnector(object):
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
-    def update_config(self, conf, render_info=None, ua_string=None):
+    def update_config(self, conf, full_agent_id, render_info=None, ua_string=None):
         if conf.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
@@ -257,6 +257,7 @@ class ServerConnector(object):
         self._com.timeout_ms = conf._timeout
         self._render_info = render_info
         self._ua_string = ua_string
+        self.DEFAULT_HEADERS["x-applitools-eyes-client"] = full_agent_id
 
     @property
     def server_url(self):
