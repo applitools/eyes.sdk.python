@@ -27,7 +27,12 @@ test_runners.py:
 test_mobile.py:
    test_IOS_safari_crop__sauce_labs:
       - ["iPad Pro (9.7 inch) Simulator", "12.0", "LANDSCAPE", "False", "desktop"]
-      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "True", "desktop", "mobile", "scrolled_mobile"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "desktop"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "mobile"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "False", "scrolled_mobile"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "True", "desktop"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "True", "mobile"]
+      - ["iPad Pro (9.7 inch) Simulator", "12.0", "PORTRAIT", "True", "scrolled_mobile"]
       - ["iPhone XR Simulator", "13.0", "PORTRAIT", "LANDSCAPE", "False", "True", "desktop", "mobile", "scrolled_mobile"]
    test_android__sauce_labs:
 
