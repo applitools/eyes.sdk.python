@@ -68,7 +68,7 @@ def configured_connector(custom_eyes_server):
     # type: (Optional[Text]) -> ServerConnector
     connector = ServerConnector()
     conf = Configuration(server_url=custom_eyes_server)
-    connector.update_config(conf)
+    connector.update_config(conf, "eyes.test")
     return connector
 
 

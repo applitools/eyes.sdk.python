@@ -4,7 +4,6 @@ from copy import copy
 from typing import Any
 
 import pytest
-import requests
 from mock import patch
 
 from applitools.common import (
@@ -262,7 +261,7 @@ def test_set_get_server_url():
 def test_check_default_server_url_from_settings():
     connector = ServerConnector()
     conf = Configuration()
-    connector.update_config(conf)
+    connector.update_config(conf, "eyes.test")
     assert connector.server_url == DEFAULT_SERVER_URL
 
 
@@ -276,7 +275,7 @@ def test_get_api_key_if_not_settled(connector, monkeypatch):
     # type: (ServerConnector, Any) -> None
     monkeypatch.setattr(os, "environ", {"APPLITOOLS_API_KEY": API_KEY})
     conf = Configuration()
-    connector.update_config(conf)
+    connector.update_config(conf, "eyes.test")
     assert connector.api_key == API_KEY
 
 
@@ -394,7 +393,7 @@ def test_request_with_changed_values(configured_connector):
     conf = Configuration(
         timeout=new_timeout, api_key=new_api_key, server_url=new_server_url
     )
-    configured_connector.update_config(conf)
+    configured_connector.update_config(conf, "eyes.test")
 
     with patch(
         "applitools.core.server_connector.ClientSession.request"
