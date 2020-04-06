@@ -1,3 +1,6 @@
+# Updated
+- All SDKs should report their version in all requests to the Eyes server [Trello 1697](https://trello.com/c/CzhUxOqE) [GH #153](https://github.com/applitools/eyes.sdk.python/pull/153)
+
 # [4.1.24] - 2020-03-30
 ## Fixed
 - Tests doesn't work with Python 2 when coded region is used [Trello 1684](https://trello.com/c/K1Bv5OK7) [GH #146](https://github.com/applitools/eyes.sdk.python/pull/146)
