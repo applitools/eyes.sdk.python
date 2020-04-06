@@ -52,7 +52,6 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "pytest==3.9.3",
         "pytest-cov==2.6.1",
         "pytest-xdist==1.26.1",
-        "PyYAML",
         "virtualenv==16.3.0",
         "pytest-virtualenv==1.4.0",
         "mock",
