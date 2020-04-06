@@ -116,7 +116,7 @@ def pytest_runtest_makereport(item, call):
         )
 
 
-if (os.getenv("TRAVIS_COMMIT", " ") != " "):
+if (os.getenv("TRAVIS_COMMIT", " ") != " ") and (os.getenv("BUILD_TAG", " ").eq == " "):
     def pytest_collection_modifyitems(items):
         skip = pytest.mark.skip(reason="Skipping this test because it's still fail")
         failed_tests = get_failed_tests_from_file()
