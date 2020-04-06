@@ -135,7 +135,8 @@ class _RequestCommunicator(object):
         if use_api_key:
             params["apiKey"] = self.api_key
         params.update(kwargs.get("params", {}))
-        headers = kwargs.get("headers", self.headers).copy()
+        headers = self.headers.copy()
+        headers.update(kwargs.get("headers", {}))
         timeout_sec = kwargs.get("timeout", None)
         if timeout_sec is None:
             timeout_sec = datetime_utils.to_sec(self.timeout_ms)
@@ -210,7 +211,11 @@ class ServerConnector(object):
     Provides an API for communication with the Applitools server.
     """
 
-    DEFAULT_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
+    DEFAULT_HEADERS = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "x-applitools-eyes-client": None,
+    }
 
     API_SESSIONS = "api/sessions"
     API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
@@ -241,7 +246,7 @@ class ServerConnector(object):
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
 
-    def update_config(self, conf, render_info=None, ua_string=None):
+    def update_config(self, conf, full_agent_id, render_info=None, ua_string=None):
         if conf.api_key is None:
             raise EyesError(
                 "API key not set! Log in to https://applitools.com to obtain your"
@@ -252,6 +257,7 @@ class ServerConnector(object):
         self._com.timeout_ms = conf._timeout
         self._render_info = render_info
         self._ua_string = ua_string
+        self.DEFAULT_HEADERS["x-applitools-eyes-client"] = full_agent_id
 
     @property
     def server_url(self):
@@ -300,7 +306,10 @@ class ServerConnector(object):
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.long_request(
-            "post", url_resource=self.API_SESSIONS_RUNNING, data=data
+            "post",
+            url_resource=self.API_SESSIONS_RUNNING,
+            data=data,
+            headers=self.DEFAULT_HEADERS,
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
         running_session.is_new_session = response.status_code == requests.codes.created
