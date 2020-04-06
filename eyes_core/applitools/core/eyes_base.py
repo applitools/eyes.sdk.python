@@ -521,7 +521,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         logger.info("Batch is {}".format(self.configure.batch))
 
         self._server_connector.update_config(
-            self.get_configuration(), self.full_agent_id
+            self.get_configuration()#, self.full_agent_id
         )
         self._create_session_start_info()
         # Actually start the session.
