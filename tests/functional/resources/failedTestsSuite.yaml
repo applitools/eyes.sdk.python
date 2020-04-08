@@ -39,5 +39,18 @@ test_mobile.py:
 test_app_native.py:
    test_ios_native:
 
+test_bad_selectors.py:
+   test_check_region_with_bad_ignore_selector:
+
+test_default_rendering.py:
+   test_default_rendering_of_multiple_targets:
+
 test_vg_manager.py:
    test_vgwith_bad_webhook:
+
+test_timeouts.py:
+   test_timeout2:
+
+test_visual_grid_rca.py:
+   test_VG_RCA_config:
+   test_VG_RCA_fluent:
