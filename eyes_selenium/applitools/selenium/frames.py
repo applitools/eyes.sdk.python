@@ -103,10 +103,7 @@ class FrameChain(tp.Sequence[Frame]):
         cl1, cl2 = len(self._frames), len(other)
         if cl1 != cl2:
             return False
-        for i in range(cl1):
-            if self._frames[i].id_ != other[i].id_:
-                return False
-        return True
+        return all(self._frames[i].id_ == other[i].id_ for i in range(cl1))
 
     def clear(self):
         # type: () -> None
