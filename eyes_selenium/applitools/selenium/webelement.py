@@ -9,7 +9,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.geometry import CoordinatesType, Point, Region
-from applitools.common.utils.general_utils import proxy_to, all_fields
+from applitools.common.utils.general_utils import proxy_to, all_attrs
 
 from . import eyes_selenium_utils
 
@@ -91,7 +91,7 @@ class EyesWebElement(object):
         """
         if isinstance(element, EyesWebElement):
             element = element._element
-        self._proxy_to_fields = all_fields(element)
+        self._proxy_to_fields = all_attrs(element)
         self._element = element  # type: WebElement
         self._driver = driver  # type: EyesWebDriver
 
