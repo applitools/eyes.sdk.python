@@ -32,9 +32,9 @@ class Frame(object):
     """
 
     reference = attr.ib()  # type: EyesWebElement
-    location = attr.ib()
-    outer_size = attr.ib()
-    inner_size = attr.ib()
+    location = attr.ib()  # type: Point
+    outer_size = attr.ib()  # type: RectangleSize
+    inner_size = attr.ib()  # type: RectangleSize
     parent_scroll_position = attr.ib()
     scroll_root_element = attr.ib(default=None)  # type: Optional[EyesWebElement]
     original_overflow = attr.ib(default=None)
