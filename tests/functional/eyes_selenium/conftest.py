@@ -142,7 +142,8 @@ def driver(request, browser_config, webdriver_module):
             while counter < 5:
                 try:
                     browser = webdriver_class(
-                        executable_path=driver_manager_class().install(), options=options
+                        executable_path=driver_manager_class().install(),
+                        options=options,
                     )
                     break
                 except Exception as e:
