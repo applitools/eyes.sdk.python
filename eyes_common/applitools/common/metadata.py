@@ -26,7 +26,9 @@ class RunningSession(object):
     baseline_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     url = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     rendering_info = attr.ib(default=None)  # type: Optional[RenderingInfo]
-    is_new_session = attr.ib(default=False)  # type: bool
+    is_new_session = attr.ib(
+        default=False, metadata={JsonInclude.NAME: "isNew"}
+    )  # type: bool
 
 
 def _to_device_info(v):

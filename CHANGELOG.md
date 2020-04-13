@@ -1,3 +1,5 @@
+## Fixed
+- StartSession request now considers "isNew" flag. [Trello 1715](https://trello.com/c/DcVzWbeR)
 # Updated
 - All SDKs should report their version in all requests to the Eyes server [Trello 1697](https://trello.com/c/CzhUxOqE) [GH #153](https://github.com/applitools/eyes.sdk.python/pull/153)
 
