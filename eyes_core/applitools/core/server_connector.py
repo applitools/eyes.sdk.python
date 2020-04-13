@@ -312,7 +312,6 @@ class ServerConnector(object):
             headers=self.DEFAULT_HEADERS,
         )
         running_session = json_utils.attr_from_response(response, RunningSession)
-        running_session.is_new_session = response.status_code == requests.codes.created
         self._is_session_started = True
         return running_session
 

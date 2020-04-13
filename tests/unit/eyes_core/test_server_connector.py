@@ -193,19 +193,22 @@ RUNNING_SESSION_DATA_RESPONSE_URL = "http://some-session-url.com"
 RUNNING_SESSION_DATA_RESPONSE_SESSION_ID = "some session id"
 RUNNING_SESSION_DATA_RESPONSE_BATCH_ID = "other url"
 RUNNING_SESSION_DATA_RESPONSE_BASELINE_ID = "other url"
+RUNNING_SESSION_DATA_RESPONSE_IS_NEW = False
 RUNNING_SESSION_DATA_RESPONSE = """
 {
     "id": "%s",
     "sessionId": "%s",
     "url": "%s",
     "batchId": "%s",
-    "baselineId": "%s"
+    "baselineId": "%s",
+    "isNew": "%s"
 }""" % (
     RUNNING_SESSION_DATA_RESPONSE_ID,
     RUNNING_SESSION_DATA_RESPONSE_SESSION_ID,
     RUNNING_SESSION_DATA_RESPONSE_URL,
     RUNNING_SESSION_DATA_RESPONSE_BATCH_ID,
     RUNNING_SESSION_DATA_RESPONSE_BASELINE_ID,
+    RUNNING_SESSION_DATA_RESPONSE_IS_NEW,
 )
 RUNNING_SESSION_OBJ = attr_from_json(RUNNING_SESSION_DATA_RESPONSE, RunningSession)
 
@@ -305,6 +308,7 @@ def test_start_session(configured_connector):
     assert running_session.batch_id == RUNNING_SESSION_DATA_RESPONSE_BATCH_ID
     assert running_session.baseline_id == RUNNING_SESSION_DATA_RESPONSE_BASELINE_ID
     assert running_session.url == RUNNING_SESSION_DATA_RESPONSE_URL
+    assert running_session.is_new_session == RUNNING_SESSION_DATA_RESPONSE_IS_NEW
 
 
 @patch(
