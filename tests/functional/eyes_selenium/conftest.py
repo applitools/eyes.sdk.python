@@ -76,7 +76,7 @@ def eyes_config_base():
 
 
 @pytest.fixture(scope="function")
-def eyes_opened(request, eyes, driver):
+def eyes_opened(request, eyes, driver, check_test_result):
     viewport_size = request.node.get_closest_marker("viewport_size")
     viewport_size = viewport_size.args[-1] if viewport_size else None
 
@@ -98,7 +98,8 @@ def eyes_opened(request, eyes, driver):
 
     eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
     yield eyes
-    print(eyes.close(False))
+    test_result = eyes.close(False)
+    check_test_result.send(test_result)
 
 
 @pytest.yield_fixture(scope="function")
