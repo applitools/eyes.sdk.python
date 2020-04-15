@@ -14,7 +14,6 @@ from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
-    from .utils.custom_types import ViewPort
     from .visual_grid import EmulationDevice
 
 __all__ = (
@@ -413,6 +412,9 @@ class Region(DictAccessMixin):
             self.top <= other.top <= self.bottom
             or other.top <= self.top <= other.bottom
         )
+
+    def is_intersected(self, other):
+        return self.overlaps(other)
 
     def intersect(self, other):
         # type: (Region) -> Region

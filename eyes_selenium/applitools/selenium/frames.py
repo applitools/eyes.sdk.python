@@ -32,9 +32,9 @@ class Frame(object):
     """
 
     reference = attr.ib()  # type: EyesWebElement
-    location = attr.ib()
-    outer_size = attr.ib()
-    inner_size = attr.ib()
+    location = attr.ib()  # type: Point
+    outer_size = attr.ib()  # type: RectangleSize
+    inner_size = attr.ib()  # type: RectangleSize
     parent_scroll_position = attr.ib()
     scroll_root_element = attr.ib(default=None)  # type: Optional[EyesWebElement]
     original_overflow = attr.ib(default=None)
@@ -103,10 +103,7 @@ class FrameChain(tp.Sequence[Frame]):
         cl1, cl2 = len(self._frames), len(other)
         if cl1 != cl2:
             return False
-        for i in range(cl1):
-            if self._frames[i].id_ != other[i].id_:
-                return False
-        return True
+        return all(self._frames[i].id_ == other[i].id_ for i in range(cl1))
 
     def clear(self):
         # type: () -> None
