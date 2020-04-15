@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, TypeVar
 
 import attr
 
+from . import logger
 from .geometry import CoordinatesType, Region
 from .utils import ABC, argument_guard
 
@@ -94,6 +95,8 @@ class EyesScreenshot(ABC):
         """
         argument_guard.not_none(region)
         argument_guard.is_a(region, Region)
+        logger.debug("convert_region_location({}, {}, {})".format(region, from_, to))
+
         if region.is_size_empty:
             return Region.EMPTY()
 
@@ -101,6 +104,7 @@ class EyesScreenshot(ABC):
         argument_guard.not_none(to)
 
         updated_location = self.convert_location(region.location, from_, to)
+        logger.debug("updated_location: {}".format(updated_location))
         return Region(
             updated_location.x,
             updated_location.y,

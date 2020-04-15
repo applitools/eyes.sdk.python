@@ -23,15 +23,14 @@ __all__ = (
 
 def _region_from_element(element, screenshot):
     location = element.location
-    size = element.size
     if screenshot:
         # Element's coordinates are context relative, so we need to convert them first.
         adjusted_location = screenshot.location_in_screenshot(
-            Point(location["x"], location["y"]), CoordinatesType.CONTEXT_RELATIVE
+            Point.from_(location), CoordinatesType.CONTEXT_RELATIVE
         )
     else:
-        adjusted_location = Point(location["x"], location["y"])
-    region = Region.from_(adjusted_location, size)
+        adjusted_location = Point.from_(location)
+    region = Region.from_(adjusted_location, element.size)
     return region
 
 
