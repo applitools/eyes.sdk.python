@@ -6,7 +6,7 @@ import yaml
 
 from applitools.common import BatchInfo, StdoutLogger, logger, Configuration, StitchMode
 from applitools.common.utils import iteritems
-from tests.utils import send_result_report
+from tests.utils import send_result_report, get_session_results
 
 logger.set_logger(StdoutLogger())
 
@@ -37,6 +37,23 @@ def eyes_config(eyes_config_base):
 @pytest.fixture(scope="session")
 def batch_info():
     return BatchInfo(os.getenv("APPLITOOLS_BATCH_NAME", "Python SDK"))
+
+
+def check_test_result_(eyes):
+    while True:
+        comparision = yield
+        test_result = yield
+        session_results = get_session_results(eyes.api_key, test_result)
+        img = session_results["actualAppOutput"][0]["imageMatchSettings"]
+        for param in comparision:
+            assert img[param["actual_name"]] == param["expected"]
+
+
+@pytest.fixture(scope="function")
+def check_test_result(eyes):
+    g = check_test_result_(eyes)
+    next(g)
+    yield g
 
 
 @pytest.fixture(name="eyes", scope="function")
