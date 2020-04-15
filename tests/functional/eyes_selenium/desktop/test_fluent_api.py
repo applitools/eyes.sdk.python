@@ -178,8 +178,11 @@ def test_simple_region(eyes_opened):
 
 
 @pytest.mark.parametrize("ignore_displacements", [True, False])
-def test_ignore_displacements(eyes_opened, ignore_displacements):
+def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_result):
     eyes_opened.check(
         "Fluent - Ignore Displacements = ({})".format(ignore_displacements),
         Target.window().ignore_displacements(ignore_displacements).fully(),
+    )
+    check_test_result.send(
+        [{"actual_name": "ignoreDisplacements", "expected": ignore_displacements}]
     )
