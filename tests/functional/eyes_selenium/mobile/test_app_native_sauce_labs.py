@@ -108,7 +108,7 @@ def test_iOS_native__sauce_labs(mobile_eyes):
 @pytest.mark.platform("iOS")
 def test_iOS_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
-    eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp checkRegion")
+    eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 375, 712)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
     )
