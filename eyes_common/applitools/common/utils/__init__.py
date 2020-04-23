@@ -11,6 +11,7 @@ from .compat import (  # type: ignore # noqa
     urlsplit,
     urlunsplit,
     quote_plus,
+    with_metaclass,
 )
 from .datetime_utils import (  # type: ignore # noqa
     UTC,

@@ -1,7 +1,19 @@
-from enum import Enum
+import warnings
+from enum import Enum, EnumMeta
+import enum
+from types import DynamicClassAttribute
+
+from applitools.common.utils.compat import with_metaclass
 
 
-class BrowserType(Enum):
+class _EDGEDeprecationMeta(EnumMeta):
+    def __new__(metacls, cls, bases, classdict):
+        enum_class = enum.EnumMeta.__new__(metacls, cls, bases, classdict)
+        enum_class._member_map_["EDGE"] = enum_class.EDGE_LEGACY
+        return enum_class
+
+
+class BrowserType(with_metaclass(_EDGEDeprecationMeta, Enum)):
     CHROME = "chrome-0"
     CHROME_ONE_VERSION_BACK = "chrome-1"
     CHROME_TWO_VERSIONS_BACK = "chrome-2"
@@ -13,7 +25,14 @@ class BrowserType(Enum):
     SAFARI_TWO_VERSIONS_BACK = "safari-2"
     IE_10 = "ie10"
     IE_11 = "ie"
-    EDGE = "edge"
+    EDGE_LEGACY = "edgelegacy"
+    EDGE_CHROMIUM = "edgechromium"
+    EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-1"
+    EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-2"
+
+    @DynamicClassAttribute
+    def EDGE(self):
+        warnings.warn("EDGE is deprecated", DeprecationWarning, stacklevel=2)
 
 
 class StitchMode(Enum):
