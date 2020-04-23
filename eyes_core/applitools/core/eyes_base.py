@@ -2,10 +2,9 @@ from __future__ import absolute_import
 
 import abc
 import typing
-from copy import deepcopy
 
 from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
-from applitools.common.config import BatchInfo, Configuration
+from applitools.common.config import Configuration
 from applitools.common.errors import (
     DiffsFoundError,
     EyesError,
@@ -16,7 +15,7 @@ from applitools.common.match import MatchResult
 from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
-from applitools.common.utils import ABC, argument_guard, general_utils
+from applitools.common.utils import ABC, argument_guard
 from applitools.common.visual_grid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
@@ -39,7 +38,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
     from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
-    from typing import Optional, Text, Union, Any
+    from typing import Optional, Text, Union
 
 __all__ = ("EyesBase",)
 
@@ -362,7 +361,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                     return results
                 except EyesError as e:
                     logger.info("Failed to abort server session: %s " % e)
-                    pass
                 finally:
                     self._running_session = None
         finally:
@@ -664,17 +662,18 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         """
         Assign the viewport size we need to be in the default content frame.
         """
-        if not self._is_viewport_size_set:
-            try:
-                if self.configure.viewport_size is None:
-                    # TODO: ignore if viewport_size settled explicitly
-                    target_size = self._get_viewport_size()
-                    self.configure.viewport_size = target_size
-                else:
-                    target_size = self.configure.viewport_size
-                    self._set_viewport_size(target_size)
-                self._is_viewport_size_set = True
-            except Exception as e:
-                logger.warning("Viewport has not been setup. {}".format(e))
-                self._is_viewport_size_set = False
-                raise e
+        if self._is_viewport_size_set:
+            return
+        try:
+            if self.configure.viewport_size is None:
+                # TODO: ignore if viewport_size settled explicitly
+                target_size = self._get_viewport_size()
+                self.configure.viewport_size = target_size
+            else:
+                target_size = self.configure.viewport_size
+                self._set_viewport_size(target_size)
+            self._is_viewport_size_set = True
+        except Exception as e:
+            logger.warning("Viewport has not been setup. {}".format(e))
+            self._is_viewport_size_set = False
+            raise e
