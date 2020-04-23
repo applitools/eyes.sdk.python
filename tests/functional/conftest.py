@@ -87,6 +87,10 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 def pytest_runtest_makereport(item, call):
     outcome = yield
     result = outcome.get_result()
+    if result.when == "setup" or not result.caplog:
+        # skip tests on setup stage and if skipped
+        return
+
     passed = result.outcome == "passed"
     group = "selenium"
     test_name = item.name
