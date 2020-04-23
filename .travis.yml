@@ -9,7 +9,8 @@ before_script:
     - sleep 10 # give webdriver some time to start
     - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
 script:
-    - echo $APPLITOOLS_BATCH_ID
+    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG"
+    - echo "APPLITOOLS_BATCH_ID=$APPLITOOLS_BATCH_ID"
     - tox -e $TOX_ENV
 stages:
     - lint
