@@ -32,7 +32,14 @@ class BrowserType(with_metaclass(_EDGEDeprecationMeta, Enum)):
 
     @DynamicClassAttribute
     def EDGE(self):
-        warnings.warn("EDGE is deprecated", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "The `EDGE` option that is being used in your browsers configuration"
+            " will soon be deprecated. Please change it to either `EDGE_LEGACY`"
+            " for the legacy version or to `EDGE_CHROMIUM` for the"
+            " new Chromium-based version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 
 class StitchMode(Enum):
