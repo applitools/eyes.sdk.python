@@ -1,9 +1,8 @@
 import warnings
 from enum import Enum, EnumMeta
 import enum
-from types import DynamicClassAttribute
 
-from applitools.common.utils.compat import with_metaclass
+from applitools.common.utils.compat import with_metaclass, DynamicClassAttributeGetter
 
 
 class _EDGEDeprecationMeta(EnumMeta):
@@ -30,7 +29,7 @@ class BrowserType(with_metaclass(_EDGEDeprecationMeta, Enum)):
     EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-1"
     EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-2"
 
-    @DynamicClassAttribute
+    @DynamicClassAttributeGetter
     def EDGE(self):
         warnings.warn(
             "The `EDGE` option that is being used in your browsers configuration"

@@ -96,3 +96,28 @@ def with_metaclass(meta, *bases):
             return meta.__prepare__(name, bases)
 
     return type.__new__(metaclass, "temporary_class", (), {})
+
+
+class DynamicClassAttributeGetter(object):
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.fget = fget
+        # next two lines make DynamicClassAttribute act the same as property
+        self.__doc__ = doc or fget.__doc__
+        self.overwrite_doc = doc is None
+        # support for abstract methods
+        self.__isabstractmethod__ = bool(getattr(fget, "__isabstractmethod__", False))
+
+    def __get__(self, instance, ownerclass=None):
+        if instance is None:
+            if self.__isabstractmethod__:
+                return self
+            raise AttributeError()
+        elif self.fget is None:
+            raise AttributeError("unreadable attribute")
+        return self.fget(instance)
+
+    def getter(self, fget):
+        fdoc = fget.__doc__ if self.overwrite_doc else None
+        result = type(self)(fget, self.fset, self.fdel, fdoc or self.__doc__)
+        result.overwrite_doc = self.overwrite_doc
+        return result
