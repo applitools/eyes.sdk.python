@@ -262,7 +262,8 @@ def warning(msg):
 
 
 def deprecation(msg):
-    warnings.warn("DEPRECATION: {}".format(msg))
+    # type: (tp.Text) -> None
+    warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
 def exception(msg):
