@@ -175,3 +175,16 @@ def counted(f):
 
     wrapped.calls = 0
     return wrapped
+
+
+class DynamicEnumGetter(object):
+    """
+    Allow to use methods as values in Enum classes
+    """
+
+    def __init__(self, fget=None):
+        self.fget = fget
+        self.__doc__ = fget.__doc__
+
+    def __get__(self, instance, ownerclass=None):
+        return self.fget(ownerclass)

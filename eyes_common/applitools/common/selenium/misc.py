@@ -1,32 +1,10 @@
 import warnings
-from enum import Enum, EnumMeta
-import enum
+from enum import Enum
 
-from applitools.common.utils.compat import with_metaclass, DynamicClassAttributeGetter
-
-
-class _EDGEDeprecationMeta(EnumMeta):
-    class Dict(dict):
-        def __getitem__(self, item):
-            if item == "EDGE":
-                warnings.warn(
-                    "The `EDGE` option that is being used in your browsers configuration"
-                    " will soon be deprecated. Please change it to either `EDGE_LEGACY`"
-                    " for the legacy version or to `EDGE_CHROMIUM` for the"
-                    " new Chromium-based version.",
-                    DeprecationWarning,
-                    stacklevel=3,
-                )
-                return BrowserType.EDGE_LEGACY
-            return super(_EDGEDeprecationMeta.Dict, self).__getitem__(item)
-
-    def __new__(metacls, cls, bases, classdict):
-        enum_class = enum.EnumMeta.__new__(metacls, cls, bases, classdict)
-        enum_class._member_map_ = _EDGEDeprecationMeta.Dict(**enum_class._member_map_)
-        return enum_class
+from applitools.common.utils.general_utils import DynamicEnumGetter
 
 
-class BrowserType(with_metaclass(_EDGEDeprecationMeta, Enum)):
+class BrowserType(Enum):
     CHROME = "chrome-0"
     CHROME_ONE_VERSION_BACK = "chrome-1"
     CHROME_TWO_VERSIONS_BACK = "chrome-2"
@@ -43,16 +21,18 @@ class BrowserType(with_metaclass(_EDGEDeprecationMeta, Enum)):
     EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-1"
     EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-2"
 
-    @DynamicClassAttributeGetter
+    @DynamicEnumGetter
     def EDGE(self):
-        # display msg in IDE, cannot be hidden to separate variable
+        # type: () -> BrowserType
         warnings.warn(
             "The `EDGE` option that is being used in your browsers configuration"
             " will soon be deprecated. Please change it to either `EDGE_LEGACY`"
             " for the legacy version or to `EDGE_CHROMIUM` for the"
             " new Chromium-based version.",
             DeprecationWarning,
+            stacklevel=3,
         )
+        return self.EDGE_LEGACY
 
 
 class StitchMode(Enum):
