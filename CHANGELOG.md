@@ -1,3 +1,4 @@
+# [4.1.25] - 2020-04-24
 ## Added
 - UFG Edge Chromium support [Trello 1757](https://trello.com/c/LUe43aee)
 ## Fixed
