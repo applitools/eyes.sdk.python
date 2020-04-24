@@ -1,3 +1,5 @@
+## Added
+- UFG Edge Chromium support [Trello 1757](https://trello.com/c/LUe43aee)
 ## Fixed
 - StartSession request now considers "isNew" flag. [Trello 1715](https://trello.com/c/DcVzWbeR)
 # Updated
