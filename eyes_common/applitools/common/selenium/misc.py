@@ -1,4 +1,7 @@
+import warnings
 from enum import Enum
+
+from applitools.common.utils.general_utils import DynamicEnumGetter
 
 
 class BrowserType(Enum):
@@ -13,7 +16,23 @@ class BrowserType(Enum):
     SAFARI_TWO_VERSIONS_BACK = "safari-2"
     IE_10 = "ie10"
     IE_11 = "ie"
-    EDGE = "edge"
+    EDGE_LEGACY = "edgelegacy"
+    EDGE_CHROMIUM = "edgechromium"
+    EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-1"
+    EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-2"
+
+    @DynamicEnumGetter
+    def EDGE(self):
+        # type: () -> BrowserType
+        warnings.warn(
+            "The `EDGE` option that is being used in your browsers configuration"
+            " will soon be deprecated. Please change it to either `EDGE_LEGACY`"
+            " for the legacy version or to `EDGE_CHROMIUM` for the"
+            " new Chromium-based version.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        return self.EDGE_LEGACY
 
 
 class StitchMode(Enum):
