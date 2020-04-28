@@ -17,7 +17,7 @@ from .webdriver import EyesWebDriver
 if typing.TYPE_CHECKING:
     from typing import Text, Optional, Union, List, Tuple
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.common import TestResults, Region
+    from applitools.common import TestResults, Region, MatchLevel
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         ViewPort,
@@ -35,11 +35,7 @@ if typing.TYPE_CHECKING:
     from .webelement import EyesWebElement
 
 
-@proxy_to(
-    "configure",
-    all_fields(Configuration)
-    + ["use_dom", "send_dom", "match_level", "ignore_displacements", "enable_patterns"],
-)
+@proxy_to("configure", all_fields(Configuration))
 class Eyes(EyesConfigurationMixin):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
@@ -120,6 +116,16 @@ class Eyes(EyesConfigurationMixin):
 
         """
         return self._current_eyes.full_agent_id
+
+    @property
+    def match_level(self):
+        # type: () -> MatchLevel
+        return self.configure.match_level
+
+    @match_level.setter
+    def match_level(self, match_level):
+        # type: (MatchLevel) -> None
+        self.configure.match_level = match_level
 
     @property
     def should_stitch_content(self):
