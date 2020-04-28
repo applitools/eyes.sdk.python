@@ -1,78 +1,78 @@
-# [4.1.25] - 2020-04-24
-## Added
+## [4.1.25] - 2020-04-24
+### Added
 - UFG Edge Chromium support [Trello 1757](https://trello.com/c/LUe43aee)
-## Fixed
+### Fixed
 - StartSession request now considers "isNew" flag. [Trello 1715](https://trello.com/c/DcVzWbeR)
-# Updated
+### Updated
 - All SDKs should report their version in all requests to the Eyes server [Trello 1697](https://trello.com/c/CzhUxOqE) [GH #153](https://github.com/applitools/eyes.sdk.python/pull/153)
 
-# [4.1.24] - 2020-03-30
-## Fixed
+## [4.1.24] - 2020-03-30
+### Fixed
 - Tests doesn't work with Python 2 when coded region is used [Trello 1684](https://trello.com/c/K1Bv5OK7) [GH #146](https://github.com/applitools/eyes.sdk.python/pull/146)
 - Custom methods and attributes that was added to ChromeDriver wasn't accessible from EyesWebDriver instance [Trello 1602](https://trello.com/c/aMbwNDUF) [GH #150](https://github.com/applitools/eyes.sdk.python/pull/150)
 
-# [4.1.23] - 2020-03-25
-## Fixed
+## [4.1.23] - 2020-03-25
+### Fixed
 - VG tests hang intermittently [Trello 1566](https://trello.com/c/kU2EaDiE)
 
-# [4.1.22] - 2020-03-18
-## Fixed
+## [4.1.22] - 2020-03-18
+### Fixed
 - Issue With VG Capturing After Element Check [Trello 1639](https://trello.com/c/tPRpKuOX)
 - VG Ignore region in the wrong coordinates [Trello 1654](https://trello.com/c/OvhH1p91)
 
-# [4.1.21] - 2020-03-16
-## Fixed
+## [4.1.21] - 2020-03-16
+### Fixed
 - Handling Data URL in CSS [Trello 1656](https://trello.com/c/DlBLzq0R)
 
-# [4.1.20] - 2020-03-13
-## Fixed
+## [4.1.20] - 2020-03-13
+### Fixed
 - Missing useragent in headers during downloading of resources for VG [Trello 1646](https://trello.com/c/QvI2Ba21)
 
-# [4.1.19] - 2020-03-11
-## Fixed
+## [4.1.19] - 2020-03-11
+### Fixed
 - Appium Native tests fail with error [Trello 1590](https://trello.com/c/gG26XQLH)
 
-# [4.1.18] - 2020-03-06
-## Fixed
+## [4.1.18] - 2020-03-06
+### Fixed
 - Non consistent execution of tests with VG [Trello 1623](https://trello.com/c/2s6WMVKn)
 - get_all_test_results return always one TestResults object
-## Updated
+### Updated
 - Dom snapshot updated to *3.3.3* [Trello 1586](https://trello.com/c/ZS0Wb1FN)
 
-# [4.1.17] - 2020-03-05
-## Updated
+## [4.1.17] - 2020-03-05
+### Updated
 - DOM directly to storage service on MatchWindow. [Trello 1592](https://trello.com/c/MXixwLnj)
 - DOM capture and snapshot scripts to *7.1.3* and *1.4.9* respectively
-## Fixed
+### Fixed
 - Requirements issue with attrs [Trello 1578](https://trello.com/c/sR56FqO7)
 - VG not rendering properly with external css which contain relative resources [Trello 1619](https://trello.com/c/F2jfilLk)
 
-# [4.1.16] - 2020-02-24
-## Fixed
+## [4.1.16] - 2020-02-24
+### Fixed
 - Batch notification is not working if batch id contains some non URL-compatible symbols [Trello 1567](https://trello.com/c/hCPqs80W)
 
-# [4.1.15] - 2020-02-20
-## Fixed
+## [4.1.15] - 2020-02-20
+### Fixed
 - execute_script of EyesWebDriver not work with EyesWebElement [Trello 112](https://trello.com/c/OrdYpmTj)
 - The `TypeError: integer argument expected, got float` was raised in some cases  [Trello 1536](https://trello.com/c/ZgU3wMR8)
 - Set is_disabled cause an error [Trello 611](https://trello.com/c/eZBMTKHK)
 
-# [4.1.14] - 2020-02-12
+## [4.1.14] - 2020-02-12
 ### Fixed
 - Python SDK crashed on get RenderInfo with new server version [Trello 1555](https://trello.com/c/8DppLbN7)
 
-# [4.1.13] - 2020-02-12
+## [4.1.13] - 2020-02-12
 ### Updated
 - Allow to set api_key and server_url after set_batch_ids in BatchClose [GitHub 106](https://github.com/applitools/eyes.sdk.python/pull/106)
 ### Fixed
 - DefaultMatchSettings being overridden incorrectly by ImageMatchSettings [Trello 1495](https://trello.com/c/KEbWXavV)
 - "Got an empty screenshot window!" with viewport screenshot [GitHub 107](https://github.com/applitools/eyes.sdk.python/pull/107)
 
-# [4.1.12] - 2020-02-07
-## Update
+## [4.1.12] - 2020-02-07
+### Update
 - Pin Appium Python Client to 4+ version
 - The ServerConnector now utilize HTTP Session [GitHub 101](https://github.com/applitools/eyes.sdk.python/pull/101)
-## Fixed
+### Fixed
 - Wrong object inside TestsResults.steps_info
 ### Added
 - Batch Notifications [Trello 1380](https://trello.com/c/gare3CuF)

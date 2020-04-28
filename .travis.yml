@@ -36,13 +36,13 @@ jobs:
               - CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "ERROR === There is no change log for version $SDK_VERSION" || echo "$TMP_CHANGELOG")
               - echo $CHANGELOG
               - if [[ (-z "$TMP_CHANGELOG") && ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
-                  sleep 5;
-                  exit 1;
+                sleep 5;
+                exit 1;
                 fi
               - if [[ $TRAVIS_TAG =~ ^RELEASE_CANDIDATE ]]; then
-                  git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+                git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
 #                  git commit -m 'update pom version';
-                  git push origin HEAD:$RELEASE_BRANCH;
+                git push origin HEAD:$RELEASE_BRANCH;
                 fi
 
         - stage: unit-tests
