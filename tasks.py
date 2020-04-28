@@ -77,7 +77,6 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "flake8-import-order",
         "flake8-bugbear",
         "mypy",
-        "bumpversion",
     ]
     if testing:
         requires = testing_requires

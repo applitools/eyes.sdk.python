@@ -13,18 +13,18 @@ script:
     - echo "APPLITOOLS_BATCH_ID=$APPLITOOLS_BATCH_ID"
     - tox -e $TOX_ENV
 stages:
-#    - lint
-#    - unit-tests
-#    - integration-tests
+    - lint
+    - unit-tests
+    - integration-tests
 #    - bumpversion
-#    - functional-tests
+    - functional-tests
     - deploy
 jobs:
     include:
-#        - stage: lint
-#          python: 3.6
-#          env:
-#              - TOX_ENV=lint
+        - stage: lint
+          python: 3.6
+          env:
+              - TOX_ENV=lint
 #        - stage: bumpversion
 #          if: tag =~ ^RELEASE_CANDIDATE AND fork == false #AND branch == develop
 #          script:
@@ -47,54 +47,54 @@ jobs:
 #            git push origin HEAD:$RELEASE_BRANCH;
 #            fi
 #
-#        - stage: unit-tests
-#          if: tag =~ ^RELEASE_CANDIDATE AND fork == false #AND branch == develop
-#          python: 2.7
-#          env:
-#              - TOX_ENV=unit
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=unit
-##
-#        - stage: integration-tests
-#          python: 2.7
-#          env:
-#              - TOX_ENV=integration
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=integration
-#
-#        - stage: functional-tests
-#          python: 3.6
-#          addons:
-#              chrome: stable
-#              firefox: latest
-#          env:
-#              - TOX_ENV=selenium
-#              - TEST_PLATFORM=Linux
-#              - TEST_BROWSERS=chrome
-#        - python: 3.6
-#          addons:
-#              chrome: stable
-#          env:
-#              - TOX_ENV=desktop
-#              - TEST_PLATFORM=Linux
-#              - TEST_BROWSERS=chrome
-#        - python: 2.7
-#          addons:
-#              chrome: stable
-#          env:
-#              - TOX_ENV=selenium
-#              - TEST_PLATFORM=Linux
-#              - TEST_BROWSERS=chrome
-#        - python: 3.6
-#          addons:
-#              chrome: stable
-#          env:
-#              - TOX_ENV=desktop
-#              - TEST_PLATFORM=Linux
-#              - TEST_RUN_ON_VG=true
-#              - TEST_BROWSERS=chrome
+        - stage: unit-tests
+          if: tag =~ ^RELEASE_CANDIDATE AND fork == false #AND branch == develop
+          python: 2.7
+          env:
+              - TOX_ENV=unit
+        - python: 3.6
+          env:
+              - TOX_ENV=unit
+
+        - stage: integration-tests
+          python: 2.7
+          env:
+              - TOX_ENV=integration
+        - python: 3.6
+          env:
+              - TOX_ENV=integration
+
+        - stage: functional-tests
+          python: 3.6
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+        - python: 3.6
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+        - python: 2.7
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+        - python: 3.6
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_RUN_ON_VG=true
+              - TEST_BROWSERS=chrome
 #        - python: 3.6
 #          env:
 #              - TOX_ENV=selenium
@@ -108,10 +108,10 @@ jobs:
 #              - TEST_BROWSERS="internet\ explorer"
 #              - TEST_REMOTE=1
 #              - PYTEST_ADDOPTS="--ignore=tests/functional/eyes_selenium/selenium/test_dom_capture.py"
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=images
-#              - TEST_PLATFORM="Linux"
+        - python: 3.6
+          env:
+              - TOX_ENV=images
+              - TEST_PLATFORM="Linux"
 #        - os: windows
 #          language: sh
 #          python: "3.7"
@@ -128,7 +128,7 @@ jobs:
 #              - python3 --version
 #              - python3 -m pip install --upgrade pip wheel
 #          install:
-##              - sudo safaridriver --enable
+#              - sudo safaridriver --enable
 #              - pip3 install -U tox
 #          addons:
 #              chrome: stable
@@ -140,43 +140,45 @@ jobs:
 #          script:
 #              - echo $APPLITOOLS_BATCH_ID
 #              - python3 -m tox -e $TOX_ENV
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=mobile
-#              - TEST_PLATFORM="iOS"
-#              - TEST_REMOTE=1
-#        - python: 3.6
-#          env:
-#              - TOX_ENV=mobile
-#              - TEST_PLATFORM="Android"
-#              - TEST_REMOTE=1
-#        - python: 3.6
-#          addons:
-#              chrome: stable
-#          env:
-#              - TOX_ENV=selenium-visualgrid
-#              - TEST_PLATFORM=Linux
-#              - TEST_BROWSERS=chrome
+        - python: 3.6
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="iOS"
+              - TEST_REMOTE=1
+        - python: 3.6
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="Android"
+              - TEST_REMOTE=1
+        - python: 3.6
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium-visualgrid
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
         - stage: deploy
-          if: tag =~ ^v AND fork == false #AND branch == develop
+          if: tag =~ ^v AND fork == false AND branch == develop
           python: 3.6
           script:
               # save the email of the person who did this commit in COMMITTER_EMAIL
+              - pip install -U invoke twine
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
               - SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g')
               - if [[ $COMMITTER_EMAIL =~ $ALLOWED_RELEASE_COMMITERS ]]; then
                   echo "DEPLOY";
-                  chmod +x ./extractChangeLog.sh;
-                  TMP_CHANGELOG=$(./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md");
-                  CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
-                  echo $CHANGELOG;
+                  TMP_CHANGELOG=$(bash ./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md");
 
                   if [[ (-z "$TMP_CHANGELOG") && ($TRAVIS_TAG =~ ^v) ]]; then
                   sleep 5;
                   exit 1;
                   fi
 
-                  chmod +x ./sendMail.sh;
+                  CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
+                  echo $CHANGELOG;
+
                   TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
-                  ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+                  bash ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+
+                  inv dist --from-env;
                 fi
