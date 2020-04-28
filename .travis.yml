@@ -14,16 +14,36 @@ script:
     - tox -e $TOX_ENV
 stages:
     - lint
-    - unit-tests
-    - integration-tests
-    - eyes-images-tests
-    - functional-tests
+    - bumpversion
+#    - unit-tests
+#    - integration-tests
+#    - eyes-images-tests
+#    - functional-tests
+    - deploy
 jobs:
     include:
         - stage: lint
           python: 3.6
           env:
               - TOX_ENV=lint
+        - stage: bumpversion
+          python: 3.6
+              - SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g')
+              - echo $SDK_VERSION
+              - chmod +x ./extractChangeLog.sh
+              - TMP_CHANGELOG=$(./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md")
+              - echo "$TMP_CHANGELOG"
+              - CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "ERROR === There is no change log for version $SDK_VERSION" || echo "$TMP_CHANGELOG")
+              - echo $CHANGELOG
+              - if [[ (-z "$TMP_CHANGELOG") && ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
+                  sleep 5;
+                  exit 1;
+                fi
+              - if [[ $TRAVIS_TAG =~ ^RELEASE_CANDIDATE ]]; then
+                  git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+#                  git commit -m 'update pom version';
+                  git push origin HEAD:$RELEASE_BRANCH;
+                fi
 
         - stage: unit-tests
           python: 2.7
@@ -134,3 +154,10 @@ jobs:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+        - python: 3.6
+          env:
+              - TOX_ENV=deploy
+
+            #   - if [[ $TRAVIS_TAG =~ ^FULL_COVERAGE_TESTS ]]; then
+            #       sed -i 's/regressionTestsSuite.xml/devTestsSuite.xml/g' $TRAVIS_BUILD_DIR/eyes.sdk.python/pom.xml;
+            #       fi
