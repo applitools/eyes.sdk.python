@@ -6,6 +6,7 @@ install:
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
+    # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
     - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
         export TEST_REPORT_SANDBOX=False;
         export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
@@ -41,6 +42,8 @@ jobs:
         - stage: bumpversion
           if: tag =~ ^RELEASE_CANDIDATE AND fork == false
           script:
+              # Push new commit to $RELEASE_BRANCH with tag vN.N.N which lead to deploy to PyPi
+              # RELEASE_BRANCH should be set in Travis CI settings
               - echo "v$SDK_VERSION $CHANGELOG"
               - if [[ "$TMP_CHANGELOG" ]]; then
                   pip install bump2version;
@@ -175,17 +178,20 @@ jobs:
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
           script:
+              # Deploy to PyPi and send notification about the tests execution status
+              # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
               - pip install -U invoke twine
               - echo "v$SDK_VERSION $CHANGELOG"
               - echo $TMP_CHANGELOG
-              # save the email of the person who did this commit in COMMITTER_EMAIL
+              # Save the email of the person who did this commit in COMMITTER_EMAIL
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
               - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
                   echo "DEPLOY";
                   TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
-                  bash ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
 
+                  bash ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
                   inv dist --from-env;
+
                   echo "DEPLOY SUCCESSFUL";
                 else
                   echo "DEPLOYMENT FAILED";
