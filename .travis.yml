@@ -16,7 +16,7 @@ stages:
     - lint
     - unit-tests
     - integration-tests
-#    - bumpversion
+    - bumpversion
     - functional-tests
     - deploy
 jobs:
@@ -25,30 +25,29 @@ jobs:
           python: 3.6
           env:
               - TOX_ENV=lint
-#        - stage: bumpversion
-#          if: tag =~ ^RELEASE_CANDIDATE AND fork == false #AND branch == develop
-#          script:
-#          - echo $TRAVIS_TAG
-#          - SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g')
-#          - echo $SDK_VERSION
-#          - chmod +x ./extractChangeLog.sh
-#          - TMP_CHANGELOG=$(./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md")
-#          - echo "$TMP_CHANGELOG"
-#          - CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "ERROR === There is no change log for version $SDK_VERSION" || echo "$TMP_CHANGELOG")
-#          - echo $CHANGELOG
-#          - if [[ (-z "$TMP_CHANGELOG") && ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
-#            sleep 5;
-#            exit 1;
-#            fi
-#          - if [[ $TRAVIS_TAG =~ ^RELEASE_CANDIDATE ]]; then
-#            pip install bump2version;
-#            bumpversion --allow-dirty --new-version $SDK_VERSION patch;
-#            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
-#            git push origin HEAD:$RELEASE_BRANCH;
-#            fi
-#
+        - stage: bumpversion
+          if: tag =~ ^RELEASE_CANDIDATE AND fork == false AND branch == develop
+          script:
+          - echo $TRAVIS_TAG
+          - SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g')
+          - echo $SDK_VERSION
+          - chmod +x ./extractChangeLog.sh
+          - TMP_CHANGELOG=$(./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md")
+          - echo "$TMP_CHANGELOG"
+          - CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "ERROR === There is no change log for version $SDK_VERSION" || echo "$TMP_CHANGELOG")
+          - echo $CHANGELOG
+          - if [[ (-z "$TMP_CHANGELOG") && ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
+            sleep 5;
+            exit 1;
+            fi
+          - if [[ $TRAVIS_TAG =~ ^RELEASE_CANDIDATE ]]; then
+            pip install bump2version;
+            bumpversion --allow-dirty --new-version $SDK_VERSION patch;
+            git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+            git push --tags origin HEAD:$RELEASE_BRANCH;
+            fi
+
         - stage: unit-tests
-          if: tag =~ ^RELEASE_CANDIDATE AND fork == false #AND branch == develop
           python: 2.7
           env:
               - TOX_ENV=unit
@@ -65,6 +64,7 @@ jobs:
               - TOX_ENV=integration
 
         - stage: functional-tests
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           addons:
               chrome: stable
@@ -74,6 +74,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -81,6 +82,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 2.7
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -88,6 +90,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -96,12 +99,14 @@ jobs:
               - TEST_RUN_ON_VG=true
               - TEST_BROWSERS=chrome
 #        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
 #              - TOX_ENV=selenium
 #              - TEST_PLATFORM="macOS 10.14"
 #              - TEST_BROWSERS=safari
 #              - TEST_REMOTE=1
 #        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
 #              - TOX_ENV=selenium
 #              - TEST_PLATFORM="Windows 10"
@@ -109,6 +114,7 @@ jobs:
 #              - TEST_REMOTE=1
 #              - PYTEST_ADDOPTS="--ignore=tests/functional/eyes_selenium/selenium/test_dom_capture.py"
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=images
               - TEST_PLATFORM="Linux"
@@ -141,16 +147,19 @@ jobs:
 #              - echo $APPLITOOLS_BATCH_ID
 #              - python3 -m tox -e $TOX_ENV
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
