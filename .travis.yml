@@ -6,11 +6,14 @@ install:
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
-    - sleep 10 # give webdriver some time to start
+    - if [[ $TRAVIS_TAG =~ ^v ]]; then
+        export TEST_REPORT_SANDBOX=False;
+      fi
     - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
 script:
-    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG"
-    - echo "APPLITOOLS_BATCH_ID=$APPLITOOLS_BATCH_ID"
+    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
+    - echo $TEST_REPORT_SANDBOX
+    - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
 stages:
     - lint
@@ -28,7 +31,6 @@ jobs:
         - stage: bumpversion
           if: tag =~ ^RELEASE_CANDIDATE AND fork == false AND branch == develop
           script:
-          - echo $TRAVIS_TAG
           - SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g')
           - echo $SDK_VERSION
           - chmod +x ./extractChangeLog.sh
