@@ -6,23 +6,54 @@ install:
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
-    - sleep 10 # give webdriver some time to start
+    # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
+    - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
+        export TEST_REPORT_SANDBOX=False;
+        export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
+        export TMP_CHANGELOG=$(bash ./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md");
+        export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
+
+        if [[ (-z "$TMP_CHANGELOG") ]]; then
+            echo "THE CHANGELOG IS NOT CORRECT";
+            exit 1;
+        fi
+
+      fi
     - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
 script:
+    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
+    - echo "v$SDK_VERSION $CHANGELOG"
+    - echo $TEST_REPORT_SANDBOX
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
 stages:
     - lint
     - unit-tests
     - integration-tests
-    - eyes-images-tests
+    - bumpversion
     - functional-tests
+    - deploy
 jobs:
     include:
         - stage: lint
           python: 3.6
           env:
               - TOX_ENV=lint
+        - stage: bumpversion
+          if: tag =~ ^RELEASE_CANDIDATE AND fork == false
+          script:
+              # Push new commit to $RELEASE_BRANCH with tag vN.N.N which lead to deploy to PyPi
+              # RELEASE_BRANCH should be set in Travis CI settings
+              - echo "v$SDK_VERSION $CHANGELOG"
+              - if [[ "$TMP_CHANGELOG" ]]; then
+                  pip install bump2version;
+                  bumpversion --new-version $SDK_VERSION patch;
+                  git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+                  git push --tags origin HEAD:$RELEASE_BRANCH;
+                else
+                  echo "THE CHANGELOG IS NOT CORRECT";
+                  exit 1;
+                fi
 
         - stage: unit-tests
           python: 2.7
@@ -41,6 +72,7 @@ jobs:
               - TOX_ENV=integration
 
         - stage: functional-tests
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           addons:
               chrome: stable
@@ -50,6 +82,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -57,6 +90,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 2.7
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -64,6 +98,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -72,12 +107,14 @@ jobs:
               - TEST_RUN_ON_VG=true
               - TEST_BROWSERS=chrome
 #        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
 #              - TOX_ENV=selenium
 #              - TEST_PLATFORM="macOS 10.14"
 #              - TEST_BROWSERS=safari
 #              - TEST_REMOTE=1
 #        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
 #              - TOX_ENV=selenium
 #              - TEST_PLATFORM="Windows 10"
@@ -85,6 +122,7 @@ jobs:
 #              - TEST_REMOTE=1
 #              - PYTEST_ADDOPTS="--ignore=tests/functional/eyes_selenium/selenium/test_dom_capture.py"
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=images
               - TEST_PLATFORM="Linux"
@@ -104,7 +142,7 @@ jobs:
 #              - python3 --version
 #              - python3 -m pip install --upgrade pip wheel
 #          install:
-##              - sudo safaridriver --enable
+#              - sudo safaridriver --enable
 #              - pip3 install -U tox
 #          addons:
 #              chrome: stable
@@ -117,19 +155,45 @@ jobs:
 #              - echo $APPLITOOLS_BATCH_ID
 #              - python3 -m tox -e $TOX_ENV
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
         - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+        - stage: deploy
+          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
+          python: 3.6
+          script:
+              # Deploy to PyPi and send notification about the tests execution status
+              # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
+              - pip install -U invoke twine
+              - echo "v$SDK_VERSION $CHANGELOG"
+              - echo $TMP_CHANGELOG
+              # Save the email of the person who did this commit in COMMITTER_EMAIL
+              - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
+              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
+                  echo "DEPLOY";
+                  TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
+
+                  bash ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+                  inv dist --from-env;
+
+                  echo "DEPLOY SUCCESSFUL";
+                else
+                  echo "DEPLOYMENT FAILED";
+                  exit 1;
+                fi
