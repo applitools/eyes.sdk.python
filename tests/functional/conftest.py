@@ -10,6 +10,10 @@ from tests.utils import send_result_report, get_session_results
 
 logger.set_logger(StdoutLogger())
 
+TRAVIS_COMMIT = os.getenv("TRAVIS_COMMIT")
+BUILD_TAG = os.getenv("BUILD_TAG")
+RUNNING_ON_TRAVIS_REGRESSION_SUITE = TRAVIS_COMMIT and BUILD_TAG is None
+
 
 @pytest.fixture(scope="session")
 def eyes_runner_class():
@@ -83,6 +87,10 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 def pytest_runtest_makereport(item, call):
     outcome = yield
     result = outcome.get_result()
+    if result.when == "setup" or not result.caplog:
+        # skip tests on setup stage and if skipped
+        return
+
     passed = result.outcome == "passed"
     group = "selenium"
     test_name = item.name
@@ -133,7 +141,7 @@ def pytest_runtest_makereport(item, call):
         )
 
 
-if (os.getenv("TRAVIS_COMMIT", " ") != " ") and (os.getenv("BUILD_TAG", " ") == " "):
+if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
 
     def pytest_collection_modifyitems(items):
         skip = pytest.mark.skip(reason="Skipping this test because it's still fail")
@@ -167,14 +175,14 @@ if (os.getenv("TRAVIS_COMMIT", " ") != " ") and (os.getenv("BUILD_TAG", " ") == 
                 item.add_marker(skip)
 
     def set_skip_for_mobile_platform(item, failed_tests, skip):
-        for excludedItem in failed_tests[item.fspath.basename][item.originalname]:
+        for excluded_item in failed_tests[item.fspath.basename][item.originalname]:
             if (
-                item.callspec.params["mobile_eyes"]["deviceName"] in excludedItem
+                item.callspec.params["mobile_eyes"]["deviceName"] in excluded_item
                 and item.callspec.params["mobile_eyes"]["deviceOrientation"]
-                in excludedItem
+                in excluded_item
                 and item.callspec.params["mobile_eyes"]["platformVersion"]
-                in excludedItem
-                and str(item.callspec.params["mobile_eyes"]["fully"]) in excludedItem
-                and item.callspec.params["page"] in excludedItem
+                in excluded_item
+                and str(item.callspec.params["mobile_eyes"]["fully"]) in excluded_item
+                and item.callspec.params["page"] in excluded_item
             ):
                 item.add_marker(skip)

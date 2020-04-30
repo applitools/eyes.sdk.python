@@ -28,7 +28,15 @@ def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
 
 
 @task(pre=[clean])
-def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
+def dist(
+    c,
+    common=False,
+    core=False,
+    selenium=False,
+    images=False,
+    prod=False,
+    from_env=False,
+):
     git_status = c.run("git status", hide=True)
     if "Changes not staged for commit" in git_status.stdout:
         raise Exception("Working directory should be clean")
@@ -38,11 +46,16 @@ def dist(c, common=False, core=False, selenium=False, images=False, prod=False):
             common, core, selenium, images, full_path=True, path_as_str=True
         )
     )
-    dest = "pypi" if prod else "test"
+    if from_env:
+        twine_command = "twine upload dist/*"
+    else:
+        twine_command = "twine upload -r {dest} dist/*".format(
+            dest="pypi" if prod else "test"
+        )
     for pack_path in packages:
         with c.cd(pack_path):
             c.run("python setup.py sdist", echo=True)
-            c.run("twine upload -r {dest} dist/*".format(dest=dest), echo=True)
+            c.run(twine_command, echo=True)
 
 
 @task
@@ -59,7 +72,12 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "webdriver_manager==1.5",
         "tox==3.14.3",
     ]
-    lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
+    lint_requires = [
+        "flake8",
+        "flake8-import-order",
+        "flake8-bugbear",
+        "mypy",
+    ]
     if testing:
         requires = testing_requires
     elif dev:

@@ -1,0 +1,5 @@
+sauce labs (web)
+sauce labs (mobile web)
+batch completion
+desktop selenium (CSS, Scroll)
+desktop visualgrid
