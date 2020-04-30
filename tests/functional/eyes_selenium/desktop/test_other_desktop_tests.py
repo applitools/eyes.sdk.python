@@ -2,6 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from applitools.selenium import Target
 
 pytestmark = [
     pytest.mark.platform("Linux"),
@@ -21,12 +22,15 @@ def test_duplicatedIFrames(eyes_opened):
     eyes_opened.check_window("Duplicated Iframes")
 
 
-# @pytest.mark.test_page_url("https://afternoon-savannah-68940.herokuapp.com/#")
-# def test_acme_login(eyes_opened):
-#     username = eyes_opened.driver.find_element_by_id("username")
-#     username.click()
-#     username.send_keys("adamC")
-#     password = eyes_opened.driver.find_element_by_id("password")
-#     password.click()
-#     password.send_keys("MySecret123?")
-#     eyes_opened.check("", Target.region(username))
+@pytest.mark.skip
+@pytest.mark.viewport_size({"width": 1024, "height": 768})
+@pytest.mark.test_suite_name("Eyes Selenium SDK - ACME")
+@pytest.mark.test_page_url("https://afternoon-savannah-68940.herokuapp.com/#")
+def test_acme_login(eyes_opened):
+    username = eyes_opened.driver.find_element_by_id("username")
+    username.click()
+    username.send_keys("adamC")
+    password = eyes_opened.driver.find_element_by_id("password")
+    password.click()
+    password.send_keys("MySecret123?")
+    eyes_opened.check(Target.region(username), Target.region(password))
