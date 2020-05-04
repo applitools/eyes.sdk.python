@@ -22,7 +22,7 @@ def eyes(vg_runner, batch_info):
     return eyes
 
 
-def test_vg_tests_count_1(eyes, batch_info, driver):
+def test_VG_tests_count_1(eyes, batch_info, driver):
     eyes.batch = batch_info
     eyes.open(
         driver, "Test Count", "Test_VGTestsCount_1", {"width": 640, "height": 480}
@@ -33,7 +33,7 @@ def test_vg_tests_count_1(eyes, batch_info, driver):
     assert results_summary.size() == 1
 
 
-def test_vg_tests_count_2(eyes, batch_info, driver):
+def test_VG_tests_count_2(eyes, batch_info, driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -48,7 +48,7 @@ def test_vg_tests_count_2(eyes, batch_info, driver):
     assert results_summary.size() == 2
 
 
-def test_vg_tests_count_3(eyes, batch_info, driver):
+def test_VG_tests_count_3(eyes, batch_info, driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -65,7 +65,7 @@ def test_vg_tests_count_3(eyes, batch_info, driver):
     assert results_summary.size() == 2
 
 
-def test_vg_tests_count_4(eyes, batch_info, driver):
+def test_VG_tests_count_4(eyes, batch_info, driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -80,7 +80,7 @@ def test_vg_tests_count_4(eyes, batch_info, driver):
     assert results_summary.size() == 1
 
 
-def test_vg_tests_count_5(eyes, batch_info, driver):
+def test_VG_tests_count_5(eyes, batch_info, driver):
     config = (
         Configuration()
         .set_batch(batch_info)
