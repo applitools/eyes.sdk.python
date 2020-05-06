@@ -167,6 +167,11 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
             if "VG" in failed_tests[item.fspath.basename][item.originalname][0]:
                 item.add_marker(skip)
+            if string_contains_list_element(
+                str(type(item.callspec.params["eyes_runner"])),
+                failed_tests[item.fspath.basename][item.originalname][0],
+            ):
+                item.add_marker(skip)
         else:
             if (
                 item.callspec.params["stitch_mode"].value
@@ -186,3 +191,9 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
                 and item.callspec.params["page"] in excluded_item
             ):
                 item.add_marker(skip)
+
+    def string_contains_list_element(string_check, list_check):
+        for element in list_check:
+            if element in string_check:
+                return True
+        return False
