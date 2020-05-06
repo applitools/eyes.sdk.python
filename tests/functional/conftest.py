@@ -167,9 +167,11 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
             if "VG" in failed_tests[item.fspath.basename][item.originalname][0]:
                 item.add_marker(skip)
-            if string_contains_list_element(
-                str(type(item.callspec.params["eyes_runner"])),
-                failed_tests[item.fspath.basename][item.originalname][0],
+            if ("eyes_runner" in item.callspec.params) and (
+                string_contains_list_element(
+                    str(type(item.callspec.params["eyes_runner"])),
+                    failed_tests[item.fspath.basename][item.originalname][0],
+                )
             ):
                 item.add_marker(skip)
         else:
