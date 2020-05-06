@@ -175,7 +175,7 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
             ):
                 item.add_marker(skip)
         else:
-            if (
+            if ("stitch_mode" in item.callspec.params) and (
                 item.callspec.params["stitch_mode"].value
                 in failed_tests[item.fspath.basename][item.originalname][0]
             ):
