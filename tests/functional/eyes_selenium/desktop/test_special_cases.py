@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from applitools.selenium import Target
 
 pytestmark = [
-    pytest.mark.selenium_only,
     pytest.mark.platform("Linux"),
     pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_suite_name("Eyes Selenium SDK - Special Cases"),
