@@ -272,7 +272,7 @@ class FullPageCaptureAlgorithm(object):
                 "Failed to extract entire size of region context {}".format(e)
             )
             logger.debug(
-                "Using image size instead: {} x()".format(image.width, image.height)
+                "Using image size instead: {} x {}".format(image.width, image.height)
             )
             entire_size = RectangleSize(image.width, image.height)
         return entire_size
