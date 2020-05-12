@@ -8,20 +8,20 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.fixture()
-def test_name_suffix(eyes_runner):
+def name_suffix(eyes_runner):
     if isinstance(eyes_runner, ClassicRunner):
         return ""
     else:
         return "_VG"
 
 
-def test_double_open_check_close(driver, eyes_runner, test_name_suffix):
+def test_double_open_check_close(driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckClose" + test_name_suffix,
+        "TestDoubleOpenCheckClose" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window().fully().ignore_displacements(False))
@@ -30,7 +30,7 @@ def test_double_open_check_close(driver, eyes_runner, test_name_suffix):
     eyes.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckClose" + test_name_suffix,
+        "TestDoubleOpenCheckClose" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes.check("Step 2", Target.window().fully().ignore_displacements(False))
@@ -40,13 +40,13 @@ def test_double_open_check_close(driver, eyes_runner, test_name_suffix):
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async(driver, eyes_runner, test_name_suffix):
+def test_double_open_check_close_async(driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseAsync" + test_name_suffix,
+        "TestDoubleOpenCheckCloseAsync" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window().fully().ignore_displacements(False))
@@ -55,7 +55,7 @@ def test_double_open_check_close_async(driver, eyes_runner, test_name_suffix):
     eyes.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseAsync" + test_name_suffix,
+        "TestDoubleOpenCheckCloseAsync" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes.check("Step 2", Target.window().fully().ignore_displacements(False))
@@ -66,14 +66,14 @@ def test_double_open_check_close_async(driver, eyes_runner, test_name_suffix):
 
 
 def test_double_open_check_close_with_different_instances(
-    driver, eyes_runner, test_name_suffix
+    driver, eyes_runner, name_suffix
 ):
     eyes1 = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseWithDifferentInstances" + test_name_suffix,
+        "TestDoubleOpenCheckCloseWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes1.check("Step 1", Target.window().fully().ignore_displacements(False))
@@ -83,7 +83,7 @@ def test_double_open_check_close_with_different_instances(
     eyes2.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseWithDifferentInstances" + test_name_suffix,
+        "TestDoubleOpenCheckCloseWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes2.check("Step 2", Target.window().fully().ignore_displacements(False))
@@ -94,14 +94,14 @@ def test_double_open_check_close_with_different_instances(
 
 
 def test_double_open_check_close_async_with_different_instances(
-    driver, eyes_runner, test_name_suffix
+    driver, eyes_runner, name_suffix
 ):
     eyes1 = Eyes(eyes_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + test_name_suffix,
+        "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes1.check("Step 1", Target.window().fully().ignore_displacements(False))
@@ -111,7 +111,7 @@ def test_double_open_check_close_async_with_different_instances(
     eyes2.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + test_name_suffix,
+        "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes2.check("Step 2", Target.window().fully().ignore_displacements(False))
@@ -121,13 +121,13 @@ def test_double_open_check_close_async_with_different_instances(
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_check_dont_get_all_results(driver, eyes_runner, test_name_suffix):
+def test_double_check_dont_get_all_results(driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
     driver.get("https://applitools.com/helloworld")
     eyes.open(
         driver,
         "Applitools Eyes SDK",
-        "TestDoubleCheckDontGetAllResults" + test_name_suffix,
+        "TestDoubleCheckDontGetAllResults" + name_suffix,
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window().with_name("Step 1"))

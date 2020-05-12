@@ -35,19 +35,16 @@ def test_check_region2(eyes_opened):
     )
 
 
-@pytest.mark.selenium_only
 def test_check_frame(eyes_opened):
     eyes_opened.check_frame("frame1", tag="frame1")
 
 
-@pytest.mark.selenium_only
 def test_check_region_in_frame(eyes_opened):
     eyes_opened.check_region_in_frame(
         "frame1", [By.ID, "inner-frame-div"], tag="Inner frame div", stitch_content=True
     )
 
 
-@pytest.mark.selenium_only
 def test_check_inner_frame(eyes_opened):
     eyes_opened.hide_scrollbars = False
     eyes_opened.driver.execute_script("document.documentElement.scrollTo(0,350);")
