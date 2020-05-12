@@ -39,19 +39,21 @@ class BatchInfo(object):
         metadata={JsonInclude.NAME: "batchSequenceName"}
     )  # type: Optional[Text]
     id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})
+    notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
         self.id = get_env_with_prefix(
             "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
         )  # type: Text
-        self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")
-        self.started_at = datetime.now(UTC)
-        self.sequence_name = get_env_with_prefix("APPLITOOLS_BATCH_SEQUENCE")
+        self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")  # type: Text
+        self.started_at = datetime.now(UTC)  # type: datetime
+        self.sequence_name = get_env_with_prefix(
+            "APPLITOOLS_BATCH_SEQUENCE"
+        )  # type: Optional[Text]
         self.notify_on_completion = str2bool(
             get_env_with_prefix("APPLITOOLS_BATCH_NOTIFY")
-        )
+        )  # type: bool
 
         if name:
             self.name = name
@@ -113,35 +115,43 @@ class Configuration(object):
 
     @property
     def enable_patterns(self):
+        # type: () -> bool
         return self.default_match_settings.enable_patterns
 
     @enable_patterns.setter
-    def enable_patterns(self, value):
-        self.default_match_settings.enable_patterns = value
+    def enable_patterns(self, enable_patterns):
+        # type: (bool) -> None
+        self.default_match_settings.enable_patterns = enable_patterns
 
     @property
     def use_dom(self):
+        # type: () -> bool
         return self.default_match_settings.use_dom
 
     @use_dom.setter
-    def use_dom(self, value):
-        self.default_match_settings.use_dom = value
+    def use_dom(self, use_dom):
+        # type: (bool) -> None
+        self.default_match_settings.use_dom = use_dom
 
     @property
     def match_level(self):
+        # type: () -> MatchLevel
         return self.default_match_settings.match_level
 
     @match_level.setter
-    def match_level(self, value):
-        self.default_match_settings.match_level = value
+    def match_level(self, match_level):
+        # type: (MatchLevel) -> None
+        self.default_match_settings.match_level = match_level
 
     @property
     def ignore_displacements(self):
+        # type: () -> bool
         return self.default_match_settings.ignore_displacements
 
     @ignore_displacements.setter
-    def ignore_displacements(self, value):
-        self.default_match_settings.ignore_displacements = value
+    def ignore_displacements(self, ignore_displacements):
+        # type: (bool) -> None
+        self.default_match_settings.ignore_displacements = ignore_displacements
 
     def set_batch(self, batch):
         # type: (Self, BatchInfo) -> Self

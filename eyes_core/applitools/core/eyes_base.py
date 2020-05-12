@@ -38,6 +38,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
     from applitools.core.fluent.check_settings import CheckSettings
     from applitools.common.capture import EyesScreenshot
+    from applitools.common import MatchLevel
     from typing import Optional, Text, Union
 
 __all__ = ("EyesBase",)
@@ -135,6 +136,16 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self._server_connector = ServerConnector()  # type: ServerConnector
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
+
+    @property
+    def match_level(self):
+        # type: () -> MatchLevel
+        return self.configure.match_level
+
+    @match_level.setter
+    def match_level(self, match_level):
+        # type: (MatchLevel) -> None
+        self.configure.match_level = match_level
 
     @property
     def is_cut_provider_explicitly_set(self):
