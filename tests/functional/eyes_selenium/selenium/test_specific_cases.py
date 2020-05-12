@@ -1,4 +1,5 @@
 import pytest
+import time
 from selenium.webdriver.common.by import By
 
 from applitools.selenium import (
@@ -10,6 +11,7 @@ from applitools.selenium import (
 )
 
 
+@pytest.mark.skip("Old test. test_hello_world implemented instead of this one")
 @pytest.mark.platform("Linux")
 @pytest.mark.test_page_url("https://applitools.com/helloworld")
 def test_quickstart_example(eyes, driver):
@@ -63,10 +65,11 @@ def test_check_window_with_send_dom(eyes, driver):
     eyes.close()
 
 
-@pytest.mark.test_page_url("https://demo.applitools.com/")
+@pytest.mark.test_page_url("data:text/html,<p>Test</p>")
 def test_abort_eyes(eyes, driver):
-    eyes.open(driver, "Python | VisualGrid", "TestAbortSeleniumEyes")
-    eyes.check_window()
+    eyes.open(driver, "Test Abort", "Test Abort", {"width": 1200, "height": 800})
+    eyes.check("SEL", Target.window())
+    time.sleep(15)
     eyes.abort()
 
 
