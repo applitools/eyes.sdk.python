@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import attr
 
+from applitools.common.accessibility import AccessibilitySettings
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
@@ -104,13 +105,14 @@ class Configuration(object):
         factory=ImageMatchSettings
     )  # type: ImageMatchSettings
     stitch_overlap = attr.ib(default=5)  # type: int
-
     api_key = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
     )  # type: Text
+    _accessibility_settings = attr.ib(default=None)  # type: AccessibilitySettings
+
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @property
@@ -298,6 +300,16 @@ class Configuration(object):
     def set_default_match_settings(self, default_match_settings):
         # type: (Self, ImageMatchSettings) -> Self
         self.default_match_settings = default_match_settings
+        return self
+
+    @property
+    def accessibility_validation(self):
+        if self._accessibility_settings is None:
+            return self.default_match_settings.accessibility_settings
+
+    def set_accessibility_validation(self, accessibility_settings):
+        # type: (Self, AccessibilitySettings) -> Self
+        self._accessibility_settings = accessibility_settings
         return self
 
     @match_timeout.validator

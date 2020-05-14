@@ -3,6 +3,7 @@ from enum import Enum
 
 import attr
 
+from .accessibility import AccessibilitySettings
 from .geometry import Region
 from .utils.json_utils import JsonInclude
 
@@ -37,12 +38,6 @@ class MatchLevel(Enum):
     STRICT = "Strict"
     # Images are identical.
     EXACT = "Exact"
-
-
-class AccessibilityLevel(Enum):
-    NONE = "None"
-    AA = "AA"
-    AAA = "AAA"
 
 
 @attr.s
@@ -144,24 +139,25 @@ class ImageMatchSettings(object):
     )  # type:Optional[bool]
     ignore_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Ignore"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     layout_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Layout"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     strict_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Strict"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     content_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Content"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     floating_match_settings = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Floating"}
-    )  # type: Optional[List[FloatingMatchSettings]]
-    # TODO: implement accessibility region
-    # accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
-    # accessibility_level = attr.ib(
-    #     metadata={JsonInclude.THIS: True}
-    # )  # type: AccessibilityLevel
+    )  # type: List[FloatingMatchSettings]
+    accessibility = attr.ib(
+        factory=list, metadata={JsonInclude.THIS: True}
+    )  # type: List
+    accessibility_settings = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[AccessibilitySettings]
 
     @classmethod
     def create_from(cls, other):
@@ -179,6 +175,8 @@ class ImageMatchSettings(object):
         img.floating_match_settings = other.floating_match_settings
         img.enable_patterns = other.enable_patterns
         img.ignore_displacements = other.ignore_displacements
+        img.accessibility = other.accessibility
+        img.accessibility_settings = other.accessibility_settings
 
         return img
 

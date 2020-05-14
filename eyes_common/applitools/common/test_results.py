@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Text
 import attr
 
 from applitools.common.utils.json_utils import JsonInclude
+from .accessibility import TestAccessibilityStatus
 
 from .geometry import RectangleSize
 from .match import ImageMatchSettings
@@ -182,6 +183,9 @@ class TestResults(object):
         type=ImageMatchSettings,
         metadata={JsonInclude.THIS: True},
     )  # type: ImageMatchSettings
+    accessibility_status = attr.ib(
+        default=None, type=TestAccessibilityStatus, metadata={JsonInclude.THIS: True},
+    )  # type: TestAccessibilityStatus
 
     @property
     def is_passed(self):
