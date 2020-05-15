@@ -26,7 +26,7 @@ def eyes_opened(eyes, running_session, session_start_info):
     eyes._current_eyes._session_start_info = session_start_info
     eyes._current_eyes._server_connector.stop_session = MagicMock(
         side_effect=lambda *args, **kwargs: TestResults(
-            1, 2, 3, 4, 3, 4, 5, 6, 2, status="unresolved"
+            1, 2, 3, 4, 3, 4, 5, 6, 2, status="Unresolved"
         )
     )
     return eyes
@@ -36,7 +36,7 @@ def eyes_opened(eyes, running_session, session_start_info):
 def eyes_opened_unresolved_new(eyes_opened, started_connector, running_session):
     started_connector.stop_session = MagicMock(
         side_effect=lambda *args, **kwargs: TestResults(
-            1, 2, 3, 4, 3, 4, 5, 6, 2, status="unresolved"
+            1, 2, 3, 4, 3, 4, 5, 6, 2, status="Unresolved"
         )
     )
     eyes_opened._current_eyes._server_connector = started_connector
@@ -49,7 +49,7 @@ def eyes_opened_unresolved_new(eyes_opened, started_connector, running_session):
 def eyes_opened_unresolved_old(eyes_opened, started_connector):
     started_connector.stop_session = MagicMock(
         side_effect=lambda *args, **kwargs: TestResults(
-            1, 2, 3, 4, 3, 4, 5, 6, 2, status="unresolved"
+            1, 2, 3, 4, 3, 4, 5, 6, 2, status="Unresolved"
         )
     )
     eyes_opened._current_eyes._server_connector = started_connector
@@ -60,7 +60,7 @@ def eyes_opened_unresolved_old(eyes_opened, started_connector):
 def eyes_opened_failed(eyes_opened, started_connector):
     started_connector.stop_session = MagicMock(
         side_effect=lambda *args, **kwargs: TestResults(
-            1, 2, 3, 4, 3, 4, 5, 6, 2, status="failed"
+            1, 2, 3, 4, 3, 4, 5, 6, 2, status="Failed"
         )
     )
     eyes_opened._current_eyes._server_connector = started_connector
@@ -75,7 +75,7 @@ def test_eyes_close_not_opened(eyes):
 def test_eyes_close_opened_but_not_session_running(eyes_opened):
     eyes_opened._current_eyes._running_session = None
     test_results = eyes_opened.close()
-    assert test_results == TestResults()
+    assert test_results == TestResults(status="Failed")
 
 
 def test_eyes_close_old_test_unresolved(eyes_opened_unresolved_old):
