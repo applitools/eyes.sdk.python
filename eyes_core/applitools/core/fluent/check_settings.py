@@ -123,7 +123,6 @@ class CheckSettings(object):
 
     def accessibility(self, region, type):
         """ Adds one or more ignore accessibility regions. """
-        argument_guard.is_a(region, Region)
         argument_guard.is_a(type, AccessibilityRegionType)
         self.values.accessibility_regions.append(
             self._accessibility_provider_from(region, type)
