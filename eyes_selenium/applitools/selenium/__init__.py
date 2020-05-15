@@ -19,7 +19,14 @@ from applitools.core.cut import (  # noqa
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
-from applitools.core.batch_close import BatchClose
+from applitools.common.accessibility import (  # noqa
+    AccessibilityRegionType,
+    AccessibilitySettings,
+    AccessibilityLevel,
+    AccessibilityGuidelinesVersion,
+)
+from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
+from applitools.core.batch_close import BatchClose  # noqa
 
 from .classic_runner import ClassicRunner  # noqa
 from .eyes import Eyes  # noqa
@@ -54,4 +61,9 @@ __all__ = (
     "TestResultContainer",
     "TestResultsSummary",
     "BatchClose",
+    "AccessibilityRegionType",
+    "AccessibilityLevel",
+    "AccessibilitySettings",
+    "AccessibilityGuidelinesVersion",
+    "AccessibilityRegionByRectangle",
 )

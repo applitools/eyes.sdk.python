@@ -16,7 +16,10 @@ from .region import (
     RegionByElement,
     RegionBySelector,
     FloatingRegionBySelector,
+    AccessibilityRegionByElement,
+    AccessibilityRegionBySelector,
 )
+from applitools.common.accessibility import AccessibilityRegionType
 
 if TYPE_CHECKING:
     from applitools.common.visual_grid import VisualGridSelector
@@ -186,6 +189,34 @@ class SeleniumCheckSettings(CheckSettings):
     def floating(self, *args):  # noqa
         return super(SeleniumCheckSettings, self).floating(*args)
 
+    # @overload
+    # def accessibility(self, region):
+    #     # type:(AccessibilityRegionByRectangle) -> SeleniumCheckSettings
+    #     pass
+
+    @overload
+    def accessibility(self, css_selector, type):
+        # type:(CssSelector, AccessibilityRegionType) -> SeleniumCheckSettings
+        pass
+
+    @overload
+    def accessibility(self, by, type):
+        # type:(BySelector, AccessibilityRegionType) -> SeleniumCheckSettings
+        pass
+
+    @overload
+    def accessibility(self, element, type):
+        # type:(AnyWebElement, AccessibilityRegionType) -> SeleniumCheckSettings
+        pass
+
+    @overload
+    def accessibility(self, region, type):
+        # type:(Region, AccessibilityRegionType) -> SeleniumCheckSettings
+        pass
+
+    def accessibility(self, region, type):
+        return super(SeleniumCheckSettings, self).accessibility(region, type)
+
     @overload  # noqa
     def region(self, region):
         # type: (Region) -> SeleniumCheckSettings
@@ -326,6 +357,23 @@ class SeleniumCheckSettings(CheckSettings):
             return FloatingRegionBySelector(by, value, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
+        )
+
+    def _accessibility_provider_from(self, region, accessibility_region_type):
+        if is_webelement(region):
+            logger.debug("accessibility: AccessibilityRegionByElement")
+            return AccessibilityRegionByElement(region, accessibility_region_type)
+        if isinstance(region, basestring):
+            logger.debug("accessibility: AccessibilityRegionBySelector")
+            return AccessibilityRegionBySelector(
+                By.CSS_SELECTOR, region, accessibility_region_type
+            )
+        if is_list_or_tuple(region):
+            by, value = region
+            logger.debug("accessibility: AccessibilityRegionBySelector")
+            return AccessibilityRegionBySelector(by, value, accessibility_region_type)
+        return super(SeleniumCheckSettings, self)._floating_provider_from(
+            region, accessibility_region_type
         )
 
 
