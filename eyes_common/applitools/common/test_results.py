@@ -115,7 +115,10 @@ class TestResults(object):
         init=False, default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     status = attr.ib(
-        default=None, repr=False, metadata={JsonInclude.THIS: True}
+        converter=TestResultsStatus,
+        default=None,
+        repr=False,
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[Text]
 
     name = attr.ib(
@@ -190,23 +193,17 @@ class TestResults(object):
     @property
     def is_passed(self):
         # type: () -> bool
-        return (
-            self.status is not None
-        ) and self.status.lower() == TestResultsStatus.Passed.name.lower()
+        return self.status == TestResultsStatus.Passed
 
     @property
     def is_unresolved(self):
         # type: () -> bool
-        return (
-            self.status is not None
-        ) and self.status.lower() == TestResultsStatus.Unresolved.name.lower()
+        return self.status == TestResultsStatus.Unresolved
 
     @property
     def is_failed(self):
         # type: () -> bool
-        return (
-            self.status is not None
-        ) and self.status.lower() == TestResultsStatus.Failed.name.lower()
+        return self.status == TestResultsStatus.Failed
 
     def __str__(self):
         origin_str = super(TestResults, self).__str__()

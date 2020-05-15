@@ -27,9 +27,14 @@ def _fields_from_attr(cls):
 def _klasses_from_attr(cls):
     klasses = {}
     klasses[cls] = _fields_from_attr(cls)
-    for field in attr.fields(cls):
-        if field.type and attr.has(field.type):
-            klasses[field.type] = _fields_from_attr(field.type)
+
+    def traverse(cls):
+        for field in attr.fields(cls):
+            if field.type and attr.has(field.type):
+                klasses[field.type] = _fields_from_attr(field.type)
+                traverse(field.type)
+
+    traverse(cls)
     return klasses
 
 
@@ -40,7 +45,6 @@ def attr_from_json(content, cls):
         params = {}
         for k, v in iteritems(dct):
             k = camelcase_to_underscore(k)
-            # if k in fields:
             params[k] = v
         return params
 
