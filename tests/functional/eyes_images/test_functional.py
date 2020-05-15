@@ -102,7 +102,7 @@ def test_check_image_fluent_accessibility(eyes):
                 "actual_name": "accessibility",
                 "expected": [
                     AccessibilityRegion(
-                        100, 10, 25, 200, AccessibilityRegionType.GraphicalObject,
+                        10, 25, 200, 100, AccessibilityRegionType.GraphicalObject,
                     )
                 ],
             },
