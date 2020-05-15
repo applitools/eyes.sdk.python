@@ -308,7 +308,7 @@ class Configuration(object):
     def accessibility_validation(self):
         # type: (Self) -> AccessibilitySettings
         if self._accessibility_settings is None:
-            return self.default_match_settings.accessibility_validation
+            return self.default_match_settings.accessibility_settings
         return self._accessibility_settings
 
     @accessibility_validation.setter
