@@ -30,6 +30,7 @@ from .geometry import (  # noqa
     Point,
     RectangleSize,
     Region,
+    AccessibilityRegion,
     Rectangle,
     SubregionForStitching,
 )
