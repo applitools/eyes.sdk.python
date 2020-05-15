@@ -1,11 +1,13 @@
 import os
 from distutils.util import strtobool
 
+import attr
 import pytest
 import yaml
 
 from applitools.common import BatchInfo, StdoutLogger, logger, Configuration, StitchMode
 from applitools.common.utils import iteritems
+from applitools.common.utils.json_utils import attr_from_dict
 from tests.utils import send_result_report, get_session_results
 
 logger.set_logger(StdoutLogger())
@@ -47,10 +49,21 @@ def check_test_result_(eyes):
     while True:
         comparision = yield
         test_result = yield
-        session_results = get_session_results(eyes.api_key, test_result)
-        img = session_results["actualAppOutput"][0]["imageMatchSettings"]
-        for param in comparision:
-            assert img[param["actual_name"]] == param["expected"]
+        check_image_match_settings(eyes, test_result, comparision)
+
+
+def check_image_match_settings(eyes, test_result, comparision):
+    session_results = get_session_results(eyes.api_key, test_result)
+    img = session_results["actualAppOutput"][0]["imageMatchSettings"]
+    for param in comparision:
+        actual = img[param["actual_name"]]
+        expected = param["expected"]
+        if attr.has(expected.__class__):
+            actual = attr_from_dict(actual, expected.__class__)
+        elif isinstance(expected, list):
+            expected_cls = expected[0].__class__
+            actual = [attr_from_dict(a, expected_cls) for a in actual]
+        assert actual == expected
 
 
 @pytest.fixture(scope="function")
