@@ -1,17 +1,16 @@
 import abc
 import typing
-from abc import ABC
 
 import attr
 
-from applitools.common.geometry import Region
+from applitools.common import FloatingBounds
+from applitools.common.geometry import Region, AccessibilityRegion, Rectangle
 from applitools.common.match import FloatingMatchSettings
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.utils import ABC
-from applitools.common.utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List
+    from typing import List, Union, Optional
 
     from applitools.core.eyes_base import EyesBase
     from applitools.common.capture import EyesScreenshot
@@ -49,17 +48,17 @@ class GetAccessibilityRegion(GetRegion):
 
 @attr.s
 class RegionByRectangle(GetRegion):
-    _region = attr.ib()  # type: Region
+    _region = attr.ib()  # type: Union[Region, Rectangle]
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[Region]
-        return [self._region]
+        return [Region.from_(self._region)]
 
 
 @attr.s
 class FloatingRegionByRectangle(GetFloatingRegion):
-    _rect = attr.ib()  # type: Region
-    _bounds = attr.ib()
+    _rect = attr.ib()  # type: Union[Region, Rectangle]
+    _bounds = attr.ib()  # type: FloatingBounds
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
@@ -68,26 +67,9 @@ class FloatingRegionByRectangle(GetFloatingRegion):
 
 @attr.s
 class AccessibilityRegionByRectangle(GetAccessibilityRegion):
-    left = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    type = attr.ib(
-        converter=AccessibilityRegionType,
-        type=AccessibilityRegionType,
-        metadata={JsonInclude.THIS: True},
-    )  # type: AccessibilityRegionType
-
-    @classmethod
-    def from_(cls, region, type):
-        return cls(
-            left=region.left,
-            top=region.top,
-            width=region.width,
-            height=region.height,
-            type=type,
-        )
+    _rect = attr.ib()  # type: Union[Region, Rectangle, AccessibilityRegion]
+    _type = attr.ib(default=None)  # type: Optional[AccessibilityRegionType]
 
     def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List[AccessibilityRegionByRectangle]
-        return [self]
+        # type: (EyesBase, EyesScreenshot) -> List[AccessibilityRegion]
+        return [AccessibilityRegion.from_(self._rect, self._type)]

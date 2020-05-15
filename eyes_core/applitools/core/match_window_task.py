@@ -13,7 +13,6 @@ from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
 from .fluent import CheckSettings, GetFloatingRegion, GetRegion
-from .fluent.region import GetAccessibilityRegion, AccessibilityRegionByRectangle
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Optional, Union
@@ -86,28 +85,12 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     image_match_settings.content_regions = filter_empty_entries(
         mutable_regions[3], location
     )
-    # TODO: add move according location fo float and accessibility
-    floating_match_settings = []
-    for i, reg in enumerate(mutable_regions[4]):
-        if reg.area == 0:
-            continue
-        vgs = region_selectors[4][i]
-        gfr = vgs.category
-        if isinstance(gfr, GetFloatingRegion):
-            fms = FloatingMatchSettings(reg, gfr.bounds)
-            floating_match_settings.append(fms)
-    image_match_settings.floating_match_settings = floating_match_settings
-
-    accessibility_regions = []
-    for i, reg in enumerate(mutable_regions[5]):
-        if reg.area == 0:
-            continue
-        vgs = region_selectors[5][i]
-        gfr = vgs.category
-        if isinstance(gfr, GetAccessibilityRegion):
-            accessibility_region = AccessibilityRegionByRectangle.from_(reg, gfr.type)
-            accessibility_regions.append(accessibility_region)
-    image_match_settings.accessibility = accessibility_regions
+    image_match_settings.floating_match_settings = filter_empty_entries(
+        mutable_regions[4], location
+    )
+    image_match_settings.accessibility = filter_empty_entries(
+        mutable_regions[5], location
+    )
     return image_match_settings
 
 

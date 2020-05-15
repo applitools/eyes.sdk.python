@@ -8,7 +8,7 @@ from .region import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
-    RegionByRegion,
+    RegionByRectangle,
     GetAccessibilityRegion,
     AccessibilityRegionByRectangle,
 )
@@ -256,7 +256,7 @@ class CheckSettings(object):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
-            return RegionByRegion(region)
+            return RegionByRectangle(region)
         raise TypeError("Unknown region type.")
 
     def _floating_provider_from(self, region, bounds):
