@@ -202,7 +202,7 @@ def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_resu
     accessibility_validation=AccessibilitySettings(
         AccessibilityLevel.AAA, AccessibilityGuidelinesVersion.WCAG_2_0
     ),
-    api_key=os.getenv("EYESTEST_APPLITOOLS_API_KEY"),
+    api_key=os.environ["EYESTEST_APPLITOOLS_API_KEY"],
 )
 def test_accessibility_regions(eyes_opened, check_test_result):
     eyes_opened.check(

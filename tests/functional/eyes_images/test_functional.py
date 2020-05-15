@@ -84,7 +84,7 @@ def test_check_image_fluent_accessibility(eyes):
             )
         )
         .set_server_url("https://testeyes.applitools.com/")
-        .set_api_key(os.getenv("EYESTEST_APPLITOOLS_API_KEY"))
+        .set_api_key(os.environ["EYESTEST_APPLITOOLS_API_KEY"])
     )
     eyes.open("images", "TestCheckImage_Fluent_Accessibility")
     eyes.check(
