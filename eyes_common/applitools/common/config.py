@@ -111,10 +111,6 @@ class Configuration(object):
     server_url = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
     )  # type: Text
-    _accessibility_settings = attr.ib(
-        default=None
-    )  # type: Optional[AccessibilitySettings]
-
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
 
     @property
@@ -306,19 +302,17 @@ class Configuration(object):
 
     @property
     def accessibility_validation(self):
-        # type: (Self) -> AccessibilitySettings
-        if self._accessibility_settings is None:
-            return self.default_match_settings.accessibility_settings
-        return self._accessibility_settings
+        # type: (Self) -> Optional[AccessibilitySettings]
+        return self.default_match_settings.accessibility_settings
 
     @accessibility_validation.setter
     def accessibility_validation(self, accessibility_settings):
         # type: (Self, Optional[AccessibilitySettings]) -> None
         if accessibility_settings is None:
-            self._accessibility_settings = None
+            self.self.default_match_settings.accessibility_settings = None
             return
         argument_guard.is_a(accessibility_settings, AccessibilitySettings)
-        self._accessibility_settings = accessibility_settings
+        self.default_match_settings.accessibility_settings = accessibility_settings
 
     def set_accessibility_validation(self, accessibility_settings):
         # type: (Self, Optional[AccessibilitySettings]) -> Self
