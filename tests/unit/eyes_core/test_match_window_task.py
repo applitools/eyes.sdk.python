@@ -14,7 +14,7 @@ from applitools.common.geometry import AccessibilityRegion, Rectangle
 from applitools.core import CheckSettings, MatchWindowTask
 from applitools.core.fluent.region import (
     AccessibilityRegionByRectangle,
-    RegionByRegion,
+    RegionByRectangle,
     FloatingRegionByRectangle,
 )
 from applitools.core.match_window_task import collect_regions_from_selectors
@@ -74,16 +74,16 @@ def test_collect_regions_from_selectors(mwt, eyes_base_mock):
         AccessibilityRegion(7, 7, 7, 7, AccessibilityRegionType.GraphicalObject),
     ]
     REGIONS_SELECTORS = [
-        [VisualGridSelector(".selector1", RegionByRegion(Region(1, 1, 1, 1)))],
+        [VisualGridSelector(".selector1", RegionByRectangle(Region(1, 1, 1, 1)))],
         [],
         [
-            VisualGridSelector(".selector2", RegionByRegion(Region(2, 2, 2, 2))),
-            VisualGridSelector(".selector3", RegionByRegion(Region(3, 3, 3, 3))),
+            VisualGridSelector(".selector2", RegionByRectangle(Region(2, 2, 2, 2))),
+            VisualGridSelector(".selector3", RegionByRectangle(Region(3, 3, 3, 3))),
         ],
         [
-            VisualGridSelector(".selector3", RegionByRegion(Region(4, 4, 4, 4))),
-            VisualGridSelector(".selector3", RegionByRegion(Region(5, 5, 5, 5))),
-            VisualGridSelector(".selector3", RegionByRegion(Region(6, 6, 6, 6))),
+            VisualGridSelector(".selector3", RegionByRectangle(Region(4, 4, 4, 4))),
+            VisualGridSelector(".selector3", RegionByRectangle(Region(5, 5, 5, 5))),
+            VisualGridSelector(".selector3", RegionByRectangle(Region(6, 6, 6, 6))),
         ],
         [
             VisualGridSelector(
