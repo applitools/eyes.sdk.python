@@ -370,9 +370,19 @@ class AccessibilityRegion(Rectangle):
         argument_guard.is_a(accessibility_type, AccessibilityRegionType)
         self.type = accessibility_type
 
+    @overload
+    def from_(self, accessibility_region):
+        # type: (Union[Dict, AccessibilityRegion]) -> AccessibilityRegion
+        pass
+
+    @overload
+    def from_(self, region, accessibility_type):
+        # type: (Union[Region,Rectangle],AccessibilityRegionType)->AccessibilityRegion
+        pass
+
     @classmethod  # noqa
     def from_(cls, obj, obj2=None):
-        # type: (Union[AccessibilityRegion, Region, Rectangle], Optional[AccessibilityRegionType])->AccessibilityRegion
+        # type: (...)->AccessibilityRegion
         """Creates a new Region instance."""
         if isinstance(obj, AccessibilityRegion):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.type)
@@ -455,7 +465,7 @@ class Region(Rectangle):
     @classmethod  # noqa
     @overload
     def from_(cls, region):
-        # type: (Region) -> Region
+        # type: (Union[Region, Dict]) -> Region
         pass
 
     @classmethod  # noqa
