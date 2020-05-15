@@ -11,6 +11,7 @@ from applitools.common import (
     TestResultContainer,
     TestResultsSummary,
 )
+from applitools.common.geometry import AccessibilityRegion
 from applitools.common.config import BatchInfo  # noqa
 from applitools.common.selenium import BrowserType, Configuration, StitchMode  # noqa
 from applitools.common.server import FailureReports  # noqa
@@ -66,4 +67,5 @@ __all__ = (
     "AccessibilitySettings",
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
+    "AccessibilityRegion",
 )

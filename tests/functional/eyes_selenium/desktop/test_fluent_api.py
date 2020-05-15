@@ -2,7 +2,6 @@ import os
 
 import pytest
 
-from applitools.common import AccessibilityRegion
 from applitools.selenium import (
     Region,
     StitchMode,
@@ -11,6 +10,7 @@ from applitools.selenium import (
     AccessibilityGuidelinesVersion,
     AccessibilityLevel,
     AccessibilityRegionType,
+    AccessibilityRegion,
 )
 
 pytestmark = [

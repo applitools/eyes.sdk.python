@@ -6,7 +6,8 @@ import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Region, logger, AccessibilityRegion, Rectangle
+from applitools.common import logger
+from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.webelement import EyesWebElement

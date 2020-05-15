@@ -6,10 +6,8 @@ import attr
 from applitools.common import (
     CoordinatesType,
     FloatingMatchSettings,
-    Point,
-    Region,
-    AccessibilityRegion,
 )
+from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.core import GetFloatingRegion, GetRegion
 from applitools.core.fluent.region import GetAccessibilityRegion

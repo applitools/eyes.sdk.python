@@ -1,9 +1,7 @@
 from applitools.common import (
     BatchInfo,
     MatchLevel,
-    Region,
     logger,
-    RectangleSize,
     TestResults,
     TestResultContainer,
     TestResultsSummary,
@@ -11,6 +9,7 @@ from applitools.common import (
     StdoutLogger,
     FileLogger,
 )
+from applitools.common.geometry import AccessibilityRegion, RectangleSize, Region
 from applitools.common.accessibility import (
     AccessibilityRegionType,
     AccessibilityLevel,
@@ -52,4 +51,5 @@ __all__ = (
     "AccessibilitySettings",
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
+    "AccessibilityRegion",
 )

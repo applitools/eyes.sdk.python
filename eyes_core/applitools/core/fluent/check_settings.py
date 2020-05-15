@@ -2,7 +2,10 @@ from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Union
 
 import attr
 
-from applitools.common import FloatingBounds, MatchLevel, Region, logger, Rectangle
+from applitools.common import FloatingBounds, MatchLevel, logger
+from applitools.common.accessibility import AccessibilityRegionType
+from applitools.common.utils import argument_guard
+from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 
 from .region import (
     FloatingRegionByRectangle,
@@ -12,9 +15,7 @@ from .region import (
     GetAccessibilityRegion,
     AccessibilityRegionByRectangle,
 )
-from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.utils import argument_guard
-from applitools.common.geometry import AccessibilityRegion
+
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num

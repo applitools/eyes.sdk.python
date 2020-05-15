@@ -24,8 +24,6 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
-    "Rectangle",
-    "AccessibilityRegion",
 )
 
 
@@ -369,6 +367,9 @@ class AccessibilityRegion(Rectangle):
         # type: (...) -> None
         super(AccessibilityRegion, self).__init__(left, top, width, height)
         if isinstance(type, basestring):
+            if type == "None":
+                self.type = None
+                return
             self.type = AccessibilityRegionType(type)
             return
         argument_guard.is_a(type, AccessibilityRegionType)

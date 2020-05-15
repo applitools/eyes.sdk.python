@@ -4,14 +4,17 @@ from os import path
 import pytest
 from PIL import Image, ImageDraw
 
-from applitools.common import AccessibilityRegion
-from applitools.common.accessibility import (
+from applitools.images import (
+    Region,
+    Target,
+    UnscaledFixedCutProvider,
+    Eyes,
     AccessibilitySettings,
     AccessibilityLevel,
     AccessibilityGuidelinesVersion,
     AccessibilityRegionType,
+    AccessibilityRegion,
 )
-from applitools.images import Region, Target, UnscaledFixedCutProvider, Eyes
 from tests.functional.conftest import check_image_match_settings
 
 here = path.abspath(path.dirname(__file__))
