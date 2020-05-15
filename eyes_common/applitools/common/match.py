@@ -176,7 +176,7 @@ class ImageMatchSettings(object):
         img.enable_patterns = other.enable_patterns
         img.ignore_displacements = other.ignore_displacements
         img.accessibility = other.accessibility
-        img.accessibility_settings = other.accessibility_settings
+        img.accessibility_settings = other.accessibility_validation
 
         return img
 
