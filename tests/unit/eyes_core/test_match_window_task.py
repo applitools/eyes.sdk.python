@@ -9,7 +9,14 @@ from applitools.common import (
     Region,
     VisualGridSelector,
 )
+from applitools.common.accessibility import AccessibilityRegionType
+from applitools.common.geometry import AccessibilityRegion, Rectangle
 from applitools.core import CheckSettings, MatchWindowTask
+from applitools.core.fluent.region import (
+    AccessibilityRegionByRectangle,
+    RegionByRegion,
+    FloatingRegionByRectangle,
+)
 from applitools.core.match_window_task import collect_regions_from_selectors
 
 
@@ -63,20 +70,39 @@ def test_collect_regions_from_selectors(mwt, eyes_base_mock):
         Region(4, 4, 4, 4),
         Region(5, 5, 5, 5),
         Region(6, 6, 6, 6),
+        FloatingMatchSettings(Region(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0)),
+        AccessibilityRegion(7, 7, 7, 7, AccessibilityRegionType.GraphicalObject),
     ]
     REGIONS_SELECTORS = [
-        [VisualGridSelector(".selector1", "some")],
+        [VisualGridSelector(".selector1", RegionByRegion(Region(1, 1, 1, 1)))],
         [],
         [
-            VisualGridSelector(".selector2", "some"),
-            VisualGridSelector(".selector3", "some"),
+            VisualGridSelector(".selector2", RegionByRegion(Region(2, 2, 2, 2))),
+            VisualGridSelector(".selector3", RegionByRegion(Region(3, 3, 3, 3))),
         ],
         [
-            VisualGridSelector(".selector3", "some"),
-            VisualGridSelector(".selector3", "some"),
-            VisualGridSelector(".selector3", "some"),
+            VisualGridSelector(".selector3", RegionByRegion(Region(4, 4, 4, 4))),
+            VisualGridSelector(".selector3", RegionByRegion(Region(5, 5, 5, 5))),
+            VisualGridSelector(".selector3", RegionByRegion(Region(6, 6, 6, 6))),
         ],
-        [],
+        [
+            VisualGridSelector(
+                ".selector4",
+                FloatingRegionByRectangle(
+                    Rectangle(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0)
+                ),
+            ),
+        ],
+        [
+            VisualGridSelector(
+                ".selector5",
+                AccessibilityRegionByRectangle(
+                    AccessibilityRegion(
+                        7, 7, 7, 7, AccessibilityRegionType.GraphicalObject
+                    )
+                ),
+            )
+        ],
         [],
     ]
     check_settings = CheckSettings()
@@ -93,6 +119,12 @@ def test_collect_regions_from_selectors(mwt, eyes_base_mock):
         Region(5, 5, 5, 5),
         Region(6, 6, 6, 6),
     ]
+    assert img.floating_match_settings == [
+        FloatingMatchSettings(Region(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0))
+    ]
+    assert img.accessibility == [
+        AccessibilityRegion(7, 7, 7, 7, AccessibilityRegionType.GraphicalObject)
+    ]
 
 
 def test_perform_match_collect_regions_from_screenshot(
@@ -102,11 +134,15 @@ def test_perform_match_collect_regions_from_screenshot(
     max_offset = 25
     floating_region = Region(0, 1, 2, 3)
     content_region = Region(1, 2, 2, 1)
+    accessibility_region = AccessibilityRegion(
+        1, 2, 1, 2, AccessibilityRegionType.GraphicalObject
+    )
     check_settings = (
         CheckSettings()
         .ignore(ignore_region)
         .floating(max_offset, floating_region)
         .content(content_region)
+        .accessibility(accessibility_region)
     )
     image_match_settings = mwt.create_image_match_settings(
         check_settings, eyes_base_mock
@@ -138,6 +174,7 @@ def test_perform_match_collect_regions_from_screenshot(
             ),
         )
     ]
+    assert ims.accessibility == [accessibility_region]
 
 
 def test_perform_match_with_render_id(

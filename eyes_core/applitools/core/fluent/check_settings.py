@@ -8,12 +8,13 @@ from .region import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
-    RegionByRectangle,
+    RegionByRegion,
     GetAccessibilityRegion,
     AccessibilityRegionByRectangle,
 )
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.utils import argument_guard
+from applitools.common.geometry import AccessibilityRegion
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num
@@ -111,19 +112,21 @@ class CheckSettings(object):
         )
         return self
 
-    # @overload
-    # def accessibility(self, region):
-    #     # type:(Self, AccessibilityRegionByRectangle) -> Self
-    #     pass
+    @overload
+    def accessibility(self, region):
+        # type:(Self, AccessibilityRegion) -> Self
+        pass
 
     @overload
     def accessibility(self, region, type):
         # type:(Self, Region, AccessibilityRegionType) -> Self
         pass
 
-    def accessibility(self, region, type):
+    def accessibility(self, region, type=None):
         """ Adds one or more ignore accessibility regions. """
-        argument_guard.is_a(type, AccessibilityRegionType)
+        # type:(...) -> Self
+        if type:
+            argument_guard.is_a(type, AccessibilityRegionType)
         self.values.accessibility_regions.append(
             self._accessibility_provider_from(region, type)
         )
@@ -253,7 +256,7 @@ class CheckSettings(object):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
-            return RegionByRectangle(region)
+            return RegionByRegion(region)
         raise TypeError("Unknown region type.")
 
     def _floating_provider_from(self, region, bounds):
@@ -265,7 +268,8 @@ class CheckSettings(object):
     def _accessibility_provider_from(self, region, accessibility_region_type):
         if isinstance(region, Region) and accessibility_region_type:
             logger.debug("accessibility: AccessibilityRegionByRectangle")
-            return AccessibilityRegionByRectangle.from_(
-                Region.from_(region), accessibility_region_type
-            )
+            return AccessibilityRegionByRectangle(region, accessibility_region_type)
+        elif isinstance(region, AccessibilityRegion):
+            logger.debug("accessibility: AccessibilityRegionByAccessibilityRegion")
+            return AccessibilityRegionByRectangle(region)
         raise TypeError("Unknown region type.")

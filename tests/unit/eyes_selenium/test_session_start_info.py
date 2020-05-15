@@ -46,7 +46,7 @@ def test_fluent_info_api_serialization(
     assert image_match_settings.ignore_displacements == ignore_displacements
     assert image_match_settings.ignore_regions == []
     assert image_match_settings.strict_regions == []
-    # assert image_match_settings.accessibility == []
+    assert image_match_settings.accessibility == []
     assert image_match_settings.layout_regions == []
     assert image_match_settings.content_regions == []
     assert image_match_settings.floating_match_settings == []
@@ -61,7 +61,7 @@ def test_fluent_info_api_serialization(
     assert serialized_img["Strict"] == []
     assert serialized_img["Content"] == []
     assert serialized_img["Floating"] == []
-    # assert serialized_img["accessibility"] == []
+    assert serialized_img["accessibility"] == []
 
 
 def test_image_match_settings_serialization(
