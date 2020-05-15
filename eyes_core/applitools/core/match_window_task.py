@@ -177,6 +177,7 @@ class MatchWindowTask(object):
     def create_image_match_settings(check_settings, eyes, screenshot=None):
         # type: (CheckSettings, EyesBase, Options[EyesScreenshot])-> ImageMatchSettings
         img = ImageMatchSettings.create_from(eyes.configure.default_match_settings)
+        img.accessibility_settings = eyes.configure.accessibility_settings
 
         # Set defaults if necessary
         if check_settings.values.match_level is not None:

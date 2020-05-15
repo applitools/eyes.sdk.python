@@ -11,12 +11,20 @@ from applitools.common import (
     StdoutLogger,
     FileLogger,
 )
+from applitools.common.accessibility import (
+    AccessibilityRegionType,
+    AccessibilityLevel,
+    AccessibilitySettings,
+    AccessibilityGuidelinesVersion,
+)
+from applitools.core.fluent.region import AccessibilityRegionByRectangle
 from applitools.core.cut import (
     FixedCutProvider,
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
 from applitools.core.batch_close import BatchClose
+
 from applitools.images.fluent import Target
 
 from .eyes import Eyes
@@ -39,4 +47,9 @@ __all__ = (
     "TestResultsSummary",
     "BatchClose",
     "Configuration",
+    "AccessibilityRegionType",
+    "AccessibilityLevel",
+    "AccessibilitySettings",
+    "AccessibilityGuidelinesVersion",
+    "AccessibilityRegionByRectangle",
 )

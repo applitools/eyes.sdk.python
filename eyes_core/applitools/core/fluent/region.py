@@ -73,7 +73,9 @@ class AccessibilityRegionByRectangle(GetAccessibilityRegion):
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     type = attr.ib(
-        type=AccessibilityRegionType, metadata={JsonInclude.THIS: True}
+        converter=AccessibilityRegionType,
+        type=AccessibilityRegionType,
+        metadata={JsonInclude.THIS: True},
     )  # type: AccessibilityRegionType
 
     @classmethod
