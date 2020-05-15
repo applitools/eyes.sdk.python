@@ -75,6 +75,10 @@ def attr_from_response(response, cls):
     return attr_from_json(response.text, cls)
 
 
+def attr_from_dict(dct, cls):
+    return attr_from_json(json.dumps(dct), cls)
+
+
 # Uses for replacing of regular attr.name to specified in metadata
 REPLACE_TO_DICT = dict()  # type: Dict[Text, Text]
 
