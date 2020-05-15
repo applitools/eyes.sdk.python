@@ -3,13 +3,16 @@ from abc import abstractmethod
 
 import attr
 
-from applitools.common import CoordinatesType, FloatingMatchSettings, Point, Region
+from applitools.common import (
+    CoordinatesType,
+    FloatingMatchSettings,
+    Point,
+    Region,
+    AccessibilityRegion,
+)
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.core import GetFloatingRegion, GetRegion
-from applitools.core.fluent.region import (
-    GetAccessibilityRegion,
-    AccessibilityRegionByRectangle,
-)
+from applitools.core.fluent.region import GetAccessibilityRegion
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
@@ -129,10 +132,10 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
 
 class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
     def get_regions(self, eyes, screenshot):
-        # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegionByRectangle]
+        # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegion]
         element = self._element(eyes.driver)
         region = _region_from_element(element, screenshot)
-        return [AccessibilityRegionByRectangle.from_(region, self.type)]
+        return [AccessibilityRegion.from_(region, self.type)]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
