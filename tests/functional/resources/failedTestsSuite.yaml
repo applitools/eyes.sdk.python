@@ -62,3 +62,6 @@ test_timeouts.py:
 test_visual_grid_rca.py:
    test_VG_RCA_config:
    test_VG_RCA_fluent:
+
+test_renderings.py:
+  test_mobile_only:
