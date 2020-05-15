@@ -33,6 +33,10 @@ class GetRegion(ABC):
 
 
 class GetFloatingRegion(GetRegion):
+    @property
+    def floating_bounds(self):
+        return self._bounds
+
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List
@@ -40,6 +44,12 @@ class GetFloatingRegion(GetRegion):
 
 
 class GetAccessibilityRegion(GetRegion):
+    @property
+    def accessibility_type(self):
+        if self._type:
+            return self._type
+        return self._rect.type
+
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List

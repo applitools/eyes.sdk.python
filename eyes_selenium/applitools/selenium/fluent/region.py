@@ -135,7 +135,7 @@ class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
         # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegion]
         element = self._element(eyes.driver)
         region = _region_from_element(element, screenshot)
-        return [AccessibilityRegion.from_(region, self.type)]
+        return [AccessibilityRegion.from_(region, self._type)]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
@@ -150,7 +150,7 @@ class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
 class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
     by = attr.ib()  # type: str
     value = attr.ib()  # type: str
-    type = attr.ib()  # type: AccessibilityRegionType
+    _type = attr.ib()  # type: AccessibilityRegionType
 
     def _element(self, driver):
         return driver.find_element(self.by, self.value)
@@ -159,7 +159,7 @@ class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
 @attr.s
 class AccessibilityRegionByElement(GetSeleniumAccessibilityRegion):
     element = attr.ib()  # type: AnyWebElement
-    type = attr.ib()  # type: AccessibilityRegionType
+    _type = attr.ib()  # type: AccessibilityRegionType
 
     def _element(self, driver):
         return self.element

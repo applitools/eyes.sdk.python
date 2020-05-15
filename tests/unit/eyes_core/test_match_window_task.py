@@ -70,8 +70,8 @@ def test_collect_regions_from_selectors(mwt, eyes_base_mock):
         Region(4, 4, 4, 4),
         Region(5, 5, 5, 5),
         Region(6, 6, 6, 6),
-        FloatingMatchSettings(Region(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0)),
-        AccessibilityRegion(7, 7, 7, 7, AccessibilityRegionType.GraphicalObject),
+        Region(6, 6, 6, 6),
+        Region(7, 7, 7, 7),
     ]
     REGIONS_SELECTORS = [
         [VisualGridSelector(".selector1", RegionByRectangle(Region(1, 1, 1, 1)))],

@@ -5,14 +5,14 @@ from datetime import datetime
 
 from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
 from applitools.common.errors import OutOfBoundsError
-from applitools.common.geometry import Point, Region
+from applitools.common.geometry import Point, Region, AccessibilityRegion
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import datetime_utils, image_utils, general_utils
+from applitools.common.utils import datetime_utils, image_utils
 from applitools.common.visual_grid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
-from .fluent import CheckSettings, GetFloatingRegion, GetRegion
+from .fluent import CheckSettings, GetFloatingRegion, GetRegion, GetAccessibilityRegion
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Optional, Union
@@ -41,6 +41,15 @@ def _collect_regions(region_providers, screenshot, eyes):
 
 def filter_empty_entries(regions, location):
     return [region.offset(-location) for region in regions if region.area != 0]
+
+
+def filter_empty_entries_and_combine(regions, location, region_selectors):
+    for i, reg in enumerate(regions):
+        if reg.area == 0:
+            continue
+        reg = reg.offset(-location)
+        vgs = region_selectors[i]
+        yield reg, vgs.category
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
@@ -85,19 +94,27 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     image_match_settings.content_regions = filter_empty_entries(
         mutable_regions[3], location
     )
-    image_match_settings.floating_match_settings = filter_empty_entries(
-        mutable_regions[4], location
-    )
-    image_match_settings.accessibility = filter_empty_entries(
-        mutable_regions[5], location
-    )
+    image_match_settings.floating_match_settings = [
+        FloatingMatchSettings(reg, gfr.floating_bounds)
+        for (reg, gfr) in filter_empty_entries_and_combine(
+            mutable_regions[4], location, region_selectors[4]
+        )
+        if isinstance(gfr, GetFloatingRegion)
+    ]
+    image_match_settings.accessibility = [
+        AccessibilityRegion.from_(reg, gfr.accessibility_type)
+        for (reg, gfr) in filter_empty_entries_and_combine(
+            mutable_regions[5], location, region_selectors[5]
+        )
+        if isinstance(gfr, GetAccessibilityRegion)
+    ]
     return image_match_settings
 
 
 def collect_regions_from_screenshot(
     check_settings, image_match_settings, screenshot, eyes
 ):
-    # type: (CheckSettings, ImageMatchSettings, EyesScreenshot, EyesBase) -> ImageMatchSettings
+    # type:(CheckSettings,ImageMatchSettings,EyesScreenshot,EyesBase)->ImageMatchSettings
 
     image_match_settings.ignore_regions = _collect_regions(  # type: ignore
         check_settings.values.ignore_regions, screenshot, eyes
