@@ -215,6 +215,7 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def accessibility(self, region, type):
+        # type:(...) -> SeleniumCheckSettings
         return super(SeleniumCheckSettings, self).accessibility(region, type)
 
     @overload  # noqa
@@ -238,6 +239,7 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def region(self, region):  # noqa
+        # type:(...) -> SeleniumCheckSettings
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
@@ -272,6 +274,7 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def frame(self, frame):  # noqa
+        # type:(...) -> SeleniumCheckSettings
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame
