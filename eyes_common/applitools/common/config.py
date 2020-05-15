@@ -303,11 +303,12 @@ class Configuration(object):
         return self
 
     @property
-    def accessibility_validation(self):
+    def accessibility_settings(self):
         if self._accessibility_settings is None:
             return self.default_match_settings.accessibility_settings
+        return self._accessibility_settings
 
-    def set_accessibility_validation(self, accessibility_settings):
+    def set_accessibility_settings(self, accessibility_settings):
         # type: (Self, AccessibilitySettings) -> Self
         self._accessibility_settings = accessibility_settings
         return self
