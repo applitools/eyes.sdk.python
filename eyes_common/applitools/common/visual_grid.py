@@ -12,7 +12,7 @@ from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Dict, Optional, Callable
+    from typing import List, Text, Dict, Optional, Callable, Any, Union
     from requests import Response
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
@@ -88,7 +88,7 @@ class EmulationBaseInfo(ABC):
 @attr.s(hash=True, slots=True)
 class VisualGridSelector(object):
     selector = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    category = attr.ib()  # type: Text
+    category = attr.ib()  # type: Union[Text, Any]
     type = attr.ib(default="xpath", metadata={JsonInclude.THIS: True})
 
 
