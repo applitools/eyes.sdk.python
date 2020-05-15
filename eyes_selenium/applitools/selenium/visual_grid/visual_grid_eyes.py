@@ -340,6 +340,9 @@ class VisualGridEyes(object):
         floating_elements = self.get_elements_from_regions(
             check_settings.values.floating_regions
         )
+        accessibility_elements = self.get_elements_from_regions(
+            check_settings.values.accessibility_regions
+        )
         element = check_settings.values.target_element
         if element is None:
             target_selector = check_settings.values.target_selector
@@ -354,6 +357,7 @@ class VisualGridEyes(object):
             strict_elements,
             content_elements,
             floating_elements,
+            accessibility_elements,
             targets,
         ]
 
