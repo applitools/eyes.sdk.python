@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload, Text
 
 import attr
 from PIL.Image import Image
@@ -11,6 +11,7 @@ from . import logger
 from .accessibility import AccessibilityRegionType
 from .mixins import DictAccessMixin
 from .utils import argument_guard
+from .utils.compat import basestring
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
@@ -363,19 +364,22 @@ class AccessibilityRegion(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        type,  # type: AccessibilityRegionType
+        type,  # type: Union[Text, AccessibilityRegionType]
     ):
         # type: (...) -> None
         super(AccessibilityRegion, self).__init__(left, top, width, height)
+        if isinstance(type, basestring):
+            self.type = AccessibilityRegionType(type)
+            return
         argument_guard.is_a(type, AccessibilityRegionType)
         self.type = type
 
-    @overload
+    @overload  # noqa
     def from_(self, accessibility_region):
         # type: (Union[Dict, AccessibilityRegion]) -> AccessibilityRegion
         pass
 
-    @overload
+    @overload  # noqa
     def from_(self, region, accessibility_type):
         # type: (Union[Region,Rectangle],AccessibilityRegionType)->AccessibilityRegion
         pass
@@ -428,10 +432,13 @@ class Region(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type:Union[Text,CoordinatesType]
     ):
         # type: (...) -> None
         super(Region, self).__init__(left, top, width, height)
+        if isinstance(coordinates_type, basestring):
+            self.coordinates_type = CoordinatesType(coordinates_type)
+            return
         argument_guard.is_a(coordinates_type, CoordinatesType)
         self.coordinates_type = coordinates_type
 
