@@ -22,6 +22,7 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
+    "Rectangle",
 )
 
 
@@ -200,16 +201,11 @@ class Point(DictAccessMixin):
 
 
 @attr.s(slots=True, init=False)
-class Region(DictAccessMixin):
-    """A rectangle identified by left,top, width, height."""
-
+class Rectangle(DictAccessMixin):
     left = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    coordinates_type = attr.ib(
-        metadata={JsonInclude.THIS: True}
-    )  # type: CoordinatesType
 
     def __init__(
         self,
@@ -217,66 +213,16 @@ class Region(DictAccessMixin):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
     ):
         # type: (...) -> None
         self.left = round_converter(left)
         self.top = round_converter(top)
         self.width = round_converter(width)
         self.height = round_converter(height)
-        self.coordinates_type = coordinates_type
-
-    def __str__(self):
-        return "Region({left}, {top}, {width} x {height}, {type})".format(
-            left=self.left,
-            top=self.top,
-            width=self.width,
-            height=self.height,
-            type=self.coordinates_type.value,
-        )
 
     @classmethod  # noqa
     def EMPTY(cls):
         return cls(0, 0, 0, 0)
-
-    @classmethod  # noqa
-    @overload
-    def from_(cls, location, image):
-        # type: (Union[Point, Dict], Image) -> Region
-        pass
-
-    @classmethod  # noqa
-    @overload
-    def from_(cls, location, size):
-        # type: (Union[Point, Dict], Union[Dict,RectangleSize]) -> Region
-        pass
-
-    @classmethod  # noqa
-    @overload
-    def from_(cls, image):
-        # type: (Image) -> Region
-        pass
-
-    @classmethod  # noqa
-    @overload
-    def from_(cls, region):
-        # type: (Region) -> Region
-        pass
-
-    @classmethod  # noqa
-    def from_(cls, obj, obj2=None):
-        # type: (Union[Region,Image,Point,Dict],Union[Dict,RectangleSize,Image])->Region
-        """Creates a new Region instance."""
-        if isinstance(obj, Region):
-            return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
-        elif isinstance(obj, Image):
-            return cls(0, 0, obj.width, obj.height)
-        elif isinstance(obj, Point) or isinstance(obj, dict) and obj2:
-            if isinstance(obj2, Image):
-                return cls(obj["x"], obj["y"], obj2.width, obj2.height)
-            else:
-                return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
-        raise ValueError("Wrong parameters passed")
 
     @property
     def x(self):
@@ -333,16 +279,6 @@ class Region(DictAccessMixin):
         """
         return RectangleSize(width=self.width, height=self.height)
 
-    def clone(self):
-        # type: () -> Region
-        """
-        Returns:
-            The cloned instance of Region.
-        """
-        return Region(
-            self.left, self.top, self.width, self.height, self.coordinates_type
-        )
-
     def make_empty(self):
         """Sets the current instance as an empty instance"""
         self.left = self.top = self.width = self.height = 0
@@ -370,6 +306,147 @@ class Region(DictAccessMixin):
             True if the rectangle is empty. Otherwise False.
         """
         return self.left == self.top == self.width == self.height == 0
+
+    @property
+    def middle_offset(self):
+        # type: () -> Point
+        return Point(int(round(self.width / 2)), int(round(self.height / 2)))
+
+    @overload  # noqa
+    def offset(self, location):
+        # type: (Point) -> Region
+        pass
+
+    @overload  # noqa
+    def offset(self, dx, dy):
+        # type: (int, int) -> Region
+        pass
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> Rectangle
+        """Get an offset region.
+
+        Args:
+            location_or_dx: Full amount to offset or just x-coordinate
+            dy: The amount to offset the y-coordinate.
+
+        Returns:
+            A region with an offset location.
+        """
+        dx, dy = dx_and_dy(location_or_dx, dy)
+        location = self.location.offset(dx, dy)
+        return Rectangle(
+            left=location.x,
+            top=location.y,
+            width=self.size["width"],
+            height=self.size["height"],
+        )
+
+
+@attr.s(slots=True, init=False)
+class Region(Rectangle):
+    """A rectangle identified by left,top, width, height."""
+
+    left = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    coordinates_type = attr.ib(
+        converter=CoordinatesType,
+        type=CoordinatesType,
+        metadata={JsonInclude.THIS: True},
+    )  # type: CoordinatesType
+
+    def __init__(
+        self,
+        left,  # type: int
+        top,  # type: int
+        width,  # type: int
+        height,  # type: int
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
+    ):
+        # type: (...) -> None
+        super(Region, self).__init__(left, top, width, height)
+        argument_guard.is_a(coordinates_type, CoordinatesType)
+        self.coordinates_type = coordinates_type
+
+    def __str__(self):
+        return "Region({left}, {top}, {width} x {height}, {type})".format(
+            left=self.left,
+            top=self.top,
+            width=self.width,
+            height=self.height,
+            type=self.coordinates_type.value,
+        )
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, location, image):
+        # type: (Union[Point, Dict], Image) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, location, size):
+        # type: (Union[Point, Dict], Union[Dict,RectangleSize]) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, image):
+        # type: (Image) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, region):
+        # type: (Region) -> Region
+        pass
+
+    @classmethod  # noqa
+    @overload
+    def from_(cls, rectangle, coordinates_type):
+        # type: (Rectangle, Optional[CoordinatesType]) -> Region
+        pass
+
+    @classmethod  # noqa
+    def from_(cls, obj, obj2=None):
+        # type:( ... )->Region
+        """Creates a new Region instance."""
+        if isinstance(obj, Rectangle):
+            if isinstance(obj2, CoordinatesType):
+                return cls(obj.left, obj.top, obj.width, obj.height, obj2)
+            return cls(obj.left, obj.top, obj.width, obj.height)
+        if isinstance(obj, Region):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
+        elif isinstance(obj, Image):
+            return cls(0, 0, obj.width, obj.height)
+        elif isinstance(obj, Point) or isinstance(obj, dict) and obj2:
+            if isinstance(obj2, Image):
+                return cls(obj["x"], obj["y"], obj2.width, obj2.height)
+            else:
+                return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
+        elif isinstance(obj, dict) and obj2 is None:
+            return cls(
+                obj[
+                    "left",
+                    obj["right"],
+                    obj["height"],
+                    obj["width"],
+                    CoordinatesType(obj["type"]),
+                ]
+            )
+        raise ValueError("Wrong parameters passed")
+
+    def clone(self):
+        # type: () -> Region
+        """
+        Returns:
+            The cloned instance of Region.
+        """
+        return Region(
+            self.left, self.top, self.width, self.height, self.coordinates_type
+        )
 
     def contains(self, other):
         # type: (Union[Point, Region]) -> bool
@@ -567,41 +644,10 @@ class Region(DictAccessMixin):
 
         return sub_regions
 
-    @property
-    def middle_offset(self):
-        # type: () -> Point
-        return Point(int(round(self.width / 2)), int(round(self.height / 2)))
-
-    @overload  # noqa
-    def offset(self, location):
-        # type: (Point) -> Region
-        pass
-
-    @overload  # noqa
-    def offset(self, dx, dy):
-        # type: (int, int) -> Region
-        pass
-
     def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Region
-        """Get an offset region.
-
-        Args:
-            location_or_dx: Full amount to offset or just x-coordinate
-            dy: The amount to offset the y-coordinate.
-
-        Returns:
-            A region with an offset location.
-        """
-        dx, dy = dx_and_dy(location_or_dx, dy)
-        location = self.location.offset(dx, dy)
-        return Region(
-            left=location.x,
-            top=location.y,
-            width=self.size["width"],
-            height=self.size["height"],
-            coordinates_type=self.coordinates_type,
-        )
+        r = super(Region, self).offset(location_or_dx, dy)
+        return Region.from_(r, self.coordinates_type)
 
     def scale(self, scale_ratio):
         # type: (float) -> Region
