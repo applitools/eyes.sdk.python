@@ -363,12 +363,12 @@ class AccessibilityRegion(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        accessibility_type,  # type: AccessibilityRegionType
+        type,  # type: AccessibilityRegionType
     ):
         # type: (...) -> None
         super(AccessibilityRegion, self).__init__(left, top, width, height)
-        argument_guard.is_a(accessibility_type, AccessibilityRegionType)
-        self.type = accessibility_type
+        argument_guard.is_a(type, AccessibilityRegionType)
+        self.type = type
 
     @overload
     def from_(self, accessibility_region):
