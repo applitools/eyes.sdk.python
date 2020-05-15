@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
+from typing import TYPE_CHECKING, List, Text, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Region, logger
+from applitools.common import Region, logger, AccessibilityRegion, Rectangle
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.webelement import EyesWebElement
@@ -189,32 +189,32 @@ class SeleniumCheckSettings(CheckSettings):
     def floating(self, *args):  # noqa
         return super(SeleniumCheckSettings, self).floating(*args)
 
-    # @overload
-    # def accessibility(self, region):
-    #     # type:(AccessibilityRegionByRectangle) -> SeleniumCheckSettings
-    #     pass
+    @overload  # noqa
+    def accessibility(self, region):
+        # type:(AccessibilityRegion) -> SeleniumCheckSettings
+        pass
 
-    @overload
+    @overload  # noqa
     def accessibility(self, css_selector, type):
         # type:(CssSelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
-    @overload
+    @overload  # noqa
     def accessibility(self, by, type):
         # type:(BySelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
-    @overload
+    @overload  # noqa
     def accessibility(self, element, type):
         # type:(AnyWebElement, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
-    @overload
+    @overload  # noqa
     def accessibility(self, region, type):
-        # type:(Region, AccessibilityRegionType) -> SeleniumCheckSettings
+        # type:(Union[Rectangle, Region], AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
-    def accessibility(self, region, type):
+    def accessibility(self, region, type=None):  # noqa
         # type:(...) -> SeleniumCheckSettings
         return super(SeleniumCheckSettings, self).accessibility(region, type)
 

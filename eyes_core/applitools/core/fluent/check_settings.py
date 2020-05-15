@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Union
 
 import attr
 
-from applitools.common import FloatingBounds, MatchLevel, Region, logger
+from applitools.common import FloatingBounds, MatchLevel, Region, logger, Rectangle
 
 from .region import (
     FloatingRegionByRectangle,
@@ -112,17 +112,17 @@ class CheckSettings(object):
         )
         return self
 
-    @overload
+    @overload  # noqa
     def accessibility(self, region):
         # type:(Self, AccessibilityRegion) -> Self
         pass
 
-    @overload
+    @overload  # noqa
     def accessibility(self, region, type):
-        # type:(Self, Region, AccessibilityRegionType) -> Self
+        # type:(Self, Union[Region. Rectangle], AccessibilityRegionType) -> Self
         pass
 
-    def accessibility(self, region, type=None):
+    def accessibility(self, region, type=None):  # noqa
         """ Adds one or more ignore accessibility regions. """
         # type:(...) -> Self
         if type:
@@ -266,7 +266,9 @@ class CheckSettings(object):
         raise TypeError("Unknown region type.")
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
-        if isinstance(region, Region) and accessibility_region_type:
+        if (
+            isinstance(region, Region) or isinstance(region, Rectangle)
+        ) and accessibility_region_type:
             logger.debug("accessibility: AccessibilityRegionByRectangle")
             return AccessibilityRegionByRectangle(region, accessibility_region_type)
         elif isinstance(region, AccessibilityRegion):

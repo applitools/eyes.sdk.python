@@ -9,7 +9,7 @@ from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Text, Union
-    from applitools.common import EyesScreenshot, Point
+    from applitools.common import EyesScreenshot, Point, AccessibilityRegion
 
 __all__ = (
     "MatchLevel",
@@ -123,16 +123,12 @@ class ExactMatchSettings(object):
     """
 
     min_diff_intensity = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
+        default=0, metadata={JsonInclude.THIS: True}
     )  # type: int
-    min_diff_width = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
-    )  # type: int
-    min_diff_height = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
-    )  # type: int
+    min_diff_width = attr.ib(default=0, metadata={JsonInclude.THIS: True})  # type: int
+    min_diff_height = attr.ib(default=0, metadata={JsonInclude.THIS: True})  # type: int
     match_threshold = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
+        default=0, metadata={JsonInclude.THIS: True}
     )  # type: float
 
     @classmethod
@@ -187,9 +183,9 @@ class ImageMatchSettings(object):
     )  # type: List[FloatingMatchSettings]
     accessibility = attr.ib(
         factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List
+    )  # type: List[AccessibilityRegion]
     accessibility_settings = attr.ib(
-        default=None, metadata={JsonInclude.THIS: True}
+        default=None, type=AccessibilitySettings, metadata={JsonInclude.THIS: True}
     )  # type: Optional[AccessibilitySettings]
 
     @classmethod
