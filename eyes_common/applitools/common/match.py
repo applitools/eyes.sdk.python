@@ -4,12 +4,12 @@ from enum import Enum
 import attr
 
 from .accessibility import AccessibilitySettings
-from .geometry import Region
+from .geometry import Region, Rectangle
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List, Text
-    from applitools.common import EyesScreenshot
+    from typing import Optional, List, Text, Union
+    from applitools.common import EyesScreenshot, Point
 
 __all__ = (
     "MatchLevel",
@@ -53,8 +53,8 @@ class MatchResult(object):
     )  # type: Optional[EyesScreenshot]
 
 
-@attr.s
-class FloatingMatchSettings(object):
+@attr.s(eq=False)
+class FloatingMatchSettings(Rectangle):
     _region = attr.ib()  # type: Region
     _bounds = attr.ib()  # type: FloatingBounds
     left = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: int
@@ -72,6 +72,34 @@ class FloatingMatchSettings(object):
         init=False, metadata={JsonInclude.THIS: True}
     )  # type: int
 
+    def __str__(self):
+        return (
+            "FloatingMatchSettings({left}, {top}, {width} x {height} | "
+            "{max_up_offset}, {max_down_offset}, {max_left_offset}, {max_right_offset}".format(
+                left=self.left,
+                top=self.top,
+                width=self.width,
+                height=self.height,
+                max_up_offset=self.max_up_offset,
+                max_down_offset=self.max_down_offset,
+                max_left_offset=self.max_left_offset,
+                max_right_offset=self.max_right_offset,
+            )
+        )
+
+    def __eq__(self, other):
+        # type: (FloatingMatchSettings) -> bool
+        return (
+            self.left == other.left
+            and self.top == other.top
+            and self.width == other.width
+            and self.height == other.height
+            and self.max_up_offset == self.max_up_offset
+            and self.max_down_offset == self.max_down_offset
+            and self.max_left_offset == self.max_left_offset
+            and self.max_right_offset == self.max_right_offset
+        )
+
     def __attrs_post_init__(self):
         self.left = self._region.left
         self.top = self._region.top
@@ -81,6 +109,11 @@ class FloatingMatchSettings(object):
         self.max_down_offset = self._bounds.max_down_offset
         self.max_left_offset = self._bounds.max_left_offset
         self.max_right_offset = self._bounds.max_right_offset
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> FloatingMatchSettings
+        r = super(FloatingMatchSettings, self).offset(location_or_dx, dy)
+        return FloatingMatchSettings(r, self._bounds)
 
 
 @attr.s

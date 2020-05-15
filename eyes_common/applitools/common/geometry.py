@@ -23,6 +23,8 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
+    "Rectangle",
+    "AccessibilityRegion",
 )
 
 
@@ -307,6 +309,41 @@ class Rectangle(DictAccessMixin):
         """
         return self.left == self.top == self.width == self.height == 0
 
+    @property
+    def middle_offset(self):
+        # type: () -> Point
+        return Point(int(round(self.width / 2)), int(round(self.height / 2)))
+
+    @overload  # noqa
+    def offset(self, location):
+        # type: (Point) -> Region
+        pass
+
+    @overload  # noqa
+    def offset(self, dx, dy):
+        # type: (int, int) -> Region
+        pass
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> Rectangle
+        """Get an offset region.
+
+        Args:
+            location_or_dx: Full amount to offset or just x-coordinate
+            dy: The amount to offset the y-coordinate.
+
+        Returns:
+            A region with an offset location.
+        """
+        dx, dy = dx_and_dy(location_or_dx, dy)
+        location = self.location.offset(dx, dy)
+        return Rectangle(
+            left=location.x,
+            top=location.y,
+            width=self.size["width"],
+            height=self.size["height"],
+        )
+
 
 @attr.s(slots=True, init=False)
 class AccessibilityRegion(Rectangle):
@@ -316,7 +353,9 @@ class AccessibilityRegion(Rectangle):
     top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    type = attr.ib(metadata={JsonInclude.THIS: True})  # type: AccessibilityRegionType
+    type = attr.ib(
+        type=AccessibilityRegionType, metadata={JsonInclude.THIS: True},
+    )  # type: AccessibilityRegionType
 
     def __init__(
         self,
@@ -324,11 +363,39 @@ class AccessibilityRegion(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        accessibility_type,  # type:AccessibilityRegionType
+        accessibility_type,  # type: AccessibilityRegionType
     ):
         # type: (...) -> None
-        super(Region, self).__init__(left, top, width, height)
+        super(AccessibilityRegion, self).__init__(left, top, width, height)
+        argument_guard.is_a(accessibility_type, AccessibilityRegionType)
         self.type = accessibility_type
+
+    @classmethod  # noqa
+    def from_(cls, obj, obj2=None):
+        # type: (Union[AccessibilityRegion, Region, Rectangle], Optional[AccessibilityRegionType])->AccessibilityRegion
+        """Creates a new Region instance."""
+        if isinstance(obj, AccessibilityRegion):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj.type)
+        elif (
+            isinstance(obj, Region)
+            or isinstance(obj, Rectangle)
+            and isinstance(obj2, AccessibilityRegionType)
+        ):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj2)
+        elif isinstance(obj, dict):
+            return cls(
+                obj["left"],
+                obj["top"],
+                obj["width"],
+                obj["height"],
+                AccessibilityRegionType(obj["type"]),
+            )
+        raise ValueError("Wrong parameters passed")
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> AccessibilityRegion
+        r = super(AccessibilityRegion, self).offset(location_or_dx, dy)
+        return AccessibilityRegion.from_(r, self.type)
 
 
 @attr.s(slots=True, init=False)
@@ -340,7 +407,9 @@ class Region(Rectangle):
     width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
     coordinates_type = attr.ib(
-        metadata={JsonInclude.THIS: True}
+        converter=CoordinatesType,
+        type=CoordinatesType,
+        metadata={JsonInclude.THIS: True},
     )  # type: CoordinatesType
 
     def __init__(
@@ -353,6 +422,7 @@ class Region(Rectangle):
     ):
         # type: (...) -> None
         super(Region, self).__init__(left, top, width, height)
+        argument_guard.is_a(coordinates_type, CoordinatesType)
         self.coordinates_type = coordinates_type
 
     def __str__(self):
@@ -389,9 +459,19 @@ class Region(Rectangle):
         pass
 
     @classmethod  # noqa
+    @overload
+    def from_(cls, rectangle, coordinates_type):
+        # type: (Rectangle, Optional[CoordinatesType]) -> Region
+        pass
+
+    @classmethod  # noqa
     def from_(cls, obj, obj2=None):
-        # type: (Union[Region,Image,Point,Dict],Union[Dict,RectangleSize,Image])->Region
+        # type:( ... )->Region
         """Creates a new Region instance."""
+        if isinstance(obj, Rectangle):
+            if isinstance(obj2, CoordinatesType):
+                return cls(obj.left, obj.top, obj.width, obj.height, obj2)
+            return cls(obj.left, obj.top, obj.width, obj.height)
         if isinstance(obj, Region):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
         elif isinstance(obj, Image):
@@ -401,6 +481,16 @@ class Region(Rectangle):
                 return cls(obj["x"], obj["y"], obj2.width, obj2.height)
             else:
                 return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
+        elif isinstance(obj, dict) and obj2 is None:
+            return cls(
+                obj[
+                    "left",
+                    obj["right"],
+                    obj["height"],
+                    obj["width"],
+                    CoordinatesType(obj["type"]),
+                ]
+            )
         raise ValueError("Wrong parameters passed")
 
     def clone(self):
@@ -609,41 +699,10 @@ class Region(Rectangle):
 
         return sub_regions
 
-    @property
-    def middle_offset(self):
-        # type: () -> Point
-        return Point(int(round(self.width / 2)), int(round(self.height / 2)))
-
-    @overload  # noqa
-    def offset(self, location):
-        # type: (Point) -> Region
-        pass
-
-    @overload  # noqa
-    def offset(self, dx, dy):
-        # type: (int, int) -> Region
-        pass
-
     def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Region
-        """Get an offset region.
-
-        Args:
-            location_or_dx: Full amount to offset or just x-coordinate
-            dy: The amount to offset the y-coordinate.
-
-        Returns:
-            A region with an offset location.
-        """
-        dx, dy = dx_and_dy(location_or_dx, dy)
-        location = self.location.offset(dx, dy)
-        return Region(
-            left=location.x,
-            top=location.y,
-            width=self.size["width"],
-            height=self.size["height"],
-            coordinates_type=self.coordinates_type,
-        )
+        r = super(Region, self).offset(location_or_dx, dy)
+        return Region.from_(r, self.coordinates_type)
 
     def scale(self, scale_ratio):
         # type: (float) -> Region
