@@ -1,6 +1,8 @@
-## [vNext]
+## [4.2.0] - 2020-08-18
 ### Added
 - Accessibility Validation feature [Trello 1767](https://trello.com/c/gq69woeK)
+### Fixed
+- element.find_element call raise an error; driver.switch_to.window if prev tab was closed raise an error [Trello 1794](https://trello.com/c/cRcp2T5n)
 ### Updated
 - Add tag release event [Trello 1758](https://trello.com/c/Jograd5k)
 
