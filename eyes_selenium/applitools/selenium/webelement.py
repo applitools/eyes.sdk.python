@@ -172,7 +172,7 @@ class EyesWebElement(object):
         :return: WebElement denoted by "By".
         """
         # Get result from the original implementation of the underlying driver.
-        result = self._original_methods["find_element"](by, value)
+        result = self._driver.find_element(by, value)
         # Wrap the element.
         if result:
             result = EyesWebElement(result, self._driver)
