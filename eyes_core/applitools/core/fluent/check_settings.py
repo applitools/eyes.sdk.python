@@ -120,12 +120,11 @@ class CheckSettings(object):
 
     @overload  # noqa
     def accessibility(self, region, type):
-        # type:(Self, Union[Region. Rectangle], AccessibilityRegionType) -> Self
+        # type:(Self, Union[Region, Rectangle], AccessibilityRegionType) -> Self
         pass
 
     def accessibility(self, region, type=None):  # noqa
-        """ Adds one or more ignore accessibility regions. """
-        # type:(...) -> Self
+        """ Adds one accessibility region. """
         if type:
             argument_guard.is_a(type, AccessibilityRegionType)
         self.values.accessibility_regions.append(
