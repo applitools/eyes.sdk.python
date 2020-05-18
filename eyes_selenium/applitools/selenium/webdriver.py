@@ -93,9 +93,6 @@ class _EyesSwitchTo(object):
         self._proxy_to_fields = all_attrs(switch_to)
         self._switch_to = switch_to  # type: SwitchTo
         self._driver = driver  # type: EyesWebDriver
-        self._scroll_position = ScrollPositionProvider(
-            driver, eyes_selenium_utils.curr_frame_scroll_root_element(driver)
-        )
 
     @contextlib.contextmanager
     def frame_and_back(self, frame_reference):
@@ -221,8 +218,7 @@ class _EyesSwitchTo(object):
     @contextlib.contextmanager
     def frames_do_scroll(self, frame_chain):
         self.default_content()
-        root_element = eyes_selenium_utils.curr_frame_scroll_root_element(self._driver)
-        scroll_provider = ScrollPositionProvider(self._driver, root_element)
+        scroll_provider = self._get_scroll_provider()
         self._position_memento = scroll_provider.get_state()
         for frame in frame_chain:
             logger.debug("Scrolling by parent scroll position...")
@@ -238,8 +234,14 @@ class _EyesSwitchTo(object):
 
     def reset_scroll(self):
         if self._position_memento:
-            self._scroll_position.restore_state(self._position_memento)
+            self._get_scroll_provider().restore_state(self._position_memento)
             self._position_memento = None
+
+    def _get_scroll_provider(self):
+        scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+            self._driver
+        )
+        return ScrollPositionProvider(self._driver, scroll_root_element)
 
 
 @proxy_to("_driver")
