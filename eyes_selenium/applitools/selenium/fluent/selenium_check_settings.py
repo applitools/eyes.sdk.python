@@ -191,28 +191,28 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self).floating(*args)
 
     @overload  # noqa
-    def accessibility(self, region):
+    def accessibility(self, region):  # noqa
         # type:(AccessibilityRegion) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, css_selector, type):
+    def accessibility(self, css_selector, type):  # noqa
         # type:(CssSelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, by, type):
+    def accessibility(self, by, type):  # noqa
         # type:(BySelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, element, type):
+    def accessibility(self, element, type):  # noqa
         # type:(AnyWebElement, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, region, type):
-        # type:(Union[Rectangle, Region], AccessibilityRegionType) -> SeleniumCheckSettings
+    def accessibility(self, region, type):  # noqa
+        # type:(Union[Rectangle,Region],AccessibilityRegionType)->SeleniumCheckSettings
         pass
 
     def accessibility(self, region, type=None):  # noqa
