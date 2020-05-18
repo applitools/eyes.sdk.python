@@ -1,13 +1,13 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, Union, overload
+from typing import TYPE_CHECKING, List, Text, overload
 
 import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
-from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
+from applitools.common.geometry import AccessibilityRegion, Region
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.webelement import EyesWebElement
@@ -191,28 +191,28 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self).floating(*args)
 
     @overload  # noqa
-    def accessibility(self, region):
+    def accessibility(self, region):  # noqa
         # type:(AccessibilityRegion) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, css_selector, type):
+    def accessibility(self, css_selector, type):  # noqa
         # type:(CssSelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, by, type):
+    def accessibility(self, by, type):  # noqa
         # type:(BySelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, element, type):
+    def accessibility(self, element, type):  # noqa
         # type:(AnyWebElement, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def accessibility(self, region, type):
-        # type:(Union[Rectangle, Region], AccessibilityRegionType) -> SeleniumCheckSettings
+    def accessibility(self, region, type):  # noqa
+        # type:(Region, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     def accessibility(self, region, type=None):  # noqa

@@ -1,5 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Union
-
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
 import attr
 
 from applitools.common import FloatingBounds, MatchLevel, logger
@@ -120,12 +119,11 @@ class CheckSettings(object):
 
     @overload  # noqa
     def accessibility(self, region, type):
-        # type:(Self, Union[Region. Rectangle], AccessibilityRegionType) -> Self
+        # type:(Self, Region, AccessibilityRegionType) -> Self
         pass
 
     def accessibility(self, region, type=None):  # noqa
-        """ Adds one or more ignore accessibility regions. """
-        # type:(...) -> Self
+        """ Adds one accessibility region. """
         if type:
             argument_guard.is_a(type, AccessibilityRegionType)
         self.values.accessibility_regions.append(
