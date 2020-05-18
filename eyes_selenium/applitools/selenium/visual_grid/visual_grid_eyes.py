@@ -226,7 +226,7 @@ class VisualGridEyes(object):
     def close(self, raise_ex=True):  # noqa
         # type: (Optional[bool]) -> Optional[TestResults]
         if not self.test_list:
-            return TestResults()
+            return TestResults(status="Failed")
         logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
         self.close_async()
 
@@ -238,7 +238,7 @@ class VisualGridEyes(object):
             {t: t.test_result for t in self.test_list}, raise_ex
         )
         if not all_results:
-            return TestResults()
+            return TestResults(status="Failed")
         return all_results[0].test_results
 
     def abort_async(self):
@@ -340,6 +340,9 @@ class VisualGridEyes(object):
         floating_elements = self.get_elements_from_regions(
             check_settings.values.floating_regions
         )
+        accessibility_elements = self.get_elements_from_regions(
+            check_settings.values.accessibility_regions
+        )
         element = check_settings.values.target_element
         if element is None:
             target_selector = check_settings.values.target_selector
@@ -354,6 +357,7 @@ class VisualGridEyes(object):
             strict_elements,
             content_elements,
             floating_elements,
+            accessibility_elements,
             targets,
         ]
 

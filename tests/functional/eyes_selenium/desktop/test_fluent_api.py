@@ -1,8 +1,17 @@
-import pytest
-from mock import patch
+import os
 
-from applitools.common import FloatingBounds, FloatingMatchSettings, MatchWindowData
-from applitools.selenium import Region, StitchMode, Target
+import pytest
+
+from applitools.selenium import (
+    Region,
+    StitchMode,
+    Target,
+    AccessibilitySettings,
+    AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
+    AccessibilityRegionType,
+    AccessibilityRegion,
+)
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
@@ -185,4 +194,32 @@ def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_resu
     )
     check_test_result.send(
         [{"actual_name": "ignoreDisplacements", "expected": ignore_displacements}]
+    )
+
+
+@pytest.mark.eyes_config(
+    server_url="https://testeyes.applitools.com/",
+    accessibility_validation=AccessibilitySettings(
+        AccessibilityLevel.AAA, AccessibilityGuidelinesVersion.WCAG_2_0
+    ),
+    api_key=os.environ["EYESTEST_APPLITOOLS_API_KEY"],
+)
+def test_accessibility_regions(eyes_opened, check_test_result):
+    eyes_opened.check(
+        "TestAccessibilityRegions",
+        Target.window()
+        .accessibility(".ignore", AccessibilityRegionType.LargeText)
+        .fully(),
+    )
+    check_test_result.send(
+        [
+            {
+                "actual_name": "accessibility",
+                "expected": [
+                    AccessibilityRegion(
+                        10, 284, 800, 500, AccessibilityRegionType.LargeText
+                    ),
+                ],
+            }
+        ]
     )

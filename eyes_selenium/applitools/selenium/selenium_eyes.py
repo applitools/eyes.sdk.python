@@ -951,7 +951,7 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):
         position_provider = None
-        if self._target_element and not self.driver.is_mobile_app:
+        if element and not self.driver.is_mobile_app:
             original_fc = self.driver.frame_chain.clone()
             eyes_element = EyesWebElement(element, self.driver)
             element_bounds = eyes_element.bounds
@@ -983,6 +983,6 @@ class SeleniumEyes(EyesBase):
                 position_provider.set_position(element_location)
 
         yield position_provider
-        if self._target_element and position_provider and not self.driver.is_mobile_app:
+        if element and position_provider and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
