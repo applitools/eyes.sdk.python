@@ -49,7 +49,7 @@ class AccessibilityStatus(Enum):
 
 
 @attr.s
-class TestAccessibilityStatus(object):
+class SessionAccessibilityStatus(object):
     status = attr.ib(
         converter=AccessibilityStatus,
         type=AccessibilityStatus,
