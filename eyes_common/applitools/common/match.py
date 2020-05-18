@@ -3,12 +3,13 @@ from enum import Enum
 
 import attr
 
+from .accessibility import AccessibilitySettings
 from .geometry import Region, Rectangle
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Text, Union
-    from applitools.common import EyesScreenshot, Point
+    from applitools.common import EyesScreenshot, Point, AccessibilityRegion
 
 __all__ = (
     "MatchLevel",
@@ -122,16 +123,12 @@ class ExactMatchSettings(object):
     """
 
     min_diff_intensity = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
+        default=0, metadata={JsonInclude.THIS: True}
     )  # type: int
-    min_diff_width = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
-    )  # type: int
-    min_diff_height = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
-    )  # type: int
+    min_diff_width = attr.ib(default=0, metadata={JsonInclude.THIS: True})  # type: int
+    min_diff_height = attr.ib(default=0, metadata={JsonInclude.THIS: True})  # type: int
     match_threshold = attr.ib(
-        default=0, metadata={JsonInclude.NON_NONE: True}
+        default=0, metadata={JsonInclude.THIS: True}
     )  # type: float
 
     @classmethod
@@ -171,24 +168,25 @@ class ImageMatchSettings(object):
     )  # type:Optional[bool]
     ignore_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Ignore"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     layout_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Layout"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     strict_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Strict"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     content_regions = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Content"}
-    )  # type: Optional[List[Region]]
+    )  # type: List[Region]
     floating_match_settings = attr.ib(
         factory=list, metadata={JsonInclude.NAME: "Floating"}
-    )  # type: Optional[List[FloatingMatchSettings]]
-    # TODO: implement accessibility region
-    # accessibility = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[List]
-    # accessibility_level = attr.ib(
-    #     metadata={JsonInclude.THIS: True}
-    # )  # type: AccessibilityLevel
+    )  # type: List[FloatingMatchSettings]
+    accessibility = attr.ib(
+        factory=list, metadata={JsonInclude.THIS: True}
+    )  # type: List[AccessibilityRegion]
+    accessibility_settings = attr.ib(
+        default=None, type=AccessibilitySettings, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[AccessibilitySettings]
 
     @classmethod
     def create_from(cls, other):
@@ -206,6 +204,8 @@ class ImageMatchSettings(object):
         img.floating_match_settings = other.floating_match_settings
         img.enable_patterns = other.enable_patterns
         img.ignore_displacements = other.ignore_displacements
+        img.accessibility = other.accessibility
+        img.accessibility_settings = other.accessibility_settings
 
         return img
 

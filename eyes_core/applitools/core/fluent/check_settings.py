@@ -1,15 +1,21 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Union
 
 import attr
 
-from applitools.common import FloatingBounds, MatchLevel, Region, logger
+from applitools.common import FloatingBounds, MatchLevel, logger
+from applitools.common.accessibility import AccessibilityRegionType
+from applitools.common.utils import argument_guard
+from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 
 from .region import (
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
     RegionByRectangle,
+    GetAccessibilityRegion,
+    AccessibilityRegionByRectangle,
 )
+
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num
@@ -43,6 +49,9 @@ class CheckSettingsValues(object):
     floating_regions = attr.ib(
         init=False, factory=list
     )  # type: List[GetFloatingRegion]
+    accessibility_regions = attr.ib(
+        init=False, factory=list
+    )  # type: List[GetAccessibilityRegion]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
@@ -105,6 +114,26 @@ class CheckSettings(object):
         return self
 
     @overload  # noqa
+    def accessibility(self, region):
+        # type:(Self, AccessibilityRegion) -> Self
+        pass
+
+    @overload  # noqa
+    def accessibility(self, region, type):
+        # type:(Self, Union[Region. Rectangle], AccessibilityRegionType) -> Self
+        pass
+
+    def accessibility(self, region, type=None):  # noqa
+        """ Adds one or more ignore accessibility regions. """
+        # type:(...) -> Self
+        if type:
+            argument_guard.is_a(type, AccessibilityRegionType)
+        self.values.accessibility_regions.append(
+            self._accessibility_provider_from(region, type)
+        )
+        return self
+
+    @overload  # noqa
     def floating(self, max_offset, region):
         # type: (Self, int, Region) -> Self
         pass
@@ -127,6 +156,7 @@ class CheckSettings(object):
         :param arg4: None       | max_left_offset
         :param arg5: None       | max_right_offset
         """
+        # TODO: check how it's work in Selenium part when args[1] is element
         if isinstance(args[0], int) and isinstance(args[1], Region):
             max_offset = args[0]  # type: int
             region = args[1]  # type: ignore
@@ -226,7 +256,7 @@ class CheckSettings(object):
     def _region_provider_from(self, region, method_name):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
-            logger.debug("{name}: RegionByRegion".format(name=method_name))
+            logger.debug("{name}: RegionByRectangle".format(name=method_name))
             return RegionByRectangle(region)
         raise TypeError("Unknown region type.")
 
@@ -234,4 +264,15 @@ class CheckSettings(object):
         if isinstance(region, Region):
             logger.debug("floating: FloatingRegionByRectangle")
             return FloatingRegionByRectangle(Region.from_(region), bounds)
+        raise TypeError("Unknown region type.")
+
+    def _accessibility_provider_from(self, region, accessibility_region_type):
+        if (
+            isinstance(region, Region) or isinstance(region, Rectangle)
+        ) and accessibility_region_type:
+            logger.debug("accessibility: AccessibilityRegionByRectangle")
+            return AccessibilityRegionByRectangle(region, accessibility_region_type)
+        elif isinstance(region, AccessibilityRegion):
+            logger.debug("accessibility: AccessibilityRegionByAccessibilityRegion")
+            return AccessibilityRegionByRectangle(region)
         raise TypeError("Unknown region type.")

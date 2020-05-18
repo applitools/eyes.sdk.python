@@ -324,7 +324,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             if not self._running_session:
                 logger.debug("close(): Server session was not started")
                 logger.info("close(): --- Empty test ended.")
-                return TestResults()
+                return TestResults(status="Failed")
 
             is_new_session = self._running_session.is_new_session
             results_url = self._running_session.url

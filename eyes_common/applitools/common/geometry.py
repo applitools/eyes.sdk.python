@@ -2,14 +2,16 @@ from __future__ import absolute_import
 
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload, Text
 
 import attr
 from PIL.Image import Image
 
 from . import logger
+from .accessibility import AccessibilityRegionType
 from .mixins import DictAccessMixin
 from .utils import argument_guard
+from .utils.compat import basestring
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
@@ -22,7 +24,6 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
-    "Rectangle",
 )
 
 
@@ -344,6 +345,75 @@ class Rectangle(DictAccessMixin):
 
 
 @attr.s(slots=True, init=False)
+class AccessibilityRegion(Rectangle):
+    """A rectangle identified by left,top, width, height."""
+
+    left = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
+    type = attr.ib(
+        type=AccessibilityRegionType, metadata={JsonInclude.THIS: True},
+    )  # type: AccessibilityRegionType
+
+    def __init__(
+        self,
+        left,  # type: int
+        top,  # type: int
+        width,  # type: int
+        height,  # type: int
+        type,  # type: Union[Text, AccessibilityRegionType]
+    ):
+        # type: (...) -> None
+        super(AccessibilityRegion, self).__init__(left, top, width, height)
+        if isinstance(type, basestring):
+            if type == "None":
+                self.type = None
+                return
+            self.type = AccessibilityRegionType(type)
+            return
+        argument_guard.is_a(type, AccessibilityRegionType)
+        self.type = type
+
+    @overload  # noqa
+    def from_(self, accessibility_region):
+        # type: (Union[Dict, AccessibilityRegion]) -> AccessibilityRegion
+        pass
+
+    @overload  # noqa
+    def from_(self, region, accessibility_type):
+        # type: (Union[Region,Rectangle],AccessibilityRegionType)->AccessibilityRegion
+        pass
+
+    @classmethod  # noqa
+    def from_(cls, obj, obj2=None):
+        # type: (...)->AccessibilityRegion
+        """Creates a new Region instance."""
+        if isinstance(obj, AccessibilityRegion):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj.type)
+        elif (
+            isinstance(obj, Region)
+            or isinstance(obj, Rectangle)
+            and isinstance(obj2, AccessibilityRegionType)
+        ):
+            return cls(obj.left, obj.top, obj.width, obj.height, obj2)
+        elif isinstance(obj, dict):
+            return cls(
+                obj["left"],
+                obj["top"],
+                obj["width"],
+                obj["height"],
+                AccessibilityRegionType(obj["type"]),
+            )
+        raise ValueError("Wrong parameters passed")
+
+    def offset(self, location_or_dx, dy=None):  # noqa
+        # type: (Union[Point, int], Optional[int]) -> AccessibilityRegion
+        r = super(AccessibilityRegion, self).offset(location_or_dx, dy)
+        return AccessibilityRegion.from_(r, self.type)
+
+
+@attr.s(slots=True, init=False)
 class Region(Rectangle):
     """A rectangle identified by left,top, width, height."""
 
@@ -363,10 +433,13 @@ class Region(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type:Union[Text,CoordinatesType]
     ):
         # type: (...) -> None
         super(Region, self).__init__(left, top, width, height)
+        if isinstance(coordinates_type, basestring):
+            self.coordinates_type = CoordinatesType(coordinates_type)
+            return
         argument_guard.is_a(coordinates_type, CoordinatesType)
         self.coordinates_type = coordinates_type
 
@@ -400,7 +473,7 @@ class Region(Rectangle):
     @classmethod  # noqa
     @overload
     def from_(cls, region):
-        # type: (Region) -> Region
+        # type: (Union[Region, Dict]) -> Region
         pass
 
     @classmethod  # noqa

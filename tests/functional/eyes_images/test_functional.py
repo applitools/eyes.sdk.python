@@ -1,10 +1,21 @@
-# from applitools.core import Region, UnscaledFixedCutProvider
+import os
 from os import path
 
 import pytest
 from PIL import Image, ImageDraw
 
-from applitools.images import Region, Target, UnscaledFixedCutProvider, Eyes
+from applitools.images import (
+    Region,
+    Target,
+    UnscaledFixedCutProvider,
+    Eyes,
+    AccessibilitySettings,
+    AccessibilityLevel,
+    AccessibilityGuidelinesVersion,
+    AccessibilityRegionType,
+    AccessibilityRegion,
+)
+from tests.functional.conftest import check_image_match_settings
 
 here = path.abspath(path.dirname(__file__))
 
@@ -66,3 +77,44 @@ def test_check_image_fluent_cut_provider(eyes):
         Target.image(path.join(here, "resources/minions-800x500.jpg")),
     )
     eyes.close()
+
+
+def test_check_image_fluent_accessibility(eyes):
+    (
+        eyes.configure.set_accessibility_validation(
+            AccessibilitySettings(
+                AccessibilityLevel.AA, AccessibilityGuidelinesVersion.WCAG_2_1
+            )
+        )
+        .set_server_url("https://testeyes.applitools.com/")
+        .set_api_key(os.environ["EYESTEST_APPLITOOLS_API_KEY"])
+    )
+    eyes.open("images", "TestCheckImage_Fluent_Accessibility")
+    eyes.check(
+        "TestCheckImage_Fluent",
+        Target.image(path.join(here, "resources/minions-800x500.jpg")).accessibility(
+            Region(10, 25, 200, 100), AccessibilityRegionType.GraphicalObject
+        ),
+    )
+    test_result = eyes.close(False)
+    check_image_match_settings(
+        eyes,
+        test_result,
+        [
+            {
+                "actual_name": "accessibility",
+                "expected": [
+                    AccessibilityRegion(
+                        10, 25, 200, 100, AccessibilityRegionType.GraphicalObject,
+                    )
+                ],
+            },
+            {
+                "actual_name": "accessibilitySettings",
+                "expected": AccessibilitySettings(
+                    level=AccessibilityLevel.AA,
+                    version=AccessibilityGuidelinesVersion.WCAG_2_1,
+                ),
+            },
+        ],
+    )

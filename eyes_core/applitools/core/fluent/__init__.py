@@ -5,6 +5,8 @@ from .region import (
     GetFloatingRegion,
     GetRegion,
     RegionByRectangle,
+    GetAccessibilityRegion,
+    AccessibilityRegionByRectangle,
 )
 
 __all__ = (
@@ -15,4 +17,6 @@ __all__ = (
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
+    "GetAccessibilityRegion",
+    "AccessibilityRegionByRectangle",
 )

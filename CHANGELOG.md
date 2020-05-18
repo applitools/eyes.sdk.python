@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- Accessibility Validation feature [Trello 1767](https://trello.com/c/gq69woeK)
 ### Updated
 - Add tag release event [Trello 1758](https://trello.com/c/Jograd5k)
 

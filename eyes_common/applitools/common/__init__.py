@@ -30,7 +30,6 @@ from .geometry import (  # noqa
     Point,
     RectangleSize,
     Region,
-    Rectangle,
     SubregionForStitching,
 )
 from .logger import FileLogger, NullLogger, StdoutLogger  # noqa

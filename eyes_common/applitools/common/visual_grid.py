@@ -12,7 +12,7 @@ from .utils.compat import ABC
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Dict, Optional, Callable, Any, Union
+    from typing import List, Text, Dict, Optional, Callable, Union, Any
     from requests import Response
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
