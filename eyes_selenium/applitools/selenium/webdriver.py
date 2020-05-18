@@ -239,9 +239,9 @@ class _EyesSwitchTo(object):
 
     def _get_scroll_provider(self):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-            self.driver
+            self._driver
         )
-        return ScrollPositionProvider(self.driver, scroll_root_element)
+        return ScrollPositionProvider(self._driver, scroll_root_element)
 
 
 @proxy_to("_driver")
