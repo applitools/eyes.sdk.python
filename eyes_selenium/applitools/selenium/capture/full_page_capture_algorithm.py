@@ -189,7 +189,11 @@ class FullPageCaptureAlgorithm(object):
             target_position = part_region.paste_physical_location.offset(
                 part_region_location - origin_position
             )
-
+            logger.debug(
+                "Origin position: {}, Target position: {}".format(
+                    origin_position, target_position
+                )
+            )
             # Actually taking the screenshot.
             datetime_utils.sleep(self.wait_before_screenshots)
             part_image = self.image_provider.get_image()
