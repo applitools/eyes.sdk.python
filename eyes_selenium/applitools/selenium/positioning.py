@@ -22,7 +22,7 @@ class SeleniumPositionProvider(PositionProvider):
     _JS_GET_ENTIRE_PAGE_SIZE = """
     var width = Math.max(arguments[0].clientWidth, arguments[0].scrollWidth);
     var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);
-    return (width + ',' + height);
+    return (width + ';' + height);
     """
     _JS_GET_CONTENT_ENTIRE_SIZE = """
         var scrollWidth = document.documentElement.scrollWidth;
@@ -35,7 +35,7 @@ class SeleniumPositionProvider(PositionProvider):
         var maxDocElementHeight = Math.max(clientHeight, scrollHeight);
         var maxBodyHeight = Math.max(bodyClientHeight, bodyScrollHeight);
         var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight);
-        return (totalWidth + ',' + totalHeight);";
+        return (totalWidth + ';' + totalHeight);";
     """
 
     def __init__(self, driver, scroll_root_element):
