@@ -694,7 +694,7 @@ class EyesWebDriver(object):
             if isinstance(value, EyesWebElement):
                 return value.element
             elif isinstance(value, list) or isinstance(value, tuple):
-                return list(extract_origin_webelement(item) for item in value)
+                return [extract_origin_webelement(item) for item in value]
             return value
 
         args = extract_origin_webelement(args)
