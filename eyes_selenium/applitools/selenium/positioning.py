@@ -22,7 +22,7 @@ class SeleniumPositionProvider(PositionProvider):
     _JS_GET_ENTIRE_PAGE_SIZE = """
     var width = Math.max(arguments[0].clientWidth, arguments[0].scrollWidth);
     var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);
-    return [width, height];
+    return (width + ',' + height);
     """
     _JS_GET_CONTENT_ENTIRE_SIZE = """
         var scrollWidth = document.documentElement.scrollWidth;
@@ -35,7 +35,7 @@ class SeleniumPositionProvider(PositionProvider):
         var maxDocElementHeight = Math.max(clientHeight, scrollHeight);
         var maxBodyHeight = Math.max(bodyClientHeight, bodyScrollHeight);
         var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight);
-        return [totalWidth, totalHeight];";
+        return (totalWidth + ',' + totalHeight);";
     """
 
     def __init__(self, driver, scroll_root_element):
@@ -60,16 +60,18 @@ class SeleniumPositionProvider(PositionProvider):
         """
         try:
             if self._driver.is_mobile_app:
-                width, height = self._driver.execute_script(
-                    self._JS_GET_CONTENT_ENTIRE_SIZE
+                size = eyes_selenium_utils.parse_size_string(
+                    self._driver.execute_script(self._JS_GET_CONTENT_ENTIRE_SIZE)
                 )
             else:
-                width, height = self._driver.execute_script(
-                    self._JS_GET_ENTIRE_PAGE_SIZE, self._scroll_root_element
+                size = eyes_selenium_utils.parse_size_string(
+                    self._driver.execute_script(
+                        self._JS_GET_ENTIRE_PAGE_SIZE, self._scroll_root_element
+                    )
                 )
         except WebDriverException as e:
             raise WebDriverException("Failed to extract entire size! \n{}".format(e))
-        return RectangleSize(width=width, height=height)
+        return size
 
     def _add_data_attribute_to_element(self):
         # type: () -> None

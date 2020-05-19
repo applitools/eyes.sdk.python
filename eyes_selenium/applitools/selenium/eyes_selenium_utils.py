@@ -451,7 +451,17 @@ def parse_location_string(position):
     xy = position.split(";")
     if len(xy) != 2:
         raise WebDriverException("Could not get scroll position!")
-    return Point(round(float(xy[0])), round(float(xy[1])))
+    return Point(float(xy[0]), float(xy[1]))
+
+
+def parse_size_string(size):
+    # type: (Union[Text, Dict]) -> RectangleSize
+    if isinstance(size, dict):
+        return RectangleSize.from_(size)
+    width_height = size.split(";")
+    if len(width_height) != 2:
+        raise WebDriverException("Could not get scroll position!")
+    return RectangleSize(float(width_height[0]), float(width_height[1]))
 
 
 def get_current_position(driver, element):
