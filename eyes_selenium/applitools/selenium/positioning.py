@@ -90,7 +90,9 @@ class ScrollPositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
         # type: (Point) -> Point
         logger.debug(
-            "setting position of %s to %s" % (location, self._scroll_root_element)
+            "ScrollPositionProvider - Setting position of {} to {}".format(
+                location, self._scroll_root_element
+            )
         )
 
         scroll_command = (
@@ -132,7 +134,9 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
     def set_position(self, location):
         # type: (Point) -> Point
         logger.info(
-            "CssTranslatePositionProvider - Setting position to: {}".format(location)
+            "CssTranslatePositionProvider - Setting position of {} to {}".format(
+                location, self._scroll_root_element
+            )
         )
         negated_location = -location
 
