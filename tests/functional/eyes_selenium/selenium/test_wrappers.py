@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
 
 from applitools.selenium import EyesWebDriver
 
@@ -48,3 +49,17 @@ def test_driver_and_element_dir(eyes, driver):
     eyes_element = eyes_driver.find_element_by_xpath("//div[@class='content']")
     _dir = dir(eyes_element)
     assert all(elem in _dir for elem in dir(element) if not elem.startswith("_"))
+
+
+def test_eyes_element_and_element_with_Select(eyes, driver):
+    driver.get("https://the-internet.herokuapp.com/dropdown")
+
+    eyes_driver = EyesWebDriver(driver, eyes)
+
+    element = driver.find_element_by_xpath("//select[contains(@id, 'dropdown')]")
+    my_select = Select(element)
+
+    eyes_element = eyes_driver.find_element_by_xpath(
+        "//select[contains(@id, 'dropdown')]"
+    )
+    my_select = Select(eyes_element)
