@@ -379,11 +379,11 @@ class EyesWebDriver(object):
         :return: A element denoted by "By".
         """
         # Get result from the original implementation of the underlying driver.
-        result = self._driver.find_element(by, value)
+        element = self._driver.find_element(by, value)
         # Wrap the element.
-        if result:
-            result = EyesWebElement(result, self)
-        return result
+        if element:
+            element = EyesWebElement(element, self)
+        return element
 
     def find_elements(self, by=By.ID, value=None):
         # type: (Text, Text) -> List[EyesWebElement]
@@ -395,14 +395,11 @@ class EyesWebDriver(object):
         :return: List of elements denoted by "By".
         """
         # Get result from the original implementation of the underlying driver.
-        results = self._driver.find_elements(by, value)
+        elements = self._driver.find_elements(by, value)
         # Wrap all returned elements.
-        if results:
-            updated_results = []
-            for element in results:
-                updated_results.append(EyesWebElement(element, self))
-            results = updated_results
-        return results
+        if elements:
+            elements = [EyesWebElement(el, self) for el in elements]
+        return elements
 
     def find_element_by_id(self, id_):
         # type: (Text) -> EyesWebElement
