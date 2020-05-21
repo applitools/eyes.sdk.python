@@ -1,3 +1,8 @@
+## [vNext]
+## Fixed
+- dir(eyes_driver) and dir(eyes_element) call on Python 2 raise an error [Trello 1879](https://trello.com/c/5qjuqVw9) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
+- element.find_elements call raise an error [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
+
 ## [4.2.0] - 2020-08-18
 ### Added
 - Accessibility Validation feature [Trello 1767](https://trello.com/c/gq69woeK)
