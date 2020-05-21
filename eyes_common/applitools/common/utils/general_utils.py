@@ -105,7 +105,7 @@ def proxy_to(proxy_obj_name, fields=None):
 
     def __dir__(self):
         _fields = fields or self._proxy_to_fields or []
-        origin_fields = super(self.__class__, self).__dir__()
+        origin_fields = dir(self.__class__)
         return list(origin_fields) + _fields
 
     def dec(cls):
