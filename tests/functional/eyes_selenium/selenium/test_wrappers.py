@@ -35,3 +35,16 @@ def test_element_find_element(eyes, driver):
     # Locate element
     element = eyes_driver.find_element_by_xpath("//div[@class='content']")
     element.find_element(By.XPATH, "//a[contains(@href, " "'request-demo')]").click()
+
+
+def test_driver_and_element_dir(eyes, driver):
+    driver.get("https://applitools.com/")
+
+    eyes_driver = EyesWebDriver(driver, eyes)
+    _dir = dir(eyes_driver)
+    assert all(elem in _dir for elem in dir(driver) if not elem.startswith("_"))
+
+    element = driver.find_element_by_xpath("//div[@class='content']")
+    eyes_element = eyes_driver.find_element_by_xpath("//div[@class='content']")
+    _dir = dir(eyes_element)
+    assert all(elem in _dir for elem in dir(element) if not elem.startswith("_"))
