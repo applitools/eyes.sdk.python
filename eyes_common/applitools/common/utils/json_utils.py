@@ -7,8 +7,6 @@ from typing import Dict, Text
 
 import attr
 
-from applitools.common import logger
-
 from .compat import iteritems
 
 
@@ -17,21 +15,23 @@ def to_json(val):
 
 
 def _fields_from_attr(cls):
-    return [
-        field.name
-        for field in attr.fields(cls)
-        if JsonInclude.THIS in field.metadata.keys()
-    ]
+    for field in attr.fields(cls):
+        if JsonInclude.THIS in field.metadata:
+            yield field.name, None
+        elif JsonInclude.NAME in field.metadata:
+            yield field.name, camelcase_to_underscore(
+                field.metadata.get(JsonInclude.NAME)
+            )
 
 
 def _klasses_from_attr(cls):
     klasses = {}
-    klasses[cls] = _fields_from_attr(cls)
+    klasses[cls] = tuple(_fields_from_attr(cls))
 
     def traverse(cls):
         for field in attr.fields(cls):
             if field.type and attr.has(field.type):
-                klasses[field.type] = _fields_from_attr(field.type)
+                klasses[field.type] = tuple(_fields_from_attr(field.type))
                 traverse(field.type)
 
     traverse(cls)
@@ -49,20 +49,33 @@ def attr_from_json(content, cls):
         return params
 
     def obj_came(obj):
+        def values_from(fields):
+            for loc_f, ser_f in fields:
+                if ser_f:
+                    yield ser_f
+                    continue
+                yield loc_f
+
         def cleaned_params(params, fields):
-            return {key: val for key, val in iteritems(params) if key in fields}
+            d = {}
+            for key, val in iteritems(params):
+                for loc_f, ser_f in fields:
+                    if key == loc_f or ser_f and key == ser_f:
+                        d[loc_f] = val
+                        break
+            return d
 
         params = make_snake(dict(obj))
         convidenced = defaultdict(int)
         for kls, fields in iteritems(klasses):
-            fields = tuple(fields)
+            fields_to_compare = tuple(values_from(fields))
             if len(klasses) == 1:
                 return kls(**cleaned_params(params, fields))
-            if set(params.keys()) == set(fields):
+            if set(params.keys()) == set(fields_to_compare):
                 return kls(**cleaned_params(params, fields))
 
             for key in params.keys():
-                if key in fields:
+                if key in fields_to_compare:
                     convidenced[(kls, fields)] += 1
         try:
             (kls, fields), _ = Counter(convidenced).most_common()[0]
