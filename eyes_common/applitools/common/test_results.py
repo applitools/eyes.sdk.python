@@ -116,10 +116,11 @@ class TestResults(object):
     )  # type: Optional[Text]
     status = attr.ib(
         converter=TestResultsStatus,
+        type=TestResultsStatus,
         default=None,
         repr=False,
         metadata={JsonInclude.THIS: True},
-    )  # type: Optional[Text]
+    )  # type: Optional[TestResultsStatus]
 
     name = attr.ib(
         default=None, repr=False, metadata={JsonInclude.THIS: True}
@@ -151,11 +152,6 @@ class TestResults(object):
     host_display_size = attr.ib(
         default=None, repr=False, type=RectangleSize, metadata={JsonInclude.THIS: True}
     )  # type: RectangleSize
-    # started_at = attr.ib(
-    #     default=None,
-    #     repr=False,
-    #     converter=lambda d: datetime.strptime(d, "%Y-%m-%dT%H:%M:%S.%fZ"),
-    # )  # type: datetime
     started_at = attr.ib(
         default=None, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: Text
