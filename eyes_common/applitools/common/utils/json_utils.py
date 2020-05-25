@@ -3,7 +3,7 @@ import json
 import re
 from collections import defaultdict, Counter
 from datetime import datetime
-from typing import Dict, Text
+from typing import Dict, Text, Type, Any, Optional, Tuple, Generator
 
 import attr
 
@@ -14,7 +14,8 @@ def to_json(val):
     return json.dumps(val, default=to_serializable, sort_keys=True)
 
 
-def _fields_from_attr(cls):
+def _fields_name_from_attr(cls):
+    # type: (Type) -> Generator[Tuple[Text, Optional[Text]]]
     for field in attr.fields(cls):
         if JsonInclude.THIS in field.metadata:
             yield field.name, None
@@ -24,62 +25,68 @@ def _fields_from_attr(cls):
             )
 
 
-def _klasses_from_attr(cls):
-    klasses = {}
-    klasses[cls] = tuple(_fields_from_attr(cls))
+def _types_and_fields_from_attr(cls):
+    # type: (Type) -> Dict[Type, Any]
+    types = {cls: tuple(_fields_name_from_attr(cls))}
 
     def traverse(cls):
         for field in attr.fields(cls):
             if field.type and attr.has(field.type):
-                klasses[field.type] = tuple(_fields_from_attr(field.type))
+                types[field.type] = tuple(_fields_name_from_attr(field.type))
                 traverse(field.type)
 
     traverse(cls)
-    return klasses
+    return types
+
+
+def _make_keys_as_underscore(dct):
+    # type: (Dict[Text, Any]) -> Dict[Text, Any]
+    params = {}
+    for k, v in iteritems(dct):
+        k = camelcase_to_underscore(k)
+        params[k] = v
+    return params
+
+
+def _server_fields_name(fields):
+    # type: (Tuple[Text, Optional[Text]]) -> Generator[Text]
+    for loc_f, ser_f in fields:
+        if ser_f:
+            yield ser_f
+            continue
+        yield loc_f
+
+
+def _cleaned_params(params, fields):
+    # type: (Dict[Text, Any], Tuple[Text, Optional[Text]]) -> Dict[Text, Any]
+    d = {}
+    for key, val in iteritems(params):
+        for loc_f, ser_f in fields:
+            if key == loc_f or ser_f and key == ser_f:
+                d[loc_f] = val
+                break
+    return d
 
 
 def attr_from_json(content, cls):
-    klasses = _klasses_from_attr(cls)
-
-    def make_snake(dct):
-        params = {}
-        for k, v in iteritems(dct):
-            k = camelcase_to_underscore(k)
-            params[k] = v
-        return params
+    types_and_fields = _types_and_fields_from_attr(cls)
 
     def obj_came(obj):
-        def values_from(fields):
-            for loc_f, ser_f in fields:
-                if ser_f:
-                    yield ser_f
-                    continue
-                yield loc_f
-
-        def cleaned_params(params, fields):
-            d = {}
-            for key, val in iteritems(params):
-                for loc_f, ser_f in fields:
-                    if key == loc_f or ser_f and key == ser_f:
-                        d[loc_f] = val
-                        break
-            return d
-
-        params = make_snake(dict(obj))
-        convidenced = defaultdict(int)
-        for kls, fields in iteritems(klasses):
-            fields_to_compare = tuple(values_from(fields))
-            if len(klasses) == 1:
-                return kls(**cleaned_params(params, fields))
+        params = _make_keys_as_underscore(dict(obj))
+        coincidence = defaultdict(int)
+        for kls, fields in iteritems(types_and_fields):
+            fields_to_compare = tuple(_server_fields_name(fields))
+            if len(types_and_fields) == 1:
+                return kls(**_cleaned_params(params, fields))
             if set(params.keys()) == set(fields_to_compare):
-                return kls(**cleaned_params(params, fields))
+                return kls(**_cleaned_params(params, fields))
 
             for key in params.keys():
                 if key in fields_to_compare:
-                    convidenced[(kls, fields)] += 1
+                    coincidence[(kls, fields)] += 1
         try:
-            (kls, fields), _ = Counter(convidenced).most_common()[0]
-            return kls(**cleaned_params(params, fields))
+            (kls, fields), _ = Counter(coincidence).most_common()[0]
+            return kls(**_cleaned_params(params, fields))
         except IndexError:
             # Failed to convert any class. Use raw object instead
             return params
