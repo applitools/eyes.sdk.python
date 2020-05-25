@@ -65,9 +65,9 @@ class SessionAccessibilityStatus(AccessibilitySettings):
 
     def __init__(
         self,
+        status,  # type: Union[Text,AccessibilityStatus]
         level,  # type: Union[Text,AccessibilityLevel]
         guidelines_version,  # type: Union[Text,AccessibilityGuidelinesVersion]
-        status,  # type: Union[Text,AccessibilityStatus]
     ):
         super(SessionAccessibilityStatus, self).__init__(level, guidelines_version)
         if isinstance(status, basestring):
