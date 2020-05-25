@@ -6,8 +6,20 @@ from applitools.common import (
     VGResource,
     RenderInfo,
     RunningSession,
+    TestResults,
+    RectangleSize,
+    Region,
 )
+from applitools.common.accessibility import (
+    SessionAccessibilityStatus,
+    AccessibilityStatus,
+    AccessibilityLevel,
+    AccessibilityGuidelinesVersion,
+    AccessibilityRegionType,
+)
+from applitools.common.geometry import AccessibilityRegion
 from applitools.common.selenium import BrowserType
+from applitools.common.test_results import TestResultsStatus
 from applitools.common.utils import json_utils
 
 
@@ -68,3 +80,115 @@ def test_running_session_serialization_and_deserialization():
     rs_json = json_utils.to_json(rs)
     assert '"isNew": true' in rs_json
     assert rs == json_utils.attr_from_json(rs_json, RunningSession)
+
+
+TEST_RESULTS_DATA = """
+{
+	"exactMatches": 0,
+	"strictMatches": 0,
+	"contentMatches": 0,
+	"layoutMatches": 0,
+	"noneMatches": 0,
+	"steps": 2,
+	"matches": 2,
+	"mismatches": 0,
+	"missing": 0,
+	"new": 0,
+	"name": "Classic Runner",
+	"secretToken": "Secrettoken",
+	"id": "00000",
+	"status": "Passed",
+	"accessibilityStatus": {
+		"status": "Failed",
+		"level": "AA",
+		"version": "WCAG_2_0"
+	},
+	"appName": "Demo App",
+	"baselineId": "k~!~!4179-edc9c988",
+	"batchName": "Classic Runner",
+	"batchId": "000002519",
+	"branchName": "default",
+	"hostOS": "Linux",
+	"hostApp": "Chrome",
+	"hostDisplaySize": {
+		"width": 800,
+		"height": 800
+	},
+	"startedAt": "2020-05-14T10:48:49.9189634+00:00",
+	"duration": 38,
+	"isNew": false,
+	"isDifferent": false,
+	"isAborted": false,
+	"defaultMatchSettings": {
+		"matchLevel": "Strict",
+		"ignore": [{"left": 300, "top": 300, "width": 300, "height": 300}],
+		"strict": [],
+		"content": [],
+		"layout": [],
+		"floating": [],
+		"accessibility": [{"left": 300, "top": 300, "width": 300, "height": 300, "type": "BoldText"}],
+		"splitTopHeight": 0,
+		"splitBottomHeight": 0,
+		"ignoreCaret": true,
+		"accessibilitySettings": {
+			"level": "AA",
+			"version": "WCAG_2_0"
+		},
+		"ignoreDisplacements": false,
+		"scale": 1.0,
+		"remainder": 0.0,
+		"useDom": false,
+		"useDL": false,
+		"enablePatterns": false
+	},
+	"appUrls": {
+		"batch": "https://eyes.applitools.com/app/test-results/111?accountIdPczBANNug~~",
+		"session": "https://eyes.applitools.com/app/test-results//00000?account"
+	},
+	"apiUrls": {
+		"batch": "https://eyesapi.applitools.com/api/sessions/batches/0000025",
+		"session": "https://eyesapi.applitools.com/api/sessions/batches/0000025/000002518"
+	},
+	"stepsInfo": [{
+		"name": "Login Window",
+		"isDifferent": false,
+		"hasBaselineImage": true,
+		"hasCurrentImage": true,
+		"hasCheckpointImage": true,
+		"appUrls": {
+			"step": "https://eyes.applitools.com/app/test-results/00000215/steps/1?accountId=~",
+			"stepEditor": "https://eyes.applitools.com/app/test-results/8/steps/1/edit?accountId="
+		},
+		"apiUrls": {
+			"baselineImage": "https://eyesapi.applitools.com/api/images/se~cff89",
+			"currentImage": "https://eyesapi.applitools.com/api/sessions/batches/00000/00000/steps/1/images/checkpoint",
+			"checkpointImage": "https://eyesapi.applitools.com/api/sessions/batches/00000/00000/steps/1/images/checkpoint",
+			"checkpointImageThumbnail": "https://eyesapi.applitools.com/api/sessions/batches/00000/00000/steps/1/images/checkpoint-thumbnail",
+			"diffImage": "https://eyesapi.applitools.com/api/sessions/batches/00000/00000/steps/1/images/diff"
+		}
+	}]
+}"""
+
+
+def test_test_results_deserialization():
+    tr = json_utils.attr_from_json(TEST_RESULTS_DATA, TestResults)  # type: TestResults
+    assert tr.status == TestResultsStatus.Passed
+    assert (
+        tr.app_urls.batch
+        == "https://eyes.applitools.com/app/test-results/111?accountIdPczBANNug~~"
+    )
+    assert tr.accessibility_status == SessionAccessibilityStatus(
+        AccessibilityStatus.Failed,
+        AccessibilityLevel.AA,
+        AccessibilityGuidelinesVersion.WCAG_2_0,
+    )
+    assert tr.host_display_size == RectangleSize(800, 800)
+    assert tr.default_match_settings.ignore_regions == [Region(300, 300, 300, 300)]
+    assert tr.default_match_settings.accessibility == [
+        AccessibilityRegion(300, 300, 300, 300, AccessibilityRegionType.BoldText)
+    ]
+    assert tr.steps_info[0].name == "Login Window"
+    assert (
+        tr.steps_info[0].app_urls.step
+        == "https://eyes.applitools.com/app/test-results/00000215/steps/1?accountId=~"
+    )
