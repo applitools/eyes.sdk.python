@@ -92,6 +92,11 @@ def attr_from_json(content, cls):
         try:
             (kls, fields), _ = Counter(coincidence).most_common()[0]
             return kls(**_cleaned_params(params, fields))
+        except TypeError:
+            # in case of Region and AccessibilityRegion there could be situation when
+            # first match is not correct value
+            (kls, fields), _ = Counter(coincidence).most_common()[1]
+            return kls(**_cleaned_params(params, fields))
         except IndexError:
             # Failed to convert any class. Use raw object instead
             return params
