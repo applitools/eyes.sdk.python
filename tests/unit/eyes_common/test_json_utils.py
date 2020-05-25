@@ -65,4 +65,6 @@ def test_running_session_serialization_and_deserialization():
         url="url",
         is_new_session=True,
     )
-    assert rs == json_utils.attr_from_json(json_utils.to_json(rs), RunningSession)
+    rs_json = json_utils.to_json(rs)
+    assert '"isNew": true' in rs_json
+    assert rs == json_utils.attr_from_json(rs_json, RunningSession)
