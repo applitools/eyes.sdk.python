@@ -3,73 +3,104 @@ import json
 import re
 from collections import defaultdict, Counter
 from datetime import datetime
-from typing import Dict, Text
+from typing import TYPE_CHECKING
 
 import attr
 
-from applitools.common import logger
-
 from .compat import iteritems
+
+if TYPE_CHECKING:
+    from typing import Dict, Text, Type, Any, Optional, Tuple, Generator
 
 
 def to_json(val):
     return json.dumps(val, default=to_serializable, sort_keys=True)
 
 
-def _fields_from_attr(cls):
-    return [
-        field.name
-        for field in attr.fields(cls)
-        if JsonInclude.THIS in field.metadata.keys()
-    ]
+def _fields_name_from_attr(cls):
+    # type: (Type) -> Generator[Tuple[Text, Optional[Text]]]
+    if not attr.has(cls):
+        raise TypeError("Class should be attrs based")
+    for field in attr.fields(cls):
+        if JsonInclude.THIS in field.metadata:
+            yield field.name, None
+        elif JsonInclude.NAME in field.metadata:
+            yield field.name, camelcase_to_underscore(
+                field.metadata.get(JsonInclude.NAME)
+            )
 
 
-def _klasses_from_attr(cls):
-    klasses = {}
-    klasses[cls] = _fields_from_attr(cls)
+def _types_and_fields_from_attr(cls):
+    # type: (Type) -> Dict[Type, Any]
+    types = {cls: tuple(_fields_name_from_attr(cls))}
 
     def traverse(cls):
         for field in attr.fields(cls):
             if field.type and attr.has(field.type):
-                klasses[field.type] = _fields_from_attr(field.type)
+                types[field.type] = tuple(_fields_name_from_attr(field.type))
                 traverse(field.type)
 
     traverse(cls)
-    return klasses
+    return types
+
+
+def _make_keys_as_underscore(dct):
+    # type: (Dict[Text, Any]) -> Dict[Text, Any]
+    params = {}
+    for k, v in iteritems(dct):
+        k = camelcase_to_underscore(k)
+        params[k] = v
+    return params
+
+
+def _server_fields_name(fields):
+    # type: (Tuple[Text, Optional[Text]]) -> Generator[Text]
+    for loc_f, ser_f in fields:
+        if ser_f:
+            yield ser_f
+            continue
+        yield loc_f
+
+
+def _cleaned_params(params, fields):
+    # type: (Dict[Text, Any], Tuple[Text, Optional[Text]]) -> Dict[Text, Any]
+    d = {}
+    for key, val in iteritems(params):
+        for loc_f, ser_f in fields:
+            if key == loc_f or ser_f and key == ser_f:
+                d[loc_f] = val
+                break
+    return d
 
 
 def attr_from_json(content, cls):
-    klasses = _klasses_from_attr(cls)
+    types_and_fields = _types_and_fields_from_attr(cls)
 
-    def make_snake(dct):
-        params = {}
-        for k, v in iteritems(dct):
-            k = camelcase_to_underscore(k)
-            params[k] = v
-        return params
-
-    def obj_came(obj):
-        def cleaned_params(params, fields):
-            return {key: val for key, val in iteritems(params) if key in fields}
-
-        params = make_snake(dict(obj))
-        convidenced = defaultdict(int)
-        for kls, fields in iteritems(klasses):
-            fields = tuple(fields)
-            if len(klasses) == 1:
-                return kls(**cleaned_params(params, fields))
-            if set(params.keys()) == set(fields):
-                return kls(**cleaned_params(params, fields))
-
-            for key in params.keys():
-                if key in fields:
-                    convidenced[(kls, fields)] += 1
+    def coincidence_find(params, coincidence, common_index=0):
         try:
-            (kls, fields), _ = Counter(convidenced).most_common()[0]
-            return kls(**cleaned_params(params, fields))
+            (kls, fields), _ = Counter(coincidence).most_common()[common_index]
+            return kls(**_cleaned_params(params, fields))
+        except TypeError:
+            # in case of Region and AccessibilityRegion there could be situation when
+            return coincidence_find(params, coincidence, common_index=common_index + 1)
         except IndexError:
             # Failed to convert any class. Use raw object instead
             return params
+
+    def obj_came(obj):
+        params = _make_keys_as_underscore(dict(obj))
+        coincidence = defaultdict(int)
+        for kls, fields in iteritems(types_and_fields):
+            fields_to_compare = tuple(_server_fields_name(fields))
+            if len(types_and_fields) == 1:
+                return kls(**_cleaned_params(params, fields))
+            if set(params.keys()) == set(fields_to_compare):
+                return kls(**_cleaned_params(params, fields))
+
+            for key in params.keys():
+                if key in fields_to_compare:
+                    coincidence[(kls, fields)] += 1
+        return coincidence_find(params, coincidence)
 
     instance = json.loads(content, object_hook=obj_came)
     return instance
