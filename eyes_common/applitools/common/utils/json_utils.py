@@ -76,6 +76,17 @@ def _cleaned_params(params, fields):
 def attr_from_json(content, cls):
     types_and_fields = _types_and_fields_from_attr(cls)
 
+    def coincidence_find(params, coincidence, common_index=0):
+        try:
+            (kls, fields), _ = Counter(coincidence).most_common()[common_index]
+            return kls(**_cleaned_params(params, fields))
+        except TypeError:
+            # in case of Region and AccessibilityRegion there could be situation when
+            return coincidence_find(params, coincidence, common_index=common_index + 1)
+        except IndexError:
+            # Failed to convert any class. Use raw object instead
+            return params
+
     def obj_came(obj):
         params = _make_keys_as_underscore(dict(obj))
         coincidence = defaultdict(int)
@@ -89,17 +100,7 @@ def attr_from_json(content, cls):
             for key in params.keys():
                 if key in fields_to_compare:
                     coincidence[(kls, fields)] += 1
-        try:
-            (kls, fields), _ = Counter(coincidence).most_common()[0]
-            return kls(**_cleaned_params(params, fields))
-        except TypeError:
-            # in case of Region and AccessibilityRegion there could be situation when
-            # first match is not correct value
-            (kls, fields), _ = Counter(coincidence).most_common()[1]
-            return kls(**_cleaned_params(params, fields))
-        except IndexError:
-            # Failed to convert any class. Use raw object instead
-            return params
+        return coincidence_find(params, coincidence)
 
     instance = json.loads(content, object_hook=obj_came)
     return instance
