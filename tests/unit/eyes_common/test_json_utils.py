@@ -5,6 +5,7 @@ from applitools.common import (
     RGridDom,
     VGResource,
     RenderInfo,
+    RunningSession,
 )
 from applitools.common.selenium import BrowserType
 from applitools.common.utils import json_utils
@@ -53,3 +54,15 @@ def test_render_request_serialize(browser_type):
     ]
     RESULT_PATTERN = '[{"agentId": "my-agent-id", "browser": {"name": "%s", "platform": "linux"}, "dom": {"hash": "a67486a8bc9ba45f878e5b0d8ff9bc68ec6ed9db0382709751327d1793898e16", "hashFormat": "sha256"}, "renderId": null, "renderInfo": {"height": 600, "sizeMode": "full-page", "width": 500}, "resources": {"url": {"contentType": "application/empty-response", "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "hashFormat": "sha256"}}, "scriptHooks": {}, "selectorsToFindRegionsFor": [], "sendDom": false, "url": "dom-url.com", "webhook": "some-webhook.com"}]'
     assert RESULT_PATTERN % (browser_type.value) == json_utils.to_json(requests)
+
+
+def test_running_session_serialization_and_deserialization():
+    rs = RunningSession(
+        id="some-id",
+        session_id="session-id",
+        batch_id="batch-id",
+        baseline_id="baseline_id",
+        url="url",
+        is_new_session=True,
+    )
+    assert rs == json_utils.attr_from_json(json_utils.to_json(rs), RunningSession)
