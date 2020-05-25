@@ -3,11 +3,14 @@ import json
 import re
 from collections import defaultdict, Counter
 from datetime import datetime
-from typing import Dict, Text, Type, Any, Optional, Tuple, Generator
+from typing import TYPE_CHECKING
 
 import attr
 
 from .compat import iteritems
+
+if TYPE_CHECKING:
+    from typing import Dict, Text, Type, Any, Optional, Tuple, Generator
 
 
 def to_json(val):
@@ -16,6 +19,8 @@ def to_json(val):
 
 def _fields_name_from_attr(cls):
     # type: (Type) -> Generator[Tuple[Text, Optional[Text]]]
+    if not attr.has(cls):
+        raise TypeError("Class should be attrs based")
     for field in attr.fields(cls):
         if JsonInclude.THIS in field.metadata:
             yield field.name, None
