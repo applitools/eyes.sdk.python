@@ -178,9 +178,9 @@ def test_test_results_deserialization():
         == "https://eyes.applitools.com/app/test-results/111?accountIdPczBANNug~~"
     )
     assert tr.accessibility_status == SessionAccessibilityStatus(
-        AccessibilityStatus.Failed,
         AccessibilityLevel.AA,
         AccessibilityGuidelinesVersion.WCAG_2_0,
+        AccessibilityStatus.Failed,
     )
     assert tr.host_display_size == RectangleSize(800, 800)
     assert tr.default_match_settings.ignore_regions == [Region(300, 300, 300, 300)]
