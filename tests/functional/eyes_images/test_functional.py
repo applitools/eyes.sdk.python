@@ -112,8 +112,7 @@ def test_check_image_fluent_accessibility(eyes):
             {
                 "actual_name": "accessibilitySettings",
                 "expected": AccessibilitySettings(
-                    level=AccessibilityLevel.AA,
-                    version=AccessibilityGuidelinesVersion.WCAG_2_1,
+                    AccessibilityLevel.AA, AccessibilityGuidelinesVersion.WCAG_2_1,
                 ),
             },
         ],
