@@ -266,9 +266,11 @@ def deprecation(msg):
     warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
-def exception(msg):
+def exception(exp, msg=None):
+    if msg:
+        exp.args = exp.args + (msg,)
     if _logger is not None:
-        _logger.exception(msg)
+        _logger.exception(exp)
 
 
 def error(msg):

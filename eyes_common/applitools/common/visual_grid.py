@@ -261,7 +261,14 @@ class VGResource(object):
     def __attrs_post_init__(self):
         self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
-            self._handle_func()
+            try:
+                self._handle_func()
+            except Exception as e:
+                logger.exception(
+                    e,
+                    "Exception has been appeared during processing"
+                    " of VGResource({})".format(self.url),
+                )
 
     @classmethod
     def EMPTY(cls, url):
