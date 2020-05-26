@@ -207,6 +207,9 @@ class RenderTask(VGTask):
             logger.debug(
                 "handle_resources({0}, {1}) call".format(content_type, resource_url)
             )
+            if not content_type:
+                logger.debug("content_type is empty. Skip handling of resources")
+                return
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)
