@@ -3,6 +3,7 @@
 - dir(eyes_driver) and dir(eyes_element) call on Python 2 raise an error [Trello 1879](https://trello.com/c/5qjuqVw9) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
 - element.find_elements call raise an error [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
 - All New tests was marked as Unresolved [Trello 1841](https://trello.com/c/boxDvmMW) [GH #176](https://github.com/applitools/eyes.sdk.python/pull/176)
+- UFG test is not rendered if content-type is None [Trello 1836](https://trello.com/c/2IK1o3Qd) [GH #179](https://github.com/applitools/eyes.sdk.python/pull/179)
 
 ## [4.2.0] - 2020-08-18
 ### Added

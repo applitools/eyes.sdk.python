@@ -85,12 +85,8 @@ class RenderTask(VGTask):
             try:
                 self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
-            except Exception as e:
-                logger.error(
-                    "Raised an exception during rendering:"
-                    "\n\t {} \n\n "
-                    "Requests: \n\t{}".format(str(e), requests)
-                )
+            except Exception:
+                logger.exception("During rendering for requests {}".format(requests))
                 fetch_fails += 1
                 datetime_utils.sleep(
                     1500, msg="/render throws exception... sleeping for 1.5s"
@@ -207,6 +203,9 @@ class RenderTask(VGTask):
             logger.debug(
                 "handle_resources({0}, {1}) call".format(content_type, resource_url)
             )
+            if not content_type:
+                logger.debug("content_type is empty. Skip handling of resources")
+                return
             urls_from_css, urls_from_svg = [], []
             if content_type.startswith("text/css"):
                 urls_from_css = parsers.get_urls_from_css_resource(content)

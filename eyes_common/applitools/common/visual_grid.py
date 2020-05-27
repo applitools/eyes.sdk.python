@@ -261,7 +261,13 @@ class VGResource(object):
     def __attrs_post_init__(self):
         self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
-            self._handle_func()
+            try:
+                self._handle_func()
+            except Exception:
+                logger.exception(
+                    "Exception has been appeared during processing"
+                    " of VGResource({})".format(self.url),
+                )
 
     @classmethod
     def EMPTY(cls, url):
@@ -291,7 +297,7 @@ class VGResource(object):
             )
             return VGResource.EMPTY(url)
 
-        content_type = response.headers["Content-Type"]
+        content_type = response.headers.get("Content-Type")
         content = response.content
         return cls(
             url,
