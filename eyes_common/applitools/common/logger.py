@@ -93,33 +93,35 @@ class _Logger(object):
             self._handler = None
             self._is_opened = False
 
-    def info(self, msg):
-        # type: (tp.Text) -> None
+    def info(self, msg, *args, **kwargs):
+        # type: (tp.Text, *tp.Any, **tp.Any) -> None
         """
         Writes info level msg to the logger.
 
         :param msg: The message that will be written to the logger.
         """
         if self._logger:
-            self._logger.info(msg)
+            self._logger.info(msg, *args, **kwargs)
 
-    def debug(self, msg):
-        # type: (tp.Text) -> None
+    def debug(self, msg, *args, **kwargs):
+        # type: (tp.Text, *tp.Any, **tp.Any) -> None
         """
         Writes debug level msg to the logger.
 
         :param msg: The message that will be written to the logger.
         """
         if self._logger:
-            self._logger.debug(msg)
+            self._logger.debug(msg, *args, **kwargs)
 
-    def exception(self, msg):
+    def exception(self, msg, *args, **kwargs):
+        # type: (tp.Text, *tp.Any, **tp.Any) -> None
         if self._logger:
-            self._logger.exception(msg)
+            self._logger.exception(msg, *args, **kwargs)
 
-    def error(self, msg):
+    def error(self, msg, *args, **kwargs):
+        # type: (tp.Text, *tp.Any, **tp.Any) -> None
         if self._logger:
-            self._logger.error(msg)
+            self._logger.error(msg, *args, **kwargs)
 
 
 class StdoutLogger(_Logger):
@@ -266,11 +268,9 @@ def deprecation(msg):
     warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
-def exception(exp, msg=None):
-    if msg:
-        exp.args = exp.args + (msg,)
+def exception(msg):
     if _logger is not None:
-        _logger.exception(exp)
+        _logger.exception(msg)
 
 
 def error(msg):
