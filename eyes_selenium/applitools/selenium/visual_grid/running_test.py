@@ -353,7 +353,7 @@ class RunningTest(object):
 
     def abort(self):
         # skip call of abort() in tests where close() already called
-        if self.close_queue:
+        if self.close_queue or self.state == COMPLETED:
             return None
 
         def ensure_and_abort():
@@ -381,7 +381,6 @@ class RunningTest(object):
                 "abort_task_error: task.uuid: {}\n{}".format(abort_task.uuid, str(e))
             )
             self.pending_exceptions.append(e)
-            self.becomes_completed()
 
         abort_task.on_task_succeeded(abort_task_succeeded)
         abort_task.on_task_completed(abort_task_completed)
