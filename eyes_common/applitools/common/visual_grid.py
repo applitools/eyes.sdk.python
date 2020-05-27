@@ -263,9 +263,8 @@ class VGResource(object):
         if callable(self._handle_func):
             try:
                 self._handle_func()
-            except Exception as e:
+            except Exception:
                 logger.exception(
-                    e,
                     "Exception has been appeared during processing"
                     " of VGResource({})".format(self.url),
                 )

@@ -85,12 +85,8 @@ class RenderTask(VGTask):
             try:
                 self.put_cache.process_all()
                 render_requests = self.eyes_connector.render(*requests)
-            except Exception as e:
-                logger.error(
-                    "Raised an exception during rendering:"
-                    "\n\t {} \n\n "
-                    "Requests: \n\t{}".format(str(e), requests)
-                )
+            except Exception:
+                logger.exception("During rendering for requests {}".format(requests))
                 fetch_fails += 1
                 datetime_utils.sleep(
                     1500, msg="/render throws exception... sleeping for 1.5s"
