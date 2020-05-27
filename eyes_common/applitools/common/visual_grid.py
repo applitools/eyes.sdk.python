@@ -297,7 +297,7 @@ class VGResource(object):
             )
             return VGResource.EMPTY(url)
 
-        content_type = response.headers["Content-Type"]
+        content_type = response.headers.get("Content-Type")
         content = response.content
         return cls(
             url,
