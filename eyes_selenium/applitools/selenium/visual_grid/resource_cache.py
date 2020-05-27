@@ -22,10 +22,9 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
         if isinstance(val, Future):
             try:
                 val = val.result()
-            except Exception as e:
-                logger.debug(
-                    "We got an exception for following URL: {}"
-                    "\n  See details below: \n{}".format(url, str(e))
+            except Exception:
+                logger.exception(
+                    "We got an exception during processing URL: {}".format(url)
                 )
                 val = None
             finally:

@@ -941,8 +941,8 @@ class SeleniumEyes(EyesBase):
                 location = eyes_selenium_utils.get_current_position(
                     self.driver, self.scroll_root_element
                 )
-            except WebDriverException as e:
-                logger.warning(str(e))
+            except WebDriverException:
+                logger.warning("Failed to _get_viewport_scroll_bounds")
                 logger.info("Assuming position is 0,0")
                 location = Point(0, 0)
         viewport_bounds = Region.from_(location, self._get_viewport_size())
