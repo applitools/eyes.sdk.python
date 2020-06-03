@@ -181,7 +181,7 @@ class RenderBrowserInfo(object):
         if self.browser_type in [
             BrowserType.IE_10,
             BrowserType.IE_11,
-            BrowserType.EDGE,
+            BrowserType.EDGE_LEGACY,
         ]:
             return "windows"
         elif self.browser_type in [
