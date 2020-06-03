@@ -5,7 +5,7 @@ import attr
 from applitools.common.config import Configuration as ConfigurationBase
 from applitools.common.geometry import RectangleSize
 from applitools.common.utils import argument_guard
-from applitools.common.visual_grid import (
+from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
     ScreenOrientation,
