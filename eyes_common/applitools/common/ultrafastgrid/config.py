@@ -1,11 +1,12 @@
 from enum import Enum
-from typing import Optional, Text
+from typing import Optional, Text, Union
 
 import attr
 
 from applitools.common.geometry import RectangleSize
-from applitools.common.selenium import BrowserType
+from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import ABC
+from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 
 
@@ -52,6 +53,43 @@ class DeviceName(Enum):
     Laptop_with_touch = "Laptop with touch"
     Laptop_with_HiDPI_screen = "Laptop with HiDPI screen"
     Laptop_with_MDPI_screen = "Laptop with MDPI screen"
+
+
+class IosDeviceName(Enum):
+    iPhone_11_Pro = "iPhone 11 Pro"
+    iPhone_11_Pro_Max = "iPhone 11 Pro Max"
+    iPhone_11 = "iPhone 11"
+    iPhone_XR = "iPhone XR"
+    iPhone_XS = "iPhone Xs"
+    iPhone_X = "iPhone_X"
+    iPhone_8 = "iPhone 8"
+    iPhone_7 = "iPhone 7"
+    iPad_Pro_3 = "iPad Pro (12.9-inch) (3rd generation)"
+    iPad_7 = "iPad (7th generation)"
+    iPad_Air_2 = "iPad Air (2nd generation)"
+
+
+class IosScreenOrientation(Enum):
+    PORTRAIT = "portrait"
+    LANDSCAPE_LEFT = "landscapeLeft"
+    LANDSCAPE_RIGHT = "landscapeRight"
+
+
+@attr.s(init=False)
+class IosDeviceInfo(object):
+    device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NON_NONE: True})
+    screen_orientation = attr.ib(
+        type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
+    )
+
+    def __init__(self, device_name, screen_orientation=None):
+        # type: (Union[IosDeviceName,Text], Union[IosScreenOrientation, Text]) -> None
+        if isinstance(device_name, basestring):
+            device_name = IosDeviceName(device_name)
+        if isinstance(screen_orientation, basestring):
+            screen_orientation = IosScreenOrientation(screen_orientation)
+        self.device_name = device_name
+        self.screen_orientation = screen_orientation
 
 
 @attr.s(hash=True)
