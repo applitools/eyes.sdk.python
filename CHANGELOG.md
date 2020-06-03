@@ -1,3 +1,7 @@
+## [vNext]
+## Fixed
+- Error for using EDGE is thrown with no reason - Python [Trello 1873](https://trello.com/c/DRavDAzS)
+
 ## [4.2.1] - 2020-05-27
 ## Fixed
 - dir(eyes_driver) and dir(eyes_element) call on Python 2 raise an error [Trello 1879](https://trello.com/c/5qjuqVw9) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
