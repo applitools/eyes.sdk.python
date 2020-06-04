@@ -45,12 +45,17 @@ def test_eyes_element_and_element_with_Select(eyes, driver):
 
     element = driver.find_element_by_xpath("//select[contains(@id, 'dropdown')]")
     my_select = Select(element)
-    my_select.options
+    options = my_select.options
+    for index, option in enumerate(options):
+        option.click()
+
     eyes_element = eyes_driver.find_element_by_xpath(
         "//select[contains(@id, 'dropdown')]"
     )
     my_select = Select(eyes_element)
-    my_select.options
+    options = my_select.options
+    for index, option in enumerate(options):
+        option.click()
 
 
 def test_driver_and_element_dir(eyes, driver):
