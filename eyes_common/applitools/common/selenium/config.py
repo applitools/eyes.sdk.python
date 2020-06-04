@@ -9,6 +9,7 @@ from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
     ScreenOrientation,
+    IRenderBrowserInfo,
 )
 
 from .misc import BrowserType, StitchMode
@@ -34,7 +35,7 @@ class Configuration(ConfigurationBase):
     # Rendering Configuration
     is_raise_exception_on = False  # type: bool
     is_rendering_config = False  # type: bool
-    _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
+    _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -63,7 +64,7 @@ class Configuration(ConfigurationBase):
 
     @overload  # noqa
     def add_browser(self, render_info):
-        # type: (RenderBrowserInfo) -> Configuration
+        # type: (IRenderBrowserInfo) -> Configuration
         pass
 
     @overload  # noqa
@@ -72,7 +73,7 @@ class Configuration(ConfigurationBase):
         pass
 
     def add_browser(self, *args):  # noqa
-        if isinstance(args[0], RenderBrowserInfo):
+        if isinstance(args[0], IRenderBrowserInfo):
             self._browsers_info.append(args[0])
         elif (
             isinstance(args[0], int)
@@ -97,7 +98,7 @@ class Configuration(ConfigurationBase):
 
     @property
     def browsers_info(self):
-        # type: () -> List[RenderBrowserInfo]
+        # type: () -> List[IRenderBrowserInfo]
         if self._browsers_info:
             return self._browsers_info
         if self.viewport_size:

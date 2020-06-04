@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     from applitools.common import (
         TestResults,
         VisualGridSelector,
-        RenderBrowserInfo,
+        IRenderBrowserInfo,
         RenderStatusResults,
     )
     from applitools.common.selenium import Configuration
@@ -51,7 +51,7 @@ TRANSITIONS = [
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
     configuration = attr.ib(hash=False, repr=False)  # type: Configuration
-    browser_info = attr.ib()  # type: RenderBrowserInfo
+    browser_info = attr.ib()  # type: IRenderBrowserInfo
     # listener = attr.ib()  # type:
     region_selectors = attr.ib(
         init=False, factory=list, hash=False

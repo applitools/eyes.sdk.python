@@ -52,6 +52,7 @@ from .ultrafastgrid.config import (  # noqa
     DeviceName,
     EmulationDevice,
     RenderBrowserInfo,
+    DesktopBrowserInfo,
     ScreenOrientation,
 )
 from .ultrafastgrid.render import (  # noqa

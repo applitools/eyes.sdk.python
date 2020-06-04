@@ -12,7 +12,7 @@ from applitools.common import (
 )
 from applitools.common.visual_grid import (
     EmulationDevice,
-    RenderBrowserInfo,
+    IRenderBrowserInfo,
     RenderRequest,
     RunningRender,
     VGResource,
@@ -34,13 +34,13 @@ if typing.TYPE_CHECKING:
 
 class EyesConnector(EyesBase):
     def __init__(self, browser_info, config, ua_string, rendering_info):
-        # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
+        # type: (DesktopBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
         super(EyesConnector, self).__init__()
         self.device = None
         if browser_info.emulation_info:
             self.device = browser_info.emulation_info.device_name
         self.device_size = None
-        self._browser_info = browser_info  # type: RenderBrowserInfo
+        self._browser_info = browser_info  # type: IRenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)

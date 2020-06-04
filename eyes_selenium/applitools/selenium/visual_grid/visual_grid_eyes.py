@@ -13,7 +13,7 @@ from applitools.common import (
     RectangleSize,
 )
 from applitools.common.utils import argument_guard
-from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
+from applitools.common.visual_grid import IRenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
@@ -281,7 +281,7 @@ class VisualGridEyes(object):
         return check_settings
 
     def _create_vgeyes_connector(self, b_info, ua_string):
-        # type: (RenderBrowserInfo, Text) -> EyesConnector
+        # type: (IRenderBrowserInfo, Text) -> EyesConnector
         vgeyes_connector = EyesConnector(
             b_info, self.configure.clone(), ua_string, self.rendering_info
         )

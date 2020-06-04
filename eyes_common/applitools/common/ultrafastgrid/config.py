@@ -75,8 +75,12 @@ class IosScreenOrientation(Enum):
     LANDSCAPE_RIGHT = "landscapeRight"
 
 
+class IRenderBrowserInfo(ABC):
+    pass
+
+
 @attr.s(init=False)
-class IosDeviceInfo(object):
+class IosDeviceInfo(IRenderBrowserInfo):
     device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NON_NONE: True})
     screen_orientation = attr.ib(
         type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
@@ -115,7 +119,7 @@ class EmulationDevice(EmulationBaseInfo):
 
 
 @attr.s(hash=True)
-class RenderBrowserInfo(object):
+class RenderBrowserInfo(IRenderBrowserInfo):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]  # type: ignore
@@ -156,3 +160,7 @@ class RenderBrowserInfo(object):
         ]:
             return "mac os x"
         return "linux"
+
+
+class DesktopBrowserInfo(RenderBrowserInfo):
+    pass
