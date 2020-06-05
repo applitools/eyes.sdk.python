@@ -9,13 +9,13 @@ from applitools.common.geometry import RectangleSize, Region
 from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
+from .config import EmulationBaseInfo, IosDeviceInfo
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional, Callable, Union, Any
     from requests import Response
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
-    from .config import EmulationBaseInfo
 
 __all__ = (
     "RenderStatus",
@@ -86,11 +86,14 @@ class RenderInfo(object):
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Region]
     selector = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
+        default=None, type=VisualGridSelector, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[VisualGridSelector]
     emulation_info = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
+        default=None, type=EmulationBaseInfo, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[EmulationBaseInfo]
+    ios_device_info = attr.ib(
+        default=None, type=IosDeviceInfo, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[IosDeviceInfo]
 
 
 @attr.s
@@ -199,7 +202,7 @@ class RenderRequest(object):
     dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
     render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
-    platform = attr.ib()  # type: Text
+    platform_name = attr.ib()  # type: Text
     browser_name = attr.ib()  # type: BrowserType
     script_hooks = attr.ib(
         default=dict, metadata={JsonInclude.NON_NONE: True}
@@ -214,14 +217,16 @@ class RenderRequest(object):
         default=None, repr=True, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     task = attr.ib(default=None)  # type: Optional[VGTask]
-    browser = attr.ib(
+    browser = attr.ib(init=False, default=None, metadata={JsonInclude.NON_NONE: True})
+    platform = attr.ib(
         init=False, default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Dict]
 
     def __attrs_post_init__(self):
         if self.browser_name is None:
             return
-        self.browser = {"name": self.browser_name.value, "platform": self.platform}
+        self.browser = {"name": self.browser_name}
+        self.platform = {"name": self.platform_name}
 
 
 @attr.s(hash=True)

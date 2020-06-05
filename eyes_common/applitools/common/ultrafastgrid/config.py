@@ -15,6 +15,10 @@ class ScreenOrientation(Enum):
     LANDSCAPE = "landscape"
 
 
+class IRenderBrowserInfo(ABC):
+    pass
+
+
 @attr.s(hash=True, slots=True)
 class EmulationBaseInfo(ABC):
     screen_orientation = attr.ib()  # type: ScreenOrientation
@@ -61,7 +65,7 @@ class IosDeviceName(Enum):
     iPhone_11 = "iPhone 11"
     iPhone_XR = "iPhone XR"
     iPhone_XS = "iPhone Xs"
-    iPhone_X = "iPhone_X"
+    iPhone_X = "iPhone X"
     iPhone_8 = "iPhone 8"
     iPhone_7 = "iPhone 7"
     iPad_Pro_3 = "iPad Pro (12.9-inch) (3rd generation)"
@@ -75,16 +79,14 @@ class IosScreenOrientation(Enum):
     LANDSCAPE_RIGHT = "landscapeRight"
 
 
-class IRenderBrowserInfo(ABC):
-    pass
-
-
-@attr.s(init=False)
-class IosDeviceInfo(IRenderBrowserInfo):
-    device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NON_NONE: True})
+@attr.s(hash=True, init=False)
+class IosDeviceInfo(object):
+    device_name = attr.ib(
+        type=IosDeviceName, metadata={JsonInclude.NAME: "name"}
+    )  # type: IosDeviceName
     screen_orientation = attr.ib(
         type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
-    )
+    )  # type: IosScreenOrientation
 
     def __init__(self, device_name, screen_orientation=None):
         # type: (Union[IosDeviceName,Text], Union[IosScreenOrientation, Text]) -> None
@@ -128,6 +130,7 @@ class RenderBrowserInfo(IRenderBrowserInfo):
     emulation_info = attr.ib(
         default=None, repr=False
     )  # type: Optional[EmulationBaseInfo]
+    ios_device_info = attr.ib(default=None, type=IosDeviceInfo)
     # TODO: add initialization with width and height for viewport_size
 
     @property
@@ -153,6 +156,8 @@ class RenderBrowserInfo(IRenderBrowserInfo):
             BrowserType.EDGE_LEGACY,
         ]:
             return "windows"
+        elif isinstance(self.ios_device_info, IosDeviceInfo):
+            return "ios"
         elif self.browser_type in [
             BrowserType.SAFARI,
             BrowserType.SAFARI_ONE_VERSION_BACK,
@@ -160,6 +165,12 @@ class RenderBrowserInfo(IRenderBrowserInfo):
         ]:
             return "mac os x"
         return "linux"
+
+    @property
+    def browser(self):
+        if isinstance(self.ios_device_info, IosDeviceInfo):
+            return "safari"
+        return self.browser_type.value
 
 
 class DesktopBrowserInfo(RenderBrowserInfo):
