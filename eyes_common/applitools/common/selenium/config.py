@@ -117,7 +117,7 @@ class Configuration(ConfigurationBase):
 
     @overload  # noqa
     def add_browsers(self, emulation_info):
-        # type: (*EmulationBaseInfo) -> Configuration
+        # type: (*ChromeEmulationInfo) -> Configuration
         pass
 
     def add_browsers(self, *args):
