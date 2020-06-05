@@ -196,12 +196,12 @@ def test_rendering_ios_simulator(driver, eyes, batch_info, vg_runner):
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
-            test_name="TestRenderingIosSimulator",
             app_name="Visual Grid Render Test",
+            test_name="TestRenderingIosSimulator",
             batch=batch_info,
         )
         .add_browser(IosDeviceInfo("iPhone 7"))
-        .add_browser(IosDeviceInfo("iPhone 11"))
+        .add_browser(IosDeviceInfo("iPhone 11", "landscapeLeft"))
     )
     eyes.open(driver)
     eyes.check_window()
