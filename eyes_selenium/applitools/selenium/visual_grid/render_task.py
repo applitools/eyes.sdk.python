@@ -171,6 +171,7 @@ class RenderTask(VGTask):
                 selector=self.selector,
                 region=region,
                 emulation_info=running_test.browser_info.emulation_info,
+                ios_device_info=running_test.browser_info.ios_device_info,
             )
             requests.append(
                 RenderRequest(
@@ -180,8 +181,8 @@ class RenderTask(VGTask):
                     dom=dom,
                     resources=request_resources,
                     render_info=r_info,
-                    browser_name=running_test.browser_info.browser_type,
-                    platform=running_test.browser_info.platform,
+                    browser_name=running_test.browser_info.browser,
+                    platform_name=running_test.browser_info.platform,
                     script_hooks=self.script_hooks,
                     selectors_to_find_regions_for=list(chain(*self.region_selectors)),
                     send_dom=running_test.configuration.send_dom,

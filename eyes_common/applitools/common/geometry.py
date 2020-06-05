@@ -16,7 +16,7 @@ from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
-    from .visual_grid import EmulationDevice
+    from .ultrafastgrid import EmulationDevice
 
 __all__ = (
     "Point",

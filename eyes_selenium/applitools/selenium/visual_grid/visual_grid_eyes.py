@@ -13,7 +13,7 @@ from applitools.common import (
     RectangleSize,
 )
 from applitools.common.utils import argument_guard
-from applitools.common.visual_grid import RenderBrowserInfo, VisualGridSelector
+from applitools.common.ultrafastgrid import RenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
@@ -381,12 +381,13 @@ class VisualGridEyes(object):
 
         if viewport_size is None:
             for render_bi in self.configure.browsers_info:
-                if not render_bi.emulation_info:
+                if not (render_bi.emulation_info or render_bi.ios_device_info):
                     viewport_size = RectangleSize(render_bi.width, render_bi.height)
                     break
 
         if viewport_size is None:
-            viewport_size = self._get_viewport_size()
+            self.configure.viewport_size = self._get_viewport_size()
+            return
 
         self.configure.viewport_size = viewport_size
         try:

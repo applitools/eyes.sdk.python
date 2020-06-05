@@ -1,6 +1,8 @@
 ## [vNext]
 ## Fixed
 - Error for using EDGE is thrown with no reason - Python [Trello 1873](https://trello.com/c/DRavDAzS)
+### Added
+- Supported rendering on ios simulators. [Trello 1872](https://trello.com/c/bykk2rzB)
 
 ## [4.2.1] - 2020-05-27
 ## Fixed

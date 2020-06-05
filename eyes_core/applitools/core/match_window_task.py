@@ -9,7 +9,7 @@ from applitools.common.geometry import Point, Region, AccessibilityRegion
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.utils import datetime_utils, image_utils
-from applitools.common.visual_grid import VisualGridSelector
+from applitools.common.ultrafastgrid import VisualGridSelector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
 from .fluent import CheckSettings, GetFloatingRegion, GetRegion, GetAccessibilityRegion
