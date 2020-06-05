@@ -1,4 +1,4 @@
-## [vNext]
+## [4.3.0] - 2020-06-05
 ## Fixed
 - Error for using EDGE is thrown with no reason - Python [Trello 1873](https://trello.com/c/DRavDAzS)
 ### Added
