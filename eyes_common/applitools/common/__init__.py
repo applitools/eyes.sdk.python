@@ -51,8 +51,8 @@ from .ultrafastgrid.config import (  # noqa
     ChromeEmulationInfo,
     DeviceName,
     EmulationDevice,
-    RenderBrowserInfo,
     DesktopBrowserInfo,
+    RenderBrowserInfo,
     ScreenOrientation,
 )
 from .ultrafastgrid.render import (  # noqa
@@ -83,9 +83,9 @@ __all__ = (
         "StitchMode",
         "ScaleProvider",
         "ChromeEmulationInfo",
+        "DesktopBrowserInfo",
         "DeviceName",
         "EmulationDevice",
-        "RenderBrowserInfo",
         "ScreenOrientation",
         "RenderInfo",
         "RenderingInfo",

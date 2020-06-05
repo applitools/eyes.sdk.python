@@ -129,54 +129,21 @@ class EmulationDevice(EmulationBaseInfo):
     device_name = attr.ib(init=False, default=None)  # type: DeviceName
 
 
-@attr.s(hash=True, init=False)
-class DesktopBrowserInfo(IRenderBrowserInfo):
+@attr.s(hash=True)
+class RenderBrowserInfo(IRenderBrowserInfo):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]  # type: ignore
     browser_type = attr.ib(
-        default=BrowserType.CHROME, type=BrowserType
+        default=BrowserType.CHROME,
+        converter=attr.converters.optional(BrowserType),
+        type=BrowserType,
     )  # type: BrowserType
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     emulation_info = attr.ib(
         default=None, repr=False
     )  # type: Optional[EmulationBaseInfo]
     ios_device_info = attr.ib(default=None, type=IosDeviceInfo)
-    # TODO: add initialization with width and height for viewport_size
-
-    @overload
-    def __init__(self, viewport_size, browser_type, baseline_env_name):
-        # type: (Union[RectangleSize,Dict],Union[BrowserType,Text],Optional[Text])->None
-        pass
-
-    @overload
-    def __init__(self, ios_device_info, baseline_env_name):
-        # type: (IosDeviceInfo, Optional[Text]) -> None
-        pass
-
-    @overload
-    def __init__(self, emulation_info, baseline_env_name):
-        # type: (ChromeEmulationInfo, Optional[Text]) -> None
-        pass
-
-    def __init__(
-        self,
-        viewport_size=None,
-        browser_type=None,
-        baseline_env_name=None,
-        emulation_info=None,
-        ios_device_info=None,
-    ):
-        self.viewport_size = viewport_size
-        self.browser_type = browser_type
-        self.baseline_env_name = baseline_env_name
-        self.emulation_info = emulation_info
-        self.ios_device_info = ios_device_info
-
-        if self.viewport_size:
-            self.viewport_size = RectangleSize.from_(self.viewport_size)
-        if isinstance(self.browser_type, basestring):
-            self.browser_type = BrowserType(browser_type)
 
     @property
     def width(self):
@@ -218,5 +185,42 @@ class DesktopBrowserInfo(IRenderBrowserInfo):
         return self.browser_type.value if self.browser_type else None
 
 
-class RenderBrowserInfo(DesktopBrowserInfo):
-    pass
+class DesktopBrowserInfo(RenderBrowserInfo):
+    @overload
+    def __init__(self, width, height, browser_type):
+        # type: (int, int, Union[BrowserType,Text])->None
+        pass
+
+    @overload
+    def __init__(self, width, height, browser_type, baseline_env_name):
+        # type: (int, int, Union[BrowserType,Text], Text)->None
+        pass
+
+    @overload
+    def __init__(self, viewport_size, browser_type):
+        # type: (Union[Dict, RectangleSize], Union[BrowserType,Text])->None
+        pass
+
+    @overload
+    def __init__(self, viewport_size, browser_type, baseline_env_name):
+        # type: (Union[Dict, RectangleSize], Union[BrowserType,Text], Text)->None
+        pass
+
+    def __init__(self, *args):
+        baseline_env_name = None
+        if isinstance(args[0], int) and isinstance(args[1], int):
+            viewport_size = RectangleSize(args[0], args[1])
+            browser_type = args[2]
+            if len(args) == 4:
+                baseline_env_name = args[3]
+        elif isinstance(args[0], RectangleSize) or isinstance(args[0], dict):
+            viewport_size = args[0]
+            browser_type = args[1]
+            if len(args) == 3:
+                baseline_env_name = args[2]
+        else:
+            raise TypeError("Unsupported parameters")
+
+        super(DesktopBrowserInfo, self).__init__(
+            viewport_size, browser_type, baseline_env_name,
+        )
