@@ -12,7 +12,7 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if TYPE_CHECKING:
-    from .ultrafastgrid import IRenderBrowserInfo
+    from .ultrafastgrid import RenderBrowserInfo
 
 
 __all__ = ("TestResults", "TestResultsSummary", "TestResultContainer")
@@ -212,7 +212,7 @@ class TestResults(object):
 @attr.s(repr=False, str=False)
 class TestResultContainer(object):
     test_results = attr.ib()  # type: TestResults
-    browser_info = attr.ib()  # type: Optional[IRenderBrowserInfo]
+    browser_info = attr.ib()  # type: Optional[RenderBrowserInfo]
     exception = attr.ib()  # type: Optional[Exception]
 
     def __str__(self):

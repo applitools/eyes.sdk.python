@@ -11,7 +11,6 @@ from applitools.common import (
 )
 from applitools.common.ultrafastgrid import (
     EmulationDevice,
-    IRenderBrowserInfo,
     RenderRequest,
     RunningRender,
     VGResource,
@@ -42,7 +41,7 @@ class EyesConnector(EyesBase):
         if browser_info.emulation_info:
             self.device = browser_info.emulation_info.device_name
         self.device_size = None
-        self._browser_info = browser_info  # type: IRenderBrowserInfo
+        self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
