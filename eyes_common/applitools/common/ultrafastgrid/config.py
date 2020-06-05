@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Text, Union
+from typing import Optional, Text, Union, overload, Dict
 
 import attr
 
@@ -80,7 +80,7 @@ class IosScreenOrientation(Enum):
 
 
 @attr.s(hash=True, init=False)
-class IosDeviceInfo(object):
+class IosDeviceInfo(IRenderBrowserInfo):
     device_name = attr.ib(
         type=IosDeviceName, metadata={JsonInclude.NAME: "name"}
     )  # type: IosDeviceName
@@ -98,7 +98,7 @@ class IosDeviceInfo(object):
         self.screen_orientation = screen_orientation
 
 
-@attr.s(hash=True)
+@attr.s(hash=True, init=False)
 class ChromeEmulationInfo(EmulationBaseInfo):
     device_name = attr.ib(
         converter=DeviceName, metadata={JsonInclude.NON_NONE: True}
@@ -106,6 +106,15 @@ class ChromeEmulationInfo(EmulationBaseInfo):
     screen_orientation = attr.ib(
         converter=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
     )  # type: ScreenOrientation
+
+    def __init__(self, device_name, screen_orientation=None):
+        # type: (Union[DeviceName,Text], Union[ScreenOrientation, Text, None]) -> None
+        if isinstance(device_name, basestring):
+            device_name = DeviceName(device_name)
+        if isinstance(screen_orientation, basestring):
+            screen_orientation = ScreenOrientation(screen_orientation)
+        self.device_name = device_name
+        self.screen_orientation = screen_orientation
 
 
 @attr.s(hash=True)
@@ -120,18 +129,54 @@ class EmulationDevice(EmulationBaseInfo):
     device_name = attr.ib(init=False, default=None)  # type: DeviceName
 
 
-@attr.s(hash=True)
-class RenderBrowserInfo(IRenderBrowserInfo):
+@attr.s(hash=True, init=False)
+class DesktopBrowserInfo(IRenderBrowserInfo):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]  # type: ignore
-    browser_type = attr.ib(default=BrowserType.CHROME)  # type: BrowserType
+    browser_type = attr.ib(
+        default=BrowserType.CHROME, type=BrowserType
+    )  # type: BrowserType
     baseline_env_name = attr.ib(default=None)  # type: Optional[Text]
     emulation_info = attr.ib(
         default=None, repr=False
     )  # type: Optional[EmulationBaseInfo]
     ios_device_info = attr.ib(default=None, type=IosDeviceInfo)
     # TODO: add initialization with width and height for viewport_size
+
+    @overload
+    def __init__(self, viewport_size, browser_type, baseline_env_name):
+        # type: (Union[RectangleSize,Dict],Union[BrowserType,Text],Optional[Text])->None
+        pass
+
+    @overload
+    def __init__(self, ios_device_info, baseline_env_name):
+        # type: (IosDeviceInfo, Optional[Text]) -> None
+        pass
+
+    @overload
+    def __init__(self, emulation_info, baseline_env_name):
+        # type: (ChromeEmulationInfo, Optional[Text]) -> None
+        pass
+
+    def __init__(
+        self,
+        viewport_size=None,
+        browser_type=None,
+        baseline_env_name=None,
+        emulation_info=None,
+        ios_device_info=None,
+    ):
+        self.viewport_size = viewport_size
+        self.browser_type = browser_type
+        self.baseline_env_name = baseline_env_name
+        self.emulation_info = emulation_info
+        self.ios_device_info = ios_device_info
+
+        if self.viewport_size:
+            self.viewport_size = RectangleSize.from_(self.viewport_size)
+        if isinstance(self.browser_type, basestring):
+            self.browser_type = BrowserType(browser_type)
 
     @property
     def width(self):
@@ -173,5 +218,5 @@ class RenderBrowserInfo(IRenderBrowserInfo):
         return self.browser_type.value
 
 
-class DesktopBrowserInfo(RenderBrowserInfo):
+class RenderBrowserInfo(DesktopBrowserInfo):
     pass

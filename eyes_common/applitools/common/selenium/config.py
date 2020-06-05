@@ -9,7 +9,9 @@ from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
     ScreenOrientation,
-    IRenderBrowserInfo,
+    EmulationBaseInfo,
+    IosDeviceInfo,
+    DesktopBrowserInfo,
 )
 
 from .misc import BrowserType, StitchMode
@@ -35,7 +37,7 @@ class Configuration(ConfigurationBase):
     # Rendering Configuration
     is_raise_exception_on = False  # type: bool
     is_rendering_config = False  # type: bool
-    _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
+    _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -64,7 +66,17 @@ class Configuration(ConfigurationBase):
 
     @overload  # noqa
     def add_browser(self, render_info):
-        # type: (IRenderBrowserInfo) -> Configuration
+        # type: (DesktopBrowserInfo) -> Configuration
+        pass
+
+    @overload  # noqa
+    def add_browser(self, render_info):
+        # type: (IosDeviceInfo) -> Configuration
+        pass
+
+    @overload  # noqa
+    def add_browser(self, render_info):
+        # type: (ChromeEmulationInfo) -> Configuration
         pass
 
     @overload  # noqa
@@ -73,8 +85,12 @@ class Configuration(ConfigurationBase):
         pass
 
     def add_browser(self, *args):  # noqa
-        if isinstance(args[0], IRenderBrowserInfo):
+        if isinstance(args[0], RenderBrowserInfo):
             self._browsers_info.append(args[0])
+        if isinstance(args[0], IosDeviceInfo):
+            self._browsers_info.append(RenderBrowserInfo(ios_device_info=args[0]))
+        elif isinstance(args[0], EmulationBaseInfo):
+            self._browsers_info.append(RenderBrowserInfo(emulation_info=args[0]))
         elif (
             isinstance(args[0], int)
             and isinstance(args[1], int)
@@ -89,16 +105,35 @@ class Configuration(ConfigurationBase):
             raise ValueError("Unsupported parameters")
         return self
 
+    @overload  # noqa
+    def add_browsers(self, *render_info):
+        # type: (*DesktopBrowserInfo) -> Configuration
+        pass
+
+    @overload  # noqa
+    def add_browsers(self, *ios_info):
+        # type: (*IosDeviceInfo) -> Configuration
+        pass
+
+    @overload  # noqa
+    def add_browsers(self, emulation_info):
+        # type: (*EmulationBaseInfo) -> Configuration
+        pass
+
+    def add_browsers(self, *args):
+        for render_info in args:
+            self.add_browser(render_info)
+        return self
+
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
         # type: (DeviceName, ScreenOrientation) -> Configuration
         argument_guard.not_none(device_name)
-        emu = ChromeEmulationInfo(device_name, orientation)
-        self.add_browser(RenderBrowserInfo(emulation_info=emu))
+        self.add_browser(ChromeEmulationInfo(device_name, orientation))
         return self
 
     @property
     def browsers_info(self):
-        # type: () -> List[IRenderBrowserInfo]
+        # type: () -> List[RenderBrowserInfo]
         if self._browsers_info:
             return self._browsers_info
         if self.viewport_size:
