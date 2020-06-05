@@ -17,7 +17,7 @@ from applitools.common.ultrafastgrid import (
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
-    from applitools.common.visual_grid import DeviceName
+    from applitools.common.ultrafastgrid import DeviceName
 
 __all__ = ("Configuration",)
 

@@ -4,13 +4,12 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     EyesError,
-    ImageMatchSettings,
     RectangleSize,
     Region,
     VisualGridSelector,
     logger,
 )
-from applitools.common.visual_grid import (
+from applitools.common.ultrafastgrid import (
     EmulationDevice,
     IRenderBrowserInfo,
     RenderRequest,
@@ -25,16 +24,19 @@ from applitools.selenium.__version__ import __version__
 if typing.TYPE_CHECKING:
     from typing import Text, List, Dict, Any, Optional
     from requests import Response
-    from applitools.common.visual_grid import RenderingInfo
+    from applitools.common.ultrafastgrid import (
+        RenderingInfo,
+        RenderBrowserInfo,
+        RenderStatusResults,
+    )
     from applitools.common.match import MatchResult
     from applitools.common.test_results import TestResults
-    from applitools.common.visual_grid import RenderStatusResults
     from applitools.selenium.fluent import SeleniumCheckSettings
 
 
 class EyesConnector(EyesBase):
     def __init__(self, browser_info, config, ua_string, rendering_info):
-        # type: (DesktopBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
+        # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
         super(EyesConnector, self).__init__()
         self.device = None
         if browser_info.emulation_info:

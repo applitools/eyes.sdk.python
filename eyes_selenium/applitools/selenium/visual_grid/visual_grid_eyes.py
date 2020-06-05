@@ -13,7 +13,7 @@ from applitools.common import (
     RectangleSize,
 )
 from applitools.common.utils import argument_guard
-from applitools.common.visual_grid import IRenderBrowserInfo, VisualGridSelector
+from applitools.common.ultrafastgrid import IRenderBrowserInfo, VisualGridSelector
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings

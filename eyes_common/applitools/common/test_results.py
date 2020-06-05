@@ -12,7 +12,7 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if TYPE_CHECKING:
-    from .visual_grid import IRenderBrowserInfo
+    from .ultrafastgrid import IRenderBrowserInfo
 
 
 __all__ = ("TestResults", "TestResultsSummary", "TestResultContainer")

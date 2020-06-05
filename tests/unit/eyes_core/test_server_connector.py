@@ -24,7 +24,7 @@ from applitools.common.server import SessionType
 from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
-from applitools.common.visual_grid import RenderingInfo
+from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.core import ServerConnector
 from applitools.core.server_connector import ClientSession
 
