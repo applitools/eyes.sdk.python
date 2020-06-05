@@ -11,6 +11,13 @@ from applitools.common import (
     TestResultContainer,
     TestResultsSummary,
 )
+from applitools.common.ultrafastgrid import (
+    IosDeviceInfo,
+    IosScreenOrientation,
+    IosDeviceName,
+    ChromeEmulationInfo,
+    DesktopBrowserInfo,
+)  # noqa
 from applitools.common.geometry import AccessibilityRegion
 from applitools.common.config import BatchInfo  # noqa
 from applitools.common.selenium import BrowserType, Configuration, StitchMode  # noqa
@@ -68,4 +75,9 @@ __all__ = (
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
     "AccessibilityRegion",
+    "IosDeviceInfo",
+    "IosScreenOrientation",
+    "IosDeviceName",
+    "ChromeEmulationInfo",
+    "DesktopBrowserInfo",
 )

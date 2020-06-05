@@ -381,12 +381,13 @@ class VisualGridEyes(object):
 
         if viewport_size is None:
             for render_bi in self.configure.browsers_info:
-                if not render_bi.emulation_info:
+                if not (render_bi.emulation_info or render_bi.ios_device_info):
                     viewport_size = RectangleSize(render_bi.width, render_bi.height)
                     break
 
         if viewport_size is None:
-            viewport_size = self._get_viewport_size()
+            self.configure.viewport_size = self._get_viewport_size()
+            return
 
         self.configure.viewport_size = viewport_size
         try:
