@@ -215,7 +215,7 @@ class DesktopBrowserInfo(IRenderBrowserInfo):
     def browser(self):
         if isinstance(self.ios_device_info, IosDeviceInfo):
             return "safari"
-        return self.browser_type.value
+        return self.browser_type.value if self.browser_type else None
 
 
 class RenderBrowserInfo(DesktopBrowserInfo):
