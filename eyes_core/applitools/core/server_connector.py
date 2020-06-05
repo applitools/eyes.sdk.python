@@ -23,7 +23,7 @@ from applitools.common.utils import (
     json_utils,
     urljoin,
 )
-from applitools.common.visual_grid import (
+from applitools.common.ultrafastgrid import (
     RenderingInfo,
     RenderRequest,
     RenderStatusResults,

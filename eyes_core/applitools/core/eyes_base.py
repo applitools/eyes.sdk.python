@@ -16,7 +16,7 @@ from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard
-from applitools.common.visual_grid import RenderingInfo
+from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
     FixedCutProvider,

@@ -23,7 +23,7 @@ from .region import (
 from applitools.common.accessibility import AccessibilityRegionType
 
 if TYPE_CHECKING:
-    from applitools.common.visual_grid import VisualGridSelector
+    from applitools.common.ultrafastgrid import VisualGridSelector
     from applitools.common.utils.custom_types import (
         AnyWebElement,
         FrameNameOrId,

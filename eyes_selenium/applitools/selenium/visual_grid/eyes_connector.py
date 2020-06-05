@@ -4,15 +4,13 @@ from applitools.common import (
     AppEnvironment,
     AppOutput,
     EyesError,
-    ImageMatchSettings,
     RectangleSize,
     Region,
     VisualGridSelector,
     logger,
 )
-from applitools.common.visual_grid import (
+from applitools.common.ultrafastgrid import (
     EmulationDevice,
-    RenderBrowserInfo,
     RenderRequest,
     RunningRender,
     VGResource,
@@ -25,10 +23,13 @@ from applitools.selenium.__version__ import __version__
 if typing.TYPE_CHECKING:
     from typing import Text, List, Dict, Any, Optional
     from requests import Response
-    from applitools.common.visual_grid import RenderingInfo
+    from applitools.common.ultrafastgrid import (
+        RenderingInfo,
+        RenderBrowserInfo,
+        RenderStatusResults,
+    )
     from applitools.common.match import MatchResult
     from applitools.common.test_results import TestResults
-    from applitools.common.visual_grid import RenderStatusResults
     from applitools.selenium.fluent import SeleniumCheckSettings
 
 

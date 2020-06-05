@@ -10,8 +10,19 @@ from applitools.common import (
     MatchLevel,
     SessionType,
     StitchMode,
+    RectangleSize,
 )
 from applitools.common.selenium import Configuration as SeleniumConfiguration
+from applitools.common.ultrafastgrid import (
+    IosDeviceInfo,
+    IosDeviceName,
+    IosScreenOrientation,
+    ChromeEmulationInfo,
+    DeviceName,
+    ScreenOrientation,
+    BrowserType,
+    RenderBrowserInfo,
+)
 
 
 def test_config_envs():
@@ -103,3 +114,48 @@ def test_set_value_to_sel_conf():
     assert conf.stitch_mode == StitchMode.CSS
     assert conf.hide_scrollbars == True
     assert conf.hide_caret == True
+
+
+def test_add_browser():
+    conf = SeleniumConfiguration().add_browser(IosDeviceInfo("iPhone X", "portrait"))
+    assert conf.browsers_info == [
+        RenderBrowserInfo(
+            ios_device_info=IosDeviceInfo(
+                IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT
+            )
+        )
+    ]
+
+    conf = SeleniumConfiguration().add_browser(
+        ChromeEmulationInfo("iPhone 4", "portrait")
+    )
+    assert conf.browsers_info == [
+        RenderBrowserInfo(
+            emulation_info=ChromeEmulationInfo(
+                DeviceName.iPhone_4, ScreenOrientation.PORTRAIT
+            )
+        )
+    ]
+
+    conf = SeleniumConfiguration().add_browser(400, 600, BrowserType.EDGE_CHROMIUM)
+    assert conf.browsers_info == [
+        RenderBrowserInfo(RectangleSize(400, 600), BrowserType.EDGE_CHROMIUM)
+    ]
+
+
+def test_add_browsers():
+    conf = SeleniumConfiguration().add_browsers(
+        IosDeviceInfo("iPhone X", "portrait"), IosDeviceInfo("iPhone 11", "portrait"),
+    )
+    assert conf.browsers_info == [
+        RenderBrowserInfo(
+            ios_device_info=IosDeviceInfo(
+                IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT
+            )
+        ),
+        RenderBrowserInfo(
+            ios_device_info=IosDeviceInfo(
+                IosDeviceName.iPhone_11, IosScreenOrientation.PORTRAIT
+            )
+        ),
+    ]
