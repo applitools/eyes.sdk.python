@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from applitools.common import (
@@ -57,15 +59,16 @@ def test_render_request_serialize(browser_type):
             dom=dom,
             resources=request_resources,
             render_info=r_info,
-            browser_name=browser_type,
-            platform="linux",
+            browser_name=browser_type.value,
+            platform_name="linux",
             script_hooks=dict(),
             selectors_to_find_regions_for=[],
             send_dom=False,
         )
     ]
-    RESULT_PATTERN = '[{"agentId": "my-agent-id", "browser": {"name": "%s", "platform": "linux"}, "dom": {"hash": "a67486a8bc9ba45f878e5b0d8ff9bc68ec6ed9db0382709751327d1793898e16", "hashFormat": "sha256"}, "renderId": null, "renderInfo": {"height": 600, "sizeMode": "full-page", "width": 500}, "resources": {"url": {"contentType": "application/empty-response", "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "hashFormat": "sha256"}}, "scriptHooks": {}, "selectorsToFindRegionsFor": [], "sendDom": false, "url": "dom-url.com", "webhook": "some-webhook.com"}]'
-    assert RESULT_PATTERN % (browser_type.value) == json_utils.to_json(requests)
+    RESULT_PATTERN = '[{"agentId": "my-agent-id", "browser": {"name": "%s"}, "platform": {"name": "linux"}, "dom": {"hash": "a67486a8bc9ba45f878e5b0d8ff9bc68ec6ed9db0382709751327d1793898e16", "hashFormat": "sha256"}, "renderId": null, "renderInfo": {"height": 600, "sizeMode": "full-page", "width": 500}, "resources": {"url": {"contentType": "application/empty-response", "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "hashFormat": "sha256"}}, "scriptHooks": {}, "selectorsToFindRegionsFor": [], "sendDom": false, "url": "dom-url.com", "webhook": "some-webhook.com"}]'
+    RESULT_PATTERN %= browser_type.value
+    assert json.loads(RESULT_PATTERN) == json.loads(json_utils.to_json(requests))
 
 
 def test_running_session_serialization_and_deserialization():
