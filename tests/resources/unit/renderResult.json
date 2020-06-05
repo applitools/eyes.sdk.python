@@ -1,0 +1,33 @@
+[
+    {
+        "agentId": "my-agent-id",
+        "browser": {
+            "name": "%s"
+        },
+        "platform": {
+            "name": "linux"
+        },
+        "dom": {
+            "hash": "a67486a8bc9ba45f878e5b0d8ff9bc68ec6ed9db0382709751327d1793898e16",
+            "hashFormat": "sha256"
+        },
+        "renderId": null,
+        "renderInfo": {
+            "height": 600,
+            "sizeMode": "full-page",
+            "width": 500
+        },
+        "resources": {
+            "url": {
+                "contentType": "application/empty-response",
+                "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "hashFormat": "sha256"
+            }
+        },
+        "scriptHooks": {},
+        "selectorsToFindRegionsFor": [],
+        "sendDom": false,
+        "url": "dom-url.com",
+        "webhook": "some-webhook.com"
+    }
+]
