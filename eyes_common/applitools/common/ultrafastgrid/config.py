@@ -15,10 +15,6 @@ class ScreenOrientation(Enum):
     LANDSCAPE = "landscape"
 
 
-class IRenderBrowserInfo(ABC):
-    pass
-
-
 @attr.s(hash=True, slots=True)
 class EmulationBaseInfo(ABC):
     screen_orientation = attr.ib()  # type: ScreenOrientation
@@ -80,7 +76,7 @@ class IosScreenOrientation(Enum):
 
 
 @attr.s(hash=True, init=False)
-class IosDeviceInfo(IRenderBrowserInfo):
+class IosDeviceInfo(object):
     device_name = attr.ib(
         type=IosDeviceName, metadata={JsonInclude.NAME: "name"}
     )  # type: IosDeviceName
@@ -130,7 +126,7 @@ class EmulationDevice(EmulationBaseInfo):
 
 
 @attr.s(hash=True)
-class RenderBrowserInfo(IRenderBrowserInfo):
+class RenderBrowserInfo(object):
     viewport_size = attr.ib(
         default=None, converter=attr.converters.optional(RectangleSize.from_)
     )  # type: Optional[RectangleSize]  # type: ignore
