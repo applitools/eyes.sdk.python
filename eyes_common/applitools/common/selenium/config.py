@@ -105,9 +105,9 @@ class Configuration(ConfigurationBase):
             raise ValueError("Unsupported parameters")
         return self
 
-    def add_browsers(self, *args):
+    def add_browsers(self, *renders_info):
         # type:(*Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo])->Configuration
-        for render_info in args:
+        for render_info in renders_info:
             self.add_browser(render_info)
         return self
 
