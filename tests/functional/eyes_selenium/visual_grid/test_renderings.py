@@ -2,8 +2,6 @@ from collections import defaultdict
 
 import pytest
 
-from applitools.common import RectangleSize, logger, ScreenOrientation
-from applitools.common.ultrafastgrid import IosDeviceInfo
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
@@ -14,6 +12,12 @@ from applitools.selenium import (
     StitchMode,
     Target,
     VisualGridRunner,
+    RectangleSize,
+    logger,
+    ScreenOrientation,
+    IosDeviceInfo,
+    IosDeviceName,
+    IosScreenOrientation,
 )
 from tests.utils import get_session_results
 
@@ -191,7 +195,24 @@ def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner)
     assert len(all_results) == 9
 
 
-def test_rendering_ios_simulator(driver, eyes, batch_info, vg_runner):
+def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Mobile Web Happy Flow",
+            batch=batch_info,
+        ).add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_XR, IosScreenOrientation.LANDSCAPE_LEFT)
+        )
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()
+
+
+def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(

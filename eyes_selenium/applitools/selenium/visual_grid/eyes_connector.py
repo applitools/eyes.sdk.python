@@ -40,6 +40,8 @@ class EyesConnector(EyesBase):
         self.device = None
         if browser_info.emulation_info:
             self.device = browser_info.emulation_info.device_name
+        elif browser_info.ios_device_info:
+            self.device = browser_info.ios_device_info.device_name
         self.device_size = None
         self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
@@ -129,8 +131,6 @@ class EyesConnector(EyesBase):
         # TODO: test with render_status prop
         status = list(self._render_statuses.values())[0]
         app_env = AppEnvironment(
-            os=self.configure.host_os,
-            hosting_app=self.configure.host_app,
             display_size=status.device_size,
             inferred="useragent: {}".format(status.user_agent),
             device_info=self.device,

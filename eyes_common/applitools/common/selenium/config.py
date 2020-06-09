@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, overload
+from typing import TYPE_CHECKING, List, overload, Union
 
 import attr
 
@@ -65,17 +65,17 @@ class Configuration(ConfigurationBase):
         return self
 
     @overload  # noqa
-    def add_browser(self, render_info):
+    def add_browser(self, desktop_browser_info):
         # type: (DesktopBrowserInfo) -> Configuration
         pass
 
     @overload  # noqa
-    def add_browser(self, render_info):
+    def add_browser(self, ios_device_info):
         # type: (IosDeviceInfo) -> Configuration
         pass
 
     @overload  # noqa
-    def add_browser(self, render_info):
+    def add_browser(self, chrome_emulation_info):
         # type: (ChromeEmulationInfo) -> Configuration
         pass
 
@@ -105,23 +105,9 @@ class Configuration(ConfigurationBase):
             raise ValueError("Unsupported parameters")
         return self
 
-    @overload  # noqa
-    def add_browsers(self, *render_info):
-        # type: (*DesktopBrowserInfo) -> Configuration
-        pass
-
-    @overload  # noqa
-    def add_browsers(self, *ios_info):
-        # type: (*IosDeviceInfo) -> Configuration
-        pass
-
-    @overload  # noqa
-    def add_browsers(self, emulation_info):
-        # type: (*ChromeEmulationInfo) -> Configuration
-        pass
-
-    def add_browsers(self, *args):
-        for render_info in args:
+    def add_browsers(self, *renders_info):
+        # type:(*Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo])->Configuration
+        for render_info in renders_info:
             self.add_browser(render_info)
         return self
 
