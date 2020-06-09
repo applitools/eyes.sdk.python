@@ -40,6 +40,8 @@ class EyesConnector(EyesBase):
         self.device = None
         if browser_info.emulation_info:
             self.device = browser_info.emulation_info.device_name
+        elif browser_info.ios_device_info:
+            self.device = browser_info.ios_device_info.device_name
         self.device_size = None
         self._browser_info = browser_info  # type: RenderBrowserInfo
         self._current_uuid = None
