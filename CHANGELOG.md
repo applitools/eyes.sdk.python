@@ -1,11 +1,15 @@
+##[vNext]
+### Updated
+- Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
+
 ## [4.3.0] - 2020-06-05
-## Fixed
+### Fixed
 - Error for using EDGE is thrown with no reason - Python [Trello 1873](https://trello.com/c/DRavDAzS)
 ### Added
 - Supported rendering on ios simulators. [Trello 1872](https://trello.com/c/bykk2rzB)
 
 ## [4.2.1] - 2020-05-27
-## Fixed
+### Fixed
 - dir(eyes_driver) and dir(eyes_element) call on Python 2 raise an error [Trello 1879](https://trello.com/c/5qjuqVw9) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
 - element.find_elements call raise an error [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #174](https://github.com/applitools/eyes.sdk.python/pull/174)
 - All New tests was marked as Unresolved [Trello 1841](https://trello.com/c/boxDvmMW) [GH #176](https://github.com/applitools/eyes.sdk.python/pull/176)
