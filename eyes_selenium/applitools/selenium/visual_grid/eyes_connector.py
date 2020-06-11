@@ -10,7 +10,6 @@ from applitools.common import (
     logger,
 )
 from applitools.common.ultrafastgrid import (
-    EmulationDevice,
     RenderRequest,
     RunningRender,
     VGResource,

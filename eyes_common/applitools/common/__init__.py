@@ -55,7 +55,6 @@ from .ultrafastgrid.config import (  # noqa
 )
 from .ultrafastgrid.render_browser_info import (
     ChromeEmulationInfo,
-    EmulationDevice,
     DesktopBrowserInfo,
     RenderBrowserInfo,
 )
@@ -89,7 +88,6 @@ __all__ = (
         "ChromeEmulationInfo",
         "DesktopBrowserInfo",
         "DeviceName",
-        "EmulationDevice",
         "ScreenOrientation",
         "RenderInfo",
         "RenderingInfo",
