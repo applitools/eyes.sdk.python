@@ -48,14 +48,18 @@ from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
 from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
 from .ultrafastgrid.config import (  # noqa
-    ChromeEmulationInfo,
     DeviceName,
+    ScreenOrientation,
+    IosDeviceName,
+    IosScreenOrientation,
+)
+from .ultrafastgrid.render_browser_info import (
+    ChromeEmulationInfo,
     EmulationDevice,
     DesktopBrowserInfo,
     RenderBrowserInfo,
-    ScreenOrientation,
 )
-from .ultrafastgrid.render import (  # noqa
+from .ultrafastgrid.render_request import (  # noqa
     RenderInfo,
     RenderingInfo,
     RenderRequest,

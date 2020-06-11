@@ -16,7 +16,7 @@ from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
-    from .ultrafastgrid import EmulationDevice
+    from .ultrafastgrid.render_browser_info import IRenderBrowserinfo
 
 __all__ = (
     "Point",
@@ -92,7 +92,7 @@ class RectangleSize(DictAccessMixin):
 
     @classmethod
     def from_(cls, obj):
-        # type: (Union[dict,Image,EmulationDevice,RectangleSize])->RectangleSize
+        # type: (Union[dict,Image,IRenderBrowserinfo,RectangleSize])->RectangleSize
         """Creates a new RectangleSize instance."""
         if isinstance(obj, dict):
             return cls(width=obj["width"], height=obj["height"])

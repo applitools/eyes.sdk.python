@@ -8,6 +8,7 @@ from applitools.common.utils import argument_guard
 from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
+    IRenderBrowserInfo,
     ScreenOrientation,
     EmulationBaseInfo,
     IosDeviceInfo,
@@ -37,7 +38,7 @@ class Configuration(ConfigurationBase):
     # Rendering Configuration
     is_raise_exception_on = False  # type: bool
     is_rendering_config = False  # type: bool
-    _browsers_info = attr.ib(init=False, factory=list)  # type: List[RenderBrowserInfo]
+    _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -85,21 +86,15 @@ class Configuration(ConfigurationBase):
         pass
 
     def add_browser(self, *args):  # noqa
-        if isinstance(args[0], RenderBrowserInfo):
+        if isinstance(args[0], IRenderBrowserInfo):
             self._browsers_info.append(args[0])
-        if isinstance(args[0], IosDeviceInfo):
-            self._browsers_info.append(RenderBrowserInfo(ios_device_info=args[0]))
-        elif isinstance(args[0], EmulationBaseInfo):
-            self._browsers_info.append(RenderBrowserInfo(emulation_info=args[0]))
         elif (
             isinstance(args[0], int)
             and isinstance(args[1], int)
             and isinstance(args[2], BrowserType)
         ):
             self._browsers_info.append(
-                RenderBrowserInfo(
-                    RectangleSize(args[0], args[1]), args[2], self.baseline_env_name
-                )
+                DesktopBrowserInfo(args[0], args[1], args[2], self.baseline_env_name)
             )
         else:
             raise ValueError("Unsupported parameters")
@@ -123,7 +118,7 @@ class Configuration(ConfigurationBase):
         if self._browsers_info:
             return self._browsers_info
         if self.viewport_size:
-            browser_info = RenderBrowserInfo(
+            browser_info = DesktopBrowserInfo(
                 viewport_size=self.viewport_size,
                 browser_type=BrowserType.CHROME,
                 baseline_env_name=self.baseline_env_name,
