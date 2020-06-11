@@ -64,18 +64,6 @@ class EmulationBaseInfo(IRenderBrowserInfo, ABC):
         return 0
 
 
-@attr.s(hash=True)
-class EmulationDevice(EmulationBaseInfo):
-    width = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: int
-    device_scale_factor = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: float
-    is_mobile = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
-    screen_orientation = attr.ib(
-        metadata={JsonInclude.THIS: True}
-    )  # type: ScreenOrientation
-    device_name = attr.ib(init=False, default=None)  # type: DeviceName
-
-
 @attr.s(init=False)
 class ChromeEmulationInfo(EmulationBaseInfo):
     device_name = attr.ib(
