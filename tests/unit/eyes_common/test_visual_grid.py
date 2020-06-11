@@ -40,19 +40,20 @@ def test_ios_device_info():
 
 
 def test_desktop_browser_info():
-    dri = DesktopBrowserInfo(500, 500, BrowserType.SAFARI)
-    assert dri.viewport_size == RectangleSize(500, 500)
+    dri = DesktopBrowserInfo(500, 600)
+    assert dri.width == 500
+    assert dri.height == 600
+    assert dri.browser_type == BrowserType.CHROME
+    assert dri.baseline_env_name is None
+
+    dri = DesktopBrowserInfo(500, 600, BrowserType.SAFARI)
+    assert dri.width == 500
+    assert dri.height == 600
     assert dri.browser_type == BrowserType.SAFARI
+    assert dri.baseline_env_name is None
 
-    dri = DesktopBrowserInfo(500, 500, BrowserType.SAFARI, "base env")
-    assert dri.baseline_env_name == "base env"
-
-    dri = DesktopBrowserInfo(RectangleSize(500, 500), BrowserType.SAFARI, "base env")
-    assert dri.viewport_size == RectangleSize(500, 500)
-    assert dri.browser_type == BrowserType.SAFARI
-    assert dri.baseline_env_name == "base env"
-
-    dri = DesktopBrowserInfo(dict(width=500, height=500), "safari-0", "base env")
-    assert dri.viewport_size == RectangleSize(500, 500)
+    dri = DesktopBrowserInfo(500, 700, BrowserType.SAFARI, "base env")
+    assert dri.width == 500
+    assert dri.height == 700
     assert dri.browser_type == BrowserType.SAFARI
     assert dri.baseline_env_name == "base env"
