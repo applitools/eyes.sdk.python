@@ -53,15 +53,15 @@ class EyesConnector(EyesBase):
         # type: (Configuration) -> None
         """Starts a new test without setting the viewport size of the AUT."""
         logger.info(
-            "opening EyesConnector with viewport size: {}x{}".format(
-                self._browser_info.width, self._browser_info.height,
+            "opening EyesConnector with viewport size: {}".format(
+                self._browser_info.viewport_size
             )
         )
         self._config = config.clone()
         if self.device_name and self.render_status.device_size:
             self._config.viewport_size = self.render_status.device_size
         else:
-            self._config.viewport_size = RectangleSize.from_(self._browser_info)
+            self._config.viewport_size = self._browser_info.viewport_size
 
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
