@@ -14,6 +14,7 @@ from applitools.common.ultrafastgrid import (
     RenderRequest,
     RunningRender,
     VGResource,
+    IRenderBrowserInfo,
 )
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 from applitools.core.capture import AppOutputWithScreenshot
@@ -37,13 +38,8 @@ class EyesConnector(EyesBase):
     def __init__(self, browser_info, config, ua_string, rendering_info):
         # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
         super(EyesConnector, self).__init__()
-        self.device = None
-        if browser_info.emulation_info:
-            self.device = browser_info.emulation_info.device_name
-        elif browser_info.ios_device_info:
-            self.device = browser_info.ios_device_info.device_name
-        self.device_size = None
-        self._browser_info = browser_info  # type: RenderBrowserInfo
+        self.device_name = getattr(browser_info, "device_name", None)
+        self._browser_info = browser_info  # type: IRenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
@@ -57,20 +53,15 @@ class EyesConnector(EyesBase):
         # type: (Configuration) -> None
         """Starts a new test without setting the viewport size of the AUT."""
         logger.info(
-            "opening EyesConnector with viewport size: {}".format(
-                self._browser_info.viewport_size
+            "opening EyesConnector with viewport size: {}x{}".format(
+                self._browser_info.width, self._browser_info.height,
             )
         )
         self._config = config.clone()
-        if self.device:
-            self._config.viewport_size = self.device_size
-        elif self._browser_info.viewport_size:
-            self._config.viewport_size = self._browser_info.viewport_size
+        if self.device_name and self.render_status.device_size:
+            self._config.viewport_size = self.render_status.device_size
         else:
-            # this means it's a emulationInfo
-            if isinstance(self._browser_info.emulation_info, EmulationDevice):
-                emu_device = self._browser_info.emulation_info
-                self._config.viewport_size = RectangleSize.from_(emu_device)
+            self._config.viewport_size = RectangleSize.from_(self._browser_info)
 
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
@@ -133,7 +124,7 @@ class EyesConnector(EyesBase):
         app_env = AppEnvironment(
             display_size=status.device_size,
             inferred="useragent: {}".format(status.user_agent),
-            device_info=self.device,
+            device_info=self.device_name,
         )
         return app_env
 

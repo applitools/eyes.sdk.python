@@ -75,9 +75,9 @@ __all__ = (
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
     "AccessibilityRegion",
-    "IosDeviceInfo",
     "IosScreenOrientation",
     "IosDeviceName",
+    "IosDeviceInfo",
     "ChromeEmulationInfo",
     "DesktopBrowserInfo",
 )
