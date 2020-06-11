@@ -64,7 +64,7 @@ class EmulationBaseInfo(IRenderBrowserInfo, ABC):
         return 0
 
 
-@attr.s(init=False)
+@attr.s(hash=True, init=False)
 class ChromeEmulationInfo(EmulationBaseInfo):
     device_name = attr.ib(
         type=DeviceName, metadata={JsonInclude.THIS: True}
@@ -170,7 +170,7 @@ class RenderBrowserInfo(IRenderBrowserInfo):
         return self.browser_type.value if self.browser_type else None
 
 
-@attr.s(init=False)
+@attr.s(hash=True, init=False)
 class DesktopBrowserInfo(IRenderBrowserInfo):
     _width = attr.ib()  # type: int
     _height = attr.ib()  # type: int
