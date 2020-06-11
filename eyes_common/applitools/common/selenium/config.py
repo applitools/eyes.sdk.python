@@ -119,8 +119,8 @@ class Configuration(ConfigurationBase):
             return self._browsers_info
         if self.viewport_size:
             browser_info = DesktopBrowserInfo(
-                width=self.viewport_size.width,
-                height=self.viewport_size.height,
+                width=self.viewport_size["width"],
+                height=self.viewport_size["height"],
                 browser_type=BrowserType.CHROME,
                 baseline_env_name=self.baseline_env_name,
             )
