@@ -174,7 +174,7 @@ class RenderBrowserInfo(IRenderBrowserInfo):
 class DesktopBrowserInfo(IRenderBrowserInfo):
     _width = attr.ib()  # type: int
     _height = attr.ib()  # type: int
-    browser_type = attr.ib(type=BrowserType,)  # type: BrowserType
+    browser_type = attr.ib(type=BrowserType)  # type: BrowserType
     baseline_env_name = attr.ib()  # type: Optional[Text]
 
     def __init__(

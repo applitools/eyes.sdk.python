@@ -62,7 +62,9 @@ class EyesConnector(EyesBase):
         else:
             self._config.viewport_size = self._browser_info.viewport_size
 
-        self._config.baseline_env_name = self._browser_info.baseline_env_name
+        self._config.baseline_env_name = getattr(
+            self._browser_info, "baseline_env_name", None
+        )
         self._open_base()
 
     def render_put_resource(self, running_render, resource):
@@ -118,11 +120,9 @@ class EyesConnector(EyesBase):
     @property
     def _environment(self):
         # type: () -> AppEnvironment
-        # TODO: test with render_status prop
-        status = list(self._render_statuses.values())[0]
         app_env = AppEnvironment(
-            display_size=status.device_size,
-            inferred="useragent: {}".format(status.user_agent),
+            display_size=self.render_status.device_size,
+            inferred="useragent: {}".format(self.render_status.user_agent),
             device_info=self.device_name,
         )
         return app_env
@@ -161,6 +161,7 @@ class EyesConnector(EyesBase):
 
     def render_status_for_task(self, uuid, status):
         # type: (str, RenderStatusResults) -> None
+        self._current_uuid = uuid
         self._render_statuses[uuid] = status
 
     @property
