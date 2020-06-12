@@ -47,6 +47,11 @@ class IRenderBrowserInfo(ABC):
         # type: () -> RectangleSize
         return RectangleSize(self.width, self.height)
 
+    @property
+    def baseline_env_name(self):
+        # type: () -> Optional[Text]
+        return self._baseline_env_name
+
 
 @attr.s
 class EmulationBaseInfo(IRenderBrowserInfo, ABC):
@@ -66,21 +71,23 @@ class EmulationBaseInfo(IRenderBrowserInfo, ABC):
 
 @attr.s(hash=True, init=False)
 class ChromeEmulationInfo(EmulationBaseInfo):
-    device_name = attr.ib(
-        type=DeviceName, metadata={JsonInclude.THIS: True}
-    )  # type: DeviceName
+    device_name = attr.ib(type=DeviceName, metadata={JsonInclude.THIS: True})
     screen_orientation = attr.ib(
         type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
-    )  # type: ScreenOrientation
+    )
 
-    def __init__(self, device_name, screen_orientation=ScreenOrientation.PORTRAIT):
-        # type: (Union[DeviceName,Text], Union[ScreenOrientation, Text, None]) -> None
-        if isinstance(device_name, basestring):
-            device_name = DeviceName(device_name)
-        if isinstance(screen_orientation, basestring):
-            screen_orientation = ScreenOrientation(screen_orientation)
-        self.device_name = device_name  # type: DeviceName
-        self.screen_orientation = screen_orientation  # type: ScreenOrientation
+    def __init__(
+        self,
+        device_name,  # type: Union[DeviceName,Text]
+        screen_orientation=ScreenOrientation.PORTRAIT,  # type:Union[ScreenOrientation,Text] # noqa
+        baseline_env_name=None,  # type: Optional[Text]
+    ):
+        # type: (...) -> None
+        self.device_name = DeviceName(device_name)  # type: DeviceName
+        self.screen_orientation = ScreenOrientation(
+            screen_orientation
+        )  # type: ScreenOrientation
+        self._baseline_env_name = baseline_env_name  # type: Optional[Text]
 
     @property
     def browser(self):
@@ -94,21 +101,22 @@ class ChromeEmulationInfo(EmulationBaseInfo):
 
 @attr.s(hash=True, init=False)
 class IosDeviceInfo(EmulationBaseInfo):
-    device_name = attr.ib(
-        type=IosDeviceName, metadata={JsonInclude.NAME: "name"}
-    )  # type: IosDeviceName
+    device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NAME: "name"})
     screen_orientation = attr.ib(
         type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
-    )  # type: IosScreenOrientation
+    )
 
-    def __init__(self, device_name, screen_orientation=None):
-        # type: (Union[IosDeviceName,Text], Union[IosScreenOrientation, Text]) -> None
-        if isinstance(device_name, basestring):
-            device_name = IosDeviceName(device_name)
-        if isinstance(screen_orientation, basestring):
-            screen_orientation = IosScreenOrientation(screen_orientation)
-        self.device_name = device_name  # type: IosDeviceName
-        self.screen_orientation = screen_orientation  # type: IosScreenOrientation
+    def __init__(
+        self,
+        device_name,  # type: Union[IosDeviceName,Text]
+        screen_orientation=IosScreenOrientation.PORTRAIT,  # type:Union[IosScreenOrientation,Text] # noqa
+        baseline_env_name=None,  # type: Optional[Text]
+    ):
+        self.device_name = IosDeviceName(device_name)  # type: IosDeviceName
+        self.screen_orientation = IosScreenOrientation(
+            screen_orientation
+        )  # type: IosScreenOrientation
+        self._baseline_env_name = baseline_env_name  # type: Optional[Text]
 
     @property
     def platform(self):
@@ -175,16 +183,15 @@ class DesktopBrowserInfo(IRenderBrowserInfo):
     _width = attr.ib()  # type: int
     _height = attr.ib()  # type: int
     browser_type = attr.ib(type=BrowserType)  # type: BrowserType
-    baseline_env_name = attr.ib()  # type: Optional[Text]
 
     def __init__(
         self, width, height, browser_type=BrowserType.CHROME, baseline_env_name=None
     ):
         # type: (int, int, Union[BrowserType,Text], Optional[Text])->None
-        self._width = width
-        self._height = height
-        self.browser_type = browser_type
-        self.baseline_env_name = baseline_env_name
+        self._width = width  # type: int
+        self._height = height  # type: int
+        self._baseline_env_name = baseline_env_name
+        self.browser_type = BrowserType(browser_type)  # type: BrowserType
 
     @property
     def width(self):

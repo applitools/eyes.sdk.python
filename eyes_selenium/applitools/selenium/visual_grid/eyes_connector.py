@@ -62,9 +62,7 @@ class EyesConnector(EyesBase):
         else:
             self._config.viewport_size = self._browser_info.viewport_size
 
-        self._config.baseline_env_name = getattr(
-            self._browser_info, "baseline_env_name", None
-        )
+        self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
 
     def render_put_resource(self, running_render, resource):
