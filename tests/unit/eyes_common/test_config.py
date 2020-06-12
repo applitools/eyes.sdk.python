@@ -131,11 +131,15 @@ def test_add_browser():
 
     conf = (
         SeleniumConfiguration()
-        .set_baseline_env_name("Baseline")
-        .add_browser(400, 600, BrowserType.EDGE_CHROMIUM)
+        .set_baseline_env_name("Default baseline")
+        .add_browser(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline")
+        .add_browser(500, 600, BrowserType.SAFARI)
+        .add_browser(500, 600, BrowserType.FIREFOX)
     )
     assert conf.browsers_info == [
-        DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline")
+        DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline"),
+        DesktopBrowserInfo(500, 600, BrowserType.SAFARI, "Default baseline"),
+        DesktopBrowserInfo(500, 600, BrowserType.FIREFOX, "Default baseline"),
     ]
 
 

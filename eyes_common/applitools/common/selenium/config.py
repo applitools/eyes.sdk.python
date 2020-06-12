@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, overload, Union
+from typing import TYPE_CHECKING, List, overload, Union, Text
 
 import attr
 
@@ -85,6 +85,11 @@ class Configuration(ConfigurationBase):
         # type: (int, int, BrowserType) -> Configuration
         pass
 
+    @overload  # noqa
+    def add_browser(self, width, height, browser_type, baseline_env_name):
+        # type: (int, int, BrowserType, Text) -> Configuration
+        pass
+
     def add_browser(self, *args):  # noqa
         if isinstance(args[0], IRenderBrowserInfo):
             self._browsers_info.append(args[0])
@@ -93,8 +98,12 @@ class Configuration(ConfigurationBase):
             and isinstance(args[1], int)
             and isinstance(args[2], BrowserType)
         ):
+            if len(args) == 4:
+                baseline_env_name = args[3]
+            else:
+                baseline_env_name = self.baseline_env_name
             self._browsers_info.append(
-                DesktopBrowserInfo(args[0], args[1], args[2], self.baseline_env_name)
+                DesktopBrowserInfo(args[0], args[1], args[2], baseline_env_name)
             )
         else:
             raise ValueError("Unsupported parameters")
