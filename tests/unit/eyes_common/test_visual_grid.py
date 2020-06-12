@@ -6,6 +6,9 @@ from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     BrowserType,
     RectangleSize,
+    ChromeEmulationInfo,
+    DeviceName,
+    ScreenOrientation,
 )
 
 
@@ -23,16 +26,38 @@ def test_vgresource_with_function_that_raises_exception_should_not_break():
     )
 
 
+def test_chrome_emulation_info():
+    cei = ChromeEmulationInfo(DeviceName.iPhone_X)
+    assert cei.device_name == DeviceName.iPhone_X
+    assert cei.screen_orientation == ScreenOrientation.PORTRAIT
+    assert cei.baseline_env_name is None
+
+    cei = ChromeEmulationInfo(
+        DeviceName.iPhone_X, ScreenOrientation.LANDSCAPE, "Baseline env"
+    )
+    assert cei.device_name == DeviceName.iPhone_X
+    assert cei.screen_orientation == ScreenOrientation.LANDSCAPE
+    assert cei.baseline_env_name == "Baseline env"
+
+    cei = ChromeEmulationInfo("iPhone X", "landscape")
+    assert cei.device_name == DeviceName.iPhone_X
+    assert cei.screen_orientation == ScreenOrientation.LANDSCAPE
+
+
 def test_ios_device_info():
     idi = IosDeviceInfo(IosDeviceName.iPhone_11_Pro)
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
-    assert idi.screen_orientation is None
+    assert idi.screen_orientation == IosScreenOrientation.PORTRAIT
+    assert idi.baseline_env_name is None
 
     idi = IosDeviceInfo(
-        IosDeviceName.iPhone_11_Pro, IosScreenOrientation.LANDSCAPE_RIGHT
+        IosDeviceName.iPhone_11_Pro,
+        IosScreenOrientation.LANDSCAPE_RIGHT,
+        "Baseline env",
     )
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
     assert idi.screen_orientation == IosScreenOrientation.LANDSCAPE_RIGHT
+    assert idi.baseline_env_name == "Baseline env"
 
     idi = IosDeviceInfo("iPhone 11 Pro", "landscapeRight")
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
