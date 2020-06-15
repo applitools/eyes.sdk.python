@@ -30,6 +30,7 @@ __all__ = (
 
 
 def _region_from_element(element, screenshot):
+    # type: (AnyWebElement, EyesWebDriverScreenshot) -> Region
     location = element.location
     if screenshot:
         # Element's coordinates are context relative, so we need to convert them first.
@@ -45,41 +46,41 @@ def _region_from_element(element, screenshot):
 class GetSeleniumRegion(GetRegion):
     def get_regions(self, eyes, screenshot):
         # type: (SeleniumEyes, EyesWebDriverScreenshot) -> List[Region]
-        element = self._element(eyes.driver)
+        element = self._fetch_element(eyes.driver)
         region = _region_from_element(element, screenshot)
         return [region]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._element(driver)]
+        return [self._fetch_element(driver)]
 
     @abstractmethod
-    def _element(self, driver):
+    def _fetch_element(self, driver):
         pass
 
 
 class GetSeleniumFloatingRegion(GetFloatingRegion):
     def get_regions(self, eyes, screenshot):
         # type: (SeleniumEyes, EyesWebDriverScreenshot) ->  List[FloatingMatchSettings]
-        element = self._element(eyes.driver)
+        element = self._fetch_element(eyes.driver)
         region = _region_from_element(element, screenshot)
-        return [FloatingMatchSettings(region, self.bounds)]
+        return [FloatingMatchSettings(region, self._bounds)]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._element(driver)]
+        return [self._fetch_element(driver)]
 
     @abstractmethod
-    def _element(self, driver):
+    def _fetch_element(self, driver):
         pass
 
 
 @attr.s
 class RegionByElement(GetSeleniumRegion):
-    element = attr.ib()  # type: AnyWebElement
+    _element = attr.ib()  # type: AnyWebElement
 
-    def _element(self, driver):
-        return self.element
+    def _fetch_element(self, driver):
+        return self._element
 
 
 @attr.s
@@ -91,11 +92,11 @@ class RegionBySelector(GetSeleniumRegion):
                   an element which represents the ignore region.
     """
 
-    by = attr.ib()
-    value = attr.ib()
+    _by = attr.ib()
+    _value = attr.ib()
 
-    def _element(self, driver):
-        return driver.find_element(self.by, self.value)
+    def _fetch_element(self, driver):
+        return driver.find_element(self._by, self._value)
 
 
 @attr.s
@@ -105,11 +106,11 @@ class FloatingRegionByElement(GetSeleniumFloatingRegion):
     :ivar bounds: The outer rectangle bounding the inner region.
     """
 
-    element = attr.ib()  # type: AnyWebElement
-    bounds = attr.ib()  # type: FloatingBounds
+    _element = attr.ib()  # type: AnyWebElement
+    _bounds = attr.ib()  # type: FloatingBounds
 
-    def _element(self, driver):
-        return self.element
+    def _fetch_element(self, driver):
+        return self._element
 
 
 @attr.s
@@ -120,44 +121,44 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     :ivar bounds: The outer rectangle bounding the inner region.
     """
 
-    by = attr.ib()  # type: str
-    value = attr.ib()  # type: str
-    bounds = attr.ib()  # type: FloatingBounds
+    _by = attr.ib()  # type: str
+    _value = attr.ib()  # type: str
+    _bounds = attr.ib()  # type: FloatingBounds
 
-    def _element(self, driver):
-        return driver.find_element(self.by, self.value)
+    def _fetch_element(self, driver):
+        return driver.find_element(self._by, self._value)
 
 
 class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
     def get_regions(self, eyes, screenshot):
         # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegion]
-        element = self._element(eyes.driver)
+        element = self._fetch_element(eyes.driver)
         region = _region_from_element(element, screenshot)
         return [AccessibilityRegion.from_(region, self._type)]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._element(driver)]
+        return [self._fetch_element(driver)]
 
     @abstractmethod
-    def _element(self, driver):
+    def _fetch_element(self, driver):
         pass
 
 
 @attr.s
 class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
-    by = attr.ib()  # type: str
-    value = attr.ib()  # type: str
+    _by = attr.ib()  # type: str
+    _value = attr.ib()  # type: str
     _type = attr.ib()  # type: AccessibilityRegionType
 
-    def _element(self, driver):
-        return driver.find_element(self.by, self.value)
+    def _fetch_element(self, driver):
+        return driver.find_element(self._by, self._value)
 
 
 @attr.s
 class AccessibilityRegionByElement(GetSeleniumAccessibilityRegion):
-    element = attr.ib()  # type: AnyWebElement
+    _element = attr.ib()  # type: AnyWebElement
     _type = attr.ib()  # type: AccessibilityRegionType
 
-    def _element(self, driver):
-        return self.element
+    def _fetch_element(self, driver):
+        return self._element
