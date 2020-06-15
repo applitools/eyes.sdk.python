@@ -36,6 +36,7 @@ class GetFloatingRegion(GetRegion, ABC):
     @property
     @abc.abstractmethod
     def floating_bounds(self):
+        # type: () -> FloatingBounds
         pass
 
     @abc.abstractmethod
