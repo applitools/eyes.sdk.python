@@ -46,32 +46,33 @@ def _region_from_element(element, screenshot):
 class GetSeleniumRegion(GetRegion):
     def get_regions(self, eyes, screenshot):
         # type: (SeleniumEyes, EyesWebDriverScreenshot) -> List[Region]
-        element = self._fetch_element(eyes.driver)
-        region = _region_from_element(element, screenshot)
-        return [region]
+        elements = self._fetch_elements(eyes.driver)
+        return [_region_from_element(el, screenshot) for el in elements]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._fetch_element(driver)]
+        return self._fetch_elements(driver)
 
     @abstractmethod
-    def _fetch_element(self, driver):
+    def _fetch_elements(self, driver):
+        # type: (AnyWebDriver) -> List[AnyWebElement]
         pass
 
 
 class GetSeleniumFloatingRegion(GetFloatingRegion):
     def get_regions(self, eyes, screenshot):
         # type: (SeleniumEyes, EyesWebDriverScreenshot) ->  List[FloatingMatchSettings]
-        element = self._fetch_element(eyes.driver)
-        region = _region_from_element(element, screenshot)
-        return [FloatingMatchSettings(region, self._bounds)]
+        elements = self._fetch_elements(eyes.driver)
+        regions = (_region_from_element(el, screenshot) for el in elements)
+        return [FloatingMatchSettings(region, self._bounds) for region in regions]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._fetch_element(driver)]
+        return self._fetch_elements(driver)
 
     @abstractmethod
-    def _fetch_element(self, driver):
+    def _fetch_elements(self, driver):
+        # type: (AnyWebDriver) -> List[AnyWebElement]
         pass
 
 
@@ -79,8 +80,8 @@ class GetSeleniumFloatingRegion(GetFloatingRegion):
 class RegionByElement(GetSeleniumRegion):
     _element = attr.ib()  # type: AnyWebElement
 
-    def _fetch_element(self, driver):
-        return self._element
+    def _fetch_elements(self, driver):
+        return [self._element]
 
 
 @attr.s
@@ -95,8 +96,8 @@ class RegionBySelector(GetSeleniumRegion):
     _by = attr.ib()
     _value = attr.ib()
 
-    def _fetch_element(self, driver):
-        return driver.find_element(self._by, self._value)
+    def _fetch_elements(self, driver):
+        return driver.find_elements(self._by, self._value)
 
 
 @attr.s
@@ -109,7 +110,7 @@ class FloatingRegionByElement(GetSeleniumFloatingRegion):
     _element = attr.ib()  # type: AnyWebElement
     _bounds = attr.ib()  # type: FloatingBounds
 
-    def _fetch_element(self, driver):
+    def _fetch_elements(self, driver):
         return self._element
 
 
@@ -125,20 +126,20 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     _value = attr.ib()  # type: str
     _bounds = attr.ib()  # type: FloatingBounds
 
-    def _fetch_element(self, driver):
-        return driver.find_element(self._by, self._value)
+    def _fetch_elements(self, driver):
+        return driver.find_elements(self._by, self._value)
 
 
 class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
     def get_regions(self, eyes, screenshot):
         # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegion]
-        element = self._fetch_element(eyes.driver)
-        region = _region_from_element(element, screenshot)
-        return [AccessibilityRegion.from_(region, self._type)]
+        elements = self._fetch_element(eyes.driver)
+        regions = (_region_from_element(el, screenshot) for el in elements)
+        return [AccessibilityRegion.from_(region, self._type) for region in regions]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
-        return [self._fetch_element(driver)]
+        return [self._fetch_elements(driver)]
 
     @abstractmethod
     def _fetch_element(self, driver):
@@ -152,7 +153,7 @@ class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
     _type = attr.ib()  # type: AccessibilityRegionType
 
     def _fetch_element(self, driver):
-        return driver.find_element(self._by, self._value)
+        return driver.find_elements(self._by, self._value)
 
 
 @attr.s
