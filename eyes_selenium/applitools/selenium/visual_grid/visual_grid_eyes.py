@@ -52,7 +52,7 @@ el = parent;
 return '/' + xpath;"""
 
 
-PROCESS_RESOURCES = resource.get_resource("processPageAndPoll.js")
+PROCESS_RESOURCES = resource.get_resource("processPageAndSerializePoll.js")
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
@@ -171,7 +171,7 @@ class VisualGridEyes(object):
                 self.is_check_timer_timeout = False
                 break
             script_result_string = self.driver.execute_script(
-                PROCESS_RESOURCES + "return __processPageAndPoll();"
+                PROCESS_RESOURCES + "return __processPageAndSerializePoll();"
             )
             try:
                 script_response = json.loads(
