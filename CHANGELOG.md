@@ -1,6 +1,8 @@
 ##[vNext]
 ### Updated
 - Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
+### Fixed
+- Match regions returns incorrect number of regions [Trello 1911](https://trello.com/c/5Y4rZAX6)
 
 ## [4.3.0] - 2020-06-05
 ### Fixed
