@@ -113,10 +113,22 @@ def test_check_element_with_ignore_region_by_same_element__fluent(eyes_opened):
 
 
 def test_check_full_window_with_multiple_ignore_regions_by_selector__fluent(
-    eyes_opened,
+    eyes_opened, check_test_result
 ):
     eyes_opened.check(
         "Fluent - Region by element", Target.window().fully().ignore(".ignore")
+    )
+    check_test_result.send(
+        [
+            {
+                "actual_name": "ignore",
+                "expected": [
+                    Region(10, 284, 800, 500),
+                    Region(122, 928, 456, 306),
+                    Region(8, 1270, 690, 206),
+                ],
+            }
+        ]
     )
 
 
