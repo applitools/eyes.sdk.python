@@ -11,6 +11,7 @@ import requests
 
 from applitools.common import TestResults, logger
 from applitools.common.utils import urljoin
+from applitools.common.utils.datetime_utils import retry
 from applitools.common.utils.json_utils import underscore_to_camelcase
 
 REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
@@ -54,11 +55,13 @@ def prepare_result_data(test_name, passed, parameters):
     )
 
 
+@retry(exception=requests.HTTPError)
 def send_result_report(test_name, passed, parameters=None, group="selenium"):
     report_data = copy(REPORT_DATA)
     report_data["results"] = [prepare_result_data(test_name, passed, parameters)]
     report_data["group"] = group
     r = requests.post(urljoin(REPORT_BASE_URL, "/result"), data=json.dumps(report_data))
+    r.raise_for_status()
     print("Result report send: {} - {}".format(r.status_code, r.text))
     return r
 
