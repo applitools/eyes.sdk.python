@@ -9,7 +9,12 @@ from applitools.common.geometry import RectangleSize, Region
 from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
-from .config import EmulationBaseInfo, IosDeviceInfo
+from .render_browser_info import (
+    IosDeviceInfo,
+    IRenderBrowserInfo,
+    ChromeEmulationInfo,
+    EmulationBaseInfo,
+)
 
 if typing.TYPE_CHECKING:
     from typing import List, Text, Dict, Optional, Callable, Union, Any
@@ -94,6 +99,31 @@ class RenderInfo(object):
     ios_device_info = attr.ib(
         default=None, type=IosDeviceInfo, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[IosDeviceInfo]
+
+    @classmethod
+    def from_(
+        cls,
+        size_mode,  # type: Optional[Text]
+        region,  # type: Optional[Region]
+        selector,  # type: Optional[VisualGridSelector]
+        render_browser_info,  # type: IRenderBrowserInfo
+    ):
+        # type: (...) -> RenderInfo
+        ios_device_info = None
+        emulation_info = None
+        if isinstance(render_browser_info, IosDeviceInfo):
+            ios_device_info = render_browser_info
+        if isinstance(render_browser_info, ChromeEmulationInfo):
+            emulation_info = render_browser_info
+        return cls(
+            width=render_browser_info.width,
+            height=render_browser_info.height,
+            size_mode=size_mode,
+            region=region,
+            selector=selector,
+            emulation_info=emulation_info,
+            ios_device_info=ios_device_info,
+        )
 
 
 @attr.s
@@ -203,7 +233,7 @@ class RenderRequest(object):
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
     render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
     platform_name = attr.ib()  # type: Text
-    browser_name = attr.ib()  # type: BrowserType
+    browser_name = attr.ib()  # type: Text
     script_hooks = attr.ib(
         default=dict, metadata={JsonInclude.NON_NONE: True}
     )  # type: Dict

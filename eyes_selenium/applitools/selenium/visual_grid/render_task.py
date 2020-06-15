@@ -164,15 +164,13 @@ class RenderTask(VGTask):
                     width=self.region_to_check.width,
                     height=self.region_to_check.height,
                 )
-            r_info = RenderInfo(
-                width=running_test.browser_info.width,
-                height=running_test.browser_info.height,
+            r_info = RenderInfo.from_(
                 size_mode=self.size_mode,
                 selector=self.selector,
                 region=region,
-                emulation_info=running_test.browser_info.emulation_info,
-                ios_device_info=running_test.browser_info.ios_device_info,
+                render_browser_info=running_test.browser_info,
             )
+
             requests.append(
                 RenderRequest(
                     webhook=self.rendering_info.results_url,

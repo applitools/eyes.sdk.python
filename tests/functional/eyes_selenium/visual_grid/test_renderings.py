@@ -15,9 +15,9 @@ from applitools.selenium import (
     RectangleSize,
     logger,
     ScreenOrientation,
-    IosDeviceInfo,
     IosDeviceName,
     IosScreenOrientation,
+    IosDeviceInfo,
 )
 from tests.utils import get_session_results
 
