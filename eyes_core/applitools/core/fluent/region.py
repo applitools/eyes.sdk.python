@@ -43,12 +43,12 @@ class GetFloatingRegion(GetRegion):
         pass
 
 
-class GetAccessibilityRegion(GetRegion):
+class GetAccessibilityRegion(GetRegion, ABC):
     @property
+    @abc.abstractmethod
     def accessibility_type(self):
-        if self._type:
-            return self._type
-        return self._rect.type
+        # type: () -> AccessibilityRegionType
+        pass
 
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
@@ -82,4 +82,11 @@ class AccessibilityRegionByRectangle(GetAccessibilityRegion):
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[AccessibilityRegion]
-        return [AccessibilityRegion.from_(self._rect, self._type)]
+        return [AccessibilityRegion.from_(self._rect, self.accessibility_type)]
+
+    @property
+    def accessibility_type(self):
+        # type: () -> AccessibilityRegionType
+        if self._type:
+            return self._type
+        return self._rect.type
