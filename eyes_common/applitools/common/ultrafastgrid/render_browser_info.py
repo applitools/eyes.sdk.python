@@ -54,23 +54,13 @@ class IRenderBrowserInfo(ABC):
 
 
 @attr.s
-class EmulationBaseInfo(IRenderBrowserInfo, ABC):
+class EmulationBaseInfo(ABC):
     device_name = attr.ib()
     screen_orientation = attr.ib()
 
-    @property
-    def width(self):
-        # type: () -> int
-        return 0
-
-    @property
-    def height(self):
-        # type: () -> int
-        return 0
-
 
 @attr.s(hash=True, init=False)
-class ChromeEmulationInfo(EmulationBaseInfo):
+class ChromeEmulationInfo(EmulationBaseInfo, IRenderBrowserInfo):
     device_name = attr.ib(type=DeviceName, metadata={JsonInclude.THIS: True})
     screen_orientation = attr.ib(
         type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
@@ -90,6 +80,16 @@ class ChromeEmulationInfo(EmulationBaseInfo):
         self._baseline_env_name = baseline_env_name  # type: Optional[Text]
 
     @property
+    def width(self):
+        # type: () -> int
+        return 0
+
+    @property
+    def height(self):
+        # type: () -> int
+        return 0
+
+    @property
     def browser(self):
         return BrowserType.CHROME.value
 
@@ -100,7 +100,7 @@ class ChromeEmulationInfo(EmulationBaseInfo):
 
 
 @attr.s(hash=True, init=False)
-class IosDeviceInfo(EmulationBaseInfo):
+class IosDeviceInfo(IRenderBrowserInfo):
     device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NAME: "name"})
     screen_orientation = attr.ib(
         type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
@@ -117,6 +117,16 @@ class IosDeviceInfo(EmulationBaseInfo):
             screen_orientation
         )  # type: IosScreenOrientation
         self._baseline_env_name = baseline_env_name  # type: Optional[Text]
+
+    @property
+    def width(self):
+        # type: () -> int
+        return 0
+
+    @property
+    def height(self):
+        # type: () -> int
+        return 0
 
     @property
     def platform(self):

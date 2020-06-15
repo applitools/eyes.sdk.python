@@ -10,13 +10,12 @@ from applitools.common import (
     EyesError,
     TestResults,
     logger,
-    RectangleSize,
 )
 from applitools.common.utils import argument_guard
 from applitools.common.ultrafastgrid import (
     RenderBrowserInfo,
     VisualGridSelector,
-    EmulationBaseInfo,
+    DesktopBrowserInfo,
 )
 from applitools.core import CheckSettings, GetRegion
 from applitools.selenium import __version__, eyes_selenium_utils, resource
@@ -385,9 +384,9 @@ class VisualGridEyes(object):
 
         if viewport_size is None:
             for render_bi in self.configure.browsers_info:
-                # TODO: Change to DesktopBrowserInfo when RenderBrowserInfo will
-                #  deprecated
-                if not isinstance(render_bi, EmulationBaseInfo):
+                if isinstance(render_bi, DesktopBrowserInfo) or isinstance(
+                    render_bi, RenderBrowserInfo
+                ):
                     viewport_size = render_bi.viewport_size
                     break
 
