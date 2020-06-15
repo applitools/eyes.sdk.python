@@ -154,7 +154,6 @@ class CheckSettings(object):
         :param arg4: None       | max_left_offset
         :param arg5: None       | max_right_offset
         """
-        # TODO: check how it's work in Selenium part when args[1] is element
         if isinstance(args[0], int) and not isinstance(args[1], int):
             max_offset = args[0]  # type: int
             region = args[1]  # type: ignore
