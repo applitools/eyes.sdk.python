@@ -21,7 +21,7 @@ from applitools.common.ultrafastgrid import (
     DeviceName,
     ScreenOrientation,
     BrowserType,
-    RenderBrowserInfo,
+    DesktopBrowserInfo,
 )
 
 
@@ -119,43 +119,36 @@ def test_set_value_to_sel_conf():
 def test_add_browser():
     conf = SeleniumConfiguration().add_browser(IosDeviceInfo("iPhone X", "portrait"))
     assert conf.browsers_info == [
-        RenderBrowserInfo(
-            ios_device_info=IosDeviceInfo(
-                IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT
-            )
-        )
+        IosDeviceInfo(IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT)
     ]
 
     conf = SeleniumConfiguration().add_browser(
         ChromeEmulationInfo("iPhone 4", "portrait")
     )
     assert conf.browsers_info == [
-        RenderBrowserInfo(
-            emulation_info=ChromeEmulationInfo(
-                DeviceName.iPhone_4, ScreenOrientation.PORTRAIT
-            )
-        )
+        ChromeEmulationInfo(DeviceName.iPhone_4, ScreenOrientation.PORTRAIT)
     ]
 
-    conf = SeleniumConfiguration().add_browser(400, 600, BrowserType.EDGE_CHROMIUM)
+    conf = (
+        SeleniumConfiguration()
+        .set_baseline_env_name("Default baseline")
+        .add_browser(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline")
+        .add_browser(500, 600, BrowserType.SAFARI)
+        .add_browser(500, 600, BrowserType.FIREFOX)
+    )
     assert conf.browsers_info == [
-        RenderBrowserInfo(RectangleSize(400, 600), BrowserType.EDGE_CHROMIUM)
+        DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline"),
+        DesktopBrowserInfo(500, 600, BrowserType.SAFARI, "Default baseline"),
+        DesktopBrowserInfo(500, 600, BrowserType.FIREFOX, "Default baseline"),
     ]
 
 
 def test_add_browsers():
     conf = SeleniumConfiguration().add_browsers(
-        IosDeviceInfo("iPhone X", "portrait"), IosDeviceInfo("iPhone 11", "portrait"),
+        IosDeviceInfo("iPhone X", "portrait"),
+        IosDeviceInfo("iPhone 11", "landscapeLeft"),
     )
     assert conf.browsers_info == [
-        RenderBrowserInfo(
-            ios_device_info=IosDeviceInfo(
-                IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT
-            )
-        ),
-        RenderBrowserInfo(
-            ios_device_info=IosDeviceInfo(
-                IosDeviceName.iPhone_11, IosScreenOrientation.PORTRAIT
-            )
-        ),
+        IosDeviceInfo(IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT),
+        IosDeviceInfo(IosDeviceName.iPhone_11, IosScreenOrientation.LANDSCAPE_LEFT),
     ]
