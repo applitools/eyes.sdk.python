@@ -32,10 +32,11 @@ class GetRegion(ABC):
         pass
 
 
-class GetFloatingRegion(GetRegion):
+class GetFloatingRegion(GetRegion, ABC):
     @property
+    @abc.abstractmethod
     def floating_bounds(self):
-        return self._bounds
+        pass
 
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
@@ -72,7 +73,11 @@ class FloatingRegionByRectangle(GetFloatingRegion):
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
-        return [FloatingMatchSettings(self._rect, self._bounds)]
+        return [FloatingMatchSettings(self._rect, self.floating_bounds)]
+
+    @property
+    def floating_bounds(self):
+        return self._bounds
 
 
 @attr.s
