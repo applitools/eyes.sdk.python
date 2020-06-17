@@ -171,7 +171,8 @@ class EyesWebElement(object):
         :param value: The value to search for.
         :return: WebElement denoted by "By".
         """
-        return self._eyes_driver.find_element(by, value)
+        elem = self._element.find_element(by, value)
+        return EyesWebElement(elem, self._eyes_driver)
 
     def find_elements(self, by=By.ID, value=None):
         """
@@ -181,7 +182,10 @@ class EyesWebElement(object):
         :param value: The value to search for.
         :return: List of web elements denoted by "By".
         """
-        return self._eyes_driver.find_elements(by, value)
+        return [
+            EyesWebElement(elem, self._eyes_driver)
+            for elem in self._element.find_elements(by, value)
+        ]
 
     def click(self):
         """
