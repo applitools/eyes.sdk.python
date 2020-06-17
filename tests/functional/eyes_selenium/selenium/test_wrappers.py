@@ -63,6 +63,22 @@ def test_eyes_element_and_element_with_Select(eyes, driver):
     assert sel_select.first_selected_option == eyes_select.first_selected_option
 
 
+def test_find_inside_element(eyes, driver):
+    driver.get("file://{}".format(get_resource_path("unit/multiple-selects.html")))
+
+    eyes_driver = EyesWebDriver(driver, eyes)
+    element = driver.find_element_by_xpath("//select[contains(@id, 'device')]")
+    eyes_element = eyes_driver.find_element_by_xpath(
+        "//select[contains(@id, 'device')]"
+    )
+    assert element.find_element_by_xpath(
+        '//option[@selected="selected"]'
+    ) == eyes_element.find_element_by_xpath('//option[@selected="selected"]')
+    assert element.find_elements(By.TAG_NAME, "options") == eyes_element.find_elements(
+        By.TAG_NAME, "options"
+    )
+
+
 def test_driver_and_element_dir(eyes, driver):
     driver.get("https://applitools.com/")
 
