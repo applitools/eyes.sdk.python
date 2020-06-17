@@ -3,6 +3,7 @@
 - Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
 ### Fixed
 - Match regions returns incorrect number of regions [Trello 1911](https://trello.com/c/5Y4rZAX6)
+- element.find_element(s) search element(s) on full source page instead of inner element [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #189](https://github.com/applitools/eyes.sdk.python/pull/189)
 
 ## [4.3.0] - 2020-06-05
 ### Fixed
