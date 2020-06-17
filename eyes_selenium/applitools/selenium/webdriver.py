@@ -68,7 +68,7 @@ class FrameResolver(object):
                 frame_ref = frame_locator.frame_element
             if frame_locator.frame_selector:
                 by, value = frame_locator.frame_selector
-                frame_ref = self._driver.find_elemen(by, value)
+                frame_ref = self._driver.find_element(by, value)
         return frame_ref
 
 
