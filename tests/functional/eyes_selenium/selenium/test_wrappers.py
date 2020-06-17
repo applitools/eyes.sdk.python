@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
 from applitools.selenium import EyesWebDriver
+from tests.utils import get_resource_path
 
 
 def test_new_tab(eyes, driver):
@@ -39,23 +40,43 @@ def test_element_find_element(eyes, driver):
 
 
 def test_eyes_element_and_element_with_Select(eyes, driver):
-    driver.get("https://the-internet.herokuapp.com/dropdown")
+    driver.get("file://{}".format(get_resource_path("unit/multiple-selects.html")))
 
     eyes_driver = EyesWebDriver(driver, eyes)
 
-    element = driver.find_element_by_xpath("//select[contains(@id, 'dropdown')]")
-    my_select = Select(element)
-    options = my_select.options
-    for index, option in enumerate(options):
+    element = driver.find_element_by_xpath("//select[contains(@id, 'device')]")
+    sel_select = Select(element)
+    sel_options = sel_select.options
+    for index, option in enumerate(sel_options):
         option.click()
 
     eyes_element = eyes_driver.find_element_by_xpath(
-        "//select[contains(@id, 'dropdown')]"
+        "//select[contains(@id, 'device')]"
     )
-    my_select = Select(eyes_element)
-    options = my_select.options
-    for index, option in enumerate(options):
+    eyes_select = Select(eyes_element)
+    eyes_options = eyes_select.options
+    for index, option in enumerate(eyes_options):
         option.click()
+
+    assert sel_options == eyes_options
+    assert sel_select.all_selected_options == eyes_select.all_selected_options
+    assert sel_select.first_selected_option == eyes_select.first_selected_option
+
+
+def test_find_inside_element(eyes, driver):
+    driver.get("file://{}".format(get_resource_path("unit/multiple-selects.html")))
+
+    eyes_driver = EyesWebDriver(driver, eyes)
+    element = driver.find_element_by_xpath("//select[contains(@id, 'device')]")
+    eyes_element = eyes_driver.find_element_by_xpath(
+        "//select[contains(@id, 'device')]"
+    )
+    assert element.find_element_by_xpath(
+        '//option[@selected="selected"]'
+    ) == eyes_element.find_element_by_xpath('//option[@selected="selected"]')
+    assert element.find_elements(By.TAG_NAME, "options") == eyes_element.find_elements(
+        By.TAG_NAME, "options"
+    )
 
 
 def test_driver_and_element_dir(eyes, driver):
