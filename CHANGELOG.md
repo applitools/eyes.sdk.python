@@ -16,6 +16,7 @@
 ## [4.3.1] - 2020-06-18
 ### Updated
 - Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
+- DOM capture and snapshot scripts to *7.2.4* and *3.5.3* respectively [Trello 1865](https://trello.com/c/haTeCXzq)
 ### Fixed
 - Match regions returns incorrect number of regions [Trello 1911](https://trello.com/c/5Y4rZAX6)
 - element.find_element(s) search element(s) on full source page instead of inner element [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #189](https://github.com/applitools/eyes.sdk.python/pull/189)
