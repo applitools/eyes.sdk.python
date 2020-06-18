@@ -2,6 +2,7 @@
 ### Updated
 - Remove get\set_viewport_size from Eyes images [Trello 1413](https://trello.com/c/v32N4D8S)
 - Added missing `stitching_service` URI field in `RenderRequest`. [Trello 1988](https://trello.com/c/Yr6EsUlL)
+- DOM snapshot scripts to *3.5.3* [Trello 1865](https://trello.com/c/haTeCXzq)
 
 ## [4.4.1] - 2020-07-01
 ### Updated
@@ -16,7 +17,6 @@
 ## [4.3.1] - 2020-06-18
 ### Updated
 - Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
-- DOM capture and snapshot scripts to *7.2.4* and *3.5.3* respectively [Trello 1865](https://trello.com/c/haTeCXzq)
 ### Fixed
 - Match regions returns incorrect number of regions [Trello 1911](https://trello.com/c/5Y4rZAX6)
 - element.find_element(s) search element(s) on full source page instead of inner element [Trello 1830](https://trello.com/c/s5W2pnUT) [GH #189](https://github.com/applitools/eyes.sdk.python/pull/189)
