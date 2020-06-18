@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 
+import json
+import threading
 import typing as tp
+from collections import OrderedDict
 from contextlib import contextmanager
 
 from appium.webdriver import Remote as AppiumWebDriver
@@ -8,7 +11,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Point, RectangleSize, logger
+from applitools.common import Point, RectangleSize, logger, EyesError
 from applitools.common.utils import datetime_utils
 
 if tp.TYPE_CHECKING:
@@ -546,3 +549,39 @@ def get_default_content_scroll_position(current_frames, driver):
                 driver, curr_frame_scroll_root_element(driver)
             )
     return scroll_position
+
+
+def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for_run):
+    # type: (AnyWebDriver, int, Text, Text) -> Dict
+    is_check_timer_timeout = []
+    script_response = {}
+    status = None
+
+    def start_timer():
+        def set_timer():
+            is_check_timer_timeout.append(True)
+
+        timer = threading.Timer(dom_extraction_timeout, set_timer)
+        timer.daemon = True
+        timer.setName(timer_name)
+        timer.start()
+        return timer
+
+    timer = start_timer()
+    while True:
+        if status == "SUCCESS" or is_check_timer_timeout:
+            del is_check_timer_timeout[:]
+            break
+        script_result_string = driver.execute_script(script_for_run)
+        try:
+            script_response = json.loads(
+                script_result_string, object_pairs_hook=OrderedDict
+            )
+            status = script_response.get("status")
+        except Exception as e:
+            logger.exception(e)
+    timer.cancel()
+    script_result = script_response.get("value")
+    if script_result is None or status == "ERROR":
+        raise EyesError("Failed to capture script_result")
+    return script_result
