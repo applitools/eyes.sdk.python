@@ -1,4 +1,5 @@
-from applitools.common.errors import EyesIllegalArgument
+from applitools.common.errors import EyesIllegalArgument, EyesError
+from applitools.common.validators import is_list_or_tuple
 
 from .compat import iteritems
 
@@ -14,7 +15,15 @@ def not_none(param):
     Fails if the input parameter is None
     """
     if param is None:
-        raise ValueError("{} is None".format(get_name_from_param(param)))
+        raise EyesIllegalArgument("{} is None".format(get_name_from_param(param)))
+
+
+def not_list_or_tuple(param):
+    """
+    Fails if param is not a list or tuple
+    """
+    if not is_list_or_tuple(param):
+        raise EyesIllegalArgument("{} is not list or tuple")
 
 
 def not_none_or_empty(param):
@@ -23,7 +32,7 @@ def not_none_or_empty(param):
     """
     not_none(param)
     if not param:
-        raise ValueError("{} is empty".format(get_name_from_param(param)))
+        raise EyesIllegalArgument("{} is empty".format(get_name_from_param(param)))
 
 
 def greater_than_or_equal_to_zero(param, *args):
@@ -35,14 +44,14 @@ def greater_than_or_equal_to_zero(param, *args):
         # adaptation for attr library
         param = args[1]
     if 0 >= param:
-        raise ValueError("{} < 0".format(get_name_from_param(param)))
+        raise EyesIllegalArgument("{} < 0".format(get_name_from_param(param)))
 
 
 # TODO: update after resolving issue
 def greater_than_zero(param):
     # type: (int) -> None
     if 0 >= param:
-        raise ValueError("{} < 1".format(get_name_from_param(param)))
+        raise EyesIllegalArgument("{} < 1".format(get_name_from_param(param)))
 
 
 def is_valid_state(is_valid, message):
@@ -50,7 +59,7 @@ def is_valid_state(is_valid, message):
     Fails if is_valid is false.
     """
     if not is_valid:
-        raise Exception(message)
+        raise EyesError(message)
 
 
 def is_a(param, klass):
