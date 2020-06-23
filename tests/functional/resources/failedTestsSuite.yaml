@@ -21,7 +21,7 @@ test_fluent_api.py:
 
 test_other_desktop_tests.py:
    test_duplicatedIFrames:
-      - CSS, Scroll, VG
+      - VG
 
 test_special_cases.py:
    test_check_region_in_a_very_big_frame:
@@ -48,9 +48,6 @@ test_app_native.py:
 
 test_bad_selectors.py:
    test_check_region_with_bad_ignore_selector:
-
-test_default_rendering.py:
-   test_default_rendering_of_multiple_targets:
 
 test_hello_world.py:
    test_hello_world:
