@@ -1,9 +1,13 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from copy import copy
-from typing import Text, List, Union
+from typing import Text, List, Union, Dict
 
+import attr
+
+from applitools.common import Region
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
+from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
 
 __all__ = ("VisualLocator",)
@@ -63,3 +67,18 @@ class VisualLocator(ABC):
             names = names[0]
         argument_guard.are_(names, klass=basestring)
         return VisualLocatorSettings(*names)
+
+
+class VisualLocatorsProvider(ABC):
+    @abstractmethod
+    def get_locators(self, visual_locator_settings):
+        # type: (VisualLocatorSettings) -> Dict[Text, List[Region]]
+        pass
+
+
+@attr.s
+class VisualLocatorData(object):
+    app_name = attr.ib(metadata={JsonInclude.THIS: True})
+    image_url = attr.ib(metadata={JsonInclude.THIS: True})
+    first_only = attr.ib(metadata={JsonInclude.THIS: True})
+    locator_names = attr.ib(metadata={JsonInclude.THIS: True})

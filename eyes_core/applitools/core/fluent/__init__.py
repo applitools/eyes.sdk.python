@@ -8,7 +8,6 @@ from .region import (
     GetAccessibilityRegion,
     AccessibilityRegionByRectangle,
 )
-from .visual_locator import VisualLocator
 
 __all__ = (
     "CheckSettings",
@@ -20,5 +19,4 @@ __all__ = (
     "RegionByRectangle",
     "GetAccessibilityRegion",
     "AccessibilityRegionByRectangle",
-    "VisualLocator",
 )

@@ -1,7 +1,7 @@
 import pytest
 
 from applitools.common import EyesIllegalArgument
-from applitools.core.fluent import VisualLocator
+from applitools.core import VisualLocator
 
 
 def test_wrong_visual_locator_names():
