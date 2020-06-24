@@ -10,7 +10,7 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import RunningSession, logger
+from applitools.common import RunningSession, logger, Region
 from applitools.common.errors import EyesError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
@@ -22,6 +22,7 @@ from applitools.common.utils import (
     gzip_compress,
     json_utils,
     urljoin,
+    iteritems,
 )
 from applitools.common.ultrafastgrid import (
     RenderingInfo,
@@ -30,6 +31,7 @@ from applitools.common.ultrafastgrid import (
     RunningRender,
     VGResource,
 )
+from applitools.core.locators import VisualLocatorsData, LOCATORS_TYPE
 
 if typing.TYPE_CHECKING:
     from typing import Text, List, Any, Optional, Dict, Union
@@ -394,6 +396,10 @@ class ServerConnector(object):
             "Failed to Upload Image. Status Code: {}".format(response.status_code)
         )
 
+    def try_upload_image(self, data):
+        # type: (bytes) -> Optional[Text]
+        return self._try_upload_data(data, "image/png", "image/png")
+
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """
@@ -565,3 +571,15 @@ class ServerConnector(object):
             )
         # TODO: improve parser to handle similar names
         return json_utils.attr_from_response(response, RenderStatusResults)
+
+    def post_locators(self, visual_locators_data):
+        # type: (VisualLocatorsData) -> LOCATORS_TYPE
+        if not self.is_session_started:
+            raise EyesError("Session not started")
+        data = json_utils.to_json(visual_locators_data)
+        response = self._com.long_request("post", "api/locators/locate", data=data)
+        response.raise_for_status()
+        return {
+            locator_id: json_utils.attr_from_dict(regions, Region)
+            for locator_id, regions in iteritems(response.json())
+        }

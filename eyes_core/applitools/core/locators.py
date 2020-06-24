@@ -69,15 +69,18 @@ class VisualLocator(ABC):
         return VisualLocatorSettings(*names)
 
 
+LOCATORS_TYPE = Dict[Text, List[Region]]
+
+
 class VisualLocatorsProvider(ABC):
     @abstractmethod
     def get_locators(self, visual_locator_settings):
-        # type: (VisualLocatorSettings) -> Dict[Text, List[Region]]
+        # type: (VisualLocatorSettings) -> LOCATORS_TYPE
         pass
 
 
 @attr.s
-class VisualLocatorData(object):
+class VisualLocatorsData(object):
     app_name = attr.ib(metadata={JsonInclude.THIS: True})
     image_url = attr.ib(metadata={JsonInclude.THIS: True})
     first_only = attr.ib(metadata={JsonInclude.THIS: True})

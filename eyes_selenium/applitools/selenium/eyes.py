@@ -7,9 +7,11 @@ from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_mixins import EyesConfigurationMixin
+from applitools.core.locators import VisualLocatorSettings, LOCATORS_TYPE
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
 from .fluent import Target
+from .locators import SeleniumVisualLocatorsProvider
 from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
@@ -34,12 +36,15 @@ if typing.TYPE_CHECKING:
     from .fluent import SeleniumCheckSettings
     from .webelement import EyesWebElement
 
+__all__ = ("Eyes",)
+
 
 @proxy_to("configure", all_fields(Configuration))
 class Eyes(EyesConfigurationMixin):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
+    _visual_locators_provider = None  # type: SeleniumVisualLocatorsProvider
     _runner = None  # type: Optional[VisualGridRunner]
     _driver = None  # type: Optional[EyesWebDriver]
     _is_opened = False  # type: bool
@@ -459,10 +464,15 @@ class Eyes(EyesConfigurationMixin):
             self.configure.test_name = test_name
         if viewport_size:
             self.configure.viewport_size = viewport_size  # type: ignore
-        self._init_driver(driver)
+        self._initialize(driver)
         result = self._current_eyes.open(self.driver)
         self._is_opened = True
         return result
+
+    def locate(self, visual_locator_settings):
+        # type: (VisualLocatorSettings) -> LOCATORS_TYPE
+        argument_guard.is_a(visual_locator_settings, VisualLocatorSettings)
+        return self._visual_locators_provider.get_locators(visual_locator_settings)
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -518,6 +528,15 @@ class Eyes(EyesConfigurationMixin):
             self._driver = driver
         else:
             self._driver = EyesWebDriver(driver, self)
+
+    def _init_locator_provider(self):
+        self._visual_locators_provider = SeleniumVisualLocatorsProvider(
+            self._driver, self._selenium_eyes
+        )
+
+    def _initialize(self, driver):
+        self._init_driver(driver)
+        self._init_locator_provider()
 
     @property
     def _current_eyes(self):
