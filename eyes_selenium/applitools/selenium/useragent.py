@@ -26,6 +26,7 @@ def parse_user_agent_string(ua_string):
         browser=browser_name,
         browser_major_version=ua["major"],
         browser_minor_version=ua["minor"],
+        origin_ua_string=ua_string,
     )
 
 
@@ -44,6 +45,7 @@ class UserAgent(object):
     browser = attr.ib()
     browser_major_version = attr.ib(converter=to_float)
     browser_minor_version = attr.ib(converter=to_float)
+    origin_ua_string = attr.ib()
 
 
 class BrowserNames(Enum):

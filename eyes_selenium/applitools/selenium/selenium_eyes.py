@@ -709,10 +709,7 @@ class SeleniumEyes(EyesBase):
     @property
     def _inferred_environment(self):
         # type: () -> Optional[Text]
-        try:
-            user_agent = self._driver.execute_script("return navigator.userAgent")
-        except WebDriverException:
-            user_agent = None
+        user_agent = self._driver.user_agent.origin_ua_string
         if user_agent:
             return "useragent:%s" % user_agent
         return None

@@ -17,7 +17,7 @@ from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import proxy_to, all_attrs
 from applitools.selenium.fluent import FrameLocator
 
-from . import eyes_selenium_utils
+from . import eyes_selenium_utils, useragent
 from .frames import Frame, FrameChain
 from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
@@ -281,6 +281,16 @@ class EyesWebDriver(object):
     def eyes(self):
         # type: () -> Eyes
         return self._eyes
+
+    @property
+    def user_agent(self):
+        # type: () -> useragent.UserAgent
+        try:
+            ua_string = self._driver.execute_script("return navigator.userAgent")
+            user_agent = useragent.parse_user_agent_string(ua_string)
+        except WebDriverException:
+            user_agent = None
+        return user_agent
 
     @property
     def session_id(self):
