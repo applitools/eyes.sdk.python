@@ -27,8 +27,8 @@ class SeleniumVisualLocatorsProvider(VisualLocatorsProvider):
         )  # type: DebugScreenshotProvider
 
     def _get_viewport_screenshot(self):
-        scale_provider = self._eyes._update_scaling_params()
-        return self._eyes._get_scaled_cropped_image(scale_provider)
+        scale_provider = self._eyes.update_scaling_params()
+        return self._eyes.get_scaled_cropped_viewport_image(scale_provider)
 
     def get_locators(self, visual_locator_settings):
         # type: (VisualLocatorSettings) -> LOCATORS_TYPE

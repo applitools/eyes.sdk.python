@@ -162,19 +162,20 @@ class SeleniumEyes(EyesBase):
         """
         return self._driver
 
-    def open(self, driver):
-        # type: (AnyWebDriver) -> EyesWebDriver
+    def open(self, driver, skip_start_session=False):
+        # type: (AnyWebDriver, bool) -> EyesWebDriver
         self._driver = driver
         self._screenshot_factory = EyesWebDriverScreenshotFactory(self.driver)
         self._ensure_viewport_size()
+        self._user_agent = self._driver.user_agent
 
-        self._open_base()
-
-        ua_string = self._session_start_info.environment.inferred
-        if ua_string:
-            ua_string = ua_string.replace("useragent:", "")
-            self._user_agent = useragent.parse_user_agent_string(ua_string)
-
+        if skip_start_session:
+            self._server_connector.update_config(
+                self.get_configuration(), self.full_agent_id
+            )
+            self._init_providers()
+        else:
+            self._open_base()
         self._image_provider = get_image_provider(self._user_agent, self)
         self._region_position_compensation = get_region_position_compensation(
             self._user_agent, self
@@ -342,7 +343,7 @@ class SeleniumEyes(EyesBase):
             if self._check_frame_or_element:
                 fc = self._ensure_frame_visible()
                 # FIXME - Scaling should be handled in a single place instead
-                scale_factory = self._update_scaling_params()
+                scale_factory = self.update_scaling_params()
                 screenshot_image = self._image_provider.get_image()
                 scale_factory.update_scale_ratio(screenshot_image.width)
                 self.driver.switch_to.frames(fc)
@@ -714,7 +715,7 @@ class SeleniumEyes(EyesBase):
             return "useragent:%s" % user_agent
         return None
 
-    def _update_scaling_params(self):
+    def update_scaling_params(self):
         # type: () -> Optional[ScaleProvider]
         if (
             self.device_pixel_ratio != self._UNKNOWN_DEVICE_PIXEL_RATIO
@@ -831,7 +832,7 @@ class SeleniumEyes(EyesBase):
 
         with self._try_hide_caret():
 
-            scale_provider = self._update_scaling_params()
+            scale_provider = self.update_scaling_params()
 
             if self._check_frame_or_element and not self.driver.is_mobile_app:
                 self._last_screenshot = self._entire_element_screenshot(scale_provider)
@@ -909,14 +910,14 @@ class SeleniumEyes(EyesBase):
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
             datetime_utils.sleep(self.configure.wait_before_screenshots)
-            image = self._get_scaled_cropped_image(scale_provider)
-            if not self._is_check_region and not self._driver.is_mobile_platform:
+            image = self.get_scaled_cropped_viewport_image(scale_provider)
+            if not (self._is_check_region or self._driver.is_mobile_platform):
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
             return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
-    def _get_scaled_cropped_image(self, scale_provider):
+    def get_scaled_cropped_viewport_image(self, scale_provider):
         image = self._image_provider.get_image()
         self._debug_screenshot_provider.save(image, "original")
         scale_provider.update_scale_ratio(image.width)

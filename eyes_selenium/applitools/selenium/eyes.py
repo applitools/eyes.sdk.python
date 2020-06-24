@@ -55,16 +55,17 @@ class Eyes(EyesConfigurationMixin):
         super(Eyes, self).__init__()
 
         # backward compatibility with settings server_url
-        if isinstance(runner, str):
-            self.configure.server_url = runner
-            runner = None
-
         if runner is None:
+            self._selenium_eyes = SeleniumEyes(self, None)
+        elif isinstance(runner, str):
+            self.configure.server_url = runner
             self._selenium_eyes = SeleniumEyes(self, None)
         elif isinstance(runner, VisualGridRunner):
             self._runner = runner
             self._visual_grid_eyes = VisualGridEyes(self, runner)
             self._is_visual_grid_eyes = True
+            # for visual locators
+            self._selenium_eyes = SeleniumEyes(self, None)
         elif isinstance(runner, ClassicRunner):
             self._runner = runner
             self._selenium_eyes = SeleniumEyes(self, runner)
@@ -464,7 +465,12 @@ class Eyes(EyesConfigurationMixin):
             self.configure.test_name = test_name
         if viewport_size:
             self.configure.viewport_size = viewport_size  # type: ignore
-        self._initialize(driver)
+
+        self._init_driver(driver)
+        self._init_locator_provider()
+        if self._is_visual_grid_eyes:
+            self._selenium_eyes.open(self._driver, skip_start_session=True)
+
         result = self._current_eyes.open(self.driver)
         self._is_opened = True
         return result
@@ -533,10 +539,6 @@ class Eyes(EyesConfigurationMixin):
         self._visual_locators_provider = SeleniumVisualLocatorsProvider(
             self._driver, self._selenium_eyes
         )
-
-    def _initialize(self, driver):
-        self._init_driver(driver)
-        self._init_locator_provider()
 
     @property
     def _current_eyes(self):

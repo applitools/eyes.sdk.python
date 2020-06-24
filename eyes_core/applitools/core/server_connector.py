@@ -574,8 +574,6 @@ class ServerConnector(object):
 
     def post_locators(self, visual_locators_data):
         # type: (VisualLocatorsData) -> LOCATORS_TYPE
-        if not self.is_session_started:
-            raise EyesError("Session not started")
         data = json_utils.to_json(visual_locators_data)
         response = self._com.long_request("post", "api/locators/locate", data=data)
         response.raise_for_status()
