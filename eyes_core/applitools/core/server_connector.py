@@ -419,8 +419,8 @@ class ServerConnector(object):
         app_output = match_data.app_output
         # when screenshot_url is present we don't need to upload again
         if app_output.screenshot_url is None:
-            app_output.screenshot_url = self._try_upload_data(
-                match_data.app_output.screenshot_bytes, "image/png", "image/png"
+            app_output.screenshot_url = self.try_upload_image(
+                match_data.app_output.screenshot_bytes
             )
         if app_output.screenshot_url is None:
             raise EyesError(
