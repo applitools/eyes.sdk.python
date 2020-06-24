@@ -46,22 +46,12 @@ class VisualLocator(ABC):
     @staticmethod
     def name(name):
         # type: (Text) -> VisualLocatorSettings
-        """
-
-        :param name:
-        :return:
-        """
         argument_guard.is_a(name, basestring)
         return VisualLocatorSettings(name)
 
     @staticmethod
     def names(*names):
         # type: (*Union[Text, List[Text]]) -> VisualLocatorSettings
-        """
-
-        :param names:
-        :return:
-        """
         argument_guard.not_list_or_tuple(names)
         if len(names) == 1 and is_list_or_tuple(names[0]):
             names = names[0]
