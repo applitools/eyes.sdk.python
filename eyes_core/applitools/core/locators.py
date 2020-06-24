@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from copy import copy
 from typing import Text, List, Union, Dict
 
@@ -6,7 +6,7 @@ import attr
 
 from applitools.common import Region
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring
+from applitools.common.utils.compat import basestring, ABC
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
 
