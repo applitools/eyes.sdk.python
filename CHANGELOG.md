@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Support of visual locators [Trello 1754](https://trello.com/c/S1xgtP7A)
+
 ## [4.3.1] - 2020-06-18
 ### Updated
 - Internal changes for ticket [Trello 1872](https://trello.com/c/bykk2rzB)
