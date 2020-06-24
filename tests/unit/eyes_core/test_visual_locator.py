@@ -22,6 +22,9 @@ def test_wrong_visual_locator_names():
 def test_visual_locator_name(name):
     vl = VisualLocator.name(name)
     assert vl.names == [name]
+    assert vl.is_first_only == True
+    vl = vl.all()
+    assert vl.is_first_only == False
 
     vl = VisualLocator.names(name, name)
     assert vl.names == [name, name]
