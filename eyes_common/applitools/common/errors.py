@@ -1,6 +1,5 @@
 __all__ = (
     "EyesError",
-    "EyesIllegalArgument",
     "OutOfBoundsError",
     "TestFailedError",
     "NewTestError",
@@ -12,12 +11,6 @@ __all__ = (
 class EyesError(Exception):
     """
     Applitools Eyes Exception.
-    """
-
-
-class EyesIllegalArgument(EyesError):
-    """
-    Raise when parameter with wrong type passed to function
     """
 
 

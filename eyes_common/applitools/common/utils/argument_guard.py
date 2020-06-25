@@ -1,4 +1,4 @@
-from applitools.common.errors import EyesIllegalArgument
+from applitools.common.validators import is_list_or_tuple
 
 from .compat import iteritems
 
@@ -15,6 +15,14 @@ def not_none(param):
     """
     if param is None:
         raise ValueError("{} is None".format(get_name_from_param(param)))
+
+
+def not_list_or_tuple(param):
+    """
+    Fails if param is not a list or tuple
+    """
+    if not is_list_or_tuple(param):
+        raise ValueError("{} is not list or tuple")
 
 
 def not_none_or_empty(param):
@@ -50,17 +58,17 @@ def is_valid_state(is_valid, message):
     Fails if is_valid is false.
     """
     if not is_valid:
-        raise Exception(message)
+        raise ValueError(message)
 
 
 def is_a(param, klass):
     if not isinstance(param, klass):
-        raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))
+        raise ValueError("{} is not instance of {}".format(param, klass))
 
 
 def is_in(param, klass):
     if not any(isinstance(param, kls) for kls in klass):
-        raise EyesIllegalArgument("{} is not instance of {}".format(param, klass))
+        raise ValueError("{} is not instance of {}".format(param, klass))
 
 
 def are_(params, klass):

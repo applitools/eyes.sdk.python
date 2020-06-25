@@ -36,8 +36,6 @@ class Configuration(ConfigurationBase):
     hide_caret = attr.ib(default=False)  # type: bool
 
     # Rendering Configuration
-    is_raise_exception_on = False  # type: bool
-    is_rendering_config = False  # type: bool
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
