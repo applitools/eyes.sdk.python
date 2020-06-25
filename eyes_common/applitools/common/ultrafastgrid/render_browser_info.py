@@ -1,17 +1,15 @@
 from abc import abstractmethod
-from typing import Optional, Text, Union, overload, Dict
+from typing import Optional, Text, Union
 
 import attr
 
 from applitools.common.geometry import RectangleSize
 from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import ABC
-from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 
 from .config import (
     IosDeviceName,
-    IosScreenOrientation,
     ScreenOrientation,
     DeviceName,
 )
@@ -103,19 +101,19 @@ class ChromeEmulationInfo(EmulationBaseInfo, IRenderBrowserInfo):
 class IosDeviceInfo(IRenderBrowserInfo):
     device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NAME: "name"})
     screen_orientation = attr.ib(
-        type=IosScreenOrientation, metadata={JsonInclude.NON_NONE: True}
+        type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
     )
 
     def __init__(
         self,
         device_name,  # type: Union[IosDeviceName,Text]
-        screen_orientation=IosScreenOrientation.PORTRAIT,  # type:Union[IosScreenOrientation,Text] # noqa
+        screen_orientation=ScreenOrientation.PORTRAIT,  # type:Union[ScreenOrientation,Text] # noqa
         baseline_env_name=None,  # type: Optional[Text]
     ):
         self.device_name = IosDeviceName(device_name)  # type: IosDeviceName
-        self.screen_orientation = IosScreenOrientation(
+        self.screen_orientation = ScreenOrientation(
             screen_orientation
-        )  # type: IosScreenOrientation
+        )  # type: ScreenOrientation
         self._baseline_env_name = baseline_env_name  # type: Optional[Text]
 
     @property

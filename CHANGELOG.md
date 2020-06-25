@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Support of visual locators [Trello 1754](https://trello.com/c/S1xgtP7A)
+### Updated
+- Removed `IosScreenOrientation` enum in favor of existing `ScreenOrientation` enum due to same viewports issue. [Trello 1944](https://trello.com/c/EzyG7525)
 
 ## [4.3.1] - 2020-06-18
 ### Updated

@@ -2,7 +2,6 @@ from applitools.common import (
     DeviceName,
     MatchLevel,
     Region,
-    ScreenOrientation,
     StdoutLogger,
     FileLogger,
     logger,
@@ -13,7 +12,7 @@ from applitools.common import (
 )
 from applitools.common.ultrafastgrid import (
     IosDeviceInfo,
-    IosScreenOrientation,
+    ScreenOrientation,
     IosDeviceName,
     ChromeEmulationInfo,
     DesktopBrowserInfo,
@@ -75,7 +74,6 @@ __all__ = (
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
     "AccessibilityRegion",
-    "IosScreenOrientation",
     "IosDeviceName",
     "IosDeviceInfo",
     "ChromeEmulationInfo",
