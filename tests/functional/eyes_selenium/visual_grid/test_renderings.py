@@ -14,9 +14,8 @@ from applitools.selenium import (
     VisualGridRunner,
     RectangleSize,
     logger,
-    ScreenOrientation,
     IosDeviceName,
-    IosScreenOrientation,
+    ScreenOrientation,
     IosDeviceInfo,
 )
 from tests.utils import get_session_results
@@ -204,7 +203,7 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
             test_name="UFG Mobile Web Happy Flow",
             batch=batch_info,
         ).add_browser(
-            IosDeviceInfo(IosDeviceName.iPhone_XR, IosScreenOrientation.LANDSCAPE_LEFT)
+            IosDeviceInfo(IosDeviceName.iPhone_XR, ScreenOrientation.LANDSCAPE)
         )
     )
     eyes.open(driver, viewport_size=RectangleSize(800, 600))
@@ -222,7 +221,7 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
             batch=batch_info,
         )
         .add_browser(IosDeviceInfo("iPhone 7"))
-        .add_browser(IosDeviceInfo("iPhone 11", "landscapeLeft"))
+        .add_browser(IosDeviceInfo("iPhone 11", "landscape"))
     )
     eyes.open(driver)
     eyes.check_window()

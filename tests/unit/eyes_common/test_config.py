@@ -16,7 +16,7 @@ from applitools.common.selenium import Configuration as SeleniumConfiguration
 from applitools.common.ultrafastgrid import (
     IosDeviceInfo,
     IosDeviceName,
-    IosScreenOrientation,
+    ScreenOrientation,
     ChromeEmulationInfo,
     DeviceName,
     ScreenOrientation,
@@ -119,7 +119,7 @@ def test_set_value_to_sel_conf():
 def test_add_browser():
     conf = SeleniumConfiguration().add_browser(IosDeviceInfo("iPhone X", "portrait"))
     assert conf.browsers_info == [
-        IosDeviceInfo(IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT)
+        IosDeviceInfo(IosDeviceName.iPhone_X, ScreenOrientation.PORTRAIT)
     ]
 
     conf = SeleniumConfiguration().add_browser(
@@ -145,10 +145,9 @@ def test_add_browser():
 
 def test_add_browsers():
     conf = SeleniumConfiguration().add_browsers(
-        IosDeviceInfo("iPhone X", "portrait"),
-        IosDeviceInfo("iPhone 11", "landscapeLeft"),
+        IosDeviceInfo("iPhone X", "portrait"), IosDeviceInfo("iPhone 11", "landscape"),
     )
     assert conf.browsers_info == [
-        IosDeviceInfo(IosDeviceName.iPhone_X, IosScreenOrientation.PORTRAIT),
-        IosDeviceInfo(IosDeviceName.iPhone_11, IosScreenOrientation.LANDSCAPE_LEFT),
+        IosDeviceInfo(IosDeviceName.iPhone_X, ScreenOrientation.PORTRAIT),
+        IosDeviceInfo(IosDeviceName.iPhone_11, ScreenOrientation.LANDSCAPE),
     ]

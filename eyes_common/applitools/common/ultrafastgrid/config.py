@@ -53,9 +53,3 @@ class IosDeviceName(Enum):
     iPad_Pro_3 = "iPad Pro (12.9-inch) (3rd generation)"
     iPad_7 = "iPad (7th generation)"
     iPad_Air_2 = "iPad Air (2nd generation)"
-
-
-class IosScreenOrientation(Enum):
-    PORTRAIT = "portrait"
-    LANDSCAPE_LEFT = "landscapeLeft"
-    LANDSCAPE_RIGHT = "landscapeRight"

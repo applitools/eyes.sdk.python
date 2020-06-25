@@ -2,7 +2,7 @@ from applitools.common import VGResource
 from applitools.common.ultrafastgrid import (
     IosDeviceInfo,
     IosDeviceName,
-    IosScreenOrientation,
+    ScreenOrientation,
     DesktopBrowserInfo,
     BrowserType,
     RectangleSize,
@@ -47,21 +47,19 @@ def test_chrome_emulation_info():
 def test_ios_device_info():
     idi = IosDeviceInfo(IosDeviceName.iPhone_11_Pro)
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
-    assert idi.screen_orientation == IosScreenOrientation.PORTRAIT
+    assert idi.screen_orientation == ScreenOrientation.PORTRAIT
     assert idi.baseline_env_name is None
 
     idi = IosDeviceInfo(
-        IosDeviceName.iPhone_11_Pro,
-        IosScreenOrientation.LANDSCAPE_RIGHT,
-        "Baseline env",
+        IosDeviceName.iPhone_11_Pro, ScreenOrientation.LANDSCAPE, "Baseline env",
     )
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
-    assert idi.screen_orientation == IosScreenOrientation.LANDSCAPE_RIGHT
+    assert idi.screen_orientation == ScreenOrientation.LANDSCAPE
     assert idi.baseline_env_name == "Baseline env"
 
-    idi = IosDeviceInfo("iPhone 11 Pro", "landscapeRight")
+    idi = IosDeviceInfo("iPhone 11 Pro", "landscape")
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
-    assert idi.screen_orientation == IosScreenOrientation.LANDSCAPE_RIGHT
+    assert idi.screen_orientation == ScreenOrientation.LANDSCAPE
 
 
 def test_desktop_browser_info():
