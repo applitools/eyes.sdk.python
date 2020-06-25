@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, List, Text, overload
 
 import attr
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.geometry import AccessibilityRegion, Region
@@ -21,6 +20,8 @@ from .region import (
     AccessibilityRegionBySelector,
 )
 from applitools.common.accessibility import AccessibilityRegionType
+from applitools.selenium.validators import is_webelement, is_list_or_tuple
+
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import VisualGridSelector
@@ -379,15 +380,3 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, accessibility_region_type
         )
-
-
-def is_list_or_tuple(elm):
-    return isinstance(elm, list) or isinstance(elm, tuple)
-
-
-def is_webelement(elm):
-    return (
-        isinstance(elm, EyesWebElement)
-        or isinstance(elm, WebElement)
-        or isinstance(getattr(elm, "_element", None), WebElement)
-    )
