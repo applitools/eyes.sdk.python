@@ -36,8 +36,6 @@ if typing.TYPE_CHECKING:
     from .fluent import SeleniumCheckSettings
     from .webelement import EyesWebElement
 
-__all__ = ("Eyes",)
-
 
 @proxy_to("configure", all_fields(Configuration))
 class Eyes(EyesConfigurationMixin):
