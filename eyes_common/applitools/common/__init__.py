@@ -50,7 +50,7 @@ from .ultrafastgrid.config import (  # noqa
     DeviceName,
     ScreenOrientation,
     IosDeviceName,
-    IosScreenOrientation,
+    ScreenOrientation,
 )
 from .ultrafastgrid.render_browser_info import (
     ChromeEmulationInfo,
