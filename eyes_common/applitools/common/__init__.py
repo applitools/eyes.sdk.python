@@ -20,7 +20,6 @@ from .errors import (  # noqa
     CoordinatesTypeConversionError,
     DiffsFoundError,
     EyesError,
-    EyesIllegalArgument,
     NewTestError,
     OutOfBoundsError,
     TestFailedError,
