@@ -34,7 +34,6 @@ from applitools.common.accessibility import (  # noqa
     AccessibilityGuidelinesVersion,
 )
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
-from applitools.core.locators import VisualLocator  # noqa
 from applitools.core.batch_close import BatchClose  # noqa
 
 from .classic_runner import ClassicRunner  # noqa
@@ -81,5 +80,4 @@ __all__ = (
     "IosDeviceInfo",
     "ChromeEmulationInfo",
     "DesktopBrowserInfo",
-    "VisualLocator",
 )
