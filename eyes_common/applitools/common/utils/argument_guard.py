@@ -1,4 +1,3 @@
-from applitools.common.errors import EyesError
 from applitools.common.validators import is_list_or_tuple
 
 from .compat import iteritems
@@ -59,7 +58,7 @@ def is_valid_state(is_valid, message):
     Fails if is_valid is false.
     """
     if not is_valid:
-        raise EyesError(message)
+        raise ValueError(message)
 
 
 def is_a(param, klass):
