@@ -68,6 +68,12 @@ from .ultrafastgrid.render_request import (  # noqa
     VGResource,
     VisualGridSelector,
 )
+from .accessibility import (  # noqa
+    AccessibilityRegionType,
+    AccessibilitySettings,
+    AccessibilityLevel,
+    AccessibilityGuidelinesVersion,
+)
 
 __all__ = (
     logger.__all__  # noqa
@@ -97,5 +103,9 @@ __all__ = (
         "RunningRender",
         "VGResource",
         "VisualGridSelector",
+        "AccessibilityRegionType",
+        "AccessibilitySettings",
+        "AccessibilityLevel",
+        "AccessibilityGuidelinesVersion",
     )  # noqa
 )
