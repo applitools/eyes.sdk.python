@@ -58,7 +58,7 @@ def eyes_class():
 
 @pytest.fixture
 def webdriver_module():
-    return webdriver
+    return webdriver.remote.webdriver
 
 
 def underscore_to_camelcase(text):
@@ -109,6 +109,15 @@ def driver(request, browser_config, webdriver_module):
     test_page_url = request.node.get_closest_marker("test_page_url")
     test_page_url = test_page_url.args[-1] if test_page_url else None
 
+    # configure eyes options through @pytest.mark.driver_config() marker
+    config_mark_opts = request.node.get_closest_marker("driver_config")
+    config_mark_opts = config_mark_opts.kwargs if config_mark_opts else {}
+    webdriver_module = (
+        config_mark_opts.get("webdriver_module")
+        if config_mark_opts.get("webdriver_module")
+        else webdriver_module
+    )
+
     force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
         force_remote = True
@@ -126,7 +135,7 @@ def driver(request, browser_config, webdriver_module):
         desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
         desired_caps["name"] = test_name
 
-        browser = webdriver_module.Remote(
+        browser = webdriver_module.WebDriver(
             command_executor=selenium_url, desired_capabilities=desired_caps
         )
     else:

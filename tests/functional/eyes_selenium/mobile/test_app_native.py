@@ -1,4 +1,10 @@
 import pytest
+from appium.webdriver import webdriver
+
+
+@pytest.fixture
+def webdriver_module():
+    return webdriver
 
 
 @pytest.mark.platform("Android")
