@@ -1,4 +1,7 @@
+import warnings
 from enum import Enum
+
+from applitools.common.utils.general_utils import DynamicEnumGetter
 
 
 class ScreenOrientation(Enum):
@@ -67,6 +70,16 @@ class DeviceName(Enum):
     Galaxy_S9 = "Galaxy S9"
     OnePlus_7T = "OnePlus 7T"
     OnePlus_7T_Pro = "OnePlus 7T Pro"
+
+    @DynamicEnumGetter
+    def iPhone6_7_8_Plus(self):
+        warnings.warn(
+            "The `iPhone6_7_8_Plus` option is deprecated. "
+            "Use `iPhone_6_7_8_Plus` instead.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        return self.iPhone_6_7_8_Plus
 
 
 class IosDeviceName(Enum):
