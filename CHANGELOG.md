@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Add additional devices support to the DeviceName ENUM [Trello 1751](https://trello.com/c/JOyUqzEM)
+
 ## [4.4.0] - 2020-06-25
 ### Added
 - Support of visual locators [Trello 1754](https://trello.com/c/S1xgtP7A)
