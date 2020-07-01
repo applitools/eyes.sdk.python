@@ -1,4 +1,4 @@
-## [vNext]
+## [4.4.1] - 2020-07-01
 ### Updated
 - Add additional devices support to the DeviceName ENUM [Trello 1751](https://trello.com/c/JOyUqzEM)
 
