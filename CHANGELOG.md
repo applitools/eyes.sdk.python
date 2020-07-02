@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Remove get\set_viewport_size from Eyes images [Trello 1413](https://trello.com/c/v32N4D8S)
+
 ## [4.4.1] - 2020-07-01
 ### Updated
 - Add additional devices support to the DeviceName ENUM [Trello 1751](https://trello.com/c/JOyUqzEM)
