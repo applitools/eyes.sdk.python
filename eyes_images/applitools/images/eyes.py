@@ -48,14 +48,6 @@ class Eyes(EyesBase):
             return self._inferred
         return ""
 
-    @staticmethod
-    def get_viewport_size():
-        pass
-
-    @staticmethod
-    def set_viewport_size(value):
-        pass
-
     def _get_viewport_size(self):
         # type: () -> RectangleSize
         return self.configure.viewport_size
