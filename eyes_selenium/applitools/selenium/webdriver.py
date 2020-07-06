@@ -279,6 +279,7 @@ class EyesWebDriver(object):
         """
         self._proxy_to_fields = all_attrs(driver)
         self._driver = driver  # type: Union[WebDriver, AppiumWebDriver]
+        driver.command_executor._commands['getSession'] = ('GET', '/session/$sessionId')
         self._eyes = eyes
         # List of frames the user switched to, and the current offset,
         # so we can properly calculate elements' coordinates
@@ -318,6 +319,10 @@ class EyesWebDriver(object):
     @property
     def session_id(self):
         return self._driver.session_id
+
+    @property
+    def session_info(self):
+        return self._driver.execute('getSession')['value']
 
     @cached_property
     def platform_name(self):
