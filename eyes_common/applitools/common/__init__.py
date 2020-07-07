@@ -53,6 +53,7 @@ from .ultrafastgrid.config import (  # noqa
     ScreenOrientation,
 )
 from .ultrafastgrid.render_browser_info import (
+    IosDeviceInfo,
     ChromeEmulationInfo,
     DesktopBrowserInfo,
     RenderBrowserInfo,
