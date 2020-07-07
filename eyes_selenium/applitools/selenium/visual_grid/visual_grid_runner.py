@@ -30,6 +30,9 @@ class VisualGridRunner(EyesRunner):
     def __init__(self, concurrent_sessions=None):
         # type: (Optional[int]) -> None
         super(VisualGridRunner, self).__init__()
+        logger.debug(
+            "VisualGridRunner(concurrent_sessions={})".format(concurrent_sessions)
+        )
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
@@ -37,7 +40,9 @@ class VisualGridRunner(EyesRunner):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
         self.resource_cache = ResourceCache()  # type:ResourceCache
-        self.put_cache = ResourceCache()  # type:ResourceCache
+        self.put_cache = ResourceCache(
+            thread_name_prefix="PutCache"
+        )  # type:ResourceCache
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 

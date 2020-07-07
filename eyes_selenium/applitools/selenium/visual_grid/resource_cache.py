@@ -7,11 +7,11 @@ from applitools.common import VGResource, logger
 
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
-    def __init__(self):
+    def __init__(self, thread_name_prefix="ResourceCache"):
         self.cache_map = {}
         kwargs = {}
         if sys.version_info >= (3, 6):
-            kwargs["thread_name_prefix"] = "ResourceCache-Executor"
+            kwargs["thread_name_prefix"] = "{}-Executor".format(thread_name_prefix)
         self.executor = ThreadPoolExecutor(**kwargs)
         self.lock = threading.RLock()
 
