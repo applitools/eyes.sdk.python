@@ -329,6 +329,16 @@ def set_viewport_size(driver, required_size):
                 return None
         else:
             logger.info("Zoom workaround failed.")
+
+    # Attempt to fix by minimizing window
+    logger.info("Trying workaround for minimization...")
+    driver.minimize()
+    set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
+    actual_viewport_size = get_viewport_size(driver)
+    if actual_viewport_size == required_size:
+        return None
+    logger.info("Minimization workaround failed.")
+
     raise WebDriverException("Failed to set the viewport size.")
 
 
