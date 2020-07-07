@@ -433,7 +433,7 @@ class Region(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type:Union[Text,CoordinatesType]
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: Union[Text,CoordinatesType]
     ):
         # type: (...) -> None
         super(Region, self).__init__(left, top, width, height)
