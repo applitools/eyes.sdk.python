@@ -1,18 +1,17 @@
-import sys
 import threading
 import typing
 from concurrent.futures import Future, ThreadPoolExecutor
 
 from applitools.common import VGResource, logger
 
+URL_VGRESOURCE_TYPE = typing.Mapping[typing.Text, VGResource]
 
-class ResourceCache(typing.Mapping[typing.Text, VGResource]):
-    def __init__(self, thread_name_prefix="ResourceCache"):
+
+class ResourceCache(URL_VGRESOURCE_TYPE):
+    def __init__(self, executor):
+        # type: (ThreadPoolExecutor) -> None
         self.cache_map = {}
-        kwargs = {}
-        if sys.version_info >= (3, 6):
-            kwargs["thread_name_prefix"] = "{}-Executor".format(thread_name_prefix)
-        self.executor = ThreadPoolExecutor(**kwargs)
+        self.executor = executor
         self.lock = threading.RLock()
 
     def __str__(self):

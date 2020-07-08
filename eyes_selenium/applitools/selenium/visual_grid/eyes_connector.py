@@ -1,5 +1,7 @@
 import typing
 
+from requests.adapters import HTTPAdapter
+
 from applitools.common import (
     AppEnvironment,
     AppOutput,
@@ -17,6 +19,7 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
 from applitools.core.capture import AppOutputWithScreenshot
+from applitools.core.server_connector import ClientSession, ServerConnector
 from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
 
@@ -33,20 +36,46 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.fluent import SeleniumCheckSettings
 
 
+class VGClientSession(ClientSession):
+    SESSION_POOL_CONNECTIONS = 32
+    SESSION_MAX_POOL_SIZE = SESSION_POOL_CONNECTIONS + 4
+
+    def __init__(self):
+        super(VGClientSession, self).__init__()
+        self._session.mount(
+            "https://",
+            HTTPAdapter(
+                pool_connections=self.SESSION_POOL_CONNECTIONS,
+                pool_maxsize=self.SESSION_MAX_POOL_SIZE,
+            ),
+        )
+        self._session.mount(
+            "http://",
+            HTTPAdapter(
+                pool_connections=self.SESSION_POOL_CONNECTIONS,
+                pool_maxsize=self.SESSION_MAX_POOL_SIZE,
+            ),
+        )
+
+
 class EyesConnector(EyesBase):
+    _session_cls = VGClientSession
+
     def __init__(self, browser_info, config, ua_string, rendering_info):
-        # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
+        # type: (RenderBrowserInfo,Configuration,Text,Optional[RenderingInfo])->None
         super(EyesConnector, self).__init__()
+        self._current_uuid = None
+        self._region_selectors = None
+        self._regions = None
+        self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
+
         self.device_name = getattr(browser_info, "device_name", None)
         self._browser_info = browser_info  # type: IRenderBrowserInfo
-        self._current_uuid = None
-        self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
+        self._ua_string = ua_string
         self.set_configuration(config)
         self._server_connector.update_config(
             config, self.full_agent_id, rendering_info, ua_string
         )
-        self._region_selectors = None
-        self._regions = None
 
     def open(self, config):
         # type: (Configuration) -> None

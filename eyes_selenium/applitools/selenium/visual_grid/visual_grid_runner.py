@@ -14,8 +14,9 @@ from applitools.common import (
 )
 from applitools.common.utils import datetime_utils, iteritems, counted
 from applitools.core import EyesRunner
+from .eyes_connector import VGClientSession
 from .helpers import collect_test_results, wait_till_tests_completed
-from .resource_cache import ResourceCache
+from .resource_cache import ResourceCache, URL_VGRESOURCE_TYPE
 
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Dict
@@ -34,20 +35,35 @@ class VisualGridRunner(EyesRunner):
             "VisualGridRunner(concurrent_sessions={})".format(concurrent_sessions)
         )
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
+        self._future_to_task = {}  # type: URL_VGRESOURCE_TYPE
 
-        kwargs = {}
-        if sys.version_info >= (3, 6):
-            kwargs["thread_name_prefix"] = "VGR-Executor"
-
-        self.resource_cache = ResourceCache()  # type:ResourceCache
-        self.put_cache = ResourceCache(
-            thread_name_prefix="PutCache"
-        )  # type:ResourceCache
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 
+        self._init_vgr_executor(concurrent_sessions)
+        self._init_resource_cache()
+        self._init_vgr_control_thread()
+
+    def _init_vgr_executor(self, concurrent_sessions):
+        kwargs = {}
+        if sys.version_info >= (3, 6):
+            kwargs["thread_name_prefix"] = "VGR-Executor"
         self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
-        self._future_to_task = ResourceCache()  # type:ResourceCache
+
+    def _init_resource_cache(self):
+        kwargs = {"max_workers": VGClientSession.SESSION_POOL_CONNECTIONS}
+        if sys.version_info >= (3, 6):
+            kwargs["thread_name_prefix"] = "ResourceCache-Executor"
+
+        self._resource_cache_executor = ThreadPoolExecutor(**kwargs)
+        self.resource_cache = ResourceCache(
+            self._resource_cache_executor
+        )  # type:ResourceCache
+        self.put_cache = ResourceCache(
+            self._resource_cache_executor
+        )  # type:ResourceCache
+
+    def _init_vgr_control_thread(self):
         thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
         thread.daemon = True
@@ -96,9 +112,8 @@ class VisualGridRunner(EyesRunner):
             else:
                 logger.debug("%s task ran" % task)
 
-        self.put_cache.executor.shutdown()
-        self.resource_cache.executor.shutdown()
         self._executor.shutdown()
+        self._resource_cache_executor.shutdown()
         self._thread.join()
 
     def _get_all_test_results_impl(self, should_raise_exception=True):

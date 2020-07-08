@@ -47,13 +47,13 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
 __all__ = ("ServerConnector",)
 
 
-@attr.s
 class ClientSession(object):
     """ A proxy to requests.Session """
 
-    _session = attr.ib(
-        factory=requests.Session
-    )  # type: Union[requests, requests.Session]
+    def __init__(self, session=None):
+        if session is None:
+            session = requests.Session()
+        self._session = session  # type: Union[requests, requests.Session]
 
     def __enter__(self):
         return self

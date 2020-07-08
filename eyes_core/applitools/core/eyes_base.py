@@ -32,7 +32,7 @@ from applitools.core.eyes_mixins import EyesConfigurationMixin
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
-from .server_connector import ServerConnector
+from .server_connector import ServerConnector, ClientSession
 
 if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
@@ -112,6 +112,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
     _cut_provider = None
     _should_get_title = False  # type: bool
     _config_cls = Configuration
+    _session_cls = ClientSession
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -133,7 +134,9 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         interacts with the Eyes server.
         """
         super(EyesBase, self).__init__()
-        self._server_connector = ServerConnector()  # type: ServerConnector
+        self._server_connector = ServerConnector(
+            self._session_cls()
+        )  # type: ServerConnector
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshot_provider = NullDebugScreenshotProvider()
 
