@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator
 from lxml import etree
 
 import tinycss2
@@ -64,3 +64,17 @@ def get_urls_from_svg_resource(content):
             continue
         urls_from_svg.append(url)
     return urls_from_svg
+
+
+def collect_urls_from_(content_type, content):
+    # type: (Text, bytes) -> Generator[Text]
+    urls_from_css, urls_from_svg = [], []
+    if content_type.startswith("text/css"):
+        urls_from_css = get_urls_from_css_resource(content)
+    if content_type.startswith("image/svg"):
+        urls_from_svg = get_urls_from_svg_resource(content)
+    for discovered_url in urls_from_css + urls_from_svg:
+        if discovered_url.startswith("data:") or discovered_url.startswith("#"):
+            # resource already in blob or not relevant
+            continue
+        yield discovered_url
