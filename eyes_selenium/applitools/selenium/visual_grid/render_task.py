@@ -24,7 +24,7 @@ from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
     from typing import Callable, Dict, Any, Text, List, Optional
-    from applitools.common import RenderStatusResults, Region
+    from applitools.common import RenderStatusResults, Region, RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
         EyesConnector,
@@ -41,7 +41,7 @@ class RenderTask(VGTask):
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
     put_cache = attr.ib(hash=False, repr=False)
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
-    rendering_info = attr.ib()
+    rendering_info = attr.ib()  # type: RenderingInfo
     region_selectors = attr.ib(
         hash=False, factory=list
     )  # type: List[List[VisualGridSelector]]
@@ -176,6 +176,7 @@ class RenderTask(VGTask):
                     webhook=self.rendering_info.results_url,
                     agent_id=self.agent_id,
                     url=dom.url,
+                    stitching_service=self.rendering_info.stitching_service_url,
                     dom=dom,
                     resources=request_resources,
                     render_info=r_info,

@@ -326,6 +326,7 @@ def test_match_window_with_image_uploading(started_connector, server_status):
         access_token="some access",
         service_url="https://render-wus.applitools.com",
         results_url="https://eyespublicwustemp.blob.core.windows.net/temp/__random__?sv=2017-04-17&sr=c&sig=aAArw3au%",
+        stitching_service_url="https://some.stitchingserviceuri.com",
     )
     with patch(
         "applitools.core.server_connector.ServerConnector.render_info",
