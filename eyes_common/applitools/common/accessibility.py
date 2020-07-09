@@ -61,7 +61,7 @@ class AccessibilityStatus(Enum):
 
 @attr.s(init=False)
 class SessionAccessibilityStatus(AccessibilitySettings):
-    status = attr.ib(type=AccessibilityStatus, metadata={JsonInclude.THIS: True},)
+    status = attr.ib(type=AccessibilityStatus, metadata={JsonInclude.THIS: True},) # type: Union[Text,AccessibilityStatus]
 
     def __init__(
         self,

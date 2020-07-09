@@ -53,8 +53,8 @@ class IRenderBrowserInfo(ABC):
 
 @attr.s
 class EmulationBaseInfo(ABC):
-    device_name = attr.ib()
-    screen_orientation = attr.ib()
+    device_name = attr.ib() # type: Union[DeviceName,Text]
+    screen_orientation = attr.ib() # type:Union[ScreenOrientation,Text]
 
 
 @attr.s(hash=True, init=False)
@@ -99,10 +99,10 @@ class ChromeEmulationInfo(EmulationBaseInfo, IRenderBrowserInfo):
 
 @attr.s(hash=True, init=False)
 class IosDeviceInfo(IRenderBrowserInfo):
-    device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NAME: "name"})
+    device_name = attr.ib(type=IosDeviceName, metadata={JsonInclude.NAME: "name"}) # type: Union[DeviceName,Text]
     screen_orientation = attr.ib(
-        type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
-    )
+        type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True} 
+    ) # type: Union[ScreenOrientation,Text]
 
     def __init__(
         self,
