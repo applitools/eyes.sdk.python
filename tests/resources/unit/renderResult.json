@@ -28,6 +28,7 @@
         "selectorsToFindRegionsFor": [],
         "sendDom": false,
         "url": "dom-url.com",
+        "stitchingService": "https://some.stitchingserviceuri.com",
         "webhook": "some-webhook.com"
     }
 ]
