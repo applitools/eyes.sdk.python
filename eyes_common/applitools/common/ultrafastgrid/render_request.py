@@ -229,6 +229,7 @@ class RenderRequest(object):
     webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     agent_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
+    stitching_service = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
     resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
     render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
