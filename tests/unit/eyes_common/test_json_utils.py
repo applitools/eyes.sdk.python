@@ -56,6 +56,7 @@ def test_render_request_serialize(browser_type):
         RenderRequest(
             webhook="some-webhook.com",
             agent_id="my-agent-id",
+            stitching_service="https://some.stitchingserviceuri.com",
             url=dom_url,
             dom=dom,
             resources=request_resources,
