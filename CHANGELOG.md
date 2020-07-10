@@ -1,4 +1,4 @@
-## [vNext]
+## [4.4.2] - 2020-07-10
 ### Updated
 - Remove get\set_viewport_size from Eyes images [Trello 1413](https://trello.com/c/v32N4D8S)
 - Added missing `stitching_service` URI field in `RenderRequest`. [Trello 1988](https://trello.com/c/Yr6EsUlL)
