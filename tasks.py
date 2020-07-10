@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 from os import path
 
 from invoke import task
@@ -162,22 +161,25 @@ def retrieve_js(c):
     for pack in _packages_resolver(selenium=True, full_path=True):
         with c.cd(pack):
             c.run("npm update --save", echo=True)
+        print("Moving js for {}".format(pack))
         move_js_resources_to(pack)
 
 
 def move_js_resources_to(pack):
     paths = [
-        "dom-capture/dist/captureDom.js",
-        "dom-snapshot/dist/processPage.js",
-        "dom-snapshot/dist/processPageAndPoll.js",
-        "dom-snapshot/dist/processPageAndSerialize.js",
+        "dom-capture/dist/captureDomAndPoll.js",
+        "dom-capture/dist/captureDomAndPollForIE.js",
+        "dom-snapshot/dist/processPageAndSerializePoll.js",
+        "dom-snapshot/dist/processPageAndSerializePollForIE.js",
     ]
     node_resources = path.join(pack, "applitools/selenium/resources/")
     node_modules = path.join(pack, "node_modules/@applitools")
     for pth in paths:
         from_ = path.join(node_modules, pth)
         name = path.basename(from_)
-        shutil.copy(from_, dst=path.join(node_resources, name))
+        to = path.join(node_resources, name)
+        print("Moving js lib from {} to {}".format(from_, to))
+        shutil.copy(from_, dst=to)
 
 
 @task

@@ -52,7 +52,7 @@ el = parent;
 return '/' + xpath;"""
 
 
-PROCESS_RESOURCES = resource.get_resource("processPageAndPoll.js")
+PROCESS_RESOURCES = resource.get_resource("processPageAndSerializePoll.js")
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
@@ -151,40 +151,14 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
-    def _start_timer(self):
-        def set_timer():
-            self.is_check_timer_timeout = True
-
-        timer = threading.Timer(DOM_EXTRACTION_TIMEOUT, set_timer)
-        timer.daemon = True
-        timer.setName("VG_StopWatch")
-        timer.start()
-        return timer
-
     def get_script_result(self):
         # type: () -> Dict
-        script_response = {}
-        status = None
-        timer = self._start_timer()
-        while True:
-            if status == "SUCCESS" or self.is_check_timer_timeout:
-                self.is_check_timer_timeout = False
-                break
-            script_result_string = self.driver.execute_script(
-                PROCESS_RESOURCES + "return __processPageAndPoll();"
-            )
-            try:
-                script_response = json.loads(
-                    script_result_string, object_pairs_hook=OrderedDict
-                )
-                status = script_response.get("status")
-            except Exception as e:
-                logger.exception(e)
-        timer.cancel()
-        script_result = script_response.get("value")
-        if script_result is None or status == "ERROR":
-            raise EyesError("Failed to capture script_result")
-        return script_result
+        return eyes_selenium_utils.get_dom_script_result(
+            self.driver,
+            DOM_EXTRACTION_TIMEOUT,
+            "VG_StopWatch",
+            PROCESS_RESOURCES + "return __processPageAndSerializePoll();",
+        )
 
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> None

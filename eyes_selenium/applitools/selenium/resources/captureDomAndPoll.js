@@ -1,7 +1,7 @@
-/* @applitools/dom-capture@7.1.3 */
+/* @applitools/dom-capture@7.2.4 */
 
-function __captureDom() {
-  var captureDom = (function () {
+function __captureDomAndPoll() {
+  var captureDomAndPoll = (function () {
   'use strict';
 
   const styleProps = [
@@ -17,6 +17,7 @@ function __captureDom() {
     'color',
     'display',
     'font-size',
+    'font-weight',
     'line-height',
     'margin',
     'opacity',
@@ -101,6 +102,17 @@ function __captureDom() {
 
   var genXpath_1 = genXpath;
 
+  function isInlineFrame(frame) {
+    return (
+      !/^https?:.+/.test(frame.src) ||
+      (frame.contentDocument &&
+        frame.contentDocument.location &&
+        ['about:blank', 'about:srcdoc'].includes(frame.contentDocument.location.href))
+    );
+  }
+
+  var isInlineFrame_1 = isInlineFrame;
+
   function absolutizeUrl(url, absoluteUrl) {
     return new URL(url, absoluteUrl).href;
   }
@@ -169,17 +181,26 @@ function __captureDom() {
 
   var parseCss_1 = parseCss;
 
-  function makeFetchCss(fetch) {
+  function makeFetchCss(fetch, {fetchTimeLimit} = {}) {
     return async function fetchCss(url) {
-      try {
-        const response = await fetch(url, {cache: 'force-cache'});
-        if (response.ok) {
-          return await response.text();
-        }
-        console.log('/failed to fetch (status ' + response.status + ') css from: ' + url + '/');
-      } catch (err) {
-        console.log('/failed to fetch (error ' + err.toString() + ') css from: ' + url + '/');
+      const controller = new AbortController();
+      const response = fetch(url, {cache: 'force-cache', signal: controller.signal})
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          }
+          console.log('/failed to fetch (status ' + response.status + ') css from: ' + url + '/');
+        })
+        .catch(err => {
+          console.log('/failed to fetch (error ' + err.toString() + ') css from: ' + url + '/');
+        });
+      const result = [response];
+      if (!Number.isNaN(Number(fetchTimeLimit))) {
+        result.push(
+          new Promise(resolve => setTimeout(resolve, fetchTimeLimit)).then(() => controller.abort()),
+        );
       }
+      return Promise.race(result);
     };
   }
 
@@ -191,14 +212,17 @@ function __captureDom() {
   };
 
   var isLinkToStyleSheet = function isLinkToStyleSheet(node) {
-    return (
-      node.nodeName &&
-      node.nodeName.toUpperCase() === 'LINK' &&
-      node.attributes &&
-      Array.from(node.attributes).find(
-        attr => attr.name.toLowerCase() === 'rel' && attr.value.toLowerCase() === 'stylesheet',
-      )
-    );
+    if (node.nodeName && node.nodeName.toUpperCase() === 'LINK' && node.attributes) {
+      const attributes = new Map(
+        Array.from(node.attributes, attr => [attr.name.toLowerCase(), attr.value.toLowerCase()]),
+      );
+      return (
+        attributes.get('rel') === 'stylesheet' ||
+        (attributes.get('as') === 'style' && ['preload', 'prefetch'].includes(attributes.get('rel')))
+      );
+    } else {
+      return false;
+    }
   };
 
   function isDataUrl(url) {
@@ -263,6 +287,7 @@ function __captureDom() {
   const NODE_TYPES = {
     ELEMENT: 1,
     TEXT: 3,
+    DOCUMENT_FRAGMENT: 11,
   };
 
   var nodeTypes = {NODE_TYPES};
@@ -273,12 +298,13 @@ function __captureDom() {
 
 
 
+
   function makePrefetchAllCss(fetchCss) {
     return async function prefetchAllCss(doc = document) {
       const cssMap = {};
       const start = Date.now();
       const promises = [];
-      doFetchAllCssFromFrame(doc, cssMap, promises);
+      doFetchAllCssFromFrame(doc, doc.location.href, cssMap, promises);
       await Promise.all(promises);
       console.log('[prefetchAllCss]', Date.now() - start);
 
@@ -324,11 +350,11 @@ function __captureDom() {
         }
       }
 
-      function doFetchAllCssFromFrame(frameDoc, cssMap, promises) {
+      function doFetchAllCssFromFrame(frameDoc, baseUrl, cssMap, promises) {
         fetchAllCssFromNode(frameDoc.documentElement);
 
         function fetchAllCssFromNode(node) {
-          promises.push(fetchNodeCss(node, frameDoc.location.href, cssMap));
+          promises.push(fetchNodeCss(node, baseUrl, cssMap));
 
           switch (node.nodeType) {
             case NODE_TYPES$1.ELEMENT: {
@@ -348,8 +374,12 @@ function __captureDom() {
 
         async function fetchAllCssFromIframe(el) {
           fetchAllCssFromElement(el);
+          if (!el.contentDocument) {
+            return;
+          }
           try {
-            doFetchAllCssFromFrame(el.contentDocument, cssMap, promises);
+            const baseUrl = isInlineFrame_1(el) ? el.baseURI : el.contentDocument.location.href;
+            doFetchAllCssFromFrame(el.contentDocument, baseUrl, cssMap, promises);
           } catch (ex) {
             console.log(ex);
           }
@@ -362,20 +392,21 @@ function __captureDom() {
 
   const {NODE_TYPES: NODE_TYPES$2} = nodeTypes;
 
-  const API_VERSION = '1.1.0';
+  const API_VERSION = '1.3.0';
 
   async function captureFrame(
     {styleProps, rectProps, ignoredTagNames} = defaultDomProps,
     doc = document,
     addStats = false,
+    fetchTimeLimit = 30000,
   ) {
-    const performance = {total: {}, prefetchCss: {}, doCaptureFrame: {}, waitForImages: {}};
+    const performance = {total: {}, prefetchCss: {}, doCaptureDoc: {}, waitForImages: {}};
     function startTime(obj) {
       obj.startTime = Date.now();
     }
     function endTime(obj) {
       obj.endTime = Date.now();
-      obj.ellapsedTime = obj.endTime - obj.startTime;
+      obj.elapsedTime = obj.endTime - obj.startTime;
     }
     const promises = [];
     startTime(performance.total);
@@ -386,7 +417,7 @@ function __captureDom() {
     const separator = '-----';
 
     startTime(performance.prefetchCss);
-    const prefetchAllCss$$1 = prefetchAllCss(fetchCss(fetch));
+    const prefetchAllCss$$1 = prefetchAllCss(fetchCss(fetch, {fetchTimeLimit}));
     const getCssFromCache = await prefetchAllCss$$1(doc);
     endTime(performance.prefetchCss);
 
@@ -404,9 +435,9 @@ function __captureDom() {
       unfetchedToken,
     });
 
-    startTime(performance.doCaptureFrame);
-    const capturedFrame = doCaptureFrame(doc);
-    endTime(performance.doCaptureFrame);
+    startTime(performance.doCaptureDoc);
+    const capturedFrame = doCaptureDoc(doc);
+    endTime(performance.doCaptureDoc);
 
     startTime(performance.waitForImages);
     await Promise.all(promises);
@@ -414,7 +445,7 @@ function __captureDom() {
 
     // Note: Change the API_VERSION when changing json structure.
     capturedFrame.version = API_VERSION;
-    capturedFrame.scriptVersion = '7.1.3';
+    capturedFrame.scriptVersion = '7.2.4';
 
     const iframePrefix = iframeCors.length ? `${iframeCors.join('\n')}\n` : '';
     const unfetchedPrefix = unfetchedResources.size
@@ -443,10 +474,6 @@ function __captureDom() {
     console.log('[captureFrame]', JSON.stringify(performance));
     return ret;
 
-    function filter(x) {
-      return !!x;
-    }
-
     function notEmptyObj(obj) {
       return Object.keys(obj).length ? obj : undefined;
     }
@@ -458,10 +485,10 @@ function __captureDom() {
       };
     }
 
-    function doCaptureFrame(frameDoc) {
+    function doCaptureDoc(docFrag, baseUrl = docFrag.location && docFrag.location.href) {
       const bgImages = new Set();
       let bundledCss = '';
-      const ret = captureNode(frameDoc.documentElement);
+      const ret = captureNode(docFrag.documentElement || docFrag);
       ret.css = bundledCss;
       promises.push(getImageSizes_1({bgImages}).then(images => (ret.images = images)));
       return ret;
@@ -469,7 +496,7 @@ function __captureDom() {
       function captureNode(node) {
         const {bundledCss: nodeCss, unfetchedResources: nodeUnfetched} = captureNodeCss$$1(
           node,
-          frameDoc.location.href,
+          baseUrl,
         );
         bundledCss += nodeCss;
         if (nodeUnfetched) for (const elem of nodeUnfetched) unfetchedResources.add(elem);
@@ -486,6 +513,11 @@ function __captureDom() {
               return elementToJSON(node);
             }
           }
+          case NODE_TYPES$2.DOCUMENT_FRAGMENT: {
+            return {
+              childNodes: Array.prototype.map.call(node.childNodes, captureNode).filter(Boolean),
+            };
+          }
           default: {
             return null;
           }
@@ -493,7 +525,8 @@ function __captureDom() {
       }
 
       function elementToJSON(el) {
-        const childNodes = Array.prototype.map.call(el.childNodes, captureNode).filter(filter);
+        const childNodes = Array.prototype.map.call(el.childNodes, captureNode).filter(Boolean);
+        const shadowRoot = el.shadowRoot && doCaptureDoc(el.shadowRoot, baseUrl);
 
         const tagName = el.tagName.toUpperCase();
         if (ignoredTagNames.indexOf(tagName) > -1) return null;
@@ -526,13 +559,17 @@ function __captureDom() {
           bgImages.add(bgImage);
         }
 
-        return {
+        const result = {
           tagName,
           style: notEmptyObj(style),
           rect: notEmptyObj(rect),
           attributes: notEmptyObj(attributes),
           childNodes,
         };
+        if (shadowRoot) {
+          result.shadowRoot = shadowRoot;
+        }
+        return result;
       }
 
       function iframeToJSON(el) {
@@ -546,7 +583,7 @@ function __captureDom() {
         }
         try {
           if (doc) {
-            obj.childNodes = [doCaptureFrame(el.contentDocument)];
+            obj.childNodes = [doCaptureDoc(doc, isInlineFrame_1(el) ? el.baseURI : doc.location.href)];
           } else {
             markFrameAsCors();
           }
@@ -566,9 +603,36 @@ function __captureDom() {
 
   var captureFrame_1 = captureFrame;
 
-  return captureFrame_1;
+  const EYES_NAME_SPACE = '__EYES__APPLITOOLS__';
+
+  function captureFrameAndPoll(...args) {
+    if (!window[EYES_NAME_SPACE]) {
+      window[EYES_NAME_SPACE] = {};
+    }
+    if (!window[EYES_NAME_SPACE].captureDomResult) {
+      window[EYES_NAME_SPACE].captureDomResult = {
+        status: 'WIP',
+        value: null,
+        error: null,
+      };
+      captureFrame_1(...args)
+        .then(r => ((resultObject.status = 'SUCCESS'), (resultObject.value = r)))
+        .catch(e => ((resultObject.status = 'ERROR'), (resultObject.error = e.message)));
+    }
+
+    const resultObject = window[EYES_NAME_SPACE].captureDomResult;
+    if (resultObject.status === 'SUCCESS') {
+      window[EYES_NAME_SPACE].captureDomResult = null;
+    }
+
+    return JSON.stringify(resultObject);
+  }
+
+  var captureFrameAndPoll_1 = captureFrameAndPoll;
+
+  return captureFrameAndPoll_1;
 
 }());
 
-  return captureDom.apply(this, arguments);
+  return captureDomAndPoll.apply(this, arguments);
 }
