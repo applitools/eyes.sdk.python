@@ -3,19 +3,17 @@ from typing import TYPE_CHECKING, List, overload, Union, Text
 import attr
 
 from applitools.common.config import Configuration as ConfigurationBase
-from applitools.common.geometry import RectangleSize
 from applitools.common.utils import argument_guard
 from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
     IRenderBrowserInfo,
     ScreenOrientation,
-    EmulationBaseInfo,
     IosDeviceInfo,
     DesktopBrowserInfo,
 )
-from applitools.common import logger
 from applitools.common.validators import is_list_or_tuple
+from applitools.common.utils.compat import raise_from
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
@@ -130,7 +128,7 @@ class Configuration(ConfigurationBase):
             try:
                 self.add_browser(render_info)
             except TypeError as e:
-                raise TypeError(e.args[0])
+                raise_from(TypeError("Wrong argument in .add_browsers()"), e)
         return self
 
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
