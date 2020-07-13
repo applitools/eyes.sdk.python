@@ -14,7 +14,8 @@ from applitools.common.ultrafastgrid import (
     IosDeviceInfo,
     DesktopBrowserInfo,
 )
-
+from applitools.common import logger
+from applitools.common.validators import is_list_or_tuple
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
@@ -104,13 +105,20 @@ class Configuration(ConfigurationBase):
                 DesktopBrowserInfo(args[0], args[1], args[2], baseline_env_name)
             )
         else:
-            raise ValueError("Unsupported parameters")
+            raise TypeError(
+                "Unsupported parameter: \n\ttype: {} \n\tvalue: {}".format(
+                    type(args), args
+                )
+            )
         return self
 
     def add_browsers(self, *renders_info):
         # type:(*Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo])->Configuration
         for render_info in renders_info:
-            self.add_browser(render_info)
+            try:
+                self.add_browser(render_info)
+            except TypeError as e:
+                raise TypeError(e.args[0])
         return self
 
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
