@@ -339,7 +339,9 @@ class Eyes(EyesConfigurationMixin):
         :return: The match results.
         """
         if self.configure.is_disabled:
+            logger.info("check(): ignored (disabled)")
             return MatchResult()
+        logger.info("check({}, {})".format(name, check_settings))
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
@@ -457,6 +459,11 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("open(): ignored (disabled)")
             return
+        logger.info(
+            "open(app_name={}, test_name={}, viewport_size={})".format(
+                app_name, test_name, viewport_size
+            )
+        )
         if app_name:
             self.configure.app_name = app_name
         if test_name:
@@ -476,6 +483,7 @@ class Eyes(EyesConfigurationMixin):
     def locate(self, visual_locator_settings):
         # type: (VisualLocatorSettings) -> LOCATORS_TYPE
         argument_guard.is_a(visual_locator_settings, VisualLocatorSettings)
+        logger.info("locate({})".format(visual_locator_settings))
         return self._visual_locators_provider.get_locators(visual_locator_settings)
 
     def close(self, raise_ex=True):
@@ -489,6 +497,7 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close(): ignored (disabled)")
             return
+        logger.info("close()")
         result = self._current_eyes.close(raise_ex)
         self._is_opened = False
         return result
@@ -497,6 +506,7 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close_async(): ignored (disabled)")
             return
+        logger.info("close_async()")
         if self._is_visual_grid_eyes:
             self._visual_grid_eyes.close_async()
         else:
@@ -509,12 +519,15 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("abort(): ignored (disabled)")
             return
+        logger.info("abort()")
         self._current_eyes.abort()
 
     def abort_async(self):
         if self.configure.is_disabled:
             logger.info("abort_async(): ignored (disabled)")
             return
+
+        logger.info("abort_async()")
         if self._is_visual_grid_eyes:
             return self._visual_grid_eyes.abort_async()
         else:
