@@ -218,7 +218,7 @@ def set_browser_size(driver, required_size):
     retries_left = _RETRIES
 
     # set browser size for mobile devices isn't working
-    if is_mobile_web(driver):
+    if is_mobile_platform(driver):
         return True
 
     while True:
@@ -226,7 +226,7 @@ def set_browser_size(driver, required_size):
         set_window_size(driver, required_size)
         datetime_utils.sleep(_SLEEP_MS)
         current_size = get_window_size(driver)
-        logger.info("Current browser size: " + str(required_size))
+        logger.info("Current browser size: " + str(current_size))
 
         if retries_left or current_size != required_size:
             break
@@ -239,7 +239,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
     # type: (AnyWebDriver, ViewPort, ViewPort) -> bool
 
     browser_size = get_window_size(driver)
-    logger.debug("Current browser size: {}".format(browser_size))
+    logger.info("Current browser size: {}".format(browser_size))
     required_browser_size = dict(
         width=browser_size["width"]
         + (required_size["width"] - actual_viewport_size["width"]),
@@ -265,9 +265,8 @@ def set_viewport_size(driver, required_size):  # noqa
         driver.set_window_position(0, 0)
     except WebDriverException:
         logger.warning("Failed to move the browser window to (0,0)")
-    set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
-    actual_viewport_size = get_viewport_size(driver)
-    if actual_viewport_size == required_size:
+
+    if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
     # Additional attempt. This Solves the "maximized browser" bug
@@ -275,10 +274,7 @@ def set_viewport_size(driver, required_size):  # noqa
     # non-maximized, so the original browser size calculation is
     # wrong).
     logger.info("Trying workaround for maximization...")
-    set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
-    actual_viewport_size = get_viewport_size(driver)
-    logger.info("Current viewport size: {}".format(actual_viewport_size))
-    if actual_viewport_size == required_size:
+    if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
     width_diff = abs(actual_viewport_size["width"] - required_size["width"])
@@ -333,9 +329,7 @@ def set_viewport_size(driver, required_size):  # noqa
     # Attempt to fix by minimizing window
     logger.info("Trying workaround for minimization...")
     driver.minimize_window()
-    set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
-    actual_viewport_size = get_viewport_size(driver)
-    if actual_viewport_size == required_size:
+    if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
     logger.error("Minimization workaround failed.")
 
