@@ -49,7 +49,7 @@ class Eyes(EyesConfigurationMixin):
     _config_cls = Configuration
 
     def __init__(self, runner=None):
-        # type: (Optional[VisualGridRunner, ClassicRunner]) -> None
+        # type: (Union[Text, VisualGridRunner, ClassicRunner, None]) -> None
         super(Eyes, self).__init__()
 
         # backward compatibility with settings server_url
@@ -210,7 +210,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def cut_provider(self):
-        # type:()->Optional[Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider]]
+        # type:()->Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider,None]
         """
         Gets current cut provider
         """
@@ -232,6 +232,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def is_cut_provider_explicitly_set(self):
+        # type: () -> bool
         """
         Gets is cut provider explicitly set.
         """
@@ -241,6 +242,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def agent_setup(self):
+        # type: () -> Optional[Text]
         """
         Gets agent setup.
         """
@@ -258,14 +260,14 @@ class Eyes(EyesConfigurationMixin):
     @staticmethod
     def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
+        argument_guard.not_none(driver)
         return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
     @staticmethod
     def set_viewport_size(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
-        assert driver is not None
-        if size is None:
-            raise ValueError("set_viewport_size require `size` parameter")
+        argument_guard.not_none(driver)
+        argument_guard.not_none(size)
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     def add_property(self, name, value):
