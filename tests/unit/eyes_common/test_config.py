@@ -10,13 +10,11 @@ from applitools.common import (
     MatchLevel,
     SessionType,
     StitchMode,
-    RectangleSize,
 )
 from applitools.common.selenium import Configuration as SeleniumConfiguration
 from applitools.common.ultrafastgrid import (
     IosDeviceInfo,
     IosDeviceName,
-    ScreenOrientation,
     ChromeEmulationInfo,
     DeviceName,
     ScreenOrientation,
@@ -135,19 +133,24 @@ def test_add_browser():
         .add_browser(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline")
         .add_browser(500, 600, BrowserType.SAFARI)
         .add_browser(500, 600, BrowserType.FIREFOX)
+        .add_browser(DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM))
     )
     assert conf.browsers_info == [
         DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM, "Baseline"),
         DesktopBrowserInfo(500, 600, BrowserType.SAFARI, "Default baseline"),
         DesktopBrowserInfo(500, 600, BrowserType.FIREFOX, "Default baseline"),
+        DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM),
     ]
 
 
 def test_add_browsers():
-    conf = SeleniumConfiguration().add_browsers(
-        IosDeviceInfo("iPhone X", "portrait"), IosDeviceInfo("iPhone 11", "landscape"),
-    )
-    assert conf.browsers_info == [
-        IosDeviceInfo(IosDeviceName.iPhone_X, ScreenOrientation.PORTRAIT),
-        IosDeviceInfo(IosDeviceName.iPhone_11, ScreenOrientation.LANDSCAPE),
+    browsers = [
+        IosDeviceInfo("iPhone X", "portrait"),
+        IosDeviceInfo("iPhone 11", "landscape"),
+        DesktopBrowserInfo(400, 600, BrowserType.EDGE_CHROMIUM),
     ]
+    conf = SeleniumConfiguration().add_browsers(*browsers)
+    assert conf.browsers_info == browsers
+
+    conf = SeleniumConfiguration().add_browsers(browsers)
+    assert conf.browsers_info == browsers
