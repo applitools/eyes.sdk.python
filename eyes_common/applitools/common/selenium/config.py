@@ -112,7 +112,7 @@ class Configuration(ConfigurationBase):
 
     @overload
     def add_browsers(self, renders_info):
-        # type:(List[Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo]])->Configuration
+        # type:(List[Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo]])->Configuration  # noqa
         pass
 
     @overload
