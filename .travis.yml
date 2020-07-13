@@ -1,6 +1,10 @@
 language: python
 services:
     - xvfb
+git:
+    submodules: false
+before_install:
+    - git submodule update --init --remote --recursive
 install:
     - pip install -U tox
 before_script:
