@@ -252,7 +252,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 def set_viewport_size(driver, required_size):  # noqa
     # type: (AnyWebDriver, ViewPort) -> None
 
-    logger.debug("set_viewport_size({})".format(str(required_size)))
+    logger.info("set_viewport_size({})".format(str(required_size)))
 
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
@@ -277,7 +277,7 @@ def set_viewport_size(driver, required_size):  # noqa
     logger.info("Trying workaround for maximization...")
     set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
     actual_viewport_size = get_viewport_size(driver)
-    logger.debug("Current viewport size: {}".format(actual_viewport_size))
+    logger.info("Current viewport size: {}".format(actual_viewport_size))
     if actual_viewport_size == required_size:
         return None
 
@@ -332,12 +332,12 @@ def set_viewport_size(driver, required_size):  # noqa
 
     # Attempt to fix by minimizing window
     logger.info("Trying workaround for minimization...")
-    driver.minimize()
+    driver.minimize_window()
     set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size)
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
         return None
-    logger.info("Minimization workaround failed.")
+    logger.error("Minimization workaround failed.")
 
     raise WebDriverException("Failed to set the viewport size.")
 
