@@ -31,8 +31,6 @@ __all__ = (
 def _get_caller_globals_and_locals():
     """
     Returns the globals and locals of the calling frame.
-
-    Is there an alternative to frame hacking here?
     """
     caller_frame = inspect.stack()[2]
     myglobals = caller_frame[0].f_globals
@@ -105,21 +103,39 @@ else:
             f.write(data)
         return buf.getvalue()
 
-    def raise_(tp, value=None, tb=None):
+    def raise_from(exc, cause):
         """
-        A function that matches the Python 2.x ``raise`` statement. This
-        allows re-raising exceptions with the cls value and traceback on
-        Python 2 and 3.
+        Equivalent to:
+
+            raise EXCEPTION from CAUSE
+
+        on Python 3. (See PEP 3134).
         """
-        if value is not None and isinstance(tp, Exception):
-            raise TypeError("instance exception may not have a separate value")
-        if value is not None:
-            exc = tp(value)
+        # Is either arg an exception class (e.g. IndexError) rather than
+        # instance (e.g. IndexError('my message here')? If so, pass the
+        # name of the class undisturbed through to "raise ... from ...".
+        if isinstance(exc, type) and issubclass(exc, Exception):
+            e = exc()
+            # exc = exc.__name__
+            # execstr = "e = " + _repr_strip(exc) + "()"
+            # myglobals, mylocals = _get_caller_globals_and_locals()
+            # exec(execstr, myglobals, mylocals)
         else:
-            exc = tp
-        if exc.__traceback__ is not tb:
-            raise exc.with_traceback(tb)
-        raise exc
+            e = exc
+        e.__suppress_context__ = False
+        if isinstance(cause, type) and issubclass(cause, Exception):
+            e.__cause__ = cause()
+            e.__suppress_context__ = True
+        elif cause is None:
+            e.__cause__ = None
+            e.__suppress_context__ = True
+        elif isinstance(cause, BaseException):
+            e.__cause__ = cause
+            e.__suppress_context__ = True
+        else:
+            raise TypeError("exception causes must derive from BaseException")
+        e.__context__ = sys.exc_info()[1]
+        raise e
 
 
 def iteritems(dct):
