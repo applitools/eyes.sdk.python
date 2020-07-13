@@ -79,6 +79,7 @@ def test_check_image_fluent_cut_provider(eyes):
     eyes.close()
 
 
+@pytest.mark.skip
 def test_check_image_fluent_accessibility(eyes):
     (
         eyes.configure.set_accessibility_validation(

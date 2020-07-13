@@ -95,6 +95,7 @@ def test_android_native_region__sauce_labs(mobile_eyes):
     eyes.check("Contact list", settings)
 
 
+@pytest.mark.skip
 @pytest.mark.platform("iOS")
 def test_iOS_native__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
@@ -105,6 +106,7 @@ def test_iOS_native__sauce_labs(mobile_eyes):
     )
 
 
+@pytest.mark.skip
 @pytest.mark.platform("iOS")
 def test_iOS_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
