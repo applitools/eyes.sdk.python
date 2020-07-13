@@ -69,7 +69,11 @@ class Eyes(EyesConfigurationMixin):
             self._selenium_eyes = SeleniumEyes(self, runner)
             self._is_visual_grid_eyes = False
         else:
-            raise ValueError("Wrong runner")
+            raise TypeError(
+                "{} is unsupported runner. Must be {} or {}".format(
+                    type(runner), ClassicRunner.__name__, VisualGridRunner.__name__
+                )
+            )
 
     def get_configuration(self):
         # type:() -> Configuration
