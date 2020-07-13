@@ -112,8 +112,20 @@ class Configuration(ConfigurationBase):
             )
         return self
 
-    def add_browsers(self, *renders_info):
+    @overload
+    def add_browsers(self, renders_info):
+        # type:(List[Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo]])->Configuration
+        pass
+
+    @overload
+    def add_browsers(self, renders_info):
         # type:(*Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo])->Configuration
+        pass
+
+    def add_browsers(self, *renders_info):
+        if len(renders_info) == 1 and is_list_or_tuple(renders_info[0]):
+            renders_info = renders_info[0]
+
         for render_info in renders_info:
             try:
                 self.add_browser(render_info)
