@@ -5,6 +5,7 @@ from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.utils import argument_guard
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
+from applitools.common.utils.compat import raise_from
 
 from .region import (
     FloatingRegionByRectangle,
@@ -72,9 +73,12 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.LAYOUT
         if not regions:
             return self
-        self.values.layout_regions = self.__regions(
-            regions, method_name="layout_regions"
-        )
+        try:
+            self.values.layout_regions = self.__regions(
+                regions, method_name="layout_regions"
+            )
+        except TypeError as e:
+            raise_from(TypeError("Wrong argument in .layout()"), e)
         return self
 
     def exact(self):
@@ -88,9 +92,12 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.STRICT
         if not regions:
             return self
-        self.values.strict_regions = self.__regions(
-            regions, method_name="strict_regions"
-        )
+        try:
+            self.values.strict_regions = self.__regions(
+                regions, method_name="strict_regions"
+            )
+        except TypeError as e:
+            raise_from(TypeError("Wrong argument in .strict()"), e)
         return self
 
     def content(self, *regions):
@@ -99,17 +106,23 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.CONTENT
         if not regions:
             return self
-        self.values.content_regions = self.__regions(
-            regions, method_name="content_regions"
-        )
+        try:
+            self.values.content_regions = self.__regions(
+                regions, method_name="content_regions"
+            )
+        except TypeError as e:
+            raise_from(TypeError("Wrong argument in .content()"), e)
         return self
 
     def ignore(self, *regions):
         # type: (Self, *Region)  -> Self
         """ Adds one or more ignore regions. """
-        self.values.ignore_regions = self.__regions(
-            regions, method_name="ignore_regions"
-        )
+        try:
+            self.values.ignore_regions = self.__regions(
+                regions, method_name="ignore_regions"
+            )
+        except TypeError as e:
+            raise_from(TypeError, e)
         return self
 
     @overload  # noqa
@@ -126,9 +139,12 @@ class CheckSettings(object):
         """ Adds one accessibility region. """
         if type:
             argument_guard.is_a(type, AccessibilityRegionType)
-        self.values.accessibility_regions.append(
-            self._accessibility_provider_from(region, type)
-        )
+        try:
+            self.values.accessibility_regions.append(
+                self._accessibility_provider_from(region, type)
+            )
+        except TypeError as e:
+            raise_from(TypeError("Wrong argument in .accessibility()"), e)
         return self
 
     @overload  # noqa
@@ -154,6 +170,8 @@ class CheckSettings(object):
         :param arg4: None       | max_left_offset
         :param arg5: None       | max_right_offset
         """
+        if len(args) < 2:
+            raise TypeError("Not enough arguments")
         if isinstance(args[0], int) and not isinstance(args[1], int):
             max_offset = args[0]  # type: int
             region = args[1]  # type: ignore
@@ -177,9 +195,12 @@ class CheckSettings(object):
                 max_right_offset=args[4],
             )
         else:
-            raise TypeError("Unsupported parameters")
+            raise TypeError("No type match")
         logger.info("Adding Region {} with FloatingBounds {}".format(region, bounds))
-        region_or_container = self._floating_provider_from(region, bounds)
+        try:
+            region_or_container = self._floating_provider_from(region, bounds)
+        except TypeError as e:
+            raise_from(TypeError("Wrong arguments in .floating()"), e)
         self.values.floating_regions.append(region_or_container)
         return self
 
@@ -255,13 +276,21 @@ class CheckSettings(object):
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
             return RegionByRectangle(region)
-        raise TypeError("Unknown region type.")
+        raise TypeError(
+            "Unsupported region: \n\ttype: {} \n\tvalue: {}".format(
+                type(region), region
+            )
+        )
 
     def _floating_provider_from(self, region, bounds):
         if isinstance(region, Region):
             logger.debug("floating: FloatingRegionByRectangle")
             return FloatingRegionByRectangle(Region.from_(region), bounds)
-        raise TypeError("Unknown region type.")
+        raise TypeError(
+            "Unsupported floating region: \n\ttype: {} \n\tvalue: {}".format(
+                type(region), region
+            )
+        )
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
         if (
@@ -272,4 +301,8 @@ class CheckSettings(object):
         elif isinstance(region, AccessibilityRegion):
             logger.debug("accessibility: AccessibilityRegionByAccessibilityRegion")
             return AccessibilityRegionByRectangle(region)
-        raise TypeError("Unknown region type.")
+        raise TypeError(
+            "Unsupported accessibility region: \n\ttype: {} \n\tvalue: {}".format(
+                type(region), region
+            )
+        )

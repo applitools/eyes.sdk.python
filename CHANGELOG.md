@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Improved traceback info for Configuration.add_browser/s() and match regions [Trello 1998](https://trello.com/c/8IoYsgNI)
+
 ## [4.4.2] - 2020-07-10
 ### Updated
 - Remove get\set_viewport_size from Eyes images [Trello 1413](https://trello.com/c/v32N4D8S)
