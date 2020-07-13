@@ -1,3 +1,4 @@
+import pytest
 from mock import Mock
 
 from applitools.common.accessibility import AccessibilityRegionType
@@ -25,6 +26,24 @@ def test_set_get_ignore_displacements():
     assert cs.values.ignore_displacements
     cs = cs.layout().ignore_displacements(False)
     assert not cs.values.ignore_displacements
+
+
+def test_give_incorrect_parameters_to_match_regions():
+    with pytest.raises(TypeError) as exc_info:
+        cs = CheckSettings().accessibility(1)
+        assert exc_info.type == TypeError
+    with pytest.raises(TypeError) as exc_info:
+        cs = CheckSettings().layout(1)
+        assert exc_info.type == TypeError
+    with pytest.raises(TypeError) as exc_info:
+        cs = CheckSettings().content(1)
+        assert exc_info.type == TypeError
+    with pytest.raises(TypeError) as exc_info:
+        cs = CheckSettings().strict(1)
+        assert exc_info.type == TypeError
+    with pytest.raises(TypeError) as exc_info:
+        cs = CheckSettings().floating(1)
+        assert exc_info.type == TypeError
 
 
 def test_set_get_accessibility_regions():

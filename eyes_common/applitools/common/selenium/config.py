@@ -3,18 +3,17 @@ from typing import TYPE_CHECKING, List, overload, Union, Text
 import attr
 
 from applitools.common.config import Configuration as ConfigurationBase
-from applitools.common.geometry import RectangleSize
 from applitools.common.utils import argument_guard
 from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
     RenderBrowserInfo,
     IRenderBrowserInfo,
     ScreenOrientation,
-    EmulationBaseInfo,
     IosDeviceInfo,
     DesktopBrowserInfo,
 )
-
+from applitools.common.validators import is_list_or_tuple
+from applitools.common.utils.compat import raise_from
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
@@ -104,13 +103,32 @@ class Configuration(ConfigurationBase):
                 DesktopBrowserInfo(args[0], args[1], args[2], baseline_env_name)
             )
         else:
-            raise ValueError("Unsupported parameters")
+            raise TypeError(
+                "Unsupported parameter: \n\ttype: {} \n\tvalue: {}".format(
+                    type(args), args
+                )
+            )
         return self
 
-    def add_browsers(self, *renders_info):
+    @overload
+    def add_browsers(self, renders_info):
+        # type:(List[Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo]])->Configuration  # noqa
+        pass
+
+    @overload
+    def add_browsers(self, renders_info):
         # type:(*Union[DesktopBrowserInfo,IosDeviceInfo,ChromeEmulationInfo])->Configuration
+        pass
+
+    def add_browsers(self, *renders_info):
+        if len(renders_info) == 1 and is_list_or_tuple(renders_info[0]):
+            renders_info = renders_info[0]
+
         for render_info in renders_info:
-            self.add_browser(render_info)
+            try:
+                self.add_browser(render_info)
+            except TypeError as e:
+                raise_from(TypeError("Wrong argument in .add_browsers()"), e)
         return self
 
     def add_device_emulation(self, device_name, orientation=ScreenOrientation.PORTRAIT):
