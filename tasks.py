@@ -79,6 +79,17 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "webdriver_manager==1.5",
         "tox==3.14.3",
     ]
+    generated_requires = [
+        "pytest>=4.4.0",
+        "pytest-cov==2.6.1",
+        "pytest-xdist==1.26.1",
+        "PyYAML",
+        "virtualenv==16.3.0",
+        "pytest-virtualenv==1.4.0",
+        "mock",
+        "webdriver_manager==1.5",
+        "tox==3.14.3",
+    ]
     lint_requires = [
         "flake8",
         "flake8-import-order",
