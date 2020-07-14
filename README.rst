@@ -45,7 +45,7 @@ For smother development experience install Invoke for task run first
 
 Install pre-commit hook
 ***********************
-Install `pre-commit <https://pre-commit.com/#installation>`_ for check and format code before commit.  For
+Install `pre-commit <https://pre-commit.com/#installation>`_ for check and format code before commit. For
 manage hooks you could use invoke:
 
 ::
