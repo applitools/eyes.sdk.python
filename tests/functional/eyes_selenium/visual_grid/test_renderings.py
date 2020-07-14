@@ -168,6 +168,7 @@ def test_svg_parsing(driver, eyes, batch_info, vg_runner):
     all_results = vg_runner.get_all_test_results(False)
 
 
+@pytest.mark.skip
 def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner):
     driver.get(
         "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
