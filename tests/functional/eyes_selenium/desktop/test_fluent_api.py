@@ -209,14 +209,13 @@ def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_resu
     )
 
 
-@pytest.mark.skip
-#@pytest.mark.eyes_config(
-#    server_url="https://testeyes.applitools.com/",
-#    accessibility_validation=AccessibilitySettings(
-#        AccessibilityLevel.AAA, AccessibilityGuidelinesVersion.WCAG_2_0
-#    ),
-#    api_key=os.environ["EYESTEST_APPLITOOLS_API_KEY"],
-#)
+@pytest.mark.eyes_config(
+    server_url="https://testeyes.applitools.com/",
+    accessibility_validation=AccessibilitySettings(
+        AccessibilityLevel.AAA, AccessibilityGuidelinesVersion.WCAG_2_0
+    ),
+    api_key=os.environ["EYESTEST_APPLITOOLS_API_KEY"],
+)
 def test_accessibility_regions(eyes_opened, check_test_result):
     eyes_opened.check(
         "TestAccessibilityRegions",
