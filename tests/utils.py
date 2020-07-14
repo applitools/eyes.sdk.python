@@ -99,6 +99,7 @@ def get_resource(name):
 def update_browser_cookies(cookies, required_domain, driver):
     # type: (CookieJar, Text, AnyWebDriver) -> None
     """Helps to reuse existing cookies with webdriver"""
+
     def dict_from_cookie(obj):
         d = {n: v for n, v in vars(obj).items() if not n.startswith("_")}
         d["secure"] = bool(d.get("secure", False))

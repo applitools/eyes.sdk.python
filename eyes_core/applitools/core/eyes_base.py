@@ -245,6 +245,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
     @property
     def agent_setup(self):
+        # TODO: Implement agent_setup
         return None
 
     def add_property(self, name, value):
@@ -490,15 +491,15 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
-        logger.debug("Eyes server URL is '{}'".format(self.configure.server_url))
-        logger.debug("Timeout = {} ms".format(self.configure._timeout))
-        logger.debug("match_timeout = {} ms".format(self.configure.match_timeout))
-        logger.debug(
+        logger.info("Eyes server URL is '{}'".format(self.configure.server_url))
+        logger.info("Timeout = {} ms".format(self.configure._timeout))
+        logger.info("match_timeout = {} ms".format(self.configure.match_timeout))
+        logger.info(
             "Default match settings = '{}' ".format(
                 self.configure.default_match_settings
             )
         )
-        logger.debug("FailureReports = '{}' ".format(self.configure.failure_reports))
+        logger.info("FailureReports = '{}' ".format(self.configure.failure_reports))
 
     def _create_session_start_info(self):
         # type: () -> None
@@ -563,7 +564,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
         # type: (Region, EyesScreenshot, CheckSettings) -> AppOutputWithScreenshot
-        logger.info("getting screenshot...")
+        logger.info("Getting screenshot...")
         screenshot = self._get_screenshot()
         logger.info("Done getting screenshot!")
         if not region.is_size_empty:
@@ -573,15 +574,16 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         if not self._dom_url and (
             self.configure.send_dom or check_settings.values.send_dom
         ):
+            logger.info("Capturing DOM")
             dom_json = self._try_capture_dom()
             self._dom_url = self._try_post_dom_capture(dom_json)
-            logger.info("dom_url: {}".format(self._dom_url))
+            logger.info("Captured DOM URL: {}".format(self._dom_url))
 
         app_output = AppOutput(
             title=self._title, screenshot_bytes=None, dom_url=self._dom_url
         )
         result = AppOutputWithScreenshot(app_output, screenshot)
-        logger.info("Done")
+        logger.info("Done getting screenshot and DOM!")
         return result
 
     def _before_match_window(self):

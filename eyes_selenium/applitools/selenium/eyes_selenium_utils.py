@@ -222,42 +222,54 @@ def set_browser_size(driver, required_size):
         return True
 
     while True:
-        logger.info("Trying to set browser size to: " + str(required_size))
+        logger.debug("Trying to set browser size to: " + str(required_size))
         set_window_size(driver, required_size)
         datetime_utils.sleep(_SLEEP_MS)
         current_size = get_window_size(driver)
-        logger.info("Current browser size: " + str(current_size))
+        logger.debug("Current browser size: " + str(current_size))
 
         if retries_left or current_size != required_size:
             break
         retries_left -= 1
 
-    return current_size == required_size
+    if current_size == required_size:
+        logger.debug(
+            "Browser size has been successfully set to {}".format(current_size)
+        )
+        return True
+    logger.debug("Browser size wasn't set: {}".format(current_size))
+    return False
 
 
 def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
     # type: (AnyWebDriver, ViewPort, ViewPort) -> bool
-
     browser_size = get_window_size(driver)
-    logger.info("Current browser size: {}".format(browser_size))
+    logger.debug("Current browser size: {}".format(browser_size))
     required_browser_size = dict(
         width=browser_size["width"]
         + (required_size["width"] - actual_viewport_size["width"]),
         height=browser_size["height"]
         + (required_size["height"] - actual_viewport_size["height"]),
     )
-    return set_browser_size(driver, required_browser_size)
+    set_browser_size(driver, required_browser_size)
+    # Browser size and Viewport size are different things.
+    # We need to compare the by Viewport sizes to be sure that it fit.
+    actual_viewport_size = get_viewport_size(driver)
+    logger.info("Current viewport size: {}".format(actual_viewport_size))
+    return actual_viewport_size == required_size
 
 
 def set_viewport_size(driver, required_size):  # noqa
     # type: (AnyWebDriver, ViewPort) -> None
-
-    logger.info("set_viewport_size({})".format(str(required_size)))
-
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size == required_size:
-        logger.info("Required size already set.")
+        logger.info("Required viewport size already set")
         return None
+    logger.info(
+        "Actual Viewport Size: {}\n\tTrying to set viewport size to: {}".format(
+            str(actual_viewport_size), str(required_size)
+        )
+    )
 
     try:
         # We move the window to (0,0) to have the best chance to be able to
@@ -265,7 +277,6 @@ def set_viewport_size(driver, required_size):  # noqa
         driver.set_window_position(0, 0)
     except WebDriverException:
         logger.warning("Failed to move the browser window to (0,0)")
-
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
@@ -332,8 +343,7 @@ def set_viewport_size(driver, required_size):  # noqa
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
     logger.error("Minimization workaround failed.")
-
-    raise WebDriverException("Failed to set the viewport size.")
+    raise EyesError("Failed to set the viewport size.")
 
 
 def hide_scrollbars(driver, root_element):

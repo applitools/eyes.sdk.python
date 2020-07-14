@@ -45,7 +45,7 @@ class FullPageCaptureAlgorithm(object):
         argument_guard.not_none(region)
         argument_guard.not_none(position_provider)
 
-        logger.info(
+        logger.debug(
             "region: %s ; full_area: %s ; position_provider: %s"
             % (region, full_area, position_provider.__class__.__name__)
         )
@@ -177,7 +177,7 @@ class FullPageCaptureAlgorithm(object):
         scaled_cut_provider,  # type: CutProvider
     ):
         # type: (...) -> Image
-        logger.info("enter: scale_ratio {}".format(scale_ratio))
+        logger.debug("Enter: scale_ratio {}".format(scale_ratio))
         for part_region in screenshot_parts:
             logger.debug("Part: {}".format(part_region))
             # Scroll to the part's top/left
@@ -259,7 +259,7 @@ class FullPageCaptureAlgorithm(object):
                     min([act_image_height, stitched_image.height]),
                 ),
             )
-            logger.info("Done")
+            logger.info("Done trimming unnecessary margins..")
         return stitched_image
 
     def _get_entire_size(self, image, position_provider):
@@ -306,7 +306,7 @@ class FullPageCaptureAlgorithm(object):
             max(scaled_cropped_size["height"], self.MIN_SCREENSHOT_PART_SIZE),
         )
         logger.info(
-            "entire page region: %s, image part size: %s" % (full_area, part_image_size)
+            "Entire page region: %s, image part size: %s" % (full_area, part_image_size)
         )
         # Getting the list of sub-regions composing the whole region (we'll take
         # screenshot for each one).
@@ -322,7 +322,7 @@ class FullPageCaptureAlgorithm(object):
         # type: (Region, Image, float) -> Region
         if region.is_size_empty:
             return region
-        logger.info("Creating screenshot object...")
+        logger.debug("Creating screenshot object...")
         #  We need the screenshot to be able to convert the region to screenshot coordinates.
         screenshot = self.screenshot_factory.make_screenshot(
             image
@@ -332,9 +332,9 @@ class FullPageCaptureAlgorithm(object):
         region_in_screenshot = screenshot.intersected_region(
             region, CoordinatesType.SCREENSHOT_AS_IS
         )
-        logger.info("Region in screenshot: {}".format(region_in_screenshot))
+        logger.debug("Region in screenshot: {}".format(region_in_screenshot))
         region_in_screenshot = region_in_screenshot.scale(pixel_ratio)
-        logger.info("Scaled region: {}".format(region_in_screenshot))
+        logger.debug("Scaled region: {}".format(region_in_screenshot))
 
         region_in_screenshot = self.region_position_compensation.compensate_region_position(
             region_in_screenshot, pixel_ratio
@@ -343,5 +343,5 @@ class FullPageCaptureAlgorithm(object):
         # the screenshot (e.g., when body width/height are set to 100%, and
         # an internal div is set to value which is larger than the viewport).
         region_in_screenshot = region_in_screenshot.intersect(Region.from_(image))
-        logger.info("Region after intersect: {}".format(region_in_screenshot))
+        logger.info("Scaled and intersected region: {}".format(region_in_screenshot))
         return region_in_screenshot

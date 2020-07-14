@@ -347,7 +347,6 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")
             return MatchResult()
-        logger.info("check({}, {})".format(name, check_settings))
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")

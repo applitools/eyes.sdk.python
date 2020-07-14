@@ -31,6 +31,7 @@ from applitools.common.ultrafastgrid import (
     RunningRender,
     VGResource,
 )
+from applitools.common.utils.compat import raise_from
 from applitools.core.locators import VisualLocatorsData, LOCATORS_TYPE
 
 if typing.TYPE_CHECKING:
@@ -359,7 +360,7 @@ class ServerConnector(object):
                 target_url = rendering_info.results_url
                 guid = uuid.uuid4()
                 target_url = target_url.replace("__random__", str(guid))
-                logger.info("uploading {} to {}".format(media_type, target_url))
+                logger.debug("Uploading {} to {}".format(media_type, target_url))
                 if self._upload_data(
                     bytes_data, rendering_info, target_url, content_type, media_type
                 ):
@@ -390,15 +391,18 @@ class ServerConnector(object):
             verify=False,
         )
         if response.status_code in [requests.codes.ok, requests.codes.created]:
-            logger.info("Upload Status Code: {}".format(response.status_code))
+            logger.debug("Upload Status Code: {}".format(response.status_code))
             return True
         raise EyesError(
-            "Failed to Upload Image. Status Code: {}".format(response.status_code)
+            "Failed to Upload. Status Code: {}".format(response.status_code)
         )
 
     def try_upload_image(self, data):
         # type: (bytes) -> Optional[Text]
-        return self._try_upload_data(data, "image/png", "image/png")
+        try:
+            return self._try_upload_data(data, "image/png", "image/png")
+        except EyesError as e:
+            raise_from(EyesError("Failed to Upload Image"), e)
 
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
@@ -417,6 +421,8 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
         app_output = match_data.app_output
+        if app_output.screenshot_bytes is None:
+            raise EyesError("No screenshot to upload")
         # when screenshot_url is present we don't need to upload again
         if app_output.screenshot_url is None:
             app_output.screenshot_url = self.try_upload_image(
@@ -426,6 +432,7 @@ class ServerConnector(object):
             raise EyesError(
                 "MatchWindow failed: could not upload image to storage service."
             )
+        logger.info("Screenshot image URL: {}".format(app_output.screenshot_url))
         data = json_utils.to_json(match_data)
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         response = self._com.long_request(

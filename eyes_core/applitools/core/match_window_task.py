@@ -420,6 +420,7 @@ class MatchWindowTask(object):
         )
         # If we're here because we haven't found a match yet, try once more
         if not self._match_result.as_expected:
+            logger.info("Window mismatch. Retrying...")
             return self._try_take_screenshot(
                 user_inputs, region, tag, ignore_mismatch, check_settings
             )
