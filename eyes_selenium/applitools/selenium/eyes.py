@@ -350,7 +350,7 @@ class Eyes(EyesConfigurationMixin):
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
-        return self._current_eyes.check(name, check_settings)
+        return self._current_eyes.check("Window2", check_settings)
 
     def check_window(self, tag=None, match_timeout=-1, fully=None):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult
