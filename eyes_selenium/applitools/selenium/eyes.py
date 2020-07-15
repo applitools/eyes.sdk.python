@@ -49,7 +49,7 @@ class Eyes(EyesConfigurationMixin):
     _config_cls = Configuration
 
     def __init__(self, runner=None):
-        # type: (Optional[VisualGridRunner, ClassicRunner]) -> None
+        # type: (Union[Text, VisualGridRunner, ClassicRunner, None]) -> None
         super(Eyes, self).__init__()
 
         # backward compatibility with settings server_url
@@ -69,7 +69,11 @@ class Eyes(EyesConfigurationMixin):
             self._selenium_eyes = SeleniumEyes(self, runner)
             self._is_visual_grid_eyes = False
         else:
-            raise ValueError("Wrong runner")
+            raise TypeError(
+                "{} is unsupported runner. Must be {} or {}".format(
+                    type(runner), ClassicRunner.__name__, VisualGridRunner.__name__
+                )
+            )
 
     def get_configuration(self):
         # type:() -> Configuration
@@ -210,7 +214,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def cut_provider(self):
-        # type:()->Optional[Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider]]
+        # type:()->Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider,None]
         """
         Gets current cut provider
         """
@@ -232,6 +236,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def is_cut_provider_explicitly_set(self):
+        # type: () -> bool
         """
         Gets is cut provider explicitly set.
         """
@@ -241,6 +246,7 @@ class Eyes(EyesConfigurationMixin):
 
     @property
     def agent_setup(self):
+        # type: () -> Optional[Text]
         """
         Gets agent setup.
         """
@@ -258,14 +264,14 @@ class Eyes(EyesConfigurationMixin):
     @staticmethod
     def get_viewport_size(driver):
         # type: (AnyWebDriver) -> ViewPort
+        argument_guard.not_none(driver)
         return eyes_selenium_utils.get_viewport_size_or_display_size(driver)
 
     @staticmethod
     def set_viewport_size(driver, size):
         # type: (AnyWebDriver, ViewPort) -> None
-        assert driver is not None
-        if size is None:
-            raise ValueError("set_viewport_size require `size` parameter")
+        argument_guard.not_none(driver)
+        argument_guard.not_none(size)
         eyes_selenium_utils.set_viewport_size(driver, size)
 
     def add_property(self, name, value):
@@ -339,6 +345,7 @@ class Eyes(EyesConfigurationMixin):
         :return: The match results.
         """
         if self.configure.is_disabled:
+            logger.info("check(): ignored (disabled)")
             return MatchResult()
         if not self.is_open:
             self.abort()
@@ -457,6 +464,11 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("open(): ignored (disabled)")
             return
+        logger.info(
+            "open(app_name={}, test_name={}, viewport_size={})".format(
+                app_name, test_name, viewport_size
+            )
+        )
         if app_name:
             self.configure.app_name = app_name
         if test_name:
@@ -476,6 +488,7 @@ class Eyes(EyesConfigurationMixin):
     def locate(self, visual_locator_settings):
         # type: (VisualLocatorSettings) -> LOCATORS_TYPE
         argument_guard.is_a(visual_locator_settings, VisualLocatorSettings)
+        logger.info("locate({})".format(visual_locator_settings))
         return self._visual_locators_provider.get_locators(visual_locator_settings)
 
     def close(self, raise_ex=True):
@@ -489,6 +502,7 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close(): ignored (disabled)")
             return
+        logger.info("close()")
         result = self._current_eyes.close(raise_ex)
         self._is_opened = False
         return result
@@ -497,6 +511,7 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("close_async(): ignored (disabled)")
             return
+        logger.info("close_async()")
         if self._is_visual_grid_eyes:
             self._visual_grid_eyes.close_async()
         else:
@@ -509,12 +524,15 @@ class Eyes(EyesConfigurationMixin):
         if self.configure.is_disabled:
             logger.info("abort(): ignored (disabled)")
             return
+        logger.info("abort()")
         self._current_eyes.abort()
 
     def abort_async(self):
         if self.configure.is_disabled:
             logger.info("abort_async(): ignored (disabled)")
             return
+
+        logger.info("abort_async()")
         if self._is_visual_grid_eyes:
             return self._visual_grid_eyes.abort_async()
         else:

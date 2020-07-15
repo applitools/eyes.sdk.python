@@ -165,9 +165,9 @@ class SafariScreenshotImageProvider(ImageProvider):
 class TakesScreenshotImageProvider(ImageProvider):
     def get_image(self):
         # type: () -> Image
-        logger.info("Getting screenshot as base64...")
+        logger.debug("Getting screenshot as base64...")
         screenshot64 = self._eyes.driver.get_screenshot_as_base64()
-        logger.info("Done getting base64! Creating BufferedImage...")
+        logger.debug("Done getting base64! Creating BufferedImage...")
         image = image_utils.image_from_base64(screenshot64)
         self._eyes.debug_screenshot_provider.save(image, "initial")
         return image
@@ -177,15 +177,15 @@ class FirefoxScreenshotImageProvider(ImageProvider):
     def get_image(self):
         driver = self._eyes.driver  # type: EyesWebDriver
         fc = driver.frame_chain.clone()
-        logger.info("frameChain size: {}".format(fc.size))
-        logger.info("Switching temporarily to default content.")
+        logger.debug("frameChain size: {}".format(fc.size))
+        logger.debug("Switching temporarily to default content.")
         driver.switch_to.default_content()
 
-        logger.info("Getting screenshot as base64.")
+        logger.debug("Getting screenshot as base64.")
         screenshot64 = driver.get_screenshot_as_base64()
-        logger.info("Done getting base64! Creating BufferedImage...")
+        logger.debug("Done getting base64! Creating BufferedImage...")
 
         image = image_utils.image_from_base64(screenshot64)
-        logger.info("Done. Switching back to original frame.")
+        logger.debug("Done. Switching back to original frame.")
         driver.switch_to.frames(fc)
         return image

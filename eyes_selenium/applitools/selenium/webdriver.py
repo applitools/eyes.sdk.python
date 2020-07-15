@@ -228,7 +228,7 @@ class _EyesSwitchTo(object):
             self.frame(frame.reference)
             new_frame = self._driver.frame_chain.peek
             new_frame.scroll_root_element = frame.scroll_root_element
-            logger.debug("Done")
+            logger.debug("Done switching to frame")
         logger.debug("Done switching into nested frames!")
         return self._driver
 

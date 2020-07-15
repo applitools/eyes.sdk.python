@@ -59,7 +59,15 @@ def dist(
 
 @task
 def install_requirements(c, dev=False, testing=False, lint=False):
-    dev_requires = ["ipython", "ipdb", "bump2version", "wheel", "twine", "pre-commit"]
+    dev_requires = [
+        "ipython",
+        "ipdb",
+        "bump2version",
+        "wheel",
+        "twine",
+        "pre-commit",
+        "browser_cookie3",
+    ]
     testing_requires = [
         "pytest==3.9.3",
         "pytest-cov==2.6.1",
