@@ -10,7 +10,7 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __init__(self):
         self.cache_map = {}
         kwargs = {}
-        if sys.version_info >= (3, 6):
+        if sys.version_info[:2] >= (3, 6):
             kwargs["thread_name_prefix"] = "ResourceCache-Executor"
         self.executor = ThreadPoolExecutor(**kwargs)
         self.lock = threading.RLock()

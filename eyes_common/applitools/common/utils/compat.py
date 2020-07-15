@@ -38,7 +38,7 @@ def _get_caller_globals_and_locals():
     return myglobals, mylocals
 
 
-PY3 = sys.version_info >= (3,)
+PY3 = sys.version_info[:1] >= (3,)
 
 if PY3:
     from urllib.parse import (
