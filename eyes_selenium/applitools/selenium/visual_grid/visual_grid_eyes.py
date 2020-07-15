@@ -117,18 +117,6 @@ class VisualGridEyes(object):
             return self.base_agent_id
         return "{} [{}]".format(agent_id, self.base_agent_id)
 
-    def add_property(self, name, value):
-        # type: (Text, Text) -> None
-        """
-        Associates a key/value pair with the test. This can be used later for filtering.
-        :param name: (string) The property name.
-        :param value: (string) The property value
-        """
-        self.configure.properties.append({"name": name, "value": value})
-
-    def clear_properties(self):
-        del self.configure.properties[:]
-
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
