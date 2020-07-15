@@ -126,6 +126,9 @@ class VisualGridEyes(object):
         """
         self.configure.properties.append({"name": name, "value": value})
 
+    def clear_properties(self):
+        del self.configure.properties[:]
+
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
