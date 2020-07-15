@@ -421,13 +421,12 @@ class ServerConnector(object):
         if not self.is_session_started:
             raise EyesError("Session not started")
         app_output = match_data.app_output
-        if app_output.screenshot_bytes is None:
-            raise EyesError("No screenshot to upload")
         # when screenshot_url is present we don't need to upload again
-        if app_output.screenshot_url is None:
+        if app_output.screenshot_url is None and app_output.screenshot_bytes:
             app_output.screenshot_url = self.try_upload_image(
                 match_data.app_output.screenshot_bytes
             )
+
         if app_output.screenshot_url is None:
             raise EyesError(
                 "MatchWindow failed: could not upload image to storage service."
