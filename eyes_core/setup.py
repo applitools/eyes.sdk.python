@@ -26,9 +26,12 @@ def get_version(package_name):
 install_requires = [
     "eyes-common=={}".format(get_version("core")),
     "attrs>=19.2.0,<20",
-    "Pillow>=5.0.0,<7.0.0",  # 7 and above doesnt support python 2
     "requests>=2.22.0",
 ]
+if sys.version_info <= (2, 7):
+    install_requires.append("Pillow >= 5.0.0,<7.0.0")
+else:
+    install_requires.append("Pillow >= 7.0.0")
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info < (3, 5):
