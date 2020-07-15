@@ -7,20 +7,10 @@
 
 ## [4.6.0] - 2020-07-23
 ### Added
-- Skip list for DOM snapshot [Trello 1974](https://trello.com/c/44xq8dze)
-### Updated
-- DOM snapshot scripts to *3.7.1*
-
-## [4.5.0] - 2020-07-20
-### Fixed
-- clear_properties method missing in UFG [Trello 2010](https://trello.com/c/ovjgBPJW)
-### Added
 - Additional strategy to set viewport size [Trello 1919](https://trello.com/c/9vRolTeu)
 - Option for use latest available versions of libraries for Py3 [Trello 2008](https://trello.com/c/mt8wSiQC)
-- Visual Viewport support for UFG [Trello 1957](https://trello.com/c/jWvdBwex)
 ### Updated
 - Improved traceback info for Configuration.add_browser/s() and match regions [Trello 1998](https://trello.com/c/8IoYsgNI)
-- Increased backoff for uploading to Storage Service [Trello 2001](https://trello.com/c/Em7MvWXs)
 
 ## [4.4.2] - 2020-07-10
 ### Updated
