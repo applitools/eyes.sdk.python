@@ -339,7 +339,11 @@ def set_viewport_size(driver, required_size):  # noqa
 
     # Attempt to fix by minimizing window
     logger.info("Trying workaround for minimization...")
-    driver.minimize_window()
+    try:
+        # some webdriver's don't support minimize_window
+        driver.minimize_window()
+    except WebDriverException as e:
+        logger.exception(e)
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
     logger.error("Minimization workaround failed.")
