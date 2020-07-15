@@ -223,7 +223,9 @@ STOP_SESSION_OBJ = attr_from_json(STOP_SESSION_DATA, TestResults)
 MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     ignore_mismatch=False,
     user_inputs=[],
-    app_output=AppOutput(title="Title", screenshot_bytes=None, screenshot_url="http"),
+    app_output=AppOutput(
+        title="Title", screenshot_bytes=b"some", screenshot_url="http"
+    ),
     tag="Tag",
     options=Options(
         name="Opt name",
