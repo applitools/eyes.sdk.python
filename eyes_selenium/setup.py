@@ -32,7 +32,7 @@ install_requires = [
     "Appium-Python-Client>=0.4,<1.0.0",
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<20",
-    "transitions>=0.6,<0.7",
+    "transitions>=0.6,<=0.8.3",
     "lxml>=4.4,<5",
 ]
 if sys.version_info <= (2, 7):
