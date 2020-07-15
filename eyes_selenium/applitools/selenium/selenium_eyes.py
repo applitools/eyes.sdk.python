@@ -220,7 +220,7 @@ class SeleniumEyes(EyesBase):
 
     def _create_position_provider(self, scroll_root_element):
         stitch_mode = self.configure.stitch_mode
-        logger.info(
+        logger.debug(
             "initializing position provider. stitch_mode: {}".format(stitch_mode)
         )
         if stitch_mode == StitchMode.Scroll:
@@ -260,7 +260,7 @@ class SeleniumEyes(EyesBase):
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
-            logger.info("URL: {}".format(self._driver.current_url))
+            logger.info("Current URL: {}".format(self._driver.current_url))
             with self._switch_to_frame(check_settings):
                 result = self._check_result_flow(name, check_settings)
 
@@ -685,7 +685,7 @@ class SeleniumEyes(EyesBase):
                     os = platform_name
                 logger.info("Setting OS: " + os)
             else:
-                logger.info("No mobile OS detected.")
+                logger.info("No mobile OS detected")
         app_env = AppEnvironment(
             os,
             hosting_app=self.configure.host_app,
@@ -750,7 +750,7 @@ class SeleniumEyes(EyesBase):
             logger.info("Failed to set ContextBasedScaleProvider.")
             logger.info("Using FixedScaleProvider instead...")
             self._scale_provider = FixedScaleProvider(1 / device_pixel_ratio)
-        logger.info("Done!")
+        logger.debug("Scaling provider has been set")
         return self._scale_provider
 
     def _try_capture_dom(self):

@@ -1,18 +1,21 @@
 import json
 import os
 import uuid
-from copy import copy
 from os import path
-
+from copy import copy
 from distutils.util import strtobool
-from typing import Text, Dict
+from typing import Text, Dict, TYPE_CHECKING
 
 import requests
 
-from applitools.common import TestResults, logger
+from applitools.common import TestResults
 from applitools.common.utils import urljoin
 from applitools.common.utils.datetime_utils import retry
 from applitools.common.utils.json_utils import underscore_to_camelcase
+
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import AnyWebDriver
+    from http.cookiejar import CookieJar
 
 REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
 REPORT_DATA = {
@@ -87,3 +90,30 @@ def get_resource(name):
     pth = get_resource_path(name)
     with open(pth, "rb") as f:
         return f.read()
+
+
+def update_browser_cookies(cookies, required_domain, driver):
+    # type: (CookieJar, Text, AnyWebDriver) -> None
+    """Helps to reuse existing cookies with webdriver"""
+    from selenium.common.exceptions import (
+        InvalidCookieDomainException,
+        UnableToSetCookieException,
+    )
+
+    def dict_from_cookie(obj):
+        d = {n: v for n, v in vars(obj).items() if not n.startswith("_")}
+        d["secure"] = bool(d.get("secure", False))
+        return d
+
+    prev_url = None
+    for cookie in cookies:
+        if not cookie.domain.endswith(required_domain):
+            continue
+        next_url = "https://" + cookie.domain.lstrip(".")
+        if next_url != prev_url:
+            driver.get(next_url)
+            prev_url = next_url
+        try:
+            driver.add_cookie(dict_from_cookie(cookie))
+        except (UnableToSetCookieException, InvalidCookieDomainException):
+            print(cookie)
