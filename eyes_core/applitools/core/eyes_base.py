@@ -16,6 +16,7 @@ from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
 from applitools.common.utils import ABC, argument_guard
+from applitools.common.utils.compat import raise_from
 from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
@@ -334,7 +335,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             should_save = (is_new_session and self.configure.save_new_tests) or (
                 (not is_new_session) and self.configure.save_failed_tests
             )
-            logger.debug("close(): automatically save session? %s" % should_save)
+            logger.info("close(): Automatically save session? %s" % should_save)
             results = self._server_connector.stop_session(
                 self._running_session, False, should_save
             )
@@ -493,7 +494,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
     def _log_open_base(self):
         logger.info("Eyes server URL is '{}'".format(self.configure.server_url))
         logger.info("Timeout = {} ms".format(self.configure._timeout))
-        logger.info("match_timeout = {} ms".format(self.configure.match_timeout))
+        logger.debug("match_timeout = {} ms".format(self.configure.match_timeout))
         logger.info(
             "Default match settings = '{}' ".format(
                 self.configure.default_match_settings
@@ -687,6 +688,5 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
                 self._set_viewport_size(target_size)
             self._is_viewport_size_set = True
         except Exception as e:
-            logger.warning("Viewport has not been setup. {}".format(e))
             self._is_viewport_size_set = False
-            raise e
+            raise_from(EyesError("Viewport has not been setup"), e)
