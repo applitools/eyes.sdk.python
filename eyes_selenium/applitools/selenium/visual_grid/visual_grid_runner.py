@@ -33,7 +33,7 @@ class VisualGridRunner(EyesRunner):
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
-        if sys.version_info >= (3, 6):
+        if sys.version_info[:2] >= (3, 6):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
         self.resource_cache = ResourceCache()  # type:ResourceCache

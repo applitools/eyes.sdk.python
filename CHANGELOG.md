@@ -1,7 +1,9 @@
 ## [vNext]
+### Added
+- Additional strategy to set viewport size [Trello 1919](https://trello.com/c/9vRolTeu)
+- Option for use latest available versions of libraries for Py3 [Trello 2008](https://trello.com/c/mt8wSiQC)
 ### Updated
 - Improved traceback info for Configuration.add_browser/s() and match regions [Trello 1998](https://trello.com/c/8IoYsgNI)
-- Add additional strategy to set browser size [Trello 1919](https://trello.com/c/9vRolTeu)
 
 ## [4.4.2] - 2020-07-10
 ### Updated

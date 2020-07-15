@@ -23,14 +23,19 @@ def get_version(package_name):
     return version
 
 
-install_requires = ["attrs>=19.2.0,<20", "Pillow >= 5.0.0,<7.0.0"]
+install_requires = ["attrs>=19.2.0,<20"]
+if sys.version_info[:2] <= (2, 7):
+    install_requires.append("Pillow >= 5.0.0,<7.0.0")
+else:
+    install_requires.append("Pillow >= 5.0.0, <8")
+
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
-if sys.version_info < (3, 5):
+if sys.version_info[:2] < (3, 5):
     # typing module was added as builtin in Python 3.5
     install_requires.append("typing >= 3.5.2")
 
-if sys.version_info < (3, 4):
+if sys.version_info[:2] < (3, 4):
     install_requires.append("enum34 == 1.1.6")
 
 setup(
