@@ -148,3 +148,10 @@ def test_rotation(driver_mock):
     eyes.rotation = 2
     assert eyes.rotation == 2
     assert eyes._driver.rotation == 2
+
+
+def test_add_clear_properties(eyes):
+    eyes.add_property("Name", "val")
+    assert eyes.configure.properties == [{"name": "Name", "value": "val"}]
+    eyes.clear_properties()
+    assert eyes.configure.properties == []
