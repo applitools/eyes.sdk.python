@@ -7,10 +7,6 @@ from distutils.util import strtobool
 from typing import Text, Dict, TYPE_CHECKING
 
 import requests
-from selenium.common.exceptions import (
-    InvalidCookieDomainException,
-    UnableToSetCookieException,
-)
 
 from applitools.common import TestResults
 from applitools.common.utils import urljoin
@@ -99,6 +95,10 @@ def get_resource(name):
 def update_browser_cookies(cookies, required_domain, driver):
     # type: (CookieJar, Text, AnyWebDriver) -> None
     """Helps to reuse existing cookies with webdriver"""
+    from selenium.common.exceptions import (
+        InvalidCookieDomainException,
+        UnableToSetCookieException,
+    )
 
     def dict_from_cookie(obj):
         d = {n: v for n, v in vars(obj).items() if not n.startswith("_")}
