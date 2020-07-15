@@ -3,7 +3,6 @@ import os
 import uuid
 from os import path
 from copy import copy
-from http.cookiejar import CookieJar
 from distutils.util import strtobool
 from typing import Text, Dict, TYPE_CHECKING
 
@@ -20,6 +19,7 @@ from applitools.common.utils.json_utils import underscore_to_camelcase
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
+    from http.cookiejar import CookieJar
 
 REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
 REPORT_DATA = {
