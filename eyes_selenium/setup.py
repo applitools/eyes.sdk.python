@@ -33,7 +33,9 @@ install_requires = [
     "transitions>=0.6,<=0.8.3",
     "lxml>=4.4,<5",
 ]
-if sys.version_info <= (2, 7):
+
+
+if sys.version_info[:2] <= (2, 7):
     install_requires.append("Pillow >= 5.0.0,<7.0.0")
     install_requires.append("Appium-Python-Client>=0.4,<1.0.0")
     install_requires.append("tinycss2==0.6.1")

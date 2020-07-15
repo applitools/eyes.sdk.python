@@ -27,7 +27,7 @@ install_requires = [
     "eyes-common=={}".format(get_version("images")),
     "eyes-core=={}".format(get_version("images")),
 ]
-if sys.version_info <= (2, 7):
+if sys.version_info[:2] <= (2, 7):
     install_requires.append("Pillow >= 5.0.0,<7.0.0")
 else:
     install_requires.append("Pillow >= 7.0.0")
