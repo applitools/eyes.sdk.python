@@ -37,7 +37,7 @@ if typing.TYPE_CHECKING:
 
 
 class VGClientSession(ClientSession):
-    SESSION_POOL_CONNECTIONS = 32
+    SESSION_POOL_CONNECTIONS = 10
     SESSION_MAX_POOL_SIZE = SESSION_POOL_CONNECTIONS + 4
 
     def __init__(self):
