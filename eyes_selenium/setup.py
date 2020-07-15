@@ -28,6 +28,7 @@ install_requires = [
     "eyes-core=={}".format(get_version("selenium")),
     "selenium>=2.53.0,<4",
     # uses for check if the mobile platform is used in the test
+    "Appium-Python-Client>=0.4,<1.0.0",
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<20",
     "transitions>=0.6,<=0.8.3",
