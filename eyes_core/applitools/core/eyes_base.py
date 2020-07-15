@@ -256,10 +256,13 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self.configure.properties.append({"name": name, "value": value})
+        self.configure.add_property(name, value)
 
     def clear_properties(self):
-        del self.configure.properties[:]
+        """
+        Clears the list of custom properties.
+        """
+        self.configure.clear_properties()
 
     @property
     def is_open(self):

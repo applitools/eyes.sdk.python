@@ -281,13 +281,13 @@ class Eyes(EyesConfigurationMixin):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
-        self._current_eyes.configure.properties.append({"name": name, "value": value})
+        self._current_eyes.configure.add_property(name, value)
 
     def clear_properties(self):
         """
         Clears the list of custom properties.
         """
-        del self._current_eyes.configure.properties[:]
+        self._current_eyes.configure.clear_properties()
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (Text, AnyWebElement) -> None
