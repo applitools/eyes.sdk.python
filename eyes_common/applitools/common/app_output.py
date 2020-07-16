@@ -1,8 +1,12 @@
-from typing import Optional, Text
+from typing import TYPE_CHECKING
 
 import attr
 
 from .utils.json_utils import JsonInclude
+
+if TYPE_CHECKING:
+    from typing import Optional, Text
+    from .geometry import RectangleSize
 
 __all__ = ("AppOutput",)
 
@@ -17,3 +21,6 @@ class AppOutput(object):
     dom_url = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Text]
+    viewport = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[RectangleSize]
