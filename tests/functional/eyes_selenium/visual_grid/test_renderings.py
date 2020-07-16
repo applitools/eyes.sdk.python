@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import pytest
+from mock import patch
 
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
@@ -224,6 +225,11 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
         .add_browser(IosDeviceInfo("iPhone 11", "landscape"))
     )
     eyes.open(driver)
-    eyes.check_window()
-    eyes.close_async()
-    assert len(vg_runner.get_all_test_results()) == 2
+    with patch(
+        "applitools.core.server_connector.ServerConnector.match_window"
+    ) as patched:
+        eyes.check_window()
+        eyes.close_async()
+        assert len(vg_runner.get_all_test_results()) == 2
+        app_output = patched.call_args.args[2].app_output
+        assert isinstance(app_output.viewport, RectangleSize)
