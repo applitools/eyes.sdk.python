@@ -1,4 +1,6 @@
 ## [vNext]
+### Fixed
+- clear_properties method missing in UFG [Trello 2010](https://trello.com/c/ovjgBPJW)
 ### Added
 - Additional strategy to set viewport size [Trello 1919](https://trello.com/c/9vRolTeu)
 - Option for use latest available versions of libraries for Py3 [Trello 2008](https://trello.com/c/mt8wSiQC)
