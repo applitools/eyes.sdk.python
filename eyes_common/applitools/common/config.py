@@ -347,3 +347,20 @@ class Configuration(object):
     def clone(self):
         # type: () -> Configuration
         return copy(self)
+
+    def add_property(self, name, value):
+        # type: (Text, Text) -> None
+        """
+        Associates a key/value pair with the test. This can be used later for filtering.
+        :param name: (string) The property name.
+        :param value: (string) The property value
+        """
+        self.properties.append({"name": name, "value": value})
+        return self
+
+    def clear_properties(self):
+        """
+        Clears the list of custom properties.
+        """
+        del self.properties[:]
+        return self
