@@ -208,6 +208,7 @@ class EyesConnector(EyesBase):
             screenshot_bytes=None,
             screenshot_url=self.render_status.image_location,
             dom_url=self.render_status.dom_location,
+            viewport=self.render_status.visual_viewport,
         )
         result = AppOutputWithScreenshot(app_output, None)
         return result

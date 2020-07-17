@@ -1,8 +1,10 @@
 from collections import defaultdict
 
 import pytest
+from mock import patch
 
 from applitools.common.utils import datetime_utils
+from applitools.core import ServerConnector
 from applitools.selenium import (
     BrowserType,
     Configuration,
@@ -227,3 +229,23 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     eyes.check_window()
     eyes.close_async()
     assert len(vg_runner.get_all_test_results()) == 2
+
+
+def test_visual_viewport(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Visual Grid Render Test",
+            test_name="TestVisualViewport",
+            batch=batch_info,
+        ).add_browser(IosDeviceInfo("iPhone 7"))
+    )
+    eyes.open(driver)
+    with patch(
+        "applitools.core.server_connector.ServerConnector.match_window",
+    ) as patched:
+        eyes.check_window()
+        eyes.close(False)
+        app_output = patched.call_args.args[1].app_output
+        assert isinstance(app_output.viewport, RectangleSize)
