@@ -466,13 +466,3 @@ def test_parse_render_info_no_error(render_json):
         assert ri.results_url == "result"
     if ri.stitching_service_url:
         assert ri.stitching_service_url == "stitching"
-
-
-def test_try_upload_delay(started_connector):
-    with patch("requests.Session.request", side_effect=EyesError) as upload_request:
-        with patch(
-            "applitools.core.server_connector.ServerConnector.render_info",
-            return_value=RENDERING_OBJ,
-        ):
-            started_connector.try_upload_image(b"")
-        assert upload_request.call_count == 10
