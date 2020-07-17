@@ -7,6 +7,7 @@
 - Visual Viewport support for UFG [Trello 1957](https://trello.com/c/jWvdBwex)
 ### Updated
 - Improved traceback info for Configuration.add_browser/s() and match regions [Trello 1998](https://trello.com/c/8IoYsgNI)
+- Increased backoff for uploading to Storage Service [Trello 2001](https://trello.com/c/Em7MvWXs)
 
 ## [4.4.2] - 2020-07-10
 ### Updated

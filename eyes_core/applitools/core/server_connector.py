@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import itertools
 import json
 import math
 import typing
@@ -369,7 +370,11 @@ class ServerConnector(object):
                 logger.error("Error uploading {}".format(media_type))
                 logger.exception(e)
 
-    @datetime_utils.retry(delays=(0.5, 1, 10), exception=EyesError, report=logger.debug)
+    @datetime_utils.retry(
+        delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
+        exception=EyesError,
+        report=logger.debug,
+    )
     def _upload_data(
         self, data_bytes, rendering_info, target_url, content_type, media_type
     ):
