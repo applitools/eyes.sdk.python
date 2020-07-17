@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import itertools
 import json
 import math
 import typing
@@ -370,7 +371,7 @@ class ServerConnector(object):
                 logger.exception(e)
 
     @datetime_utils.retry(
-        delays=(1000, 5000, 10000, 15000, 20000, 30000, 40000, 50000, 60000),
+        delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
         exception=EyesError,
         report=logger.debug,
     )
