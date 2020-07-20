@@ -1,4 +1,4 @@
-## [vNext]
+## [4.5.0] - 2020-07-20
 ### Fixed
 - clear_properties method missing in UFG [Trello 2010](https://trello.com/c/ovjgBPJW)
 ### Added
