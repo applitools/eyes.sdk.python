@@ -145,6 +145,7 @@ class VisualGridEyes(object):
 
     def get_script_result(self):
         # type: () -> Dict
+        logger.debug("get_script_result()")
         skip_resources = json.dumps(
             {"skipResources": list(self.vg_manager.resource_cache)}
         )
