@@ -1,4 +1,7 @@
+import itertools
 import os
+from collections import defaultdict
+from os import path
 from distutils.util import strtobool
 
 import attr
@@ -11,6 +14,8 @@ from applitools.common.utils.json_utils import attr_from_dict
 from tests.utils import send_result_report, get_session_results
 
 logger.set_logger(StdoutLogger())
+
+here = path.abspath(path.dirname(__file__))
 
 TRAVIS_COMMIT = os.getenv("TRAVIS_COMMIT")
 BUILD_TAG = os.getenv("BUILD_TAG")
@@ -174,20 +179,23 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
                         set_skip_for_mobile_platform(item, skip_tests_list, skip)
 
     def get_skip_tests_list():
-        result = {}
-        result.update(get_failed_tests_from_file())
-        result.update(get_skip_duplicates_tests_from_file())
+        result = defaultdict(dict)
+        for test_file, test_dict in itertools.chain(
+            get_failed_tests_from_file(), get_skip_duplicates_tests_from_file()
+        ):
+            for test_name, val in iteritems(test_dict):
+                result[test_file][test_name] = val
         return result
 
     def get_failed_tests_from_file():
-        with open("tests/functional/resources/failedTestsSuite.yaml") as f:
+        with open(path.join(here, "failedTestsSuite.yaml")) as f:
             failed_tests = yaml.load(f, Loader=yaml.Loader)
-            return failed_tests
+            return iteritems(failed_tests)
 
     def get_skip_duplicates_tests_from_file():
-        with open("tests/functional/resources/generatedTestsSuite.yaml") as f:
+        with open(path.join(here, "generatedTestsSuite.yaml")) as f:
             generated_tests = yaml.load(f, Loader=yaml.Loader)
-            return generated_tests
+            return iteritems(generated_tests)
 
     def set_skip_for_linux_platform(item, failed_tests, skip):
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
