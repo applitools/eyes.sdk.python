@@ -196,20 +196,6 @@ jobs:
 #              - python3 -m tox -e $TOX_ENV
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
-          script:
-              - travis_wait 30  tox -e mobile
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TEST_PLATFORM="Android"
-              - TEST_REMOTE=1
-          script:
-              - travis_wait 30  tox -e mobile
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
@@ -238,7 +224,7 @@ jobs:
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
               - echo "REPORTING...";
               - TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
-              - ./all_tests_report.sh "$SDK" "$COMMITER_EMAIL";
+              - bash ./all_tests_report.sh "$SDK" "$COMMITER_EMAIL";
               - echo "REPORTED SUCCESSFULLY";
 
         - stage: deploy
