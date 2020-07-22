@@ -1,0 +1,57 @@
+test_other_desktop_tests.py:
+    test_acme_login:
+
+test_classic_api.py:
+    test_check_frame:
+    test_check_region:
+    test_check_region2:
+    test_check_window:
+    test_check_window_after_scroll:
+    test_check_window_fully:
+    test_check_window_viewport:
+    test_double_check_window:
+
+test_scroll_root_element.py:
+    test_check_window__body:
+    test_check_window__html:
+    test_check_window__simple__html:
+
+test_fluent_api_frames.py:
+    test_check_frame__fluent:
+    test_check_frame__fully__fluent:
+    test_check_frame_in_frame__fully__fluent:
+    test_check_frame_in_frame__fully__fluent2:
+    test_check_region_by_coordinates__fluent:
+    test_check_region_by_coordinate_in_frame__fluent:
+    test_check_region_by_coordinate_in_frame_fully__fluent:
+    test_check_region_by_selector_after_manual_scroll__fluent:
+    test_check_region_in_frame:
+    test_check_region_in_frame__fluent:
+    test_check_region_in_frame3__fluent:
+
+test_special_cases.py:
+    test_check_region_in_a_very_big_frame:
+    test_check_region_in_a_very_big_frame_after_manual_switch_to_frame:
+
+test_fluent_api.py:
+    test_check_element_fully__fluent:
+    test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent:
+    test_check_element_with_ignore_region_by_same_element__fluent:
+    test_check_full_window_with_multiple_ignore_regions_by_selector__fluent:
+    test_check_overflowing_region_by_coordinates__fluent:
+    test_check_region_with_ignore_region__fluent:
+    test_check_scrollable_modal:
+    test_check_window__fluent:
+    test_check_window_with_floating_by_region__fluent:
+    test_check_window_with_floating_by_selector__fluent:
+    test_check_window_with_ignore_region__fluent:
+    test_check_window_with_ignore_by_selector__fluent:
+    test_check_window_with_ignore_by_selector__centered__fluent:
+    test_check_window_with_ignore_by_selector__stretched__fluent:
+    test_simple_region:
+
+test_page_with_headber.py:
+    test_check_page_with_header__window:
+    test_check_page_with_header__window__fully:
+    test_check_page_with_header__region:
+    test_check_page_with_header__region__fully:

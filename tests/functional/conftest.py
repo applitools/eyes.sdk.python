@@ -157,24 +157,37 @@ def pytest_runtest_makereport(item, call):
 if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
 
     def pytest_collection_modifyitems(items):
-        skip = pytest.mark.skip(reason="Skipping this test because it's still fail")
-        failed_tests = get_failed_tests_from_file()
+        skip = pytest.mark.skip(
+            reason="Skipping this test because it's fail or in skip list"
+        )
+        skip_tests_list = get_skip_tests_list()
         for item in items:
-            if item.fspath.basename in failed_tests:
-                if item.originalname in failed_tests[item.fspath.basename]:
-                    if failed_tests[item.fspath.basename][item.originalname] is None:
+            if item.fspath.basename in skip_tests_list:
+                if item.originalname in skip_tests_list[item.fspath.basename]:
+                    if skip_tests_list[item.fspath.basename][item.originalname] is None:
                         item.add_marker(skip)
                         continue
 
                     if os.getenv("TEST_PLATFORM") == "Linux":
-                        set_skip_for_linux_platform(item, failed_tests, skip)
+                        set_skip_for_linux_platform(item, skip_tests_list, skip)
                     if os.getenv("TEST_PLATFORM") in ["iOS", "Android"]:
-                        set_skip_for_mobile_platform(item, failed_tests, skip)
+                        set_skip_for_mobile_platform(item, skip_tests_list, skip)
+
+    def get_skip_tests_list():
+        result = {}
+        result.update(get_failed_tests_from_file())
+        result.update(get_skip_duplicates_tests_from_file())
+        return result
 
     def get_failed_tests_from_file():
         with open("tests/functional/resources/failedTestsSuite.yaml") as f:
             failed_tests = yaml.load(f, Loader=yaml.Loader)
             return failed_tests
+
+    def get_skip_duplicates_tests_from_file():
+        with open("tests/functional/resources/generatedTestsSuite.yaml") as f:
+            generated_tests = yaml.load(f, Loader=yaml.Loader)
+            return generated_tests
 
     def set_skip_for_linux_platform(item, failed_tests, skip):
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
