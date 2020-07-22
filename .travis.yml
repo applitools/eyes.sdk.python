@@ -227,9 +227,28 @@ jobs:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-          before_install:
-              - git submodule update --init --remote --recursive
-              - nvm install node
+
+        - stage: Report all test results
+          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
+          python: 3.6
+          script:
+              # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
+              - echo "v$SDK_VERSION $CHANGELOG"
+              - echo $TMP_CHANGELOG
+              # Save the email of the person who did this commit in COMMITTER_EMAIL
+              - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
+              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
+                  echo "REPORTING...";
+                  TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
+
+                  ./all_tests_report.sh "$SDK" "$COMMITER_EMAIL";
+
+                  echo "REPORTED SUCCESSFULLY";
+                else
+                  echo "REPORT FAILED";
+                  exit 1;
+                fi
+
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
