@@ -34,6 +34,7 @@ stages:
     - integration-tests
     - bumpversion
     - functional-tests
+    - set-test-report-product
     - generated-tests
     - deploy
 jobs:
@@ -215,6 +216,11 @@ jobs:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+
+        - stage: set-test-report-product
+          python: 3.6
+          script:
+              - export TEST_REPORT_SANDBOX=False;
 
         - stage: Report all test results
           python: 3.6
