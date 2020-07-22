@@ -202,6 +202,8 @@ jobs:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+          script:
+              - echo "TEST_REPORT_SANDBOX=$TEST_REPORT_SANDBOX"
 
         - stage: generated-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
