@@ -10,6 +10,7 @@ test_classic_api.py:
     test_check_window_fully:
     test_check_window_viewport:
     test_double_check_window:
+    test_check_inner_frame:
 
 test_scroll_root_element.py:
     test_check_window__body:
