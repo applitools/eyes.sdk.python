@@ -18,12 +18,12 @@ from applitools.common import (
 from applitools.common.utils import datetime_utils, apply_base_url
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
-from applitools.selenium import parsers
+from applitools.selenium.parsers import collect_urls_from_
 
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Dict, Any, Text, List, Optional
+    from typing import Callable, Dict, Any, Text, List, Optional, NoReturn
     from applitools.common import RenderStatusResults, Region, RenderingInfo
     from applitools.selenium.visual_grid import (
         RunningTest,
@@ -197,27 +197,18 @@ class RenderTask(VGTask):
         all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
         discovered_resources_urls = set()
-        discovered_resources_lock = Lock()
 
         def handle_resources(content_type, content, resource_url):
+            # type: (Optional[Text], bytes, Text) -> NoReturn
             logger.debug(
                 "handle_resources({0}, {1}) call".format(content_type, resource_url)
             )
             if not content_type:
                 logger.debug("content_type is empty. Skip handling of resources")
                 return
-            urls_from_css, urls_from_svg = [], []
-            if content_type.startswith("text/css"):
-                urls_from_css = parsers.get_urls_from_css_resource(content)
-            if content_type.startswith("image/svg"):
-                urls_from_svg = parsers.get_urls_from_svg_resource(content)
-            for discovered_url in urls_from_css + urls_from_svg:
-                if discovered_url.startswith("data:") or discovered_url.startswith("#"):
-                    # resource already in blob or not relevant
-                    continue
-                target_url = apply_base_url(discovered_url, base_url, resource_url)
-                with discovered_resources_lock:
-                    discovered_resources_urls.add(target_url)
+            for url in collect_urls_from_(content_type, content):
+                target_url = apply_base_url(url, base_url, resource_url)
+                discovered_resources_urls.add(target_url)
 
         def get_resource(link):
             # type: (Text) -> VGResource
