@@ -191,11 +191,26 @@ class RenderTask(VGTask):
 
     def parse_frame_dom_resources(self, data):  # noqa
         # type: (Dict) -> RGridDom
-        logger.debug("parse_frame_dom_resources() call")
         base_url = data["url"]
         resource_urls = data.get("resourceUrls", [])
         all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        logger.debug(
+            """
+        parse_frame_dom_resources() call
+
+        base_url: {base_url}
+        count blobs: {blobs_num}
+        count resource urls: {resource_urls_num}
+        count frames: {frames_num}
+
+        """.format(
+                base_url=base_url,
+                blobs_num=len(all_blobs),
+                resource_urls_num=len(resource_urls),
+                frames_num=len(frames),
+            )
+        )
         discovered_resources_urls = set()
 
         def handle_resources(content_type, content, resource_url):
