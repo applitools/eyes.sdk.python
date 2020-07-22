@@ -229,7 +229,6 @@ jobs:
               - TEST_BROWSERS=chrome
 
         - stage: Report all test results
-          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
           script:
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
