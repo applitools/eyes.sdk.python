@@ -1,3 +1,9 @@
+## [vNext]
+### Added
+- Skip list for DOM snapshot [Trello 1974](https://trello.com/c/44xq8dze)
+## Updated
+- DOM snapshot scripts to *3.7.1*
+
 ## [4.5.0] - 2020-07-20
 ### Fixed
 - clear_properties method missing in UFG [Trello 2010](https://trello.com/c/ovjgBPJW)

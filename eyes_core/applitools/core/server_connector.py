@@ -372,7 +372,7 @@ class ServerConnector(object):
 
     @datetime_utils.retry(
         delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
-        exception=EyesError,
+        exception=(EyesError, requests.ConnectionError),
         report=logger.debug,
     )
     def _upload_data(

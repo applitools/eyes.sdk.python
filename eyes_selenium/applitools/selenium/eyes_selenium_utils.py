@@ -579,7 +579,9 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
         def set_timer():
             is_check_timer_timeout.append(True)
 
-        timer = threading.Timer(dom_extraction_timeout, set_timer)
+        timer = threading.Timer(
+            datetime_utils.to_sec(dom_extraction_timeout), set_timer
+        )
         timer.daemon = True
         timer.setName(timer_name)
         timer.start()
@@ -598,6 +600,7 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
             status = script_response.get("status")
         except Exception as e:
             logger.exception(e)
+        datetime_utils.sleep(1000, "Waiting for the end of DOM extraction")
     timer.cancel()
     script_result = script_response.get("value")
     if script_result is None or status == "ERROR":
