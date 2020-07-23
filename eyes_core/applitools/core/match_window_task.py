@@ -56,7 +56,16 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
     if not regions:
         return image_match_settings
+    logger.debug(
+        """
+    start collect_regions_from_selectors()
 
+        regions: {}
+        region_selectors: {}
+    """.format(
+            regions, region_selectors
+        )
+    )
     mutable_regions = [
         [],  # Ignore Regions
         [],  # Layout Regions
@@ -108,6 +117,15 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         )
         if isinstance(gfr, GetAccessibilityRegion)
     ]
+    logger.debug(
+        """
+    finish collect_regions_from_selectors()
+
+        image_match_settings: {}
+    """.format(
+            image_match_settings
+        )
+    )
     return image_match_settings
 
 
@@ -133,6 +151,15 @@ def collect_regions_from_screenshot(
     )
     image_match_settings.accessibility = _collect_regions(  # type: ignore
         check_settings.values.accessibility_regions, screenshot, eyes
+    )
+    logger.debug(
+        """
+    finish collect_regions_from_screenshot()
+
+        image_match_settings: {}
+    """.format(
+            image_match_settings
+        )
     )
     return image_match_settings
 
