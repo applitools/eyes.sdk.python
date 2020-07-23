@@ -39,8 +39,8 @@ stages:
     - integration-tests
     - bumpversion
     - functional-tests
-    - set-test-report-product
     - generated-tests
+    - Report all test results
     - deploy
 jobs:
     include:
@@ -127,6 +127,14 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -134,6 +142,15 @@ jobs:
           env:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_RUN_ON_VG=true
               - TEST_BROWSERS=chrome
 #        - python: 3.6
 #          if: NOT tag =~ ^RELEASE_CANDIDATE
@@ -185,14 +202,26 @@ jobs:
 #              - python3 -m tox -e $TOX_ENV
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TEST_PLATFORM="iOS"
+              - TEST_REMOTE=1
+          script:
+              - travis_wait 30  tox -e mobile
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TEST_PLATFORM="Android"
+              - TEST_REMOTE=1
+          script:
+              - travis_wait 30  tox -e mobile
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-          script:
-              - echo "TEST_REPORT_SANDBOX=$TEST_REPORT_SANDBOX"
 
         - stage: generated-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
@@ -204,11 +233,6 @@ jobs:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-
-        - stage: set-test-report-product
-          python: 3.6
-          script:
-              - export TEST_REPORT_SANDBOX=False;
 
         - stage: Report all test results
           python: 3.6
@@ -222,6 +246,7 @@ jobs:
               - TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
               - bash ./all_tests_report.sh "$SDK" "$COMMITER_EMAIL";
               - echo "REPORTED SUCCESSFULLY";
+
 
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
