@@ -1,4 +1,4 @@
-## [vNext]
+## [4.6.0] - 2020-07-23
 ### Added
 - Skip list for DOM snapshot [Trello 1974](https://trello.com/c/44xq8dze)
 ## Updated
