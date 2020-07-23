@@ -34,8 +34,7 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __getitem__(self, item):
         with self.lock:
             val = self.cache_map[item]
-            self._process_future(item, val)
-        return val
+            return self._process_future(item, val)
 
     def __setitem__(self, key, value):
         with self.lock:
