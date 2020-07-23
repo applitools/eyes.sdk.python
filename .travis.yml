@@ -138,15 +138,18 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_RUN_ON_VG=true
-              - TEST_BROWSERS=chrome
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=desktop
+#              - TEST_PLATFORM=Linux
+#              - TEST_RUN_ON_VG=true
+#              - TEST_BROWSERS=chrome
+
+
+
 #        - python: 3.6
 #          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
@@ -209,14 +212,14 @@ jobs:
               - TEST_REMOTE=1
           script:
               - travis_wait 30  tox -e mobile
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=selenium-visualgrid
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=selenium-visualgrid
+#              - TEST_PLATFORM=Linux
+#              - TEST_BROWSERS=chrome
 
         - stage: generated-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
