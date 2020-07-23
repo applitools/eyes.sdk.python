@@ -1,13 +1,8 @@
 language: python
-node_js:
-    - "14"
 services:
     - xvfb
 git:
     submodules: false
-before_install:
-    - git submodule update --init --remote --recursive
-    - nvm install node
 install:
     - python -m pip install -U tox
 before_script:
@@ -229,24 +224,25 @@ jobs:
           addons:
               chrome: stable
               firefox: latest
+          before_script:
+              - git submodule update --init --remote --recursive
+              - nvm install node
+
           env:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-
-        - stage: Report all test results
-          python: 3.6
           script:
-              # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
               - echo "v$SDK_VERSION $CHANGELOG"
               - echo $TMP_CHANGELOG
+              - echo $TRAVIS_COMMIT
+              - echo $COMMITER_EMAIL
               # Save the email of the person who did this commit in COMMITTER_EMAIL
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
               - echo "REPORTING...";
               - TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
               - bash ./all_tests_report.sh "$SDK" "$COMMITER_EMAIL";
               - echo "REPORTED SUCCESSFULLY";
-
 
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
