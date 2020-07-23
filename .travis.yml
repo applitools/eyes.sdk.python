@@ -1,8 +1,13 @@
 language: python
+node_js:
+    - "14"
 services:
     - xvfb
 git:
     submodules: false
+before_install:
+    - git submodule update --init --remote --recursive
+    - nvm install node
 install:
     - python -m pip install -U tox
 before_script:
