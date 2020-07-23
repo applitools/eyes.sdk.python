@@ -122,14 +122,14 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=desktop
+#              - TEST_PLATFORM=Linux
+#              - TEST_BROWSERS=chrome
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -195,13 +195,13 @@ jobs:
 #          script:
 #              - echo $APPLITOOLS_BATCH_ID
 #              - python3 -m tox -e $TOX_ENV
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
-          script:
-              - travis_wait 30  tox -e mobile
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          env:
+#              - TEST_PLATFORM="iOS"
+#              - TEST_REMOTE=1
+#          script:
+#              - travis_wait 30  tox -e mobile
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
