@@ -11,6 +11,7 @@ test_classic_api.py:
     test_check_window_viewport:
     test_double_check_window:
     test_check_inner_frame:
+    test_check_region_in_frame:
 
 test_scroll_root_element.py:
     test_check_window__body:
@@ -26,7 +27,6 @@ test_fluent_api_frames.py:
     test_check_region_by_coordinate_in_frame__fluent:
     test_check_region_by_coordinate_in_frame_fully__fluent:
     test_check_region_by_selector_after_manual_scroll__fluent:
-    test_check_region_in_frame:
     test_check_region_in_frame__fluent:
     test_check_region_in_frame3__fluent:
 
