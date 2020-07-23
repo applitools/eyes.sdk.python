@@ -53,6 +53,7 @@ return '/' + xpath;"""
 
 
 PROCESS_RESOURCES = resource.get_resource("processPageAndSerializePoll.js")
+PROCESS_RESOURCES_FOR_IE = resource.get_resource("processPageAndSerializePollForIE.js")
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
@@ -144,11 +145,26 @@ class VisualGridEyes(object):
 
     def get_script_result(self):
         # type: () -> Dict
+        logger.debug("get_script_result()")
+        skip_resources = json.dumps(
+            {"skipResources": list(self.vg_manager.resource_cache)}
+        )
+        process_resources = (
+            PROCESS_RESOURCES
+            + "return __processPageAndSerializePoll(document, {});".format(
+                skip_resources
+            )
+        )
+        if self.driver.user_agent.is_internet_explorer:
+            process_resources = (
+                PROCESS_RESOURCES_FOR_IE
+                + "return __processPageAndSerializePollForIE(document, {});".format(
+                    skip_resources
+                )
+            )
+
         return eyes_selenium_utils.get_dom_script_result(
-            self.driver,
-            DOM_EXTRACTION_TIMEOUT,
-            "VG_StopWatch",
-            PROCESS_RESOURCES + "return __processPageAndSerializePoll();",
+            self.driver, DOM_EXTRACTION_TIMEOUT, "VG_StopWatch", process_resources
         )
 
     def check(self, name, check_settings):
