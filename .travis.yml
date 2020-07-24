@@ -217,6 +217,7 @@ jobs:
 #              - TEST_PLATFORM=Linux
 #              - TEST_BROWSERS=chrome
 
+#Generated tests
         - stage: generated-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
