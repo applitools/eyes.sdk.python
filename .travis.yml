@@ -3,6 +3,9 @@ services:
     - xvfb
 git:
     submodules: false
+before_script:
+    - git submodule update --init --remote --recursive
+    - nvm install node
 install:
     - python -m pip install -U tox
 before_script:
@@ -35,6 +38,7 @@ stages:
     - bumpversion
     - functional-tests
     - generated-tests
+    - Report all test results
     - deploy
 jobs:
     include:
@@ -121,14 +125,14 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=desktop
+#              - TEST_PLATFORM=Linux
+#              - TEST_BROWSERS=chrome
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -137,15 +141,18 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_RUN_ON_VG=true
-              - TEST_BROWSERS=chrome
+#        - python: 3.6
+#          if: NOT tag =~ ^RELEASE_CANDIDATE
+#          addons:
+#              chrome: stable
+#          env:
+#              - TOX_ENV=desktop
+#              - TEST_PLATFORM=Linux
+#              - TEST_RUN_ON_VG=true
+#              - TEST_BROWSERS=chrome
+
+
+
 #        - python: 3.6
 #          if: NOT tag =~ ^RELEASE_CANDIDATE
 #          env:
@@ -217,12 +224,9 @@ jobs:
 #              - TEST_PLATFORM=Linux
 #              - TEST_BROWSERS=chrome
 
-#Generated tests
         - stage: generated-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
-          node_js:
-              - "14"
           addons:
               chrome: stable
               firefox: latest
@@ -230,9 +234,7 @@ jobs:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-          before_install:
-              - git submodule update --init --remote --recursive
-              - nvm install node
+
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
