@@ -14,7 +14,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import IEDriverManager#EdgeDriverManager,
+from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
 from applitools.selenium import (
     Eyes,
@@ -39,7 +39,7 @@ BROWSERS_WEBDRIVERS = {
     "firefox": (GeckoDriverManager, webdriver.Firefox, webdriver.FirefoxOptions),
     "chrome": (ChromeDriverManager, webdriver.Chrome, webdriver.ChromeOptions),
     "internet explorer": (IEDriverManager, webdriver.Ie, webdriver.IeOptions),
-#    "MicrosoftEdge": (EdgeDriverManager, webdriver.Edge, None),
+    "MicrosoftEdge": (EdgeDriverManager, webdriver.Edge, None),
     "safari": (None, webdriver.Safari, None),
 }
 
@@ -262,7 +262,7 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
         return self.name
 
 
-COMMON_BROWSERS = [("chrome", "stable"), ("firefox", "latest")]
+COMMON_BROWSERS = [("chrome", "latest"), ("firefox", "latest")]
 SUPPORTED_PLATFORMS = [
     Platform(
         name="Windows",
