@@ -1,8 +1,7 @@
 import json
-import threading
 import typing
 import uuid
-from collections import OrderedDict
+from copy import copy
 
 import attr
 
@@ -147,7 +146,7 @@ class VisualGridEyes(object):
         # type: () -> Dict
         logger.debug("get_script_result()")
         skip_resources = json.dumps(
-            {"skipResources": list(self.vg_manager.resource_cache)}
+            {"skipResources": list(copy(self.vg_manager.resource_cache.keys()))}
         )
         process_resources = (
             PROCESS_RESOURCES
