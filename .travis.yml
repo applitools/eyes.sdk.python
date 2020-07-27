@@ -115,7 +115,7 @@ jobs:
           if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           addons:
-              chrome: 85
+              chrome: stable
               firefox: latest
           env:
               - TOX_ENV=selenium
@@ -132,7 +132,7 @@ jobs:
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
-              chrome: 85
+              chrome: stable
           env:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
@@ -223,7 +223,7 @@ jobs:
           node_js:
               - "14"
           addons:
-              chrome: 85
+              chrome: stable
               firefox: latest
           env:
               - TEST_PLATFORM=Linux
