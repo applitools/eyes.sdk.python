@@ -115,7 +115,7 @@ class RenderTask(VGTask):
                 if self.is_force_put_needed and not already_force_putted:
                     for url in self.request_resources:
                         self.put_cache.fetch_and_store(
-                            url, get_and_put_resource_wtih_render
+                            url, get_and_put_resource_wtih_render, force=True
                         )
                     already_force_putted = True
 
