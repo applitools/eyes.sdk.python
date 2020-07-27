@@ -1,7 +1,6 @@
 import typing
 from functools import partial
 from itertools import chain
-from threading import Lock
 import attr
 
 from applitools.common import (
@@ -61,7 +60,7 @@ class RenderTask(VGTask):
     def __attrs_post_init__(self):
         # type: () -> None
         self.func_to_run = self.perform  # type: Callable
-        self.request_resources = {}  # type: Dict[Text, VGResource]
+        self.full_request_resources = {}  # type: Dict[Text, VGResource]
 
     def perform(self):  # noqa
         # type: () -> List[RenderStatusResults]
@@ -73,7 +72,7 @@ class RenderTask(VGTask):
                     url, running_render.render_id
                 )
             )
-            resource = self.request_resources.get(url)
+            resource = self.full_request_resources.get(url)
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
 
@@ -113,7 +112,7 @@ class RenderTask(VGTask):
                 dom_resource = requests[i].dom.resource
 
                 if self.is_force_put_needed and not already_force_putted:
-                    for url in self.request_resources:
+                    for url in self.full_request_resources:
                         self.put_cache.fetch_and_store(
                             url, get_and_put_resource_wtih_render, force=True
                         )
@@ -141,9 +140,9 @@ class RenderTask(VGTask):
 
     def prepare_data_for_rg(self, data):
         # type: (Dict) -> List[RenderRequest]
-        self.request_resources = {}
+        self.full_request_resources = {}
         dom = self.parse_frame_dom_resources(data)
-        return self.prepare_rg_requests(dom, self.request_resources)
+        return self.prepare_rg_requests(dom, self.full_request_resources)
 
     def prepare_rg_requests(self, dom, request_resources):
         # type: (RGridDom, Dict) -> List[RenderRequest]
@@ -211,6 +210,7 @@ class RenderTask(VGTask):
                 frames_num=len(frames),
             )
         )
+        frame_request_resources = {}
         discovered_resources_urls = set()
 
         def handle_resources(content_type, content, resource_url):
@@ -233,7 +233,7 @@ class RenderTask(VGTask):
 
         for f_data in frames:
             f_data["url"] = apply_base_url(f_data["url"], base_url)
-            self.request_resources[f_data["url"]] = self.parse_frame_dom_resources(
+            frame_request_resources[f_data["url"]] = self.parse_frame_dom_resources(
                 f_data
             ).resource
 
@@ -241,7 +241,7 @@ class RenderTask(VGTask):
             resource = VGResource.from_blob(blob, on_created=handle_resources)
             if resource.url.rstrip("#") == base_url:
                 continue
-            self.request_resources[resource.url] = resource
+            frame_request_resources[resource.url] = resource
 
         for r_url in set(resource_urls).union(discovered_resources_urls):
             self.resource_cache.fetch_and_store(r_url, get_resource)
@@ -256,9 +256,10 @@ class RenderTask(VGTask):
             if val is None:
                 logger.debug("No response for {}".format(r_url))
                 continue
-            self.request_resources[r_url] = self.resource_cache[r_url]
+            frame_request_resources[r_url] = val
+        self.full_request_resources.update(frame_request_resources)
         return RGridDom(
-            url=base_url, dom_nodes=data["cdt"], resources=self.request_resources
+            url=base_url, dom_nodes=data["cdt"], resources=frame_request_resources
         )
 
     def poll_render_status(self, requests):
