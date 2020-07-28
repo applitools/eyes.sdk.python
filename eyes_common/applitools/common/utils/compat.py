@@ -25,6 +25,7 @@ __all__ = (
     "urlsplit",
     "urlunsplit",
     "raise_from",
+    "urldefrag",
 )
 
 
@@ -49,6 +50,7 @@ if PY3:
         urlsplit,
         urlunsplit,
         quote_plus,
+        urldefrag,
     )  # noqa
     from gzip import compress as gzip_compress  # noqa
     from queue import Queue  # noqa
@@ -86,6 +88,7 @@ else:
         parse_qs,
         urlsplit,
         urlunsplit,
+        urldefrag,
     )  # noqa
     from urllib import urlencode, quote_plus  # noqa
     from Queue import Queue  # noqa
