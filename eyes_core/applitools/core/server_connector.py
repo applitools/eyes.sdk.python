@@ -259,8 +259,10 @@ class ServerConnector(object):
         self._com.server_url = conf.server_url
         self._com.api_key = conf.api_key
         self._com.timeout_ms = conf._timeout
-        self._render_info = render_info
-        self._ua_string = ua_string
+        if render_info:
+            self._render_info = render_info
+        if ua_string:
+            self._ua_string = ua_string
         self.DEFAULT_HEADERS["x-applitools-eyes-client"] = full_agent_id
 
     @property

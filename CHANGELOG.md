@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Randomly render errors and skip list issue on UFG [Trello 2044](https://trello.com/c/IObN01t2)
+
 ## [4.6.0] - 2020-07-23
 ### Added
 - Skip list for DOM snapshot [Trello 1974](https://trello.com/c/44xq8dze)
