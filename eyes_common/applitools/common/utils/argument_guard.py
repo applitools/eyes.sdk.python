@@ -40,7 +40,7 @@ def not_none_or_empty(param, exc_info=None):
         raise ValueError("{} is empty".format(get_name_from_param(param)))
 
 
-def greater_than_or_equal_to_zero(param, *args, exc_info=None):
+def greater_than_or_equal_to_zero(param, *args):
     # type: (int, *int, Exception) -> None
     """
     Fails if the input integer parameter is negative.
@@ -49,8 +49,6 @@ def greater_than_or_equal_to_zero(param, *args, exc_info=None):
         # adaptation for attr library
         param = args[1]
     if 0 >= param:
-        if exc_info:
-            raise exc_info
         raise ValueError("{} < 0".format(get_name_from_param(param)))
 
 
