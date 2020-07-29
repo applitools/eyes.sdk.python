@@ -69,8 +69,15 @@ jobs:
         - os: windows
           language: sh
           python: 3.6
+          before_install:
+              - choco install python --version=3.6.6
+              - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
+              - PATH=/c/Python36:/c/Python36/Scripts:$PATH
+          cache:
+              directories:
+                - $LOCALAPPDATA/pip/Cache
         - os: osx
           language: sh
           python: 3.6
@@ -88,8 +95,15 @@ jobs:
         - os: windows
           language: sh
           python: 3.6
+          before_install:
+              - choco install python
+              - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
+              - PATH=/c/Python36:/c/Python36/Scripts:$PATH
+          cache:
+              directories:
+                  - $LOCALAPPDATA/pip/Cache
         - os: osx
           language: sh
           python: 3.6
