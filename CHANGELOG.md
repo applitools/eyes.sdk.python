@@ -2,6 +2,8 @@
 ### Fixed
 - Randomly render errors and skip list issue on UFG [Trello 2044](https://trello.com/c/IObN01t2)
 - Unicode issues with UFG and Windows [Trello 2027](https://trello.com/c/2JSXFdde)
+## Updated
+- Improve indication that app_name and/or test_name are missing [Trello 2038](https://trello.com/c/YtuycQpX)
 
 ## [4.6.0] - 2020-07-23
 ### Added

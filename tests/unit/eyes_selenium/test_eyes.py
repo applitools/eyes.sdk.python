@@ -11,7 +11,11 @@ from applitools.core import (
     NullScaleProvider,
     UnscaledFixedCutProvider,
 )
-from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
+from applitools.selenium import (
+    Eyes,
+    Target,
+    Configuration,
+)
 
 
 def open_and_get_start_session_info(eyes, driver):
@@ -26,6 +30,30 @@ def open_and_get_start_session_info(eyes, driver):
         ):
             eyes.open(driver, "TestApp", "TestName")
     return start_session.call_args_list[0][0][0]
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{}, {"test_name": "TestName"}, {"app_name": "AppName"}]
+)
+def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, kwargs):
+    with pytest.raises(ValueError):
+        eyes.open(driver_mock, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        Configuration(),
+        Configuration(test_name="TestName"),
+        Configuration(app_name="AppName"),
+    ],
+)
+def test_open_with_missing_test_name_and_app_name_with_config(
+    eyes, driver_mock, config
+):
+    with pytest.raises(ValueError):
+        eyes.set_configuration(config)
+        eyes.open(driver_mock)
 
 
 def pytest_generate_tests(metafunc):
