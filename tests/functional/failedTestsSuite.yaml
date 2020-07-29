@@ -8,10 +8,6 @@ test_specific_cases.py:
 test_classic_api.py:
    test_check_frame:
       - VG
-   test_check_inner_frame:
-      - CSS, Scroll, VG
-   test_check_region_in_frame:
-      - VG
 
 test_fluent_api.py:
    test_check_scrollable_modal:
