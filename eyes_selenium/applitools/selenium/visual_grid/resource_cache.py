@@ -51,10 +51,10 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __iter__(self):
         return iter(self.cache_map)
 
-    def fetch_and_store(self, url, func_to_run):
-        if url in self:
+    def fetch_and_store(self, url, func_to_run, force=False):
+        if url in self and not force:
             return self[url]
-        if func_to_run:
+        elif func_to_run:
             self[url] = self.executor.submit(func_to_run, url)
             return True
         return False
