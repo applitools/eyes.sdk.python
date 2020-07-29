@@ -1,14 +1,14 @@
-## [vNext]
+## [4.6.1] - 2020-07-29
 ### Fixed
 - Randomly render errors and skip list issue on UFG [Trello 2044](https://trello.com/c/IObN01t2)
 - Unicode issues with UFG and Windows [Trello 2027](https://trello.com/c/2JSXFdde)
-## Updated
+### Updated
 - Improve indication that app_name and/or test_name are missing [Trello 2038](https://trello.com/c/YtuycQpX)
 
 ## [4.6.0] - 2020-07-23
 ### Added
 - Skip list for DOM snapshot [Trello 1974](https://trello.com/c/44xq8dze)
-## Updated
+### Updated
 - DOM snapshot scripts to *3.7.1*
 
 ## [4.5.0] - 2020-07-20
