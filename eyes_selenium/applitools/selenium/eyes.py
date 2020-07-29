@@ -476,6 +476,13 @@ class Eyes(EyesConfigurationMixin):
         if viewport_size:
             self.configure.viewport_size = viewport_size  # type: ignore
 
+        argument_guard.not_none(
+            self.configure.app_name, ValueError("app_name is required")
+        )
+        argument_guard.not_none(
+            self.configure.test_name, ValueError("test_name is required")
+        )
+
         self._init_driver(driver)
         self._init_locator_provider()
         if self._is_visual_grid_eyes:
