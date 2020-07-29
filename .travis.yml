@@ -4,7 +4,7 @@ services:
 git:
     submodules: false
 install:
-    - pip install -U tox
+    - python -m pip install -U tox
 before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
@@ -58,6 +58,7 @@ jobs:
                   exit 1;
                 fi
 
+
         - stage: unit-tests
           python: 2.7
           env:
@@ -65,6 +66,17 @@ jobs:
         - python: 3.6
           env:
               - TOX_ENV=unit
+        - os: windows
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=unit
+        - os: osx
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=unit
+
 
         - stage: integration-tests
           python: 2.7
@@ -73,6 +85,17 @@ jobs:
         - python: 3.6
           env:
               - TOX_ENV=integration
+        - os: windows
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=integration
+        - os: osx
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=integration
+
 
         - stage: functional-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
