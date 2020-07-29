@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - Randomly render errors and skip list issue on UFG [Trello 2044](https://trello.com/c/IObN01t2)
+- Unicode issues with UFG and Windows [Trello 2027](https://trello.com/c/2JSXFdde)
 
 ## [4.6.0] - 2020-07-23
 ### Added
