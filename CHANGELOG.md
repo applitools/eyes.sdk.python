@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - UFG Bad DOM Rendering of Salesforce page [Trello 1899](https://trello.com/c/wfQzNryP)
+- The internal objects inside of Configuration properties wasn't copied properly [Trello 2010](https://trello.com/c/ovjgBPJW)
 ### Updated
 - DOM snapshot scripts to *4.0.1*
 
