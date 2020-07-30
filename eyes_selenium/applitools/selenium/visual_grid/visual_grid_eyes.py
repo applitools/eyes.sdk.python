@@ -120,19 +120,19 @@ class VisualGridEyes(object):
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
-        logger.open_()
         argument_guard.not_none(driver)
         logger.debug("VisualGridEyes.open(%s)" % self.configure)
 
         self._driver = driver
         self._set_viewport_size()
 
-        ua_string = self._driver.execute_script("return navigator.userAgent").replace(
-            "useragent:", ""
-        )
         for b_info in self.configure.browsers_info:
             test = RunningTest(
-                self._create_vgeyes_connector(b_info, ua_string), self.configure, b_info
+                self._create_vgeyes_connector(
+                    b_info, self._driver.user_agent.origin_ua_string
+                ),
+                self.configure.clone(),
+                b_info,
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid

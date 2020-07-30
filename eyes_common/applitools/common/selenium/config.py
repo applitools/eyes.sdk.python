@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from typing import TYPE_CHECKING, List, overload, Union, Text
 
 import attr
@@ -151,3 +153,10 @@ class Configuration(ConfigurationBase):
             )
             return [browser_info]
         return []
+
+    def clone(self):
+        # type: () -> Configuration
+        # TODO: Remove this huck when get rid of Python2
+        conf = super(Configuration, self).clone()
+        conf._browsers_info = deepcopy(self._browsers_info)
+        return conf

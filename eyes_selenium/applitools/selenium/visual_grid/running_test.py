@@ -260,9 +260,6 @@ class RunningTest(object):
             logger.debug(
                 "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
             )
-            logger.debug(
-                "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
-            )
             render_status = render_statuses[render_index]
             if render_status:
                 if not render_status.device_size:
@@ -277,6 +274,11 @@ class RunningTest(object):
                     self.watch_render[render_task] = True
                     if self.all_tasks_completed(self.watch_render):
                         self.becomes_rendered()
+                    logger.debug(
+                        "render_task_succeeded: regions {}".format(
+                            self.regions.get(render_task)
+                        )
+                    )
                 elif render_status and render_status.status == RenderStatus.ERROR:
                     self.watch_render[render_task] = True
                     del self.task_queue[:]
