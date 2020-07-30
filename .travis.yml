@@ -226,12 +226,18 @@ jobs:
               chrome: stable
               firefox: latest
           env:
-              - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
           before_install:
               - git submodule update --init --remote --recursive
               - nvm install node
+          script:
+              - tox -e selenium-generated
+              - if [[ "$TRAVIS_EVENT_TYPE"=="cron" ]]; then
+                  echo "REPORTING...";
+                  bash ./all_tests_report.sh "$SDK";
+                  echo "REPORTED SUCCESSFULLY";
+                fi
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
