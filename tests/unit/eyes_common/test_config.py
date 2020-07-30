@@ -10,6 +10,7 @@ from applitools.common import (
     MatchLevel,
     SessionType,
     StitchMode,
+    Region,
 )
 from applitools.common.selenium import Configuration as SeleniumConfiguration
 from applitools.common.ultrafastgrid import (
@@ -154,3 +155,17 @@ def test_add_browsers():
 
     conf = SeleniumConfiguration().add_browsers(browsers)
     assert conf.browsers_info == browsers
+
+
+def test_config_cloning():
+    conf = SeleniumConfiguration()
+    conf.add_property("hello", "world")
+    conf.default_match_settings.content_regions.append(Region.EMPTY())
+    conf.add_browser(200, 400, BrowserType.EDGE_CHROMIUM)
+    cloned_conf = conf.clone()
+
+    assert id(conf.properties) != id(cloned_conf.properties)
+    assert id(conf.default_match_settings.content_regions) != id(
+        cloned_conf.default_match_settings.content_regions
+    )
+    assert id(conf._browsers_info[0]) != id(cloned_conf._browsers_info[0])
