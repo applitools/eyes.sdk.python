@@ -31,13 +31,19 @@ def test_double_eyes_with_configuration_from_eyes():
 def test_get_set_configuration():
     eyes = Eyes()
     conf = eyes.get_configuration()
+    conf.add_property("test", "test")
     assert conf.server_url == "https://eyesapi.applitools.com"
     assert id(conf) != id(eyes.configure)
+
     conf.test_name = "Test1"
     assert eyes.configure.test_name != "Test1"
     eyes.set_configuration(conf)
+
     assert eyes.configure.test_name == "Test1"
     assert id(eyes.configure) != conf
+
+    # check that all objet inside are fully copied
+    assert id(eyes.configure.properties[0]) != id(conf.properties[0])
 
 
 @mock.patch.dict(os.environ, {})
