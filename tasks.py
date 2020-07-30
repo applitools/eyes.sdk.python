@@ -167,6 +167,8 @@ def mypy_check(c, common=False, core=False, selenium=False, images=False):
 @task
 def retrieve_js(c):
     for pack in _packages_resolver(selenium=True, full_path=True):
+        os.remove(os.path.join(pack, "package-lock.json"))
+
         with c.cd(pack):
             c.run("npm update --save", echo=True)
         print("Moving js for {}".format(pack))
