@@ -1,4 +1,4 @@
-## [vNext]
+## [4.6.2] - 2020-07-30
 ### Fixed
 - UFG Bad DOM Rendering of Salesforce page [Trello 1899](https://trello.com/c/wfQzNryP)
 - The internal objects inside of Configuration properties wasn't copied properly [Trello 2010](https://trello.com/c/ovjgBPJW)
