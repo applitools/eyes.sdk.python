@@ -1,3 +1,9 @@
+## [vNext]
+### Fixed
+- UFG Bad DOM Rendering of Salesforce page [Trello 1899](https://trello.com/c/wfQzNryP)
+### Updated
+- DOM snapshot scripts to *4.0.1*
+
 ## [4.6.1] - 2020-07-29
 ### Fixed
 - Randomly render errors and skip list issue on UFG [Trello 2044](https://trello.com/c/IObN01t2)
