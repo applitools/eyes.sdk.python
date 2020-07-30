@@ -164,7 +164,7 @@ def test_config_cloning():
     conf.add_browser(200, 400, BrowserType.EDGE_CHROMIUM)
     cloned_conf = conf.clone()
 
-    assert id(conf.properties) != id(cloned_conf.properties)
+    assert id(conf.properties[0]) != id(cloned_conf.properties[0])
     assert id(conf.default_match_settings.content_regions) != id(
         cloned_conf.default_match_settings.content_regions
     )
