@@ -1,5 +1,5 @@
 import uuid
-from copy import deepcopy
+from copy import deepcopy, copy
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -346,7 +346,12 @@ class Configuration(object):
 
     def clone(self):
         # type: () -> Configuration
-        return deepcopy(self)
+        # TODO: Remove this huck when get rid of Python2
+        # deepcopy on python 2 raise an exception so construct manually
+        conf = copy(self)
+        conf.properties = copy(conf.properties)
+        conf.default_match_settings = deepcopy(conf.default_match_settings)
+        return conf
 
     def add_property(self, name, value):
         # type: (Text, Text) -> None
