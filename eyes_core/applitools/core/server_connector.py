@@ -427,18 +427,6 @@ class ServerConnector(object):
         # logger.debug("Data length: %d, data: %s" % (len(data), repr(data)))
         if not self.is_session_started:
             raise EyesError("Session not started")
-        app_output = match_data.app_output
-        # when screenshot_url is present we don't need to upload again
-        if app_output.screenshot_url is None and app_output.screenshot_bytes:
-            app_output.screenshot_url = self.try_upload_image(
-                match_data.app_output.screenshot_bytes
-            )
-
-        if app_output.screenshot_url is None:
-            raise EyesError(
-                "MatchWindow failed: could not upload image to storage service."
-            )
-        logger.info("Screenshot image URL: {}".format(app_output.screenshot_url))
         data = json_utils.to_json(match_data)
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         response = self._com.long_request(
