@@ -87,13 +87,13 @@ class Eyes(EyesConfigurationMixin):
     @property
     def server_connector(self):
         # type: () -> ServerConnector
-        return self._current_eyes._server_connector
+        return self._current_eyes.server_connector
 
     @server_connector.setter
     def server_connector(self, server_connector):
         # type: (ServerConnector) -> None
         argument_guard.is_a(server_connector, ServerConnector)
-        self._current_eyes._server_connector = server_connector
+        self._current_eyes.server_connector = server_connector
 
     @property
     def configure(self):

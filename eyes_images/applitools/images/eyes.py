@@ -51,17 +51,6 @@ class Eyes(EyesBase):
             return self._inferred
         return ""
 
-    @property
-    def server_connector(self):
-        # type: () -> ServerConnector
-        return self._server_connector
-
-    @server_connector.setter
-    def server_connector(self, server_connector):
-        # type: (ServerConnector) -> None
-        argument_guard.is_a(server_connector, ServerConnector)
-        self._server_connector = server_connector
-
     def _get_viewport_size(self):
         # type: () -> RectangleSize
         return self.configure.viewport_size
