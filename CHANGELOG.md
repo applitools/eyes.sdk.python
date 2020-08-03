@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Allow to setup custom server connector [Trello 2055](https://trello.com/c/TIQVZQrK)
+
 ## [4.6.2] - 2020-07-30
 ### Fixed
 - UFG Bad DOM Rendering of Salesforce page [Trello 1899](https://trello.com/c/wfQzNryP)

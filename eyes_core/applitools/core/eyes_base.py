@@ -159,6 +159,17 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         return self._debug_screenshot_provider
 
     @property
+    def server_connector(self):
+        # type: () -> ServerConnector
+        return self._server_connector
+
+    @server_connector.setter
+    def server_connector(self, server_connector):
+        # type: (ServerConnector) -> None
+        argument_guard.is_a(server_connector, ServerConnector)
+        self._server_connector = server_connector
+
+    @property
     def cut_provider(self):
         # type: () -> Union[FixedCutProvider, UnscaledFixedCutProvider, NullCutProvider]
         return self._cut_provider

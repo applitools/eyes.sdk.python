@@ -2,11 +2,14 @@ import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.utils.general_utils import all_fields, proxy_to
+from applitools.common.utils import argument_guard
+
 from applitools.core import (
     NULL_REGION_PROVIDER,
     EyesBase,
     NullCutProvider,
     RegionProvider,
+    ServerConnector,
 )
 from applitools.images.fluent import ImagesCheckSettings, Target
 

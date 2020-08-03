@@ -8,6 +8,7 @@ from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 from applitools.core.locators import VisualLocatorSettings, LOCATORS_TYPE
+from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
 from .fluent import Target
@@ -82,6 +83,17 @@ class Eyes(EyesConfigurationMixin):
     def set_configuration(self, configuration):
         # type:(Configuration) -> None
         return super(Eyes, self).set_configuration(configuration)
+
+    @property
+    def server_connector(self):
+        # type: () -> ServerConnector
+        return self._current_eyes.server_connector
+
+    @server_connector.setter
+    def server_connector(self, server_connector):
+        # type: (ServerConnector) -> None
+        argument_guard.is_a(server_connector, ServerConnector)
+        self._current_eyes.server_connector = server_connector
 
     @property
     def configure(self):
@@ -227,9 +239,6 @@ class Eyes(EyesConfigurationMixin):
         # type: (Union[FixedCutProvider,UnscaledFixedCutProvider,NullCutProvider])->None
         """
         Manually set the the sizes to cut from an image before it's validated.
-
-        :param provider:
-        :return:
         """
         if not self._is_visual_grid_eyes:
             self._selenium_eyes.cut_provider = cutprovider
