@@ -159,6 +159,7 @@ def test_add_browsers():
 
 def test_config_cloning():
     conf = SeleniumConfiguration()
+    conf.set_viewport_size({"width": 200, "height": 400})
     conf.add_property("hello", "world")
     conf.default_match_settings.content_regions.append(Region.EMPTY())
     conf.add_browser(200, 400, BrowserType.EDGE_CHROMIUM)
@@ -169,3 +170,4 @@ def test_config_cloning():
         cloned_conf.default_match_settings.content_regions
     )
     assert id(conf._browsers_info[0]) != id(cloned_conf._browsers_info[0])
+    assert id(conf.viewport_size) != id(cloned_conf.viewport_size)
