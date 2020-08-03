@@ -313,17 +313,8 @@ class MatchWindowTask(object):
 
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
-        # when screenshot_url is present we don't need to upload again
-        if app_output.screenshot_url is None and screenshot:
-            app_output.screenshot_url = self._server_connector.try_upload_image(
-                image_utils.get_bytes(screenshot.image)
-            )
-            logger.info("Screenshot image URL: {}".format(app_output.screenshot_url))
-
-        if app_output.screenshot_url is None:
-            raise EyesError(
-                "MatchWindow failed: could not upload image to storage service."
-            )
+        if screenshot:
+            app_output.screenshot_bytes = image_utils.get_bytes(screenshot.image)
 
         match_window_data = MatchWindowData(
             ignore_mismatch=False,
