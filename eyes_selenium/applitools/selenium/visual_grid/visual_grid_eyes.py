@@ -82,7 +82,7 @@ class VisualGridEyes(object):
         self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
-        self.server_connector = None  # type: Optional[ServerConnector]
+        self._server_connector = None  # type: Optional[ServerConnector]
 
     @property
     def is_open(self):
@@ -271,7 +271,7 @@ class VisualGridEyes(object):
             self.configure.clone(),
             ua_string,
             self.rendering_info,
-            self.server_connector,
+            self._server_connector,
         )
         if self.rendering_info is None:
             self.rendering_info = vgeyes_connector.render_info()

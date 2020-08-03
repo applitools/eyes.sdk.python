@@ -54,9 +54,7 @@ class EyesConnector(EyesBase):
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
-        if server_connector is not None:
-            self.server_connector = server_connector
-        self.server_connector.update_config(
+        self._server_connector.update_config(
             config, self.full_agent_id, rendering_info, ua_string
         )
         self._region_selectors = None
