@@ -2,6 +2,7 @@ import pytest
 import time
 from selenium.webdriver.common.by import By
 
+from applitools.core import ServerConnector
 from applitools.selenium import (
     Region,
     StitchMode,
@@ -160,3 +161,40 @@ def test_execute_script_with_eyes_webelement(driver, eyes):
     eyes_driver = EyesWebDriver(driver, eyes)
     eyes_driver.execute_script("arguments[0].scrollIntoView();", elem)
     eyes_driver.execute_script("arguments[0].scrollIntoView();", e_elem)
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        (
+            "https://applitools.github.io/demo/TestPages/SpecialCases/everchanging.html",
+            [False, True],
+        ),
+        (
+            "https://applitools.github.io/demo/TestPages/SpecialCases/neverchanging.html",
+            [False],
+        ),
+    ],
+)
+def test_replace_matched_step(params, driver, eyes):
+    test_url, replace_last_expected = params
+    driver.get(test_url)
+    actual_replace_last = []
+
+    class CustomServerConnector(ServerConnector):
+        def match_window(self, running_session, match_data):
+            actual_replace_last.append(match_data.options.replace_last)
+            return super(CustomServerConnector, self).match_window(
+                running_session, match_data
+            )
+
+    eyes.server_connector = CustomServerConnector()
+    eyes.open(
+        driver,
+        "Applitools Eyes SDK",
+        "testReplaceMatchedStep",
+        {"width": 700, "height": 460},
+    )
+    eyes.check_window("Step 1")
+    eyes.close(False)
+    assert actual_replace_last == replace_last_expected
