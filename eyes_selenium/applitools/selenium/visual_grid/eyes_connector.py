@@ -187,8 +187,8 @@ class EyesConnector(EyesBase):
             )
         return status
 
-    def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
-        # type: (RegionProvider, Text, bool, SeleniumCheckSettings) -> MatchResult
+    def _match_window(self, region_provider, tag, check_settings):
+        # type: (RegionProvider, Text, SeleniumCheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: int
         if check_settings:
@@ -203,8 +203,8 @@ class EyesConnector(EyesBase):
         )
         return self._match_window_task.perform_match(
             app_output=app_output,
+            replace_last=False,
             name=tag,
-            ignore_mismatch=ignore_mismatch,
             image_match_settings=image_match_settings,
             eyes=self,
             user_inputs=self._user_inputs,
