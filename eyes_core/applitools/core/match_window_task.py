@@ -413,16 +413,18 @@ class MatchWindowTask(object):
         )
         current_screenshot_hash = hash(app_output.screenshot)
         if current_screenshot_hash == self._last_screenshot_hash:
-            logger.info("Got the same screenshot in retry. Not sending to the server.")
+            logger.info("Got the same screenshot in retry. Not sending to the server")
             return app_output.screenshot
 
         image_match_settings = self.create_image_match_settings(
             check_settings, self._eyes
         )
+
+        replace_last_if_not_first_run = self._last_screenshot_hash is not None
         self._match_result = self.perform_match(
             app_output,
             tag,
-            self._last_screenshot_hash is not None,
+            replace_last_if_not_first_run,
             image_match_settings,
             self._eyes,
             user_inputs,

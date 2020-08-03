@@ -174,6 +174,10 @@ def test_execute_script_with_eyes_webelement(driver, eyes):
             "https://applitools.github.io/demo/TestPages/SpecialCases/neverchanging.html",
             [False],
         ),
+        (
+            "https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html",
+            [False],
+        ),
     ],
 )
 def test_replace_matched_step(params, driver, eyes):
