@@ -22,12 +22,19 @@ def test_is_disabled_False(eyes):
 
 
 def test_set_get_server_connector(eyes):
+    updated = []
+
     class CustomServerCon(ServerConnector):
-        pass
+        def update_config(self, conf, full_agent_id, render_info=None, ua_string=None):
+            updated.append(True)
+            return super(CustomServerCon, self).update_config(conf, full_agent_id)
 
     conn = CustomServerCon()
     eyes.server_connector = conn
     assert eyes.server_connector is conn
+
+    eyes.server_connector.update_config(eyes.configure, eyes.full_agent_id)
+    assert updated
 
 
 def test_set_incorrect_server_connector(eyes):
