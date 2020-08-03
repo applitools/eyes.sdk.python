@@ -15,7 +15,12 @@ from applitools.common.ultrafastgrid import (
     VGResource,
     IRenderBrowserInfo,
 )
-from applitools.core import NULL_REGION_PROVIDER, EyesBase, RegionProvider
+from applitools.core import (
+    NULL_REGION_PROVIDER,
+    EyesBase,
+    RegionProvider,
+    ServerConnector,
+)
 from applitools.core.capture import AppOutputWithScreenshot
 from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
@@ -34,15 +39,24 @@ if typing.TYPE_CHECKING:
 
 
 class EyesConnector(EyesBase):
-    def __init__(self, browser_info, config, ua_string, rendering_info):
-        # type: (RenderBrowserInfo, Configuration, Text, Optional[RenderingInfo])->None
+    def __init__(
+        self,
+        browser_info,  # type: RenderBrowserInfo
+        config,  # type: Configuration
+        ua_string,  # type: Text
+        rendering_info,  # type: Optional[RenderingInfo]
+        server_connector,  # type: Optional[ServerConnector]
+    ):
+        # type: (...) -> None
         super(EyesConnector, self).__init__()
         self.device_name = getattr(browser_info, "device_name", None)
         self._browser_info = browser_info  # type: IRenderBrowserInfo
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
-        self._server_connector.update_config(
+        if server_connector is not None:
+            self.server_connector = server_connector
+        self.server_connector.update_config(
             config, self.full_agent_id, rendering_info, ua_string
         )
         self._region_selectors = None
