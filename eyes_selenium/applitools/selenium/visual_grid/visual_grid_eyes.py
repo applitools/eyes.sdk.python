@@ -16,7 +16,7 @@ from applitools.common.ultrafastgrid import (
     VisualGridSelector,
     DesktopBrowserInfo,
 )
-from applitools.core import CheckSettings, GetRegion
+from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
 
@@ -82,6 +82,7 @@ class VisualGridEyes(object):
         self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
+        self._server_connector = None  # type: Optional[ServerConnector]
 
     @property
     def is_open(self):
@@ -266,7 +267,11 @@ class VisualGridEyes(object):
     def _create_vgeyes_connector(self, b_info, ua_string):
         # type: (RenderBrowserInfo, Text) -> EyesConnector
         vgeyes_connector = EyesConnector(
-            b_info, self.configure.clone(), ua_string, self.rendering_info
+            b_info,
+            self.configure.clone(),
+            ua_string,
+            self.rendering_info,
+            self._server_connector,
         )
         if self.rendering_info is None:
             self.rendering_info = vgeyes_connector.render_info()

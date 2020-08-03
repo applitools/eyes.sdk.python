@@ -7,11 +7,13 @@ from applitools.core import (
     EyesBase,
     NullCutProvider,
     RegionProvider,
+    ServerConnector,
 )
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
+from ..common.utils import argument_guard
 
 if typing.TYPE_CHECKING:
     from typing import Text, Union, Optional, Dict
@@ -47,6 +49,17 @@ class Eyes(EyesBase):
         if self._inferred:
             return self._inferred
         return ""
+
+    @property
+    def server_connector(self):
+        # type: () -> ServerConnector
+        return self._server_connector
+
+    @server_connector.setter
+    def server_connector(self, server_connector):
+        # type: (ServerConnector) -> None
+        argument_guard.is_a(server_connector, ServerConnector)
+        self._server_connector = server_connector
 
     def _get_viewport_size(self):
         # type: () -> RectangleSize
