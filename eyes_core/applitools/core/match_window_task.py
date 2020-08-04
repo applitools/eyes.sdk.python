@@ -249,6 +249,9 @@ class MatchWindowTask(object):
             retry_timeout_ms = self._default_retry_timeout_ms
         logger.debug("retry_timeout = {} ms".format(retry_timeout_ms))
 
+        # set hash to initial value
+        self._last_screenshot_hash = None
+
         screenshot = self._take_screenshot(
             user_inputs,
             region,
