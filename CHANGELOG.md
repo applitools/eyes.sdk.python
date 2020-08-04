@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Allow to setup custom server connector [Trello 2055](https://trello.com/c/TIQVZQrK)
+### Updated
+- Screenshot retry mechanism is now more efficient [Trello 1866](https://trello.com/c/KyxkI6Bu)
 
 ## [4.6.2] - 2020-07-30
 ### Fixed

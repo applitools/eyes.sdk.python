@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.positioning import SeleniumPositionProvider
 
 
-@attr.s
+@attr.s(hash=False)
 class EyesWebDriverScreenshot(EyesScreenshot):
 
     _driver = attr.ib()  # type: EyesWebDriver

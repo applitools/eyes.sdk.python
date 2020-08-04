@@ -624,9 +624,12 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        result = self._match_window(
-            region_provider, tag, ignore_mismatch, check_settings
-        )
+        result = self._match_window(region_provider, tag, check_settings)
+
+        if not ignore_mismatch:
+            del self._user_inputs[:]
+            self._last_screenshot = result.screenshot
+
         self._after_match_window()
         self._handle_match_result(result, tag)
         return result
@@ -664,8 +667,8 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             )
             return None
 
-    def _match_window(self, region_provider, tag, ignore_mismatch, check_settings):
-        # type: (RegionProvider, Text, bool, CheckSettings) -> MatchResult
+    def _match_window(self, region_provider, tag, check_settings):
+        # type: (RegionProvider, Text, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: Num
         if check_settings:
@@ -679,7 +682,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             region,
             tag,
             self._should_match_once_on_timeout,
-            ignore_mismatch,
             check_settings,
             retry_timeout_ms,
         )
