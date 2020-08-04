@@ -35,6 +35,7 @@ class Options(object):
 
     name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     user_inputs = attr.ib(metadata={JsonInclude.THIS: True})  # type: UserInputs
+    replace_last = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     ignore_mismatch = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     ignore_match = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     force_mismatch = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool

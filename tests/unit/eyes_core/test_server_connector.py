@@ -230,6 +230,7 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     options=Options(
         name="Opt name",
         user_inputs=[],
+        replace_last=False,
         ignore_mismatch=False,
         ignore_match=False,
         force_match=False,

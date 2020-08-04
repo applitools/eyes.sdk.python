@@ -1,11 +1,9 @@
 import abc
 from typing import TYPE_CHECKING, TypeVar
 
-import attr
-
 from . import logger
 from .geometry import CoordinatesType, Region
-from .utils import ABC, argument_guard
+from .utils import ABC, argument_guard, image_utils
 
 if TYPE_CHECKING:
     from PIL.Image import Image
@@ -16,13 +14,18 @@ __all__ = ("EyesScreenshot",)
 Self = TypeVar("Self", bound="EyesScreenshot")  # typedef
 
 
-@attr.s
 class EyesScreenshot(ABC):
     """
      Base class for handling screenshots.
      """
 
-    _image = attr.ib()  # type: Image
+    def __init__(self, image):
+        # type: (Image) -> None
+        argument_guard.not_none(image)
+        self._image = image
+
+    def __hash__(self):
+        return hash(image_utils.get_base64(self._image))
 
     @property
     def image(self):
