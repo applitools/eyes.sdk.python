@@ -23,7 +23,7 @@ class SeleniumVisualLocatorsProvider(VisualLocatorsProvider):
         self._eyes = eyes
         self._server_connector = eyes._server_connector  # type: ServerConnector
         self._debug_screenshot_provider = (
-            eyes.debug_screenshot_provider
+            eyes.debug_screenshots_provider
         )  # type: DebugScreenshotsProvider
 
     def _get_viewport_screenshot(self):
