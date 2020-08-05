@@ -1,6 +1,10 @@
 import pytest
 
 from applitools.core import ServerConnector
+from applitools.core.debug import (
+    NullDebugScreenshotsProvider,
+    FileDebugScreenshotsProvider,
+)
 
 
 def pytest_generate_tests(metafunc):
@@ -43,3 +47,26 @@ def test_set_incorrect_server_connector(eyes):
 
     with pytest.raises(ValueError):
         eyes.server_connector = CustomServerCon()
+
+
+def test_set_get_debug_screenshot_provider(eyes, monkeypatch):
+    if getattr(eyes, "_is_visual_grid_eyes", False):
+        assert eyes.debug_screenshots_provider is None
+        assert eyes.debug_screenshots_prefix is None
+        assert eyes.debug_screenshots_path is None
+        return
+
+    assert isinstance(eyes.debug_screenshots_provider, NullDebugScreenshotsProvider)
+
+    eyes.save_debug_screenshots = True
+    assert isinstance(eyes.debug_screenshots_provider, FileDebugScreenshotsProvider)
+    assert eyes.debug_screenshots_prefix == "screenshot_"
+    assert eyes.debug_screenshots_path == ""
+
+    eyes.debug_screenshots_path = "./screenshot"
+    assert eyes.debug_screenshots_path == "./screenshot"
+    assert eyes.debug_screenshots_provider.path == "./screenshot"
+
+    eyes.debug_screenshots_prefix = "new_prefix"
+    assert eyes.debug_screenshots_prefix == "new_prefix"
+    assert eyes.debug_screenshots_provider.prefix == "new_prefix"
