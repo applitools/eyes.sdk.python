@@ -60,6 +60,6 @@ class FileDebugScreenshotProvider(DebugScreenshotProvider):
         self._image_counter += 1
 
         filename = "{path}/{prefix}_{timestamp}_{suffix}.png".format(
-            path=self.path, prefix=self.DEFAULT_PREFIX, timestamp=now, suffix=suffix
+            path=self.path, prefix=self.prefix, timestamp=now, suffix=suffix
         )
         image_utils.save_image(image, filename)
