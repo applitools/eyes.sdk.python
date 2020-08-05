@@ -1,4 +1,3 @@
-import os
 from abc import abstractmethod
 from datetime import datetime
 
@@ -8,15 +7,14 @@ from applitools.common.utils import image_utils
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 
-@attr.s
+@attr.s(slots=True)
 class DebugScreenshotsProvider(object):
     """Interface for saving debug screenshots."""
 
-    DEFAULT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
-    DEFAULT_PATH = get_env_with_prefix("DEBUG_SCREENSHOT_PATH", "")
-
-    _prefix = attr.ib(default=DEFAULT_PREFIX)
-    _path = attr.ib(default=DEFAULT_PATH)
+    _prefix = attr.ib(
+        factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
+    )
+    _path = attr.ib(factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PATH", ""))
 
     def __attrs_post_init__(self):
         self._image_counter = 0
