@@ -1,6 +1,7 @@
 ## [vNext]
 ### Added
 - Allow to setup custom server connector [Trello 2055](https://trello.com/c/TIQVZQrK)
+- Public interface to set debug screenshots provider [Trello 2058](https://trello.com/c/wrMoRDPY)
 ### Updated
 - Screenshot retry mechanism is now more efficient [Trello 1866](https://trello.com/c/KyxkI6Bu)
 
