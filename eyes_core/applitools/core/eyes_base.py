@@ -202,6 +202,26 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._debug_screenshots_provider = NullDebugScreenshotsProvider()
 
     @property
+    def debug_screenshots_path(self):
+        # type: () -> Optional[Text]
+        return self._debug_screenshots_provider.path
+
+    @debug_screenshots_path.setter
+    def debug_screenshots_path(self, path_to_save):
+        # type: (Text) -> None
+        self._debug_screenshots_provider.path = path_to_save
+
+    @property
+    def debug_screenshots_prefix(self):
+        # type: () -> Optional[Text]
+        return self._debug_screenshots_provider.path
+
+    @debug_screenshots_prefix.setter
+    def debug_screenshots_prefix(self, prefix):
+        # type: (Text) -> None
+        self._debug_screenshots_provider.prefix = prefix
+
+    @property
     def _environment(self):
         # type: () -> AppEnvironment
         """
