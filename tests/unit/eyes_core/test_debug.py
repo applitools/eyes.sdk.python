@@ -19,5 +19,5 @@ def test_debug_screenshot_save(image, tmpdir):
     img1 = tmpdir.listdir()[0].basename
     assert img1.startswith("some") and img1.endswith("0-test.png")
     provider.save(image, "test2")
-    img2 = tmpdir.listdir()[0].basename
+    img2 = tmpdir.listdir(sort=True)[1].basename
     assert img2.startswith("some") and img2.endswith("1-test2.png")

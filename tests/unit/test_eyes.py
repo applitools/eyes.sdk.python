@@ -50,12 +50,6 @@ def test_set_incorrect_server_connector(eyes):
 
 
 def test_set_get_debug_screenshot_provider(eyes, monkeypatch):
-    if getattr(eyes, "_is_visual_grid_eyes", False):
-        assert eyes.debug_screenshots_provider is None
-        assert eyes.debug_screenshots_prefix is None
-        assert eyes.debug_screenshots_path is None
-        return
-
     assert isinstance(eyes.debug_screenshots_provider, NullDebugScreenshotsProvider)
 
     eyes.save_debug_screenshots = True
