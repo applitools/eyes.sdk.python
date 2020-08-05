@@ -7,6 +7,7 @@ from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_mixins import EyesConfigurationMixin
+from applitools.core.eyes_base import DebugScreenshotsAbstract
 from applitools.core.locators import VisualLocatorSettings, LOCATORS_TYPE
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
@@ -39,7 +40,7 @@ if typing.TYPE_CHECKING:
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesConfigurationMixin):
+class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
@@ -212,8 +213,42 @@ class Eyes(EyesConfigurationMixin):
     @save_debug_screenshots.setter
     def save_debug_screenshots(self, save):
         # type: (bool) -> None
+        """If True, will save all screenshots to local directory."""
         if not self._is_visual_grid_eyes:
             self._selenium_eyes.save_debug_screenshots = save
+
+    @property
+    def debug_screenshots_provider(self):
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.debug_screenshots_provider
+
+    @property
+    def debug_screenshots_path(self):
+        # type: () -> Optional[Text]
+        """The path where you save the debug screenshots."""
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.debug_screenshots_path
+
+    @debug_screenshots_path.setter
+    def debug_screenshots_path(self, path_to_save):
+        # type: (Text) -> None
+        """The path where you want to save the debug screenshots."""
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.debug_screenshots_path = path_to_save
+
+    @property
+    def debug_screenshots_prefix(self):
+        # type: () -> Optional[Text]
+        """The prefix for the screenshots' names."""
+        if not self._is_visual_grid_eyes:
+            return self._selenium_eyes.debug_screenshots_prefix
+
+    @debug_screenshots_prefix.setter
+    def debug_screenshots_prefix(self, prefix):
+        # type: (Text) -> None
+        """The prefix for the screenshots' names."""
+        if not self._is_visual_grid_eyes:
+            self._selenium_eyes.debug_screenshots_prefix = prefix
 
     @position_provider.setter
     def position_provider(self, provider):

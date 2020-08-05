@@ -97,7 +97,58 @@ class _EyesBaseAbstract(ABC):
         pass
 
 
-class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
+class DebugScreenshotsAbstract(ABC):
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_provider(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def save_debug_screenshots(self):
+        # type: () -> bool
+        """True if screenshots saving enabled."""
+        pass
+
+    @save_debug_screenshots.setter
+    @abc.abstractmethod
+    def save_debug_screenshots(self, save):
+        # type: (bool) -> None
+        """If True, will save all screenshots to local directory."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_path(self):
+        # type: () -> Optional[Text]
+        """The path where you save the debug screenshots."""
+        pass
+
+    @debug_screenshots_path.setter
+    @abc.abstractmethod
+    def debug_screenshots_path(self, path_to_save):
+        # type: (Text) -> None
+        """The path where you want to save the debug screenshots."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_prefix(self):
+        # type: () -> Optional[Text]
+        """The prefix for the screenshots' names."""
+        pass
+
+    @debug_screenshots_prefix.setter
+    @abc.abstractmethod
+    def debug_screenshots_prefix(self, prefix):
+        # type: (Text) -> None
+        """The prefix for the screenshots' names."""
+        pass
+
+
+class EyesBase(
+    EyesConfigurationMixin, DebugScreenshotsAbstract, _EyesBaseAbstract, ABC
+):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
@@ -214,7 +265,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
     @property
     def debug_screenshots_prefix(self):
         # type: () -> Optional[Text]
-        return self._debug_screenshots_provider.path
+        return self._debug_screenshots_provider.prefix
 
     @debug_screenshots_prefix.setter
     def debug_screenshots_prefix(self, prefix):
