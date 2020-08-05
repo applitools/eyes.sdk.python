@@ -9,7 +9,7 @@ from applitools.common.utils.general_utils import get_env_with_prefix
 
 
 @attr.s
-class DebugScreenshotProvider(object):
+class DebugScreenshotsProvider(object):
     """Interface for saving debug screenshots."""
 
     DEFAULT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_")
@@ -44,14 +44,14 @@ class DebugScreenshotProvider(object):
         pass
 
 
-class NullDebugScreenshotProvider(DebugScreenshotProvider):
+class NullDebugScreenshotsProvider(DebugScreenshotsProvider):
     """A mock debug screenshot provider."""
 
     def save(self, image, suffix):
         pass
 
 
-class FileDebugScreenshotProvider(DebugScreenshotProvider):
+class FileDebugScreenshotsProvider(DebugScreenshotsProvider):
     """ A debug screenshot provider for saving screenshots to file."""
 
     def save(self, image, suffix):

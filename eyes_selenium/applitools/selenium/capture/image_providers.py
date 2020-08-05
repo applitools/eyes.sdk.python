@@ -169,7 +169,7 @@ class TakesScreenshotImageProvider(ImageProvider):
         screenshot64 = self._eyes.driver.get_screenshot_as_base64()
         logger.debug("Done getting base64! Creating BufferedImage...")
         image = image_utils.image_from_base64(screenshot64)
-        self._eyes.debug_screenshot_provider.save(image, "initial")
+        self._eyes.debug_screenshots_provider.save(image, "initial")
         return image
 
 

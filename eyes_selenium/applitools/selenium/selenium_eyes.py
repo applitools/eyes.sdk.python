@@ -796,7 +796,7 @@ class SeleniumEyes(EyesBase):
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
             self.configure.wait_before_screenshots,
-            self._debug_screenshot_provider,
+            self._debug_screenshots_provider,
             self._screenshot_factory,
             origin_provider,
             scale_provider,
@@ -919,17 +919,17 @@ class SeleniumEyes(EyesBase):
 
     def get_scaled_cropped_viewport_image(self, scale_provider):
         image = self._image_provider.get_image()
-        self._debug_screenshot_provider.save(image, "original")
+        self._debug_screenshots_provider.save(image, "original")
         scale_provider.update_scale_ratio(image.width)
         pixel_ratio = 1 / scale_provider.scale_ratio
         if pixel_ratio != 1.0:
             logger.info("Scaling")
             image = image_utils.scale_image(image, 1.0 / pixel_ratio)
-            self._debug_screenshot_provider.save(image, "scaled")
+            self._debug_screenshots_provider.save(image, "scaled")
         if not isinstance(self.cut_provider, NullCutProvider):
             logger.info("Cutting")
             image = self.cut_provider.cut(image)
-            self._debug_screenshot_provider.save(image, "cutted")
+            self._debug_screenshots_provider.save(image, "cutted")
         return image
 
     def _get_viewport_scroll_bounds(self):

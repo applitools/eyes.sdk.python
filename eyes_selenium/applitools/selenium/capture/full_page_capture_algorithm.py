@@ -14,7 +14,7 @@ from applitools.selenium.capture import EyesWebDriverScreenshot
 if typing.TYPE_CHECKING:
     from typing import Optional, List, Dict
     from applitools.common import ScaleProvider
-    from applitools.core.debug import DebugScreenshotProvider
+    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.common.geometry import SubregionForStitching
     from applitools.selenium.region_compensation import RegionPositionCompensation
     from applitools.core.capture import EyesScreenshotFactory, ImageProvider
@@ -26,7 +26,7 @@ class FullPageCaptureAlgorithm(object):
     MIN_SCREENSHOT_PART_SIZE = 10
 
     wait_before_screenshots = attr.ib()  # type: int
-    debug_screenshot_provider = attr.ib()  # type: DebugScreenshotProvider
+    debug_screenshots_provider = attr.ib()  # type: DebugScreenshotsProvider
     screenshot_factory = attr.ib()  # type: EyesScreenshotFactory
     origin_provider = attr.ib()  # type: PositionProvider
     scale_provider = attr.ib()  # type: ScaleProvider
@@ -69,7 +69,7 @@ class FullPageCaptureAlgorithm(object):
         cutted_initial_screenshot = self._cut_if_needed(
             initial_screenshot, scaled_cut_provider
         )
-        self.debug_screenshot_provider.save(
+        self.debug_screenshots_provider.save(
             cutted_initial_screenshot, self._debug_msg("cutted_initial_screenshot")
         )
 
@@ -79,14 +79,14 @@ class FullPageCaptureAlgorithm(object):
         cropped_initial_screenshot = self._crop_if_needed(
             cutted_initial_screenshot, region_in_initial_screenshot
         )
-        self.debug_screenshot_provider.save(
+        self.debug_screenshots_provider.save(
             cropped_initial_screenshot, self._debug_msg("cropped_initial_screenshot")
         )
 
         scaled_initial_screenshot = image_utils.scale_image(
             cropped_initial_screenshot, self.scale_provider
         )
-        self.debug_screenshot_provider.save(
+        self.debug_screenshots_provider.save(
             scaled_initial_screenshot, self._debug_msg("scaled_initial_screenshot")
         )
         if full_area is None or full_area.is_empty:
@@ -193,29 +193,29 @@ class FullPageCaptureAlgorithm(object):
             # Actually taking the screenshot.
             datetime_utils.sleep(self.wait_before_screenshots)
             part_image = self.image_provider.get_image()
-            self.debug_screenshot_provider.save(
+            self.debug_screenshots_provider.save(
                 part_image, self._debug_msg("part_image")
             )
 
             cut_part = scaled_cut_provider.cut(part_image)
-            self.debug_screenshot_provider.save(cut_part, self._debug_msg("cut_part"))
+            self.debug_screenshots_provider.save(cut_part, self._debug_msg("cut_part"))
 
             r = part_region.physical_crop_area
             if not r.is_size_empty:
                 cropped_part = image_utils.crop_image(cut_part, r)
             else:
                 cropped_part = cut_part
-            self.debug_screenshot_provider.save(
+            self.debug_screenshots_provider.save(
                 cropped_part, self._debug_msg("cropped_part")
             )
             scaled_part_image = image_utils.scale_image(cropped_part, scale_ratio)
-            self.debug_screenshot_provider.save(
+            self.debug_screenshots_provider.save(
                 scaled_part_image, self._debug_msg("scaled_part_image")
             )
 
             r2 = part_region.logical_crop_area
             scaled_cropped_part_image = image_utils.crop_image(scaled_part_image, r2)
-            self.debug_screenshot_provider.save(
+            self.debug_screenshots_provider.save(
                 scaled_cropped_part_image, self._debug_msg("scaled_cropped_part_image")
             )
 
@@ -223,7 +223,7 @@ class FullPageCaptureAlgorithm(object):
             image_utils.paste_image(
                 stitched_image, scaled_cropped_part_image, target_position
             )
-            self.debug_screenshot_provider.save(
+            self.debug_screenshots_provider.save(
                 stitched_image, self._debug_msg("stitched_image")
             )
         return stitched_image
@@ -242,7 +242,7 @@ class FullPageCaptureAlgorithm(object):
         logger.info(
             "Actual stitched size: {} x {}".format(act_image_width, act_image_height)
         )
-        self.debug_screenshot_provider.save(
+        self.debug_screenshots_provider.save(
             stitched_image, self._debug_msg("_stitched_before_trim")
         )
         if (
