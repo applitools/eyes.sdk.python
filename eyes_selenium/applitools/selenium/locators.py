@@ -11,7 +11,7 @@ from applitools.core.locators import (
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
-    from applitools.core.debug import DebugScreenshotProvider
+    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.core import ServerConnector
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
@@ -23,8 +23,8 @@ class SeleniumVisualLocatorsProvider(VisualLocatorsProvider):
         self._eyes = eyes
         self._server_connector = eyes._server_connector  # type: ServerConnector
         self._debug_screenshot_provider = (
-            eyes.debug_screenshot_provider
-        )  # type: DebugScreenshotProvider
+            eyes.debug_screenshots_provider
+        )  # type: DebugScreenshotsProvider
 
     def _get_viewport_screenshot(self):
         scale_provider = self._eyes.update_scaling_params()

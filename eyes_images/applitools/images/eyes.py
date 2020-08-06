@@ -127,7 +127,7 @@ class Eyes(EyesBase):
         if not isinstance(self.cut_provider, NullCutProvider):
             logger.debug("cutting...")
             image = self.cut_provider.cut(image)
-            self.debug_screenshot_provider.save(image, "cut")
+            self.debug_screenshots_provider.save(image, "cut")
 
         self._screenshot = EyesImagesScreenshot(image)
         if not self.configure.viewport_size:
