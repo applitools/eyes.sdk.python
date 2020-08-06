@@ -1,4 +1,10 @@
+from typing import Optional, Text
+
 from applitools.common import logger, Configuration
+from applitools.core.debug import (
+    FileDebugScreenshotsProvider,
+    NullDebugScreenshotsProvider,
+)
 
 
 class EyesConfigurationMixin(object):

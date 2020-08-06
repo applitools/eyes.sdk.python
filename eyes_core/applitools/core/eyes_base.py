@@ -25,8 +25,8 @@ from applitools.core.cut import (
     UnscaledFixedCutProvider,
 )
 from applitools.core.debug import (
-    FileDebugScreenshotProvider,
-    NullDebugScreenshotProvider,
+    FileDebugScreenshotsProvider,
+    NullDebugScreenshotsProvider,
 )
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
@@ -97,7 +97,58 @@ class _EyesBaseAbstract(ABC):
         pass
 
 
-class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
+class DebugScreenshotsAbstract(ABC):
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_provider(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def save_debug_screenshots(self):
+        # type: () -> bool
+        """True if screenshots saving enabled."""
+        pass
+
+    @save_debug_screenshots.setter
+    @abc.abstractmethod
+    def save_debug_screenshots(self, save):
+        # type: (bool) -> None
+        """If True, will save all screenshots to local directory."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_path(self):
+        # type: () -> Optional[Text]
+        """The path where you save the debug screenshots."""
+        pass
+
+    @debug_screenshots_path.setter
+    @abc.abstractmethod
+    def debug_screenshots_path(self, path_to_save):
+        # type: (Text) -> None
+        """The path where you want to save the debug screenshots."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def debug_screenshots_prefix(self):
+        # type: () -> Optional[Text]
+        """The prefix for the screenshots' names."""
+        pass
+
+    @debug_screenshots_prefix.setter
+    @abc.abstractmethod
+    def debug_screenshots_prefix(self, prefix):
+        # type: (Text) -> None
+        """The prefix for the screenshots' names."""
+        pass
+
+
+class EyesBase(
+    EyesConfigurationMixin, DebugScreenshotsAbstract, _EyesBaseAbstract, ABC
+):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
     _session_start_info = None  # type: Optional[SessionStartInfo]
@@ -136,7 +187,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         super(EyesBase, self).__init__()
         self._server_connector = ServerConnector()  # type: ServerConnector
         self._user_inputs = []  # type: UserInputs
-        self._debug_screenshot_provider = NullDebugScreenshotProvider()
+        self._debug_screenshots_provider = NullDebugScreenshotsProvider()
 
     @property
     def match_level(self):
@@ -153,10 +204,6 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         return self._cut_provider and not (
             isinstance(self._cut_provider, NullCutProvider)
         )
-
-    @property
-    def debug_screenshot_provider(self):
-        return self._debug_screenshot_provider
 
     @property
     def server_connector(self):
@@ -183,21 +230,47 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         self._cut_provider = cutprovider
 
     @property
-    def _debug_screenshot_provided(self):
+    def debug_screenshots_provider(self):
+        return self._debug_screenshots_provider
+
+    @property
+    def save_debug_screenshots(self):
         # type: () -> bool
         """True if screenshots saving enabled."""
-        return isinstance(self._debug_screenshot_provider, FileDebugScreenshotProvider)
+        return isinstance(
+            self._debug_screenshots_provider, FileDebugScreenshotsProvider
+        )
 
-    @_debug_screenshot_provided.setter
-    def _debug_screenshot_provided(self, save):
+    @save_debug_screenshots.setter
+    def save_debug_screenshots(self, save):
         # type: (bool) -> None
-        prev = self._debug_screenshot_provider
+        prev = self._debug_screenshots_provider
         if save:
-            self._debug_screenshot_provider = FileDebugScreenshotProvider(
+            self._debug_screenshots_provider = FileDebugScreenshotsProvider(
                 prev.prefix, prev.path
             )
         else:
-            self._debug_screenshot_provider = NullDebugScreenshotProvider()
+            self._debug_screenshots_provider = NullDebugScreenshotsProvider()
+
+    @property
+    def debug_screenshots_path(self):
+        # type: () -> Optional[Text]
+        return self._debug_screenshots_provider.path
+
+    @debug_screenshots_path.setter
+    def debug_screenshots_path(self, path_to_save):
+        # type: (Text) -> None
+        self._debug_screenshots_provider.path = path_to_save
+
+    @property
+    def debug_screenshots_prefix(self):
+        # type: () -> Optional[Text]
+        return self._debug_screenshots_provider.prefix
+
+    @debug_screenshots_prefix.setter
+    def debug_screenshots_prefix(self, prefix):
+        # type: (Text) -> None
+        self._debug_screenshots_provider.prefix = prefix
 
     @property
     def _environment(self):
@@ -455,7 +528,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
             self._scale_provider = NullScaleProvider()
             self._position_provider = InvalidPositionProvider()
             self._cut_provider = NullCutProvider()
-            self._debug_screenshot_provider = NullDebugScreenshotProvider()
+            self._debug_screenshots_provider = NullDebugScreenshotsProvider()
 
         if self._scale_provider is None:
             self._scale_provider = NullScaleProvider()
@@ -584,7 +657,7 @@ class EyesBase(EyesConfigurationMixin, _EyesBaseAbstract, ABC):
         logger.info("Done getting screenshot!")
         if not region.is_size_empty:
             screenshot = screenshot.sub_screenshot(region)
-            self._debug_screenshot_provider.save(screenshot.image, "sub_screenshot")
+            self._debug_screenshots_provider.save(screenshot.image, "sub_screenshot")
 
         if not self._dom_url and (
             self.configure.send_dom or check_settings.values.send_dom
