@@ -175,3 +175,20 @@ def paste_image(base_image, part_image, position):
 def rotate_image(image, rotate):
     # type: (Image.Image, int) -> Image.Image
     return image.rotate(rotate)
+
+
+def crop_to_specific_size_if_needed(image, max_image_height, max_image_area):
+    # type: (Image, int, int) -> Image
+    if (
+        image.height <= max_image_height
+        and image.width * image.height <= max_image_area
+    ):
+        return image
+
+    trimmed_height = min(max_image_area / image.width, max_image_height)
+    new_region = Region(0, 0, image.width, trimmed_height)
+    if new_region.is_size_empty:
+        return image
+
+    image = crop_image(image, new_region)
+    return image

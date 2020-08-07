@@ -1,5 +1,6 @@
 import pytest
 import time
+
 from selenium.webdriver.common.by import By
 
 from applitools.core import ServerConnector
@@ -202,3 +203,28 @@ def test_replace_matched_step(params, driver, eyes):
     eyes.check_window("Step 1")
     eyes.close(False)
     assert actual_replace_last == replace_last_expected
+
+
+def test_screenshot_too_big(driver, eyes):
+    driver = eyes.open(
+        driver,
+        "Applitools Eyes SDK",
+        "Test Screenshot Too Big",
+        {"width": 800, "height": 800},
+    )
+    r_info = eyes.server_connector.render_info()
+    eyes.save_debug_screenshots = True
+    screenshots = []
+    eyes._selenium_eyes._debug_screenshots_provider.save = lambda image, suffix: screenshots.append(
+        image
+    )
+    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    driver.find_element_by_id("stretched").click()
+    frame = driver.find_element_by_css_selector("#modal2 iframe")
+    driver.switch_to.frame(frame)
+    element = driver.find_element_by_tag_name("html")
+    eyes.check("Step 1", Target.region(element).fully())
+    eyes.close(False)
+
+    image = screenshots[-1]
+    assert r_info.max_image_height == image.height
