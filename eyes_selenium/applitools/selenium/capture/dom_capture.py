@@ -269,7 +269,13 @@ def _parse_and_serialize_css(node, text, minimize=False):
                     logger.debug("The node has import")
                     yield CssNode.create_sub_node(parent_node=node, href=tag.value)
             continue
-
+        if getattr(style_node, "kind", None) == "invalid":
+            logger.warning(
+                "Cannot serialize item: {}, ParseError: {}".format(
+                    style_node, style_node.message
+                )
+            )
+            continue
         try:
             if minimize and style_node and style_node.content:
                 try:
