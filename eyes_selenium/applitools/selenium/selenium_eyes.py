@@ -849,6 +849,16 @@ class SeleniumEyes(EyesBase):
 
         return self._last_screenshot
 
+    def _crop_if_needed(self, image):
+        r_info = self.server_connector.render_info()
+        if r_info.max_image_height is None or r_info.max_image_area is None:
+            return image
+        image = image_utils.crop_to_specific_size_if_needed(
+            image, r_info.max_image_height, r_info.max_image_area
+        )
+        self._debug_screenshots_provider.save(image, "final")
+        return image
+
     def _entire_element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Entire element screenshot requested")
@@ -866,6 +876,7 @@ class SeleniumEyes(EyesBase):
         image = algo.get_stitched_region(
             self._region_to_check, self._full_region_to_check, elem_position_provider
         )
+        image = self._crop_if_needed(image)
         return EyesWebDriverScreenshot.create_entire_frame(
             self._driver, image, RectangleSize.from_(image)
         )
@@ -900,7 +911,7 @@ class SeleniumEyes(EyesBase):
             image = algo.get_stitched_region(
                 region, Region.EMPTY(), self.position_provider
             )
-
+            image = self._crop_if_needed(image)
             return EyesWebDriverScreenshot.create_full_page(
                 self._driver, image, original_frame_position
             )
@@ -930,6 +941,7 @@ class SeleniumEyes(EyesBase):
             logger.info("Cutting")
             image = self.cut_provider.cut(image)
             self._debug_screenshots_provider.save(image, "cutted")
+        image = self._crop_if_needed(image)
         return image
 
     def _get_viewport_scroll_bounds(self):

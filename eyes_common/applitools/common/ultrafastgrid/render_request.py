@@ -73,6 +73,12 @@ class RenderingInfo(object):
     stitching_service_url = attr.ib(
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
+    max_image_height = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[int]
+    max_image_area = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[int]
 
 
 @attr.s(hash=True, slots=True)
