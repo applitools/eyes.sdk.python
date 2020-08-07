@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 from datetime import datetime
 from os import path
@@ -60,6 +61,9 @@ class FileDebugScreenshotsProvider(DebugScreenshotsProvider):
 
     def save(self, image, suffix):
         # type: (Image, Text) -> None
+        if not path.isdir(self.path):
+            os.makedirs(self.path)
+
         now = datetime.now().strftime("%H-%M-%S")
         suffix = "{}-{}".format(self._image_counter, suffix)
         self._image_counter += 1
