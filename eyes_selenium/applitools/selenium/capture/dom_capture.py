@@ -271,7 +271,7 @@ def _parse_and_serialize_css(node, text, minimize=False):
             continue
 
         try:
-            if minimize and style_node.content:
+            if minimize and style_node and style_node.content:
                 try:
                     # remove whitespaces inside blocks
                     style_node.content = [
