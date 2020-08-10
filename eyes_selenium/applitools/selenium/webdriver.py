@@ -23,8 +23,9 @@ from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
-    from typing import Generator, Text, Optional, List, Dict, Any
+    from typing import Generator, Text, Optional, List, Dict, Any, Union
     from applitools.common.utils.custom_types import ViewPort, FrameReference
+    from appium.webdriver import Remote as AppiumWebDriver
     from .eyes import Eyes
     from PIL.Image import Image
 
@@ -267,7 +268,7 @@ class EyesWebDriver(object):
         :param stitch_mode: How to stitch a page (default is with scrolling).
         """
         self._proxy_to_fields = all_attrs(driver)
-        self._driver = driver
+        self._driver = driver  # type: Union[WebDriver, AppiumWebDriver]
         self._eyes = eyes
         # List of frames the user switched to, and the current offset,
         # so we can properly calculate elements' coordinates

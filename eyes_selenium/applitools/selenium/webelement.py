@@ -14,7 +14,8 @@ from applitools.common.utils.general_utils import proxy_to, all_attrs
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
-    from typing import Optional, Text
+    from typing import Optional, Text, Union
+    from appium.webdriver.webdriver import MobileWebElement
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -92,7 +93,7 @@ class EyesWebElement(object):
         if isinstance(element, EyesWebElement):
             element = element._element
         self._proxy_to_fields = all_attrs(element)
-        self._element = element  # type: WebElement
+        self._element = element  # type: Union[WebElement, MobileWebElement]
         self._eyes_driver = driver  # type: EyesWebDriver
 
         # setting from outside
