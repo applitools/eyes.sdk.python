@@ -6,6 +6,7 @@ import typing as tp
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from appium.webdriver.webdriver import MobileWebElement
 
 from applitools.common import logger
 from applitools.common.geometry import CoordinatesType, Point, Region
@@ -14,7 +15,7 @@ from applitools.common.utils.general_utils import proxy_to, all_attrs
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
-    from typing import Optional, Text
+    from typing import Optional, Text, Union
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -91,8 +92,10 @@ class EyesWebElement(object):
         """
         if isinstance(element, EyesWebElement):
             element = element._element
+        if isinstance(element, MobileWebElement):
+            element._w3c = True
         self._proxy_to_fields = all_attrs(element)
-        self._element = element  # type: WebElement
+        self._element = element  # type: Union[WebElement, MobileWebElement]
         self._eyes_driver = driver  # type: EyesWebDriver
 
         # setting from outside
