@@ -59,7 +59,7 @@ class VisualLocator(ABC):
         return VisualLocatorSettings(*names)
 
 
-LOCATORS_TYPE = Dict[Text, List[Region]]
+LOCATORS_TYPE = Dict[Text, List[Region]]  # typedef
 
 
 class VisualLocatorsProvider(ABC):
