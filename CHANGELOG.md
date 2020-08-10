@@ -5,6 +5,7 @@
 ### Updated
 - Screenshot retry mechanism is now more efficient [Trello 1866](https://trello.com/c/KyxkI6Bu)
 - Limited screenshot size. [Trello 1991](https://trello.com/c/2iCNfoI7)
+- Add missing typedef for Visual Locators type [Trello 2069](https://trello.com/c/pvV5duI4)
 
 ## [4.6.2] - 2020-07-30
 ### Fixed
