@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Added `name` and `names` to VisualLocatorSettings [Trello 2077](https://trello.com/c/smh8LdKv)
+
 ## [4.7.0] - 2020-08-10
 ### Added
 - Allow to setup custom server connector [Trello 2055](https://trello.com/c/TIQVZQrK)
