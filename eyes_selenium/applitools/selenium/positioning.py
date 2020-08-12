@@ -211,3 +211,12 @@ class ElementPositionProvider(SeleniumPositionProvider):
             raise WebDriverException("Failed to extract entire size! \n {}".format(e))
         logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
+
+
+class MobileSafariPositionProvider(ScrollPositionProvider):
+    def get_current_position(self):
+        # type: () -> Point
+        """
+        The scroll position of the current frame.
+        """
+        return Point.ZERO()
