@@ -517,6 +517,9 @@ class SeleniumEyes(EyesBase):
     def _ensure_frame_visible(self):
         logger.debug("scroll_root_element_: {}".format(self._scroll_root_element))
         current_fc = self.driver.frame_chain.clone()
+        if not current_fc:
+            # if no frames no point to go below
+            return current_fc
         fc = self.driver.frame_chain.clone()
         self.driver.execute_script("window.scrollTo(0,0);")
         origin_driver = eyes_selenium_utils.get_underlying_driver(self.driver)
