@@ -43,12 +43,13 @@ from .positioning import (
     CSSTranslatePositionProvider,
     ElementPositionProvider,
     ScrollPositionProvider,
+    MobileSafariPositionProvider,
 )
 from .region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
 )
-from .useragent import UserAgent
+from .useragent import UserAgent, OSNames, BrowserNames
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
@@ -225,6 +226,8 @@ class SeleniumEyes(EyesBase):
         logger.debug(
             "initializing position provider. stitch_mode: {}".format(stitch_mode)
         )
+        if self.driver.user_agent.browser == BrowserNames.MobileSafari:
+            return MobileSafariPositionProvider(self.driver, scroll_root_element)
         if stitch_mode == StitchMode.Scroll:
             return ScrollPositionProvider(self.driver, scroll_root_element)
         elif stitch_mode == StitchMode.CSS:
@@ -980,10 +983,12 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):
         position_provider = None
-        if element and not self.driver.is_mobile_app:
+        if element and not (
+            self.driver.is_mobile_app
+            or self.driver.user_agent.browser == BrowserNames.MobileSafari
+        ):
             original_fc = self.driver.frame_chain.clone()
-            eyes_element = EyesWebElement(element, self.driver)
-            element_bounds = eyes_element.bounds
+            element_bounds = element.bounds
 
             current_frame_offset = original_fc.current_frame_offset
             element_bounds = element_bounds.offset(current_frame_offset)
@@ -1020,6 +1025,9 @@ class SeleniumEyes(EyesBase):
                 position_provider.set_position(element_location)
 
         yield position_provider
-        if element and position_provider and not self.driver.is_mobile_app:
+        if element and not (
+            self.driver.is_mobile_app
+            or self.driver.user_agent.browser == BrowserNames.MobileSafari
+        ):
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
