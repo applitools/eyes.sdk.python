@@ -43,7 +43,7 @@ from .positioning import (
     CSSTranslatePositionProvider,
     ElementPositionProvider,
     ScrollPositionProvider,
-    MobileSafariPositionProvider,
+    MobileSafariAdapter,
 )
 from .region_compensation import (
     RegionPositionCompensation,
@@ -226,8 +226,6 @@ class SeleniumEyes(EyesBase):
         logger.debug(
             "initializing position provider. stitch_mode: {}".format(stitch_mode)
         )
-        if self.driver.user_agent.browser == BrowserNames.MobileSafari:
-            return MobileSafariPositionProvider(self.driver, scroll_root_element)
         if stitch_mode == StitchMode.Scroll:
             return ScrollPositionProvider(self.driver, scroll_root_element)
         elif stitch_mode == StitchMode.CSS:
@@ -558,7 +556,13 @@ class SeleniumEyes(EyesBase):
         # type: (EyesWebElement) -> PositionProvider
         position_provider = scroll_root_element.position_provider
         if not position_provider:
-            position_provider = self._create_position_provider(scroll_root_element)
+            position_provider = ElementPositionProvider(
+                self.driver, scroll_root_element
+            )
+            if self.driver.user_agent.browser == BrowserNames.MobileSafari:
+                position_provider = MobileSafariAdapter(
+                    position_provider, self._target_element
+                )
             scroll_root_element.position_provider = position_provider
         logger.debug("position provider: {}".format(position_provider))
         self.current_frame_position_provider = position_provider
@@ -610,7 +614,7 @@ class SeleniumEyes(EyesBase):
         if self._last_screenshot is None:
             logger.debug("add_mouse_trigger: Ignoring %s (no screenshot)" % action)
             return
-        if not self._driver.frame_chain == self._last_screenshot.frame_chain:
+        if self._driver.frame_chain != self._last_screenshot.frame_chain:
             logger.debug("add_mouse_trigger: Ignoring %s (different frame)" % action)
             return
         control = self._last_screenshot.get_intersected_region_by_element(element)
@@ -983,10 +987,7 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):
         position_provider = None
-        if element and not (
-            self.driver.is_mobile_app
-            or self.driver.user_agent.browser == BrowserNames.MobileSafari
-        ):
+        if element and not self.driver.is_mobile_app:
             original_fc = self.driver.frame_chain.clone()
             element_bounds = element.bounds
 
@@ -1025,9 +1026,6 @@ class SeleniumEyes(EyesBase):
                 position_provider.set_position(element_location)
 
         yield position_provider
-        if element and not (
-            self.driver.is_mobile_app
-            or self.driver.user_agent.browser == BrowserNames.MobileSafari
-        ):
+        if element and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)

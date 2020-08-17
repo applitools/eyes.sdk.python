@@ -18,6 +18,38 @@ if typing.TYPE_CHECKING:
     from . import EyesWebDriver
 
 
+class BaseBrowserAdapter(object):
+    def __init__(self, position_provider, element):
+        self._position_provider = position_provider
+        self._element = element
+
+    def __getattr__(self, item):
+        return getattr(self._position_provider, item)
+
+    def __dir__(self):
+        return [
+            name for name in dir(self._position_provider) if not name.startswith("_")
+        ]
+
+    def __subclasscheck__(self, subclass):
+        return isinstance(self._position_provider.__class__, subclass)
+
+
+class MobileSafariAdapter(BaseBrowserAdapter):
+    def set_position(self, location):
+        element_location = self._element.location  # scroll to element
+        if location == element_location:
+            self._driver.execute_script(
+                "arguments[0].style.transform='translate(0px,0px)';",
+                self._scroll_root_element,
+            )
+            return Point.from_(element_location)
+        return self._position_provider.set_position(location)
+
+    def get_current_position(self):
+        return Point.ZERO()
+
+
 class SeleniumPositionProvider(PositionProvider):
     """ Encapsulates page/element positioning """
 
@@ -211,12 +243,3 @@ class ElementPositionProvider(SeleniumPositionProvider):
             raise WebDriverException("Failed to extract entire size! \n {}".format(e))
         logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
-
-
-class MobileSafariPositionProvider(ScrollPositionProvider):
-    def get_current_position(self):
-        # type: () -> Point
-        """
-        The scroll position of the current frame.
-        """
-        return Point.ZERO()
