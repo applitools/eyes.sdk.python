@@ -12,6 +12,8 @@ from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 from . import eyes_selenium_utils
+from .useragent import BrowserNames, OSNames
+from .positioning import ScrollPositionProvider
 
 if tp.TYPE_CHECKING:
     from typing import Optional, Text, Union
@@ -94,6 +96,7 @@ class EyesWebElement(object):
         """
         if isinstance(element, EyesWebElement):
             element = element._element
+
         self._proxy_to_fields = all_attrs(element)
         self._element = element  # type: Union[WebElement, MobileWebElement]
         self._eyes_driver = driver  # type: EyesWebDriver
@@ -356,3 +359,88 @@ class SizeAndBorders(object):
 
     def __str__(self):
         return "SizeAndBorders(size={}, borders={})".format(self.size, self.borders)
+
+
+class ElementAdapter(object):
+    def __init__(self, eyes_element):
+        # type: (EyesWebElement) -> None
+        self._dir = []
+        self._element = eyes_element
+        self._driver = eyes_element.driver
+
+    def __getattr__(self, item):
+        return getattr(self._element, item)
+
+    def __dir__(self):
+        if not self._dir:
+            self._dir = [
+                name for name in dir(self._element) if not name.startswith("_")
+            ]
+        return self._dir
+
+    def __subclasscheck__(self, subclass):
+        return isinstance(self._element.__class__, subclass)
+
+
+class AndroidChromeElementAdapter(ElementAdapter):
+    """
+     Appium set _w3c to False for Android Chrome which cause
+     an error during execution of script
+    """
+
+    def __init__(self, eyes_element):
+        eyes_element.element._w3c = True
+        super(AndroidChromeElementAdapter, self).__init__(eyes_element)
+
+
+class MobileSafariElementAdapter(ElementAdapter):
+    """
+    Some browser, like MobileSafari returns relative position parameters for element.
+    This is class helper converts relative position to absolute.
+    """
+
+    def __init__(self, eyes_element):
+        # type: (EyesWebElement) -> None
+        super(MobileSafariElementAdapter, self).__init__(eyes_element)
+        self._position_provider = ScrollPositionProvider(
+            eyes_element.driver, eyes_element
+        )
+
+    @property
+    def location(self):
+        # type: () -> Point
+        loc = Point.from_(self._element.location)  # scroll into view at this point
+        curr_pos = eyes_selenium_utils.get_current_position(
+            self._driver, eyes_selenium_utils.scroll_root_element_from(self._driver)
+        )
+        return loc + curr_pos
+
+    @property
+    def bounding_client_rect(self):
+        # type: () -> Dict[str, int]
+        rect = self._element.bounding_client_rect
+        x, y = self.location
+        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
+
+    @property
+    def bounds(self):
+        # type: () -> Region
+        bounds = self._element.bounds
+        bounds.left, bounds.top = self.location
+        return bounds
+
+    @property
+    def rect(self):
+        # type: () -> Dict[str, int]
+        rect = self._element.rect
+        x, y = self.location
+        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
+
+
+def adapt_element(eyes_element):
+    # type: (EyesWebElement) -> ElementAdapter
+    user_agent = eyes_element.driver.user_agent
+    if user_agent.browser == BrowserNames.MobileSafari:
+        return MobileSafariElementAdapter(eyes_element)
+    elif user_agent.browser == BrowserNames.Chrome and user_agent.os == OSNames.Android:
+        return AndroidChromeElementAdapter(eyes_element)
