@@ -40,18 +40,17 @@ from .capture.screenshot_utils import cut_to_viewport_size_if_required
 from .classic_runner import ClassicRunner
 from .frames import FrameChain
 from .positioning import (
-    CSSTranslatePositionProvider,
     ElementPositionProvider,
     ScrollPositionProvider,
-    MobileSafariAdapter,
+    create_position_provider,
 )
 from .region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
 )
-from .useragent import UserAgent, OSNames, BrowserNames
+from .useragent import BrowserNames
 from .webdriver import EyesWebDriver
-from .webelement import EyesWebElement
+from .webelement import EyesWebElement, adapt_element
 
 if typing.TYPE_CHECKING:
     from typing import Generator, Optional, Text
@@ -219,14 +218,13 @@ class SeleniumEyes(EyesBase):
         return False
 
     def _create_position_provider(self, scroll_root_element):
-        stitch_mode = self.configure.stitch_mode
-        logger.debug(
-            "initializing position provider. stitch_mode: {}".format(stitch_mode)
+
+        return create_position_provider(
+            self.driver,
+            self.configure.stitch_mode,
+            scroll_root_element,
+            self._target_element,
         )
-        if stitch_mode == StitchMode.Scroll:
-            return ScrollPositionProvider(self.driver, scroll_root_element)
-        elif stitch_mode == StitchMode.CSS:
-            return CSSTranslatePositionProvider(self.driver, scroll_root_element)
 
     def check(self, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
@@ -814,7 +812,7 @@ class SeleniumEyes(EyesBase):
 
         if target_element and not isinstance(target_element, EyesWebElement):
             target_element = EyesWebElement(target_element, self.driver)
-        return target_element
+        return adapt_element(target_element)
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
@@ -998,6 +996,17 @@ class SeleniumEyes(EyesBase):
                     viewport_bounds, element_bounds
                 )
             )
+
+            if (
+                self.configure.stitch_mode == StitchMode.CSS
+                and self.driver.user_agent.browser == BrowserNames.MobileSafari
+            ):
+                # hide header bar if present
+                self._driver.execute_script(
+                    "arguments[0].style.transform='translate(0px,0px)';",
+                    self._scroll_root_element,
+                )
+
             if not viewport_bounds.contains(element_bounds):
                 self._ensure_frame_visible()
                 element_location = Point.from_(element.location)

@@ -4,11 +4,12 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import Point, logger
+from applitools.common import Point, logger, StitchMode, EyesError
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
+from .useragent import BrowserNames
 
 if typing.TYPE_CHECKING:
     from typing import Optional
@@ -19,12 +20,16 @@ if typing.TYPE_CHECKING:
 
 
 class BaseBrowserAdapter(object):
-    def __init__(self, position_provider, element):
-        self._position_provider = position_provider
-        self._element = element
+    def __init__(self, position_provider):
+        self._position_provider = position_provider  # type: PositionProvider
 
     def __getattr__(self, item):
         return getattr(self._position_provider, item)
+
+    def __str__(self):
+        return "{} for {}".format(
+            self.__class__.__name__, self._position_provider.__class__.__name__
+        )
 
     def __dir__(self):
         return [
@@ -35,7 +40,11 @@ class BaseBrowserAdapter(object):
         return isinstance(self._position_provider.__class__, subclass)
 
 
-class MobileSafariAdapter(BaseBrowserAdapter):
+class CSSMobileSafariAdapter(BaseBrowserAdapter):
+    def __init__(self, position_provider, element):
+        super(CSSMobileSafariAdapter, self).__init__(position_provider)
+        self._element = element
+
     def set_position(self, location):
         element_location = self._element.location  # scroll to element
         if location == element_location:
@@ -48,7 +57,9 @@ class MobileSafariAdapter(BaseBrowserAdapter):
         return self._position_provider.set_position(location)
 
     def get_current_position(self):
-        return Point.ZERO()
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
 
 
 class SeleniumPositionProvider(PositionProvider):
@@ -244,3 +255,18 @@ class ElementPositionProvider(SeleniumPositionProvider):
             raise WebDriverException("Failed to extract entire size! \n {}".format(e))
         logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
+
+
+def create_position_provider(driver, stitch_mode, scroll_root_element, target_element):
+    logger.debug("initializing position provider. stitch_mode: {}".format(stitch_mode))
+    if stitch_mode == StitchMode.Scroll:
+        position_provider = ScrollPositionProvider(driver, scroll_root_element)
+    elif stitch_mode == StitchMode.CSS:
+        position_provider = CSSTranslatePositionProvider(driver, scroll_root_element)
+        if driver.user_agent.browser == BrowserNames.MobileSafari:
+            position_provider = CSSMobileSafariAdapter(
+                position_provider, target_element
+            )
+    else:
+        raise EyesError("Wrong sitch_mode")
+    return position_provider

@@ -438,9 +438,13 @@ class MobileSafariElementAdapter(ElementAdapter):
 
 
 def adapt_element(eyes_element):
-    # type: (EyesWebElement) -> ElementAdapter
+    # type: (EyesWebElement) -> Union[EyesWebElement,ElementAdapter]
     user_agent = eyes_element.driver.user_agent
     if user_agent.browser == BrowserNames.MobileSafari:
         return MobileSafariElementAdapter(eyes_element)
-    elif user_agent.browser == BrowserNames.Chrome and user_agent.os == OSNames.Android:
+    elif (
+        user_agent.browser in [BrowserNames.Chrome, BrowserNames.Unknown]
+        and user_agent.os == OSNames.Android
+    ):
         return AndroidChromeElementAdapter(eyes_element)
+    return eyes_element
