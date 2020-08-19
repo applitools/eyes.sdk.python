@@ -96,7 +96,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         self._screenshot_type = update_screenshot_type(
             self._screenshot_type, self._image, self._driver
         )
-        position_provider = eyes_selenium_utils.get_cur_position_provider(self._driver)
+        position_provider = self._driver.eyes.current_frame_position_provider
 
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()

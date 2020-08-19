@@ -93,15 +93,13 @@ class SeleniumEyes(EyesBase):
     _effective_viewport = None  # type: Optional[Region]
     _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
-    _user_agent = None  # type: Optional[UserAgent]
     _image_provider = None  # type: Optional[ImageProvider]
     _region_position_compensation = None  # type: Optional[RegionPositionCompensation]
     _switched_to_frame_count = 0  # int
     _full_region_to_check = None  # type: Optional[Region]
     _position_memento = None  # type: Optional[PositionMemento]
     _is_check_region = None  # type: Optional[bool]
-    _original_scroll_position = None  # type: Optional[Point]
-    current_frame_position_provider = None  # type: Optional[PositionProvider]
+    _current_frame_position_provider = None  # type: Optional[PositionProvider]
     _runner = None  # type: Optional[ClassicRunner]
 
     @staticmethod
@@ -170,7 +168,6 @@ class SeleniumEyes(EyesBase):
         self._driver = driver
         self._screenshot_factory = EyesWebDriverScreenshotFactory(self.driver)
         self._ensure_viewport_size()
-        self._user_agent = self._driver.user_agent
 
         if skip_start_session:
             self._server_connector.update_config(
@@ -179,9 +176,9 @@ class SeleniumEyes(EyesBase):
             self._init_providers()
         else:
             self._open_base()
-        self._image_provider = get_image_provider(self._user_agent, self)
+        self._image_provider = get_image_provider(self._driver.user_agent, self)
         self._region_position_compensation = get_region_position_compensation(
-            self._user_agent, self
+            self._driver.user_agent, self
         )
         return self._driver
 
@@ -246,15 +243,11 @@ class SeleniumEyes(EyesBase):
         self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
+        self._position_memento = self._position_provider.get_state()
+
         self._original_fc = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_app:
-            # save original scroll position
-            scroll_provider = ScrollPositionProvider(
-                self.driver, self._scroll_root_element
-            )
-            self._original_scroll_position = scroll_provider.get_current_position()
-
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
@@ -278,6 +271,8 @@ class SeleniumEyes(EyesBase):
         if not self.driver.is_mobile_app:
             self.driver.switch_to.frames(self._original_fc)
         self._position_provider = None
+        self._current_frame_position_provider = None
+        self._position_memento = None
         self._original_fc = None
         logger.debug("check - done!")
         return result
@@ -287,6 +282,7 @@ class SeleniumEyes(EyesBase):
         results = super(SeleniumEyes, self).close(raise_ex)
         if self._runner:
             self._runner.aggregate_result(results)
+        self._screenshot_factory = None
         return results
 
     def _check_result_flow(self, name, check_settings, source):
@@ -328,7 +324,7 @@ class SeleniumEyes(EyesBase):
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
-                    self.current_frame_position_provider = (
+                    self._current_frame_position_provider = (
                         self._create_position_provider(
                             self.driver.find_element_by_tag_name("html")
                         )
@@ -343,6 +339,13 @@ class SeleniumEyes(EyesBase):
         if result is None:
             result = MatchResult()
         return result
+
+    @property
+    def current_frame_position_provider(self):
+        if self._current_frame_position_provider:
+            return self._current_frame_position_provider
+        else:
+            return self.position_provider
 
     def _check_full_frame_or_element(self, name, check_settings, source):
         self._check_frame_or_element = True
@@ -473,6 +476,8 @@ class SeleniumEyes(EyesBase):
                     self._check_frame_or_element = False
                     self._region_to_check = None
                     self._element_position_provider = None
+                    self._full_region_to_check = None
+                    self._effective_viewport = None
         return result
 
     def _check_region(self, name, check_settings, source):
@@ -557,13 +562,9 @@ class SeleniumEyes(EyesBase):
         position_provider = scroll_root_element.position_provider
         if not position_provider:
             position_provider = self._create_position_provider(scroll_root_element)
-            if self.driver.user_agent.browser == BrowserNames.MobileSafari:
-                position_provider = MobileSafariAdapter(
-                    position_provider, self._target_element
-                )
             scroll_root_element.position_provider = position_provider
         logger.debug("position provider: {}".format(position_provider))
-        self.current_frame_position_provider = position_provider
+        self._current_frame_position_provider = position_provider
         return position_provider
 
     @contextlib.contextmanager
