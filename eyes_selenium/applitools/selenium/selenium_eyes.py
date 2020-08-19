@@ -803,7 +803,7 @@ class SeleniumEyes(EyesBase):
             return self._get_element_region(target_element)
 
     def _element_from(self, check_settings):
-        # type: (SeleniumCheckSettings) -> EyesWebElement
+        # type: (SeleniumCheckSettings) -> Optional[EyesWebElement]
         target_element = check_settings.values.target_element
         target_selector = check_settings.values.target_selector
         if not target_element and target_selector:
@@ -812,7 +812,8 @@ class SeleniumEyes(EyesBase):
 
         if target_element and not isinstance(target_element, EyesWebElement):
             target_element = EyesWebElement(target_element, self.driver)
-        return adapt_element(target_element)
+        if target_element:
+            return adapt_element(target_element)
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
