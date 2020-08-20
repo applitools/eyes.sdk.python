@@ -182,7 +182,7 @@ def retrieve_js(c):
             os.remove(path.join(pack, "package-lock.json"))
 
         with c.cd(pack):
-            c.run("npm update --save", echo=True)
+            c.run("npm update", echo=True)
         print("Moving js for {}".format(pack))
         move_js_resources_to(pack)
 
