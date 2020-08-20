@@ -71,10 +71,11 @@ jobs:
           python: 3.6
           before_install:
               - choco install python --version=3.6.6
+              - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
-              - PATH=/c/Python36:/c/Python36/Scripts:$PATH
+              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
@@ -97,10 +98,11 @@ jobs:
           python: 3.6
           before_install:
               - choco install python --version=3.6.6
+              - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
-              - PATH=/c/Python36:/c/Python36/Scripts:$PATH
+              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache

@@ -189,13 +189,13 @@ def retrieve_js(c):
 
 def move_js_resources_to(pack):
     paths = [
-        "dom-capture/dist/captureDomAndPoll.js",
-        "dom-capture/dist/captureDomAndPollForIE.js",
-        "dom-snapshot/dist/processPageAndSerializePoll.js",
-        "dom-snapshot/dist/processPageAndSerializePollForIE.js",
+        path.join("dom-capture", "dist", "captureDomAndPoll.js"),
+        path.join("dom-capture", "dist", "captureDomAndPollForIE.js"),
+        path.join("dom-snapshot", "dist", "processPageAndSerializePoll.js"),
+        path.join("dom-snapshot", "dist", "processPageAndSerializePollForIE.js"),
     ]
-    node_resources = path.join(pack, "applitools/selenium/resources/")
-    node_modules = path.join(pack, "node_modules/@applitools")
+    node_resources = path.join(pack, "applitools", "selenium", "resources")
+    node_modules = path.join(pack, "node_modules", "@applitools")
     for pth in paths:
         from_ = path.join(node_modules, pth)
         name = path.basename(from_)
