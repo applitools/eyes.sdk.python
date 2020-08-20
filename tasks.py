@@ -45,6 +45,8 @@ def dist(
             common, core, selenium, images, full_path=True, path_as_str=True
         )
     )
+    _fetch_js_libs_if_required(c, common, core, images, selenium)
+
     if from_env:
         twine_command = "twine upload dist/*"
     else:
@@ -131,6 +133,12 @@ def _packages_resolver(
         yield pack
 
 
+def _fetch_js_libs_if_required(c, common, core, selenium, images):
+    # get js libs only if selenium lib is installing
+    if selenium or not any([common, core, images, selenium]):
+        retrieve_js(c)
+
+
 @task
 def install_packages(
     c, common=False, core=False, selenium=False, images=False, editable=False
@@ -138,6 +146,9 @@ def install_packages(
     packages = _packages_resolver(
         common, core, selenium, images, full_path=True, path_as_str=True
     )
+
+    _fetch_js_libs_if_required(c, common, core, images, selenium)
+
     editable = "-e" if editable else ""
     for pack in packages:
         c.run("pip install -U {} {}".format(editable, pack), echo=True)
@@ -167,7 +178,8 @@ def mypy_check(c, common=False, core=False, selenium=False, images=False):
 @task
 def retrieve_js(c):
     for pack in _packages_resolver(selenium=True, full_path=True):
-        os.remove(os.path.join(pack, "package-lock.json"))
+        if path.exists(path.join(pack, "package-lock.json")):
+            os.remove(path.join(pack, "package-lock.json"))
 
         with c.cd(pack):
             c.run("npm update --save", echo=True)
