@@ -28,16 +28,12 @@ class AccessibilitySettings(object):
 
     def __init__(
         self,
-        level,  # type: Union[Text,AccessibilityLevel]
-        guidelines_version,  # type: Union[Text,AccessibilityGuidelinesVersion]
+        level,  # type: AccessibilityLevel
+        guidelines_version,  # type: AccessibilityGuidelinesVersion
     ):
         # type: (...) -> None
-        if isinstance(level, basestring):
-            level = AccessibilityLevel(level)
-        if isinstance(guidelines_version, basestring):
-            guidelines_version = AccessibilityGuidelinesVersion(guidelines_version)
-        self.level = level
-        self.guidelines_version = guidelines_version
+        self.level = AccessibilityLevel(level)
+        self.guidelines_version = AccessibilityGuidelinesVersion(guidelines_version)
 
 
 class AccessibilityRegionType(Enum):
@@ -63,15 +59,13 @@ class AccessibilityStatus(Enum):
 class SessionAccessibilityStatus(AccessibilitySettings):
     status = attr.ib(
         type=AccessibilityStatus, metadata={JsonInclude.THIS: True},
-    )  # type: Union[Text,AccessibilityStatus]
+    )  # type: AccessibilityStatus
 
     def __init__(
         self,
-        status,  # type: Union[Text,AccessibilityStatus]
-        level,  # type: Union[Text,AccessibilityLevel]
-        guidelines_version,  # type: Union[Text,AccessibilityGuidelinesVersion]
+        status,  # type: AccessibilityStatus
+        level,  # type: AccessibilityLevel
+        guidelines_version,  # type: AccessibilityGuidelinesVersion
     ):
         super(SessionAccessibilityStatus, self).__init__(level, guidelines_version)
-        if isinstance(status, basestring):
-            status = AccessibilityStatus(status)
-        self.status = status
+        self.status = AccessibilityStatus(status)
