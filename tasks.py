@@ -135,7 +135,7 @@ def _packages_resolver(
 
 def _fetch_js_libs_if_required(c, common, core, selenium, images):
     # get js libs only if selenium lib is installing
-    if selenium or not any([common, core, images, selenium]):
+    if selenium or not any([common, core, selenium, images]):
         retrieve_js(c)
 
 
@@ -147,7 +147,7 @@ def install_packages(
         common, core, selenium, images, full_path=True, path_as_str=True
     )
 
-    _fetch_js_libs_if_required(c, common, core, images, selenium)
+    _fetch_js_libs_if_required(c, common, core, selenium, images)
 
     editable = "-e" if editable else ""
     for pack in packages:
