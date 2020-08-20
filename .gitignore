@@ -187,13 +187,11 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
 # mypy
 .mypy_cache/
 
-/eyes_selenium/node_modules/
+eyes_selenium/node_modules/
+eyes_selenium/applitools/selenium/resources/
 logs/
 
 .vscode/
