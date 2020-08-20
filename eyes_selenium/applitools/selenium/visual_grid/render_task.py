@@ -34,7 +34,7 @@ if typing.TYPE_CHECKING:
 @attr.s(hash=True)
 class RenderTask(VGTask):
     MAX_FAILS_COUNT = 5
-    MAX_ITERATIONS = 100
+    MAX_ITERATIONS = 2400  # poll_render_status for 1 hour
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
