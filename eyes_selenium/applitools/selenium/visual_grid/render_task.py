@@ -34,7 +34,7 @@ if typing.TYPE_CHECKING:
 @attr.s(hash=True)
 class RenderTask(VGTask):
     MAX_FAILS_COUNT = 5
-    MAX_ITERATIONS = 100
+    MAX_ITERATIONS = 2400  # poll_render_status for 1 hour
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
@@ -288,7 +288,10 @@ class RenderTask(VGTask):
                     datetime_utils.sleep(1500, msg="Rendering...")
                 if iterations > self.MAX_ITERATIONS:
                     raise EyesError(
-                        "Max iterations in poll_render_status has been reached"
+                        "Max iterations in poll_render_status has been reached "
+                        "for render_id: \n {}".format(
+                            "\n".join(s.render_id for s in statuses)
+                        )
                     )
                 if statuses or 0 < fails_count < 3:
                     break
