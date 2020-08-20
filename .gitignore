@@ -192,6 +192,7 @@ venv.bak/
 
 eyes_selenium/node_modules/
 eyes_selenium/applitools/selenium/resources/
+!eyes_selenium/applitools/selenium/resources/.gitignore
 logs/
 
 .vscode/
