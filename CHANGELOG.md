@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Remove typing annotation that Enum accepts Text [Trello 2076](https://trello.com/c/zZ0oTowF)
+
 ## [4.7.0] - 2020-08-10
 ### Added
 - Allow to setup custom server connector [Trello 2055](https://trello.com/c/TIQVZQrK)
