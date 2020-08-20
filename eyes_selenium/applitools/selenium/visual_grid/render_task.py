@@ -288,7 +288,10 @@ class RenderTask(VGTask):
                     datetime_utils.sleep(1500, msg="Rendering...")
                 if iterations > self.MAX_ITERATIONS:
                     raise EyesError(
-                        "Max iterations in poll_render_status has been reached"
+                        "Max iterations in poll_render_status has been reached "
+                        "for render_id: \n {}".format(
+                            "\n".join(s.render_id for s in statuses)
+                        )
                     )
                 if statuses or 0 < fails_count < 3:
                     break
