@@ -70,8 +70,8 @@ class CheckSettings(object):
     def layout(self, *regions):
         # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
-        self.values.match_level = MatchLevel.LAYOUT
         if not regions:
+            self.values.match_level = MatchLevel.LAYOUT
             return self
         try:
             self.values.layout_regions = self.__regions(
@@ -89,8 +89,8 @@ class CheckSettings(object):
     def strict(self, *regions):
         # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
-        self.values.match_level = MatchLevel.STRICT
         if not regions:
+            self.values.match_level = MatchLevel.STRICT
             return self
         try:
             self.values.strict_regions = self.__regions(
@@ -103,8 +103,8 @@ class CheckSettings(object):
     def content(self, *regions):
         # type: (Self, *Region)  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
-        self.values.match_level = MatchLevel.CONTENT
         if not regions:
+            self.values.match_level = MatchLevel.CONTENT
             return self
         try:
             self.values.content_regions = self.__regions(
