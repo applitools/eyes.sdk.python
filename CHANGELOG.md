@@ -1,4 +1,4 @@
-## [vNext]
+## [4.7.1] - 2020-08-25
 ### Fixed
 - Match level have been changed automatically when call match region [Trello 2104](https://trello.com/c/5pXHlas3)
 ### Updated
