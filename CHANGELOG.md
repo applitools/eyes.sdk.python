@@ -1,4 +1,6 @@
 ## [vNext]
+### Fixed
+- Match level have been changed automatically when call match region [Trello 2104](https://trello.com/c/5pXHlas3)
 ### Updated
 - Remove typing annotation that Enum accepts Text [Trello 2076](https://trello.com/c/zZ0oTowF)
 
