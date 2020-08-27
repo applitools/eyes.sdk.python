@@ -271,9 +271,9 @@ SUPPORTED_PLATFORMS = [
         browsers=COMMON_BROWSERS + [("safari", "latest")],
         extra=None,
     ),
-    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.13.0"}),
+    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.17.1"}),
     Platform(
-        name="Android", version="", browsers=[], extra={"appiumVersion": "1.13.0"}
+        name="Android", version="", browsers=[], extra={"appiumVersion": "1.17.1"}
     ),
 ]
 SUPPORTED_PLATFORMS_DICT = {
