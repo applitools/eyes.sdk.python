@@ -183,6 +183,8 @@ class SeleniumEyes(EyesBase):
 
     def _try_hide_scrollbars(self, frame=None):
         # type: (Optional[Frame]) -> bool
+        if self._driver.is_mobile_platform:
+            return False
         if self.should_scrollbars_be_hidden:
             if frame:
                 frame.hide_scrollbars(self.driver)
@@ -201,6 +203,8 @@ class SeleniumEyes(EyesBase):
 
     def _try_restore_scrollbars(self, frame=None):
         # type: (Optional[Frame]) -> bool
+        if self._driver.is_mobile_platform:
+            return False
         if self.should_scrollbars_be_hidden:
             if frame:
                 frame.return_to_original_overflow(self.driver)
