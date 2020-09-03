@@ -258,6 +258,9 @@ class RenderRequest(object):
     platform = attr.ib(
         init=False, default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Dict]
+    options = attr.ib(
+        factory=dict, metadata={JsonInclude.THIS: True}
+    )  # type: Dict[str, Any]
 
     def __attrs_post_init__(self):
         if self.browser_name is None:

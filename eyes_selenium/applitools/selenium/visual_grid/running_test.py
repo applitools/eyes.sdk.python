@@ -238,6 +238,9 @@ class RunningTest(object):
         short_description = "{} of {}".format(
             self.configuration.test_name, self.configuration.app_name
         )
+        opts = self.configuration.visual_grid_options or []
+        opts += check_settings.values.visual_grid_options or []
+        request_options = {o.key: o.value for o in opts}
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
@@ -251,6 +254,7 @@ class RunningTest(object):
             script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
             selector=check_settings.values.selector,
+            request_options=request_options,
         )
         logger.debug("RunningTest %s" % render_task.name)
         render_index = render_task.add_running_test(self)

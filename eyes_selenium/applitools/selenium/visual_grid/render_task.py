@@ -56,6 +56,7 @@ class RenderTask(VGTask):
     is_force_put_needed = attr.ib(
         default=str2bool(get_env_with_prefix("APPLITOOLS_UFG_FORCE_PUT_RESOURCES"))
     )  # type: bool
+    request_options = attr.ib(hash=False, factory=dict)  # type: Dict[str, Any]
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -184,6 +185,7 @@ class RenderTask(VGTask):
                     script_hooks=self.script_hooks,
                     selectors_to_find_regions_for=list(chain(*self.region_selectors)),
                     send_dom=running_test.configuration.send_dom,
+                    options=self.request_options,
                 )
             )
         return requests

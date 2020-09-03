@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Text, Any
 
 
 class ScreenOrientation(Enum):
@@ -81,3 +82,10 @@ class IosDeviceName(Enum):
     iPad_Pro_3 = "iPad Pro (12.9-inch) (3rd generation)"
     iPad_7 = "iPad (7th generation)"
     iPad_Air_2 = "iPad Air (2nd generation)"
+
+
+class VisualGridOption:
+    def __init__(self, key, value):
+        # type: (Text, Any) -> None
+        self.key = key
+        self.value = value

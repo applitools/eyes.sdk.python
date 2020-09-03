@@ -51,6 +51,7 @@ from .ultrafastgrid.config import (  # noqa
     ScreenOrientation,
     IosDeviceName,
     ScreenOrientation,
+    VisualGridOption,
 )
 from .ultrafastgrid.render_browser_info import (
     IosDeviceInfo,
