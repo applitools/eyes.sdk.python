@@ -68,6 +68,9 @@ class Configuration(ConfigurationBase):
 
     def set_visual_grid_options(self, *options):
         # type: (*VisualGridOption) -> Configuration
+        if len(options) == 1 and options[-1] is None:
+            del self.visual_grid_options[:]
+            return self
         argument_guard.are_(options, VisualGridOption)
         self.visual_grid_options = list(options)
         return self
