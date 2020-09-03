@@ -39,9 +39,7 @@ class Configuration(ConfigurationBase):
 
     # Rendering Configuration
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
-    visual_grid_options = attr.ib(
-        default=None
-    )  # type: Optional[List[VisualGridOption]]
+    visual_grid_options = attr.ib(factory=list)  # type: List[VisualGridOption]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration

@@ -60,9 +60,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
-    visual_grid_options = attr.ib(
-        default=None
-    )  # type: Optional[List[VisualGridOption]]
+    visual_grid_options = attr.ib(factory=list)  # type: List[VisualGridOption]
 
     @property
     def size_mode(self):

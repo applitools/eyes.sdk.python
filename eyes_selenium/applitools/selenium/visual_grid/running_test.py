@@ -1,3 +1,4 @@
+import itertools
 import typing
 from collections import defaultdict
 
@@ -234,13 +235,17 @@ class RunningTest(object):
         script_hooks,  # type: Dict[Text, Any]
         check_settings,
     ):
-        # type: (...)->RenderTask
+        # type: (...) -> RenderTask
         short_description = "{} of {}".format(
             self.configuration.test_name, self.configuration.app_name
         )
-        opts = self.configuration.visual_grid_options or []
-        opts += check_settings.values.visual_grid_options or []
-        request_options = {o.key: o.value for o in opts}
+        request_options = {
+            o.key: o.value
+            for o in itertools.chain(
+                self.configuration.visual_grid_options,
+                check_settings.values.visual_grid_options,
+            )
+        }
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(short_description, tag),
             script=script_result,
