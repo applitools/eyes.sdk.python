@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from typing import TYPE_CHECKING, List, overload, Union, Text
+from typing import TYPE_CHECKING, List, overload, Union, Text, Optional
 
 import attr
 
@@ -169,4 +169,5 @@ class Configuration(ConfigurationBase):
         # TODO: Remove this huck when get rid of Python2
         conf = super(Configuration, self).clone()
         conf._browsers_info = deepcopy(self._browsers_info)
+        conf.visual_grid_options = deepcopy(self.visual_grid_options)
         return conf
