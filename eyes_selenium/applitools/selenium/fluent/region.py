@@ -3,12 +3,9 @@ from abc import abstractmethod
 
 import attr
 
-from applitools.common import (
-    CoordinatesType,
-    FloatingMatchSettings,
-)
-from applitools.common.geometry import AccessibilityRegion, Point, Region
+from applitools.common import CoordinatesType, FloatingMatchSettings
 from applitools.common.accessibility import AccessibilityRegionType
+from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.utils import ABC
 from applitools.core import GetFloatingRegion, GetRegion
 from applitools.core.fluent.region import GetAccessibilityRegion
@@ -16,8 +13,9 @@ from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
     from typing import List
+
     from applitools.common import FloatingBounds
-    from applitools.common.utils.custom_types import AnyWebElement, AnyWebDriver
+    from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (

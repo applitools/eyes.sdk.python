@@ -10,9 +10,10 @@ from applitools.selenium.useragent import BrowserNames, OSNames
 
 if typing.TYPE_CHECKING:
     from applitools.common import Region
-    from .webdriver import EyesWebDriver
+
     from .eyes import Eyes
     from .useragent import UserAgent
+    from .webdriver import EyesWebDriver
 
 
 def get_region_position_compensation(useragent, eyes):

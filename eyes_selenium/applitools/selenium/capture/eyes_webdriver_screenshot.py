@@ -26,10 +26,12 @@ from applitools.selenium.capture.screenshot_utils import (
 from applitools.selenium.frames import FrameChain
 
 if typing.TYPE_CHECKING:
-    from typing import Union, Optional
+    from typing import Optional, Union
+
     from PIL import Image
-    from applitools.selenium.webdriver import EyesWebDriver
+
     from applitools.selenium.positioning import SeleniumPositionProvider
+    from applitools.selenium.webdriver import EyesWebDriver
 
 
 @attr.s(hash=False)

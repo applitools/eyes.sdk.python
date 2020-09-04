@@ -9,11 +9,11 @@ from .selenium_check_settings import SeleniumCheckSettings
 if TYPE_CHECKING:
     from applitools.common import Region
     from applitools.common.utils.custom_types import (
-        CssSelector,
         AnyWebElement,
         BySelector,
-        FrameNameOrId,
+        CssSelector,
         FrameIndex,
+        FrameNameOrId,
     )
 
 __all__ = ("Target",)

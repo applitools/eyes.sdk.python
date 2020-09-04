@@ -5,23 +5,25 @@ from collections import defaultdict
 import attr
 from transitions import Machine
 
-from applitools.common import Region, logger, RenderStatus
+from applitools.common import Region, RenderStatus, logger
 
 from .render_task import RenderTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Dict, Any, Text
+    from typing import Any, Dict, List, Optional, Text
+
     from applitools.common import (
-        TestResults,
-        VisualGridSelector,
         RenderBrowserInfo,
         RenderStatusResults,
+        TestResults,
+        VisualGridSelector,
     )
     from applitools.common.selenium import Configuration
     from applitools.selenium.fluent import SeleniumCheckSettings
-    from .visual_grid_runner import VisualGridRunner
+
     from .eyes_connector import EyesConnector
+    from .visual_grid_runner import VisualGridRunner
 
 NEW = "new"
 NOT_RENDERED = "not_rendered"

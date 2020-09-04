@@ -10,10 +10,10 @@ from applitools.common import (
     logger,
 )
 from applitools.common.ultrafastgrid import (
+    IRenderBrowserInfo,
     RenderRequest,
     RunningRender,
     VGResource,
-    IRenderBrowserInfo,
 )
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -26,15 +26,17 @@ from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Dict, Any, Optional
+    from typing import Any, Dict, List, Optional, Text
+
     from requests import Response
-    from applitools.common.ultrafastgrid import (
-        RenderingInfo,
-        RenderBrowserInfo,
-        RenderStatusResults,
-    )
+
     from applitools.common.match import MatchResult
     from applitools.common.test_results import TestResults
+    from applitools.common.ultrafastgrid import (
+        RenderBrowserInfo,
+        RenderingInfo,
+        RenderStatusResults,
+    )
     from applitools.selenium.fluent import SeleniumCheckSettings
 
 

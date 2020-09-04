@@ -3,16 +3,16 @@ from typing import TYPE_CHECKING
 from applitools.common import logger
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core.locators import (
-    VisualLocatorsProvider,
-    VisualLocatorSettings,
     LOCATORS_TYPE,
     VisualLocatorsData,
+    VisualLocatorSettings,
+    VisualLocatorsProvider,
 )
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
-    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.core import ServerConnector
+    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 

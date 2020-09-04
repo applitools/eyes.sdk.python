@@ -2,13 +2,13 @@ from __future__ import absolute_import
 
 import typing
 
-from applitools.common import EyesError, logger, MatchResult
+from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
-from applitools.core.eyes_mixins import EyesConfigurationMixin
 from applitools.core.eyes_base import DebugScreenshotsAbstract
-from applitools.core.locators import VisualLocatorSettings, LOCATORS_TYPE
+from applitools.core.eyes_mixins import EyesConfigurationMixin
+from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
@@ -19,23 +19,26 @@ from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional, Union, List, Tuple
+    from typing import List, Optional, Text, Tuple, Union
+
     from selenium.webdriver.remote.webelement import WebElement
-    from applitools.common import TestResults, Region, MatchLevel
+
+    from applitools.common import MatchLevel, Region, TestResults
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
-        ViewPort,
-        FrameReference,
         AnyWebElement,
+        FrameReference,
+        ViewPort,
     )
     from applitools.core import (
-        PositionProvider,
         FixedCutProvider,
-        UnscaledFixedCutProvider,
         NullCutProvider,
+        PositionProvider,
+        UnscaledFixedCutProvider,
     )
-    from .frames import FrameChain
+
     from .fluent import SeleniumCheckSettings
+    from .frames import FrameChain
     from .webelement import EyesWebElement
 
 

@@ -1,18 +1,19 @@
-from typing import TYPE_CHECKING, Union
 from collections import Counter
+from typing import TYPE_CHECKING, Union
 
 from applitools.common import (
-    logger,
-    TestFailedError,
     DiffsFoundError,
     NewTestError,
+    TestFailedError,
     TestResultContainer,
     TestResults,
+    logger,
 )
 from applitools.common.utils import datetime_utils, iteritems
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Callable
+    from typing import Callable, Dict, List
+
     from applitools.selenium.visual_grid import RunningTest
 
 

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Generator
-from lxml import etree
 
 import tinycss2
+from lxml import etree
 
 from applitools.common import logger
 

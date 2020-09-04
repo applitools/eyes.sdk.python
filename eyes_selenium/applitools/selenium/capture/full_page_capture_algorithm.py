@@ -12,13 +12,14 @@ from applitools.core.cut import NullCutProvider
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List, Dict
+    from typing import Dict, List, Optional
+
     from applitools.common import ScaleProvider
-    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.common.geometry import SubregionForStitching
-    from applitools.selenium.region_compensation import RegionPositionCompensation
     from applitools.core.capture import EyesScreenshotFactory, ImageProvider
     from applitools.core.cut import CutProvider
+    from applitools.core.debug import DebugScreenshotsProvider
+    from applitools.selenium.region_compensation import RegionPositionCompensation
 
 
 @attr.s

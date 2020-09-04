@@ -53,17 +53,19 @@ from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text, Generator
+    from typing import Generator, Optional, Text
+
+    from applitools.common import ScaleProvider
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
-        ViewPort,
         AnyWebElement,
+        ViewPort,
     )
-    from applitools.common import ScaleProvider
     from applitools.core import MatchWindowTask, PositionMemento
-    from .frames import Frame
-    from .fluent import SeleniumCheckSettings
+
     from .eyes import Eyes
+    from .fluent import SeleniumCheckSettings
+    from .frames import Frame
 
 
 class ScreenshotType(object):
