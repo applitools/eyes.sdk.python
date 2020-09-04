@@ -1,3 +1,4 @@
+import itertools
 import typing
 from collections import defaultdict
 
@@ -234,7 +235,7 @@ class RunningTest(object):
         script_hooks,  # type: Dict[Text, Any]
         check_settings,
     ):
-        # type: (...)->RenderTask
+        # type: (...) -> RenderTask
         short_description = "{} of {}".format(
             self.configuration.test_name, self.configuration.app_name
         )
@@ -251,6 +252,10 @@ class RunningTest(object):
             script_hooks=script_hooks,
             agent_id=self.eyes.base_agent_id,
             selector=check_settings.values.selector,
+            request_options=self._options_dict(
+                self.configuration.visual_grid_options,
+                check_settings.values.visual_grid_options,
+            ),
         )
         logger.debug("RunningTest %s" % render_task.name)
         render_index = render_task.add_running_test(self)
@@ -396,3 +401,12 @@ class RunningTest(object):
         if self.state == "completed":
             return True
         return all(watch.values())
+
+    @staticmethod
+    def _options_dict(configuration_options, check_settings_options):
+        return {
+            o.key: o.value
+            for o in itertools.chain(
+                configuration_options or (), check_settings_options or ()
+            )
+        }
