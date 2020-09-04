@@ -11,7 +11,6 @@ from applitools.common import (
     SessionType,
     StitchMode,
     Region,
-    VisualGridOption,
 )
 from applitools.common.selenium import Configuration as SeleniumConfiguration
 from applitools.common.ultrafastgrid import (
@@ -164,8 +163,6 @@ def test_config_cloning():
     conf.add_property("hello", "world")
     conf.default_match_settings.content_regions.append(Region.EMPTY())
     conf.add_browser(200, 400, BrowserType.EDGE_CHROMIUM)
-    conf.set_visual_grid_options(VisualGridOption("option1", "val"))
-
     cloned_conf = conf.clone()
 
     assert id(conf.properties[0]) != id(cloned_conf.properties[0])
@@ -174,4 +171,3 @@ def test_config_cloning():
     )
     assert id(conf._browsers_info[0]) != id(cloned_conf._browsers_info[0])
     assert id(conf.viewport_size) != id(cloned_conf.viewport_size)
-    assert id(conf.visual_grid_options) != id(cloned_conf.visual_grid_options)

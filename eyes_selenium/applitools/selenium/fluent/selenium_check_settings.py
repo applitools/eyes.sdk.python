@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, overload
+from typing import TYPE_CHECKING, List, Text, overload, Tuple
 
 import attr
 from selenium.webdriver.common.by import By
@@ -60,7 +60,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
-    visual_grid_options = attr.ib(factory=list)  # type: List[VisualGridOption]
+    visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
 
     @property
     def size_mode(self):
@@ -386,5 +386,5 @@ class SeleniumCheckSettings(CheckSettings):
     def visual_grid_options(self, *options):
         # type: (*VisualGridOption) -> SeleniumCheckSettings
         argument_guard.are_(options, VisualGridOption)
-        self.values.visual_grid_options = list(options)
+        self.values.visual_grid_options = options
         return self

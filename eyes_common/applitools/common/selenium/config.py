@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from typing import TYPE_CHECKING, List, overload, Union, Text, Optional
+from typing import TYPE_CHECKING, List, overload, Union, Text, Optional, Tuple
 
 import attr
 
@@ -39,7 +39,9 @@ class Configuration(ConfigurationBase):
 
     # Rendering Configuration
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
-    visual_grid_options = attr.ib(factory=list)  # type: List[VisualGridOption]
+    visual_grid_options = attr.ib(
+        default=None
+    )  # type: Optional[Tuple[VisualGridOption]]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -68,11 +70,11 @@ class Configuration(ConfigurationBase):
 
     def set_visual_grid_options(self, *options):
         # type: (*VisualGridOption) -> Configuration
-        if len(options) == 1 and options[-1] is None:
-            del self.visual_grid_options[:]
-            return self
-        argument_guard.are_(options, VisualGridOption)
-        self.visual_grid_options = list(options)
+        if options == (None,):
+            self.visual_grid_options = None
+        else:
+            argument_guard.are_(options, VisualGridOption)
+            self.visual_grid_options = options
         return self
 
     @overload  # noqa
@@ -170,5 +172,4 @@ class Configuration(ConfigurationBase):
         # TODO: Remove this huck when get rid of Python2
         conf = super(Configuration, self).clone()
         conf._browsers_info = deepcopy(self._browsers_info)
-        conf.visual_grid_options = deepcopy(self.visual_grid_options)
         return conf
