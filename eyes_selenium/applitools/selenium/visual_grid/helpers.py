@@ -31,7 +31,8 @@ def wait_till_tests_completed(test_provider):
         if len(states) == 1 and states[0] == "completed":
             break
         datetime_utils.sleep(
-            1500, msg="Waiting for state completed!",
+            1500,
+            msg="Waiting for state completed!",
         )
 
 

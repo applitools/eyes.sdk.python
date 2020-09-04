@@ -156,7 +156,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
     @property
     def original_fc(self):
         # type: () -> Optional[FrameChain]
-        """ Gets original frame chain
+        """Gets original frame chain
 
         Before check() call we save original frame chain
 

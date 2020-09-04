@@ -336,8 +336,10 @@ class FullPageCaptureAlgorithm(object):
         region_in_screenshot = region_in_screenshot.scale(pixel_ratio)
         logger.debug("Scaled region: {}".format(region_in_screenshot))
 
-        region_in_screenshot = self.region_position_compensation.compensate_region_position(
-            region_in_screenshot, pixel_ratio
+        region_in_screenshot = (
+            self.region_position_compensation.compensate_region_position(
+                region_in_screenshot, pixel_ratio
+            )
         )
         # Handling a specific case where the region is actually larger than
         # the screenshot (e.g., when body width/height are set to 100%, and

@@ -90,8 +90,10 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
             frame_size = self.get_frame_size(position_provider)
-            self._current_frame_scroll_position = eyes_selenium_utils.get_updated_scroll_position(  # noqa
-                position_provider
+            self._current_frame_scroll_position = (
+                eyes_selenium_utils.get_updated_scroll_position(  # noqa
+                    position_provider
+                )
             )
             self.updated_frame_location_in_screenshot(
                 self._frame_location_in_screenshot

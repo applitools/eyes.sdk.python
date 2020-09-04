@@ -687,8 +687,10 @@ class EyesWebDriver(object):
         # Optimization
         if current_frames:
             self.switch_to.default_content()
-        self._default_content_viewport_size = eyes_selenium_utils.get_viewport_size_or_display_size(  # noqa: B950
-            self._driver
+        self._default_content_viewport_size = (
+            eyes_selenium_utils.get_viewport_size_or_display_size(  # noqa: B950
+                self._driver
+            )
         )
 
         if current_frames:

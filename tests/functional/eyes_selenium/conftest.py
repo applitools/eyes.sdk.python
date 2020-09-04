@@ -114,9 +114,11 @@ def driver(request, browser_config, webdriver_module):
         force_remote = True
 
     if force_remote:
-        sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.getenv("SAUCE_USERNAME", None),
-            password=os.getenv("SAUCE_ACCESS_KEY", None),
+        sauce_url = (
+            "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+                username=os.getenv("SAUCE_USERNAME", None),
+                password=os.getenv("SAUCE_ACCESS_KEY", None),
+            )
         )
         selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
         logger.debug("SELENIUM_URL={}".format(selenium_url))

@@ -203,7 +203,9 @@ class _RequestCommunicator(object):
 
         datetime_utils.sleep(delay)
         response = self.request(
-            "get", url, headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()}
+            "get",
+            url,
+            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
         )
         if response.status_code != requests.codes.ok:
             return response
@@ -245,7 +247,8 @@ class ServerConnector(object):
 
         if client_session:
             self._com = _RequestCommunicator(
-                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
+                headers=ServerConnector.DEFAULT_HEADERS,
+                client_session=client_session,
             )
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)
