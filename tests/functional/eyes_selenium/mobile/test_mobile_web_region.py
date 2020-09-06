@@ -27,7 +27,7 @@ def _region_test_flow(eyes):
         "platformName": "iOS",
         "browserName": "Safari",
         "deviceName": "iPhone 11",
-        "platformVersion": "13.6",
+        "platformVersion": "13.4",
     }
 )
 @pytest.mark.test_page_url("https://applitools.com")
