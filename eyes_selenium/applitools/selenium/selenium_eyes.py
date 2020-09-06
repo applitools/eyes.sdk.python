@@ -730,7 +730,7 @@ class SeleniumEyes(EyesBase):
     def _inferred_environment(self):
         # type: () -> Optional[Text]
         user_agent = self._driver.user_agent
-        if user_agent:
+        if user_agent.origin_ua_string:
             return "useragent:%s" % user_agent.origin_ua_string
         return None
 
