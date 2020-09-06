@@ -46,14 +46,15 @@ class CSSMobileSafariAdapter(BaseBrowserAdapter):
         self._element = element
 
     def set_position(self, location):
-        element_location = self._element.location  # scroll to element
-        if location == element_location:
-            # hide header which hides actual element
-            self._driver.execute_script(
-                "arguments[0].style.transform='translate(0px,0px)';",
-                self._scroll_root_element,
-            )
-            return Point.from_(element_location)
+        if self._element:
+            element_location = self._element.location  # scroll to element
+            if location == element_location:
+                # hide header which hides actual element
+                self._driver.execute_script(
+                    "arguments[0].style.transform='translate(0px,0px)';",
+                    self._scroll_root_element,
+                )
+                return Point.from_(element_location)
         return self._position_provider.set_position(location)
 
     def get_current_position(self):
