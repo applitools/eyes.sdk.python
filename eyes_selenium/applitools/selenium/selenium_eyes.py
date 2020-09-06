@@ -682,29 +682,22 @@ class SeleniumEyes(EyesBase):
     @property
     def _environment(self):
         os = self.configure.host_os
+
         # If no host OS was set, check for mobile OS.
-        device_info = "Desktop"
+        device_info = (
+            self._driver.desired_capabilities.get("deviceName", "")
+            if self.driver.is_mobile_platform
+            else "Desktop"
+        )
+
         if os is None:
             logger.info("No OS set, checking for mobile OS...")
-            # Since in Python Appium driver is the same for Android and iOS,
-            # we need to use the desired capabilities to figure this out.
-            if eyes_selenium_utils.is_mobile_app(self._driver):
-                platform_name = self._driver.platform_name
-                logger.info(platform_name + " detected")
+            if self._driver.is_mobile_app:
+                os = self.driver.user_agent.os_name_with_major_version
                 device_info = self._driver.desired_capabilities.get("deviceModel", "")
-                platform_version = self._driver.platform_version
-                if platform_version is not None:
-                    # Notice that Python's "split" function's +limit+ is the the
-                    # maximum splits performed whereas in Ruby it is the maximum
-                    # number of elements in the result (which is why they are set
-                    # differently).
-                    major_version = platform_version.split(".", 1)[0]
-                    os = platform_name + " " + major_version
-                else:
-                    os = platform_name
                 logger.info("Setting OS: " + os)
             else:
-                logger.info("No mobile OS detected")
+                logger.info("No mobile app detected. Using inferred environment")
         app_env = AppEnvironment(
             os,
             hosting_app=self.configure.host_app,
