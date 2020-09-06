@@ -13,11 +13,13 @@ def webdriver_module():
 def _region_test_flow(eyes):
     eyes.configure.stitch_mode = StitchMode.Scroll
     eyes.check(
-        "region-scroll", Target.region([By.CSS_SELECTOR, "#footer-menus"]),
+        "region-scroll",
+        Target.region([By.CSS_SELECTOR, "#PhonePortraitBreak"]),
     )
     eyes.configure.stitch_mode = StitchMode.CSS
     eyes.check(
-        "region-css", Target.region([By.CSS_SELECTOR, "#footer-menus"]).timeout(0),
+        "region-css",
+        Target.region([By.CSS_SELECTOR, "#PhonePortraitBreak"]).timeout(0),
     )
 
 
@@ -30,7 +32,9 @@ def _region_test_flow(eyes):
         "platformVersion": "13.4",
     }
 )
-@pytest.mark.test_page_url("https://applitools.com")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/MobileDemo/adaptive.html"
+)
 def test_region_capture_ios(eyes, driver):
     eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_iOS")
     _region_test_flow(eyes)
@@ -46,9 +50,10 @@ def test_region_capture_ios(eyes, driver):
         "platformVersion": "9.0",
     }
 )
-@pytest.mark.test_page_url("https://applitools.com")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/MobileDemo/adaptive.html"
+)
 def test_region_capture_android(eyes, driver):
-    driver.get("https://applitools.com")
     eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_Android")
     _region_test_flow(eyes)
     eyes.close()
