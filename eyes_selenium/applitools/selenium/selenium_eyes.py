@@ -245,11 +245,12 @@ class SeleniumEyes(EyesBase):
         self._position_provider = self._create_position_provider(
             self._scroll_root_element
         )
-        self._position_memento = self._position_provider.get_state()
 
         self._original_fc = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_app:
+            self._position_memento = self._position_provider.get_state()
+
             # hide scrollbar for main window
             self._try_hide_scrollbars()
 
