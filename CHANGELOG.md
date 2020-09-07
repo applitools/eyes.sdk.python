@@ -1,4 +1,6 @@
 ## [vNext]
+### Updated
+- Added `name` and `names` to VisualLocatorSettings [Trello 2077](https://trello.com/c/smh8LdKv)
 ### Added
 - VisualGrid Options [Trello 2089](https://trello.com/c/d4zggQes)
 

@@ -34,7 +34,7 @@ from .scaling import (
 from .server_connector import ServerConnector
 from .triggers import MouseTrigger, TextTrigger
 from .batch_close import BatchClose
-from .locators import VisualLocator
+from .locators import VisualLocator, VisualLocatorSettings
 
 __all__ = (
     "TextTrigger",
@@ -69,4 +69,5 @@ __all__ = (
     "EyesRunner",
     "BatchClose",
     "VisualLocator",
+    "VisualLocatorSettings",
 )
