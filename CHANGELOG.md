@@ -1,8 +1,8 @@
-## [vNext]
-### Updated
-- Added `name` and `names` to VisualLocatorSettings [Trello 2077](https://trello.com/c/smh8LdKv)
+## [4.8.0] - 2020-09-07
 ### Added
 - VisualGrid Options [Trello 2089](https://trello.com/c/d4zggQes)
+### Updated
+- Added `name` and `names` to VisualLocatorSettings [Trello 2077](https://trello.com/c/smh8LdKv)
 
 ## [4.7.1] - 2020-08-25
 ### Fixed

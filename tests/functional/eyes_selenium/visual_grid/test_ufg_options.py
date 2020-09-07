@@ -18,9 +18,7 @@ def test_ufg_options(driver):
     )
 
     driver.get("https://google.com")
-    with patch(
-        "applitools.core.server_connector.ServerConnector.render",
-    ) as patched:
+    with patch("applitools.core.server_connector.ServerConnector.render") as patched:
         eyes.open(driver, "Mock app", "Mock Test")
         eyes.check(
             "",
