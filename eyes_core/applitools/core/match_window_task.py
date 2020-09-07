@@ -190,7 +190,7 @@ class MatchWindowTask(object):
         :param eyes: The Eyes instance which created this task.
         :param app_output_provider: A callback for getting the application output
                                     when performing match.
-       """
+        """
         self._server_connector = server_connector
         self._running_session = running_session
         self._eyes = eyes

@@ -13,6 +13,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger, EyesError
 from applitools.common.utils import datetime_utils
+from applitools.common.utils.compat import urlparse
 
 if tp.TYPE_CHECKING:
     from typing import Text, Optional, Any, Union, Generator, Dict
@@ -609,5 +610,13 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
 
 
 def get_app_name(driver):
-    caps = driver.capabilities
+    caps = driver.desired_capabilities
     return caps.get("appPackage", None) or caps.get("bundleId", None)
+
+
+def get_webapp_domain(driver):
+    return urlparse(driver.current_url).hostname
+
+
+def get_free_account_tracking_source(driver):
+    return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)
