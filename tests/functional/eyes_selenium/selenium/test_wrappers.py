@@ -25,18 +25,18 @@ def test_new_tab(eyes, driver):
 
 
 def test_element_find_element(eyes, driver):
-    driver.get("https://applitools.com/")
+    driver.get("https://applitools.com/helloworld/")
     # Locate element
-    element = driver.find_element_by_xpath("//div[@class='content']")
-    element.find_element(By.XPATH, "//a[contains(@href, " "'request-demo')]").click()
+    element = driver.find_element_by_xpath("//div[@class='demo-page center']")
+    element.find_element(By.XPATH, "//a[contains(@href, 'diff1')]").click()
 
     eyes_driver = EyesWebDriver(driver, eyes)
     # Navigate the browser to the "hello world!" web-site.
-    eyes_driver.get("https://applitools.com/")
+    eyes_driver.get("https://applitools.com/helloworld/")
 
     # Locate element
-    element = eyes_driver.find_element_by_xpath("//div[@class='content']")
-    element.find_element(By.XPATH, "//a[contains(@href, " "'request-demo')]").click()
+    element = eyes_driver.find_element_by_xpath("//div[@class='demo-page center']")
+    element.find_element(By.XPATH, "//a[contains(@href, 'diff1')]").click()
 
 
 def test_eyes_element_and_element_with_Select(eyes, driver):
@@ -80,13 +80,13 @@ def test_find_inside_element(eyes, driver):
 
 
 def test_driver_and_element_dir(eyes, driver):
-    driver.get("https://applitools.com/")
+    driver.get("https://applitools.com/helloworld/")
 
     eyes_driver = EyesWebDriver(driver, eyes)
     _dir = dir(eyes_driver)
     assert all(elem in _dir for elem in dir(driver) if not elem.startswith("_"))
 
-    element = driver.find_element_by_xpath("//div[@class='content']")
-    eyes_element = eyes_driver.find_element_by_xpath("//div[@class='content']")
+    element = driver.find_element_by_xpath("//div[@class='demo-page center']")
+    eyes_element = eyes_driver.find_element_by_xpath("//div[@class='demo-page center']")
     _dir = dir(eyes_element)
     assert all(elem in _dir for elem in dir(element) if not elem.startswith("_"))

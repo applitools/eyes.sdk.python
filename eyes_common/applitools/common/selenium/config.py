@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from typing import TYPE_CHECKING, List, overload, Union, Text
+from typing import TYPE_CHECKING, List, overload, Union, Text, Optional, Tuple
 
 import attr
 
@@ -13,6 +13,7 @@ from applitools.common.ultrafastgrid import (
     ScreenOrientation,
     IosDeviceInfo,
     DesktopBrowserInfo,
+    VisualGridOption,
 )
 from applitools.common.validators import is_list_or_tuple
 from applitools.common.utils.compat import raise_from
@@ -38,6 +39,9 @@ class Configuration(ConfigurationBase):
 
     # Rendering Configuration
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
+    visual_grid_options = attr.ib(
+        default=None
+    )  # type: Optional[Tuple[VisualGridOption]]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -62,6 +66,15 @@ class Configuration(ConfigurationBase):
     def set_hide_caret(self, hide_caret):
         # type: (bool) -> Configuration
         self.hide_caret = hide_caret
+        return self
+
+    def set_visual_grid_options(self, *options):
+        # type: (*VisualGridOption) -> Configuration
+        if options == (None,):
+            self.visual_grid_options = None
+        else:
+            argument_guard.are_(options, VisualGridOption)
+            self.visual_grid_options = options
         return self
 
     @overload  # noqa
@@ -159,4 +172,5 @@ class Configuration(ConfigurationBase):
         # TODO: Remove this huck when get rid of Python2
         conf = super(Configuration, self).clone()
         conf._browsers_info = deepcopy(self._browsers_info)
+        conf.visual_grid_options = deepcopy(self.visual_grid_options)
         return conf

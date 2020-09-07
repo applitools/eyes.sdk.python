@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, overload
+from typing import TYPE_CHECKING, List, Text, overload, Tuple
 
 import attr
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
 from applitools.common.geometry import AccessibilityRegion, Region
+from applitools.common.ultrafastgrid import VisualGridOption
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.webelement import EyesWebElement
@@ -21,7 +22,7 @@ from .region import (
 )
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.selenium.validators import is_webelement, is_list_or_tuple
-
+from applitools.common.utils import argument_guard
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import VisualGridSelector
@@ -59,6 +60,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # for Rendering Grid
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
+    visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
 
     @property
     def size_mode(self):
@@ -380,3 +382,9 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, accessibility_region_type
         )
+
+    def visual_grid_options(self, *options):
+        # type: (*VisualGridOption) -> SeleniumCheckSettings
+        argument_guard.are_(options, VisualGridOption)
+        self.values.visual_grid_options = options
+        return self

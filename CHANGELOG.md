@@ -1,6 +1,15 @@
 ## [vNext]
 ### Updated
 - Added `name` and `names` to VisualLocatorSettings [Trello 2077](https://trello.com/c/smh8LdKv)
+### Added
+- VisualGrid Options [Trello 2089](https://trello.com/c/d4zggQes)
+
+## [4.7.1] - 2020-08-25
+### Fixed
+- Match level have been changed automatically when call match region [Trello 2104](https://trello.com/c/5pXHlas3)
+### Updated
+- Remove typing annotation that Enum accepts Text [Trello 2076](https://trello.com/c/zZ0oTowF)
+- Remove DOM-Snapshot and DOM-Capture from being tracked in Git [Trello 2099](https://trello.com/c/9T9gltjj)
 
 ## [4.7.0] - 2020-08-10
 ### Added

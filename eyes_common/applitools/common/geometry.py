@@ -362,7 +362,7 @@ class AccessibilityRegion(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        type,  # type: Union[Text, AccessibilityRegionType]
+        type,  # type: AccessibilityRegionType
     ):
         # type: (...) -> None
         super(AccessibilityRegion, self).__init__(left, top, width, height)
@@ -370,10 +370,7 @@ class AccessibilityRegion(Rectangle):
             if type == "None":
                 self.type = None
                 return
-            self.type = AccessibilityRegionType(type)
-            return
-        argument_guard.is_a(type, AccessibilityRegionType)
-        self.type = type
+        self.type = AccessibilityRegionType(type)
 
     @overload  # noqa
     def from_(self, accessibility_region):
@@ -433,15 +430,11 @@ class Region(Rectangle):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: Union[Text,CoordinatesType]
+        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
     ):
         # type: (...) -> None
         super(Region, self).__init__(left, top, width, height)
-        if isinstance(coordinates_type, basestring):
-            self.coordinates_type = CoordinatesType(coordinates_type)
-            return
-        argument_guard.is_a(coordinates_type, CoordinatesType)
-        self.coordinates_type = coordinates_type
+        self.coordinates_type = CoordinatesType(coordinates_type)
 
     def __str__(self):
         return "Region({left}, {top}, {width} x {height}, {type})".format(

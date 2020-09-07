@@ -160,7 +160,6 @@ def test_perform_match_collect_regions_from_screenshot(
         ims = match_window_data.options.image_match_settings
 
     assert ims.content_regions == [content_region]
-    assert ims.match_level == MatchLevel.CONTENT
     assert ims.ignore_regions == [ignore_region]
 
     assert ims.floating_match_settings == [

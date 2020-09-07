@@ -500,11 +500,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         if self.configure.is_disabled:
             logger.info("open(): ignored (disabled)")
             return
-        logger.info(
-            "open(app_name={}, test_name={}, viewport_size={})".format(
-                app_name, test_name, viewport_size
-            )
-        )
         if app_name:
             self.configure.app_name = app_name
         if test_name:
@@ -517,6 +512,14 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         )
         argument_guard.not_none(
             self.configure.test_name, ValueError("test_name is required")
+        )
+
+        logger.info(
+            "open(app_name={}, test_name={}, viewport_size={})".format(
+                self.configure.app_name,
+                self.configure.test_name,
+                self.configure.viewport_size,
+            )
         )
 
         self._init_driver(driver)

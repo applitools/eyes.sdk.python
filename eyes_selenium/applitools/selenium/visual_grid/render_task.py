@@ -34,7 +34,7 @@ if typing.TYPE_CHECKING:
 @attr.s(hash=True)
 class RenderTask(VGTask):
     MAX_FAILS_COUNT = 5
-    MAX_ITERATIONS = 100
+    MAX_ITERATIONS = 2400  # poll_render_status for 1 hour
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
@@ -56,6 +56,7 @@ class RenderTask(VGTask):
     is_force_put_needed = attr.ib(
         default=str2bool(get_env_with_prefix("APPLITOOLS_UFG_FORCE_PUT_RESOURCES"))
     )  # type: bool
+    request_options = attr.ib(hash=False, factory=dict)  # type: Dict[str, Any]
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -184,6 +185,7 @@ class RenderTask(VGTask):
                     script_hooks=self.script_hooks,
                     selectors_to_find_regions_for=list(chain(*self.region_selectors)),
                     send_dom=running_test.configuration.send_dom,
+                    options=self.request_options,
                 )
             )
         return requests
@@ -288,7 +290,10 @@ class RenderTask(VGTask):
                     datetime_utils.sleep(1500, msg="Rendering...")
                 if iterations > self.MAX_ITERATIONS:
                     raise EyesError(
-                        "Max iterations in poll_render_status has been reached"
+                        "Max iterations in poll_render_status has been reached "
+                        "for render_id: \n {}".format(
+                            "\n".join(s.render_id for s in statuses)
+                        )
                     )
                 if statuses or 0 < fails_count < 3:
                     break
