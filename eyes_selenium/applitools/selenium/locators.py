@@ -51,8 +51,8 @@ class SeleniumVisualLocatorsProvider(VisualLocatorsProvider):
         data = VisualLocatorsData(
             app_name=self._eyes.configure.app_name,
             image_url=viewport_screenshot_url,
-            first_only=visual_locator_settings.is_first_only,
-            locator_names=visual_locator_settings.names,
+            first_only=visual_locator_settings.values.is_first_only,
+            locator_names=visual_locator_settings.values.names,
         )
         logger.info("Post visual locators: {}".format(data))
         return self._server_connector.post_locators(data)
