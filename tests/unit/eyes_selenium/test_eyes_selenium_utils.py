@@ -49,3 +49,21 @@ def test_using_mobile_app(driver_mock, platform_name, param):
     driver_mock.desired_capabilities["platformName"] = platform_name
     assert eyes_selenium_utils.is_mobile_app(driver_mock)
     assert not eyes_selenium_utils.is_mobile_web(driver_mock)
+
+
+def test_get_app_name_missing(driver_mock):
+    driver_mock.capabilities = {}
+
+    assert eyes_selenium_utils.get_app_name(driver_mock) is None
+
+
+def test_get_app_name_android(driver_mock):
+    driver_mock.capabilities = {"appPackage": "com.example.appid"}
+
+    assert eyes_selenium_utils.get_app_name(driver_mock) == "com.example.appid"
+
+
+def test_get_app_name_ios(driver_mock):
+    driver_mock.capabilities = {"bundleId": "com.example.appid"}
+
+    assert eyes_selenium_utils.get_app_name(driver_mock) == "com.example.appid"

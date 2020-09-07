@@ -606,3 +606,8 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
     if script_result is None or status == "ERROR":
         raise EyesError("Failed to capture script_result")
     return script_result
+
+
+def get_app_name(driver):
+    caps = driver.capabilities
+    return caps.get("appPackage", None) or caps.get("bundleId", None)

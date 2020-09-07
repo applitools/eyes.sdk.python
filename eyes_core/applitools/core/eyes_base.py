@@ -685,7 +685,12 @@ class EyesBase(
         """
 
     def _check_window_base(
-        self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
+        self,
+        region_provider,
+        tag=None,
+        ignore_mismatch=False,
+        check_settings=None,
+        source=None,
     ):
         # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
         if self.configure.is_disabled:
@@ -697,7 +702,7 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        result = self._match_window(region_provider, tag, check_settings)
+        result = self._match_window(region_provider, tag, check_settings, source)
 
         if not ignore_mismatch:
             del self._user_inputs[:]
@@ -740,7 +745,7 @@ class EyesBase(
             )
             return None
 
-    def _match_window(self, region_provider, tag, check_settings):
+    def _match_window(self, region_provider, tag, check_settings, source):
         # type: (RegionProvider, Text, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: Num
@@ -757,6 +762,7 @@ class EyesBase(
             self._should_match_once_on_timeout,
             check_settings,
             retry_timeout_ms,
+            source,
         )
         return result
 
