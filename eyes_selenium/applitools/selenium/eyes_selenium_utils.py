@@ -189,9 +189,15 @@ def get_current_frame_content_entire_size(driver):
 def get_device_pixel_ratio(driver):
     # type: (AnyWebDriver) -> float
     try:
-        return driver.execute_script("return window.devicePixelRatio;")
+        ratio = driver.execute_script("return window.devicePixelRatio;")
+        logger.debug("Got browser pixel ratio: {}".format(ratio))
     except WebDriverException:
-        return driver.session_info['pixelRatio']
+        ratio = driver.session["pixelRatio"]
+        logger.debug("Got app pixel ratio: {}".format(ratio))
+    except KeyError:
+        ratio = 1
+        logger.debug("Set pixel ratio for 1")
+    return ratio
 
 
 def get_viewport_size(driver):
