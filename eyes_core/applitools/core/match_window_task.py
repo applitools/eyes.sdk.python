@@ -388,11 +388,7 @@ class MatchWindowTask(object):
                 datetime_utils.sleep(retry_timeout)
 
             screenshot = self._try_take_screenshot(
-                user_inputs,
-                region,
-                tag,
-                check_settings,
-                source=source,
+                user_inputs, region, tag, check_settings, source,
             )
         else:
             screenshot = self._retry_taking_screenshot(
@@ -411,7 +407,7 @@ class MatchWindowTask(object):
         region,  # type: Region
         tag,  # type: Text
         check_settings,  # type: CheckSettings
-        source,
+        source,  # type: Optional[Text]
     ):
         # type: (...) -> EyesScreenshot
         app_output = self._app_output_provider.get_app_output(
@@ -463,12 +459,15 @@ class MatchWindowTask(object):
             retry_timeout_sec,
             retry,
             start,
-            source=source,
+            source,
+            None,
         )
         # If we're here because we haven't found a match yet, try once more
         if not self._match_result.as_expected:
             logger.info("Window mismatch. Retrying...")
-            return self._try_take_screenshot(user_inputs, region, tag, check_settings)
+            return self._try_take_screenshot(
+                user_inputs, region, tag, check_settings, source
+            )
         return screenshot
 
     def _taking_screenshot_loop(
@@ -480,8 +479,8 @@ class MatchWindowTask(object):
         retry_timeout_ms,  # type: int
         retry_ms,  # type: int
         start,  # type: datetime
-        screenshot=None,  # type: Optional[EyesScreenshot]
-        source=None,
+        source,  # type: Optional[Text]
+        screenshot,  # type: Optional[EyesScreenshot]
     ):
         # type: (...) -> Optional[EyesScreenshot]
 
@@ -491,7 +490,7 @@ class MatchWindowTask(object):
         datetime_utils.sleep(self._MATCH_INTERVAL_MS)
 
         new_screenshot = self._try_take_screenshot(
-            user_inputs, region, tag, check_settings=check_settings, source=source
+            user_inputs, region, tag, check_settings, source
         )
         if self._match_result.as_expected:
             return new_screenshot
@@ -505,6 +504,6 @@ class MatchWindowTask(object):
             retry_timeout_ms,
             retry_ms,
             start,
+            source,
             new_screenshot,
-            source=source,
         )

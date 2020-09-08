@@ -685,12 +685,7 @@ class EyesBase(
         """
 
     def _check_window_base(
-        self,
-        region_provider,
-        tag=None,
-        ignore_mismatch=False,
-        check_settings=None,
-        source=None,
+        self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
     ):
         # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
         if self.configure.is_disabled:
@@ -702,7 +697,7 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        result = self._match_window(region_provider, tag, check_settings, source)
+        result = self._match_window(region_provider, tag, check_settings)
 
         if not ignore_mismatch:
             del self._user_inputs[:]
@@ -745,7 +740,7 @@ class EyesBase(
             )
             return None
 
-    def _match_window(self, region_provider, tag, check_settings, source):
+    def _match_window(self, region_provider, tag, check_settings):
         # type: (RegionProvider, Text, CheckSettings) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: Num
@@ -762,7 +757,7 @@ class EyesBase(
             self._should_match_once_on_timeout,
             check_settings,
             retry_timeout_ms,
-            source,
+            self._get_free_account_tracking_source(),
         )
         return result
 
@@ -785,3 +780,11 @@ class EyesBase(
         except Exception as e:
             self._is_viewport_size_set = False
             raise_from(EyesError("Viewport has not been setup"), e)
+
+    def _get_free_account_tracking_source(self):
+        # type: () -> Optional[Text]
+        """
+        Get a tested app name or website domain if available.
+        To be implemented in concrete classes.
+        """
+        return None

@@ -293,14 +293,13 @@ class SeleniumEyes(EyesBase):
 
     def _check_result_flow(self, name, check_settings):
         target_region = check_settings.values.target_region
-        source = eyes_selenium_utils.get_free_account_tracking_source(self.driver)
         result = None
         if target_region and self._switched_to_frame_count == 0:
             logger.debug("have target region")
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region), name, False, check_settings, source
+                RegionProvider(target_region), name, False, check_settings
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -324,17 +323,11 @@ class SeleniumEyes(EyesBase):
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
-                    self.current_frame_position_provider = (
-                        self._create_position_provider(
-                            self.driver.find_element_by_tag_name("html")
-                        )
+                    self.current_frame_position_provider = self._create_position_provider(
+                        self.driver.find_element_by_tag_name("html")
                     )
                 result = self._check_window_base(
-                    NULL_REGION_PROVIDER,
-                    name,
-                    False,
-                    check_settings,
-                    source=source,
+                    NULL_REGION_PROVIDER, name, False, check_settings
                 )
         if result is None:
             result = MatchResult()
@@ -987,10 +980,8 @@ class SeleniumEyes(EyesBase):
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
                     fc = original_fc
                     self.driver.switch_to.frames(original_fc)
-                    scroll_root_element = (
-                        eyes_selenium_utils.curr_frame_scroll_root_element(
-                            self.driver, self._scroll_root_element
-                        )
+                    scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
+                        self.driver, self._scroll_root_element
                     )
                 else:
                     fc = self.driver.frame_chain.clone()
@@ -1005,3 +996,7 @@ class SeleniumEyes(EyesBase):
         if element and position_provider and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
+
+    def _get_free_account_tracking_source(self):
+        # type: () -> Optional[Text]
+        return eyes_selenium_utils.get_free_account_tracking_source(self.driver)
