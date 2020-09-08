@@ -611,7 +611,7 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
 
 def get_app_name(driver):
     caps = driver.desired_capabilities
-    return caps.get("appPackage", None) or caps.get("bundleId", None)
+    return caps.get("appPackage", None) or caps.get("app", "").split("/")[-1] or None
 
 
 def get_webapp_domain(driver):

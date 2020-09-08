@@ -62,9 +62,9 @@ def test_get_app_name_android(driver_mock):
 
 
 def test_get_app_name_ios(driver_mock):
-    driver_mock.desired_capabilities["bundleId"] = "com.example.appid"
+    driver_mock.desired_capabilities["app"] = "https://host/dir/app_1_0.zip"
 
-    assert eyes_selenium_utils.get_app_name(driver_mock) == "com.example.appid"
+    assert eyes_selenium_utils.get_app_name(driver_mock) == "app_1_0.zip"
 
 
 def test_get_app_domain(driver_mock):
