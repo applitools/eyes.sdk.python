@@ -29,9 +29,9 @@ def test_match_window_data_contains_webapp_domain():
         ) as smw:
             eyes.check("Step 1", Target.window().ignore(".auth-header"))
             match_window_data = smw.call_args[0][1]
-        assert match_window_data.options.source == "demo.applitools.com"
         eyes.close_async()
     finally:
         driver.quit()
         results = runner.get_all_test_results()
         print(results)
+    assert match_window_data.options.source == "demo.applitools.com"
