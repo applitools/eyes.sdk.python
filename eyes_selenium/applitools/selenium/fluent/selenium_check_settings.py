@@ -72,8 +72,10 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
             if self.stitch_content:
                 return "full-page"
             return "viewport"
-        if self.target_region:
+        elif self.target_region:
             return "region"
+        elif self.stitch_content:
+            return "full-selector"
         return "selector"
 
 
