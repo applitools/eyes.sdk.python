@@ -181,6 +181,7 @@ class VisualGridEyes(object):
         region_xpaths = self.get_region_xpaths(check_settings)
         logger.info("region_xpaths: {}".format(region_xpaths))
         script_result = self.get_script_result()
+        source = eyes_selenium_utils.get_free_account_tracking_source(self.driver)
         try:
             for test in self.test_list:
                 if self._test_uuid != test.test_uuid:
@@ -193,6 +194,7 @@ class VisualGridEyes(object):
                     region_selectors=region_xpaths,
                     region_to_check=check_settings.values.target_region,
                     script_hooks=check_settings.values.script_hooks,
+                    source=source,
                 )
                 if test.state == "new":
                     test.becomes_not_rendered()

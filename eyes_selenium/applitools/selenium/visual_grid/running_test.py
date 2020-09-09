@@ -180,6 +180,7 @@ class RunningTest(object):
         region_selectors,
         region_to_check,
         script_hooks,
+        source,  # type: Optional[Text]
     ):
         # type: (...) -> None
         logger.debug("RunningTest %s , %s" % (tag, check_settings))
@@ -201,6 +202,7 @@ class RunningTest(object):
                 render_task.uuid,
                 region_selectors,
                 self.regions[render_task],
+                source,
             )
 
         check_task = VGTask(
