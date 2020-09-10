@@ -243,7 +243,7 @@ class MatchWindowTask(object):
         should_run_once_on_timeout,  # type: bool
         check_settings,  # type: CheckSettings
         retry_timeout_ms,  # type: Num
-        source,
+        source,  # type: Optional[Text]
     ):
         # type: (...) -> MatchResult
         if retry_timeout_ms is None or retry_timeout_ms < 0:
