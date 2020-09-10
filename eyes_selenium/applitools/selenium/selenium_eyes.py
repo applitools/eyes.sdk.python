@@ -230,6 +230,7 @@ class SeleniumEyes(EyesBase):
 
     def check(self, name, check_settings=None):
         # type: (Text, Optional[SeleniumCheckSettings]) -> MatchResult
+        source = eyes_selenium_utils.get_free_account_tracking_source(self.driver)
         if check_settings is None:
             check_settings = Target.window()
 
@@ -262,7 +263,7 @@ class SeleniumEyes(EyesBase):
 
             logger.info("Current URL: {}".format(self._driver.current_url))
             with self._switch_to_frame(check_settings):
-                result = self._check_result_flow(name, check_settings)
+                result = self._check_result_flow(name, check_settings, source)
 
             # restore scrollbar of main window
             self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
@@ -270,7 +271,7 @@ class SeleniumEyes(EyesBase):
             )
             self._try_restore_scrollbars()
         else:
-            result = self._check_result_flow(name, check_settings)
+            result = self._check_result_flow(name, check_settings, source)
 
         self._stitch_content = False
         self._scroll_root_element = None
@@ -291,7 +292,7 @@ class SeleniumEyes(EyesBase):
             self._runner.aggregate_result(results)
         return results
 
-    def _check_result_flow(self, name, check_settings):
+    def _check_result_flow(self, name, check_settings, source):
         target_region = check_settings.values.target_region
         result = None
         if target_region and self._switched_to_frame_count == 0:
@@ -299,11 +300,7 @@ class SeleniumEyes(EyesBase):
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region),
-                name,
-                False,
-                check_settings,
-                eyes_selenium_utils.get_free_account_tracking_source(self.driver),
+                RegionProvider(target_region), name, False, check_settings, source,
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -311,16 +308,18 @@ class SeleniumEyes(EyesBase):
                 logger.debug("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
-                    result = self._check_element(name, check_settings)
+                    result = self._check_element(name, check_settings, source)
                 else:
-                    result = self._check_region(name, check_settings)
+                    result = self._check_region(name, check_settings, source)
                 self._target_element = None
             elif len(check_settings.values.frame_chain) > 0:
                 logger.debug("have frame chain")
                 if self._stitch_content:
-                    result = self._check_full_frame_or_element(name, check_settings)
+                    result = self._check_full_frame_or_element(
+                        name, check_settings, source
+                    )
                 else:
-                    result = self._check_frame_fluent(name, check_settings)
+                    result = self._check_frame_fluent(name, check_settings, source)
             else:
                 logger.debug("default case")
                 if not self.driver.is_mobile_app:
@@ -331,17 +330,13 @@ class SeleniumEyes(EyesBase):
                         self.driver.find_element_by_tag_name("html")
                     )
                 result = self._check_window_base(
-                    NULL_REGION_PROVIDER,
-                    name,
-                    False,
-                    check_settings,
-                    eyes_selenium_utils.get_free_account_tracking_source(self.driver),
+                    NULL_REGION_PROVIDER, name, False, check_settings, source,
                 )
         if result is None:
             result = MatchResult()
         return result
 
-    def _check_full_frame_or_element(self, name, check_settings):
+    def _check_full_frame_or_element(self, name, check_settings, source):
         self._check_frame_or_element = True
 
         def full_frame_or_element_region(check_settings):
@@ -373,23 +368,23 @@ class SeleniumEyes(EyesBase):
             name,
             False,
             check_settings,
-            eyes_selenium_utils.get_free_account_tracking_source(self.driver),
+            source,
         )
         self._check_frame_or_element = False
         self._region_to_check = None
         return result
 
-    def _check_frame_fluent(self, name, check_settings):
+    def _check_frame_fluent(self, name, check_settings, source):
         fc = self.driver.frame_chain.clone()
         target_frame = fc.pop()
         self._target_element = target_frame.reference
 
         self.driver.switch_to.frames_do_scroll(fc)
-        result = self._check_region(name, check_settings)
+        result = self._check_region(name, check_settings, source)
         self._target_element = None
         return result
 
-    def _check_element(self, name, check_settings):
+    def _check_element(self, name, check_settings, source):
         element = self._target_element  # type: EyesWebElement
 
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
@@ -455,13 +450,7 @@ class SeleniumEyes(EyesBase):
                         )
 
                     result = self._check_window_base(
-                        NULL_REGION_PROVIDER,
-                        name,
-                        False,
-                        check_settings,
-                        eyes_selenium_utils.get_free_account_tracking_source(
-                            self.driver
-                        ),
+                        NULL_REGION_PROVIDER, name, False, check_settings, source,
                     )
                 except Exception as e:
                     logger.exception(e)
@@ -474,7 +463,7 @@ class SeleniumEyes(EyesBase):
                     self._element_position_provider = None
         return result
 
-    def _check_region(self, name, check_settings):
+    def _check_region(self, name, check_settings, source):
         self._is_check_region = True
 
         def get_region():
@@ -505,11 +494,7 @@ class SeleniumEyes(EyesBase):
             return region
 
         result = self._check_window_base(
-            RegionProvider(get_region),
-            name,
-            False,
-            check_settings,
-            eyes_selenium_utils.get_free_account_tracking_source(self.driver),
+            RegionProvider(get_region), name, False, check_settings, source,
         )
         self._is_check_region = False
         return result
