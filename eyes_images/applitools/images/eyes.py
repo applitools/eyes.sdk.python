@@ -137,7 +137,7 @@ class Eyes(EyesBase):
 
         check_settings = check_settings.timeout(0)
         match_result = self._check_window_base(
-            region_provider, self._raw_title, ignore_mismatch, check_settings
+            region_provider, self._raw_title, ignore_mismatch, check_settings, None
         )
         self._screenshot = None
         self._raw_title = None

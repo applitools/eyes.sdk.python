@@ -299,7 +299,11 @@ class SeleniumEyes(EyesBase):
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region), name, False, check_settings
+                RegionProvider(target_region),
+                name,
+                False,
+                check_settings,
+                eyes_selenium_utils.get_free_account_tracking_source(self.driver),
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -327,7 +331,11 @@ class SeleniumEyes(EyesBase):
                         self.driver.find_element_by_tag_name("html")
                     )
                 result = self._check_window_base(
-                    NULL_REGION_PROVIDER, name, False, check_settings
+                    NULL_REGION_PROVIDER,
+                    name,
+                    False,
+                    check_settings,
+                    eyes_selenium_utils.get_free_account_tracking_source(self.driver),
                 )
         if result is None:
             result = MatchResult()
@@ -365,6 +373,7 @@ class SeleniumEyes(EyesBase):
             name,
             False,
             check_settings,
+            eyes_selenium_utils.get_free_account_tracking_source(self.driver),
         )
         self._check_frame_or_element = False
         self._region_to_check = None
@@ -446,7 +455,13 @@ class SeleniumEyes(EyesBase):
                         )
 
                     result = self._check_window_base(
-                        NULL_REGION_PROVIDER, name, False, check_settings
+                        NULL_REGION_PROVIDER,
+                        name,
+                        False,
+                        check_settings,
+                        eyes_selenium_utils.get_free_account_tracking_source(
+                            self.driver
+                        ),
                     )
                 except Exception as e:
                     logger.exception(e)
@@ -490,7 +505,11 @@ class SeleniumEyes(EyesBase):
             return region
 
         result = self._check_window_base(
-            RegionProvider(get_region), name, False, check_settings
+            RegionProvider(get_region),
+            name,
+            False,
+            check_settings,
+            eyes_selenium_utils.get_free_account_tracking_source(self.driver),
         )
         self._is_check_region = False
         return result
@@ -996,7 +1015,3 @@ class SeleniumEyes(EyesBase):
         if element and position_provider and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
-
-    def _get_free_account_tracking_source(self):
-        # type: () -> Optional[Text]
-        return eyes_selenium_utils.get_free_account_tracking_source(self.driver)
