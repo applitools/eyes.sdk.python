@@ -230,7 +230,7 @@ class SeleniumEyes(EyesBase):
 
     def check(self, name, check_settings=None):
         # type: (Text, Optional[SeleniumCheckSettings]) -> MatchResult
-        source = eyes_selenium_utils.get_free_account_tracking_source(self.driver)
+        source = eyes_selenium_utils.get_check_source(self.driver)
         if check_settings is None:
             check_settings = Target.window()
 

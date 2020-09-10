@@ -618,5 +618,5 @@ def get_webapp_domain(driver):
     return urlparse(driver.current_url).hostname
 
 
-def get_free_account_tracking_source(driver):
+def get_check_source(driver):
     return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)

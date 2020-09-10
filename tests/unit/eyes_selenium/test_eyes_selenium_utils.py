@@ -73,20 +73,14 @@ def test_get_app_domain(driver_mock):
     assert eyes_selenium_utils.get_webapp_domain(driver_mock) == "example.com"
 
 
-def test_get_free_account_tracking_source_mobile(driver_mock):
+def test_check_source_mobile(driver_mock):
     driver_mock.desired_capabilities["appPackage"] = "com.example.appid"
     driver_mock.desired_capabilities["platformName"] = "Android"
 
-    assert (
-        eyes_selenium_utils.get_free_account_tracking_source(driver_mock)
-        == "com.example.appid"
-    )
+    assert eyes_selenium_utils.get_check_source(driver_mock) == "com.example.appid"
 
 
-def test_get_free_account_tracking_source_web(driver_mock):
+def test_get_check_source_source_web(driver_mock):
     driver_mock.current_url = "https://example.com/page.html"
 
-    assert (
-        eyes_selenium_utils.get_free_account_tracking_source(driver_mock)
-        == "example.com"
-    )
+    assert eyes_selenium_utils.get_check_source(driver_mock) == "example.com"
