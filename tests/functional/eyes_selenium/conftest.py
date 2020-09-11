@@ -3,9 +3,7 @@ from __future__ import absolute_import
 import os
 import re
 import sys
-import threading
 import typing
-import time
 from collections import namedtuple
 from distutils.util import strtobool
 from itertools import chain
@@ -25,6 +23,7 @@ from applitools.selenium import (
 )
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
+from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:
     from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
@@ -103,34 +102,6 @@ def eyes_opened(request, eyes, driver, check_test_result):
     check_test_result.send(test_result)
 
 
-def _open_webdriver(driver_call):
-    browser = None
-    counter = 0
-    is_browser_open_timeout = []
-
-    def start_timer():
-        def set_timer():
-            is_browser_open_timeout.append(True)
-
-        timer = threading.Timer(60 * 3, set_timer)
-        timer.daemon = True
-        timer.start()
-        return timer
-
-    timer = start_timer()
-    while counter < 5 or is_browser_open_timeout:
-        try:
-            browser = driver_call()
-        except Exception as e:
-            print("Tried to start browser. It was exception {}".format(e))
-            time.sleep(1.0)
-
-    timer.cancel()
-    if browser is None:
-        raise WebDriverException("Never created!")
-    return browser
-
-
 @pytest.yield_fixture(scope="function")
 def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
@@ -155,7 +126,7 @@ def driver(request, browser_config, webdriver_module):
         desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
         desired_caps["name"] = test_name
 
-        browser = _open_webdriver(
+        browser = open_webdriver(
             lambda: webdriver_module.Remote(
                 command_executor=selenium_url, desired_capabilities=desired_caps
             )
@@ -171,13 +142,13 @@ def driver(request, browser_config, webdriver_module):
             options.headless = bool(headless)
 
         if driver_manager_class:
-            browser = _open_webdriver(
+            browser = open_webdriver(
                 lambda: webdriver_class(
                     executable_path=driver_manager_class().install(), options=options,
                 )
             )
         else:
-            browser = _open_webdriver(webdriver_class)
+            browser = open_webdriver(webdriver_class)
 
     if test_page_url:
         browser.get(test_page_url)

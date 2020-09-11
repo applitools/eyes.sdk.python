@@ -7,6 +7,7 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.common import StitchMode, logger
 from applitools.selenium import ScreenOrientation, Target
+from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 IOS_DEVICES = [
     ["iPad Pro (9.7 inch) Simulator", "12.0", ScreenOrientation.LANDSCAPE, False],
@@ -107,8 +108,10 @@ def mobile_eyes(request, page, eyes):
     desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
     desired_caps["name"] = "{} ({})".format(test_name, eyes.full_agent_id)
 
-    driver = appium_webdriver.Remote(
-        command_executor=selenium_url, desired_capabilities=desired_caps
+    driver = open_webdriver(
+        lambda: appium_webdriver.Remote(
+            command_executor=selenium_url, desired_capabilities=desired_caps
+        )
     )
 
     eyes.stitch_mode = StitchMode.CSS
