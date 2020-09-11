@@ -8,7 +8,7 @@ def test_test_vg_check_source_sent(driver, vg_runner):
     eyes = Eyes(vg_runner)
     eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
     eyes.configuration.add_browser(800, 600, BrowserType.FIREFOX)
-    eyes.configuration.app_name = "Python | VisualGrid"
+    eyes.configuration.app_name = "TestCheckSourceSent"
     eyes.configuration.test_name = "TestVgCheckSourceSent"
 
     try:
