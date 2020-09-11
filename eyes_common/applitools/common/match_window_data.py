@@ -31,6 +31,7 @@ class Options(object):
     :ivar force_match: Forces the server to skip the comparison process and mark the
     current window as a match.
     :ivar image_match_settings
+    :ivar source: App name or web page domain where checking is performed
     """
 
     name = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
@@ -43,6 +44,7 @@ class Options(object):
     image_match_settings = attr.ib(
         type=ImageMatchSettings, metadata={JsonInclude.THIS: True}
     )  # type: ImageMatchSettings
+    source = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
     render_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
 
 

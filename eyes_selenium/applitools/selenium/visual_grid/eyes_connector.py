@@ -150,6 +150,7 @@ class EyesConnector(EyesBase):
         check_task_uuid,  # type:  Text
         region_selectors,  # type: List[VisualGridSelector]
         regions,  # type: List[Region]
+        source,  # type: Optional[Text]
     ):
         # type:(...)->MatchResult
         self._current_uuid = check_task_uuid
@@ -159,7 +160,7 @@ class EyesConnector(EyesBase):
         self._region_selectors = region_selectors
         self._regions = regions
         check_result = self._check_window_base(
-            NULL_REGION_PROVIDER, name, False, check_settings
+            NULL_REGION_PROVIDER, name, False, check_settings, source
         )
         self._current_uuid = None
         self._region_selectors = []
@@ -187,8 +188,8 @@ class EyesConnector(EyesBase):
             )
         return status
 
-    def _match_window(self, region_provider, tag, check_settings):
-        # type: (RegionProvider, Text, SeleniumCheckSettings) -> MatchResult
+    def _match_window(self, region_provider, tag, check_settings, source):
+        # type: (RegionProvider, Text, SeleniumCheckSettings, Optional[Text]) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: int
         if check_settings:
@@ -212,6 +213,7 @@ class EyesConnector(EyesBase):
             render_id=self.render_status.render_id,
             region_selectors=self._region_selectors,
             regions=self._regions,
+            source=source,
         )
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
