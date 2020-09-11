@@ -84,7 +84,7 @@ class IosDeviceName(Enum):
     iPad_Air_2 = "iPad Air (2nd generation)"
 
 
-class VisualGridOption:
+class VisualGridOption(object):
     def __init__(self, key, value):
         # type: (Text, Any) -> None
         self.key = key

@@ -236,6 +236,7 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
         force_match=False,
         force_mismatch=False,
         image_match_settings=SESSION_START_INFO_OBJ.default_match_settings,
+        source=None,
         render_id=None,
     ),
     agent_setup="Agent setup",

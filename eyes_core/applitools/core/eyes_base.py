@@ -685,9 +685,14 @@ class EyesBase(
         """
 
     def _check_window_base(
-        self, region_provider, tag=None, ignore_mismatch=False, check_settings=None
+        self,
+        region_provider,  # type: RegionProvider
+        tag=None,  # type: Optional[Text]
+        ignore_mismatch=False,  # type: bool
+        check_settings=None,  # type: CheckSettings
+        source=None,  # type: Optional[Text]
     ):
-        # type: (RegionProvider, Optional[Text], bool, CheckSettings) -> MatchResult
+        # type: (...) -> MatchResult
         if self.configure.is_disabled:
             logger.info("check_window(%s): ignored (disabled)" % tag)
             return MatchResult(as_expected=True)
@@ -697,7 +702,7 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        result = self._match_window(region_provider, tag, check_settings)
+        result = self._match_window(region_provider, tag, check_settings, source)
 
         if not ignore_mismatch:
             del self._user_inputs[:]
@@ -740,8 +745,8 @@ class EyesBase(
             )
             return None
 
-    def _match_window(self, region_provider, tag, check_settings):
-        # type: (RegionProvider, Text, CheckSettings) -> MatchResult
+    def _match_window(self, region_provider, tag, check_settings, source):
+        # type: (RegionProvider, Text, CheckSettings, Optional[Text]) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: Num
         if check_settings:
@@ -757,6 +762,7 @@ class EyesBase(
             self._should_match_once_on_timeout,
             check_settings,
             retry_timeout_ms,
+            source,
         )
         return result
 

@@ -194,3 +194,22 @@ def test_perform_match_with_render_id(
 
     assert match_window_data.render_id == "some-render-id"
     assert match_window_data.options.render_id == "some-render-id"
+
+
+def test_perform_match_with_source(
+    mwt, app_output_with_screenshot, image_match_settings, eyes_base_mock
+):
+    check_settings = CheckSettings()
+    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
+        mwt.perform_match(
+            app_output_with_screenshot,
+            "Name",
+            False,
+            image_match_settings,
+            eyes_base_mock,
+            check_settings=check_settings,
+            source="tracking_source",
+        )
+        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
+
+    assert match_window_data.options.source == "tracking_source"

@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Collect tested domains and app names [Trello 870](https://trello.com/c/8X8mwBMS)
+
 ## [4.8.0] - 2020-09-07
 ### Added
 - VisualGrid Options [Trello 2089](https://trello.com/c/d4zggQes)

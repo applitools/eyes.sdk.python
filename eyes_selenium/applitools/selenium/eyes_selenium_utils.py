@@ -13,6 +13,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Point, RectangleSize, logger, EyesError
 from applitools.common.utils import datetime_utils
+from applitools.common.utils.compat import urlparse
 
 if tp.TYPE_CHECKING:
     from typing import Text, Optional, Any, Union, Generator, Dict
@@ -606,3 +607,16 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
     if script_result is None or status == "ERROR":
         raise EyesError("Failed to capture script_result")
     return script_result
+
+
+def get_app_name(driver):
+    caps = driver.desired_capabilities
+    return caps.get("appPackage", None) or caps.get("app", "").split("/")[-1] or None
+
+
+def get_webapp_domain(driver):
+    return urlparse(driver.current_url).hostname
+
+
+def get_check_source(driver):
+    return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)
