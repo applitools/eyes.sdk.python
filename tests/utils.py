@@ -69,16 +69,18 @@ def send_result_report(test_name, passed, parameters=None, group="selenium"):
     return r
 
 
+@retry(exception=requests.HTTPError)
 def get_session_results(api_key, results):
     # type: (Text, TestResults) -> Dict
     api_session_url = results.api_urls.session
-    resp = requests.get(
+    r = requests.get(
         "{}?format=json&AccessToken={}&apiKey={}".format(
             api_session_url, results.secret_token, api_key
         ),
         verify=False,
     )
-    return resp.json()
+    r.raise_for_status()
+    return r.json()
 
 
 def get_resource_path(name):

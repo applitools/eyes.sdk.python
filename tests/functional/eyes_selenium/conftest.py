@@ -4,7 +4,6 @@ import os
 import re
 import sys
 import typing
-import time
 from collections import namedtuple
 from distutils.util import strtobool
 from itertools import chain
@@ -24,6 +23,7 @@ from applitools.selenium import (
 )
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
+from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:
     from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
@@ -126,8 +126,10 @@ def driver(request, browser_config, webdriver_module):
         desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
         desired_caps["name"] = test_name
 
-        browser = webdriver_module.Remote(
-            command_executor=selenium_url, desired_capabilities=desired_caps
+        browser = open_webdriver(
+            lambda: webdriver_module.Remote(
+                command_executor=selenium_url, desired_capabilities=desired_caps
+            ),
         )
     else:
         # Use local browser. Use ENV variable for driver binary or install if no one.
@@ -138,23 +140,15 @@ def driver(request, browser_config, webdriver_module):
             headless = strtobool(os.getenv("TEST_BROWSER_HEADLESS", "True"))
             options = options()
             options.headless = bool(headless)
-        if driver_manager_class:
-            counter = 0
-            while counter < 5:
-                try:
-                    browser = webdriver_class(
-                        executable_path=driver_manager_class().install(),
-                        options=options,
-                    )
-                    break
-                except Exception as e:
-                    print("Tried to start browser. It was exception {}".format(e))
-                    time.sleep(1.0)
-        else:
-            browser = webdriver_class()
 
-    if browser is None:
-        raise WebDriverException("Never created!")
+        if driver_manager_class:
+            browser = open_webdriver(
+                lambda: webdriver_class(
+                    executable_path=driver_manager_class().install(), options=options,
+                ),
+            )
+        else:
+            browser = open_webdriver(webdriver_class)
 
     if test_page_url:
         browser.get(test_page_url)

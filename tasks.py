@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from os import path
 
 from invoke import task
@@ -80,6 +81,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "mock",
         "webdriver_manager==1.5",
         "tox==3.14.3",
+        "pytest-rerunfailures",
     ]
     lint_requires = [
         "flake8",
@@ -210,8 +212,16 @@ def run_tests_on_CI(c, tests):
     if not browsers:
         raise ValueError("`TEST_BROWSERS` env variable should be set")
 
-    pattern = "pytest {par} {tests} --ignore={tests}/test_dom_capture.py --ignore={tests}/test_client_sites.py".format(
-        par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2", tests=tests
+    pattern = (
+        "pytest {par} {tests} {rerun}"
+        "--ignore={tests}/test_dom_capture.py "
+        "--ignore={tests}/test_client_sites.py".format(
+            par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2",
+            tests=tests,
+            rerun="--reruns 3 --only-rerun WebDriverException "
+            if sys.version_info[:1] >= (3,)
+            else "",
+        )
     )
 
     # use Unix background task execution for run tests in parallel
