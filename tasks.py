@@ -218,7 +218,7 @@ def run_tests_on_CI(c, tests):
         "--ignore={tests}/test_client_sites.py".format(
             par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2",
             tests=tests,
-            rerun="--reruns 3 --only-rerun WebDriverException"
+            rerun="--reruns 3 --only-rerun WebDriverException "
             if sys.version_info[:1] >= (3,)
             else "",
         )
