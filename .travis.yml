@@ -197,17 +197,15 @@ jobs:
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
+              - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
-          script:
-              - tox -e mobile
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
+              - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
-          script:
-              - tox -e mobile
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -216,16 +214,14 @@ jobs:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-
-        - stage: generated-tests
-          if: NOT tag =~ ^RELEASE_CANDIDATE
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
-          node_js:
-              - "14"
+          node_js: 14
           addons:
               chrome: stable
               firefox: latest
           env:
+              - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
           before_install:
@@ -233,11 +229,12 @@ jobs:
               - nvm install node
           script:
               - tox -e selenium-generated
-              - if [[ "$TRAVIS_EVENT_TYPE"=="cron" ]]; then
+              - if [[ $TRAVIS_EVENT_TYPE=="cron" ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
                   echo "REPORTED SUCCESSFULLY";
                 fi
+
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
