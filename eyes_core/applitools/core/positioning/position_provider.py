@@ -5,7 +5,8 @@ from applitools.common.geometry import Point
 from applitools.common.utils import ABC, iteritems
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Any
+    from typing import Any, List, Optional
+
     from applitools.common import RectangleSize
 
 
@@ -67,7 +68,7 @@ class PositionProvider(ABC):
 
     def restore_state(self, state):
         # type: (PositionMemento) -> None
-        """ Restores the state of the position provider to the state provided as a
+        """Restores the state of the position provider to the state provided as a
         parameter.
 
         Args:

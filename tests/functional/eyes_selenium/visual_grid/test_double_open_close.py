@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.selenium import Eyes, Target, VisualGridRunner, ClassicRunner
+from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 
 
 def pytest_generate_tests(metafunc):

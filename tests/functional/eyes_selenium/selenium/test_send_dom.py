@@ -1,10 +1,11 @@
 import json
 import os
 from collections import OrderedDict
+
 import pytest
 
+from applitools.selenium import Configuration, Target
 from applitools.selenium.capture import dom_capture
-from applitools.selenium import Target, Configuration
 from tests.utils import get_session_results
 
 

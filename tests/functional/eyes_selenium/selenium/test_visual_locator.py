@@ -2,7 +2,7 @@ import pytest
 
 from applitools.common import Region
 from applitools.core import VisualLocator
-from applitools.selenium import Eyes, ClassicRunner, VisualGridRunner
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
 @pytest.mark.parametrize("eyes_runner", [ClassicRunner(), VisualGridRunner(1)])

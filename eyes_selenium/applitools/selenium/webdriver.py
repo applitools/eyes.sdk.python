@@ -14,7 +14,7 @@ from applitools.common import RectangleSize, logger
 from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
-from applitools.common.utils.general_utils import proxy_to, all_attrs
+from applitools.common.utils.general_utils import all_attrs, proxy_to
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils, useragent
@@ -23,11 +23,14 @@ from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
-    from typing import Generator, Text, Optional, List, Dict, Any, Union
-    from applitools.common.utils.custom_types import ViewPort, FrameReference
+    from typing import Any, Dict, Generator, List, Optional, Text, Union
+
     from appium.webdriver import Remote as AppiumWebDriver
-    from .eyes import Eyes
     from PIL.Image import Image
+
+    from applitools.common.utils.custom_types import FrameReference, ViewPort
+
+    from .eyes import Eyes
 
 
 @attr.s
@@ -687,8 +690,8 @@ class EyesWebDriver(object):
         # Optimization
         if current_frames:
             self.switch_to.default_content()
-        self._default_content_viewport_size = eyes_selenium_utils.get_viewport_size_or_display_size(  # noqa: B950
-            self._driver
+        self._default_content_viewport_size = (
+            eyes_selenium_utils.get_viewport_size_or_display_size(self._driver)
         )
 
         if current_frames:

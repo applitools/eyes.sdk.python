@@ -1,3 +1,4 @@
+from .batch_close import BatchClose
 from .capture import (
     AppOutputProvider,
     AppOutputWithScreenshot,
@@ -16,6 +17,7 @@ from .fluent import (
     GetRegion,
     RegionByRectangle,
 )
+from .locators import VisualLocator, VisualLocatorSettings
 from .match_window_task import MatchWindowTask
 from .positioning import (
     NULL_REGION_PROVIDER,
@@ -33,8 +35,6 @@ from .scaling import (
 )
 from .server_connector import ServerConnector
 from .triggers import MouseTrigger, TextTrigger
-from .batch_close import BatchClose
-from .locators import VisualLocator, VisualLocatorSettings
 
 __all__ = (
     "TextTrigger",

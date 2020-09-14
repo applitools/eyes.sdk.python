@@ -7,23 +7,17 @@ import typing
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
-from applitools.common import (
-    TestResults,
-    TestResultsSummary,
-    logger,
-)
-from applitools.common.utils import datetime_utils, iteritems, counted
+from applitools.common import TestResults, TestResultsSummary, logger
+from applitools.common.utils import counted, datetime_utils, iteritems
 from applitools.core import EyesRunner
+
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List, Dict
-    from applitools.selenium.visual_grid import (
-        RunningTest,
-        VisualGridEyes,
-        VGTask,
-    )
+    from typing import Dict, List, Optional
+
+    from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
 
 
 class VisualGridRunner(EyesRunner):

@@ -1,9 +1,4 @@
-from applitools.selenium import (
-    Eyes,
-    Configuration,
-    BrowserType,
-    Target,
-)
+from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
 
@@ -26,7 +21,7 @@ def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runne
         ),
     )
     eyes.check(
-        "Step 3", Target.window().ignore("body > div > div > form > div:nth-child(1)"),
+        "Step 3", Target.window().ignore("body > div > div > form > div:nth-child(1)")
     )
     eyes.close_async()
     trc = vg_runner.get_all_test_results().all_results[0]

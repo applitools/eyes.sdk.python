@@ -53,17 +53,19 @@ from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text, Generator
+    from typing import Generator, Optional, Text
+
+    from applitools.common import ScaleProvider
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
-        ViewPort,
         AnyWebElement,
+        ViewPort,
     )
-    from applitools.common import ScaleProvider
     from applitools.core import MatchWindowTask, PositionMemento
-    from .frames import Frame
-    from .fluent import SeleniumCheckSettings
+
     from .eyes import Eyes
+    from .fluent import SeleniumCheckSettings
+    from .frames import Frame
 
 
 class ScreenshotType(object):
@@ -300,7 +302,7 @@ class SeleniumEyes(EyesBase):
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region), name, False, check_settings, source,
+                RegionProvider(target_region), name, False, check_settings, source
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -326,11 +328,17 @@ class SeleniumEyes(EyesBase):
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
-                    self.current_frame_position_provider = self._create_position_provider(
-                        self.driver.find_element_by_tag_name("html")
+                    self.current_frame_position_provider = (
+                        self._create_position_provider(
+                            self.driver.find_element_by_tag_name("html")
+                        )
                     )
                 result = self._check_window_base(
-                    NULL_REGION_PROVIDER, name, False, check_settings, source,
+                    NULL_REGION_PROVIDER,
+                    name,
+                    False,
+                    check_settings,
+                    source,
                 )
         if result is None:
             result = MatchResult()
@@ -450,7 +458,11 @@ class SeleniumEyes(EyesBase):
                         )
 
                     result = self._check_window_base(
-                        NULL_REGION_PROVIDER, name, False, check_settings, source,
+                        NULL_REGION_PROVIDER,
+                        name,
+                        False,
+                        check_settings,
+                        source,
                     )
                 except Exception as e:
                     logger.exception(e)
@@ -494,7 +506,11 @@ class SeleniumEyes(EyesBase):
             return region
 
         result = self._check_window_base(
-            RegionProvider(get_region), name, False, check_settings, source,
+            RegionProvider(get_region),
+            name,
+            False,
+            check_settings,
+            source,
         )
         self._is_check_region = False
         return result
@@ -984,8 +1000,10 @@ class SeleniumEyes(EyesBase):
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
                     fc = original_fc
                     self.driver.switch_to.frames(original_fc)
-                    scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-                        self.driver, self._scroll_root_element
+                    scroll_root_element = (
+                        eyes_selenium_utils.curr_frame_scroll_root_element(
+                            self.driver, self._scroll_root_element
+                        )
                     )
                 else:
                     fc = self.driver.frame_chain.clone()

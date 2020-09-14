@@ -6,9 +6,9 @@ import pytest
 from applitools.selenium import (
     BatchInfo,
     BrowserType,
+    ClassicRunner,
     StitchMode,
     VisualGridRunner,
-    ClassicRunner,
 )
 
 

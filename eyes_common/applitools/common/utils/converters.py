@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from datetime import datetime
 from enum import Enum
-from typing import Union, Text
+from typing import Text, Union
+
 from .compat import quote_plus
 
 

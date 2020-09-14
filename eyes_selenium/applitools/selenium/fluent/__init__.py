@@ -1,8 +1,8 @@
 from .region import (
-    FloatingRegionBySelector,
     FloatingRegionByElement,
-    RegionBySelector,
+    FloatingRegionBySelector,
     RegionByElement,
+    RegionBySelector,
 )
 from .selenium_check_settings import FrameLocator, SeleniumCheckSettings
 from .target import Target

@@ -1,6 +1,6 @@
+import pytest
 from selenium.webdriver.common.by import By
 
-import pytest
 from applitools.selenium import StitchMode, Target
 
 

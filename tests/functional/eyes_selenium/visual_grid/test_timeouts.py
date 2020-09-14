@@ -1,7 +1,7 @@
 import pytest
 
-from applitools.common import RectangleSize, EyesError
-from applitools.selenium import Eyes, Target, Configuration, BrowserType, DeviceName
+from applitools.common import EyesError, RectangleSize
+from applitools.selenium import BrowserType, Configuration, DeviceName, Eyes, Target
 from applitools.selenium.visual_grid import visual_grid_eyes
 
 original_timeout = -1

@@ -12,8 +12,8 @@ __all__ = ("MatchWindowDataWithScreenshot", "MatchSingleWindowData")
 @attr.s
 class MatchWindowDataWithScreenshot(object):
     """
-     A container for a MatchWindowData along with the screenshot used for creating
-     it. (We specifically avoid inheritance so we don't have to deal with serialization issues).
+    A container for a MatchWindowData along with the screenshot used for creating
+    it. (We specifically avoid inheritance so we don't have to deal with serialization issues).
     """
 
     match_window_data = attr.ib()  # type: MatchWindowData

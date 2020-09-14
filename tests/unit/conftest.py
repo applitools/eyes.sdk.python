@@ -17,11 +17,11 @@ from applitools.common import (
     SessionStartInfo,
     SessionType,
 )
-from applitools.selenium import Eyes, ClassicRunner, VisualGridRunner
-from applitools.images import Eyes as EyesImages
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
+from applitools.images import Eyes as EyesImages
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
 @pytest.fixture

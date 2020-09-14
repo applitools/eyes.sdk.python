@@ -11,9 +11,10 @@ from applitools.selenium.useragent import BrowserNames, OSNames, UserAgent
 
 if typing.TYPE_CHECKING:
     from PIL.Image import Image
+
+    from applitools.selenium.frames import FrameChain
     from applitools.selenium.selenium_eyes import SeleniumEyes
     from applitools.selenium.webdriver import EyesWebDriver
-    from applitools.selenium.frames import FrameChain
 
 
 def get_image_provider(ua, eyes):

@@ -1,6 +1,7 @@
 import typing
 from functools import partial
 from itertools import chain
+
 import attr
 
 from applitools.common import (
@@ -9,12 +10,12 @@ from applitools.common import (
     RenderRequest,
     RenderStatus,
     RGridDom,
+    RunningRender,
     VGResource,
     VisualGridSelector,
     logger,
-    RunningRender,
 )
-from applitools.common.utils import datetime_utils, apply_base_url
+from applitools.common.utils import apply_base_url, datetime_utils
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium.parsers import collect_urls_from_
@@ -22,12 +23,13 @@ from applitools.selenium.parsers import collect_urls_from_
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Dict, Any, Text, List, Optional, NoReturn
-    from applitools.common import RenderStatusResults, Region, RenderingInfo
+    from typing import Any, Callable, Dict, List, NoReturn, Optional, Text
+
+    from applitools.common import Region, RenderingInfo, RenderStatusResults
     from applitools.selenium.visual_grid import (
-        RunningTest,
         EyesConnector,
         ResourceCache,
+        RunningTest,
     )
 
 

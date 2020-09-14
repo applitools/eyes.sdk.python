@@ -11,25 +11,25 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Point, RectangleSize, logger, EyesError
+from applitools.common import EyesError, Point, RectangleSize, logger
 from applitools.common.utils import datetime_utils
 from applitools.common.utils.compat import urlparse
 
 if tp.TYPE_CHECKING:
-    from typing import Text, Optional, Any, Union, Generator, Dict
+    from typing import Any, Dict, Generator, Optional, Text, Union
+
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        AnyWebElement,
+        Num,
+        ViewPort,
+    )
     from applitools.core import PositionProvider
+    from applitools.selenium.fluent import FrameLocator, SeleniumCheckSettings
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
-    from applitools.selenium.fluent import SeleniumCheckSettings, FrameLocator
-
-    from applitools.common.utils.custom_types import (
-        AnyWebDriver,
-        ViewPort,
-        AnyWebElement,
-        Num,
-    )
 
 __all__ = (
     "get_current_frame_content_entire_size",

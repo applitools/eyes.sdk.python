@@ -5,17 +5,13 @@ from copy import copy
 
 import attr
 
-from applitools.common import (
-    EyesError,
-    TestResults,
-    logger,
-)
-from applitools.common.utils import argument_guard
+from applitools.common import EyesError, TestResults, logger
 from applitools.common.ultrafastgrid import (
+    DesktopBrowserInfo,
     RenderBrowserInfo,
     VisualGridSelector,
-    DesktopBrowserInfo,
 )
+from applitools.common.utils import argument_guard
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import __version__, eyes_selenium_utils, resource
 from applitools.selenium.fluent import SeleniumCheckSettings
@@ -26,9 +22,10 @@ from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Union, Optional, Dict
+    from typing import Dict, List, Optional, Text, Union
+
     from applitools.common.utils.custom_types import AnyWebElement
-    from applitools.selenium import Eyes, EyesWebDriver, Configuration
+    from applitools.selenium import Configuration, Eyes, EyesWebDriver
 
 
 GET_ELEMENT_XPATH_JS = """

@@ -7,6 +7,7 @@ from .utils import ABC, argument_guard, image_utils
 
 if TYPE_CHECKING:
     from PIL.Image import Image
+
     from .geometry import Point
 
 __all__ = ("EyesScreenshot",)
@@ -16,8 +17,8 @@ Self = TypeVar("Self", bound="EyesScreenshot")  # typedef
 
 class EyesScreenshot(ABC):
     """
-     Base class for handling screenshots.
-     """
+    Base class for handling screenshots.
+    """
 
     def __init__(self, image):
         # type: (Image) -> None

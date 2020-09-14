@@ -8,11 +8,7 @@ from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import ABC
 from applitools.common.utils.json_utils import JsonInclude
 
-from .config import (
-    IosDeviceName,
-    ScreenOrientation,
-    DeviceName,
-)
+from .config import DeviceName, IosDeviceName, ScreenOrientation
 
 
 class IRenderBrowserInfo(ABC):

@@ -15,7 +15,7 @@ General purpose utilities.
 
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Any, List, Text, Optional
+    from typing import Any, Callable, List, Optional, Text
 
     T = typing.TypeVar("T")
 

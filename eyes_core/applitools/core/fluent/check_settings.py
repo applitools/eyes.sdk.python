@@ -1,21 +1,21 @@
 from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+
 import attr
 
 from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.utils import argument_guard
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
 
 from .region import (
+    AccessibilityRegionByRectangle,
     FloatingRegionByRectangle,
+    GetAccessibilityRegion,
     GetFloatingRegion,
     GetRegion,
     RegionByRectangle,
-    GetAccessibilityRegion,
-    AccessibilityRegionByRectangle,
 )
-
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num
@@ -207,7 +207,7 @@ class CheckSettings(object):
     def send_dom(self, senddom=True):
         # type: (Self, bool) -> Self
         """
-         Defines whether to send the document DOM or not.
+        Defines whether to send the document DOM or not.
         """
         self.values.send_dom = senddom
         return self
@@ -215,7 +215,7 @@ class CheckSettings(object):
     def use_dom(self, use=True):
         # type: (Self, bool) -> Self
         """
-         Defines useDom for enabling the match algorithm to use dom.
+        Defines useDom for enabling the match algorithm to use dom.
         """
         self.values.use_dom = use
         return self

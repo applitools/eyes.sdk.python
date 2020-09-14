@@ -4,7 +4,8 @@ from applitools.common import TestResultContainer, TestResultsSummary
 from applitools.core import EyesBase, EyesRunner
 
 if TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import List, Optional
+
     from applitools.common import TestResults
 
 

@@ -1,4 +1,4 @@
-from applitools.common.utils.general_utils import proxy_to, all_attrs
+from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 
 class ProxyToObj(object):

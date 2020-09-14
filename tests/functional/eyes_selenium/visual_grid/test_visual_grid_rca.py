@@ -1,6 +1,6 @@
 from selenium.webdriver.support.wait import WebDriverWait
 
-from applitools.selenium import Eyes, BatchInfo, Target
+from applitools.selenium import BatchInfo, Eyes, Target
 
 batch_info = BatchInfo("Test Visual Grid RCA")
 

@@ -1,5 +1,5 @@
 import uuid
-from copy import deepcopy, copy
+from copy import copy, deepcopy
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -16,6 +16,7 @@ from applitools.common.utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar
+
     from applitools.common.utils.custom_types import ViewPort
 
     Self = TypeVar("Self", bound="Configuration")  # typedef

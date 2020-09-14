@@ -1,4 +1,4 @@
-from .compat import urlparse, urljoin, urldefrag
+from .compat import urldefrag, urljoin, urlparse
 
 __all__ = ("apply_base_url", "is_url_with_scheme", "is_absolute_url")
 

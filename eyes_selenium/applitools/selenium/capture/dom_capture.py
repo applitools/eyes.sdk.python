@@ -9,7 +9,7 @@ import requests
 import tinycss2
 
 from applitools.common import logger
-from applitools.common.utils import datetime_utils, is_url_with_scheme, is_absolute_url
+from applitools.common.utils import datetime_utils, is_absolute_url, is_url_with_scheme
 from applitools.common.utils.compat import urljoin
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider

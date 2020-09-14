@@ -1,5 +1,4 @@
 from applitools.selenium import parsers
-
 from tests.utils import get_resource
 
 

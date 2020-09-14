@@ -1,7 +1,7 @@
 import itertools
 import time
 from datetime import datetime, timedelta, tzinfo
-from typing import Text, Union, Optional
+from typing import Optional, Text, Union
 
 from applitools.common import logger
 

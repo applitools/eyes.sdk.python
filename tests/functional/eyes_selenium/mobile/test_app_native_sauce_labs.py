@@ -7,15 +7,17 @@ from mock import patch
 from selenium.common.exceptions import WebDriverException
 
 from applitools.common import logger
-from applitools.selenium import Target, Region
+from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 
 @pytest.yield_fixture(scope="function")
 def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabilities):
-    selenium_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-        username=os.getenv("SAUCE_USERNAME", None),
-        password=os.getenv("SAUCE_ACCESS_KEY", None),
+    selenium_url = (
+        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+            username=os.getenv("SAUCE_USERNAME", None),
+            password=os.getenv("SAUCE_ACCESS_KEY", None),
+        )
     )
     platform_name = os.getenv("TEST_PLATFORM", None)
     if platform_name == "Android":

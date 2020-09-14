@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.common import Region, CoordinatesType, Point, RectangleSize
+from applitools.common import CoordinatesType, Point, RectangleSize, Region
 
 
 @pytest.mark.parametrize(
@@ -29,9 +29,7 @@ def test_region_creation(left, top, width, height, coord_type, result):
     assert expect == result
 
 
-@pytest.mark.parametrize(
-    "x,y,result", [[0, 0, Point(0, 0)], [1.6, 2.2, Point(2, 2)]],
-)
+@pytest.mark.parametrize("x,y,result", [[0, 0, Point(0, 0)], [1.6, 2.2, Point(2, 2)]])
 def test_point_creation(x, y, result):
     expect = Point(x, y)
     assert expect == result

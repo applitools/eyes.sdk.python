@@ -4,15 +4,17 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import EyesError, Point, logger
+from applitools.common import Point, logger
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Union, Any, Dict
+    from typing import Optional
+
     from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
+
     from . import EyesWebDriver
 
 

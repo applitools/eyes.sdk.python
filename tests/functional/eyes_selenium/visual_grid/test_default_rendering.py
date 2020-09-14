@@ -1,4 +1,4 @@
-from applitools.selenium import Eyes, Target, BrowserType
+from applitools.selenium import BrowserType, Eyes, Target
 
 
 def test_default_rendering_of_multiple_targets(driver, vg_runner):

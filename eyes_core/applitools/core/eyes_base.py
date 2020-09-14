@@ -15,9 +15,9 @@ from applitools.common.match import MatchResult
 from applitools.common.metadata import AppEnvironment, SessionStartInfo
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.test_results import TestResults
+from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.common.utils import ABC, argument_guard
 from applitools.common.utils.compat import raise_from
-from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.cut import (
     FixedCutProvider,
@@ -36,11 +36,12 @@ from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 
 if typing.TYPE_CHECKING:
-    from applitools.common.utils.custom_types import ViewPort, UserInputs, Num
-    from applitools.core.fluent.check_settings import CheckSettings
-    from applitools.common.capture import EyesScreenshot
-    from applitools.common import MatchLevel
     from typing import Optional, Text, Union
+
+    from applitools.common import MatchLevel
+    from applitools.common.capture import EyesScreenshot
+    from applitools.common.utils.custom_types import Num, UserInputs, ViewPort
+    from applitools.core.fluent.check_settings import CheckSettings
 
 __all__ = ("EyesBase",)
 
@@ -87,9 +88,7 @@ class _EyesBaseAbstract(ABC):
     @abc.abstractmethod
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        """
-
-        """
+        """"""
 
     @property
     @abc.abstractmethod

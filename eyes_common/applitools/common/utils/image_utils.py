@@ -12,7 +12,7 @@ from PIL import Image
 
 from applitools.common import logger
 from applitools.common.errors import EyesError
-from applitools.common.geometry import Region, Point
+from applitools.common.geometry import Point, Region
 from applitools.common.scale_provider import ScaleProvider
 
 from . import argument_guard

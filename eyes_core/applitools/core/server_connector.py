@@ -11,20 +11,12 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import RunningSession, logger, Region
+from applitools.common import Region, RunningSession, logger
 from applitools.common.errors import EyesError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
-from applitools.common.utils import (
-    argument_guard,
-    datetime_utils,
-    gzip_compress,
-    json_utils,
-    urljoin,
-    iteritems,
-)
 from applitools.common.ultrafastgrid import (
     RenderingInfo,
     RenderRequest,
@@ -32,11 +24,19 @@ from applitools.common.ultrafastgrid import (
     RunningRender,
     VGResource,
 )
+from applitools.common.utils import (
+    argument_guard,
+    datetime_utils,
+    gzip_compress,
+    iteritems,
+    json_utils,
+    urljoin,
+)
 from applitools.common.utils.compat import raise_from
-from applitools.core.locators import VisualLocatorsData, LOCATORS_TYPE
+from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
 
 if typing.TYPE_CHECKING:
-    from typing import Text, List, Any, Optional, Dict, Union
+    from typing import Any, Dict, List, Optional, Text, Union
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -245,7 +245,7 @@ class ServerConnector(object):
 
         if client_session:
             self._com = _RequestCommunicator(
-                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session,
+                headers=ServerConnector.DEFAULT_HEADERS, client_session=client_session
             )
         else:
             self._com = _RequestCommunicator(headers=ServerConnector.DEFAULT_HEADERS)

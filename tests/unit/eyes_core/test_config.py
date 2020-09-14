@@ -2,9 +2,9 @@ import pytest
 
 from applitools.common import Configuration, MatchLevel
 from applitools.common.accessibility import (
-    AccessibilitySettings,
-    AccessibilityLevel,
     AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
+    AccessibilitySettings,
 )
 
 

@@ -10,15 +10,15 @@ from applitools.selenium import (
     Configuration,
     DeviceName,
     Eyes,
+    IosDeviceInfo,
+    IosDeviceName,
     MatchLevel,
+    RectangleSize,
+    ScreenOrientation,
     StitchMode,
     Target,
     VisualGridRunner,
-    RectangleSize,
     logger,
-    IosDeviceName,
-    ScreenOrientation,
-    IosDeviceInfo,
 )
 from tests.utils import get_session_results
 

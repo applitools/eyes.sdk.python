@@ -8,14 +8,15 @@ from .utils.compat import basestring
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
+    from typing import Optional, Text, Union
+
     from applitools.common import (
+        BatchInfo,
         DeviceName,
         IosDeviceName,
-        BatchInfo,
-        RenderingInfo,
         RectangleSize,
+        RenderingInfo,
     )
-    from typing import Optional, Text, Union
 
 __all__ = ("RunningSession", "AppEnvironment", "SessionStartInfo")
 
@@ -40,7 +41,7 @@ class RunningSession(object):
 def _to_device_info(v):
     # type: (Optional[Union[DeviceName, IosDeviceName, Text]]) -> Text
     # import here because in global scope causing circular import reference
-    from .ultrafastgrid.config import IosDeviceName, DeviceName  # noqa
+    from .ultrafastgrid.config import DeviceName, IosDeviceName  # noqa
 
     if isinstance(v, basestring):
         return v

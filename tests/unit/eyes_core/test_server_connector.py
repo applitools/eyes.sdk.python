@@ -21,10 +21,10 @@ from applitools.common import (
 )
 from applitools.common.config import DEFAULT_SERVER_URL, Configuration
 from applitools.common.server import SessionType
+from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
 from applitools.common.utils.json_utils import attr_from_json
-from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.core import ServerConnector
 from applitools.core.server_connector import ClientSession
 
@@ -459,7 +459,7 @@ def test_http_methods(configured_connector, http_method):
     ],
 )
 def test_parse_render_info_no_error(render_json):
-    ri = attr_from_json(render_json, RenderingInfo,)
+    ri = attr_from_json(render_json, RenderingInfo)
     if ri.service_url:
         assert ri.service_url == "url"
     if ri.access_token:
