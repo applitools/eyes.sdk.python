@@ -201,6 +201,7 @@ jobs:
           env:
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
+              - PYTEST_TIMEOUT=300
           script:
               - tox -e mobile
         - python: 3.6

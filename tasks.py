@@ -82,6 +82,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "webdriver_manager==1.5",
         "tox==3.14.3",
         "pytest-rerunfailures",
+        "pytest-timeout",
     ]
     lint_requires = [
         "flake8",
