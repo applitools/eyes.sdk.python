@@ -2,7 +2,7 @@ from mock import patch
 
 from applitools.common import VisualGridOption
 from applitools.common.selenium import BrowserType
-from applitools.selenium import VisualGridRunner, Eyes, Target
+from applitools.selenium import Eyes, Target, VisualGridRunner
 
 
 def test_ufg_options(driver):

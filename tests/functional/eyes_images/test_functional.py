@@ -5,15 +5,15 @@ import pytest
 from PIL import Image, ImageDraw
 
 from applitools.images import (
+    AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
+    AccessibilityRegion,
+    AccessibilityRegionType,
+    AccessibilitySettings,
+    Eyes,
     Region,
     Target,
     UnscaledFixedCutProvider,
-    Eyes,
-    AccessibilitySettings,
-    AccessibilityLevel,
-    AccessibilityGuidelinesVersion,
-    AccessibilityRegionType,
-    AccessibilityRegion,
 )
 from tests.functional.conftest import check_image_match_settings
 

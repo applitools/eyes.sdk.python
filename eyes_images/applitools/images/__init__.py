@@ -1,29 +1,28 @@
 from applitools.common import (
     BatchInfo,
-    MatchLevel,
-    logger,
-    TestResults,
-    TestResultContainer,
-    TestResultsSummary,
     Configuration,
-    StdoutLogger,
     FileLogger,
+    MatchLevel,
+    StdoutLogger,
+    TestResultContainer,
+    TestResults,
+    TestResultsSummary,
+    logger,
+)
+from applitools.common.accessibility import (
+    AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
+    AccessibilityRegionType,
+    AccessibilitySettings,
 )
 from applitools.common.geometry import AccessibilityRegion, RectangleSize, Region
-from applitools.common.accessibility import (
-    AccessibilityRegionType,
-    AccessibilityLevel,
-    AccessibilitySettings,
-    AccessibilityGuidelinesVersion,
-)
-from applitools.core.fluent.region import AccessibilityRegionByRectangle
+from applitools.core.batch_close import BatchClose
 from applitools.core.cut import (
     FixedCutProvider,
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
-from applitools.core.batch_close import BatchClose
-
+from applitools.core.fluent.region import AccessibilityRegionByRectangle
 from applitools.images.fluent import Target
 
 from .eyes import Eyes

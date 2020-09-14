@@ -11,11 +11,11 @@ from applitools.common import (
 )
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle
-from applitools.core import CheckSettings, MatchWindowTask, AppOutputWithScreenshot
+from applitools.core import AppOutputWithScreenshot, CheckSettings, MatchWindowTask
 from applitools.core.fluent.region import (
     AccessibilityRegionByRectangle,
-    RegionByRectangle,
     FloatingRegionByRectangle,
+    RegionByRectangle,
 )
 from applitools.core.match_window_task import collect_regions_from_selectors
 

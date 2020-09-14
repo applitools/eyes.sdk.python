@@ -7,7 +7,7 @@ from mock import patch
 from selenium.common.exceptions import WebDriverException
 
 from applitools.common import logger
-from applitools.selenium import Target, Region
+from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 

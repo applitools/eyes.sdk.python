@@ -15,18 +15,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
-from applitools.selenium import (
-    Eyes,
-    StitchMode,
-    Configuration,
-    logger,
-)
+from applitools.selenium import Configuration, Eyes, StitchMode, logger
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:
-    from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
+    from typing import TYPE_CHECKING, Generator, Iterable, Optional, Text
 except ImportError:
     TYPE_CHECKING = False
     pass
@@ -207,8 +202,7 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
         if self.is_appium_based:
             return
 
-        from selenium.webdriver import FirefoxOptions
-        from selenium.webdriver import ChromeOptions
+        from selenium.webdriver import ChromeOptions, FirefoxOptions
 
         # clean up from quotes for correct comparision; original bug on Windows where
         # string contains quotes

@@ -1,4 +1,5 @@
 import os
+
 from mock import patch
 
 from applitools.core.debug import FileDebugScreenshotsProvider

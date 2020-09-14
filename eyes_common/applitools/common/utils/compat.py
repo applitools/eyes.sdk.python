@@ -42,18 +42,18 @@ def _get_caller_globals_and_locals():
 PY3 = sys.version_info[:1] >= (3,)
 
 if PY3:
-    from urllib.parse import (
-        urlparse,
-        urljoin,
-        urlencode,
-        parse_qs,
-        urlsplit,
-        urlunsplit,
-        quote_plus,
-        urldefrag,
-    )  # noqa
     from gzip import compress as gzip_compress  # noqa
     from queue import Queue  # noqa
+    from urllib.parse import (  # noqa
+        parse_qs,
+        quote_plus,
+        urldefrag,
+        urlencode,
+        urljoin,
+        urlparse,
+        urlsplit,
+        urlunsplit,
+    )
 
     basestring = str
     ABC = abc.ABC
@@ -82,16 +82,17 @@ if PY3:
 
 
 else:
-    from urlparse import (
-        urlparse,
-        urljoin,
+    from urllib import quote_plus, urlencode  # noqa
+
+    from Queue import Queue  # noqa
+    from urlparse import (  # noqa
         parse_qs,
+        urldefrag,
+        urljoin,
+        urlparse,
         urlsplit,
         urlunsplit,
-        urldefrag,
-    )  # noqa
-    from urllib import urlencode, quote_plus  # noqa
-    from Queue import Queue  # noqa
+    )
 
     basestring = basestring
     ABC = abc.ABCMeta(str("ABC"), (), {})

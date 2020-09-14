@@ -1,9 +1,4 @@
-from applitools.selenium import (
-    Eyes,
-    Configuration,
-    BrowserType,
-    Target,
-)
+from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
 

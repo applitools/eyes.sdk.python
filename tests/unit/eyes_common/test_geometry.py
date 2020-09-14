@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.common import Region, CoordinatesType, Point, RectangleSize
+from applitools.common import CoordinatesType, Point, RectangleSize, Region
 
 
 @pytest.mark.parametrize(

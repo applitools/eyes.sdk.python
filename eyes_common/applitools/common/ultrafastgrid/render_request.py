@@ -9,16 +9,19 @@ from applitools.common.geometry import RectangleSize, Region
 from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
+
 from .render_browser_info import (
-    IosDeviceInfo,
-    IRenderBrowserInfo,
     ChromeEmulationInfo,
     EmulationBaseInfo,
+    IosDeviceInfo,
+    IRenderBrowserInfo,
 )
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Dict, Optional, Callable, Union, Any
+    from typing import Any, Callable, Dict, List, Optional, Text, Union
+
     from requests import Response
+
     from applitools.common.utils.custom_types import Num
     from applitools.selenium.visual_grid.vg_task import VGTask
 

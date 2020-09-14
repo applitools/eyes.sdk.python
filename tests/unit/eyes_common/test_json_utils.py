@@ -3,21 +3,21 @@ import json
 import pytest
 
 from applitools.common import (
-    RenderRequest,
-    RGridDom,
-    VGResource,
-    RenderInfo,
-    RunningSession,
-    TestResults,
     RectangleSize,
     Region,
+    RenderInfo,
+    RenderRequest,
+    RGridDom,
+    RunningSession,
+    TestResults,
+    VGResource,
 )
 from applitools.common.accessibility import (
-    SessionAccessibilityStatus,
-    AccessibilityStatus,
-    AccessibilityLevel,
     AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
     AccessibilityRegionType,
+    AccessibilityStatus,
+    SessionAccessibilityStatus,
 )
 from applitools.common.geometry import AccessibilityRegion
 from applitools.common.selenium import BrowserType

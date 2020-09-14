@@ -1,15 +1,15 @@
-import pytest
 import time
 
+import pytest
 from selenium.webdriver.common.by import By
 
 from applitools.core import ServerConnector
 from applitools.selenium import (
+    EyesWebDriver,
+    EyesWebElement,
     Region,
     StitchMode,
     Target,
-    EyesWebElement,
-    EyesWebDriver,
 )
 
 

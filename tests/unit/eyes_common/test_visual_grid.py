@@ -1,13 +1,12 @@
 from applitools.common import VGResource
 from applitools.common.ultrafastgrid import (
+    BrowserType,
+    ChromeEmulationInfo,
+    DesktopBrowserInfo,
+    DeviceName,
     IosDeviceInfo,
     IosDeviceName,
-    ScreenOrientation,
-    DesktopBrowserInfo,
-    BrowserType,
     RectangleSize,
-    ChromeEmulationInfo,
-    DeviceName,
     ScreenOrientation,
 )
 

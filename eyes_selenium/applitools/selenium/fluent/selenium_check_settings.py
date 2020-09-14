@@ -1,38 +1,38 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, overload, Tuple
+from typing import TYPE_CHECKING, List, Text, Tuple, overload
 
 import attr
 from selenium.webdriver.common.by import By
 
 from applitools.common import logger
+from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Region
 from applitools.common.ultrafastgrid import VisualGridOption
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
+from applitools.selenium.validators import is_list_or_tuple, is_webelement
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
-    FloatingRegionByElement,
-    RegionByElement,
-    RegionBySelector,
-    FloatingRegionBySelector,
     AccessibilityRegionByElement,
     AccessibilityRegionBySelector,
+    FloatingRegionByElement,
+    FloatingRegionBySelector,
+    RegionByElement,
+    RegionBySelector,
 )
-from applitools.common.accessibility import AccessibilityRegionType
-from applitools.selenium.validators import is_webelement, is_list_or_tuple
-from applitools.common.utils import argument_guard
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import VisualGridSelector
     from applitools.common.utils.custom_types import (
+        FLOATING_VALUES,
         AnyWebElement,
-        FrameNameOrId,
-        FrameIndex,
         BySelector,
         CssSelector,
-        FLOATING_VALUES,
+        FrameIndex,
+        FrameNameOrId,
     )
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"

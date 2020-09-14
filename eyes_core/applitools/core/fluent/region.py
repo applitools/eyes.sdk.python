@@ -4,16 +4,16 @@ import typing
 import attr
 
 from applitools.common import FloatingBounds
-from applitools.common.geometry import Region, AccessibilityRegion, Rectangle
-from applitools.common.match import FloatingMatchSettings
 from applitools.common.accessibility import AccessibilityRegionType
+from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
+from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
-    from typing import List, Union, Optional
+    from typing import List, Optional, Union
 
-    from applitools.core.eyes_base import EyesBase
     from applitools.common.capture import EyesScreenshot
+    from applitools.core.eyes_base import EyesBase
 
 __all__ = (
     "GetFloatingRegion",

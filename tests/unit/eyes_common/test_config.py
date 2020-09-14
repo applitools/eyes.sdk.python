@@ -8,19 +8,19 @@ from applitools.common import (
     Configuration,
     FailureReports,
     MatchLevel,
+    Region,
     SessionType,
     StitchMode,
-    Region,
 )
 from applitools.common.selenium import Configuration as SeleniumConfiguration
 from applitools.common.ultrafastgrid import (
+    BrowserType,
+    ChromeEmulationInfo,
+    DesktopBrowserInfo,
+    DeviceName,
     IosDeviceInfo,
     IosDeviceName,
-    ChromeEmulationInfo,
-    DeviceName,
     ScreenOrientation,
-    BrowserType,
-    DesktopBrowserInfo,
     VisualGridOption,
 )
 

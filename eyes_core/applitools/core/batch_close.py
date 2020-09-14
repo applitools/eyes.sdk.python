@@ -1,10 +1,10 @@
-from typing import Text, List, Union, Optional
+from typing import List, Optional, Text, Union
 
 import attr
 import requests
 
 from applitools.common.config import DEFAULT_SERVER_URL
-from applitools.common.utils import urljoin, quote_plus
+from applitools.common.utils import quote_plus, urljoin
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 

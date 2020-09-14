@@ -1,6 +1,6 @@
 from typing import Optional, Text
 
-from applitools.common import logger, Configuration
+from applitools.common import Configuration, logger
 from applitools.core.debug import (
     FileDebugScreenshotsProvider,
     NullDebugScreenshotsProvider,

@@ -7,6 +7,7 @@ from .utils import ABC, argument_guard, image_utils
 
 if TYPE_CHECKING:
     from PIL.Image import Image
+
     from .geometry import Point
 
 __all__ = ("EyesScreenshot",)

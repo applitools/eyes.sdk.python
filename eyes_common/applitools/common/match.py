@@ -4,11 +4,12 @@ from enum import Enum
 import attr
 
 from .accessibility import AccessibilitySettings
-from .geometry import Region, Rectangle, AccessibilityRegion
+from .geometry import AccessibilityRegion, Rectangle, Region
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List, Text, Union
+    from typing import List, Optional, Text, Union
+
     from applitools.common import EyesScreenshot, Point
 
 __all__ = (

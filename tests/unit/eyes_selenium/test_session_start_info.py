@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from applitools.common import MatchLevel, ExactMatchSettings, ImageMatchSettings
+from applitools.common import ExactMatchSettings, ImageMatchSettings, MatchLevel
 from applitools.common.utils import json_utils
 from applitools.core import MatchWindowTask
 from applitools.core.test_eyes import TestEyes

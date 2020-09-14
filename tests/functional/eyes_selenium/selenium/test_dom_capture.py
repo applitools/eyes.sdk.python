@@ -2,13 +2,13 @@ import json
 import os
 import time
 from collections import OrderedDict
-from mock import MagicMock
 
 import pytest
+from mock import MagicMock
 from selenium.webdriver.common.by import By
 
 from applitools.common import Point
-from applitools.selenium import eyes_selenium_utils, EyesWebDriver, Eyes
+from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.capture import dom_capture
 
 

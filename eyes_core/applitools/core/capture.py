@@ -7,8 +7,10 @@ from applitools.common import AppOutput, EyesScreenshot, Point, Region
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
+    from typing import Callable, Optional
+
     from PIL.Image import Image
-    from typing import Optional, Callable
+
     from applitools.core import CheckSettings, EyesBase
 
     T = typing.TypeVar("T", bound=CheckSettings)

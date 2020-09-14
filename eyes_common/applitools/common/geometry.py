@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload, Text
+from typing import TYPE_CHECKING, Dict, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from PIL.Image import Image

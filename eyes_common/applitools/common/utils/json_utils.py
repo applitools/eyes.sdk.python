@@ -1,7 +1,7 @@
 import enum
 import json
 import re
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -10,7 +10,7 @@ import attr
 from .compat import iteritems
 
 if TYPE_CHECKING:
-    from typing import Dict, Text, Type, Any, Optional, Tuple, Generator
+    from typing import Any, Dict, Generator, Optional, Text, Tuple, Type
 
 
 def to_json(val):

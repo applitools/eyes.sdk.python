@@ -1,21 +1,21 @@
 from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+
 import attr
 
 from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.utils import argument_guard
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
 
 from .region import (
+    AccessibilityRegionByRectangle,
     FloatingRegionByRectangle,
+    GetAccessibilityRegion,
     GetFloatingRegion,
     GetRegion,
     RegionByRectangle,
-    GetAccessibilityRegion,
-    AccessibilityRegionByRectangle,
 )
-
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import Num

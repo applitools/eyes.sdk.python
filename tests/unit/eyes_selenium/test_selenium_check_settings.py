@@ -1,12 +1,11 @@
-from mock import MagicMock
+import pytest
 from appium.webdriver import WebElement as AppiumWebElement
+from mock import MagicMock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
-import pytest
-
 from applitools.common import FloatingBounds
-from applitools.selenium import EyesWebElement, Region, AccessibilityRegionType
+from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 

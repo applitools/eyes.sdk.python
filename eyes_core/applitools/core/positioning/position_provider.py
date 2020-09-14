@@ -5,7 +5,8 @@ from applitools.common.geometry import Point
 from applitools.common.utils import ABC, iteritems
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Any
+    from typing import Any, List, Optional
+
     from applitools.common import RectangleSize
 
 

@@ -1,6 +1,6 @@
 from mock import patch
 
-from applitools.selenium import Eyes, Target, BrowserType
+from applitools.selenium import BrowserType, Eyes, Target
 
 
 def test_test_vg_check_source_sent(driver, vg_runner):

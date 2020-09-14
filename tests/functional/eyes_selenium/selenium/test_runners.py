@@ -1,14 +1,14 @@
 import pytest
 
 from applitools.selenium import (
+    BatchInfo,
     ClassicRunner,
+    Configuration,
     Eyes,
+    StitchMode,
     Target,
     VisualGridRunner,
     logger,
-    Configuration,
-    BatchInfo,
-    StitchMode,
 )
 
 
