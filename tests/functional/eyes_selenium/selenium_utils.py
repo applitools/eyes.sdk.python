@@ -1,4 +1,3 @@
-from __future__ import print_function
 import time
 
 from selenium.common.exceptions import WebDriverException
