@@ -108,7 +108,7 @@ def timeit(method):
     return timed
 
 
-def retry(delays=(0, 100, 500), exception=Exception, report=lambda *args: None):
+def retry(delays=(0, 1000, 5000), exception=Exception, report=lambda *args: None):
     """
     This is a Python decorator which helps implementing an aspect oriented
     implementation of a retrying of certain steps which might fail sometimes.

@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Collect tested domains and app names [Trello 870](https://trello.com/c/8X8mwBMS)
+### Updated
+- Internal test infrastructure update [Trello 2147](https://trello.com/c/HVpkukIW)
 
 ## [4.8.0] - 2020-09-07
 ### Added
