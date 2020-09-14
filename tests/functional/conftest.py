@@ -1,17 +1,17 @@
 import itertools
 import os
 from collections import defaultdict
-from os import path
 from distutils.util import strtobool
+from os import path
 
 import attr
 import pytest
 import yaml
 
-from applitools.common import BatchInfo, StdoutLogger, logger, Configuration, StitchMode
+from applitools.common import BatchInfo, Configuration, StdoutLogger, StitchMode, logger
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
-from tests.utils import send_result_report, get_session_results
+from tests.utils import get_session_results, send_result_report
 
 logger.set_logger(StdoutLogger())
 

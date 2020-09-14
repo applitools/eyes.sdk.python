@@ -6,7 +6,7 @@ import attr
 from applitools.common import TestResults, logger
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Text, Optional
+    from typing import Callable, Optional, Text
 
 
 @attr.s(hash=True)

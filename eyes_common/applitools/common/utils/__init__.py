@@ -4,13 +4,13 @@ from .compat import (  # type: ignore # noqa
     gzip_compress,
     iteritems,
     parse_qs,
+    quote_plus,
     range,
     urlencode,
     urljoin,
     urlparse,
     urlsplit,
     urlunsplit,
-    quote_plus,
 )
 from .datetime_utils import (  # type: ignore # noqa
     UTC,
@@ -18,8 +18,7 @@ from .datetime_utils import (  # type: ignore # noqa
     to_rfc1123_datetime,
 )
 from .general_utils import cached_property, counted  # noqa
-from .url_utils import apply_base_url, is_url_with_scheme, is_absolute_url  # noqa
-
+from .url_utils import apply_base_url, is_absolute_url, is_url_with_scheme  # noqa
 
 __all__ = (
     compat.__all__  # noqa

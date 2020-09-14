@@ -1,12 +1,9 @@
 import time
+
 from mock import patch
 
 from applitools.common import RenderStatus, RenderStatusResults
-from applitools.selenium import (
-    BrowserType,
-    Eyes,
-    Target,
-)
+from applitools.selenium import BrowserType, Eyes, Target
 
 
 def test_abort_when_not_rendered(driver, vg_runner, batch_info):

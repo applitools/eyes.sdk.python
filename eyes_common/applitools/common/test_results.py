@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, List, Optional, Text
 import attr
 
 from applitools.common.utils.json_utils import JsonInclude
-from .accessibility import SessionAccessibilityStatus
 
+from .accessibility import SessionAccessibilityStatus
 from .geometry import RectangleSize
 from .match import ImageMatchSettings
 

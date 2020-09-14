@@ -3,9 +3,9 @@ import os
 import uuid
 from datetime import datetime
 
-from applitools.common.config import BatchInfo
 from mock import patch
 
+from applitools.common.config import BatchInfo
 from applitools.common.utils import json_utils
 
 

@@ -1,13 +1,12 @@
 from applitools.common import VGResource
 from applitools.common.ultrafastgrid import (
+    BrowserType,
+    ChromeEmulationInfo,
+    DesktopBrowserInfo,
+    DeviceName,
     IosDeviceInfo,
     IosDeviceName,
-    ScreenOrientation,
-    DesktopBrowserInfo,
-    BrowserType,
     RectangleSize,
-    ChromeEmulationInfo,
-    DeviceName,
     ScreenOrientation,
 )
 
@@ -51,7 +50,7 @@ def test_ios_device_info():
     assert idi.baseline_env_name is None
 
     idi = IosDeviceInfo(
-        IosDeviceName.iPhone_11_Pro, ScreenOrientation.LANDSCAPE, "Baseline env",
+        IosDeviceName.iPhone_11_Pro, ScreenOrientation.LANDSCAPE, "Baseline env"
     )
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
     assert idi.screen_orientation == ScreenOrientation.LANDSCAPE

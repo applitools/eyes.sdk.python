@@ -12,13 +12,14 @@ from applitools.core.cut import NullCutProvider
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, List, Dict
+    from typing import Dict, List, Optional
+
     from applitools.common import ScaleProvider
-    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.common.geometry import SubregionForStitching
-    from applitools.selenium.region_compensation import RegionPositionCompensation
     from applitools.core.capture import EyesScreenshotFactory, ImageProvider
     from applitools.core.cut import CutProvider
+    from applitools.core.debug import DebugScreenshotsProvider
+    from applitools.selenium.region_compensation import RegionPositionCompensation
 
 
 @attr.s
@@ -336,8 +337,10 @@ class FullPageCaptureAlgorithm(object):
         region_in_screenshot = region_in_screenshot.scale(pixel_ratio)
         logger.debug("Scaled region: {}".format(region_in_screenshot))
 
-        region_in_screenshot = self.region_position_compensation.compensate_region_position(
-            region_in_screenshot, pixel_ratio
+        region_in_screenshot = (
+            self.region_position_compensation.compensate_region_position(
+                region_in_screenshot, pixel_ratio
+            )
         )
         # Handling a specific case where the region is actually larger than
         # the screenshot (e.g., when body width/height are set to 100%, and

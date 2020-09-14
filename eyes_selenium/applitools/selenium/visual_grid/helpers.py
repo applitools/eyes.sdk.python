@@ -1,18 +1,19 @@
-from typing import TYPE_CHECKING, Union
 from collections import Counter
+from typing import TYPE_CHECKING, Union
 
 from applitools.common import (
-    logger,
-    TestFailedError,
     DiffsFoundError,
     NewTestError,
+    TestFailedError,
     TestResultContainer,
     TestResults,
+    logger,
 )
 from applitools.common.utils import datetime_utils, iteritems
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Callable
+    from typing import Callable, Dict, List
+
     from applitools.selenium.visual_grid import RunningTest
 
 
@@ -30,9 +31,7 @@ def wait_till_tests_completed(test_provider):
             break
         if len(states) == 1 and states[0] == "completed":
             break
-        datetime_utils.sleep(
-            1500, msg="Waiting for state completed!",
-        )
+        datetime_utils.sleep(1500, msg="Waiting for state completed!")
 
 
 def collect_test_results(tests, should_raise_exception):

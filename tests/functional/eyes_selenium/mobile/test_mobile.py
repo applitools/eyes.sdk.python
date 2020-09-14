@@ -99,9 +99,11 @@ def mobile_eyes(request, page, eyes):
     if fully:
         test_name += " fully"
 
-    selenium_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-        username=os.getenv("SAUCE_USERNAME", None),
-        password=os.getenv("SAUCE_ACCESS_KEY", None),
+    selenium_url = (
+        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+            username=os.getenv("SAUCE_USERNAME", None),
+            password=os.getenv("SAUCE_ACCESS_KEY", None),
+        )
     )
     desired_caps = browser_config.copy()
     desired_caps["build"] = os.getenv("BUILD_TAG", None)

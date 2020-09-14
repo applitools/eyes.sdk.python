@@ -2,7 +2,6 @@ import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.utils.general_utils import all_fields, proxy_to
-
 from applitools.core import (
     NULL_REGION_PROVIDER,
     EyesBase,
@@ -15,8 +14,10 @@ from .__version__ import __version__
 from .capture import EyesImagesScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Union, Optional, Dict
+    from typing import Dict, Optional, Text, Union
+
     from PIL import Image
+
     from applitools.common.utils.custom_types import ViewPort
 
 

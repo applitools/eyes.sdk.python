@@ -1,9 +1,7 @@
 from enum import Enum
-from typing import Union, Text
 
 import attr
 
-from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 
 
@@ -20,10 +18,10 @@ class AccessibilityLevel(Enum):
 @attr.s(init=False)
 class AccessibilitySettings(object):
     level = attr.ib(
-        type=AccessibilityLevel, metadata={JsonInclude.THIS: True},
+        type=AccessibilityLevel, metadata={JsonInclude.THIS: True}
     )  # type: AccessibilityLevel
     guidelines_version = attr.ib(
-        type=AccessibilityGuidelinesVersion, metadata={JsonInclude.NAME: "version"},
+        type=AccessibilityGuidelinesVersion, metadata={JsonInclude.NAME: "version"}
     )  # type: AccessibilityGuidelinesVersion
 
     def __init__(
@@ -58,7 +56,7 @@ class AccessibilityStatus(Enum):
 @attr.s(init=False)
 class SessionAccessibilityStatus(AccessibilitySettings):
     status = attr.ib(
-        type=AccessibilityStatus, metadata={JsonInclude.THIS: True},
+        type=AccessibilityStatus, metadata={JsonInclude.THIS: True}
     )  # type: AccessibilityStatus
 
     def __init__(

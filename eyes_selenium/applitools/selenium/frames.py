@@ -9,7 +9,9 @@ from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
     from typing import Optional
+
     from applitools.common.utils.custom_types import AnyWebDriver
+
     from .webelement import EyesWebElement
 
 __all__ = ("Frame", "FrameChain")

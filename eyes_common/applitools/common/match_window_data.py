@@ -7,7 +7,8 @@ from .match import ImageMatchSettings
 from .utils.json_utils import JsonInclude
 
 if typing.TYPE_CHECKING:
-    from typing import Text, Optional
+    from typing import Optional, Text
+
     from .utils.custom_types import UserInputs
 
 

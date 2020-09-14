@@ -26,10 +26,12 @@ from applitools.selenium.capture.screenshot_utils import (
 from applitools.selenium.frames import FrameChain
 
 if typing.TYPE_CHECKING:
-    from typing import Union, Optional
+    from typing import Optional, Union
+
     from PIL import Image
-    from applitools.selenium.webdriver import EyesWebDriver
+
     from applitools.selenium.positioning import SeleniumPositionProvider
+    from applitools.selenium.webdriver import EyesWebDriver
 
 
 @attr.s(hash=False)
@@ -90,8 +92,10 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
             frame_size = self.get_frame_size(position_provider)
-            self._current_frame_scroll_position = eyes_selenium_utils.get_updated_scroll_position(  # noqa
-                position_provider
+            self._current_frame_scroll_position = (
+                eyes_selenium_utils.get_updated_scroll_position(  # noqa
+                    position_provider
+                )
             )
             self.updated_frame_location_in_screenshot(
                 self._frame_location_in_screenshot

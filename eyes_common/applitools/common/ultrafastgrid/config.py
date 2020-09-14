@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Text, Any
+from typing import Any, Text
 
 
 class ScreenOrientation(Enum):

@@ -9,13 +9,15 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.geometry import CoordinatesType, Point, Region
-from applitools.common.utils.general_utils import proxy_to, all_attrs
+from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 from . import eyes_selenium_utils
 
 if tp.TYPE_CHECKING:
     from typing import Optional, Text, Union
+
     from appium.webdriver.webdriver import MobileWebElement
+
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 

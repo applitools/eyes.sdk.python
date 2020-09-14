@@ -1,11 +1,6 @@
 import pytest
 
-from applitools.selenium import (
-    BrowserType,
-    Configuration,
-    Eyes,
-    Target,
-)
+from applitools.selenium import BrowserType, Configuration, Eyes, Target
 
 pytestmark = [
     pytest.mark.platform("Linux"),

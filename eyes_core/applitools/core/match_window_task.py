@@ -4,21 +4,23 @@ import typing
 from datetime import datetime
 
 from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
-from applitools.common.errors import OutOfBoundsError, EyesError
-from applitools.common.geometry import Point, Region, AccessibilityRegion
+from applitools.common.errors import EyesError, OutOfBoundsError
+from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.utils import datetime_utils, image_utils
 from applitools.common.ultrafastgrid import VisualGridSelector
+from applitools.common.utils import datetime_utils, image_utils
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 
-from .fluent import CheckSettings, GetFloatingRegion, GetRegion, GetAccessibilityRegion
+from .fluent import CheckSettings, GetAccessibilityRegion, GetFloatingRegion, GetRegion
 
 if typing.TYPE_CHECKING:
-    from typing import List, Text, Optional, Union
+    from typing import List, Optional, Text, Union
+
     from applitools.common import EyesScreenshot
     from applitools.common.utils.custom_types import Num, UserInputs
     from applitools.core.server_connector import ServerConnector
+
     from .eyes_base import EyesBase
 
     GET_REGION = Union[GetRegion, GetFloatingRegion]
@@ -388,7 +390,7 @@ class MatchWindowTask(object):
                 datetime_utils.sleep(retry_timeout)
 
             screenshot = self._try_take_screenshot(
-                user_inputs, region, tag, check_settings, source,
+                user_inputs, region, tag, check_settings, source
             )
         else:
             screenshot = self._retry_taking_screenshot(

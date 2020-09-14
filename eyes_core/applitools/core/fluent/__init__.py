@@ -1,12 +1,12 @@
 from .check_settings import CheckSettings, CheckSettingsValues
 from .check_target import CheckTarget
 from .region import (
+    AccessibilityRegionByRectangle,
     FloatingRegionByRectangle,
+    GetAccessibilityRegion,
     GetFloatingRegion,
     GetRegion,
     RegionByRectangle,
-    GetAccessibilityRegion,
-    AccessibilityRegionByRectangle,
 )
 
 __all__ = (

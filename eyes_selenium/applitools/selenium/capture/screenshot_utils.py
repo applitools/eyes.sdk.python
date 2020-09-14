@@ -4,13 +4,10 @@ from typing import TYPE_CHECKING, Optional
 from applitools.common import Point, Region, logger
 from applitools.common.utils import image_utils
 from applitools.selenium import eyes_selenium_utils
-from applitools.selenium.eyes_selenium_utils import (
-    get_cur_position_provider,
-    get_updated_scroll_position,
-)
 
 if TYPE_CHECKING:
     from PIL import Image
+
     from applitools.selenium.webdriver import EyesWebDriver
 
 

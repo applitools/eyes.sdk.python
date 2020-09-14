@@ -3,14 +3,14 @@ import os
 import pytest
 
 from applitools.selenium import (
+    AccessibilityGuidelinesVersion,
+    AccessibilityLevel,
+    AccessibilityRegion,
+    AccessibilityRegionType,
+    AccessibilitySettings,
     Region,
     StitchMode,
     Target,
-    AccessibilitySettings,
-    AccessibilityGuidelinesVersion,
-    AccessibilityLevel,
-    AccessibilityRegionType,
-    AccessibilityRegion,
 )
 
 pytestmark = [

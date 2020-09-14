@@ -2,8 +2,8 @@ import pytest
 
 from applitools.core import ServerConnector
 from applitools.core.debug import (
-    NullDebugScreenshotsProvider,
     FileDebugScreenshotsProvider,
+    NullDebugScreenshotsProvider,
 )
 
 

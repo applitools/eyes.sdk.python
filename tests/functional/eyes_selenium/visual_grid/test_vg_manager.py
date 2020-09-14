@@ -1,7 +1,7 @@
 import pytest
 
-from applitools.common import RectangleSize, EyesError
-from applitools.selenium import BrowserType, Eyes, Configuration, Target
+from applitools.common import EyesError, RectangleSize
+from applitools.selenium import BrowserType, Configuration, Eyes, Target
 
 
 def test_get_all_test_results(vg_runner, driver):

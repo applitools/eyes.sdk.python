@@ -1,22 +1,22 @@
 from copy import deepcopy
-
-from typing import TYPE_CHECKING, List, overload, Union, Text, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 
 from applitools.common.config import Configuration as ConfigurationBase
-from applitools.common.utils import argument_guard
 from applitools.common.ultrafastgrid import (
     ChromeEmulationInfo,
-    RenderBrowserInfo,
-    IRenderBrowserInfo,
-    ScreenOrientation,
-    IosDeviceInfo,
     DesktopBrowserInfo,
+    IosDeviceInfo,
+    IRenderBrowserInfo,
+    RenderBrowserInfo,
+    ScreenOrientation,
     VisualGridOption,
 )
-from applitools.common.validators import is_list_or_tuple
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.validators import is_list_or_tuple
+
 from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:

@@ -14,7 +14,7 @@ before_script:
     - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
         export TEST_REPORT_SANDBOX=False;
         export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
-        export TMP_CHANGELOG=$(bash ./extractChangeLog.sh "$SDK_VERSION" "CHANGELOG.md");
+        export TMP_CHANGELOG=$(bash ./ci_scripts/extract_changelog.sh "$SDK_VERSION" "CHANGELOG.md");
         export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
 
         if [[ (-z "$TMP_CHANGELOG") ]]; then
@@ -40,10 +40,6 @@ stages:
     - deploy
 jobs:
     include:
-        - stage: lint
-          python: 3.6
-          env:
-              - TOX_ENV=lint
         - stage: bumpversion
           if: tag =~ ^RELEASE_CANDIDATE AND fork == false
           script:
@@ -201,17 +197,15 @@ jobs:
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
+              - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
-          script:
-              - tox -e mobile
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
+              - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
-          script:
-              - tox -e mobile
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -220,16 +214,14 @@ jobs:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-
-        - stage: generated-tests
-          if: NOT tag =~ ^RELEASE_CANDIDATE
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
-          node_js:
-              - "14"
+          node_js: 14
           addons:
               chrome: stable
               firefox: latest
           env:
+              - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
           before_install:
@@ -237,11 +229,12 @@ jobs:
               - nvm install node
           script:
               - tox -e selenium-generated
-              - if [[ "$TRAVIS_EVENT_TYPE"=="cron" ]]; then
+              - if [[ $TRAVIS_EVENT_TYPE=="cron" ]]; then
                   echo "REPORTING...";
-                  bash ./all_tests_report.sh "$SDK";
+                  bash ./ci_scripts/all_tests_report.sh "$SDK";
                   echo "REPORTED SUCCESSFULLY";
                 fi
+
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
@@ -255,9 +248,9 @@ jobs:
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
               - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
                   echo "DEPLOY";
-                  TEST_COVERAGE_GAP=$(cat testCoverageGap.txt);
+                  TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
-                  bash ./sendMail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+                  bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
                   inv dist --from-env;
 
                   echo "DEPLOY SUCCESSFUL";

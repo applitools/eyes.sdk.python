@@ -15,18 +15,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
 
-from applitools.selenium import (
-    Eyes,
-    StitchMode,
-    Configuration,
-    logger,
-)
+from applitools.selenium import Configuration, Eyes, StitchMode, logger
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.visual_grid import VisualGridRunner
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:
-    from typing import Text, Optional, Generator, Iterable, TYPE_CHECKING
+    from typing import TYPE_CHECKING, Generator, Iterable, Optional, Text
 except ImportError:
     TYPE_CHECKING = False
     pass
@@ -114,9 +109,11 @@ def driver(request, browser_config, webdriver_module):
         force_remote = True
 
     if force_remote:
-        sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.getenv("SAUCE_USERNAME", None),
-            password=os.getenv("SAUCE_ACCESS_KEY", None),
+        sauce_url = (
+            "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+                username=os.getenv("SAUCE_USERNAME", None),
+                password=os.getenv("SAUCE_ACCESS_KEY", None),
+            )
         )
         selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
         logger.debug("SELENIUM_URL={}".format(selenium_url))
@@ -144,7 +141,7 @@ def driver(request, browser_config, webdriver_module):
         if driver_manager_class:
             browser = open_webdriver(
                 lambda: webdriver_class(
-                    executable_path=driver_manager_class().install(), options=options,
+                    executable_path=driver_manager_class().install(), options=options
                 ),
             )
         else:
@@ -205,8 +202,7 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
         if self.is_appium_based:
             return
 
-        from selenium.webdriver import FirefoxOptions
-        from selenium.webdriver import ChromeOptions
+        from selenium.webdriver import ChromeOptions, FirefoxOptions
 
         # clean up from quotes for correct comparision; original bug on Windows where
         # string contains quotes

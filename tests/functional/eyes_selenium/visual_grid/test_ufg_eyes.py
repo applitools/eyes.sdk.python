@@ -1,5 +1,6 @@
 import json
 import re
+
 from mock import patch
 
 from applitools.selenium import Eyes, eyes_selenium_utils

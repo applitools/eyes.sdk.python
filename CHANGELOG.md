@@ -2,7 +2,7 @@
 ### Added
 - Collect tested domains and app names [Trello 870](https://trello.com/c/8X8mwBMS)
 ### Updated
-- Internal test infrastructure update [Trello 2147](https://trello.com/c/HVpkukIW)
+- Internal test infrastructure update [Trello 2147](https://trello.com/c/HVpkukIW) [GitHub 237](https://github.com/applitools/eyes.sdk.python/pull/237) [GitHub 232](https://github.com/applitools/eyes.sdk.python/pull/232)
 
 ## [4.8.0] - 2020-09-07
 ### Added
