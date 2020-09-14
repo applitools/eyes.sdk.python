@@ -12,11 +12,11 @@ from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 from . import eyes_selenium_utils
-from .useragent import BrowserNames, OSNames
 from .positioning import ScrollPositionProvider
+from .useragent import BrowserNames, OSNames
 
 if tp.TYPE_CHECKING:
-    from typing import Optional, Text, Union
+    from typing import Dict, Optional, Text, Union
 
     from appium.webdriver.webdriver import MobileWebElement
 
@@ -384,8 +384,8 @@ class ElementAdapter(object):
 
 class AndroidChromeElementAdapter(ElementAdapter):
     """
-     Appium set _w3c to False for Android Chrome which cause
-     an error during execution of script
+    Appium set _w3c to False for Android Chrome which cause
+    an error during execution of script
     """
 
     def __init__(self, eyes_element):

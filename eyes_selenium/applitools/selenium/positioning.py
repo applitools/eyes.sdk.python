@@ -4,7 +4,7 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import Point, logger, StitchMode, EyesError
+from applitools.common import EyesError, Point, StitchMode, logger
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 

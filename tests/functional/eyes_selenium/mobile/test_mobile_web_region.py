@@ -2,7 +2,7 @@ import pytest
 from appium import webdriver
 from selenium.webdriver.common.by import By
 
-from applitools.selenium import Target, StitchMode
+from applitools.selenium import StitchMode, Target
 
 
 @pytest.fixture
