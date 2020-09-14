@@ -103,7 +103,7 @@ def eyes_opened(request, eyes, driver, check_test_result):
 
 
 @pytest.yield_fixture(scope="function")
-def driver(request, browser_config, webdriver_module):
+def driver(request, browser_config, webdriver_module, capsys):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
     test_page_url = request.node.get_closest_marker("test_page_url")
@@ -129,7 +129,8 @@ def driver(request, browser_config, webdriver_module):
         browser = open_webdriver(
             lambda: webdriver_module.Remote(
                 command_executor=selenium_url, desired_capabilities=desired_caps
-            )
+            ),
+            capsys,
         )
     else:
         # Use local browser. Use ENV variable for driver binary or install if no one.
@@ -145,10 +146,11 @@ def driver(request, browser_config, webdriver_module):
             browser = open_webdriver(
                 lambda: webdriver_class(
                     executable_path=driver_manager_class().install(), options=options,
-                )
+                ),
+                capsys,
             )
         else:
-            browser = open_webdriver(webdriver_class)
+            browser = open_webdriver(webdriver_class, capsys)
 
     if test_page_url:
         browser.get(test_page_url)

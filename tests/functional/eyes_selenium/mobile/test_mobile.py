@@ -78,7 +78,7 @@ ANDROID_DEVICES = [
 
 
 @pytest.yield_fixture(scope="function")
-def mobile_eyes(request, page, eyes):
+def mobile_eyes(request, page, eyes, capsys):
     # configure eyes through @pytest.mark.parametrize('mobile_eyes', [], indirect=True)
     browser_config = copy(getattr(request, "param", {}))
     fully = browser_config.pop("fully", None)
@@ -111,7 +111,8 @@ def mobile_eyes(request, page, eyes):
     driver = open_webdriver(
         lambda: appium_webdriver.Remote(
             command_executor=selenium_url, desired_capabilities=desired_caps
-        )
+        ),
+        capsys,
     )
 
     eyes.stitch_mode = StitchMode.CSS

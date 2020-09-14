@@ -12,7 +12,9 @@ from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 
 @pytest.yield_fixture(scope="function")
-def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabilities):
+def mobile_eyes(
+    request, eyes, ios_desired_capabilities, android_desired_capabilities, capsys
+):
     selenium_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
         username=os.getenv("SAUCE_USERNAME", None),
         password=os.getenv("SAUCE_ACCESS_KEY", None),
@@ -26,7 +28,8 @@ def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabil
     mobile_driver = open_webdriver(
         lambda: appium_webdriver.Remote(
             command_executor=selenium_url, desired_capabilities=desired_caps
-        )
+        ),
+        capsys,
     )
     if mobile_driver is None:
         raise WebDriverException("Never created!")

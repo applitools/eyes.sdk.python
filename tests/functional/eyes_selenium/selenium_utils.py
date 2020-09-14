@@ -44,21 +44,21 @@ def might_hang(interval_or_func=60, log_func=print):
     return decorator(interval_or_func) if apply_now else decorator
 
 
-@might_hang
-def open_webdriver(driver_callable):
+def open_webdriver(driver_callable, capsys):
     browser = None
 
-    for i in range(5):
-        try:
-            browser = driver_callable()
-            break
-        except Exception as e:
-            print(
-                "Failed to start browser. Retrying {}\n Raised an exception {}".format(
-                    i, e
-                )
-            )
-            time.sleep(1.0)
+    with capsys.disabled():
+        with hang_logger(description="open_webdriver"):
+            for i in range(5):
+                try:
+                    browser = driver_callable()
+                    break
+                except Exception as e:
+                    print(
+                        "Failed to start browser. Retrying {}\n "
+                        "Raised an exception {}".format(i, e)
+                    )
+                    time.sleep(1.0)
 
     if browser is None:
         raise WebDriverException("Webdriver wasn't created!")
