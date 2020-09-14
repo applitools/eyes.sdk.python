@@ -87,9 +87,7 @@ class _EyesBaseAbstract(ABC):
     @abc.abstractmethod
     def _set_viewport_size(self, size):
         # type: (ViewPort) -> None
-        """
-
-        """
+        """"""
 
     @property
     @abc.abstractmethod

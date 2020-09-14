@@ -51,7 +51,7 @@ def test_render_request_serialize(browser_type):
         region=None,
         emulation_info=None,
     )
-    dom = RGridDom(url=dom_url, dom_nodes=[{}], resources=request_resources,)
+    dom = RGridDom(url=dom_url, dom_nodes=[{}], resources=request_resources)
     requests = [
         RenderRequest(
             webhook="some-webhook.com",

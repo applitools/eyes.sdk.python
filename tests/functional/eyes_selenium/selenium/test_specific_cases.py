@@ -215,8 +215,8 @@ def test_screenshot_too_big(driver, eyes):
     r_info = eyes.server_connector.render_info()
     eyes.save_debug_screenshots = True
     screenshots = []
-    eyes._selenium_eyes._debug_screenshots_provider.save = lambda image, suffix: screenshots.append(
-        image
+    eyes._selenium_eyes._debug_screenshots_provider.save = (
+        lambda image, suffix: screenshots.append(image)
     )
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     driver.find_element_by_id("stretched").click()

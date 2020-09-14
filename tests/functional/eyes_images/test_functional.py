@@ -103,14 +103,14 @@ def test_check_image_fluent_accessibility(eyes):
                 "actual_name": "accessibility",
                 "expected": [
                     AccessibilityRegion(
-                        10, 25, 200, 100, AccessibilityRegionType.GraphicalObject,
+                        10, 25, 200, 100, AccessibilityRegionType.GraphicalObject
                     )
                 ],
             },
             {
                 "actual_name": "accessibilitySettings",
                 "expected": AccessibilitySettings(
-                    AccessibilityLevel.AA, AccessibilityGuidelinesVersion.WCAG_2_1,
+                    AccessibilityLevel.AA, AccessibilityGuidelinesVersion.WCAG_2_1
                 ),
             },
         ],

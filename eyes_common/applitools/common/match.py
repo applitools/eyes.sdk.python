@@ -73,18 +73,15 @@ class FloatingMatchSettings(Rectangle):
     )  # type: int
 
     def __str__(self):
-        return (
-            "FloatingMatchSettings({left}, {top}, {width} x {height} | "
-            "{max_up_offset}, {max_down_offset}, {max_left_offset}, {max_right_offset}".format(
-                left=self.left,
-                top=self.top,
-                width=self.width,
-                height=self.height,
-                max_up_offset=self.max_up_offset,
-                max_down_offset=self.max_down_offset,
-                max_left_offset=self.max_left_offset,
-                max_right_offset=self.max_right_offset,
-            )
+        return "FloatingMatchSettings({left}, {top}, {width} x {height} | " "{max_up_offset}, {max_down_offset}, {max_left_offset}, {max_right_offset}".format(
+            left=self.left,
+            top=self.top,
+            width=self.width,
+            height=self.height,
+            max_up_offset=self.max_up_offset,
+            max_down_offset=self.max_down_offset,
+            max_left_offset=self.max_left_offset,
+            max_right_offset=self.max_right_offset,
         )
 
     def __eq__(self, other):

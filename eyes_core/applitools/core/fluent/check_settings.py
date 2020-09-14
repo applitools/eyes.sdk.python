@@ -207,7 +207,7 @@ class CheckSettings(object):
     def send_dom(self, senddom=True):
         # type: (Self, bool) -> Self
         """
-         Defines whether to send the document DOM or not.
+        Defines whether to send the document DOM or not.
         """
         self.values.send_dom = senddom
         return self
@@ -215,7 +215,7 @@ class CheckSettings(object):
     def use_dom(self, use=True):
         # type: (Self, bool) -> Self
         """
-         Defines useDom for enabling the match algorithm to use dom.
+        Defines useDom for enabling the match algorithm to use dom.
         """
         self.values.use_dom = use
         return self

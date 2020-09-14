@@ -302,7 +302,7 @@ class SeleniumEyes(EyesBase):
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region), name, False, check_settings, source,
+                RegionProvider(target_region), name, False, check_settings, source
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -334,7 +334,11 @@ class SeleniumEyes(EyesBase):
                         )
                     )
                 result = self._check_window_base(
-                    NULL_REGION_PROVIDER, name, False, check_settings, source,
+                    NULL_REGION_PROVIDER,
+                    name,
+                    False,
+                    check_settings,
+                    source,
                 )
         if result is None:
             result = MatchResult()
@@ -454,7 +458,11 @@ class SeleniumEyes(EyesBase):
                         )
 
                     result = self._check_window_base(
-                        NULL_REGION_PROVIDER, name, False, check_settings, source,
+                        NULL_REGION_PROVIDER,
+                        name,
+                        False,
+                        check_settings,
+                        source,
                     )
                 except Exception as e:
                     logger.exception(e)
@@ -498,7 +506,11 @@ class SeleniumEyes(EyesBase):
             return region
 
         result = self._check_window_base(
-            RegionProvider(get_region), name, False, check_settings, source,
+            RegionProvider(get_region),
+            name,
+            False,
+            check_settings,
+            source,
         )
         self._is_check_region = False
         return result

@@ -388,7 +388,7 @@ class MatchWindowTask(object):
                 datetime_utils.sleep(retry_timeout)
 
             screenshot = self._try_take_screenshot(
-                user_inputs, region, tag, check_settings, source,
+                user_inputs, region, tag, check_settings, source
             )
         else:
             screenshot = self._retry_taking_screenshot(

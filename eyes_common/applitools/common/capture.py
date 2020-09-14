@@ -16,8 +16,8 @@ Self = TypeVar("Self", bound="EyesScreenshot")  # typedef
 
 class EyesScreenshot(ABC):
     """
-     Base class for handling screenshots.
-     """
+    Base class for handling screenshots.
+    """
 
     def __init__(self, image):
         # type: (Image) -> None

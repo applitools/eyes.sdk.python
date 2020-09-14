@@ -146,7 +146,7 @@ def driver(request, browser_config, webdriver_module):
         if driver_manager_class:
             browser = open_webdriver(
                 lambda: webdriver_class(
-                    executable_path=driver_manager_class().install(), options=options,
+                    executable_path=driver_manager_class().install(), options=options
                 ),
             )
         else:
