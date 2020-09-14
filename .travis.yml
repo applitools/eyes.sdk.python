@@ -40,10 +40,6 @@ stages:
     - deploy
 jobs:
     include:
-        - stage: lint
-          python: 3.6
-          env:
-              - TOX_ENV=lint
         - stage: bumpversion
           if: tag =~ ^RELEASE_CANDIDATE AND fork == false
           script:
