@@ -229,7 +229,7 @@ jobs:
               - nvm install node
           script:
               - tox -e selenium-generated
-              - if [[ $TRAVIS_EVENT_TYPE=="cron" ]]; then
+              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
                   echo "REPORTED SUCCESSFULLY";
