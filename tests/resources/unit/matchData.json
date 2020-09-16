@@ -1,0 +1,56 @@
+{"agentSetup": null,
+    "appOutput": {
+        "domUrl": "https://eyespublicwusi0.core/bl9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
+        "screenshotUrl": "https://eyespublicwusi0.blob.core/g0e97eMliN8f7etrM110",
+        "title": "",
+        "viewport": {
+            "height": 1300,
+            "width": 2560
+        }
+    },
+    "ignoreMismatch": false,
+    "options": {
+        "forceMatch": false,
+        "forceMismatch": false,
+        "ignoreMatch": false,
+        "ignoreMismatch": false,
+        "imageMatchSettings": {
+            "Content": [],
+            "Floating": [],
+            "Layout": [],
+            "Strict": [],
+            "accessibility": [],
+            "accessibilitySettings": null,
+            "enablePatterns": null,
+            "exact": null,
+            "ignoreCaret": false,
+            "ignoreDisplacements": false,
+            "Ignore": [
+                {
+                    "coordinatesType": "SCREENSHOT_AS_IS",
+                    "height": 41,
+                    "left": 30,
+                    "top": 165,
+                    "width": 738
+                },
+                {
+                    "coordinatesType": "SCREENSHOT_AS_IS",
+                    "height": 32,
+                    "left": 30,
+                    "top": 480,
+                    "width": 738
+                }
+            ],
+            "matchLevel": "Strict",
+            "useDom": null
+        },
+        "name": "Capture",
+        "renderId": "bf3ce18291b4aa933bee",
+        "replaceLast": false,
+        "source": "applitoolscasppe.cm",
+        "userInputs": []
+    },
+    "renderId": "bf3ce18291b4aa933bee",
+    "tag": "Capture",
+    "userInputs": []
+}
