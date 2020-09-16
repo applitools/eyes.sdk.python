@@ -91,7 +91,8 @@ def test_running_session_serialization_and_deserialization():
     assert rs == json_utils.attr_from_json(rs_json, RunningSession)
 
 
-def test_multithread_seialization():
+@pytest.mark.parametrize("i", range(5))
+def test_multithreading_serialization(i):
     mwd = MatchWindowData(
         agent_setup=None,
         app_output=AppOutput(
@@ -125,7 +126,10 @@ def test_multithread_seialization():
     )
     match_window_data = get_resource("unit/matchData.json").decode("utf-8")
     with ThreadPoolExecutor() as executor:
-        results = executor.map(json_utils.to_json, [mwd] * 10)
+        results = list(executor.map(json_utils.to_json, [mwd] * 100))
+
+    assert len(results) == 100
+
     for i, r in enumerate(results):
         assert json_utils.attr_from_json(
             json_utils.to_json(mwd), MatchWindowData
