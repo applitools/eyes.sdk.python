@@ -284,8 +284,8 @@ class RunningTest(object):
                     if self.all_tasks_completed(self.watch_render):
                         self.becomes_rendered()
                     logger.debug(
-                        "render_task_succeeded: regions {}".format(
-                            self.regions.get(render_task)
+                        "render_task_succeeded: uuid: {}\n\tregions {}".format(
+                            render_task.uuid, self.regions.get(render_task)
                         )
                     )
                 elif render_status and render_status.status == RenderStatus.ERROR:
