@@ -1,252 +1,107 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
+import re
 import typing as tp
-from collections import OrderedDict
-from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Dict, List, Text
 
+import attr
 import requests
 import tinycss2
 
 from applitools.common import logger
-from applitools.common.utils import datetime_utils, is_absolute_url, is_url_with_scheme
-from applitools.common.utils.compat import urljoin
+from applitools.common.utils import (
+    datetime_utils,
+    is_absolute_url,
+    is_url_with_scheme,
+    json_utils,
+    urljoin,
+)
+from applitools.common.utils.json_utils import JsonInclude
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider
+from applitools.selenium.resource import get_resource
 
 if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
 
 __all__ = ("get_full_window_dom",)
-_CAPTURE_CSSOM_SCRIPT = """
-function extractCssResources() {
-    cssAndText = Array.from(document.querySelectorAll(
-    'link[rel="stylesheet"],style')).map(el => {
-        if (el.tagName.toUpperCase() === 'LINK') {
-            return [null, el.getAttribute('href')];
-        } else {
-            return [el.textContent, null];
-        }
-    });
-    return cssAndText
-}
-return extractCssResources();
-"""
-_CAPTURE_FRAME_SCRIPT = """
-function captureFrame({ styleProps, attributeProps, rectProps, ignoredTagNames }) {
-  const NODE_TYPES = {
-    ELEMENT: 1,
-    TEXT: 3,
-  };
+_CAPTURE_FRAME_SCRIPT = get_resource("captureDomAndPoll.js")
+DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
-  function filter(x) {
-    return !!x;
-  }
 
-  function notEmptyObj(obj) {
-    return Object.keys(obj).length ? obj : undefined;
-  }
+@attr.s
+class Separator:
+    separator = attr.ib(metadata={JsonInclude.THIS: True})
+    css_start_token = attr.ib(metadata={JsonInclude.THIS: True})
+    css_end_token = attr.ib(metadata={JsonInclude.THIS: True})
+    iframe_start_token = attr.ib(metadata={JsonInclude.THIS: True})
+    iframe_end_token = attr.ib(metadata={JsonInclude.THIS: True})
 
-  function iframeToJSON(el) {
-    const obj = elementToJSON(el);
-    try {
-      if (el.contentDocument) {
-        obj.childNodes = [captureNode(el.contentDocument.documentElement)];
-      }
-    } catch (ex) {
-    } finally {
-      return obj;
-    }
-  }
 
-  function elementToJSON(el) {
-    const tagName = el.tagName.toUpperCase();
-    if (ignoredTagNames.indexOf(tagName) > -1) return null;
-    const computedStyle = window.getComputedStyle(el);
-    const boundingClientRect = el.getBoundingClientRect();
+def _parse_script_result(script_result, missing_css, missing_frames, data):
+    # type: (Text, List, List, List) -> Separator
+    lines = re.split(r"\r?\n", script_result)
+    try:
+        separators = json_utils.attr_from_json(lines[0], Separator)
+        blocks = [missing_css, missing_frames, data]
+        block_index = 0
+        for line in lines[1:]:
+            if separators.separator == line:
+                block_index += 1
+            else:
+                blocks[block_index].append(line)
+        logger.info("missing css count: {}".format(len(missing_css)))
+        logger.info("missing frames count: {}".format(len(missing_frames)))
+    except Exception as e:
+        logger.exception(e)
+    # TODO: probably need to add shouldWaitForPhaser
+    return separators
 
-    const style = {};
-    for (const p of styleProps) style[p] = computedStyle.getPropertyValue(p);
 
-    const rect = {};
-    for (const p of rectProps) rect[p] = boundingClientRect[p];
+def recurse_frames(frame_data):
+    if not frame_data:
+        return ""
 
-    const attributes = {};
 
-    if (!attributeProps) {
-      if (el.hasAttributes()) {
-        var attrs = el.attributes;
-        for (const p of attrs) {
-          attributes[p.name] = p.value;
-        }
-      }
-    }
-    else {
-      if (attributeProps.all) {
-        for (const p of attributeProps.all) {
-          if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
-        }
-      }
+def efficient_string_replace(ref_id_open_token, ref_id_end_token, input, replacements):
+    if not replacements:
+        return input
 
-      if (attributeProps[tagName]) {
-        for (const p of attributeProps[tagName]) {
-          if (el.hasAttribute(p)) attributes[p] = el.getAttribute(p);
-        }
-      }
-    }
-    return {
-      tagName,
-      style: notEmptyObj(style),
-      rect: notEmptyObj(rect),
-      attributes: notEmptyObj(attributes),
-      childNodes: Array.prototype.map.call(el.childNodes, captureNode).filter(filter),
-    };
-  }
 
-  function captureTextNode(node) {
-    return {
-      tagName: '#text',
-      text: node.textContent,
-    };
-  }
+def get_frame_dom(driver):
+    # type: (EyesWebDriver) -> Dict
+    script_result = eyes_selenium_utils.get_dom_script_result(
+        driver,
+        DOM_EXTRACTION_TIMEOUT,
+        "DomCapture_StopWatch",
+        _CAPTURE_FRAME_SCRIPT + "return __captureDomAndPoll();",
+    )
+    missing_css = []
+    missing_frames = []
+    data = []
+    separators = _parse_script_result(script_result, missing_css, missing_frames, data)
 
-  function captureNode(node) {
-    switch (node.nodeType) {
-      case NODE_TYPES.TEXT:
-        return captureTextNode(node);
-      case NODE_TYPES.ELEMENT:
-        if (node.tagName.toUpperCase() === 'IFRAME') {
-          return iframeToJSON(node);
-        } else {
-          return elementToJSON(node);
-        }
-      default:
-        return null;
-    }
-  }
-
-  return captureNode(document.documentElement);
-}
-
-return JSON.stringify(captureFrame(arguments[0]));
-"""
-_ARGS_OBJ = {
-    "styleProps": [
-        "background-color",
-        "background-image",
-        "background-size",
-        "color",
-        "border-width",
-        "border-color",
-        "border-style",
-        "padding",
-        "margin",
-    ],
-    "attributeProps": None,
-    "rectProps": ["width", "height", "top", "left"],
-    "ignoredTagNames": ["HEAD", "SCRIPT"],
-}
-CSS_DOWNLOAD_TIMEOUT = 3  # Secs
+    # TODO: add fetch css func
+    # fetch_css_files(missing_css)
+    frame_data = recurse_frames(missing_frames)
+    return efficient_string_replace(
+        separators.iframe_start_token, separators.iframe_end_token, data[0], frame_data
+    )
 
 
 @datetime_utils.timeit
 def get_full_window_dom(driver, return_as_dict=False):
     # type: (EyesWebDriver, bool) -> tp.Union[str, dict]
-
-    dom_tree = json.loads(
-        driver.execute_script(_CAPTURE_FRAME_SCRIPT, _ARGS_OBJ),
-        object_pairs_hook=OrderedDict,
-    )
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
 
     with eyes_selenium_utils.get_and_restore_state(
         ScrollPositionProvider(driver, current_root_element)
     ):
         logger.debug("Traverse DOM Tree")
-        _traverse_dom_tree(driver, {"childNodes": [dom_tree], "tagName": "OUTER_HTML"})
+        script_result = get_frame_dom(driver)
 
-    if return_as_dict:
-        return dom_tree
-
-    return json.dumps(dom_tree)
-
-
-class DomNode(object):
-    __slots__ = ("tag_name", "child_nodes", "is_html", "is_iframe")
-
-    def __init__(self, tag_name, child_nodes):
-        # type: (tp.Text, tp.List) -> None
-        self.tag_name = tag_name
-        self.child_nodes = child_nodes
-        self.is_html = bool(self.tag_name == "HTML")
-        self.is_iframe = bool(self.tag_name == "IFRAME")
-
-    @classmethod
-    def create_from_dom_tree(cls, node):
-        # type: (tp.Dict) -> DomNode
-        tag_name = node.get("tagName", "").upper()
-        child_nodes = node.get("childNodes", [])
-        return cls(tag_name, child_nodes)
-
-
-def _traverse_dom_tree(driver, dom_tree):
-    # type: (EyesWebDriver, tp.Dict) -> None
-    """
-    Walk through all IFRAMEs and add CSS to them
-    """
-    node = DomNode.create_from_dom_tree(dom_tree)
-    if not node.tag_name:
-        return None
-    for index, sub_dom_tree in enumerate(_loop(driver, dom_tree)):
-        # Reduce recursion optimization. Save from extra _loop calls
-        if not sub_dom_tree["childNodes"]:
-            continue
-        with driver.switch_to.frame_and_back(index):
-            _traverse_dom_tree(driver, sub_dom_tree)
-
-
-def _loop(driver, dom_tree):
-    # type: (EyesWebDriver, tp.Dict) -> tp.Iterable
-    node = DomNode.create_from_dom_tree(dom_tree)
-    if not node.child_nodes:
-        return []
-
-    def iterate_child_nodes(child_nodes):
-        for sub_dom_tree in child_nodes:
-            sub_node = DomNode.create_from_dom_tree(sub_dom_tree)
-            if sub_node.is_iframe:
-                yield sub_dom_tree
-                continue
-
-            if sub_node.is_html:
-                sub_dom_tree["css"] = _get_frame_bundled_css(driver)
-            if sub_node.child_nodes:
-                # yield from iterate_child_nodes() in python 3
-                for sub in iterate_child_nodes(sub_node.child_nodes):
-                    yield sub
-
-    return iterate_child_nodes(node.child_nodes)
-
-
-@datetime_utils.timeit
-def _get_frame_bundled_css(driver):
-    # type: (EyesWebDriver) -> tp.Text
-    base_url = driver.current_url  # type: ignore
-    if not is_absolute_url(base_url):
-        logger.info("Base URL is not an absolute URL!")
-
-    cssom_results = driver.execute_script(_CAPTURE_CSSOM_SCRIPT)
-    raw_css_nodes = [
-        CssNode.create(base_url, css_href, css_text)
-        for css_text, css_href in cssom_results
-    ]
-
-    if len(raw_css_nodes) > 5:
-        with ThreadPoolExecutor() as executor:
-            results = executor.map(_process_raw_css_node, raw_css_nodes)
-    else:
-        results = [_process_raw_css_node(node) for node in raw_css_nodes]
-    return "".join(results)
+    return json.loads(script_result) if return_as_dict else script_result
 
 
 def _process_raw_css_node(node, minimize_css=True):
