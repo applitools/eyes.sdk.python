@@ -3,6 +3,8 @@ from __future__ import absolute_import, unicode_literals
 import json
 import re
 import typing as tp
+from concurrent.futures.thread import ThreadPoolExecutor
+from itertools import chain
 from typing import Dict, List, Text
 
 import attr
@@ -33,11 +35,11 @@ _CAPTURE_FRAME_SCRIPT_IE = (
     get_resource("captureDomAndPollForIE.js") + "return __captureDomAndPollForIE();"
 )
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
-CSS_DOWNLOAD_TIMEOUT = 3  # Secs
+CSS_DOWNLOAD_TIMEOUT = 30  # Secs
 
 
 @attr.s
-class Separator:
+class Separator(object):
     separator = attr.ib(metadata={JsonInclude.THIS: True})
     css_start_token = attr.ib(metadata={JsonInclude.THIS: True})
     css_end_token = attr.ib(metadata={JsonInclude.THIS: True})
@@ -45,20 +47,26 @@ class Separator:
     iframe_end_token = attr.ib(metadata={JsonInclude.THIS: True})
 
 
-class CssDownloader:
+class CssDownloader(object):
     def __init__(self):
-        self.css_urls = []
+        self.css_start_token = None
+        self.css_end_token = None
+        self._executor = ThreadPoolExecutor()
+        self._results = []
 
-    def fetch_css_files(self, css_start_token, css_end_token, urls):
+    def fetch_css_files(self, base_url, css_start_token, css_end_token, urls):
+        if not is_absolute_url(base_url):
+            logger.info("Base URL is not an absolute URL!")
         self.css_start_token = css_start_token
         self.css_end_token = css_end_token
-        self.css_urls.extend(urls)
+        nodes = [CssNode.create(base_url, url) for url in urls]
+        futures = self._executor.map(
+            _download_jsonify_node, urls, nodes, timeout=CSS_DOWNLOAD_TIMEOUT
+        )
+        self._results.append(futures)
 
     def results(self):
-        return {
-            url: clean_for_json(_process_raw_css_node(CssNode(None, url, None)))
-            for url in self.css_urls
-        }
+        return {url: data for url, data in chain(*self._results)}
 
 
 def _parse_script_result(script_result):
@@ -130,7 +138,10 @@ def get_frame_dom(driver, css_downoader):
     separators, missing_css, missing_frames, data = _parse_script_result(script_result)
 
     css_downoader.fetch_css_files(
-        separators.css_start_token, separators.css_end_token, missing_css
+        driver.current_url,
+        separators.css_start_token,
+        separators.css_end_token,
+        missing_css,
     )
     frame_data = recurse_frames(driver, missing_frames, css_downoader)
     return efficient_string_replace(
@@ -165,6 +176,10 @@ def get_full_window_dom(driver, return_as_dict=False):
         script_result = get_dom(driver)
 
     return json.loads(script_result) if return_as_dict else script_result
+
+
+def _download_jsonify_node(url, node):
+    return url, clean_for_json(_process_raw_css_node(node))
 
 
 def _process_raw_css_node(node, minimize_css=True):
