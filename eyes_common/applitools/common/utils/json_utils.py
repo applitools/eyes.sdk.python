@@ -1,7 +1,7 @@
 import enum
 import json
 import re
-from collections import Counter, OrderedDict, defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -88,7 +88,7 @@ def attr_from_json(content, cls):
             return params
 
     def obj_came(obj):
-        params = _make_keys_as_underscore(OrderedDict(obj))
+        params = _make_keys_as_underscore(dict(obj))
         coincidence = defaultdict(int)
         for kls, fields in iteritems(types_and_fields):
             fields_to_compare = tuple(_server_fields_name(fields))
@@ -116,15 +116,14 @@ def attr_from_dict(dct, cls):
 
 def _cleaned_dict_from_attrs(val):
     # Uses for replacing of regular attr.name to specified in metadata
-    replace_to_dict = OrderedDict()  # type: Dict[Text, Text]
+    replace_to_dict = dict()  # type: Dict[Text, Text]
 
-    class _CamelCasedDict(OrderedDict):
+    class _CamelCasedDict(dict):
         def __setitem__(self, key, value):
             if key in replace_to_dict:
                 # use key specified in metadata
                 old_key = key
                 key = replace_to_dict[old_key]
-                del replace_to_dict[old_key]
             else:
                 # convert key into camel case format
                 key = underscore_to_camelcase(key)
