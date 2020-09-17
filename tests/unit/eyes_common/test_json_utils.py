@@ -124,16 +124,13 @@ def test_multithreading_serialization(i):
             user_inputs=[],
         ),
     )
-    match_window_data = get_resource("unit/matchData.json").decode("utf-8")
     with ThreadPoolExecutor() as executor:
         results = list(executor.map(json_utils.to_json, [mwd] * 100))
 
     assert len(results) == 100
 
     for i, r in enumerate(results):
-        assert json_utils.attr_from_json(
-            json_utils.to_json(mwd), MatchWindowData
-        ) == json_utils.attr_from_json(match_window_data, MatchWindowData)
+        assert "Ignore" in r
         assert "ignoreRegions" not in r
 
 
