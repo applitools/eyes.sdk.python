@@ -71,7 +71,6 @@ def test_send_DOM_Selector(eyes, driver, batch_info):
 
 @pytest.mark.expected_json("expected_dom1")
 def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expected_json):
-    expected = expected_json.parsed
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -90,8 +89,8 @@ def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expecte
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
 
     assert get_has_DOM(dom_intercepting_eyes.api_key, results)
-    assert actual == expected
-    assert get_step_DOM(dom_intercepting_eyes, results) == expected
+    assert actual == expected_json
+    assert get_step_DOM(dom_intercepting_eyes, results) == expected_json
 
 
 def get_has_DOM(api_key, results):
