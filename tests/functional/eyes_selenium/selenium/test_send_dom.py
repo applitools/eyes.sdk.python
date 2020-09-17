@@ -111,3 +111,30 @@ def get_step_DOM(eyes, results):
     )
     res = requests.get(url)
     return res.json()
+
+
+def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
+    # Expected json data is captured by java sdk,
+    # it produces arbitrary cd_frame_id_ attributes
+    del expected_json["childNodes"][1]["childNodes"][13]["attributes"]["cd_frame_id_"]
+    del expected_json["childNodes"][1]["childNodes"][13]["childNodes"][0]["childNodes"][
+        1
+    ]["childNodes"][3]["attributes"]["cd_frame_id_"]
+    config = (
+        Configuration()
+        .set_batch(batch_info)
+        .set_app_name("Test Send DOM")
+        .set_test_name("test_send_dom_cors_iframe")
+        .set_viewport_size(RectangleSize(1024, 768))
+        # TODO: Remove this when default options get in sync for java and python SDK
+        .set_hide_scrollbars(True)
+    )
+    dom_intercepting_eyes.set_configuration(config)
+
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage")
+    dom_intercepting_eyes.open(driver, "Test Send DOM", "test_send_dom_cors_iframe")
+    dom_intercepting_eyes.check("Window", Target.window().fully())
+    dom_intercepting_eyes.close(False)
+    actual = json.loads(dom_intercepting_eyes.captured_dom_json)
+
+    assert actual == expected_json
