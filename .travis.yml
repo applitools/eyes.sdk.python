@@ -77,6 +77,18 @@ jobs:
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
+        - os: windows
+          language: sh
+          before_install:
+              - choco install python2
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=unit
+              - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                - $LOCALAPPDATA/pip/Cache
         - os: osx
           language: sh
           python: 3.6
@@ -93,7 +105,6 @@ jobs:
               - TOX_ENV=integration
         - os: windows
           language: sh
-          python: 3.6
           before_install:
               - choco install python --version=3.6.6
               - choco install -y --force nodejs-lts
@@ -101,6 +112,18 @@ jobs:
           env:
               - TOX_ENV=integration
               - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                  - $LOCALAPPDATA/pip/Cache
+        - os: windows
+          language: sh
+          before_install:
+              - choco install python2
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=integration
+              - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache

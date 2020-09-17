@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Collect tested domains and app names [Trello 870](https://trello.com/c/8X8mwBMS)
+### Fixed
+- Missing match regions on UFG with Python 2 [Trello 2020](https://trello.com/c/PD67n1Vj)
 ### Updated
 - Internal test infrastructure update [Trello 2147](https://trello.com/c/HVpkukIW) [GitHub 237](https://github.com/applitools/eyes.sdk.python/pull/237) [GitHub 232](https://github.com/applitools/eyes.sdk.python/pull/232)
 
