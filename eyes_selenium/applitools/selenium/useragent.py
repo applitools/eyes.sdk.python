@@ -44,6 +44,7 @@ class BrowserNames(Enum):
     IE = "IE"
     Firefox = "Firefox"
     Chrome = "Chrome"
+    ChromeMobile = "Chrome Mobile"
     HeadlessChrome = "HeadlessChrome"
     Safari = "Safari"
     Chromium = "Chromium"
@@ -77,6 +78,15 @@ class UserAgent(object):
             self.browser == BrowserNames.IE
             or (self.browser == BrowserNames.Edge and self.browser_major_version <= 18)
         )
+
+    @property
+    def is_chrome(self):
+        # type: () -> bool
+        return self.browser in [
+            BrowserNames.Chrome,
+            BrowserNames.Chromium,
+            BrowserNames.ChromeMobile,
+        ]
 
     @property
     def os_name_with_major_version(self):
