@@ -176,6 +176,9 @@ class EyesConnector(EyesBase):
 
     def render_status_for_task(self, uuid, status):
         # type: (str, RenderStatusResults) -> None
+        logger.debug(
+            "render_status_for_task: uuid: {} \n\tstatus: {}".format(uuid, status)
+        )
         self._current_uuid = uuid
         self._render_statuses[uuid] = status
 
