@@ -2,6 +2,7 @@ import json
 
 import pytest
 import requests
+from pytest_dictsdiff import check_objects
 
 from applitools.common import RectangleSize
 from applitools.common.utils import urlencode, urlsplit, urlunsplit
@@ -9,14 +10,6 @@ from applitools.selenium import Configuration, Target
 from tests.utils import get_session_results
 
 
-@pytest.mark.platform("Linux")
-@pytest.mark.parametrize(
-    "url, num",
-    [
-        ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html", "1"],
-        ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture_2.html", "2"],
-    ],
-)
 @pytest.fixture
 def dom_intercepting_eyes(eyes):
     intercepted = eyes._selenium_eyes._try_capture_dom
@@ -29,6 +22,14 @@ def dom_intercepting_eyes(eyes):
     return eyes
 
 
+@pytest.mark.platform("Linux")
+@pytest.mark.parametrize(
+    "url, num",
+    [
+        ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html", "1"],
+        ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture_2.html", "2"],
+    ],
+)
 def test_send_DOM_1_2(eyes, driver, batch_info, url, num):
     driver.get(url)
     config = Configuration().set_batch(batch_info)
@@ -89,7 +90,7 @@ def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expecte
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
 
     assert get_has_DOM(dom_intercepting_eyes.api_key, results)
-    assert actual == expected_json
+    assert check_objects(actual, expected_json)
     assert get_step_DOM(dom_intercepting_eyes, results) == expected_json
 
 
@@ -137,4 +138,4 @@ def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expecte
     dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
 
-    assert actual == expected_json
+    assert check_objects(actual, expected_json)
