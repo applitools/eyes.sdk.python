@@ -61,6 +61,8 @@ class CssDownloader(object):
     def fetch_css_files(self, base_url, css_start_token, css_end_token, urls):
         if not is_absolute_url(base_url):
             logger.info("Base URL is not an absolute URL!")
+        assert self.css_start_token is None or self.css_start_token == css_start_token
+        assert self.css_end_token is None or self.css_end_token == css_end_token
         self.css_start_token = css_start_token
         self.css_end_token = css_end_token
         nodes = [CssNode.create(base_url, url) for url in urls]
