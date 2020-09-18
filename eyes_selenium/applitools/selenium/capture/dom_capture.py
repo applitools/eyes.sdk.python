@@ -35,7 +35,7 @@ __all__ = ("get_full_window_dom",)
 _CAPTURE_FRAME_SCRIPT = (
     get_resource("captureDomAndPoll.js") + "return __captureDomAndPoll();"
 )
-_CAPTURE_FRAME_SCRIPT_IE = (
+_CAPTURE_FRAME_SCRIPT_FOR_IE = (
     get_resource("captureDomAndPollForIE.js") + "return __captureDomAndPollForIE();"
 )
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
@@ -133,8 +133,10 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
 
 def get_frame_dom(driver, css_downoader):
     # type: (EyesWebDriver, CssDownloader) -> Dict
+    is_ie = driver.user_agent.is_internet_explorer
+    script = _CAPTURE_FRAME_SCRIPT_FOR_IE if is_ie else _CAPTURE_FRAME_SCRIPT
     script_result = eyes_selenium_utils.get_dom_script_result(
-        driver, DOM_EXTRACTION_TIMEOUT, "DomCapture_StopWatch", _CAPTURE_FRAME_SCRIPT,
+        driver, DOM_EXTRACTION_TIMEOUT, "DomCapture_StopWatch", script
     )
     separators, missing_css, missing_frames, data = _parse_script_result(script_result)
 
