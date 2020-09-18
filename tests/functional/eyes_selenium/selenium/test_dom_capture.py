@@ -233,22 +233,3 @@ class TestCustomersPages(object):
     )
     def test_nikita_example(self):
         self.eyes.check_window("Nikita")
-
-
-def test_efficient_string_replace():
-    assert (
-        efficient_string_replace(
-            "@<",
-            ">#",
-            "abcdef@<0>#ghijklmnop@<1>#qrstuv@<2>#wx@<1>#@<0>#yz",
-            {"0": "ABCDEFG", "1": "HIJKLMNOP", "2": "QRSTUV", "3": "WXYZ"},
-        )
-        == "abcdefABCDEFGghijklmnopHIJKLMNOPqrstuvQRSTUVwxHIJKLMNOPABCDEFGyz"
-    )
-
-
-def test_clean_for_json():
-    assert clean_for_json("\b\t\n\f\r") == r"\b\t\n\f\r"
-    assert clean_for_json('"/') == r"\"/"
-    assert clean_for_json("\\") == r"\\"
-    assert clean_for_json(chr(25)) == r"\u0019"

@@ -1,0 +1,27 @@
+from __future__ import absolute_import, unicode_literals
+import json
+import re
+
+
+def efficient_string_replace(ref_id_open_token, ref_id_end_token, input, replacements):
+    r = re.compile(re.escape(ref_id_open_token) + "(.*?)" + re.escape(ref_id_end_token))
+    for _ in range(len(replacements) + 1):  # limit retries to avoid endless loop
+
+        def replacement(match):
+            replacement.performed = True  # no nonlocal keyword in py2
+            return replacements[match.group(1)]
+
+        replacement.performed = False
+        input = r.sub(replacement, input)
+
+        if not replacement.performed:
+            break
+    else:
+        raise RuntimeError("Cyclic replacement pattern found")
+
+    return input
+
+
+def clean_for_json(s):
+    # make json array and remove [" and "]
+    return json.dumps([s])[2:-2]

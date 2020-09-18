@@ -19,6 +19,10 @@ from applitools.common.utils import (
     json_utils,
     urljoin,
 )
+from applitools.common.utils.efficient_string_replace import (
+    efficient_string_replace,
+    clean_for_json,
+)
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider
@@ -123,18 +127,6 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
             frame_data[missing_frame_line] = ""
         switch_to.frames(fc)
     return frame_data
-
-
-def efficient_string_replace(ref_id_open_token, ref_id_end_token, input, replacements):
-    res = input
-    for ph, replacement in replacements.items():
-        res = res.replace(ref_id_open_token + ph + ref_id_end_token, replacement)
-    return res
-
-
-def clean_for_json(s):
-    # make json array and remove [" and "]
-    return json.dumps([s])[2:-2]
 
 
 def get_frame_dom(driver, css_downoader):
