@@ -51,7 +51,7 @@ class CssDownloader(object):
     def __init__(self):
         self.css_start_token = None
         self.css_end_token = None
-        self._executor = ThreadPoolExecutor()
+        self._executor = ThreadPoolExecutor(4)
         self._results = []
 
     def fetch_css_files(self, base_url, css_start_token, css_end_token, urls):
@@ -67,6 +67,13 @@ class CssDownloader(object):
 
     def results(self):
         return {url: data for url, data in chain(*self._results)}
+
+    def __enter__(self):
+        self._executor.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self._executor.__exit__(exc_type, exc_val, exc_tb)
 
 
 def _parse_script_result(script_result):
@@ -151,17 +158,17 @@ def get_frame_dom(driver, css_downoader):
 
 def get_dom(driver):
     # type: (EyesWebDriver) -> Text
-    original_fc = driver.frame_chain.clone()
-    css_downloader = CssDownloader()
-    dom = get_frame_dom(driver, css_downloader)
-    if original_fc is not None:
-        driver.switch_to.frames(original_fc)
-    return efficient_string_replace(
-        css_downloader.css_start_token,
-        css_downloader.css_end_token,
-        dom,
-        css_downloader.results(),
-    )
+    with CssDownloader() as css_downloader:
+        original_fc = driver.frame_chain.clone()
+        dom = get_frame_dom(driver, css_downloader)
+        if original_fc is not None:
+            driver.switch_to.frames(original_fc)
+        return efficient_string_replace(
+            css_downloader.css_start_token,
+            css_downloader.css_end_token,
+            dom,
+            css_downloader.results(),
+        )
 
 
 @datetime_utils.timeit
