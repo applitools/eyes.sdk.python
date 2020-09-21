@@ -8,15 +8,14 @@ from typing import Dict, Text
 def efficient_string_replace(ref_id_open_token, ref_id_end_token, input, replacements):
     # type: (Text, Text, Text, Dict[Text, Text]) -> Text
     r = re.compile(re.escape(ref_id_open_token) + "(.*?)" + re.escape(ref_id_end_token))
+
+    def replacement(match):
+        replacement.performed = True  # no nonlocal keyword in py2
+        return replacements[match.group(1)]
+
     for _ in range(len(replacements) + 1):  # limit retries to avoid endless loop
-
-        def replacement(match):
-            replacement.performed = True  # no nonlocal keyword in py2
-            return replacements[match.group(1)]
-
         replacement.performed = False
         input = r.sub(replacement, input)
-
         if not replacement.performed:
             break
     else:
