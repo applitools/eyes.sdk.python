@@ -114,6 +114,7 @@ def get_step_DOM(eyes, results):
     return res.json()
 
 
+@pytest.mark.skip
 def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
     # Expected json data is captured by java sdk,
     # it produces arbitrary cd_frame_id_ attributes
