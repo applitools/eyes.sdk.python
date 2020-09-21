@@ -5,7 +5,7 @@ import re
 import typing as tp
 from concurrent.futures.thread import ThreadPoolExecutor
 from itertools import chain
-from typing import Dict, List, Text
+from typing import Dict, Generator, List, Optional, Text, Union
 
 import attr
 import requests
@@ -20,8 +20,8 @@ from applitools.common.utils import (
     urljoin,
 )
 from applitools.common.utils.efficient_string_replace import (
-    efficient_string_replace,
     clean_for_json,
+    efficient_string_replace,
 )
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.selenium import eyes_selenium_utils
@@ -43,12 +43,12 @@ CSS_DOWNLOAD_TIMEOUT = 30  # Secs
 
 
 @attr.s
-class Separator(object):
-    separator = attr.ib(metadata={JsonInclude.THIS: True})
-    css_start_token = attr.ib(metadata={JsonInclude.THIS: True})
-    css_end_token = attr.ib(metadata={JsonInclude.THIS: True})
-    iframe_start_token = attr.ib(metadata={JsonInclude.THIS: True})
-    iframe_end_token = attr.ib(metadata={JsonInclude.THIS: True})
+class Separators(object):
+    separator = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    css_start_token = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    css_end_token = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    iframe_start_token = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    iframe_end_token = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
 
 
 class CssDownloader(object):
@@ -59,6 +59,7 @@ class CssDownloader(object):
         self._results = []
 
     def fetch_css_files(self, base_url, css_start_token, css_end_token, urls):
+        #  type: (Text, Text, Text, List[Text]) -> None
         if not is_absolute_url(base_url):
             logger.info("Base URL is not an absolute URL!")
         assert self.css_start_token is None or self.css_start_token == css_start_token
@@ -72,6 +73,7 @@ class CssDownloader(object):
         self._results.append(futures)
 
     def results(self):
+        # type: () -> Dict[Text, Text]
         return {url: data for url, data in chain(*self._results)}
 
     def __enter__(self):
@@ -83,10 +85,10 @@ class CssDownloader(object):
 
 
 def _parse_script_result(script_result):
-    # type: (Text) -> (Separator, List, List, List)
+    # type: (Text) -> (Separators, List, List, List)
     missing_css, missing_frames, data = [], [], []
     lines = re.split(r"\r?\n", script_result)
-    separators = json_utils.attr_from_json(lines[0], Separator)
+    separators = json_utils.attr_from_json(lines[0], Separators)
     blocks = [missing_css, missing_frames, data]
     block_index = 0
     for line in lines[1:]:
@@ -100,6 +102,7 @@ def _parse_script_result(script_result):
 
 
 def recurse_frames(driver, missing_frames_list, css_downoader):
+    # type: (EyesWebDriver, List[Text], CssDownloader) -> Dict[Text, Text]
     frame_data = {}
     switch_to = driver.switch_to
     fc = driver.frame_chain.clone()
@@ -130,7 +133,7 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
 
 
 def get_frame_dom(driver, css_downoader):
-    # type: (EyesWebDriver, CssDownloader) -> Dict
+    # type: (EyesWebDriver, CssDownloader) -> Text
     is_ie = driver.user_agent.is_internet_explorer
     script = _CAPTURE_FRAME_SCRIPT_FOR_IE if is_ie else _CAPTURE_FRAME_SCRIPT
     script_result = eyes_selenium_utils.get_dom_script_result(
@@ -167,7 +170,7 @@ def get_dom(driver):
 
 @datetime_utils.timeit
 def get_full_window_dom(driver, return_as_dict=False):
-    # type: (EyesWebDriver, bool) -> tp.Union[str, dict]
+    # type: (EyesWebDriver, bool) -> Union[str, dict]
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
 
     with eyes_selenium_utils.get_and_restore_state(
@@ -180,11 +183,12 @@ def get_full_window_dom(driver, return_as_dict=False):
 
 
 def _download_jsonify_node(url, node):
+    # type: (Text, CssNode) -> (Text, Text)
     return url, clean_for_json(_process_raw_css_node(node))
 
 
 def _process_raw_css_node(node, minimize_css=True):
-    # type: (CssNode, bool) -> tp.Text
+    # type: (CssNode, bool) -> Text
 
     @datetime_utils.retry()
     def get_css(url):
@@ -212,7 +216,7 @@ def _process_raw_css_node(node, minimize_css=True):
 
 
 def _parse_and_serialize_css(node, text, minimize=False):
-    # type: (CssNode, tp.Text, bool) -> tp.Generator
+    # type: (CssNode, Text, bool) -> Generator
     def is_import_node(n):
         return n.type == "at-rule" and n.lower_at_keyword == "import"
 
@@ -253,7 +257,7 @@ def _parse_and_serialize_css(node, text, minimize=False):
 
 
 def _make_url(base_url, value):
-    # type: (tp.Text, tp.Text) -> tp.Text
+    # type: (Text, Text) -> Text
     if is_absolute_url(value) and not is_url_with_scheme(value):  # noqa
         url = urljoin("http://", value)
     else:
@@ -262,6 +266,7 @@ def _make_url(base_url, value):
 
 
 def _frame_location(driver):
+    # type: (EyesWebDriver) -> Text
     return driver.execute_script("return document.location.href")
 
 
@@ -269,24 +274,24 @@ class CssNode(object):
     __slots__ = ("base_url", "url", "text")
 
     def __init__(self, base_url, url, text):
-        # type: (tp.Optional[tp.Text], tp.Optional[tp.Text], tp.Optional[tp.Text]) -> None
+        # type: (Optional[Text], Optional[Text], Optional[Text]) -> None
         self.base_url = base_url
         self.url = url
         self.text = text
 
     @classmethod
     def create(cls, base_url, href=None, text=None):
-        # type: (tp.Text, tp.Optional[tp.Text], tp.Optional[tp.Text]) -> 'CssNode'
+        # type: (Text, Optional[Text], Optional[Text]) -> 'CssNode'
         url = _make_url(base_url, href) if href else None
         return cls(base_url, url, text)
 
     @classmethod
     def create_sub_node(cls, parent_node, href, text=None):
-        # type: ('CssNode', tp.Text, tp.Optional[tp.Text]) -> 'CssNode'
+        # type: ('CssNode', Text, Optional[Text]) -> 'CssNode'
         url = _make_url(parent_node.base_url, href)
         return cls(parent_node.base_url, url, text)
 
     @classmethod
     def create_serialized_node(cls, text):
-        # type: (tp.Text) -> 'CssNode'
+        # type: (Text) -> 'CssNode'
         return cls(base_url=None, url=None, text=text)
