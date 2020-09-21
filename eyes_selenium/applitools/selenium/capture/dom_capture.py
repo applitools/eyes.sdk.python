@@ -184,7 +184,7 @@ def get_full_window_dom(driver, return_as_dict=False):
 
 def _download_jsonify_node(url, node):
     # type: (Text, CssNode) -> (Text, Text)
-    return url, clean_for_json(_process_raw_css_node(node))
+    return url, clean_for_json(_process_raw_css_node(node, minimize_css=False))
 
 
 def _process_raw_css_node(node, minimize_css=True):
@@ -226,7 +226,7 @@ def _parse_and_serialize_css(node, text, minimize=False):
     for style_node in stylesheet:
         if is_import_node(style_node):
             for tag in style_node.prelude:
-                if tag.type == "url":
+                if tag.type in ("url", "string"):
                     logger.debug("The node has import")
                     yield CssNode.create_sub_node(parent_node=node, href=tag.value)
             continue
@@ -288,7 +288,7 @@ class CssNode(object):
     @classmethod
     def create_sub_node(cls, parent_node, href, text=None):
         # type: ('CssNode', Text, Optional[Text]) -> 'CssNode'
-        url = _make_url(parent_node.base_url, href)
+        url = _make_url(parent_node.url, href)
         return cls(parent_node.base_url, url, text)
 
     @classmethod
