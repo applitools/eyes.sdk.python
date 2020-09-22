@@ -108,7 +108,7 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
     fc = driver.frame_chain.clone()
     for missing_frame_line in missing_frames_list:
         logger.info("Switching to frame line: {}".format(missing_frame_line))
-        original_location = _frame_location(driver)
+        original_location = _frame_url(driver)
         try:
             for missing_frame_xpath in missing_frame_line.split(","):
                 logger.info("Switching to specific frame: " + missing_frame_xpath)
@@ -119,7 +119,7 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
                     )
                 )
                 switch_to.frame(frame)
-                location_after_switch = _frame_location(driver)
+                location_after_switch = _frame_url(driver)
                 if location_after_switch == original_location:
                     logger.info("Switching to frame failed")
                     frame_data[missing_frame_line] = ""
@@ -142,7 +142,7 @@ def get_frame_dom(driver, css_downoader):
     separators, missing_css, missing_frames, data = _parse_script_result(script_result)
 
     css_downoader.fetch_css_files(
-        _frame_location(driver),
+        _frame_url(driver),
         separators.css_start_token,
         separators.css_end_token,
         missing_css,
@@ -265,7 +265,7 @@ def _make_url(base_url, value):
     return url
 
 
-def _frame_location(driver):
+def _frame_url(driver):
     # type: (EyesWebDriver) -> Text
     return driver.execute_script("return document.location.href")
 
