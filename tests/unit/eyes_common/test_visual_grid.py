@@ -1,3 +1,5 @@
+from random import randint
+
 from applitools.common import VGResource
 from applitools.common.ultrafastgrid import (
     BrowserType,
@@ -23,6 +25,16 @@ def test_vgresource_with_function_that_raises_exception_should_not_break():
         },
         _raise,
     )
+
+
+def test_vg_resource_big_content_should_be_cutted_in_vg_resource():
+    chars = (b"a", b"b", b"c", b"2")
+    resource = VGResource(
+        "https://test.url",
+        "content-type/test",
+        b"".join(chars[randint(0, 3)] for _ in range(VGResource.MAX_RESOURCE_SIZE + 5)),
+    )
+    assert len(resource.content) == VGResource.MAX_RESOURCE_SIZE
 
 
 def test_chrome_emulation_info():

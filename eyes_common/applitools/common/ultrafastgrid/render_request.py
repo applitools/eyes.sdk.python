@@ -170,7 +170,7 @@ class RGridDom(object):
 
 @attr.s(slots=True)
 class VGResource(object):
-    MAX_RESOURCE_SIZE = 15 * 1024 * 1024
+    MAX_RESOURCE_SIZE = 15 * 1024 * 1024  # type: int
 
     url = attr.ib()  # type: Text
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
