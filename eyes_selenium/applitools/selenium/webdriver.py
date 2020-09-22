@@ -23,7 +23,7 @@ from .positioning import ScrollPositionProvider
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, Generator, List, Optional, Text, Union
+    from typing import Any, ContextManager, Dict, Generator, List, Optional, Text, Union
 
     from appium.webdriver import Remote as AppiumWebDriver
     from PIL.Image import Image
@@ -753,3 +753,14 @@ class EyesWebDriver(object):
             driver.quit()
         """
         self._driver.quit()
+
+    @contextlib.contextmanager
+    def saved_frame_chain(self):
+        # type: () -> ContextManager
+        """Context manager that saves and restores driver's frame chain"""
+        original_fc = self.frame_chain.clone()
+        try:
+            yield
+        finally:
+            if original_fc is not None:
+                self.switch_to.frames(original_fc)

@@ -1,12 +1,25 @@
 import json
-import os
-from collections import OrderedDict
 
 import pytest
+import requests
+from pytest_dictsdiff import check_objects
 
+from applitools.common import RectangleSize
+from applitools.common.utils import urlencode, urlsplit, urlunsplit
 from applitools.selenium import Configuration, Target
-from applitools.selenium.capture import dom_capture
 from tests.utils import get_session_results
+
+
+@pytest.fixture
+def dom_intercepting_eyes(eyes):
+    intercepted = eyes._selenium_eyes._try_capture_dom
+
+    def try_capture_dom():
+        eyes.captured_dom_json = intercepted()
+        return eyes.captured_dom_json
+
+    eyes._selenium_eyes._try_capture_dom = try_capture_dom
+    return eyes
 
 
 @pytest.mark.platform("Linux")
@@ -57,39 +70,33 @@ def test_send_DOM_Selector(eyes, driver, batch_info):
     assert get_has_DOM(eyes.api_key, results)
 
 
-@pytest.mark.skip
-def test_send_DOM_full_window(eyes, driver, batch_info):
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
-    config = Configuration().set_batch(batch_info)
-    eyes.set_configuration(config)
-    eyes_driver = eyes.open(
-        driver,
-        "Test Send DOM",
-        "Full Window",
-        viewport_size={"width": 1024, "height": 768},
+@pytest.mark.expected_json("expected_dom1")
+def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expected_json):
+    config = (
+        Configuration()
+        .set_batch(batch_info)
+        .set_app_name("Test Send DOM")
+        .set_test_name("Full Window")
+        .set_viewport_size(RectangleSize(1024, 768))
+        # TODO: Remove this when default options get in sync for java and python SDK
+        .set_hide_scrollbars(True)
     )
-    eyes.check_window()
-    actual_dom_json = dom_capture.get_full_window_dom(eyes_driver, return_as_dict=True)
+    dom_intercepting_eyes.set_configuration(config)
 
-    def get_expected_json(test_name):
-        cur_dir = os.path.abspath(__file__).rpartition("/")[0]
-        samples_dir = os.path.join(cur_dir, "resources")
-        with open(os.path.join(samples_dir, test_name + ".json"), "r") as f:
-            return json.loads(f.read(), object_pairs_hook=OrderedDict)
+    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    dom_intercepting_eyes.open(driver, "Test Send DOM", "Full Window")
+    dom_intercepting_eyes.check("Window", Target.window().fully())
+    results = dom_intercepting_eyes.close(False)
+    actual = json.loads(dom_intercepting_eyes.captured_dom_json)
+    received_back = get_step_DOM(dom_intercepting_eyes, results)
+    # Make next asserts script-version independent
+    del expected_json["scriptVersion"]
+    del actual["scriptVersion"]
+    del received_back["scriptVersion"]
 
-    expected_dom_json = get_expected_json("expected_dom1")
-    results = eyes.close(False)
-    assert get_has_DOM(eyes.api_key, results)
-    assert actual_dom_json["attributes"] == expected_dom_json["attributes"]
-    assert actual_dom_json["css"] == expected_dom_json["css"]
-    assert actual_dom_json["images"] == expected_dom_json["images"]
-    assert actual_dom_json["rect"] == expected_dom_json["rect"]
-    assert actual_dom_json["scriptVersion"] == expected_dom_json["attributes"]
-    assert actual_dom_json["style"] == expected_dom_json["style"]
-    assert actual_dom_json["tagName"] == expected_dom_json["tagName"]
-    assert actual_dom_json["version"] == expected_dom_json["version"]
-
-    assert actual_dom_json == expected_dom_json
+    assert get_has_DOM(dom_intercepting_eyes.api_key, results)
+    assert check_objects(actual, expected_json)
+    assert check_objects(received_back, expected_json)
 
 
 def get_has_DOM(api_key, results):
@@ -97,3 +104,38 @@ def get_has_DOM(api_key, results):
     actualAppOutputs = session_results["actualAppOutput"]
     assert len(actualAppOutputs) == 1
     return actualAppOutputs[0]["image"]["hasDom"]
+
+
+def get_step_DOM(eyes, results):
+    session_results = get_session_results(eyes.api_key, results)
+    actualAppOutputs = session_results["actualAppOutput"]
+    dom_id = actualAppOutputs[0]["image"]["domId"]
+    url = urlunsplit(
+        urlsplit(eyes.server_url)._replace(
+            path="/api/images/dom/" + dom_id, query=urlencode({"apiKey": eyes.api_key})
+        )
+    )
+    res = requests.get(url)
+    return res.json()
+
+
+@pytest.mark.skip("Rounding error on CI")
+def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
+    config = (
+        Configuration()
+        .set_batch(batch_info)
+        .set_app_name("Test Send DOM")
+        .set_test_name("test_send_dom_cors_iframe")
+        .set_viewport_size(RectangleSize(1600, 1200))
+        # TODO: Remove this when default options get in sync for java and python SDK
+        .set_hide_scrollbars(True)
+    )
+    dom_intercepting_eyes.set_configuration(config)
+
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage")
+    dom_intercepting_eyes.open(driver, "Test Send DOM", "test_send_dom_cors_iframe")
+    dom_intercepting_eyes.check("Window", Target.window().fully())
+    dom_intercepting_eyes.close(False)
+    actual = json.loads(dom_intercepting_eyes.captured_dom_json)
+
+    assert check_objects(actual, expected_json)
