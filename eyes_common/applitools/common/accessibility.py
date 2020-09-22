@@ -1,7 +1,9 @@
 from enum import Enum
+from typing import Text
 
 import attr
 
+from applitools.common import logger
 from applitools.common.utils.json_utils import JsonInclude
 
 
@@ -54,7 +56,13 @@ class AccessibilityStatus(Enum):
 
 
 @attr.s(init=False)
-class SessionAccessibilityStatus(AccessibilitySettings):
+class SessionAccessibilityStatus(object):
+    level = attr.ib(
+        type=AccessibilityLevel, metadata={JsonInclude.THIS: True}
+    )  # type: AccessibilityLevel
+    version = attr.ib(
+        type=AccessibilityGuidelinesVersion, metadata={JsonInclude.THIS: True}
+    )  # type: AccessibilityGuidelinesVersion
     status = attr.ib(
         type=AccessibilityStatus, metadata={JsonInclude.THIS: True}
     )  # type: AccessibilityStatus
@@ -63,7 +71,14 @@ class SessionAccessibilityStatus(AccessibilitySettings):
         self,
         status,  # type: AccessibilityStatus
         level,  # type: AccessibilityLevel
-        guidelines_version,  # type: AccessibilityGuidelinesVersion
+        version,  # type: AccessibilityGuidelinesVersion
     ):
-        super(SessionAccessibilityStatus, self).__init__(level, guidelines_version)
+        self.level = AccessibilityLevel(level)
+        self.version = AccessibilityGuidelinesVersion(version)
         self.status = AccessibilityStatus(status)
+
+    @property
+    def guidelines_version(self):
+        # type: () -> AccessibilityGuidelinesVersion
+        logger.deprecation("Use `version` instead `guidelines_version`")
+        return self.version

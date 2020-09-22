@@ -3,6 +3,7 @@
 - Uploading of big resources breaks rendering in UFG [Trello 2154](https://trello.com/c/rBYpPkqT)
 ### Updated
 - Update implementation of dom_capture to use the latest dom-capture js script [Trello 2146](https://trello.com/c/SPuY0Hmb)
+- Change guidelines_version to version in SessionAccessibilityStatus [Trello 1890](https://trello.com/c/q9xRauk7)
 
 ## [4.8.1] - 2020-09-18
 ### Fixed
