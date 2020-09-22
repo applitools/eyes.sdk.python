@@ -3,6 +3,7 @@ from typing import Text
 
 import attr
 
+from applitools.common import logger
 from applitools.common.utils.json_utils import JsonInclude
 
 
@@ -75,3 +76,9 @@ class SessionAccessibilityStatus(object):
         self.level = AccessibilityLevel(level)
         self.version = AccessibilityGuidelinesVersion(version)
         self.status = AccessibilityStatus(status)
+
+    @property
+    def guidelines_version(self):
+        # type: () -> AccessibilityGuidelinesVersion
+        logger.deprecation("Use `version` instead `guidelines_version`")
+        return self.version
