@@ -2,7 +2,7 @@
   "name": "node_resources",
   "description": "required javascript scripts",
   "dependencies": {
-    "@applitools/dom-capture": "=7.2.4",
+    "@applitools/dom-capture": "=7.2.6",
     "@applitools/dom-snapshot": "=4.0.5"
   }
 }

@@ -88,10 +88,15 @@ def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expecte
     dom_intercepting_eyes.check("Window", Target.window().fully())
     results = dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
+    received_back = get_step_DOM(dom_intercepting_eyes, results)
+    # Make next asserts script-version independent
+    del expected_json["scriptVersion"]
+    del actual["scriptVersion"]
+    del received_back["scriptVersion"]
 
     assert get_has_DOM(dom_intercepting_eyes.api_key, results)
     assert check_objects(actual, expected_json)
-    assert get_step_DOM(dom_intercepting_eyes, results) == expected_json
+    assert check_objects(received_back, expected_json)
 
 
 def get_has_DOM(api_key, results):
