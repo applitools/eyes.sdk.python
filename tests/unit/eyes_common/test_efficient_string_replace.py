@@ -18,14 +18,20 @@ def test_efficient_string_replace():
 
 def test_efficient_string_replace_recursive_forward():
     res = efficient_string_replace(
-        "@<", ">#", "abc@<0>#ghi@<1>#mno@<2>#", {"0": "@<1>#", "1": "JKL", "2": "PQR"},
+        "@<",
+        ">#",
+        "abc@<0>#ghi@<1>#mno@<2>#",
+        {"0": "@<1>#", "1": "JKL", "2": "PQR"},
     )
     assert res == "abcJKLghiJKLmnoPQR"
 
 
 def test_efficient_string_replace_recursive_backward():
     res = efficient_string_replace(
-        "@<", ">#", "abc@<0>#ghi@<1>#mno@<2>#", {"0": "DEF", "1": "@<0>#", "2": "PQR"},
+        "@<",
+        ">#",
+        "abc@<0>#ghi@<1>#mno@<2>#",
+        {"0": "DEF", "1": "@<0>#", "2": "PQR"},
     )
     assert res == "abcDEFghiDEFmnoPQR"
 
