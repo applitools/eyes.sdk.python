@@ -1,4 +1,4 @@
-## [vNext]
+## [4.8.2] - 2020-09-22
 ### Fixed
 - Uploading of big resources breaks rendering in UFG [Trello 2154](https://trello.com/c/rBYpPkqT)
 ### Updated
