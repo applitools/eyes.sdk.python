@@ -155,6 +155,18 @@ class TestDomCaptureUnit(object):
         )
         assert current_scroll == Point(0, 0)
 
+    @pytest.mark.test_page_url("https://corsat2.herokuapp.com")
+    def test_send_dom_cors_css(self):
+        dom = dom_capture.get_full_window_dom(self.driver, True)
+        css = dom["css"]
+
+        assert "p.corsat11" in css
+        assert "p.corsat12" in css
+        assert "p.corsat13" in css
+        assert "p.corsat21" in css
+        assert "p.corsat22" in css
+        assert "p.corsat23" in css
+
 
 @pytest.mark.usefixtures("eyes_for_class")
 @pytest.mark.test_suite_name("Eyes Selenium SDK - DynamicPages")
