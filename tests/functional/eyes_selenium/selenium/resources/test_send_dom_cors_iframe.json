@@ -26,7 +26,7 @@
             "height": 37,
             "left": 8,
             "top": 21.4375,
-            "width": 1008
+            "width": 1584
           },
           "style": {
             "background-color": "rgba(0, 0, 0, 0)",
@@ -289,7 +289,6 @@
         },
         {
           "attributes": {
-            "cd_frame_id_": "b885e1d9b9e511dab5050fb0eccd810d",
             "height": "400",
             "name": "frame1",
             "src": "./frame2.html",
@@ -355,7 +354,6 @@
                     },
                     {
                       "attributes": {
-                        "cd_frame_id_": "2afcb8edda8bbb4a722b69e29f3e018b",
                         "height": "350",
                         "src": "https://afternoon-savannah-68940.herokuapp.com/#",
                         "style": "position: relative; left: 50px;",
@@ -2091,7 +2089,7 @@
           "childNodes": [],
           "rect": {
             "height": 306,
-            "left": 284,
+            "left": 572,
             "top": 927.875,
             "width": 456
           },
@@ -2110,7 +2108,7 @@
             "font-size": "16px",
             "font-weight": "400",
             "line-height": "18px",
-            "margin": "0px 276px",
+            "margin": "0px 564px",
             "opacity": "1",
             "overflow": "visible",
             "padding": "0px",
@@ -2202,7 +2200,7 @@
             "height": 206,
             "left": 8,
             "top": 1269.875,
-            "width": 1014
+            "width": 1590
           },
           "style": {
             "background-color": "rgb(173, 216, 230)",
@@ -2344,7 +2342,7 @@
         "height": 1493.4375,
         "left": 8,
         "top": 21.4375,
-        "width": 1008
+        "width": 1584
       },
       "style": {
         "background-color": "rgba(0, 0, 0, 0)",
@@ -2376,7 +2374,7 @@
     "height": 1522.875,
     "left": 0,
     "top": 0,
-    "width": 1024
+    "width": 1600
   },
   "scriptVersion": "7.2.4",
   "style": {
