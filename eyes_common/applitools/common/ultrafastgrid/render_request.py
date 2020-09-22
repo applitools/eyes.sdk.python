@@ -186,14 +186,13 @@ class VGResource(object):
         return self.hash
 
     def __attrs_post_init__(self):
-        if self.content:
-            if len(self.content) > self.MAX_RESOURCE_SIZE:
-                logger.debug(
-                    "The content of {} is bigger then supported max size. "
-                    "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
-                )
-                self.content = self.content[: self.MAX_RESOURCE_SIZE]
-            self.hash = general_utils.get_sha256_hash(self.content)
+        if len(self.content) > self.MAX_RESOURCE_SIZE:
+            logger.debug(
+                "The content of {} is bigger then supported max size. "
+                "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
+            )
+            self.content = self.content[: self.MAX_RESOURCE_SIZE]
+        self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
             try:
                 self._handle_func()
