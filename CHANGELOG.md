@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Update implementation of dom_capture to use the latest dom-capture js script [Trello 2146](https://trello.com/c/SPuY0Hmb)
+
 ## [4.8.1] - 2020-09-18
 ### Fixed
 - Missing match regions on UFG with Python 2 [Trello 2020](https://trello.com/c/PD67n1Vj)
