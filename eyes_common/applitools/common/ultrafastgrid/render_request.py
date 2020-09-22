@@ -6,7 +6,6 @@ import attr
 
 from applitools.common import logger
 from applitools.common.geometry import RectangleSize, Region
-from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -171,6 +170,8 @@ class RGridDom(object):
 
 @attr.s(slots=True)
 class VGResource(object):
+    MAX_RESOURCE_SIZE = 15 * 1024 * 1024
+
     url = attr.ib()  # type: Text
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     content = attr.ib(repr=False)  # type: bytes
@@ -185,7 +186,10 @@ class VGResource(object):
         return self.hash
 
     def __attrs_post_init__(self):
-        self.hash = general_utils.get_sha256_hash(self.content)
+        if self.content:
+            if len(self.content) > self.MAX_RESOURCE_SIZE:
+                self.content = self.content[: self.MAX_RESOURCE_SIZE]
+            self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
             try:
                 self._handle_func()
