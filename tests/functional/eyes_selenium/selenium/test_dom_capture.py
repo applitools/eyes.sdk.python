@@ -155,7 +155,9 @@ class TestDomCaptureUnit(object):
         )
         assert current_scroll == Point(0, 0)
 
-    @pytest.mark.test_page_url("https://corsat2.herokuapp.com")
+    @pytest.mark.test_page_url(
+        "https://applitools.github.io/demo/TestPages/CorsCssTestPage/"
+    )
     def test_send_dom_cors_css(self):
         dom = dom_capture.get_full_window_dom(self.driver, True)
         css = dom["css"]
