@@ -176,7 +176,12 @@ class VGResource(object):
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     content = attr.ib(repr=False)  # type: bytes
     msg = attr.ib(default=None)  # type: Optional[Text]
-    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: Text
+    error_status_code = attr.ib(
+        default=None, hash=False, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
+    hash = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
@@ -186,13 +191,14 @@ class VGResource(object):
         return self.hash
 
     def __attrs_post_init__(self):
-        if len(self.content) > self.MAX_RESOURCE_SIZE:
-            logger.debug(
-                "The content of {} is bigger then supported max size. "
-                "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
-            )
-            self.content = self.content[: self.MAX_RESOURCE_SIZE]
-        self.hash = general_utils.get_sha256_hash(self.content)
+        if self.content:
+            if len(self.content) > self.MAX_RESOURCE_SIZE:
+                logger.debug(
+                    "The content of {} is bigger supported max size. "
+                    "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
+                )
+                self.content = self.content[: self.MAX_RESOURCE_SIZE]
+            self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
             try:
                 self._handle_func()
@@ -203,15 +209,14 @@ class VGResource(object):
                 )
 
     @classmethod
-    def EMPTY(cls, url):
-        return cls(url, "application/empty-response", b"")
-
-    @classmethod
     def from_blob(cls, blob, on_created=None):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
         url = blob.get("url")
+        error_msg = blob.get("errorStatusCode")
+        if error_msg:
+            return cls(url, content_type, content=None, error_status_code=error_msg)
         return cls(
             url,
             content_type,
@@ -222,16 +227,20 @@ class VGResource(object):
     @classmethod
     def from_response(cls, url, response, on_created=None):
         # type: (Text, Response, Callable) -> VGResource
+        content = response.content
+        content_type = response.headers.get("Content-Type")
         if not response.ok:
             logger.debug(
                 "We've got response code {} {} for URL {}".format(
                     response.status_code, response.reason, url
                 )
             )
-            return VGResource.EMPTY(url)
-
-        content_type = response.headers.get("Content-Type")
-        content = response.content
+            return cls(
+                url,
+                content_type,
+                content=None,
+                error_status_code=str(response.status_code),
+            )
         return cls(
             url,
             content_type,
