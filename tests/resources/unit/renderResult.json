@@ -8,7 +8,7 @@
             "name": "linux"
         },
         "dom": {
-            "hash": "a67486a8bc9ba45f878e5b0d8ff9bc68ec6ed9db0382709751327d1793898e16",
+            "hash": "68d71d9ec246f71c66d54f01b349a1ee9103caf8674e0ef85ee6b3e54d2c4a20",
             "hashFormat": "sha256"
         },
         "renderId": null,
@@ -19,8 +19,8 @@
         },
         "resources": {
             "url": {
-                "contentType": "application/empty-response",
-                "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "contentType": "application/png",
+                "hash": "0a8cac771ca188eacc57e2c96c31f5611925c5ecedccb16b8c236d6c0d325112",
                 "hashFormat": "sha256"
             }
         },
