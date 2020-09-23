@@ -191,14 +191,13 @@ class VGResource(object):
         return self.hash
 
     def __attrs_post_init__(self):
-        if self.content:
-            if len(self.content) > self.MAX_RESOURCE_SIZE:
-                logger.debug(
-                    "The content of {} is bigger supported max size. "
-                    "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
-                )
-                self.content = self.content[: self.MAX_RESOURCE_SIZE]
-            self.hash = general_utils.get_sha256_hash(self.content)
+        if len(self.content) > self.MAX_RESOURCE_SIZE:
+            logger.debug(
+                "The content of {} is bigger supported max size. "
+                "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
+            )
+            self.content = self.content[: self.MAX_RESOURCE_SIZE]
+        self.hash = general_utils.get_sha256_hash(self.content)
         if callable(self._handle_func):
             try:
                 self._handle_func()
@@ -216,7 +215,7 @@ class VGResource(object):
         url = blob.get("url")
         error_msg = blob.get("errorStatusCode")
         if error_msg:
-            return cls(url, content_type, content=None, error_status_code=error_msg)
+            return cls(url, content_type, content=content, error_status_code=error_msg)
         return cls(
             url,
             content_type,
@@ -238,7 +237,7 @@ class VGResource(object):
             return cls(
                 url,
                 content_type,
-                content=None,
+                content=content,
                 error_status_code=str(response.status_code),
             )
         return cls(

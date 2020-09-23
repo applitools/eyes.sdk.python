@@ -76,11 +76,6 @@ class RenderTask(VGTask):
                 )
             )
             resource = self.full_request_resources.get(url)
-
-            if resource.error_status_code:
-                # no need to put resource with error
-                return resource
-
             self.eyes_connector.render_put_resource(running_render, resource)
             return resource
 
