@@ -191,7 +191,7 @@ class VisualGridEyes(object):
                     source=source,
                 )
                 if test.state == "new":
-                    test.becomes_not_rendered()
+                    test.becomes_not_opened()
         except Exception as e:
             logger.exception(e)
             self.abort()

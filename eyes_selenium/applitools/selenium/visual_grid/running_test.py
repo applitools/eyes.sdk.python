@@ -26,25 +26,25 @@ if typing.TYPE_CHECKING:
     from .visual_grid_runner import VisualGridRunner
 
 NEW = "new"
-NOT_RENDERED = "not_rendered"
-RENDERED = "rendered"
+NOT_OPENED = "not_opened"
 OPENED = "opened"
+RENDERED = "rendered"
 COMPLETED = "completed"
 TESTED = "tested"
 
-STATES = [NEW, NOT_RENDERED, OPENED, RENDERED, COMPLETED, TESTED]
+STATES = [NEW, OPENED, NOT_OPENED, RENDERED, COMPLETED, TESTED]
 TRANSITIONS = [
-    {"trigger": "becomes_not_rendered", "source": NEW, "dest": NOT_RENDERED},
-    {"trigger": "becomes_opened", "source": RENDERED, "dest": OPENED},
-    {"trigger": "becomes_rendered", "source": NOT_RENDERED, "dest": RENDERED},
+    {"trigger": "becomes_not_opened", "source": NEW, "dest": NOT_OPENED},
+    {"trigger": "becomes_opened", "source": NOT_OPENED, "dest": OPENED},
+    {"trigger": "becomes_rendered", "source": OPENED, "dest": RENDERED},
     {
         "trigger": "becomes_tested",
-        "source": [NEW, NOT_RENDERED, OPENED],
+        "source": [NEW, NOT_OPENED, OPENED],
         "dest": TESTED,
     },
     {
         "trigger": "becomes_completed",
-        "source": [NEW, NOT_RENDERED, RENDERED, OPENED, TESTED],
+        "source": [NEW, NOT_OPENED, RENDERED, OPENED, TESTED],
         "dest": COMPLETED,
     },
 ]
@@ -111,11 +111,11 @@ class RunningTest(object):
         # type: () -> List
         if self.state == NEW:
             return []
-        elif self.state == NOT_RENDERED:
-            return self.render_queue
-        elif self.state == RENDERED:
+        elif self.state == NOT_OPENED:
             return self.open_queue
         elif self.state == OPENED:
+            return self.render_queue
+        elif self.state == RENDERED:
             if self.task_lock:
                 return []
             elif self.task_queue:
@@ -133,11 +133,11 @@ class RunningTest(object):
         # type: () -> int
         if self.state == NEW:
             return 0
-        elif self.state == NOT_RENDERED:
-            return len(self.render_queue) * 10
-        elif self.state == RENDERED:
-            return len(self.open_queue)
+        elif self.state == NOT_OPENED:
+            return len(self.open_queue) * 10
         elif self.state == OPENED:
+            return len(self.render_queue)
+        elif self.state == RENDERED:
             return len(self.task_queue)
         elif self.state == TESTED:
             return len(self.close_queue)
@@ -325,7 +325,7 @@ class RunningTest(object):
         if self.state == NEW:
             self.becomes_completed()
             return None
-        elif self.state in [NOT_RENDERED, RENDERED, OPENED, TESTED]:
+        elif self.state in [NOT_OPENED, RENDERED, OPENED, TESTED]:
             close_task = VGTask(
                 "close {}".format(self.browser_info), lambda: self.eyes.close(False)
             )
