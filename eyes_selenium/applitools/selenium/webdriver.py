@@ -64,7 +64,7 @@ class FrameResolver(object):
     def _ref_if_locator(self, frame_ref):
         if isinstance(frame_ref, FrameLocator):
             frame_locator = frame_ref
-            if frame_locator.frame_index:
+            if frame_locator.frame_index is not None:
                 frame_ref = frame_locator.frame_index
             if frame_locator.frame_name_or_id:
                 frame_ref = frame_locator.frame_name_or_id
