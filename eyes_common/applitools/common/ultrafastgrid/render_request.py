@@ -193,7 +193,7 @@ class VGResource(object):
     def __attrs_post_init__(self):
         if len(self.content) > self.MAX_RESOURCE_SIZE:
             logger.debug(
-                "The content of {} is bigger supported max size. "
+                "The content of {} is bigger then supported max size. "
                 "Trimming to {} bytes".format(self.url, self.MAX_RESOURCE_SIZE)
             )
             self.content = self.content[: self.MAX_RESOURCE_SIZE]
