@@ -347,5 +347,8 @@ class RenderStatusResults(object):
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     visual_viewport = attr.ib(
-        default=None, type=RectangleSize, metadata={JsonInclude.THIS: True}
+        default=None,
+        type=RectangleSize,
+        converter=attr.converters.optional(RectangleSize.from_),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]
