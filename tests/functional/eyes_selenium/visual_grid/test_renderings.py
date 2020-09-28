@@ -4,6 +4,7 @@ import pytest
 from mock import patch
 
 from applitools.common.utils import datetime_utils
+from applitools.core import ServerConnector
 from applitools.selenium import (
     BrowserType,
     Configuration,
@@ -251,11 +252,12 @@ def test_visual_viewport(driver, batch_info, vg_runner):
         assert isinstance(app_output.viewport, RectangleSize)
 
 
-def test_render_resource_not_found(driver):
+def test_render_resource_not_found(driver, fake_connector_class):
     vg_runner = VisualGridRunner(1)
     driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 
     eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
     eyes.open(
         driver,
         app_name="Visual Grid Render Test",
@@ -267,15 +269,9 @@ def test_render_resource_not_found(driver):
         "applitools.selenium.visual_grid.running_test.RunningTest.check",
         wraps=running_test.check,
     ) as running_check:
-        with patch(
-            "applitools.selenium.visual_grid.eyes_connector.EyesConnector.render",
-            wraps=running_test.eyes.render,
-        ) as render:
-            eyes.check_window("check")
-            error_resource = running_check.call_args[1]["script_result"]["blobs"][-1]
-            assert error_resource["errorStatusCode"] == 404
-
-            render_request = render.call_args[0][0]
-            assert (
-                render_request.resources[error_resource["url"]].error_status_code == 404
-            )
+        eyes.check_window("check")
+        error_resource = running_check.call_args[1]["script_result"]["blobs"][-1]
+        assert error_resource["errorStatusCode"] == 404
+    eyes.close(False)
+    render_request = eyes.server_connector.calls["render"][0]
+    assert render_request.resources[error_resource["url"]].error_status_code == 404
