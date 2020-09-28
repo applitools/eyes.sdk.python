@@ -38,7 +38,7 @@ class Frame(object):
     outer_size = attr.ib()  # type: RectangleSize
     inner_size = attr.ib()  # type: RectangleSize
     parent_scroll_position = attr.ib()
-    scroll_root_element = attr.ib(default=None)  # type: Optional[EyesWebElement]
+    scroll_root_element = attr.ib()  # type: EyesWebElement
     original_overflow = attr.ib(default=None)
 
     def return_to_original_overflow(self, driver):
