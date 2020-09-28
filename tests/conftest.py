@@ -87,14 +87,14 @@ class FakeServerConnector(ServerConnector):
         return [
             RenderStatusResults(
                 **{
-                    "image_location": "https://eyesapi.applitools.com/api/images/stitching/se%7e865ad786-00d8-4e8e-9fd7-c01b33e47dcc?accessKey=ESHMdY9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
+                    "image_location": "https://eyesapi.applitools.com/api/images/sti/se%-4e8e-9fd7-c01b33e47dcc?accessKey=None",
                     "status": "rendered",
                     "os": "linux",
                     "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/85.0.4183.83 Safari/537.36",
                     "visual_viewport": {"width": 800, "height": 600},
                     "device_size": {"width": 800, "height": 600},
                     "retry_count": 0,
-                    "dom_location": "https://eyespublicwusi0.blob.core.windows.net/a25655-se/f6261f24-2167-40b1-bfb9-f6912df29cd5?sv=2017-04-17&sr=c&sig=WIfL7z6gPmhzbu1DJ51smaTPYU27cwPZuGx9pEooNNc%3D&se=2020-09-29T15%3A11%3A50Z&sp=w&accessKey=ESHMdY9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
+                    "dom_location": "https://eyespublicw0.blob.core/a255-se/40b1-bf12df29cd5?sv=2017-04-17&sr=c&sig=1smaTPYU27cwPZuGx9pEooNNc%3D&se=2015%3A11%3A50Z&sp=w&accessKey=None",
                     "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
                 }
             )
