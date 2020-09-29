@@ -625,12 +625,14 @@ def ensure_sync_with_underlying_driver(eyes_driver, selenium_driver):
     Checks if frame selected in selenium_driver matches frame_chain in eyes_driver
     If it doesn't, goes through all the chain of selections with eyes_driver.
     """
-    if eyes_driver.frame_chain.size == 0:
-        in_sync = _has_no_frame_selected(selenium_driver)
-    else:
-        in_sync = eyes_driver.frame_chain.peek.scroll_root_element.is_attached_to_page
-    if not in_sync:
-        _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
+    if not eyes_driver.is_mobile_app:
+        if eyes_driver.frame_chain.size == 0:
+            in_sync = _has_no_frame_selected(selenium_driver)
+        else:
+            selected_frame = eyes_driver.frame_chain.peek
+            in_sync = selected_frame.scroll_root_element.is_attached_to_page
+        if not in_sync:
+            _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
 
 
 def _has_no_frame_selected(driver):
