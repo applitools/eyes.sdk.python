@@ -213,13 +213,16 @@ class VGResource(object):
         url = blob.get("url")
         error_status = blob.get("errorStatusCode")
 
-        handle_func = lambda: on_created(content_type, content, url)
         return cls(
             url,
             content_type,
             content,
             error_status_code=error_status,
-            handle_func=handle_func if error_status is None else None,
+            handle_func=(
+                lambda: on_created(content_type, content, url)
+                if error_status is None
+                else None
+            ),
         )
 
     @classmethod
@@ -229,13 +232,16 @@ class VGResource(object):
         content_type = response.headers.get("Content-Type")
         error_status = None if response.ok else str(response.status_code)
 
-        handle_func = lambda: on_created(content_type, content, url)
         return cls(
             url,
             content_type,
             content,
             error_status_code=error_status,
-            handle_func=handle_func if error_status is None else None,
+            handle_func=(
+                lambda: on_created(content_type, content, url)
+                if error_status is None
+                else None
+            ),
         )
 
 
