@@ -176,7 +176,10 @@ class VGResource(object):
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     content = attr.ib(repr=False)  # type: bytes
     msg = attr.ib(default=None)  # type: Optional[Text]
-    hash = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: Text
+    error_status_code = attr.ib(
+        default=None, hash=False, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
+    hash = attr.ib(init=False, metadata={JsonInclude.NON_NONE: True})  # type: Text
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
@@ -203,40 +206,42 @@ class VGResource(object):
                 )
 
     @classmethod
-    def EMPTY(cls, url):
-        return cls(url, "application/empty-response", b"")
-
-    @classmethod
     def from_blob(cls, blob, on_created=None):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
         url = blob.get("url")
+        error_status = blob.get("errorStatusCode")
+
         return cls(
             url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content, url),
+            error_status_code=error_status,
+            handle_func=(
+                lambda: on_created(content_type, content, url)
+                if error_status is None
+                else None
+            ),
         )
 
     @classmethod
     def from_response(cls, url, response, on_created=None):
         # type: (Text, Response, Callable) -> VGResource
-        if not response.ok:
-            logger.debug(
-                "We've got response code {} {} for URL {}".format(
-                    response.status_code, response.reason, url
-                )
-            )
-            return VGResource.EMPTY(url)
-
-        content_type = response.headers.get("Content-Type")
         content = response.content
+        content_type = response.headers.get("Content-Type")
+        error_status = None if response.ok else str(response.status_code)
+
         return cls(
             url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content, url),
+            error_status_code=error_status,
+            handle_func=(
+                lambda: on_created(content_type, content, url)
+                if error_status is None
+                else None
+            ),
         )
 
 
@@ -339,5 +344,8 @@ class RenderStatusResults(object):
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     visual_viewport = attr.ib(
-        default=None, type=RectangleSize, metadata={JsonInclude.THIS: True}
+        default=None,
+        type=RectangleSize,
+        converter=attr.converters.optional(RectangleSize.from_),
+        metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]

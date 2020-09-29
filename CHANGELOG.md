@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- [UFG] Add non-200 URLs to resource map [Trello 1798](https://trello.com/c/urf8SY1Z)
+
 ## [4.8.2] - 2020-09-22
 ### Fixed
 - Uploading of big resources breaks rendering in UFG [Trello 2154](https://trello.com/c/rBYpPkqT)

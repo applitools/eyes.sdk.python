@@ -7,7 +7,6 @@ from applitools.common.utils import ABC, iteritems
 class EyesRunner(ABC):
     def __init__(self):
         logger.open_()
-        self._batch_server_connectors = {}
 
     @abstractmethod
     def _get_all_test_results_impl(self, should_raise_exception):

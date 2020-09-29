@@ -67,7 +67,7 @@ class VisualGridRunner(EyesRunner):
             except IndexError:
                 datetime_utils.sleep(1000, msg="Waiting for task")
                 continue
-            future = self._executor.submit(lambda task: task(), task)
+            future = self._executor.submit(task)
             self._future_to_task[future] = task
 
     def _stop(self):
