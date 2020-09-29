@@ -109,6 +109,10 @@ _SLEEP_MS = 1000
 _RETRIES = 3
 
 
+class SwitchToParentIsNotSupported(Exception):
+    pass
+
+
 def is_mobile_platform(driver):
     # type: (AnyWebDriver) -> bool
     """
@@ -622,17 +626,24 @@ def get_check_source(driver):
 def ensure_sync_with_underlying_driver(eyes_driver, selenium_driver):
     # type: (EyesWebDriver) -> None
     """
-    Checks if frame selected in selenium_driver matches frame_chain in eyes_driver
-    If it doesn't, goes through all the chain of selections with eyes_driver.
+    Checks if frame selected in selenium_driver matches frame_chain in eyes_driver.
+    If it doesn't, follows parent frames up to default content and then repeats
+    all the chain of frame selections with eyes_driver.
     """
     if not eyes_driver.is_mobile_app:
-        if eyes_driver.frame_chain.size == 0:
-            in_sync = _has_no_frame_selected(selenium_driver)
-        else:
-            selected_frame = eyes_driver.frame_chain.peek
-            in_sync = selected_frame.scroll_root_element.is_attached_to_page
-        if not in_sync:
-            _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
+        try:
+            if eyes_driver.frame_chain.size == 0:
+                in_sync = _has_no_frame_selected(selenium_driver)
+            else:
+                selected_frame = eyes_driver.frame_chain.peek
+                in_sync = selected_frame.scroll_root_element.is_attached_to_page
+            if not in_sync:
+                _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
+        except SwitchToParentIsNotSupported:
+            logger.info(
+                "Unable to ensure framechain sync with the underlying driver due to "
+                "unsupported switch to parent frame call in the driver"
+            )
 
 
 def _has_no_frame_selected(driver):
@@ -642,7 +653,7 @@ def _has_no_frame_selected(driver):
     words, default content is selected)
     """
     root_element = _current_root_element(driver)
-    driver.switch_to.parent_frame()
+    _swith_to_parent_frame(driver)
     parent_element = _current_root_element(driver)
     if root_element == parent_element:
         return True
@@ -661,7 +672,7 @@ def _do_sync_with_underlying_driver(eyes_driver, selenium_driver):
     """
     root_elements_trace = [_current_root_element(selenium_driver)]
     while True:
-        selenium_driver.switch_to.parent_frame()
+        _swith_to_parent_frame(selenium_driver)
         root_element = _current_root_element(selenium_driver)
         if root_element != root_elements_trace[-1]:
             root_elements_trace.append(root_element)
@@ -684,7 +695,7 @@ def _switch_to_frame_with_root_element(driver, root_element):
         if _current_root_element(driver) == root_element:
             break
         else:
-            driver.switch_to.parent_frame()
+            _swith_to_parent_frame(driver)
     else:
         raise RuntimeError("Failed to reach element {}".format(root_element))
 
@@ -696,3 +707,17 @@ def _current_root_element(driver):
     Usually it's the 'html' element.
     """
     return driver.find_element_by_xpath("/*")
+
+
+def _swith_to_parent_frame(driver):
+    # type: (WebDriver) -> None
+    """
+    Switches given driver to the parent frame or raises specific exception
+    """
+    try:
+        driver.switch_to.parent_frame()
+    except WebDriverException as e:
+        if "Method is not implemented" in e.msg:
+            raise SwitchToParentIsNotSupported(e)
+        else:
+            raise
