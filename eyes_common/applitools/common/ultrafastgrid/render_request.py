@@ -179,9 +179,7 @@ class VGResource(object):
     error_status_code = attr.ib(
         default=None, hash=False, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Text]
-    hash = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[Text]
+    hash = attr.ib(init=False, metadata={JsonInclude.NON_NONE: True})  # type: Text
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
@@ -213,14 +211,15 @@ class VGResource(object):
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
         url = blob.get("url")
-        error_msg = blob.get("errorStatusCode")
-        if error_msg:
-            return cls(url, content_type, content=content, error_status_code=error_msg)
+        error_status = blob.get("errorStatusCode")
+
+        handle_func = lambda: on_created(content_type, content, url)
         return cls(
             url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content, url),
+            error_status_code=error_status,
+            handle_func=handle_func if error_status is None else None,
         )
 
     @classmethod
@@ -228,23 +227,15 @@ class VGResource(object):
         # type: (Text, Response, Callable) -> VGResource
         content = response.content
         content_type = response.headers.get("Content-Type")
-        if not response.ok:
-            logger.debug(
-                "We've got response code {} {} for URL {}".format(
-                    response.status_code, response.reason, url
-                )
-            )
-            return cls(
-                url,
-                content_type,
-                content=content,
-                error_status_code=str(response.status_code),
-            )
+        error_status = None if response.ok else str(response.status_code)
+
+        handle_func = lambda: on_created(content_type, content, url)
         return cls(
             url,
             content_type,
             content,
-            handle_func=lambda: on_created(content_type, content, url),
+            error_status_code=error_status,
+            handle_func=handle_func if error_status is None else None,
         )
 
 
