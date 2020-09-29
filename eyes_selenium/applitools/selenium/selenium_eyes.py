@@ -28,6 +28,7 @@ from applitools.core import (
     RegionProvider,
     TextTrigger,
 )
+from applitools.core.feature import Feature
 
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
@@ -233,6 +234,17 @@ class SeleniumEyes(EyesBase):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         source = eyes_selenium_utils.get_check_source(self.driver)
         name = check_settings.values.name
+
+        if (
+            self.configure.is_feature_activated(
+                Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME
+            )
+            and self.driver.frame_chain.size > 0
+            and check_settings.values.target_region is None
+            and check_settings.values.target_element is None
+            and check_settings.values.target_selector is None
+        ):
+            check_settings.region(self.driver.find_element_by_xpath("/*"))
 
         logger.info("check('{}', check_settings) - begin".format(name))
 

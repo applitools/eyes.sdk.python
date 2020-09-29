@@ -3,6 +3,7 @@ import time
 import pytest
 
 from applitools.core import ServerConnector
+from applitools.core.feature import Feature
 from applitools.selenium import (
     EyesWebDriver,
     EyesWebElement,
@@ -243,4 +244,20 @@ def test_iframe_selected_with_raw_selenium_driver_works(eyes, driver):
 
     eyes.check("step name", Target.region(form))
 
+    eyes.close()
+
+
+def test_feature_target_window_captures_selected_frame(eyes, driver):
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+    eyes.configure.set_features(Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME)
+    eyes_driver = eyes.open(
+        driver=driver,
+        app_name="Applitools Eyes SDK",
+        test_name="Target window captures selected frame feature",
+        viewport_size={"width": 800, "height": 600},
+    )
+    frame = eyes_driver.find_element_by_css_selector("body > iframe")
+    eyes_driver.switch_to.frame(frame)
+
+    eyes.check("step name", Target.window())
     eyes.close()
