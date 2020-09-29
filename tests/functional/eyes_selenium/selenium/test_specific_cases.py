@@ -1,7 +1,6 @@
 import time
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from applitools.core import ServerConnector
 from applitools.selenium import (
@@ -228,3 +227,20 @@ def test_screenshot_too_big(driver, eyes):
 
     image = screenshots[-1]
     assert r_info.max_image_height == image.height
+
+
+def test_iframe_selected_with_raw_selenium_driver_works(eyes, driver):
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
+    eyes.open(
+        driver=driver,
+        app_name="Applitools Eyes SDK",
+        test_name="test_iframe_selected_with_selenium_driver_works",
+        viewport_size={"width": 800, "height": 600},
+    )
+    driver.switch_to.frame(0)
+    driver.switch_to.frame(0)
+    form = driver.find_element_by_css_selector("form")
+
+    eyes.check("step name", Target.region(form))
+
+    eyes.close()

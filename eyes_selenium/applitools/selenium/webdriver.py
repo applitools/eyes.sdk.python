@@ -769,3 +769,6 @@ class EyesWebDriver(object):
         finally:
             if original_fc is not None:
                 self.switch_to.frames(original_fc)
+
+    def ensure_sync_with_underlying_driver(self):
+        eyes_selenium_utils.ensure_sync_with_underlying_driver(self, self._driver)

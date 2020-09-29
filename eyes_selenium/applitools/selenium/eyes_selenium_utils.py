@@ -617,3 +617,78 @@ def get_webapp_domain(driver):
 
 def get_check_source(driver):
     return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)
+
+
+def ensure_sync_with_underlying_driver(eyes_driver, selenium_driver):
+    # type: (EyesWebDriver) -> None
+    """
+    Checks if frame selected in selenium_driver matches frame_chain in eyes_driver
+    If it doesn't, goes through all the chain of selections with eyes_driver.
+    """
+    if eyes_driver.frame_chain.size == 0:
+        in_sync = _has_no_frame_selected(selenium_driver)
+    else:
+        in_sync = eyes_driver.frame_chain.peek.scroll_root_element.is_attached_to_page
+    if not in_sync:
+        _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
+
+
+def _has_no_frame_selected(driver):
+    # type: (WebDriver) -> bool
+    """
+    Predicate that checks if given selenium driver has no frame selected (in other
+    words, default content is selected)
+    """
+    root_element = _current_root_element(driver)
+    driver.switch_to.parent_frame()
+    parent_element = _current_root_element(driver)
+    if root_element == parent_element:
+        return True
+    else:  # Restore previously selected frame
+        for frame in driver.find_elements_by_xpath("//iframe|//frame"):
+            driver.switch_to.frame(frame)
+            if _current_root_element(driver) == root_element:
+                break
+            else:
+                driver.switch_to.parent_frame()
+        else:
+            raise RuntimeError("Failed to switch back to {}".format(root_element))
+        return False
+
+
+def _do_sync_with_underlying_driver(eyes_driver, selenium_driver):
+    # type: (EyesWebDriver, WebDriverException) -> None
+    """
+    Goes from currently selected frame in selenium_driver up to
+    the topmost default content and remembers the trace.
+    Then follows that trace with eyes_driver to get to original frame and have
+    frame_chain synchronized.
+    """
+    root_elements_trace = [_current_root_element(selenium_driver)]
+    while True:
+        selenium_driver.switch_to.parent_frame()
+        root_element = _current_root_element(selenium_driver)
+        if root_element != root_elements_trace[-1]:
+            root_elements_trace.append(root_element)
+        else:
+            root_elements_trace.pop()
+            break
+    eyes_driver.frame_chain.clear()
+    for root_element in reversed(root_elements_trace):
+        for frame in eyes_driver.find_elements_by_xpath("//iframe|//frame"):
+            eyes_driver.switch_to.frame(frame)
+            if _current_root_element(selenium_driver) == root_element:
+                break
+            else:
+                eyes_driver.switch_to.parent_frame()
+        else:
+            raise RuntimeError("Failed to reach element {}".format(root_element))
+
+
+def _current_root_element(driver):
+    # type: (WebDriver) -> WebElement
+    """
+    Finds root WebElement within currently selected frame in given driver.
+    Usually it's the 'html' element.
+    """
+    return driver.find_element_by_xpath("/*")
