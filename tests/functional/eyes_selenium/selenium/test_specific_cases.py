@@ -235,7 +235,7 @@ def test_iframe_selected_with_raw_selenium_driver_works(eyes, driver):
     eyes.open(
         driver=driver,
         app_name="Applitools Eyes SDK",
-        test_name="test_iframe_selected_with_selenium_driver_works",
+        test_name="Allow iframe selection with raw selenium driver",
         viewport_size={"width": 800, "height": 600},
     )
     driver.switch_to.frame(0)
