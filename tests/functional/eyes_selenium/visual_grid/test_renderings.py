@@ -4,7 +4,6 @@ import pytest
 from mock import patch
 
 from applitools.common.utils import datetime_utils
-from applitools.core import ServerConnector
 from applitools.selenium import (
     BrowserType,
     Configuration,
@@ -20,7 +19,6 @@ from applitools.selenium import (
     VisualGridRunner,
     logger,
 )
-from applitools.selenium.visual_grid import ResourceCache
 from tests.utils import get_session_results
 
 
