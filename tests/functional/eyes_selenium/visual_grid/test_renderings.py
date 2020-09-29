@@ -1,3 +1,4 @@
+import subprocess
 from collections import defaultdict
 
 import pytest
@@ -254,6 +255,7 @@ def test_render_resource_not_found(driver, fake_connector_class):
     driver.get("http://applitools.github.io/demo/DomSnapshot/test-visual-grid.html")
     missing_blob_url = "http://applitools.github.io/blabla"
     missing_resource_url = "http://localhost:7374/get-cors.css"
+    subprocess.run(["python", "-m", "http.server", "7374", "--bind", "127.0.0.1"])
 
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
@@ -278,4 +280,4 @@ def test_render_resource_not_found(driver, fake_connector_class):
     eyes.close(False)
     render_request = eyes.server_connector.calls["render"][0]
     assert render_request.resources[missing_blob_url].error_status_code == "404"
-    assert render_request.resources[missing_resource_url].error_status_code == "503"
+    assert render_request.resources[missing_resource_url].error_status_code == "404"
