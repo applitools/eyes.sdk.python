@@ -646,15 +646,8 @@ def _has_no_frame_selected(driver):
     parent_element = _current_root_element(driver)
     if root_element == parent_element:
         return True
-    else:  # Restore previously selected frame
-        for frame in driver.find_elements_by_xpath("//iframe|//frame"):
-            driver.switch_to.frame(frame)
-            if _current_root_element(driver) == root_element:
-                break
-            else:
-                driver.switch_to.parent_frame()
-        else:
-            raise RuntimeError("Failed to switch back to {}".format(root_element))
+    else:
+        _switch_to_frame_with_root_element(driver, root_element)
         return False
 
 
@@ -677,14 +670,23 @@ def _do_sync_with_underlying_driver(eyes_driver, selenium_driver):
             break
     eyes_driver.frame_chain.clear()
     for root_element in reversed(root_elements_trace):
-        for frame in eyes_driver.find_elements_by_xpath("//iframe|//frame"):
-            eyes_driver.switch_to.frame(frame)
-            if _current_root_element(selenium_driver) == root_element:
-                break
-            else:
-                eyes_driver.switch_to.parent_frame()
+        _switch_to_frame_with_root_element(eyes_driver, root_element)
+
+
+def _switch_to_frame_with_root_element(driver, root_element):
+    # type: (AnyWebDriver, AnyWebElement) -> None
+    """
+    Tries to find and switch given driver to a frame that has given root_element
+    as it's root element.
+    """
+    for frame in driver.find_elements_by_xpath("//iframe|//frame"):
+        driver.switch_to.frame(frame)
+        if _current_root_element(driver) == root_element:
+            break
         else:
-            raise RuntimeError("Failed to reach element {}".format(root_element))
+            driver.switch_to.parent_frame()
+    else:
+        raise RuntimeError("Failed to reach element {}".format(root_element))
 
 
 def _current_root_element(driver):
