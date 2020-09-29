@@ -45,7 +45,11 @@ from tests.utils import get_resource
     ],
 )
 def test_render_request_serialize(browser_type):
-    request_resources = {"url": VGResource.EMPTY("some-url.com")}
+    request_resources = {
+        "url": VGResource(
+            "some-url.com", content_type="application/png", content=b"some-content"
+        )
+    }
     dom_url = "dom-url.com"
     r_info = RenderInfo(
         width=500,
@@ -74,7 +78,9 @@ def test_render_request_serialize(browser_type):
     ]
     test_results_data = get_resource("unit/renderResult.json").decode("utf-8")
     test_results_data %= browser_type.value
-    assert json.loads(test_results_data) == json.loads(json_utils.to_json(requests))
+    assert json.loads(test_results_data.replace("\n", "")) == json.loads(
+        json_utils.to_json(requests)
+    )
 
 
 def test_running_session_serialization_and_deserialization():

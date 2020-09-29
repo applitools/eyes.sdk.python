@@ -3,7 +3,7 @@ import re
 
 from mock import patch
 
-from applitools.selenium import Eyes, eyes_selenium_utils
+from applitools.selenium import Eyes, VisualGridRunner, eyes_selenium_utils
 
 
 def _fetch_skip_resources(resource_script_string):
@@ -21,9 +21,10 @@ def _retrieve_urls(data):
     )
 
 
-def test_ufg_skip_list(vg_runner, driver):
-    # TODO: Refactor this to unit test
+def test_ufg_skip_list(driver, fake_connector_class):
+    vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
     driver.get(
         "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
     )
@@ -48,5 +49,4 @@ def test_ufg_skip_list(vg_runner, driver):
             script_result = _retrieve_urls(running_check.call_args[1]["script_result"])
             assert set(skip_list).difference(script_result["resource_urls"])
 
-    eyes.close_async()
-    vg_runner.get_all_test_results(False)
+    eyes.close(False)
