@@ -1,6 +1,7 @@
 ## [vNext]
 ### Updated
 - [UFG] Add non-200 URLs to resource map [Trello 1798](https://trello.com/c/urf8SY1Z)
+- Print OS and Python versions to logs [Trello 2153](https://trello.com/c/ZBxxo3dn)
 - Add missing test for set_viewport_size [Trello 1919](https://trello.com/c/9vRolTeu)
 
 ## [4.8.2] - 2020-09-22
