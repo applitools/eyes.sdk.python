@@ -355,6 +355,7 @@ class Configuration(object):
         conf.viewport_size = copy(conf.viewport_size)
         conf.properties = deepcopy(conf.properties)
         conf.default_match_settings = deepcopy(conf.default_match_settings)
+        conf.features = deepcopy(conf.features)
         return conf
 
     def add_property(self, name, value):
