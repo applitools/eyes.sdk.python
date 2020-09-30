@@ -2,6 +2,7 @@ import mock
 import pytest
 from appium.webdriver import Remote as AppiumWebDriver
 
+from applitools.common import EyesError
 from applitools.selenium import eyes_selenium_utils
 
 
@@ -84,3 +85,22 @@ def test_get_check_source_source_web(driver_mock):
     driver_mock.current_url = "https://example.com/page.html"
 
     assert eyes_selenium_utils.get_check_source(driver_mock) == "example.com"
+
+
+def test_set_viewport_size_minimize_window_called(driver_mock):
+    driver_mock.minimize_window = mock.Mock()
+    set_browser_size_by_viewport_size = mock.Mock()
+    set_browser_size_by_viewport_size.side_effect = [False, True]
+
+    with mock.patch(
+        "applitools.selenium.eyes_selenium_utils.get_viewport_size",
+        return_value={"width": 600, "height": 850},
+    ):
+        with mock.patch(
+            "applitools.selenium.eyes_selenium_utils.set_browser_size_by_viewport_size",
+            new=set_browser_size_by_viewport_size,
+        ):
+            eyes_selenium_utils.set_viewport_size(
+                driver_mock, {"width": 600, "height": 650}
+            )
+    assert driver_mock.minimize_window.called
