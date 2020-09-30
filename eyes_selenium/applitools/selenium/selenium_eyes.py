@@ -235,16 +235,10 @@ class SeleniumEyes(EyesBase):
         source = eyes_selenium_utils.get_check_source(self.driver)
         name = check_settings.values.name
 
-        if (
-            self.configure.is_feature_activated(
-                Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME
-            )
-            and self.driver.frame_chain.size > 0
-            and check_settings.values.target_region is None
-            and check_settings.values.target_element is None
-            and check_settings.values.target_selector is None
+        if self.configure.is_feature_activated(
+            Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME
         ):
-            check_settings.region(self.driver.find_element_by_xpath("/*"))
+            self._maybe_fix_target(check_settings)
 
         logger.info("check('{}', check_settings) - begin".format(name))
 
@@ -1023,3 +1017,17 @@ class SeleniumEyes(EyesBase):
         if element and position_provider and not self.driver.is_mobile_app:
             self.driver.switch_to.frames(fc)
             position_provider.restore_state(state)
+
+    def _maybe_fix_target(self, check_settings):
+        # type: (SeleniumCheckSettings) -> None
+        """
+        In case no target explicitly selected and there is a frame selected by driver
+        makes that frame's content a target region.
+        """
+        if (
+            self.driver.frame_chain.size > 0
+            and check_settings.values.target_region is None
+            and check_settings.values.target_element is None
+            and check_settings.values.target_selector is None
+        ):
+            check_settings.region(self.driver.find_element_by_xpath("/*"))
