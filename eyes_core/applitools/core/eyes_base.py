@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import abc
+import platform
 import typing
 
 from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
@@ -578,6 +579,13 @@ class EyesBase(
             raise EyesError("A test is already running")
 
     def _log_open_base(self):
+        logger.info(
+            "Running on: {} {} {}".format(
+                platform.platform(),
+                platform.python_implementation(),
+                platform.python_version(),
+            )
+        )
         logger.info("Eyes server URL is '{}'".format(self.configure.server_url))
         logger.info("Timeout = {} ms".format(self.configure._timeout))
         logger.debug("match_timeout = {} ms".format(self.configure.match_timeout))
