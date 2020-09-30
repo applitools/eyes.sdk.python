@@ -258,6 +258,13 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
+          python: 3.6
+          script:
+            - pip install invoke
+            - inv install-requirements
+            - inv install-packages
+            - bash ./tutorials/tutorials.sh
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
