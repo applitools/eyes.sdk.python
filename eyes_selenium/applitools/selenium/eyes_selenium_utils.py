@@ -13,7 +13,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import EyesError, Point, RectangleSize, logger
 from applitools.common.utils import datetime_utils
-from applitools.common.utils.compat import urlparse
+from applitools.common.utils.compat import urlparse, raise_from
 
 if tp.TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Union
@@ -110,6 +110,10 @@ _RETRIES = 3
 
 
 class SwitchToParentIsNotSupported(Exception):
+    pass
+
+
+class EyesWebDriverIsOutOfSync(Exception):
     pass
 
 
@@ -637,13 +641,23 @@ def ensure_sync_with_underlying_driver(eyes_driver, selenium_driver):
             else:
                 selected_frame = eyes_driver.frame_chain.peek
                 in_sync = selected_frame.scroll_root_element.is_attached_to_page
-            if not in_sync:
-                _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
         except SwitchToParentIsNotSupported:
             logger.info(
-                "Unable to ensure framechain sync with the underlying driver due to "
-                "unsupported switch to parent frame call in the driver"
+                "Unable to ensure frame chain sync with the underlying driver due to "
+                "unsupported 'switch to parent frame' call in the driver"
             )
+        if not in_sync:
+            try:
+                _do_sync_with_underlying_driver(eyes_driver, selenium_driver)
+            except Exception as e:
+                raise_from(
+                    EyesWebDriverIsOutOfSync(
+                        "EyesWebDriver frame chain is out of sync. "
+                        "Please use web driver returned by Eyes.open call "
+                        "for frame switching."
+                    ),
+                    e,
+                )
 
 
 def _has_no_frame_selected(driver):
@@ -718,6 +732,6 @@ def _swith_to_parent_frame(driver):
         driver.switch_to.parent_frame()
     except WebDriverException as e:
         if "Method is not implemented" in e.msg:
-            raise SwitchToParentIsNotSupported(e)
+            raise_from(SwitchToParentIsNotSupported, e)
         else:
             raise
