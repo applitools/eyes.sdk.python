@@ -31,6 +31,7 @@ class Frame(object):
     :param inner_size: The frame element inner outerSize (i.e., the outer_size
                        of the frame actual outer_size, without borders).
     :param parent_scroll_position: The scroll location of the frame.
+    :param scroll_root_element: The element used for content scrolling within frame.
     """
 
     reference = attr.ib()  # type: EyesWebElement
