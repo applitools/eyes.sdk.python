@@ -15,6 +15,7 @@ from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_attrs, proxy_to
+from applitools.selenium import webdriver_sync
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils, useragent
@@ -771,4 +772,4 @@ class EyesWebDriver(object):
                 self.switch_to.frames(original_fc)
 
     def ensure_sync_with_underlying_driver(self):
-        eyes_selenium_utils.ensure_sync_with_underlying_driver(self, self._driver)
+        webdriver_sync.ensure_sync_with_underlying_driver(self, self._driver)
