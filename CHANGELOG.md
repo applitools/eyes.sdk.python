@@ -1,4 +1,6 @@
 ## [vNext]
+### Fixed
+- Error in log file when checking a page with cors frames [Trello 2191](https://trello.com/c/DZ8HrDjm)
 ### Updated
 - [UFG] Add non-200 URLs to resource map [Trello 1798](https://trello.com/c/urf8SY1Z)
 - Print OS and Python versions to logs [Trello 2153](https://trello.com/c/ZBxxo3dn)
