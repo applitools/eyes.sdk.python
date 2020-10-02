@@ -1,11 +1,16 @@
+import typing as tp
+
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.utils.compat import raise_from
-from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
-from applitools.selenium.webdriver import EyesWebDriver
+
+if tp.TYPE_CHECKING:
+    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdriver.remote.webelement import WebElement
+
+    from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
+    from applitools.selenium.webdriver import EyesWebDriver
 
 
 class SwitchToParentIsNotSupported(Exception):
