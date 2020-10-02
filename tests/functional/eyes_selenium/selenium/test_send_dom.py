@@ -119,8 +119,8 @@ def get_step_DOM(eyes, results):
     return res.json()
 
 
-@pytest.mark.skip("Rounding error on CI")
 def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
+    del expected_json["scriptVersion"]
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -138,4 +138,5 @@ def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expecte
     dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
 
+    del actual["scriptVersion"]
     assert check_objects(actual, expected_json)
