@@ -126,7 +126,7 @@ def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expecte
         .set_batch(batch_info)
         .set_app_name("Test Send DOM")
         .set_test_name("test_send_dom_cors_iframe")
-        .set_viewport_size(RectangleSize(1600, 1200))
+        .set_viewport_size(RectangleSize(1024, 768))
         # TODO: Remove this when default options get in sync for java and python SDK
         .set_hide_scrollbars(True)
     )
