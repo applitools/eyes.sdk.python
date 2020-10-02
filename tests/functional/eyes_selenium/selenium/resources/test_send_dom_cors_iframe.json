@@ -1599,10 +1599,10 @@
                                                                                                         "visibility": "visible"
                                                                                                     },
                                                                                                     "rect": {
-                                                                                                        "width": 54.15625,
+                                                                                                        "width": 54,
                                                                                                         "height": 18,
                                                                                                         "top": 319.703125,
-                                                                                                        "left": 272.375
+                                                                                                        "left": 272.5
                                                                                                     },
                                                                                                     "attributes": {
                                                                                                         "href": "#"
@@ -1662,10 +1662,10 @@
                                                                         "visibility": "visible"
                                                                     },
                                                                     "rect": {
-                                                                        "width": 246.28125,
+                                                                        "width": 246,
                                                                         "height": 34,
                                                                         "top": 383.703125,
-                                                                        "left": 94.359375
+                                                                        "left": 94.5
                                                                     },
                                                                     "attributes": {
                                                                         "id": "site-footer"
@@ -1699,10 +1699,10 @@
                                                                                 "visibility": "visible"
                                                                             },
                                                                             "rect": {
-                                                                                "width": 246.28125,
+                                                                                "width": 246,
                                                                                 "height": 14,
                                                                                 "top": 383.703125,
-                                                                                "left": 94.359375
+                                                                                "left": 94.5
                                                                             },
                                                                             "attributes": {
                                                                                 "id": "footer-nav"
@@ -1732,10 +1732,10 @@
                                                                                         "visibility": "visible"
                                                                                     },
                                                                                     "rect": {
-                                                                                        "width": 56.59375,
+                                                                                        "width": 56,
                                                                                         "height": 12,
                                                                                         "top": 384.703125,
-                                                                                        "left": 115.609375
+                                                                                        "left": 115.5
                                                                                     },
                                                                                     "attributes": {
                                                                                         "href": "#"
@@ -1771,10 +1771,10 @@
                                                                                         "visibility": "visible"
                                                                                     },
                                                                                     "rect": {
-                                                                                        "width": 15.96875,
+                                                                                        "width": 16,
                                                                                         "height": 12,
                                                                                         "top": 384.703125,
-                                                                                        "left": 172.203125
+                                                                                        "left": 171.5
                                                                                     },
                                                                                     "attributes": {
                                                                                         "class": "sep"
@@ -1810,10 +1810,10 @@
                                                                                         "visibility": "visible"
                                                                                     },
                                                                                     "rect": {
-                                                                                        "width": 73.375,
+                                                                                        "width": 73,
                                                                                         "height": 12,
                                                                                         "top": 384.703125,
-                                                                                        "left": 188.171875
+                                                                                        "left": 187.5
                                                                                     },
                                                                                     "attributes": {
                                                                                         "href": "#"
@@ -1849,10 +1849,10 @@
                                                                                         "visibility": "visible"
                                                                                     },
                                                                                     "rect": {
-                                                                                        "width": 15.96875,
+                                                                                        "width": 16,
                                                                                         "height": 12,
                                                                                         "top": 384.703125,
-                                                                                        "left": 261.546875
+                                                                                        "left": 260.5
                                                                                     },
                                                                                     "attributes": {
                                                                                         "class": "sep"
@@ -1888,10 +1888,10 @@
                                                                                         "visibility": "visible"
                                                                                     },
                                                                                     "rect": {
-                                                                                        "width": 41.859375,
+                                                                                        "width": 43,
                                                                                         "height": 12,
                                                                                         "top": 384.703125,
-                                                                                        "left": 277.515625
+                                                                                        "left": 276.5
                                                                                     },
                                                                                     "attributes": {
                                                                                         "href": "#"
@@ -1933,10 +1933,10 @@
                                                                                 "visibility": "visible"
                                                                             },
                                                                             "rect": {
-                                                                                "width": 246.28125,
+                                                                                "width": 246,
                                                                                 "height": 14,
                                                                                 "top": 403.703125,
-                                                                                "left": 94.359375
+                                                                                "left": 94.5
                                                                             },
                                                                             "attributes": {
                                                                                 "id": "colophon"
