@@ -119,7 +119,9 @@ def get_step_DOM(eyes, results):
     return res.json()
 
 
-def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
+def test_send_dom_cors_iframe(
+    dom_intercepting_eyes, driver, batch_info, expected_json, caplog
+):
     del expected_json["scriptVersion"]
     config = (
         Configuration()
@@ -140,3 +142,4 @@ def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expecte
 
     del actual["scriptVersion"]
     assert check_objects(actual, expected_json)
+    assert "ERROR" not in caplog.text
