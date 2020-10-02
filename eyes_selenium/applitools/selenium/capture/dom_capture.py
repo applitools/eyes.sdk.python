@@ -119,12 +119,12 @@ def recurse_frames(driver, missing_frames_list, css_downoader):
                     )
                 )
                 switch_to.frame(frame)
-                location_after_switch = _frame_url(driver)
-                if location_after_switch == original_location:
-                    logger.info("Switching to frame failed")
-                    frame_data[missing_frame_line] = ""
-                    continue
-                frame_data[missing_frame_line] = get_frame_dom(driver, css_downoader)
+            location_after_switch = _frame_url(driver)
+            if location_after_switch == original_location:
+                logger.info("Switching to frame failed")
+                frame_data[missing_frame_line] = ""
+                continue
+            frame_data[missing_frame_line] = get_frame_dom(driver, css_downoader)
         except Exception:
             logger.exception("Failed to get frame dom")
             frame_data[missing_frame_line] = ""
