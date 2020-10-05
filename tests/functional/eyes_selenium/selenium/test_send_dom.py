@@ -119,14 +119,16 @@ def get_step_DOM(eyes, results):
     return res.json()
 
 
-@pytest.mark.skip("Rounding error on CI")
-def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expected_json):
+def test_send_dom_cors_iframe(
+    dom_intercepting_eyes, driver, batch_info, expected_json, caplog
+):
+    del expected_json["scriptVersion"]
     config = (
         Configuration()
         .set_batch(batch_info)
         .set_app_name("Test Send DOM")
         .set_test_name("test_send_dom_cors_iframe")
-        .set_viewport_size(RectangleSize(1600, 1200))
+        .set_viewport_size(RectangleSize(1024, 768))
         # TODO: Remove this when default options get in sync for java and python SDK
         .set_hide_scrollbars(True)
     )
@@ -138,4 +140,6 @@ def test_send_dom_cors_iframe(dom_intercepting_eyes, driver, batch_info, expecte
     dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
 
+    del actual["scriptVersion"]
     assert check_objects(actual, expected_json)
+    assert "ERROR" not in caplog.text
