@@ -1,10 +1,10 @@
-from typing import Optional, Text
+from typing import TYPE_CHECKING, Text
 
-from applitools.common import Configuration, logger
-from applitools.core.debug import (
-    FileDebugScreenshotsProvider,
-    NullDebugScreenshotsProvider,
-)
+from applitools.common import Configuration, MatchResult, logger
+from applitools.core.fluent import CheckSettings
+
+if TYPE_CHECKING:
+    from typing import Optional
 
 
 class EyesConfigurationMixin(object):
@@ -53,3 +53,29 @@ class EyesConfigurationMixin(object):
             "Use `set_configuration` instead"
         )
         self.set_configuration(configuration)
+
+
+class EyesCheckMixin(object):
+    _check_settings_cls = CheckSettings
+
+    def check(self, name=None, check_settings=None, *args):
+        checks = []
+        if name and not isinstance(name, Text):
+            checks.append(name)
+            name = None
+        if check_settings:
+            checks.append(check_settings)
+        if args:
+            checks.extend(a for a in args if a)
+        if not checks:
+            checks = [self._check_settings_cls()]
+        if name:
+            checks[0] = checks[0].with_name(name)
+        for check_settings in checks:
+            res = self._check(check_settings)
+        if len(checks) == 1:
+            return res
+
+    def _check(self, check_settings):
+        # type: (*CheckSettings) -> Optional[MatchResult]
+        pass
