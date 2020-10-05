@@ -164,9 +164,10 @@ class VisualGridEyes(object):
             self.driver, DOM_EXTRACTION_TIMEOUT, "VG_StopWatch", process_resources
         )
 
-    def check(self, name, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> None
+    def check(self, check_settings):
+        # type: (SeleniumCheckSettings) -> None
         argument_guard.is_a(check_settings, CheckSettings)
+        name = check_settings.values.name
         logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
         self._try_set_target_selector(check_settings)
 

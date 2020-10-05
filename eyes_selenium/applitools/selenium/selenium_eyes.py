@@ -37,7 +37,6 @@ from .capture.full_page_capture_algorithm import FullPageCaptureAlgorithm
 from .capture.image_providers import get_image_provider
 from .capture.screenshot_utils import cut_to_viewport_size_if_required
 from .classic_runner import ClassicRunner
-from .fluent import Target
 from .frames import FrameChain
 from .positioning import (
     CSSTranslatePositionProvider,
@@ -230,16 +229,10 @@ class SeleniumEyes(EyesBase):
         elif stitch_mode == StitchMode.CSS:
             return CSSTranslatePositionProvider(self.driver, scroll_root_element)
 
-    def check(self, name, check_settings=None):
-        # type: (Text, Optional[SeleniumCheckSettings]) -> MatchResult
+    def check(self, check_settings):
+        # type: (Text, SeleniumCheckSettings) -> MatchResult
         source = eyes_selenium_utils.get_check_source(self.driver)
-        if check_settings is None:
-            check_settings = Target.window()
-
-        if name:
-            check_settings = check_settings.with_name(name)
-        else:
-            name = check_settings.values.name
+        name = check_settings.values.name
 
         logger.info("check('{}', check_settings) - begin".format(name))
 

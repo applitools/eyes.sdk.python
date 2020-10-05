@@ -1,18 +1,19 @@
 from __future__ import absolute_import
 
 import typing
+from typing import overload
 
 from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_base import DebugScreenshotsAbstract
-from applitools.core.eyes_mixins import EyesConfigurationMixin
+from applitools.core.eyes_mixins import EyesCheckMixin, EyesConfigurationMixin
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
-from .fluent import Target
+from .fluent import SeleniumCheckSettings, Target
 from .locators import SeleniumVisualLocatorsProvider
 from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
@@ -37,13 +38,13 @@ if typing.TYPE_CHECKING:
         UnscaledFixedCutProvider,
     )
 
-    from .fluent import SeleniumCheckSettings
     from .frames import FrameChain
     from .webelement import EyesWebElement
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
+class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, EyesCheckMixin):
+    _check_settings_cls = SeleniumCheckSettings  # type: type
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
@@ -374,8 +375,9 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         if not self._is_visual_grid_eyes:
             self.configure.send_dom = value
 
-    def check(self, name, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> MatchResult
+    @overload
+    def check(self, name=None, check_settings=None):
+        # type: (Optional[Text], Optional[SeleniumCheckSettings]) -> MatchResult
         """
         Takes a snapshot and matches it with the expected output.
 
@@ -383,13 +385,30 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         :param check_settings: target which area of the window to check.
         :return: The match results.
         """
+        pass
+
+    @overload
+    def check(self, *check_settings):
+        # type: (*SeleniumCheckSettings) -> None
+        """
+        Takes multiple snapshots and matches them with the expected outputs.
+
+        :params check_settings: targets which areas of the window to check.
+        """
+        pass
+
+    def check(self, *args, **kwargs):
+        return super(Eyes, self).check(*args, **kwargs)
+
+    def _check(self, check_settings):
+        # type: (SeleniumCheckSettings) -> MatchResult
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")
             return MatchResult()
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
-        return self._current_eyes.check(name, check_settings)
+        return self._current_eyes.check(check_settings)
 
     def check_window(self, tag=None, match_timeout=-1, fully=None):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult
