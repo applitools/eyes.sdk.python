@@ -65,8 +65,7 @@ class EyesCheckMixin(object):
             name = None
         if check_settings:
             checks.append(check_settings)
-        if args:
-            checks.extend(a for a in args if a)
+        checks.extend(args)
         if not checks:
             checks = [self._check_settings_cls()]
         if name:
