@@ -1,4 +1,5 @@
 import typing
+from typing import overload
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.utils.general_utils import all_fields, proxy_to
@@ -8,6 +9,7 @@ from applitools.core import (
     NullCutProvider,
     RegionProvider,
 )
+from applitools.core.eyes_mixins import EyesCheckMixin
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
@@ -22,7 +24,8 @@ if typing.TYPE_CHECKING:
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesBase):
+class Eyes(EyesBase, EyesCheckMixin):
+    _check_settings_cls = ImagesCheckSettings  # type: type
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
@@ -73,20 +76,31 @@ class Eyes(EyesBase):
         # type: (Text, Text, Optional[ViewPort]) -> None
         self.open_base(app_name, test_name, dimension)
 
-    def check(self, name, check_settings):
+    @overload
+    def check(self, name=None, check_settings=None):
+        # type: (Optional[Text], Optional[ImagesCheckSettings]) -> bool
+        pass
+
+    @overload
+    def check(self, *check_settings):
+        # type: (*ImagesCheckSettings) -> None
+        pass
+
+    def check(self, *args, **kwargs):
+        return super(Eyes, self).check(*args, **kwargs)
+
+    def _check(self, check_settings):
         # type: (Text, ImagesCheckSettings) -> bool
         if self.configure.is_disabled:
             return False
-        if name:
-            check_settings = check_settings.with_name(name)
-        else:
-            name = check_settings.values.name
 
         image = check_settings.values.image
         if self.configure.viewport_size is None:
             self.configure.viewport_size = RectangleSize.from_(image)
 
-        return self._check_image(NULL_REGION_PROVIDER, name, False, check_settings)
+        return self._check_image(
+            NULL_REGION_PROVIDER, check_settings.values.name, False, check_settings
+        )
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
         # type: (Union[Image.Image, Text], Optional[Text], bool) -> Optional[bool]
