@@ -1,4 +1,4 @@
-## [vNext]
+## [4.8.3] - 2020-10-05
 ### Fixed
 - Error in log file when checking a page with cors frames [Trello 2191](https://trello.com/c/DZ8HrDjm)
 ### Updated
