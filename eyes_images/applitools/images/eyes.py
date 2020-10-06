@@ -1,5 +1,4 @@
 import typing
-from typing import overload
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
 from applitools.common.utils.general_utils import all_fields, proxy_to
@@ -9,7 +8,7 @@ from applitools.core import (
     NullCutProvider,
     RegionProvider,
 )
-from applitools.core.eyes_mixins import EyesCheckMixin
+from applitools.core.eyes_mixins import merge_check_arguments
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
@@ -24,8 +23,7 @@ if typing.TYPE_CHECKING:
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesBase, EyesCheckMixin):
-    _check_settings_cls = ImagesCheckSettings  # type: type
+class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
@@ -76,21 +74,20 @@ class Eyes(EyesBase, EyesCheckMixin):
         # type: (Text, Text, Optional[ViewPort]) -> None
         self.open_base(app_name, test_name, dimension)
 
-    @overload
-    def check(self, name=None, check_settings=None):
-        # type: (Optional[Text], Optional[ImagesCheckSettings]) -> bool
-        pass
-
-    @overload
-    def check(self, *check_settings):
-        # type: (*ImagesCheckSettings) -> None
-        pass
-
-    def check(self, *args, **kwargs):
-        return super(Eyes, self).check(*args, **kwargs)
-
-    def _check(self, check_settings):
+    @typing.overload
+    def check(self, name, check_settings):
         # type: (Text, ImagesCheckSettings) -> bool
+        pass
+
+    @typing.overload
+    def check(self, check_settings):
+        # type: (ImagesCheckSettings) -> None
+        pass
+
+    def check(self, check_settings_or_name=None, check_settings=None, name=None):
+        check_settings = merge_check_arguments(
+            ImagesCheckSettings, check_settings_or_name, check_settings, name
+        )
         if self.configure.is_disabled:
             return False
 

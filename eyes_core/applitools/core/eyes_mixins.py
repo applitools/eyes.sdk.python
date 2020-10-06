@@ -1,11 +1,5 @@
-from typing import TYPE_CHECKING
-
-from applitools.common import Configuration, MatchResult, logger
+from applitools.common import Configuration, logger
 from applitools.common.utils.compat import basestring
-from applitools.core.fluent import CheckSettings
-
-if TYPE_CHECKING:
-    from typing import Optional
 
 
 class EyesConfigurationMixin(object):
@@ -56,26 +50,23 @@ class EyesConfigurationMixin(object):
         self.set_configuration(configuration)
 
 
-class EyesCheckMixin(object):
-    _check_settings_cls = CheckSettings
-
-    def check(self, name=None, check_settings=None, *args):
-        checks = []
-        if name and not isinstance(name, basestring):
-            checks.append(name)
-            name = None
-        if check_settings:
-            checks.append(check_settings)
-        checks.extend(args)
-        if not checks:
-            checks = [self._check_settings_cls()]
-        if name:
-            checks[0] = checks[0].with_name(name)
-        for check_settings in checks:
-            res = self._check(check_settings)
-        if len(checks) == 1:
-            return res
-
-    def _check(self, check_settings):
-        # type: (*CheckSettings) -> Optional[MatchResult]
-        pass
+def merge_check_arguments(
+    settings_class, check_settings_or_name=None, check_settings=None, name=None
+):
+    """
+    Merge mandatory check_settings and optional name arguments into check_settings.
+    Name argument might come first.
+    """
+    if isinstance(check_settings_or_name, settings_class):
+        if check_settings is not None:
+            raise ValueError("Check settings should be provided once")
+        check_settings = check_settings_or_name
+    elif isinstance(check_settings_or_name, basestring):
+        if name is not None:
+            raise ValueError("Name might be provided only once")
+        name = check_settings_or_name
+    if not isinstance(check_settings, settings_class):
+        raise ValueError("Check settings should be provided")
+    if name:
+        check_settings = check_settings.with_name(name)
+    return check_settings

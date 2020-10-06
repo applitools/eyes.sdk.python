@@ -1,14 +1,13 @@
 from __future__ import absolute_import
 
 import typing
-from typing import overload
 
 from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_base import DebugScreenshotsAbstract
-from applitools.core.eyes_mixins import EyesCheckMixin, EyesConfigurationMixin
+from applitools.core.eyes_mixins import EyesConfigurationMixin, merge_check_arguments
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
@@ -43,8 +42,7 @@ if typing.TYPE_CHECKING:
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, EyesCheckMixin):
-    _check_settings_cls = SeleniumCheckSettings  # type: type
+class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
@@ -375,9 +373,9 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, EyesCheckMixin):
         if not self._is_visual_grid_eyes:
             self.configure.send_dom = value
 
-    @overload
-    def check(self, name=None, check_settings=None):
-        # type: (Optional[Text], Optional[SeleniumCheckSettings]) -> MatchResult
+    @typing.overload
+    def check(self, name, check_settings):
+        # type: (Text, SeleniumCheckSettings) -> MatchResult
         """
         Takes a snapshot and matches it with the expected output.
 
@@ -387,21 +385,22 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, EyesCheckMixin):
         """
         pass
 
-    @overload
-    def check(self, *check_settings):
-        # type: (*SeleniumCheckSettings) -> None
+    @typing.overload
+    def check(self, check_settings):
+        # type: (SeleniumCheckSettings) -> None
         """
-        Takes multiple snapshots and matches them with the expected outputs.
+        Takes a snapshot and matches it with the expected output.
 
-        :params check_settings: targets which areas of the window to check.
+        :param check_settings: target which area of the window to check.
+        :return: The match results.
         """
         pass
 
-    def check(self, *args, **kwargs):
-        return super(Eyes, self).check(*args, **kwargs)
+    def check(self, check_settings_or_name=None, check_settings=None, name=None):
+        check_settings = merge_check_arguments(
+            SeleniumCheckSettings, check_settings_or_name, check_settings, name
+        )
 
-    def _check(self, check_settings):
-        # type: (SeleniumCheckSettings) -> MatchResult
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")
             return MatchResult()
