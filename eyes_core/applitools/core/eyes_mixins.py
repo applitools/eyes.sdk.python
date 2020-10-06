@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from applitools.common import Configuration, MatchResult, logger
+from applitools.common.utils.compat import basestring
 from applitools.core.fluent import CheckSettings
 
 if TYPE_CHECKING:
@@ -60,7 +61,7 @@ class EyesCheckMixin(object):
 
     def check(self, name=None, check_settings=None, *args):
         checks = []
-        if name and not isinstance(name, ("".__class__, u"".__class__)):
+        if name and not isinstance(name, basestring):
             checks.append(name)
             name = None
         if check_settings:
