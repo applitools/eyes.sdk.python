@@ -3,20 +3,21 @@ from pytest import raises
 from applitools.core import CheckSettings
 from applitools.core.eyes_mixins import merge_check_arguments
 
+_missing_check_settings = "missing 1 required positional argument: 'check_settings'"
+
 
 def test_merge_check_arguments_empty():
-    with raises(ValueError, message="Check settings should be provided"):
+    with raises(TypeError, message=_missing_check_settings):
         merge_check_arguments(CheckSettings)
 
 
 def test_merge_check_arguments_only_name_keyword():
-    with raises(ValueError, message="Check settings should be provided"):
+    with raises(TypeError, message=_missing_check_settings):
         merge_check_arguments(CheckSettings, name="A")
 
 
 def test_merge_check_arguments_only_name_positional():
-    with raises(ValueError, message="Check settings should be provided"):
-        merge_check_arguments(CheckSettings, "A")
+    merge_check_arguments(CheckSettings, "A")
 
 
 def test_merge_check_arguments_only_settings_keyword():
@@ -51,13 +52,16 @@ def test_merge_check_arguments_name_valid_settings_none():
     assert checks == CheckSettings().with_name("A")
 
 
-def test_merge_check_arguments_multiple_checks():
-    with raises(ValueError, message="Check settings should be provided once"):
-        merge_check_arguments(
-            CheckSettings,
-            CheckSettings().with_name("A"),
-            CheckSettings().with_name("B"),
-        )
+def test_merge_check_arguments_both_none():
+    checks = merge_check_arguments(CheckSettings, None, None)
+
+    assert checks == CheckSettings()
+
+
+def test_merge_check_arguments_name_none_check_settings_valid():
+    checks = merge_check_arguments(CheckSettings, None, CheckSettings().with_name("A"))
+
+    assert checks == CheckSettings().with_name("A")
 
 
 def test_merge_check_arguments_override_name():
