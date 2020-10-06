@@ -1,6 +1,6 @@
 import os
-from unittest import mock
 
+import mock
 import pytest
 
 from applitools.core import ServerConnector
