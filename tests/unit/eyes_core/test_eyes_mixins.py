@@ -45,6 +45,12 @@ def test_eyes_check_mixin_check_both_keyword():
     assert checks == CheckSettings().with_name("A")
 
 
+def test_eyes_check_mixin_check_name_valid_settings_none():
+    checks = merge_check_arguments(CheckSettings, "A", None)
+
+    assert checks == CheckSettings().with_name("A")
+
+
 def test_eyes_check_mixin_multiple_checks():
     with raises(ValueError, message="Check settings should be provided once"):
         merge_check_arguments(
