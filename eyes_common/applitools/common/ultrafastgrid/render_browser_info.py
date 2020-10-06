@@ -8,7 +8,7 @@ from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils import ABC
 from applitools.common.utils.json_utils import JsonInclude
 
-from .config import DeviceName, IosDeviceName, ScreenOrientation
+from .config import DeviceName, IosDeviceName, ScreenOrientation, IosVersion
 
 
 class IRenderBrowserInfo(ABC):
@@ -100,16 +100,21 @@ class IosDeviceInfo(IRenderBrowserInfo):
     )  # type: DeviceName
     screen_orientation = attr.ib(
         type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}
-    )  # type: ScreenOrientation
+    )  # type: Optional[ScreenOrientation]
+    ios_version = attr.ib(
+        type=IosVersion, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[IosVersion]
 
     def __init__(
         self,
         device_name,  # type: IosDeviceName
         screen_orientation=ScreenOrientation.PORTRAIT,  # type: ScreenOrientation
+        ios_version=None,  # type: Optional[IosVersion]
         baseline_env_name=None,  # type: Optional[Text]
     ):
         self.device_name = IosDeviceName(device_name)
         self.screen_orientation = ScreenOrientation(screen_orientation)
+        self.ios_version = IosVersion(ios_version) if ios_version else None
         self._baseline_env_name = baseline_env_name
 
     @property
