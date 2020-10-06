@@ -2,3 +2,8 @@
 	path = sdk.coverage.tests
 	url = https://github.com/applitools/sdk.coverage.tests.git
 	branch = python_initial
+
+[submodule "eyes.ufg.python"]
+	path = eyes.ufg.python
+	url = https://github.com/applitools/eyes.ufg.python.git
+	branch = master

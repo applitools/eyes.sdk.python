@@ -47,6 +47,7 @@ def dist(
         )
     )
     _fetch_js_libs_if_required(c, common, core, images, selenium)
+    _fetch_ufg_modules_if_required(c, common, core, selenium, images)
 
     if from_env:
         twine_command = "twine upload dist/*"
@@ -137,6 +138,12 @@ def _fetch_js_libs_if_required(c, common, core, selenium, images):
         retrieve_js(c)
 
 
+def _fetch_ufg_modules_if_required(c, common, core, selenium, images):
+    # get js libs only if selenium lib is installing
+    if common or selenium or not any([common, core, selenium, images]):
+        update_local_ufg_modules(c, update_submodule=True)
+
+
 @task
 def install_packages(
     c, common=False, core=False, selenium=False, images=False, editable=False
@@ -146,6 +153,7 @@ def install_packages(
     )
 
     _fetch_js_libs_if_required(c, common, core, selenium, images)
+    _fetch_ufg_modules_if_required(c, common, core, selenium, images)
 
     editable = "-e" if editable else ""
     for pack in packages:
@@ -200,6 +208,48 @@ def move_js_resources_to(pack):
         to = path.join(node_resources, name)
         print("Moving js lib from {} to {}".format(from_, to))
         shutil.copy(from_, dst=to)
+
+
+@task
+def update_local_ufg_modules(c, update_submodule=False):
+    if update_submodule:
+        c.run("git submodule update --init --remote --recursive")
+
+    def mergefolders(root_src_dir, root_dst_dir):
+        for src_dir, dirs, files in os.walk(root_src_dir):
+            dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+            if not os.path.exists(dst_dir):
+                os.makedirs(dst_dir)
+            for file_ in files:
+                src_file = os.path.join(src_dir, file_)
+                dst_file = os.path.join(dst_dir, file_)
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                shutil.copy(src_file, dst_dir)
+
+    def get_version(pack_path):
+        _, pack_name = path.split(pack_path)[1].split("_")
+        version_file = codecs.open(
+            path.join(pack_path, "applitools/{}/__version__.py".format(pack_name)),
+            "r",
+            "utf-8",
+        ).read()
+
+        try:
+            version = re.findall(r"^__version__ = \"([^']+)\"\r?$", version_file, re.M)[
+                0
+            ]
+        except IndexError:
+            raise RuntimeError("Unable to determine version.")
+        return version
+
+    for dest_pack in _packages_resolver(common=True, selenium=True, full_path=True):
+        cur_dir, pack_name = path.split(dest_pack)
+        source_ufg = path.join(cur_dir, "eyes.ufg.python", pack_name)
+        if get_version(dest_pack) != get_version(source_ufg):
+            raise RuntimeError("Version mismatch")
+        print("Moving UFG modules from {} to {}".format(source_ufg, dest_pack))
+        mergefolders(source_ufg, dest_pack)
 
 
 @task
