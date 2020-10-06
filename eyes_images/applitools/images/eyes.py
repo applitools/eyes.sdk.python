@@ -84,10 +84,8 @@ class Eyes(EyesBase):
         # type: (ImagesCheckSettings) -> None
         pass
 
-    def check(self, check_settings_or_name=None, check_settings=None, name=None):
-        check_settings = merge_check_arguments(
-            ImagesCheckSettings, check_settings_or_name, check_settings, name
-        )
+    def check(self, *args, **kwargs):
+        check_settings = merge_check_arguments(ImagesCheckSettings, *args, **kwargs)
         if self.configure.is_disabled:
             return False
 

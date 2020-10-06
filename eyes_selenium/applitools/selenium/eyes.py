@@ -396,10 +396,8 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         """
         pass
 
-    def check(self, check_settings_or_name=None, check_settings=None, name=None):
-        check_settings = merge_check_arguments(
-            SeleniumCheckSettings, check_settings_or_name, check_settings, name
-        )
+    def check(self, *args, **kwargs):
+        check_settings = merge_check_arguments(SeleniumCheckSettings, *args, **kwargs)
 
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")
