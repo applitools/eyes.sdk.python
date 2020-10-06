@@ -12,7 +12,11 @@ from applitools.core.debug import (
 
 @pytest.fixture
 def clean_environ():
-    with mock.patch.dict(os.environ, clear=True):
+    # Python2/Windows ThreadPoolExecutor requires this
+    cpus = os.getenv("NUMBER_OF_PROCESSORS")
+    save = {"NUMBER_OF_PROCESSORS": cpus} if cpus else {}
+
+    with mock.patch.dict(os.environ, save, clear=True):
         yield
 
 
