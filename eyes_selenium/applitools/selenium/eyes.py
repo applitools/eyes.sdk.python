@@ -403,7 +403,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         ):
             check_settings, name = name, check_settings
         if check_settings is None:
-            check_settings = SeleniumCheckSettings()
+            check_settings = Target.window()
         if name:
             check_settings = check_settings.with_name(name)
 
