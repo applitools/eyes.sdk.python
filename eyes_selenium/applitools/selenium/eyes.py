@@ -5,9 +5,10 @@ import typing
 from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
+from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_base import DebugScreenshotsAbstract
-from applitools.core.eyes_mixins import EyesConfigurationMixin, merge_check_arguments
+from applitools.core.eyes_mixins import EyesConfigurationMixin
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
@@ -396,8 +397,15 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         """
         pass
 
-    def check(self, *args, **kwargs):
-        check_settings = merge_check_arguments(SeleniumCheckSettings, *args, **kwargs)
+    def check(self, check_settings, name=None):
+        if isinstance(name, SeleniumCheckSettings) or isinstance(
+            check_settings, basestring
+        ):
+            check_settings, name = name, check_settings
+        if check_settings is None:
+            check_settings = SeleniumCheckSettings()
+        if name:
+            check_settings = check_settings.with_name(name)
 
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")

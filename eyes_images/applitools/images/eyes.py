@@ -1,6 +1,7 @@
 import typing
 
 from applitools.common import Configuration, EyesError, RectangleSize, Region, logger
+from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -8,7 +9,6 @@ from applitools.core import (
     NullCutProvider,
     RegionProvider,
 )
-from applitools.core.eyes_mixins import merge_check_arguments
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
@@ -84,10 +84,15 @@ class Eyes(EyesBase):
         # type: (ImagesCheckSettings) -> None
         pass
 
-    def check(self, *args, **kwargs):
-        check_settings = merge_check_arguments(ImagesCheckSettings, *args, **kwargs)
+    def check(self, check_settings, name=None):
         if self.configure.is_disabled:
             return False
+        if isinstance(name, ImagesCheckSettings) or isinstance(
+            check_settings, basestring
+        ):
+            check_settings, name = name, check_settings
+        if name:
+            check_settings = check_settings.with_name(name)
 
         image = check_settings.values.image
         if self.configure.viewport_size is None:

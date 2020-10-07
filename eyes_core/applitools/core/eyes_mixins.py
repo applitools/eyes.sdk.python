@@ -1,5 +1,4 @@
 from applitools.common import Configuration, logger
-from applitools.common.utils.compat import basestring
 
 
 class EyesConfigurationMixin(object):
@@ -48,17 +47,3 @@ class EyesConfigurationMixin(object):
             "Use `set_configuration` instead"
         )
         self.set_configuration(configuration)
-
-
-def merge_check_arguments(settings_class, check_settings, name=None):
-    """
-    Merge mandatory check_settings and optional name arguments into check_settings.
-    Name argument might come first.
-    """
-    if isinstance(name, settings_class) or isinstance(check_settings, basestring):
-        check_settings, name = name, check_settings
-    if check_settings is None:
-        check_settings = settings_class()
-    if name:
-        check_settings = check_settings.with_name(name)
-    return check_settings
