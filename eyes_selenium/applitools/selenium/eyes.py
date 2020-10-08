@@ -5,6 +5,7 @@ import typing
 from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
+from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_base import DebugScreenshotsAbstract
 from applitools.core.eyes_mixins import EyesConfigurationMixin
@@ -12,7 +13,7 @@ from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
-from .fluent import Target
+from .fluent import SeleniumCheckSettings, Target
 from .locators import SeleniumVisualLocatorsProvider
 from .selenium_eyes import SeleniumEyes
 from .visual_grid import VisualGridEyes, VisualGridRunner
@@ -37,7 +38,6 @@ if typing.TYPE_CHECKING:
         UnscaledFixedCutProvider,
     )
 
-    from .fluent import SeleniumCheckSettings
     from .frames import FrameChain
     from .webelement import EyesWebElement
 
@@ -374,6 +374,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         if not self._is_visual_grid_eyes:
             self.configure.send_dom = value
 
+    @typing.overload
     def check(self, name, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         """
@@ -383,13 +384,36 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         :param check_settings: target which area of the window to check.
         :return: The match results.
         """
+        pass
+
+    @typing.overload
+    def check(self, check_settings):
+        # type: (SeleniumCheckSettings) -> None
+        """
+        Takes a snapshot and matches it with the expected output.
+
+        :param check_settings: target which area of the window to check.
+        :return: The match results.
+        """
+        pass
+
+    def check(self, check_settings, name=None):
+        if isinstance(name, SeleniumCheckSettings) or isinstance(
+            check_settings, basestring
+        ):
+            check_settings, name = name, check_settings
+        if check_settings is None:
+            check_settings = Target.window()
+        if name:
+            check_settings = check_settings.with_name(name)
+
         if self.configure.is_disabled:
             logger.info("check(): ignored (disabled)")
             return MatchResult()
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
-        return self._current_eyes.check(name, check_settings)
+        return self._current_eyes.check(check_settings)
 
     def check_window(self, tag=None, match_timeout=-1, fully=None):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult

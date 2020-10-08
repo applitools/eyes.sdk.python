@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Allow to call eyes.check(Target) without required tag parameter [Trello 1332](https://trello.com/c/eog9OcrR)
+
 ## [4.8.3] - 2020-10-05
 ### Fixed
 - Error in log file when checking a page with cors frames [Trello 2191](https://trello.com/c/DZ8HrDjm)

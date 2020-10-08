@@ -1,3 +1,6 @@
+import os
+
+import mock
 import pytest
 
 from applitools.core import ServerConnector
@@ -5,6 +8,16 @@ from applitools.core.debug import (
     FileDebugScreenshotsProvider,
     NullDebugScreenshotsProvider,
 )
+
+
+@pytest.fixture
+def clean_environ():
+    # Python2/Windows ThreadPoolExecutor requires this
+    cpus = os.getenv("NUMBER_OF_PROCESSORS")
+    save = {"NUMBER_OF_PROCESSORS": cpus} if cpus else {}
+
+    with mock.patch.dict(os.environ, save, clear=True):
+        yield
 
 
 def pytest_generate_tests(metafunc):
@@ -49,7 +62,7 @@ def test_set_incorrect_server_connector(eyes):
         eyes.server_connector = CustomServerCon()
 
 
-def test_set_get_debug_screenshot_provider(eyes, monkeypatch):
+def test_set_get_debug_screenshot_provider(clean_environ, eyes):
     assert isinstance(eyes.debug_screenshots_provider, NullDebugScreenshotsProvider)
 
     eyes.save_debug_screenshots = True

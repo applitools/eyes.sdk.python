@@ -2,7 +2,7 @@ import datetime
 import json
 
 import pytest
-from mock import patch
+from mock import MagicMock, call, patch
 
 from applitools.common import BatchInfo, EyesError, MatchLevel, StitchMode
 from applitools.common.utils import json_utils
@@ -12,6 +12,7 @@ from applitools.core import (
     UnscaledFixedCutProvider,
 )
 from applitools.selenium import Configuration, Eyes, Target
+from applitools.selenium.fluent import SeleniumCheckSettings
 
 
 def open_and_get_start_session_info(eyes, driver):
@@ -179,3 +180,80 @@ def test_add_clear_properties(eyes):
     assert eyes.configure.properties == [{"name": "Name", "value": "val"}]
     eyes.clear_properties()
     assert eyes.configure.properties == []
+
+
+@pytest.fixture
+def eyes_check_mock():
+    eyes = Eyes()
+    eyes._is_opened = True
+    eyes._selenium_eyes = MagicMock()
+    eyes.calls = eyes._selenium_eyes.check.call_args_list
+    return eyes
+
+
+def test_selenium_eyes_check_args_empty(eyes_check_mock):
+    with pytest.raises(
+        TypeError, message="missing 1 required positional argument: 'check_settings'"
+    ):
+        eyes_check_mock.check()
+
+
+def test_selenium_eyes_check_args_only_name_keyword(eyes_check_mock):
+    with pytest.raises(
+        TypeError, message="missing 1 required positional argument: 'check_settings'"
+    ):
+        eyes_check_mock.check(name="A")
+
+
+def test_selenium_eyes_check_args_only_name_positional(eyes_check_mock):
+    eyes_check_mock.check("A")
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+def test_selenium_eyes_check_args_only_settings_keyword(eyes_check_mock):
+    eyes_check_mock.check(check_settings=SeleniumCheckSettings())
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings())]
+
+
+def test_selenium_eyes_check_args_only_settings_positional(eyes_check_mock):
+    eyes_check_mock.check(SeleniumCheckSettings())
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings())]
+
+
+def test_selenium_eyes_check_args_both_positional(eyes_check_mock):
+    eyes_check_mock.check("A", SeleniumCheckSettings())
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+def test_selenium_eyes_check_args_both_keyword(eyes_check_mock):
+    eyes_check_mock.check(check_settings=SeleniumCheckSettings(), name="A")
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+def test_selenium_eyes_check_args_name_valid_settings_none(eyes_check_mock):
+    eyes_check_mock.check("A", None)
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+def test_selenium_eyes_check_args_both_none(eyes_check_mock):
+    eyes_check_mock.check(None, None)
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings())]
+
+
+def test_selenium_eyes_check_args_name_none_check_settings_valid(eyes_check_mock):
+    eyes_check_mock.check(None, SeleniumCheckSettings().with_name("A"))
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+def test_selenium_eyes_check_args_override_name(eyes_check_mock):
+    eyes_check_mock.check("A", SeleniumCheckSettings().with_name("B"))
+
+    assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
