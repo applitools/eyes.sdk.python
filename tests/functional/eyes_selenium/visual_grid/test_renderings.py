@@ -3,7 +3,6 @@ from collections import defaultdict
 import pytest
 from mock import patch
 
-from applitools.common import IosVersion
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
@@ -12,6 +11,7 @@ from applitools.selenium import (
     Eyes,
     IosDeviceInfo,
     IosDeviceName,
+    IosVersion,
     MatchLevel,
     RectangleSize,
     ScreenOrientation,
@@ -239,7 +239,7 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    assert len(vg_runner.get_all_test_results()) == 2
+    assert len(vg_runner.get_all_test_results()) == 3
 
 
 def test_visual_viewport(driver, batch_info, vg_runner):
