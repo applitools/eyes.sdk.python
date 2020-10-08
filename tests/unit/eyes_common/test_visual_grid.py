@@ -1,3 +1,4 @@
+import json
 from random import randint
 
 from applitools.common import VGResource, IosVersion
@@ -11,6 +12,7 @@ from applitools.common.ultrafastgrid import (
     RectangleSize,
     ScreenOrientation,
 )
+from applitools.common.utils import json_utils
 
 
 def test_vgresource_with_function_that_raises_exception_should_not_break():
@@ -61,6 +63,9 @@ def test_ios_device_info():
     assert idi.screen_orientation == ScreenOrientation.PORTRAIT
     assert idi.ios_version is None
     assert idi.baseline_env_name is None
+    assert {"name": "iPhone 11 Pro", "screenOrientation": "portrait"} == json.loads(
+        json_utils.to_json(idi)
+    )
 
     idi = IosDeviceInfo(
         IosDeviceName.iPhone_11_Pro,
@@ -72,11 +77,21 @@ def test_ios_device_info():
     assert idi.screen_orientation == ScreenOrientation.LANDSCAPE
     assert idi.ios_version == IosVersion.LATEST
     assert idi.baseline_env_name == "Baseline env"
+    assert {
+        "name": "iPhone 11 Pro",
+        "screenOrientation": "landscape",
+        "iosVersion": "latest",
+    } == json.loads(json_utils.to_json(idi))
 
     idi = IosDeviceInfo("iPhone 11 Pro", "landscape", "latest-1")
     assert idi.device_name == IosDeviceName.iPhone_11_Pro
     assert idi.screen_orientation == ScreenOrientation.LANDSCAPE
     assert idi.ios_version == IosVersion.ONE_VERSION_BACK
+    assert {
+        "name": "iPhone 11 Pro",
+        "screenOrientation": "landscape",
+        "iosVersion": "latest-1",
+    } == json.loads(json_utils.to_json(idi))
 
 
 def test_desktop_browser_info():
