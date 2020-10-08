@@ -3,6 +3,7 @@ from collections import defaultdict
 import pytest
 from mock import patch
 
+from applitools.common import IosVersion
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
@@ -213,16 +214,27 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
 
 
 def test_rendering_ios_simulator(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    driver.get("http://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
-            app_name="Visual Grid Render Test",
-            test_name="TestRenderingIosSimulator",
+            app_name="Eyes SDK",
+            test_name="UFG Mobile Web Happy Flow",
             batch=batch_info,
         )
-        .add_browser(IosDeviceInfo("iPhone 7"))
-        .add_browser(IosDeviceInfo("iPhone 11", "landscape"))
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_XR, ScreenOrientation.LANDSCAPE)
+        )
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_XR, ios_version=IosVersion.LATEST)
+        )
+        .add_browser(
+            IosDeviceInfo(
+                IosDeviceName.iPhone_XR, ios_version=IosVersion.ONE_VERSION_BACK
+            )
+        )
+        .set_save_diffs(False)
+        .set_save_new_tests(False)
     )
     eyes.open(driver)
     eyes.check_window()
