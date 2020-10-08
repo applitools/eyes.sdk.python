@@ -11,6 +11,7 @@ from applitools.selenium import (
     Eyes,
     IosDeviceInfo,
     IosDeviceName,
+    IosVersion,
     MatchLevel,
     RectangleSize,
     ScreenOrientation,
@@ -213,21 +214,32 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
 
 
 def test_rendering_ios_simulator(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    driver.get("http://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
-            app_name="Visual Grid Render Test",
-            test_name="TestRenderingIosSimulator",
+            app_name="Eyes SDK",
+            test_name="UFG Mobile Web Happy Flow",
             batch=batch_info,
         )
-        .add_browser(IosDeviceInfo("iPhone 7"))
-        .add_browser(IosDeviceInfo("iPhone 11", "landscape"))
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_XR, ScreenOrientation.LANDSCAPE)
+        )
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_XR, ios_version=IosVersion.LATEST)
+        )
+        .add_browser(
+            IosDeviceInfo(
+                IosDeviceName.iPhone_XR, ios_version=IosVersion.ONE_VERSION_BACK
+            )
+        )
+        .set_save_diffs(False)
+        .set_save_new_tests(False)
     )
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    assert len(vg_runner.get_all_test_results()) == 2
+    assert len(vg_runner.get_all_test_results()) == 3
 
 
 def test_visual_viewport(driver, batch_info, vg_runner):

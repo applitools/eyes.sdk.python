@@ -55,6 +55,7 @@ from .test_results import TestResultContainer, TestResults, TestResultsSummary  
 from .ultrafastgrid.config import (  # noqa
     DeviceName,
     IosDeviceName,
+    IosVersion,
     ScreenOrientation,
     VisualGridOption,
 )

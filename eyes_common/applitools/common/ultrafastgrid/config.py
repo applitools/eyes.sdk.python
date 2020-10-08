@@ -70,6 +70,11 @@ class DeviceName(Enum):
     OnePlus_7T_Pro = "OnePlus 7T Pro"
 
 
+class IosVersion(Enum):
+    LATEST = "latest"
+    ONE_VERSION_BACK = "latest-1"
+
+
 class IosDeviceName(Enum):
     iPhone_11_Pro = "iPhone 11 Pro"
     iPhone_11_Pro_Max = "iPhone 11 Pro Max"

@@ -25,6 +25,7 @@ from applitools.common.ultrafastgrid import (  # noqa
     DesktopBrowserInfo,
     IosDeviceInfo,
     IosDeviceName,
+    IosVersion,
     ScreenOrientation,
 )
 from applitools.core.batch_close import BatchClose  # noqa
@@ -76,6 +77,7 @@ __all__ = (
     "AccessibilityRegion",
     "IosDeviceName",
     "IosDeviceInfo",
+    "IosVersion",
     "ChromeEmulationInfo",
     "DesktopBrowserInfo",
 )

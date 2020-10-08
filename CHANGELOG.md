@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Allow to call eyes.check(Target) without required tag parameter [Trello 1332](https://trello.com/c/eog9OcrR)
+### Updated
+- Added IosVersion for IosDeviceInfo [Trello 2187](https://trello.com/c/25AjSV6V)
 
 ## [4.8.3] - 2020-10-05
 ### Fixed
