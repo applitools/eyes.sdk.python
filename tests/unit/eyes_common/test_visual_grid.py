@@ -1,7 +1,7 @@
 import json
 from random import randint
 
-from applitools.common import VGResource, IosVersion
+from applitools.common import IosVersion, VGResource
 from applitools.common.ultrafastgrid import (
     BrowserType,
     ChromeEmulationInfo,
