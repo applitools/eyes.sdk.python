@@ -1,4 +1,4 @@
-## [vNext]
+## [4.9.0] - 2020-10-08
 ### Added
 - Allow to call eyes.check(Target) without required tag parameter [Trello 1332](https://trello.com/c/eog9OcrR)
 ### Updated
