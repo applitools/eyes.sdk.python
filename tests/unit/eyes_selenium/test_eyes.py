@@ -18,6 +18,7 @@ from applitools.selenium.fluent import SeleniumCheckSettings
 def open_and_get_start_session_info(eyes, driver):
     eyes.api_key = "Some API KEY"
     eyes._is_viewport_size_set = True
+    driver.is_mobile_app = False
 
     with patch(
         "applitools.core.server_connector.ServerConnector.start_session"
