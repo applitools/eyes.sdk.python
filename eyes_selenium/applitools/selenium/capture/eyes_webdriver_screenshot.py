@@ -45,6 +45,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     frame_window = attr.ib(default=None)  # type: Region
     region_window = attr.ib(default=Region(0, 0, 0, 0))  # type: Region
     _frame_chain = attr.ib(init=False)  # type: FrameChain
+    _scroll_root_element_location = attr.ib(init=False)  # type: Point
 
     @classmethod
     def create_viewport(cls, driver, image):
@@ -96,6 +97,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 eyes_selenium_utils.get_updated_scroll_position(  # noqa
                     position_provider
                 )
+            )
+            self._scroll_root_element_location = Point.from_(
+                position_provider._scroll_root_element.location
             )
             self.updated_frame_location_in_screenshot(
                 self._frame_location_in_screenshot
@@ -223,6 +227,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 result = result.offset(
                     -self.region_window.left, -self.region_window.top
                 )
+                result = result.offset(-self._scroll_root_element_location)
             elif from_ == self.SCREENSHOT_AS_IS and to in [
                 self.CONTEXT_RELATIVE,
                 self.CONTEXT_AS_IS,
