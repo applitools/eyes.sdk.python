@@ -79,4 +79,8 @@ def test_measure_ensure_sync_with_underlying_driver_performance(
     eyes_driver.ensure_sync_with_underlying_driver()
     r = time.monotonic() - ts
     with open("ensure_sync_with_underlying_driver_perf.txt", "a") as f:
-        f.write(f"{page_desc}; {test_desc}; {i}; {r * 1000:.0f}\n")
+        f.write(
+            "{page_desc}; {test_desc}; {i}; {r:.0f}\n".format(
+                page_desc=page_desc, test_desc=test_desc, i=i, r=r * 1000
+            )
+        )
