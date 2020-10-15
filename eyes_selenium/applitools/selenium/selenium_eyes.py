@@ -683,18 +683,17 @@ class SeleniumEyes(EyesBase):
     def _environment(self):
         os = self.configure.host_os
 
-        # If no host OS was set, check for mobile OS.
         device_info = (
             self._driver.desired_capabilities.get("deviceName", "")
             if self.driver.is_mobile_platform
             else "Desktop"
         )
 
+        # If no host OS was set, check for mobile OS
         if os is None:
             logger.info("No OS set, checking for mobile OS...")
             if self._driver.is_mobile_app:
                 os = self.driver.user_agent.os_name_with_major_version
-                device_info = self._driver.desired_capabilities.get("deviceModel", "")
                 logger.info("Setting OS: " + os)
             else:
                 logger.info("No mobile app detected. Using inferred environment")
