@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Problem with check window when driver context is Frame [Trello 1421](https://trello.com/c/zUnlId86)
+
 ## [4.9.0] - 2020-10-08
 ### Added
 - Allow to call eyes.check(Target) without required tag parameter [Trello 1332](https://trello.com/c/eog9OcrR)

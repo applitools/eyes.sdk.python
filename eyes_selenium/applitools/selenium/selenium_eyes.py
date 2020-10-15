@@ -28,6 +28,7 @@ from applitools.core import (
     RegionProvider,
     TextTrigger,
 )
+from applitools.core.feature import Feature
 
 from . import eyes_selenium_utils, useragent
 from .__version__ import __version__
@@ -299,6 +300,11 @@ class SeleniumEyes(EyesBase):
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
+            total_frames = len(check_settings.values.frame_chain)
+            if self.configure.is_feature_activated(
+                Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME
+            ):
+                total_frames += self.driver.frame_chain.size
             if target_element:
                 logger.debug("have target element")
                 self._target_element = target_element
@@ -307,7 +313,7 @@ class SeleniumEyes(EyesBase):
                 else:
                     result = self._check_region(name, check_settings, source)
                 self._target_element = None
-            elif len(check_settings.values.frame_chain) > 0:
+            elif total_frames > 0:
                 logger.debug("have frame chain")
                 if self._stitch_content:
                     result = self._check_full_frame_or_element(
@@ -998,6 +1004,12 @@ class SeleniumEyes(EyesBase):
                             self.driver, self._scroll_root_element
                         )
                     )
+                # This might happen when scroll root element is calculated in the
+                # beginning of SeleniumEyes.check when there is a frame in
+                # driver's frame_chain but it gets popped out and becomes check target
+                elif not self.scroll_root_element.is_attached_to_page:
+                    fc = self.driver.frame_chain.clone()
+                    scroll_root_element = self.driver.find_element_by_tag_name("html")
                 else:
                     fc = self.driver.frame_chain.clone()
                     scroll_root_element = self.scroll_root_element

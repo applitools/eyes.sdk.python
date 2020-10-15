@@ -31,6 +31,7 @@ class Frame(object):
     :param inner_size: The frame element inner outerSize (i.e., the outer_size
                        of the frame actual outer_size, without borders).
     :param parent_scroll_position: The scroll location of the frame.
+    :param scroll_root_element: The element used for content scrolling within frame.
     """
 
     reference = attr.ib()  # type: EyesWebElement
@@ -38,7 +39,7 @@ class Frame(object):
     outer_size = attr.ib()  # type: RectangleSize
     inner_size = attr.ib()  # type: RectangleSize
     parent_scroll_position = attr.ib()
-    scroll_root_element = attr.ib(default=None)  # type: Optional[EyesWebElement]
+    scroll_root_element = attr.ib()  # type: EyesWebElement
     original_overflow = attr.ib(default=None)
 
     def return_to_original_overflow(self, driver):

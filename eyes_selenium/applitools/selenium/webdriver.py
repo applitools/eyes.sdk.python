@@ -15,6 +15,7 @@ from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_attrs, proxy_to
+from applitools.selenium import webdriver_sync
 from applitools.selenium.fluent import FrameLocator
 
 from . import eyes_selenium_utils, useragent
@@ -64,7 +65,7 @@ class FrameResolver(object):
     def _ref_if_locator(self, frame_ref):
         if isinstance(frame_ref, FrameLocator):
             frame_locator = frame_ref
-            if frame_locator.frame_index:
+            if frame_locator.frame_index is not None:
                 frame_ref = frame_locator.frame_index
             if frame_locator.frame_name_or_id:
                 frame_ref = frame_locator.frame_name_or_id
@@ -133,8 +134,7 @@ class _EyesSwitchTo(object):
         :param frame_reference: The reference to the frame.
         """
         frame_res = FrameResolver(frame_reference, self._driver)
-        self.will_switch_to_frame(frame_res.eyes_webelement)
-        self._switch_to.frame(frame_res.webelement)
+        self._do_switch_to_frame(frame_res.eyes_webelement)
 
     def frames(self, frame_chain):
         # type: (FrameChain) -> None
@@ -181,12 +181,12 @@ class _EyesSwitchTo(object):
         del self._driver.frame_chain[:]
         self._switch_to.window(window_name)
 
-    def will_switch_to_frame(self, target_frame):
+    def _do_switch_to_frame(self, target_frame):
         # type: (EyesWebElement) -> None
         """
-        Will be called before switching into a frame.
+        Will be called when switching into a frame.
 
-        :param target_frame: The element about to be switched to.
+        :param target_frame: The element to be switched to.
         """
         argument_guard.not_none(target_frame)
 
@@ -198,14 +198,20 @@ class _EyesSwitchTo(object):
         content_location = Point(
             bounds["x"] + borders["left"], bounds["y"] + borders["top"]
         )
+        outer_size = RectangleSize.from_(target_frame.size)
+        inner_size = RectangleSize.from_(frame_inner_size)
         original_location = target_frame.scroll_location
 
+        self._switch_to.frame(target_frame.element)
+
+        scroll_root_element = self._driver.find_element_by_xpath("/*")
         frame = Frame(
             reference=target_frame,
             location=content_location,
-            outer_size=RectangleSize.from_(target_frame.size),
-            inner_size=RectangleSize.from_(frame_inner_size),
+            outer_size=outer_size,
+            inner_size=inner_size,
             parent_scroll_position=original_location,
+            scroll_root_element=scroll_root_element,
         )
         self._driver.frame_chain.push(frame)
 
@@ -764,3 +770,6 @@ class EyesWebDriver(object):
         finally:
             if original_fc is not None:
                 self.switch_to.frames(original_fc)
+
+    def ensure_sync_with_underlying_driver(self):
+        webdriver_sync.ensure_sync_with_underlying_driver(self, self._driver)

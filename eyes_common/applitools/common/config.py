@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar
 
     from applitools.common.utils.custom_types import ViewPort
+    from applitools.core.feature import Feature
 
     Self = TypeVar("Self", bound="Configuration")  # typedef
 
@@ -113,6 +114,7 @@ class Configuration(object):
         factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
+    features = attr.ib(factory=set)  # type: set
 
     @property
     def enable_patterns(self):
@@ -353,6 +355,7 @@ class Configuration(object):
         conf.viewport_size = copy(conf.viewport_size)
         conf.properties = deepcopy(conf.properties)
         conf.default_match_settings = deepcopy(conf.default_match_settings)
+        conf.features = deepcopy(conf.features)
         return conf
 
     def add_property(self, name, value):
@@ -371,3 +374,11 @@ class Configuration(object):
         """
         del self.properties[:]
         return self
+
+    def set_features(self, *features):
+        # type: (*Feature) -> None
+        self.features = set(features)
+
+    def is_feature_activated(self, feature):
+        # type: (Feature) -> bool
+        return feature in self.features
