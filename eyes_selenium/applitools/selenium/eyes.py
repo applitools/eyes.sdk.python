@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import typing
 
+from appium.webdriver import Remote as AppiumWebDriver
+
 from applitools.common import EyesError, MatchResult, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
@@ -9,6 +11,7 @@ from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_fields, proxy_to
 from applitools.core.eyes_base import DebugScreenshotsAbstract
 from applitools.core.eyes_mixins import EyesConfigurationMixin
+from applitools.core.feature import Feature
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
@@ -527,6 +530,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         if self.configure.is_disabled:
             logger.info("open(): ignored (disabled)")
             return
+
         if app_name:
             self.configure.app_name = app_name
         if test_name:
@@ -623,6 +627,13 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
             self._driver = driver
         else:
             self._driver = EyesWebDriver(driver, self)
+
+        if self._driver.is_mobile_app and not isinstance(driver, AppiumWebDriver):
+            logger.error("To test a mobile app you need to use appium webdriver")
+            if Feature.SCALE_MOBILE_APP in self.configure.features:
+                raise EyesError(
+                    "For mobile app testing the appium driver should be used"
+                )
 
     def _init_locator_provider(self):
         self._visual_locators_provider = SeleniumVisualLocatorsProvider(

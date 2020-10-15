@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - Incorrect Device Name send to Dashboard [Trello 1163](https://trello.com/c/4PPntuFb)
+- Broken scaling on mobile native apps [Trello 465](https://trello.com/c/WS0XeAxs)
 ### Updated
 - Problem with check window when driver context is Frame [Trello 1421](https://trello.com/c/zUnlId86)
 

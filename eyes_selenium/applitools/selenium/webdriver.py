@@ -279,7 +279,7 @@ class EyesWebDriver(object):
         """
         self._proxy_to_fields = all_attrs(driver)
         self._driver = driver  # type: Union[WebDriver, AppiumWebDriver]
-        self._eyes = eyes
+        self._eyes = eyes  # type: Eyes
         # List of frames the user switched to, and the current offset,
         # so we can properly calculate elements' coordinates
         self._frame_chain = FrameChain()

@@ -33,7 +33,6 @@ if tp.TYPE_CHECKING:
 
 __all__ = (
     "get_current_frame_content_entire_size",
-    "get_device_pixel_ratio",
     "get_viewport_size",
     "get_window_size",
     "set_window_size",
@@ -184,11 +183,6 @@ def get_current_frame_content_entire_size(driver):
     except WebDriverException:
         raise WebDriverException("Failed to extract entire size!")
     return RectangleSize(width, height)
-
-
-def get_device_pixel_ratio(driver):
-    # type: (AnyWebDriver) -> float
-    return driver.execute_script("return window.devicePixelRatio;")
 
 
 def get_viewport_size(driver):
