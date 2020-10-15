@@ -2,8 +2,6 @@ import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
 
-from applitools.common import NewTestError
-
 
 @pytest.fixture
 def webdriver_module():
