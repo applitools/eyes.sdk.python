@@ -628,7 +628,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         else:
             self._driver = EyesWebDriver(driver, self)
 
-        if self._driver.is_mobile_app and not isinstance(self.driver, AppiumWebDriver):
+        if self._driver.is_mobile_app and not isinstance(driver, AppiumWebDriver):
             logger.error("For testing mobile app you need to use appium webdriver")
             if Feature.SCALE_MOBILE_APP in self.configure.features:
                 raise EyesError(
