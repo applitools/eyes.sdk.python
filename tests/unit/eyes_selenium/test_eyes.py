@@ -15,10 +15,31 @@ from applitools.selenium import Configuration, Eyes, Target
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 
-def open_and_get_start_session_info(eyes, driver):
+def pytest_generate_tests(metafunc):
+    if "eyes" in metafunc.fixturenames:
+        metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
+
+
+def open_and_get_start_session_info(
+    eyes,
+    driver,
+    is_app=False,
+    is_mobile_web=False,
+    platform_name=None,
+    device_name=None,
+):
+    driver.is_mobile_app = is_app
+    driver.is_mobile_platform = is_app or is_mobile_web
+    driver.is_mobile_web = is_mobile_web
+
+    driver.desired_capabilities = {}
+    if platform_name:
+        driver.desired_capabilities["platformName"] = platform_name
+    if device_name:
+        driver.desired_capabilities["deviceName"] = device_name
+
     eyes.api_key = "Some API KEY"
     eyes._is_viewport_size_set = True
-    driver.is_mobile_app = False
 
     with patch(
         "applitools.core.server_connector.ServerConnector.start_session"
@@ -52,11 +73,6 @@ def test_open_with_missing_test_name_and_app_name_with_config(
     with pytest.raises(ValueError):
         eyes.set_configuration(config)
         eyes.open(driver_mock)
-
-
-def pytest_generate_tests(metafunc):
-    if "eyes" in metafunc.fixturenames:
-        metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
 
 
 def test_set_get_scale_ratio(eyes):
@@ -131,29 +147,33 @@ def test_baseline_env_name(eyes, driver_mock):
 
 
 def test_batch_info_serializing(eyes, driver_mock):
+    if eyes._visual_grid_eyes:
+        pytest.skip("Not relevant for UFG")
+
     date = datetime.datetime.strptime("2019-06-04T10:27:15Z", "%Y-%m-%dT%H:%M:%SZ")
     eyes.batch = BatchInfo("Batch Info", date)
     eyes.batch.sequence_name = "Sequence"
 
-    if not eyes._visual_grid_eyes:
-        session_info = open_and_get_start_session_info(eyes, driver_mock)
-        info_json = json_utils.to_json(session_info)
-        batch_info = json.loads(info_json)["startInfo"]["batchInfo"]
+    session_info = open_and_get_start_session_info(eyes, driver_mock)
+    info_json = json_utils.to_json(session_info)
+    batch_info = json.loads(info_json)["startInfo"]["batchInfo"]
 
-        assert batch_info["name"] == "Batch Info"
-        assert batch_info["batchSequenceName"] == "Sequence"
-        assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
+    assert batch_info["name"] == "Batch Info"
+    assert batch_info["batchSequenceName"] == "Sequence"
+    assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
 
 
 def test_get_set_cut_provider(eyes):
-    if not eyes._visual_grid_eyes:
-        eyes.cut_provider = FixedCutProvider(20, 0, 0, 0)
-        assert isinstance(eyes._current_eyes._cut_provider, FixedCutProvider)
-        assert isinstance(eyes.cut_provider, FixedCutProvider)
+    if eyes._visual_grid_eyes:
+        pytest.skip("Not relevant for UFG")
 
-        eyes.cut_provider = UnscaledFixedCutProvider(10, 0, 5, 0)
-        assert isinstance(eyes._current_eyes._cut_provider, UnscaledFixedCutProvider)
-        assert isinstance(eyes.cut_provider, UnscaledFixedCutProvider)
+    eyes.cut_provider = FixedCutProvider(20, 0, 0, 0)
+    assert isinstance(eyes._current_eyes._cut_provider, FixedCutProvider)
+    assert isinstance(eyes.cut_provider, FixedCutProvider)
+
+    eyes.cut_provider = UnscaledFixedCutProvider(10, 0, 5, 0)
+    assert isinstance(eyes._current_eyes._cut_provider, UnscaledFixedCutProvider)
+    assert isinstance(eyes.cut_provider, UnscaledFixedCutProvider)
 
 
 def test_check_without_open_call(eyes):
@@ -258,3 +278,49 @@ def test_selenium_eyes_check_args_override_name(eyes_check_mock):
     eyes_check_mock.check("A", SeleniumCheckSettings().with_name("B"))
 
     assert eyes_check_mock.calls == [call(SeleniumCheckSettings().with_name("A"))]
+
+
+@pytest.mark.parametrize(
+    "is_app,platform_name,device_name,is_mobile_web",
+    [
+        (False, "iOS", "iPhone X", True),
+        (False, "Linux", "Desktop", False),
+    ],
+)
+def test_start_session_environment_for_web(
+    eyes, driver_mock, is_app, platform_name, device_name, is_mobile_web
+):
+    if eyes._visual_grid_eyes:
+        pytest.skip("Not relevant for UFG")
+
+    driver_mock.user_agent.origin_ua_string = "Some uastring"
+    session_info = open_and_get_start_session_info(
+        eyes, driver_mock, is_app, is_mobile_web, platform_name, device_name
+    )
+    assert session_info.environment.device_info == device_name
+    assert session_info.environment.inferred == "useragent:Some uastring"
+
+
+@pytest.mark.parametrize(
+    "is_app,platform_name,device_name,is_mobile_web",
+    [
+        (True, "Android", "Galaxy S9", False),
+        (True, "iOS", "iPhone X", False),
+    ],
+)
+def test_start_session_environment_for_app(
+    eyes, driver_mock, is_app, platform_name, device_name, is_mobile_web
+):
+    if eyes._visual_grid_eyes:
+        pytest.skip("Not relevant for UFG")
+
+    driver_mock.user_agent = MagicMock()
+    driver_mock.user_agent.os_name_with_major_version = "Some os 19"
+    driver_mock.user_agent.origin_ua_string = None
+
+    session_info = open_and_get_start_session_info(
+        eyes, driver_mock, is_app, is_mobile_web, platform_name, device_name
+    )
+    assert session_info.environment.os == "Some os 19"
+    assert session_info.environment.device_info == device_name
+    assert session_info.environment.inferred is None
