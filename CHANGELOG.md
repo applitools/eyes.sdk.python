@@ -1,4 +1,6 @@
 ## [vNext]
+### Fixed
+- Incorrect Device Name send to Dashboard [Trello 1163](https://trello.com/c/4PPntuFb)
 ### Updated
 - Problem with check window when driver context is Frame [Trello 1421](https://trello.com/c/zUnlId86)
 

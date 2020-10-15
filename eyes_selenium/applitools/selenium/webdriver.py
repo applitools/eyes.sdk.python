@@ -21,6 +21,7 @@ from applitools.selenium.fluent import FrameLocator
 from . import eyes_selenium_utils, useragent
 from .frames import Frame, FrameChain
 from .positioning import ScrollPositionProvider
+from .useragent import UserAgent
 from .webelement import EyesWebElement
 
 if typing.TYPE_CHECKING:
@@ -286,6 +287,7 @@ class EyesWebDriver(object):
 
         self.driver_takes_screenshot = driver.capabilities.get("takesScreenshot", False)
         self.rotation = None  # type: Optional[int]
+        self._user_agent = None  # type: Optional[UserAgent]
 
     @property
     def eyes(self):
@@ -295,12 +297,23 @@ class EyesWebDriver(object):
     @property
     def user_agent(self):
         # type: () -> useragent.UserAgent
+        if self.is_mobile_app:
+            major_version = minor_version = None
+            if self.platform_version:
+                major_version, minor_version = self.platform_version.split(".", 2)[:2]
+            self._user_agent = useragent.UserAgent(
+                os=self.platform_name,
+                os_major_version=major_version,
+                os_minor_version=minor_version,
+            )
+        if self._user_agent:
+            return self._user_agent
         try:
             ua_string = self._driver.execute_script("return navigator.userAgent")
-            user_agent = useragent.parse_user_agent_string(ua_string)
-        except WebDriverException:
-            user_agent = None
-        return user_agent
+            self._user_agent = useragent.parse_user_agent_string(ua_string)
+        except WebDriverException as e:
+            logger.exception(e)
+        return self._user_agent
 
     @property
     def session_id(self):

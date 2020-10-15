@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Text
 
 import attr
 from ua_parser import user_agent_parser
@@ -43,6 +44,7 @@ class BrowserNames(Enum):
     IE = "IE"
     Firefox = "Firefox"
     Chrome = "Chrome"
+    ChromeMobile = "Chrome Mobile"
     HeadlessChrome = "HeadlessChrome"
     Safari = "Safari"
     Chromium = "Chromium"
@@ -61,13 +63,13 @@ class OSNames(Enum):
 
 @attr.s
 class UserAgent(object):
-    os = attr.ib()
-    os_major_version = attr.ib(converter=to_float)
-    os_minor_version = attr.ib(converter=to_float)
-    browser = attr.ib()
-    browser_major_version = attr.ib(converter=to_float)
-    browser_minor_version = attr.ib(converter=to_float)
-    origin_ua_string = attr.ib()
+    os = attr.ib(default=OSNames.Unknown, converter=OSNames)
+    os_major_version = attr.ib(default=-1, converter=to_float)
+    os_minor_version = attr.ib(default=-1, converter=to_float)
+    browser = attr.ib(default=BrowserNames.Unknown, converter=BrowserNames)
+    browser_major_version = attr.ib(default=-1, converter=to_float)
+    browser_minor_version = attr.ib(default=-1, converter=to_float)
+    origin_ua_string = attr.ib(default=None)
 
     @property
     def is_internet_explorer(self):
@@ -76,3 +78,19 @@ class UserAgent(object):
             self.browser == BrowserNames.IE
             or (self.browser == BrowserNames.Edge and self.browser_major_version <= 18)
         )
+
+    @property
+    def is_chrome(self):
+        # type: () -> bool
+        return self.browser in [
+            BrowserNames.Chrome,
+            BrowserNames.Chromium,
+            BrowserNames.ChromeMobile,
+        ]
+
+    @property
+    def os_name_with_major_version(self):
+        # type: () -> Text
+        if self.os_major_version != -1:
+            return "{} {:.0f}".format(self.os.value, self.os_major_version)
+        return self.os.value
