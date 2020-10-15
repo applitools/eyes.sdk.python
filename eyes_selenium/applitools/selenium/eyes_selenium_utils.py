@@ -33,7 +33,6 @@ if tp.TYPE_CHECKING:
 
 __all__ = (
     "get_current_frame_content_entire_size",
-    "get_device_pixel_ratio",
     "get_viewport_size",
     "get_window_size",
     "set_window_size",
@@ -184,20 +183,6 @@ def get_current_frame_content_entire_size(driver):
     except WebDriverException:
         raise WebDriverException("Failed to extract entire size!")
     return RectangleSize(width, height)
-
-
-def get_device_pixel_ratio(driver):
-    # type: (AnyWebDriver) -> float
-    try:
-        ratio = driver.execute_script("return window.devicePixelRatio;")
-        logger.debug("Got browser pixel ratio: {}".format(ratio))
-    except WebDriverException:
-        ratio = driver.session["pixelRatio"]
-        logger.debug("Got app pixel ratio: {}".format(ratio))
-    except KeyError:
-        ratio = 1
-        logger.debug("Set pixel ratio for 1")
-    return ratio
 
 
 def get_viewport_size(driver):

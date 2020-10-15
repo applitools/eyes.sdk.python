@@ -30,7 +30,7 @@ from applitools.core import (
 )
 from applitools.core.feature import Feature
 
-from . import eyes_selenium_utils, useragent
+from . import eyes_selenium_utils
 from .__version__ import __version__
 from .capture import EyesWebDriverScreenshot, dom_capture
 from .capture.eyes_webdriver_screenshot import EyesWebDriverScreenshotFactory
@@ -736,10 +736,17 @@ class SeleniumEyes(EyesBase):
             return self._scale_provider
 
         logger.debug("Trying to extract device pixel ratio...")
+
         try:
-            device_pixel_ratio = eyes_selenium_utils.get_device_pixel_ratio(
-                self._driver
-            )
+            if (
+                self.driver.is_mobile_app
+                and Feature.SCALE_MOBILE_APP in self.configure.features
+            ):
+                device_pixel_ratio = self.driver.session["pixelRatio"]
+            else:
+                device_pixel_ratio = self._driver.execute_script(
+                    "return window.devicePixelRatio;"
+                )
         except Exception as e:
             logger.info(
                 "Failed to extract device pixel ratio! Using default. Error %s " % e
