@@ -897,7 +897,10 @@ class SeleniumEyes(EyesBase):
         )
         image = self._crop_if_needed(image)
         return EyesWebDriverScreenshot.create_entire_frame(
-            self._driver, image, RectangleSize.from_(image)
+            self._driver,
+            image,
+            RectangleSize.from_(image),
+            self._full_region_to_check.location,
         )
 
     def _full_page_screenshot(self, scale_provider):
@@ -932,7 +935,7 @@ class SeleniumEyes(EyesBase):
             )
             image = self._crop_if_needed(image)
             return EyesWebDriverScreenshot.create_full_page(
-                self._driver, image, original_frame_position
+                self._driver, image, original_frame_position, Point.from_(location)
             )
 
     def _element_screenshot(self, scale_provider):
