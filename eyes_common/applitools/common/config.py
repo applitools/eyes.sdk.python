@@ -1,7 +1,7 @@
 import uuid
 from copy import copy, deepcopy
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Set
 
 import attr
 
@@ -114,7 +114,7 @@ class Configuration(object):
         factory=lambda: get_env_with_prefix("APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL)
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
-    features = attr.ib(factory=set)  # type: set
+    features = attr.ib(factory=set)  # type: Set[Feature]
 
     @property
     def enable_patterns(self):
