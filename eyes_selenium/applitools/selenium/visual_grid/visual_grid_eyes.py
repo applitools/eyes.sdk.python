@@ -254,7 +254,9 @@ class VisualGridEyes(object):
             check_settings = check_settings.match_level(self.configure.match_level)
         if fully is None:
             fps = self.configure.force_full_page_screenshot
-            check_settings = check_settings.fully(True if fps is None else fps)
+            check_settings = check_settings.fully(
+                check_settings.is_check_window if fps is None else fps
+            )
         if send_dom is None:
             send = self.configure.send_dom
             check_settings = check_settings.send_dom(True if send is None else send)
