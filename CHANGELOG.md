@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- Supporting check full element with ufg [Trello 2145](https://trello.com/c/8tPAnz66)
 ### Fixed
 - Incorrect Device Name send to Dashboard [Trello 1163](https://trello.com/c/4PPntuFb)
 - Broken scaling on mobile native apps [Trello 465](https://trello.com/c/WS0XeAxs)

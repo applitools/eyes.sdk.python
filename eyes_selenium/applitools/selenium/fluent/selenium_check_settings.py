@@ -64,17 +64,24 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
 
     @property
     def size_mode(self):
-        if (
-            self.target_region is None
-            and self.target_selector is None
-            and self.target_element is None
-        ):
+        if self.is_target_empty:
             if self.stitch_content:
                 return "full-page"
             return "viewport"
-        if self.target_region:
+        elif self.target_region:
             return "region"
+        elif self.stitch_content:
+            return "full-selector"
         return "selector"
+
+    @property
+    def is_target_empty(self):
+        # type: () -> bool
+        return (
+            self.target_region is None
+            and self.target_selector is None
+            and self.target_element is None
+        )
 
 
 @attr.s
@@ -388,3 +395,8 @@ class SeleniumCheckSettings(CheckSettings):
         argument_guard.are_(options, VisualGridOption)
         self.values.visual_grid_options = options
         return self
+
+    @property
+    def is_check_window(self):
+        # type: () -> bool
+        return bool(self.values.is_target_empty and self.values.selector is None)

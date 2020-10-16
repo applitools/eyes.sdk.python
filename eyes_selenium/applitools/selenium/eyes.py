@@ -385,7 +385,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
 
         :param name: The name of the tag.
         :param check_settings: target which area of the window to check.
-        :return: The match results.
         """
         pass
 
@@ -396,7 +395,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         Takes a snapshot and matches it with the expected output.
 
         :param check_settings: target which area of the window to check.
-        :return: The match results.
         """
         pass
 
@@ -427,7 +425,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         :param tag: An optional tag to be associated with the snapshot.
         :param match_timeout:  The amount of time to retry matching (milliseconds)
         :param fully: Defines that the screenshot will contain the entire window.
-        :return: The match results.
         """
         logger.debug("check_window('%s')" % tag)
         return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
@@ -441,7 +438,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
                 name/id as would be used in a call to driver.switch_to.frame()).
         :param tag: An optional tag to be associated with the match.
         :param match_timeout: The amount of time to retry matching. (Milliseconds)
-        :return: The match results.
         """
         logger.debug("check_frame('%s')" % tag)
         return self.check(
@@ -467,12 +463,34 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         :param match_timeout: Timeout for the visual validation checkpoint
                               (milliseconds).
         :param stitch_content: If `True`, stitch the internal content of the region
-        :return: The match results.
         """
         logger.debug("check_region('%s')" % tag)
         return self.check(
             tag,
-            Target.region(region).timeout(match_timeout).stitch_content(stitch_content),
+            Target.region(region).timeout(match_timeout).fully(stitch_content),
+        )
+
+    def check_element(
+        self,
+        element,  # type: Union[Text,List,Tuple,WebElement,EyesWebElement]
+        tag=None,  # type: Optional[Text]
+        match_timeout=-1,  # type: int
+    ):
+        # type: (...) -> MatchResult
+        """
+        Takes a snapshot of the given region from the browser using the web driver
+        and matches it with the expected output. If the current context is a frame,
+        the region is offsetted relative to the frame.
+
+        :param element: The element to check.
+        :param tag: Description of the visual validation checkpoint.
+        :param match_timeout: Timeout for the visual validation checkpoint
+                              (milliseconds).
+        """
+        logger.debug("check_region('%s')" % tag)
+        return self.check(
+            tag,
+            Target.region(element).timeout(match_timeout).fully(),
         )
 
     def check_region_in_frame(
@@ -494,7 +512,6 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         :param match_timeout: Timeout for the visual validation checkpoint
                               (milliseconds).
         :param stitch_content: If `True`, stitch the internal content of the region
-        :return: None
         """
         if self.configure.is_disabled:
             logger.info("check_region_in_frame_by_selector(): ignored (disabled)")
