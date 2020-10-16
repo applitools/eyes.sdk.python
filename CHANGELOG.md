@@ -1,4 +1,4 @@
-## [vNext]
+## [4.10.0] - 2020-10-16
 ### Added
 - Supporting check full element with ufg [Trello 2145](https://trello.com/c/8tPAnz66)
 ### Fixed
