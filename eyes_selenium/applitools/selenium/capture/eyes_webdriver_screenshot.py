@@ -268,7 +268,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 # First, convert context-relative to context-as-is.
                 result = result.offset(-self._current_frame_scroll_position)
                 # Now convert context-as-is to screenshot-as-is
-                result = result.offset(-self._frame_location_in_screenshot)
+                result = result.offset(self._frame_location_in_screenshot)
                 result = result.offset(-self._screenshot_location_in_outer_frame)
             elif to == self.CONTEXT_AS_IS:
                 result = result.offset(-self._current_frame_scroll_position)
