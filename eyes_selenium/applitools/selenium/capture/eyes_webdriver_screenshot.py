@@ -44,6 +44,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     # of the screenshot. Used for calculations, so can also be outside(!)
     # the screenshot.
     _frame_location_in_screenshot = attr.ib()  # type: Point
+    # Coordinates of the captured area in the frame (or top window) it belongs to.
+    # Used for calculations of coordinates of regions.
     _screenshot_location_in_outer_frame = attr.ib()  # type: Point
     _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
     frame_window = attr.ib(default=None)  # type: Region
@@ -61,7 +63,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     def create_full_page(
         cls, driver, image, frame_location_in_screenshot, screenshot_location_on_page
     ):
-        # type: (EyesWebDriver, Image.Image, Point) -> EyesWebDriverScreenshot
+        # type: (EyesWebDriver, Image.Image, Point, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
@@ -72,30 +74,34 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def create_entire_frame(
-        cls, driver, image, entire_frame_size, screenshot_location_on_page
+        cls,
+        driver,  # type: EyesWebDriver
+        image,  # type: Image.Image
+        entire_frame_size,  # type: RectangleSize
+        frame_location_in_outer_frame,  # type: Point
     ):
-        # type: (EyesWebDriver, Image.Image, RectangleSize) -> EyesWebDriverScreenshot
+        # type: (...) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
             Point(0, 0),
-            screenshot_location_on_page,
+            frame_location_in_outer_frame,
             current_frame_scroll_position=Point(0, 0),
             frame_window=Region.from_(Point(0, 0), entire_frame_size),
         )
 
     @classmethod
     def from_screenshot(
-        cls, driver, image, screenshot_region, screenshot_location_on_page
+        cls, driver, image, screenshot_region, screenshot_location_in_outer_frame
     ):
-        # type: (EyesWebDriver, Image.Image, Region) -> EyesWebDriverScreenshot
+        # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
             Point.ZERO(),
-            screenshot_location_on_page,
+            screenshot_location_in_outer_frame,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
             region_window=Region.from_(screenshot_region),
         )

@@ -327,11 +327,10 @@ class SeleniumEyes(EyesBase):
                     # required to prevent cut line on the last stitched part of the
                     # page on some browsers (like firefox).
                     self.driver.switch_to.default_content()
-                    scrool_root_element = eyes_selenium_utils.scroll_root_element_from(
-                        self.driver, check_settings
-                    )
                     self.current_frame_position_provider = (
-                        self._create_position_provider(scrool_root_element)
+                        self._create_position_provider(
+                            self.driver.find_element_by_tag_name("html")
+                        )
                     )
                 result = self._check_window_base(
                     NULL_REGION_PROVIDER,
