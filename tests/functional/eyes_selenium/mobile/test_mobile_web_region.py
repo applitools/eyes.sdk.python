@@ -14,12 +14,12 @@ def _region_test_flow(eyes):
     eyes.configure.stitch_mode = StitchMode.Scroll
     eyes.check(
         "region-scroll",
-        Target.region([By.CSS_SELECTOR, "#PhonePortraitBreak"]),
+        Target.region([By.CSS_SELECTOR, "#TabletPortraitBreak"]),
     )
     eyes.configure.stitch_mode = StitchMode.CSS
     eyes.check(
         "region-css",
-        Target.region([By.CSS_SELECTOR, "#PhonePortraitBreak"]).timeout(0),
+        Target.region([By.CSS_SELECTOR, "#TabletPortraitBreak"]).timeout(0),
     )
 
 
