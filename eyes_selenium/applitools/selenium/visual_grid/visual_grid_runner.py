@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
 
 
 class VisualGridRunner(EyesRunner):
-    def __init__(self, concurrent_sessions=None):
+    def __init__(self, concurrent_sessions=5):
         # type: (Optional[int]) -> None
         super(VisualGridRunner, self).__init__()
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
