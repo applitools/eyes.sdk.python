@@ -899,7 +899,7 @@ class SeleniumEyes(EyesBase):
             self._driver,
             image,
             RectangleSize.from_(image),
-            self._full_region_to_check.location,
+            -self._full_region_to_check.location,
         )
 
     def _full_page_screenshot(self, scale_provider):
@@ -919,11 +919,11 @@ class SeleniumEyes(EyesBase):
             origin_provider.set_position(Point.ZERO())
             logger.debug("resetting origin_provider location")
 
-            location = self.scroll_root_element.location
+            location = Point.from_(self.scroll_root_element.location)
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
-                location["x"] + size_and_borders.borders["left"],
-                location["y"] + size_and_borders.borders["top"],
+                location.x + size_and_borders.borders["left"],
+                location.y + size_and_borders.borders["top"],
                 size_and_borders.size["width"],
                 size_and_borders.size["height"],
             )
@@ -933,8 +933,9 @@ class SeleniumEyes(EyesBase):
                 region, Region.EMPTY(), self.position_provider
             )
             image = self._crop_if_needed(image)
+            frame_location_in_screenshot = original_frame_position - location
             return EyesWebDriverScreenshot.create_full_page(
-                self._driver, image, original_frame_position, Point.from_(location)
+                self._driver, image, frame_location_in_screenshot
             )
 
     def _element_screenshot(self, scale_provider):

@@ -44,9 +44,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     # of the screenshot. Used for calculations, so can also be outside(!)
     # the screenshot.
     _frame_location_in_screenshot = attr.ib()  # type: Point
-    # Coordinates of the captured area in the frame (or top window) it belongs to.
-    # Used for calculations of coordinates of regions.
-    _screenshot_location_in_outer_frame = attr.ib()  # type: Point
     _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
     frame_window = attr.ib(default=None)  # type: Region
     region_window = attr.ib(default=Region(0, 0, 0, 0))  # type: Region
@@ -55,22 +52,14 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.VIEWPORT, None, Point.ZERO())
+        instance = cls(driver, image, ScreenshotType.VIEWPORT, None)
         instance._validate_frame_window()
         return instance
 
     @classmethod
-    def create_full_page(
-        cls, driver, image, frame_location_in_screenshot, screenshot_location_on_page
-    ):
-        # type: (EyesWebDriver, Image.Image, Point, Point) -> EyesWebDriverScreenshot
-        return cls(
-            driver,
-            image,
-            None,
-            frame_location_in_screenshot - screenshot_location_on_page,
-            Point(0, 0),
-        )
+    def create_full_page(cls, driver, image, frame_location_in_screenshot):
+        # type: (EyesWebDriver, Image.Image, Point) -> EyesWebDriverScreenshot
+        return cls(driver, image, None, frame_location_in_screenshot)
 
     @classmethod
     def create_entire_frame(
@@ -78,30 +67,28 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         driver,  # type: EyesWebDriver
         image,  # type: Image.Image
         entire_frame_size,  # type: RectangleSize
-        frame_location_in_outer_frame,  # type: Point
+        frame_location_in_screenshot,  # type: Point
     ):
         # type: (...) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            Point(0, 0),
-            frame_location_in_outer_frame,
+            frame_location_in_screenshot,
             current_frame_scroll_position=Point(0, 0),
             frame_window=Region.from_(Point(0, 0), entire_frame_size),
         )
 
     @classmethod
     def from_screenshot(
-        cls, driver, image, screenshot_region, screenshot_location_in_outer_frame
+        cls, driver, image, screenshot_region, frame_location_in_screenshot
     ):
         # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            -screenshot_location_in_outer_frame,
-            Point.ZERO(),
+            frame_location_in_screenshot,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
             region_window=Region.from_(screenshot_region),
         )
@@ -213,7 +200,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
-            self._screenshot_location_in_outer_frame,
+            self._frame_location_in_screenshot,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
@@ -248,7 +235,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 result = result.offset(
                     -self.region_window.left, -self.region_window.top
                 )
-                result = result.offset(-self._screenshot_location_in_outer_frame)
             elif from_ == self.SCREENSHOT_AS_IS and to in [
                 self.CONTEXT_RELATIVE,
                 self.CONTEXT_AS_IS,
@@ -269,7 +255,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 result = result.offset(-self._current_frame_scroll_position)
                 # Now convert context-as-is to screenshot-as-is
                 result = result.offset(self._frame_location_in_screenshot)
-                result = result.offset(-self._screenshot_location_in_outer_frame)
             elif to == self.CONTEXT_AS_IS:
                 result = result.offset(-self._current_frame_scroll_position)
             else:
