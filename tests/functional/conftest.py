@@ -1,3 +1,5 @@
+import contextlib
+import functools
 import itertools
 import os
 from collections import defaultdict
@@ -5,6 +7,7 @@ from distutils.util import strtobool
 from os import path
 
 import attr
+import mock
 import pytest
 import yaml
 
@@ -324,3 +327,31 @@ class FakeServerConnector(ServerConnector):
                 "max_image_area": 37500000,
             }
         )
+
+
+@pytest.fixture(scope="function")
+def spy():
+    def make_spy(obj, attribute):
+        method = getattr(obj, attribute)
+
+        @functools.wraps(method)
+        def wrapped(*args, **kwargs):
+            try:
+                patched.return_list.append(method(*args, **kwargs))
+                return patched.return_list[-1]
+            except Exception as e:
+                patched.raised_list.append(e)
+                raise
+
+        patched = exit_stack.enter_context(
+            mock.patch.object(obj, attribute, side_effect=wrapped, autospec=True)
+        )
+        patched.return_list = []
+        patched.raised_list = []
+        return patched
+
+    exit_stack = contextlib.ExitStack()
+    make_spy.ANY = mock.ANY
+    make_spy.call = mock.call
+    with exit_stack:
+        yield make_spy

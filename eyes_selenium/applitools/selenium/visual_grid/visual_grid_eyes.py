@@ -140,24 +140,23 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
-    def get_script_result(self):
-        # type: () -> Dict
+    def get_script_result(self, dont_fetch_resources):
+        # type: (bool) -> Dict
         logger.debug("get_script_result()")
-        skip_resources = json.dumps(
-            {"skipResources": list(copy(self.vg_manager.resource_cache.keys()))}
+        options = json.dumps(
+            {
+                "dontFetchResources": dont_fetch_resources,
+                "skipResources": list(copy(self.vg_manager.resource_cache.keys())),
+            }
         )
         process_resources = (
             PROCESS_RESOURCES
-            + "return __processPageAndSerializePoll(document, {});".format(
-                skip_resources
-            )
+            + "return __processPageAndSerializePoll({});".format(options)
         )
         if self.driver.user_agent.is_internet_explorer:
             process_resources = (
                 PROCESS_RESOURCES_FOR_IE
-                + "return __processPageAndSerializePollForIE(document, {});".format(
-                    skip_resources
-                )
+                + "return __processPageAndSerializePollForIE({});".format(options)
             )
 
         return eyes_selenium_utils.get_dom_script_result(
@@ -178,7 +177,11 @@ class VisualGridEyes(object):
 
         region_xpaths = self.get_region_xpaths(check_settings)
         logger.info("region_xpaths: {}".format(region_xpaths))
-        script_result = self.get_script_result()
+        dont_fetch_resources = (
+            self.configure.disable_browser_fetching
+            or check_settings.values.disable_browser_fetching
+        )
+        script_result = self.get_script_result(dont_fetch_resources)
         source = eyes_selenium_utils.get_check_source(self.driver)
         try:
             for test in self.test_list:
