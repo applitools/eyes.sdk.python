@@ -42,6 +42,7 @@ class Configuration(ConfigurationBase):
     visual_grid_options = attr.ib(
         default=None
     )  # type: Optional[Tuple[VisualGridOption]]
+    disable_browser_fetching = attr.ib(default=False)  # type: bool
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -75,6 +76,11 @@ class Configuration(ConfigurationBase):
         else:
             argument_guard.are_(options, VisualGridOption)
             self.visual_grid_options = options
+        return self
+
+    def set_disable_browser_fetching(self, disable_browser_fetching):
+        # type: (bool) -> Configuration
+        self.disable_browser_fetching = disable_browser_fetching
         return self
 
     @overload  # noqa
