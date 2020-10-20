@@ -68,8 +68,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             driver,
             image,
             None,
-            frame_location_in_screenshot,
-            screenshot_location_on_page,
+            frame_location_in_screenshot - screenshot_location_on_page,
+            Point(0, 0),
         )
 
     @classmethod
@@ -100,8 +100,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
+            -screenshot_location_in_outer_frame,
             Point.ZERO(),
-            screenshot_location_in_outer_frame,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
             region_window=Region.from_(screenshot_region),
         )
