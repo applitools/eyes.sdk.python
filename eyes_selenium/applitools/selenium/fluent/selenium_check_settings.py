@@ -61,6 +61,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
     visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
+    disable_browser_fetching = attr.ib(default=False)  # type: bool
 
     @property
     def size_mode(self):
@@ -394,6 +395,11 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (*VisualGridOption) -> SeleniumCheckSettings
         argument_guard.are_(options, VisualGridOption)
         self.values.visual_grid_options = options
+        return self
+
+    def disable_browser_fetching(self):
+        # type: () -> SeleniumCheckSettings
+        self.values.disable_browser_fetching = True
         return self
 
     @property

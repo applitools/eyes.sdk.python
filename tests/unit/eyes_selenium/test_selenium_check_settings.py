@@ -31,6 +31,12 @@ def get_regions_from_(method_name, *args):
     return regions
 
 
+def test_default_check_settings():
+    check_settings = SeleniumCheckSettings()
+
+    assert check_settings.values.disable_browser_fetching is False
+
+
 def test_check_region_and_frame_with_unsupported_input():
     with pytest.raises(TypeError):
         cs = get_cs_from_method("region", 12355)
@@ -204,3 +210,10 @@ def test_before_render_screenshot_hook():
     cs = SeleniumCheckSettings()
     cs.before_render_screenshot_hook("some hook")
     assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"
+
+
+def test_check_settings_disable_browser_fetching():
+    check_settings = SeleniumCheckSettings()
+    check_settings.disable_browser_fetching()
+
+    assert check_settings.values.disable_browser_fetching is True
