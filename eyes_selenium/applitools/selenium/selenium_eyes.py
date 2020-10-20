@@ -808,7 +808,7 @@ class SeleniumEyes(EyesBase):
             return self._get_element_region(target_element)
 
     def _element_from(self, check_settings):
-        # type: (SeleniumCheckSettings) -> Optional[EyesWebElement]
+        # type: (SeleniumCheckSettings) -> EyesWebElement
         target_element = check_settings.values.target_element
         target_selector = check_settings.values.target_selector
         if not target_element and target_selector:
@@ -817,8 +817,7 @@ class SeleniumEyes(EyesBase):
 
         if target_element and not isinstance(target_element, EyesWebElement):
             target_element = EyesWebElement(target_element, self.driver)
-        if target_element:
-            return adapt_element(target_element)
+        return adapt_element(target_element)
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
@@ -1002,16 +1001,6 @@ class SeleniumEyes(EyesBase):
                     viewport_bounds, element_bounds
                 )
             )
-
-            if (
-                self.configure.stitch_mode == StitchMode.CSS
-                and self.driver.user_agent.browser == BrowserNames.MobileSafari
-            ):
-                # hide header bar if present
-                self._driver.execute_script(
-                    "arguments[0].style.transform='translate(0px,0px)';",
-                    self._scroll_root_element,
-                )
 
             if not viewport_bounds.contains(element_bounds):
                 self._ensure_frame_visible()
