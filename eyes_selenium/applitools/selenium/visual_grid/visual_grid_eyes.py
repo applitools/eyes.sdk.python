@@ -269,7 +269,6 @@ class VisualGridEyes(object):
             self.configure.clone(),
             ua_string,
             self.rendering_info,
-            self.server_connector,
         )
         if self.rendering_info is None:
             self.rendering_info = vgeyes_connector.render_info()

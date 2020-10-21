@@ -47,7 +47,6 @@ class EyesConnector(EyesBase):
         config,  # type: Configuration
         ua_string,  # type: Text
         rendering_info,  # type: Optional[RenderingInfo]
-        server_connector,  # type: Optional[ServerConnector]
     ):
         # type: (...) -> None
         super(EyesConnector, self).__init__()
@@ -56,13 +55,12 @@ class EyesConnector(EyesBase):
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
-        if server_connector is not None:
-            self.server_connector = server_connector
         self.server_connector.update_config(
             config, self.full_agent_id, rendering_info, ua_string
         )
         self._region_selectors = None
         self._regions = None
+        self.device_size = None
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -72,10 +70,11 @@ class EyesConnector(EyesBase):
                 self._browser_info.viewport_size
             )
         )
+        # TODO: Add proper browser info handling
         self._config = config.clone()
-        if self.device_name and self.render_status.device_size:
-            self._config.viewport_size = self.render_status.device_size
-        else:
+        if self.device_size:
+            self._config.viewport_size = self.device_size
+        elif self._browser_info.viewport_size:
             self._config.viewport_size = self._browser_info.viewport_size
 
         self._config.baseline_env_name = self._browser_info.baseline_env_name
@@ -134,10 +133,12 @@ class EyesConnector(EyesBase):
     @property
     def _environment(self):
         # type: () -> AppEnvironment
+        # TODO: Add proper browser info handling
         app_env = AppEnvironment(
-            display_size=self.render_status.device_size,
-            inferred="useragent: {}".format(self.render_status.user_agent),
+            display_size=self._browser_info.viewport_size,
+            os=self._browser_info.platform.capitalize(),
             device_info=self.device_name,
+            hosting_app=self._browser_info.browser,
         )
         return app_env
 

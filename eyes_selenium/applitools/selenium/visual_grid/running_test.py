@@ -39,7 +39,7 @@ TRANSITIONS = [
     {"trigger": "becomes_rendered", "source": OPENED, "dest": RENDERED},
     {
         "trigger": "becomes_tested",
-        "source": [NEW, NOT_OPENED, OPENED],
+        "source": [NEW, NOT_OPENED, RENDERED, OPENED],
         "dest": TESTED,
     },
     {
@@ -134,7 +134,7 @@ class RunningTest(object):
         if self.state == NEW:
             return 0
         elif self.state == NOT_OPENED:
-            return len(self.open_queue) * 10
+            return len(self.open_queue)
         elif self.state == OPENED:
             return len(self.render_queue)
         elif self.state == RENDERED:
