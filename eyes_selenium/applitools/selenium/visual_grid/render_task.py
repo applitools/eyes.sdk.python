@@ -195,7 +195,7 @@ class RenderTask(VGTask):
     def parse_frame_dom_resources(self, data):  # noqa
         # type: (Dict) -> RGridDom
         base_url = data["url"]
-        resource_urls = data.get("resourceUrls", [])
+        resource_urls = set(data.get("resourceUrls", []))
         all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
         logger.debug(
@@ -215,7 +215,6 @@ class RenderTask(VGTask):
             )
         )
         frame_request_resources = {}
-        discovered_resources_urls = set()
 
         def handle_resources(content_type, content, resource_url):
             # type: (Optional[Text], bytes, Text) -> NoReturn
@@ -247,15 +246,18 @@ class RenderTask(VGTask):
                 continue
             frame_request_resources[resource.url] = resource
 
-        for r_url in set(resource_urls).union(discovered_resources_urls):
-            self.resource_cache.fetch_and_store(r_url, get_resource)
-        self.resource_cache.process_all()
+        urls_to_fetch = resource_urls
+        discovered_resources_urls = set()
+        fetched_discovered_resource_urls = set()
+        while urls_to_fetch:
+            for r_url in urls_to_fetch:
+                self.resource_cache.fetch_and_store(r_url, get_resource)
+            self.resource_cache.process_all()
+            fetched_discovered_resource_urls |= discovered_resources_urls
+            urls_to_fetch = discovered_resources_urls
+            discovered_resources_urls = set()
 
-        # some discovered urls becomes available only after resources processed
-        for r_url in discovered_resources_urls:
-            self.resource_cache.fetch_and_store(r_url, get_resource)
-
-        for r_url in set(resource_urls).union(discovered_resources_urls):
+        for r_url in resource_urls | fetched_discovered_resource_urls:
             val = self.resource_cache[r_url]
             if val is None:
                 logger.debug("No response for {}".format(r_url))
