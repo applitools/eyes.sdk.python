@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Text, Tuple, overload
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -61,7 +61,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     selector = attr.ib(default=None)  # type: VisualGridSelector
     script_hooks = attr.ib(factory=dict)  # type: dict
     visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
-    disable_browser_fetching = attr.ib(default=False)  # type: bool
+    disable_browser_fetching = attr.ib(default=None)  # type: Optional[bool]
 
     @property
     def size_mode(self):
@@ -397,9 +397,9 @@ class SeleniumCheckSettings(CheckSettings):
         self.values.visual_grid_options = options
         return self
 
-    def disable_browser_fetching(self):
-        # type: () -> SeleniumCheckSettings
-        self.values.disable_browser_fetching = True
+    def disable_browser_fetching(self, disable=True):
+        # type: (bool) -> SeleniumCheckSettings
+        self.values.disable_browser_fetching = disable
         return self
 
     @property

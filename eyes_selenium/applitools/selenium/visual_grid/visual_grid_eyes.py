@@ -177,9 +177,8 @@ class VisualGridEyes(object):
 
         region_xpaths = self.get_region_xpaths(check_settings)
         logger.info("region_xpaths: {}".format(region_xpaths))
-        dont_fetch_resources = (
-            self.configure.disable_browser_fetching
-            or check_settings.values.disable_browser_fetching
+        dont_fetch_resources = self._effective_disable_browser_fetching(
+            self.configure, check_settings
         )
         script_result = self.get_script_result(dont_fetch_resources)
         source = eyes_selenium_utils.get_check_source(self.driver)
@@ -390,3 +389,10 @@ class VisualGridEyes(object):
         except Exception as e:
             logger.exception(e)
             raise EyesError(str(e))
+
+    @staticmethod
+    def _effective_disable_browser_fetching(config, check_settings):
+        if check_settings.values.disable_browser_fetching is not None:
+            return check_settings.values.disable_browser_fetching
+        else:
+            return config.disable_browser_fetching
