@@ -225,7 +225,7 @@ class RenderTask(VGTask):
             )
             if not content_type:
                 logger.debug("content_type is empty. Skip handling of resources")
-                return
+                return []
             return [
                 apply_base_url(url, base_url, resource_url)
                 for url in collect_urls_from_(content_type, content)
