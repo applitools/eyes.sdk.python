@@ -9,9 +9,9 @@ if TYPE_CHECKING:
     from typing import List, Text
 
 
-def _url_from_tags(tags):
+def _url_from_tags(tags, url_tag_types):
     for tag in tags:
-        if tag.type == "url":
+        if tag.type in url_tag_types:
             try:
                 yield tag.value
             except Exception as e:
@@ -35,15 +35,15 @@ def get_urls_from_css_resource(bytes_text):
         return []
     urls = []
     for rule in rules:
-        tags = rule.content
         if is_import_node(rule):
             logger.debug("The node has @import")
-            tags = rule.prelude
-        if is_font_node(rule):
+            extracted = _url_from_tags(rule.prelude, ("url", "string"))
+        elif is_font_node(rule):
             logger.debug("The node has @font-face")
-            tags = rule.content
-        if tags:
-            urls.extend(list(_url_from_tags(tags)))
+            extracted = _url_from_tags(rule.content, ("url",))
+        else:
+            extracted = _url_from_tags(rule.content, ("url",))
+        urls.extend(list(extracted))
     return urls
 
 
