@@ -237,13 +237,14 @@ class RenderTask(VGTask):
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response, find_child_resource_urls)
 
-        def schedule_resource_cache_download(url, fetched_queue):
-            if self.resource_cache.fetch_and_store(url, get_resource) is True:
-                # resource processing scheduled, add to the queue end
-                fetched_queue.appendleft(url)
+        def schedule_resource_cache_download(url, fetched_urls_deque):
+            downloading = self.resource_cache.fetch_and_store(url, get_resource)
+            if downloading:
+                # going to take time, add to the queue end
+                fetched_urls_deque.appendleft(url)
             else:
                 # resource is already in cache, add to the queue front
-                fetched_queue.append(url)
+                fetched_urls_deque.append(url)
 
         frame_request_resources = {}
         for f_data in frames:
@@ -260,12 +261,12 @@ class RenderTask(VGTask):
             frame_request_resources[resource.url] = resource
             urls_to_fetch |= set(resource.child_resource_urls)
 
-        fetched_deque = deque()
+        fetched_urls_deque = deque()
         for url in urls_to_fetch:
-            schedule_resource_cache_download(url, fetched_deque)
+            schedule_resource_cache_download(url, fetched_urls_deque)
 
-        while fetched_deque:
-            url = fetched_deque.pop()
+        while fetched_urls_deque:
+            url = fetched_urls_deque.pop()
             resource = self.resource_cache[url]
             if resource is None:
                 logger.debug("No response for {}".format(url))
@@ -273,7 +274,7 @@ class RenderTask(VGTask):
             frame_request_resources[url] = resource
             for url in resource.child_resource_urls:
                 if url not in frame_request_resources:
-                    schedule_resource_cache_download(url, fetched_deque)
+                    schedule_resource_cache_download(url, fetched_urls_deque)
 
         self.full_request_resources.update(frame_request_resources)
         return RGridDom(
