@@ -237,6 +237,14 @@ class RenderTask(VGTask):
             response = self.eyes_connector.download_resource(link)
             return VGResource.from_response(link, response, find_child_resource_urls)
 
+        def schedule_resource_cache_download(url, fetched_queue):
+            if self.resource_cache.fetch_and_store(url, get_resource) is True:
+                # resource processing scheduled, add to the queue end
+                fetched_queue.appendleft(url)
+            else:
+                # resource is already in cache, add to the queue front
+                fetched_queue.append(url)
+
         frame_request_resources = {}
         for f_data in frames:
             f_data["url"] = apply_base_url(f_data["url"], base_url)
@@ -254,11 +262,10 @@ class RenderTask(VGTask):
 
         fetched_deque = deque()
         for url in urls_to_fetch:
-            self.resource_cache.fetch_and_store(url, get_resource)
-            fetched_deque.append(url)
+            schedule_resource_cache_download(url, fetched_deque)
 
         while fetched_deque:
-            url = fetched_deque.popleft()
+            url = fetched_deque.pop()
             resource = self.resource_cache[url]
             if resource is None:
                 logger.debug("No response for {}".format(url))
@@ -266,8 +273,7 @@ class RenderTask(VGTask):
             frame_request_resources[url] = resource
             for url in resource.child_resource_urls:
                 if url not in frame_request_resources:
-                    self.resource_cache.fetch_and_store(url, get_resource)
-                    fetched_deque.append(url)
+                    schedule_resource_cache_download(url, fetched_deque)
 
         self.full_request_resources.update(frame_request_resources)
         return RGridDom(
