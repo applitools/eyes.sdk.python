@@ -260,6 +260,9 @@ class RenderTask(VGTask):
         while fetched_deque:
             url = fetched_deque.popleft()
             resource = self.resource_cache[url]
+            if resource is None:
+                logger.debug("No response for {}".format(url))
+                continue
             frame_request_resources[url] = resource
             for url in resource.child_resource_urls:
                 if url not in frame_request_resources:
