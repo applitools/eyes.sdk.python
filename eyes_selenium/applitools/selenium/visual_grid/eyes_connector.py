@@ -148,7 +148,6 @@ class EyesConnector(EyesBase):
 
     def check(
         self,
-        name,  # type: Text
         check_settings,  # type: SeleniumCheckSettings
         check_task_uuid,  # type:  Text
         region_selectors,  # type: List[VisualGridSelector]
@@ -157,8 +156,8 @@ class EyesConnector(EyesBase):
     ):
         # type:(...)->MatchResult
         self._current_uuid = check_task_uuid
-        if name:
-            check_settings = check_settings.with_name(name)
+        name = check_settings.values.name
+
         logger.debug("EyesConnector.check({}, {})".format(name, check_task_uuid))
         self._region_selectors = region_selectors
         self._regions = regions

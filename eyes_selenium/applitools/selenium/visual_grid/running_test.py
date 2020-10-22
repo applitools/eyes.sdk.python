@@ -199,7 +199,6 @@ class RunningTest(object):
         def check_run():
             logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
             self.eyes.check(
-                tag,
                 check_settings,
                 render_task.uuid,
                 region_selectors,
