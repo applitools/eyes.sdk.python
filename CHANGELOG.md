@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Allow to disable fetching page resources by dom snapshot script [Trello 2242](https://trello.com/c/C1YodBjt)
+### Fixed
+- Resources grabbed from cached resources *are still sent* in the render's resource map [Trello 2129](https://trello.com/c/kCsU9aM4)
 
 ## [4.10.0] - 2020-10-16
 ### Added
