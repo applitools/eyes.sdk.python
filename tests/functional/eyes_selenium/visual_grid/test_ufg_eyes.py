@@ -54,25 +54,15 @@ def test_ufg_skip_list(driver, fake_connector_class):
     eyes.close(False)
 
 
-@pytest.mark.parametrize(
-    "target, fetching_disabled, blobs_count",
-    [
-        (Target.window(), False, 24),
-        (Target.window().disable_browser_fetching(), True, 0),
-    ],
-)
-def test_disable_browser_fetching(
-    driver, vg_runner, spy, target, fetching_disabled, blobs_count
-):
+def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
     eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     eyes.open(driver, "Test Visual Grid", "Test Disable Browser Fetching Config")
     get_script_result = spy(VisualGridEyes, "get_script_result")
 
-    eyes.check(target)
+    eyes.check(Target.window().disable_browser_fetching())
 
-    assert get_script_result.call_args_list == [spy.call(spy.ANY, fetching_disabled)]
+    assert get_script_result.call_args_list == [spy.call(spy.ANY, True)]
     assert len(get_script_result.return_list) == 1
-    assert len(get_script_result.return_list[0]["blobs"]) == blobs_count
-    eyes.close()
-    vg_runner.get_all_test_results()
+    assert get_script_result.return_list[0]["blobs"] == []
