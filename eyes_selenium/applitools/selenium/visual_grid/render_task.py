@@ -327,6 +327,7 @@ def fetch_resources_recursively(
     def schedule_fetch(urls):
         for url in urls:
             if url not in seen_urls:
+                seen_urls.add(url)
                 downloading = resource_cache.fetch_and_store(url, get_resource)
                 if downloading:  # going to take time, add to the queue end
                     fetched_urls_deque.appendleft(url)
@@ -339,7 +340,6 @@ def fetch_resources_recursively(
     while fetched_urls_deque:
         url = fetched_urls_deque.pop()
         resource = resource_cache[url]
-        seen_urls.add(url)
         if resource is None:
             logger.debug("No response for {}".format(url))
         else:
