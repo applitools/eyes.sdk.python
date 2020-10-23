@@ -209,7 +209,7 @@ class VGResource(object):
                 )
 
     @classmethod
-    def from_blob(cls, blob, get_child_resource_urls_func=None):
+    def from_blob(cls, blob, get_child_resource_urls_func):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
@@ -225,7 +225,7 @@ class VGResource(object):
         )
 
     @classmethod
-    def from_response(cls, url, response, get_child_resource_urls_func=None):
+    def from_response(cls, url, response, get_child_resource_urls_func):
         # type: (Text, Response, Callable) -> VGResource
         content = response.content
         content_type = response.headers.get("Content-Type")
