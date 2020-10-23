@@ -1,5 +1,5 @@
 import typing
-from collections import deque
+from collections import Iterable, deque
 from functools import partial
 from itertools import chain
 
@@ -24,7 +24,7 @@ from applitools.selenium.parsers import collect_urls_from_
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Callable, Dict, List, NoReturn, Optional, Text
+    from typing import Any, Callable, Dict, List, NoReturn, Optional, Text, Tuple
 
     from applitools.common import Region, RenderingInfo, RenderStatusResults
     from applitools.selenium.visual_grid import (
@@ -32,6 +32,54 @@ if typing.TYPE_CHECKING:
         ResourceCache,
         RunningTest,
     )
+
+
+class RecursiveCachedResourceFetchQueue(object):
+    """
+    Fetches resources and resources referenced from fetched resources recursively.
+    """
+
+    def __init__(
+        self,
+        eyes_connector,  # type: EyesConnector
+        resource_cache,  # type: ResourceCache
+        find_child_resource_urls,  # type: Callable[[Text, Text, Text],List[Text]]
+    ):
+        # type: (...) -> None
+        self._eyes_connector = eyes_connector
+        self._resource_cache = resource_cache
+        self._find_child_resource_urls = find_child_resource_urls
+        self._fetched_urls_deque = deque()
+        self._seen_urls = set()
+
+    def schedule_fetch(self, urls):
+        # type: (Iterable[Text]) -> None
+        for url in urls:
+            if url in self._seen_urls:
+                continue
+            downloading = self._resource_cache.fetch_and_store(url, self._get_resource)
+            if downloading:  # going to take time, add to the queue end
+                self._fetched_urls_deque.appendleft(url)
+            else:  # resource is already in cache, add to the queue front
+                self._fetched_urls_deque.append(url)
+
+    def __iter__(self):
+        # type: () -> Iterable[Tuple[Text, VGResource]]
+        while self._fetched_urls_deque:
+            url = self._fetched_urls_deque.pop()
+            resource = self._resource_cache[url]
+            if resource is None:
+                logger.debug("No response for {}".format(url))
+            else:
+                self._seen_urls.add(url)
+                self.schedule_fetch(resource.child_resource_urls)
+                yield url, resource
+
+    def _get_resource(self, link):
+        # type: (Text) -> VGResource
+        logger.debug("get_resource({0}) call".format(link))
+        response = self._eyes_connector.download_resource(link)
+        return VGResource.from_response(link, response, self._find_child_resource_urls)
 
 
 @attr.s(hash=True)
@@ -231,21 +279,9 @@ class RenderTask(VGTask):
                 for url in collect_urls_from_(content_type, content)
             ]
 
-        def get_resource(link):
-            # type: (Text) -> VGResource
-            logger.debug("get_resource({0}) call".format(link))
-            response = self.eyes_connector.download_resource(link)
-            return VGResource.from_response(link, response, find_child_resource_urls)
-
-        def schedule_resource_cache_download(url, fetched_urls_deque):
-            downloading = self.resource_cache.fetch_and_store(url, get_resource)
-            if downloading:
-                # going to take time, add to the queue end
-                fetched_urls_deque.appendleft(url)
-            else:
-                # resource is already in cache, add to the queue front
-                fetched_urls_deque.append(url)
-
+        resource_fetch_queue = RecursiveCachedResourceFetchQueue(
+            self.eyes_connector, self.resource_cache, find_child_resource_urls
+        )
         frame_request_resources = {}
         for f_data in frames:
             f_data["url"] = apply_base_url(f_data["url"], base_url)
@@ -253,29 +289,15 @@ class RenderTask(VGTask):
                 f_data
             ).resource
 
-        urls_to_fetch = set(resource_urls)
+        resource_fetch_queue.schedule_fetch(resource_urls)
         for blob in all_blobs:
             resource = VGResource.from_blob(blob, find_child_resource_urls)
             if resource.url.rstrip("#") == base_url:
                 continue
             frame_request_resources[resource.url] = resource
-            urls_to_fetch |= set(resource.child_resource_urls)
+            resource_fetch_queue.schedule_fetch(resource.child_resource_urls)
 
-        fetched_urls_deque = deque()
-        for url in urls_to_fetch:
-            schedule_resource_cache_download(url, fetched_urls_deque)
-
-        while fetched_urls_deque:
-            url = fetched_urls_deque.pop()
-            resource = self.resource_cache[url]
-            if resource is None:
-                logger.debug("No response for {}".format(url))
-                continue
-            frame_request_resources[url] = resource
-            for url in resource.child_resource_urls:
-                if url not in frame_request_resources:
-                    schedule_resource_cache_download(url, fetched_urls_deque)
-
+        frame_request_resources.update(resource_fetch_queue)
         self.full_request_resources.update(frame_request_resources)
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=frame_request_resources
