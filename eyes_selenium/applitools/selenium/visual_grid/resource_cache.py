@@ -51,13 +51,25 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __iter__(self):
         return iter(self.cache_map)
 
-    def fetch_and_store(self, url, func_to_run, force=False):
-        if url in self and not force:
-            return self[url]
-        elif func_to_run:
-            self[url] = self.executor.submit(func_to_run, url)
-            return True
-        return False
+    def fetch_and_store(self, url, fetch_function, force=False):
+        # type: (typing.Text, typing.Callable[[typing.Text], VGResource], bool) -> bool
+        """
+        Schedules fetch of the url using fetch_function.
+
+        :param url: url to fetch resource from
+        :param fetch_function: function called to fetch the resource in a worker thread
+        :param force: option to force fetch even if the resource is
+                      already fetched or fetching
+
+        :return: True if the fetch was just scheduled or already in process
+                 False if it's already fetched and in the cache
+        """
+        with self.lock:
+            if force or url not in self.cache_map:
+                self.cache_map[url] = self.executor.submit(fetch_function, url)
+                return True
+            else:
+                return isinstance(self.cache_map[url], Future)
 
     def process_all(self):
         with self.lock:

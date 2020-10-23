@@ -66,3 +66,18 @@ def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
     assert get_script_result.call_args_list == [spy.call(spy.ANY, True)]
     assert len(get_script_result.return_list) == 1
     assert get_script_result.return_list[0]["blobs"] == []
+
+
+@pytest.mark.parametrize(
+    "target",
+    [Target.window(), Target.window().disable_browser_fetching()],
+)
+def test_fetch_deep_css_chain(driver, vg_runner, target):
+    eyes = Eyes(vg_runner)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsCssTestPage/")
+    eyes.open(driver, "Test Visual Grid", "Test Deep CSS chain")
+
+    eyes.check(target)
+
+    eyes.close()
+    vg_runner.get_all_test_results()

@@ -183,7 +183,8 @@ class VGResource(object):
     hash_format = attr.ib(
         init=False, default="sha256", metadata={JsonInclude.THIS: True}
     )  # type: Text
-    _handle_func = attr.ib(default=None)
+    child_resource_urls = attr.ib(factory=list)  # type: List[Text]
+    _get_child_resource_urls_func = attr.ib(default=None)  # type: Callable
 
     def __hash__(self):
         return self.hash
@@ -196,9 +197,11 @@ class VGResource(object):
             )
             self.content = self.content[: self.MAX_RESOURCE_SIZE]
         self.hash = general_utils.get_sha256_hash(self.content)
-        if callable(self._handle_func):
+        if not self.error_status_code and callable(self._get_child_resource_urls_func):
             try:
-                self._handle_func()
+                self.child_resource_urls = self._get_child_resource_urls_func(
+                    self.content_type, self.content, self.url
+                )
             except Exception:
                 logger.exception(
                     "Exception has been appeared during processing"
@@ -206,7 +209,7 @@ class VGResource(object):
                 )
 
     @classmethod
-    def from_blob(cls, blob, on_created=None):
+    def from_blob(cls, blob, get_child_resource_urls_func):
         # type: (Dict, Callable) -> VGResource
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
@@ -218,15 +221,11 @@ class VGResource(object):
             content_type,
             content,
             error_status_code=error_status,
-            handle_func=(
-                lambda: on_created(content_type, content, url)
-                if error_status is None
-                else None
-            ),
+            get_child_resource_urls_func=get_child_resource_urls_func,
         )
 
     @classmethod
-    def from_response(cls, url, response, on_created=None):
+    def from_response(cls, url, response, get_child_resource_urls_func):
         # type: (Text, Response, Callable) -> VGResource
         content = response.content
         content_type = response.headers.get("Content-Type")
@@ -237,11 +236,7 @@ class VGResource(object):
             content_type,
             content,
             error_status_code=error_status,
-            handle_func=(
-                lambda: on_created(content_type, content, url)
-                if error_status is None
-                else None
-            ),
+            get_child_resource_urls_func=get_child_resource_urls_func,
         )
 
 
