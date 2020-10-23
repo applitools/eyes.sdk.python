@@ -140,24 +140,23 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
-    def get_script_result(self):
-        # type: () -> Dict
+    def get_script_result(self, dont_fetch_resources):
+        # type: (bool) -> Dict
         logger.debug("get_script_result()")
-        skip_resources = json.dumps(
-            {"skipResources": list(copy(self.vg_manager.resource_cache.keys()))}
+        options = json.dumps(
+            {
+                "dontFetchResources": dont_fetch_resources,
+                "skipResources": list(copy(self.vg_manager.resource_cache.keys())),
+            }
         )
         process_resources = (
             PROCESS_RESOURCES
-            + "return __processPageAndSerializePoll(document, {});".format(
-                skip_resources
-            )
+            + "return __processPageAndSerializePoll({});".format(options)
         )
         if self.driver.user_agent.is_internet_explorer:
             process_resources = (
                 PROCESS_RESOURCES_FOR_IE
-                + "return __processPageAndSerializePollForIE(document, {});".format(
-                    skip_resources
-                )
+                + "return __processPageAndSerializePollForIE({});".format(options)
             )
 
         return eyes_selenium_utils.get_dom_script_result(
@@ -178,7 +177,10 @@ class VisualGridEyes(object):
 
         region_xpaths = self.get_region_xpaths(check_settings)
         logger.info("region_xpaths: {}".format(region_xpaths))
-        script_result = self.get_script_result()
+        dont_fetch_resources = self._effective_disable_browser_fetching(
+            self.configure, check_settings
+        )
+        script_result = self.get_script_result(dont_fetch_resources)
         source = eyes_selenium_utils.get_check_source(self.driver)
         try:
             for test in self.test_list:
@@ -387,3 +389,10 @@ class VisualGridEyes(object):
         except Exception as e:
             logger.exception(e)
             raise EyesError(str(e))
+
+    @staticmethod
+    def _effective_disable_browser_fetching(config, check_settings):
+        if check_settings.values.disable_browser_fetching is not None:
+            return check_settings.values.disable_browser_fetching
+        else:
+            return config.disable_browser_fetching

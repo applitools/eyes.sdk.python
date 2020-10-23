@@ -1,9 +1,11 @@
 import json
 import re
 
+import pytest
 from mock import patch
 
-from applitools.selenium import Eyes, VisualGridRunner, eyes_selenium_utils
+from applitools.selenium import Eyes, Target, VisualGridRunner, eyes_selenium_utils
+from applitools.selenium.visual_grid import VisualGridEyes
 
 
 def _fetch_skip_resources(resource_script_string):
@@ -50,3 +52,17 @@ def test_ufg_skip_list(driver, fake_connector_class):
             assert set(skip_list).difference(script_result["resource_urls"])
 
     eyes.close(False)
+
+
+def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
+    eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
+    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
+    eyes.open(driver, "Test Visual Grid", "Test Disable Browser Fetching Config")
+    get_script_result = spy(VisualGridEyes, "get_script_result")
+
+    eyes.check(Target.window().disable_browser_fetching())
+
+    assert get_script_result.call_args_list == [spy.call(spy.ANY, True)]
+    assert len(get_script_result.return_list) == 1
+    assert get_script_result.return_list[0]["blobs"] == []

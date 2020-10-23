@@ -104,16 +104,25 @@ def test_set_value_to_conf(conf):
     assert conf.branch_name == "branch name"
 
 
+def test_default_values_selenium_configuration():
+    conf = SeleniumConfiguration()
+
+    assert conf.disable_browser_fetching is False
+
+
 def test_set_value_to_sel_conf():
     conf = SeleniumConfiguration()
     conf.set_force_full_page_screenshot(True).set_wait_before_screenshots(
         10000000
     ).set_stitch_mode(StitchMode.CSS).set_hide_scrollbars(True).set_hide_caret(True)
+    conf.set_disable_browser_fetching(True)
+
     assert conf.force_full_page_screenshot == True
     assert conf.wait_before_screenshots == 10000000
     assert conf.stitch_mode == StitchMode.CSS
     assert conf.hide_scrollbars == True
     assert conf.hide_caret == True
+    assert conf.disable_browser_fetching is True
 
 
 def test_add_browser():

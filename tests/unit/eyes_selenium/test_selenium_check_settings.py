@@ -31,6 +31,12 @@ def get_regions_from_(method_name, *args):
     return regions
 
 
+def test_default_check_settings():
+    check_settings = SeleniumCheckSettings()
+
+    assert check_settings.values.disable_browser_fetching is None
+
+
 def test_check_region_and_frame_with_unsupported_input():
     with pytest.raises(TypeError):
         cs = get_cs_from_method("region", 12355)
@@ -204,3 +210,35 @@ def test_before_render_screenshot_hook():
     cs = SeleniumCheckSettings()
     cs.before_render_screenshot_hook("some hook")
     assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"
+
+
+def test_disable_browser_fetching_combinations():
+    from applitools.selenium import Configuration, Target
+    from applitools.selenium.visual_grid import VisualGridEyes
+
+    effective_option = VisualGridEyes._effective_disable_browser_fetching
+    cfg = Configuration()
+    assert effective_option(cfg, Target.window()) is False
+    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
+    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
+    assert (
+        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
+    )
+
+    cfg.set_disable_browser_fetching(False)
+
+    assert effective_option(cfg, Target.window()) is False
+    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
+    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
+    assert (
+        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
+    )
+
+    cfg.set_disable_browser_fetching(True)
+
+    assert effective_option(cfg, Target.window()) is True
+    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
+    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
+    assert (
+        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
+    )
