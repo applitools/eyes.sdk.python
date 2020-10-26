@@ -905,11 +905,6 @@ class SeleniumEyes(EyesBase):
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Full page screenshot requested")
-        original_fc = self.driver.frame_chain.clone()
-        if original_fc.size > 0:
-            original_frame_position = original_fc.default_content_scroll_position
-        else:
-            original_frame_position = Point.ZERO()
 
         with self.driver.switch_to.frames_and_back(self._original_fc):
             scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
@@ -919,11 +914,11 @@ class SeleniumEyes(EyesBase):
             origin_provider.set_position(Point.ZERO())
             logger.debug("resetting origin_provider location")
 
-            location = Point.from_(self.scroll_root_element.location)
+            location = self.scroll_root_element.location
             size_and_borders = self.scroll_root_element.size_and_borders
             region = Region(
-                location.x + size_and_borders.borders["left"],
-                location.y + size_and_borders.borders["top"],
+                location["x"] + size_and_borders.borders["left"],
+                location["y"] + size_and_borders.borders["top"],
                 size_and_borders.size["width"],
                 size_and_borders.size["height"],
             )
@@ -933,9 +928,8 @@ class SeleniumEyes(EyesBase):
                 region, Region.EMPTY(), self.position_provider
             )
             image = self._crop_if_needed(image)
-            frame_location_in_screenshot = original_frame_position - location
             return EyesWebDriverScreenshot.create_full_page(
-                self._driver, image, frame_location_in_screenshot
+                self._driver, image, -region.location
             )
 
     def _element_screenshot(self, scale_provider):

@@ -6,18 +6,38 @@ from applitools.selenium import Eyes, Target
 
 
 @pytest.mark.parametrize(
-    "target",
+    "target,expected_layout_regions",
     [
-        Target.window()
-        .scroll_root_element([By.CSS_SELECTOR, "div.pre-scrollable"])
-        .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
-        .fully(),
-        Target.region([By.CSS_SELECTOR, "div.pre-scrollable"])
-        .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
-        .fully(),
+        (
+            Target.window()
+            .scroll_root_element([By.CSS_SELECTOR, "div.pre-scrollable"])
+            .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"]),
+            [Region(102, 137, 533, 33)],
+        ),
+        (
+            Target.window()
+            .scroll_root_element([By.CSS_SELECTOR, "div.pre-scrollable"])
+            .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
+            .fully(),
+            [Region(10, 30, 533, 33)],
+        ),
+        (
+            Target.region([By.CSS_SELECTOR, "div.pre-scrollable"]).layout(
+                [By.CSS_SELECTOR, "h3.section-type-TITLE"]
+            ),
+            [Region(9, 30, 533, 33)],
+        ),
+        (
+            Target.region([By.CSS_SELECTOR, "div.pre-scrollable"])
+            .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
+            .fully(),
+            [Region(10, 30, 533, 33)],
+        ),
     ],
 )
-def test_layout_region_calculation_for_targets(driver, fake_connector_class, target):
+def test_layout_region_calculation_for_targets(
+    driver, fake_connector_class, target, expected_layout_regions
+):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
@@ -29,9 +49,10 @@ def test_layout_region_calculation_for_targets(driver, fake_connector_class, tar
     eyes.check(target)
     _, match_data = eyes.server_connector.calls["match_window"]
 
-    assert match_data.options.image_match_settings.layout_regions == [
-        Region(10, 30, 533, 33)
-    ]
+    assert (
+        match_data.options.image_match_settings.layout_regions
+        == expected_layout_regions
+    )
 
 
 def test_layout_region_calculation_for_frame_target(driver, fake_connector_class):
