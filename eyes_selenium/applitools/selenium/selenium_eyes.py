@@ -88,7 +88,7 @@ class SeleniumEyes(EyesBase):
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
     _check_frame_or_element = None  # type: bool
     _original_fc = None  # type: Optional[FrameChain]
-    _scroll_root_element = None
+    _scroll_root_element = None  # type: Optional[EyesWebElement]
     _effective_viewport = None  # type: Optional[Region]
     _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
@@ -249,7 +249,9 @@ class SeleniumEyes(EyesBase):
         self._original_fc = self.driver.frame_chain.clone()
 
         if not self.driver.is_mobile_app:
-            self._position_memento = self._position_provider.get_state()
+            self._position_memento = ScrollPositionProvider(
+                self.driver, self.scroll_root_element
+            ).get_state()
 
             # hide scrollbar for main window
             self._try_hide_scrollbars()
@@ -269,7 +271,9 @@ class SeleniumEyes(EyesBase):
         self._stitch_content = False
         self._scroll_root_element = None
         if self._position_memento:
-            self._position_provider.restore_state(self._position_memento)
+            ScrollPositionProvider(self.driver, self.scroll_root_element).restore_state(
+                self._position_memento
+            )
 
         if not self.driver.is_mobile_app:
             self.driver.switch_to.frames(self._original_fc)
