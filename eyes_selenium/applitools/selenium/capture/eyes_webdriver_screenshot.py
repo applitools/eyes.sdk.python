@@ -46,7 +46,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     _frame_location_in_screenshot = attr.ib()  # type: Point
     _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
     frame_window = attr.ib(default=None)  # type: Region
-    region_window = attr.ib(default=Region(0, 0, 0, 0))  # type: Region
     _frame_chain = attr.ib(init=False)  # type: FrameChain
 
     @classmethod
@@ -81,16 +80,15 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def from_screenshot(
-        cls, driver, image, screenshot_region, frame_location_in_screenshot
+        cls, driver, image, screenshot_region, frame_location_in_parent_screenshot
     ):
         # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            frame_location_in_screenshot,
+            frame_location_in_parent_screenshot - screenshot_region.location,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
-            region_window=Region.from_(screenshot_region),
         )
 
     def __attrs_post_init__(self):
@@ -200,7 +198,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
-            self._frame_location_in_screenshot - region.location,
+            self._frame_location_in_screenshot,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
@@ -231,10 +229,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             ):
                 # If this is not a sub-screenshot, this will have no effect.
                 result = result.offset(self._frame_location_in_screenshot)
-                # If this is not a region subscreenshot, this will have no effect.
-                result = result.offset(
-                    -self.region_window.left, -self.region_window.top
-                )
             elif from_ == self.SCREENSHOT_AS_IS and to in [
                 self.CONTEXT_RELATIVE,
                 self.CONTEXT_AS_IS,
