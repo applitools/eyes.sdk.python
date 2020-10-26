@@ -6,39 +6,40 @@ from applitools.selenium import Eyes, Target
 
 
 @pytest.mark.parametrize(
-    "target,expected_layout_regions",
+    "target, expected_layout_region",
     [
         (
             Target.window()
             .scroll_root_element([By.CSS_SELECTOR, "div.pre-scrollable"])
             .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"]),
-            [Region(102, 137, 533, 33)],
+            Region(102, 137, 533, 33),
         ),
         (
             Target.window()
             .scroll_root_element([By.CSS_SELECTOR, "div.pre-scrollable"])
             .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
             .fully(),
-            [Region(10, 30, 533, 33)],
+            Region(10, 30, 533, 33),
         ),
         (
             Target.region([By.CSS_SELECTOR, "div.pre-scrollable"]).layout(
                 [By.CSS_SELECTOR, "h3.section-type-TITLE"]
             ),
-            [Region(9, 30, 533, 33)],
+            Region(9, 30, 533, 33),
         ),
         (
             Target.region([By.CSS_SELECTOR, "div.pre-scrollable"])
             .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
             .fully(),
-            [Region(10, 30, 533, 33)],
+            Region(10, 30, 533, 33),
         ),
     ],
 )
 def test_layout_region_calculation_for_targets(
-    driver, fake_connector_class, target, expected_layout_regions
+    driver, fake_connector_class, target, expected_layout_region
 ):
     eyes = Eyes()
+    eyes.send_dom = False
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get(
@@ -49,25 +50,40 @@ def test_layout_region_calculation_for_targets(
     eyes.check(target)
     _, match_data = eyes.server_connector.calls["match_window"]
 
-    assert (
-        match_data.options.image_match_settings.layout_regions
-        == expected_layout_regions
-    )
+    assert match_data.options.image_match_settings.layout_regions == [
+        expected_layout_region
+    ]
 
 
-def test_layout_region_calculation_for_frame_target(driver, fake_connector_class):
+@pytest.mark.parametrize(
+    "target, expected_layout_regions",
+    [
+        (
+            Target.frame([By.CSS_SELECTOR, "body>iframe"]).layout(
+                [By.ID, "inner-frame-div"]
+            ),
+            [],  # When target is frame (not fully) layout element is not accessible
+        ),
+        (
+            Target.frame([By.CSS_SELECTOR, "body>iframe"])
+            .layout([By.ID, "inner-frame-div"])
+            .fully(),
+            [Region(8, 8, 304, 184)],
+        ),
+    ],
+)
+def test_layout_region_calculation_for_frame_target(
+    driver, fake_connector_class, target, expected_layout_regions
+):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
 
-    eyes.check(
-        Target.frame([By.CSS_SELECTOR, "body>iframe"])
-        .layout([By.ID, "inner-frame-div"])
-        .fully()
-    )
+    eyes.check(target)
     _, match_data = eyes.server_connector.calls["match_window"]
 
-    assert match_data.options.image_match_settings.layout_regions == [
-        Region(8, 8, 304, 184)
-    ]
+    assert (
+        match_data.options.image_match_settings.layout_regions
+        == expected_layout_regions
+    )
