@@ -200,7 +200,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
-            self._frame_location_in_screenshot,
+            self._frame_location_in_screenshot - region.location,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
