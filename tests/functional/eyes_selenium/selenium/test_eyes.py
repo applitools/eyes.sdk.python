@@ -55,35 +55,38 @@ def test_layout_region_calculation_for_targets(
     ]
 
 
-@pytest.mark.parametrize(
-    "target, expected_layout_regions",
-    [
-        (
-            Target.frame([By.CSS_SELECTOR, "body>iframe"]).layout(
-                [By.ID, "inner-frame-div"]
-            ),
-            [],  # When target is frame (not fully) layout element is not accessible
-        ),
-        (
-            Target.frame([By.CSS_SELECTOR, "body>iframe"])
-            .layout([By.ID, "inner-frame-div"])
-            .fully(),
-            [Region(8, 8, 304, 184)],
-        ),
-    ],
-)
-def test_layout_region_calculation_for_frame_target(
-    driver, fake_connector_class, target, expected_layout_regions
-):
+@pytest.mark.skip("Known bug, Trello#1644")
+def test_layout_region_calculation_for_frame_target(driver, fake_connector_class):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
 
-    eyes.check(target)
+    eyes.check(
+        Target.frame([By.CSS_SELECTOR, "body>iframe"]).layout(
+            [By.ID, "inner-frame-div"]
+        )
+    )
     _, match_data = eyes.server_connector.calls["match_window"]
 
-    assert (
-        match_data.options.image_match_settings.layout_regions
-        == expected_layout_regions
+    assert match_data.options.image_match_settings.layout_regions == [
+        Region(8, 8, 304, 184)
+    ]
+
+
+def test_layout_region_calculation_for_frame_fully_target(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
+
+    eyes.check(
+        Target.frame([By.CSS_SELECTOR, "body>iframe"])
+        .layout([By.ID, "inner-frame-div"])
+        .fully()
     )
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.options.image_match_settings.layout_regions == [
+        Region(8, 8, 304, 184)
+    ]
