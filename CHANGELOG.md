@@ -1,4 +1,4 @@
-## [vNext]
+## [4.11.0] - 2020-10-27
 ### Added
 - Allow to disable fetching page resources by dom snapshot script [Trello 2242](https://trello.com/c/C1YodBjt)
 ### Fixed
