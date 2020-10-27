@@ -61,11 +61,11 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return cls(driver, image, None, frame_location_in_screenshot)
 
     @classmethod
-    def create_entire_frame(
+    def create_entire_element(
         cls,
         driver,  # type: EyesWebDriver
         image,  # type: Image.Image
-        entire_frame_size,  # type: RectangleSize
+        entire_element_size,  # type: RectangleSize
         frame_location_in_screenshot,  # type: Point
     ):
         # type: (...) -> EyesWebDriverScreenshot
@@ -75,7 +75,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             ScreenshotType.ENTIRE_FRAME,
             frame_location_in_screenshot,
             current_frame_scroll_position=Point(0, 0),
-            frame_window=Region.from_(Point(0, 0), entire_frame_size),
+            frame_window=Region.from_(Point(0, 0), entire_element_size),
         )
 
     @classmethod

@@ -895,7 +895,7 @@ class SeleniumEyes(EyesBase):
             self._region_to_check, self._full_region_to_check, elem_position_provider
         )
         image = self._crop_if_needed(image)
-        return EyesWebDriverScreenshot.create_entire_frame(
+        return EyesWebDriverScreenshot.create_entire_element(
             self._driver,
             image,
             RectangleSize.from_(image),
