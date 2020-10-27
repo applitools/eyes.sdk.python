@@ -5,9 +5,10 @@ from collections import defaultdict
 import attr
 from transitions import Machine
 
-from applitools.common import Region, RenderStatus, logger
+from applitools.common import Region, RenderRequest, RenderStatus, logger
 
 from .render_task import RenderTask
+from .resource_collection_task import ResourceCollectionTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
@@ -175,26 +176,16 @@ class RunningTest(object):
 
     def check(
         self,
-        tag,  # type: Text
         check_settings,  # type: SeleniumCheckSettings
-        script_result,  # type: Dict[str, Any]
         visual_grid_manager,  # type: VisualGridRunner
-        region_selectors,
-        region_to_check,
-        script_hooks,
+        region_selectors,  # type: Dict
+        render_request,  # type: RenderRequest
         source,  # type: Optional[Text]
     ):
         # type: (...) -> None
-        logger.debug("RunningTest %s , %s" % (tag, check_settings))
-        render_task = self._render_task(
-            script_result,
-            tag,
-            visual_grid_manager,
-            region_selectors,
-            region_to_check,
-            script_hooks,
-            check_settings,
-        )
+        logger.debug("RunningTest %s" % check_settings)
+        render_task = self._render_task(render_request, check_settings)
+        tag = check_settings.values.name
 
         def check_run():
             logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
@@ -230,35 +221,20 @@ class RunningTest(object):
 
     def _render_task(
         self,
-        script_result,  # type: Dict[Text, Any]
-        tag,  # type: Text
-        visual_grid_manager,  # type: VisualGridRunner
-        region_selectors,  # type: List
-        region_to_check,  # type: Region
-        script_hooks,  # type: Dict[Text, Any]
-        check_settings,
+        render_request,  # type: RenderRequest
+        check_settings,  # type: SeleniumCheckSettings
     ):
         # type: (...) -> RenderTask
         short_description = "{} of {}".format(
             self.configuration.test_name, self.configuration.app_name
         )
+        tag = check_settings.values.name
+
+        # resource_collection_task.on_task_error()
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(short_description, tag),
-            script=script_result,
-            resource_cache=visual_grid_manager.resource_cache,
-            put_cache=visual_grid_manager.put_cache,
-            rendering_info=self.eyes.render_info(),
-            eyes_connector=self.eyes,
-            region_selectors=region_selectors,
-            size_mode=check_settings.values.size_mode,
-            region_to_check=region_to_check,
-            script_hooks=script_hooks,
-            agent_id=self.eyes.base_agent_id,
-            selector=check_settings.values.selector,
-            request_options=self._options_dict(
-                self.configuration.visual_grid_options,
-                check_settings.values.visual_grid_options,
-            ),
+            server_connector=self.eyes,
+            render_requests=[render_request],
         )
         logger.debug("RunningTest %s" % render_task.name)
         render_index = render_task.add_running_test(self)
@@ -270,8 +246,8 @@ class RunningTest(object):
             )
             render_status = render_statuses[render_index]
             if render_status:
-                if not render_status.device_size:
-                    render_status.device_size = self.browser_info.viewport_size
+                # if not render_status.device_size:
+                #     render_status.device_size = self.browser_info.viewport_size
                 self.eyes.render_status_for_task(render_task.uuid, render_status)
                 if render_status.status == RenderStatus.RENDERED:
                     for vgr in render_status.selector_regions:

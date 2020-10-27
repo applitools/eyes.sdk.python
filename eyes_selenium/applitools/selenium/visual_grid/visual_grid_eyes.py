@@ -1,6 +1,6 @@
+import itertools
 import typing
 import uuid
-from copy import copy
 
 import attr
 
@@ -19,6 +19,8 @@ from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
+from .render_task import RenderTask
+from .resource_collection_task import ResourceCollectionTask
 from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
 
@@ -78,7 +80,7 @@ class VisualGridEyes(object):
         self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
-        self.server_connector = None  # type: Optional[ServerConnector]
+        self.server_connector = ServerConnector()  # type: ServerConnector
 
     @property
     def is_open(self):
@@ -122,6 +124,7 @@ class VisualGridEyes(object):
 
         self._driver = driver
         self._set_viewport_size()
+        self.server_connector.update_config(self.configure, self.full_agent_id)
 
         for b_info in self.configure.browsers_info:
             test = RunningTest(
@@ -152,6 +155,15 @@ class VisualGridEyes(object):
         except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)
 
+    @staticmethod
+    def _options_dict(configuration_options, check_settings_options):
+        return {
+            o.key: o.value
+            for o in itertools.chain(
+                configuration_options or (), check_settings_options or ()
+            )
+        }
+
     def check(self, check_settings):
         # type: (SeleniumCheckSettings) -> None
         argument_guard.is_a(check_settings, CheckSettings)
@@ -176,27 +188,63 @@ class VisualGridEyes(object):
         )
         logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
         source = eyes_selenium_utils.get_check_source(self.driver)
-        try:
-            for test in self.test_list:
-                if self._test_uuid != test.test_uuid:
-                    continue
-                test.check(
-                    tag=name,
-                    check_settings=check_settings,
-                    script_result=script_result,
-                    visual_grid_manager=self.vg_manager,
-                    region_selectors=region_xpaths,
-                    region_to_check=check_settings.values.target_region,
-                    script_hooks=check_settings.values.script_hooks,
-                    source=source,
-                )
-                if test.state == "new":
-                    test.becomes_not_opened()
-        except Exception as e:
-            logger.exception(e)
-            self.abort()
-            for test in self.test_list:
-                test.becomes_tested()
+        tag = check_settings.values.name
+        short_description = "{} of {}".format(
+            self.configure.test_name, self.configure.app_name
+        )
+        running_tests = [t for t in self.test_list if self._test_uuid == t.test_uuid]
+
+        self.server_connector.update_config(self.configure, self.full_agent_id)
+
+        resource_collection_task = ResourceCollectionTask(
+            name="VisualGridEyes.check-resource_collection {} - {}".format(
+                short_description, tag
+            ),
+            script=script_result,
+            resource_cache=self.vg_manager.resource_cache,
+            put_cache=self.vg_manager.put_cache,
+            rendering_info=self.server_connector.render_info(),
+            server_connector=self.server_connector,
+            region_selectors=region_xpaths,
+            size_mode=check_settings.values.size_mode,
+            region_to_check=check_settings.values.target_region,
+            script_hooks=check_settings.values.script_hooks,
+            agent_id=self.base_agent_id,
+            selector=check_settings.values.selector,
+            running_tests=running_tests,
+            request_options=self._options_dict(
+                self.configure.visual_grid_options,
+                check_settings.values.visual_grid_options,
+            ),
+        )
+
+        def collected_task(render_requests):
+            render_task = RenderTask(
+                name="RunningTest.render {} - {}".format(short_description, tag),
+                server_connector=self.server_connector,
+                render_requests=render_requests,
+                running_tests=running_tests,
+            )
+            try:
+                for test in running_tests:
+                    test.check(
+                        check_settings=check_settings,
+                        visual_grid_manager=self.vg_manager,
+                        region_selectors=region_xpaths,
+                        render_request=render_requests[test],
+                        source=source,
+                    )
+                    if test.state == "new":
+                        test.becomes_not_opened()
+            except Exception as e:
+                logger.exception(e)
+                self.abort()
+                for test in self.test_list:
+                    test.becomes_tested()
+
+        resource_collection_task.on_task_succeeded(collected_task)
+        resource_collection_task()
+
         logger.info("added check tasks  {}".format(check_settings))
 
     def close_async(self):
@@ -264,15 +312,15 @@ class VisualGridEyes(object):
 
     def _create_vgeyes_connector(self, b_info, ua_string):
         # type: (RenderBrowserInfo, Text) -> EyesConnector
-        vgeyes_connector = EyesConnector(
+        if self.rendering_info is None:
+            self.rendering_info = self.server_connector.render_info()
+
+        return EyesConnector(
             b_info,
             self.configure.clone(),
             ua_string,
             self.rendering_info,
         )
-        if self.rendering_info is None:
-            self.rendering_info = vgeyes_connector.render_info()
-        return vgeyes_connector
 
     def _try_set_target_selector(self, check_settings):
         # type: (SeleniumCheckSettings) -> None

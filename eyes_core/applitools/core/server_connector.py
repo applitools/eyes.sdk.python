@@ -228,6 +228,7 @@ class ServerConnector(object):
     # Rendering Grid
     RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
     RESOURCES_SHA_256 = "/resources/sha256/"
+    RESOURCE_STATUS = "/query/resources-exist"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
 
@@ -508,10 +509,10 @@ class ServerConnector(object):
             )
         )
 
-    def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> Text
-        argument_guard.not_none(running_render)
+    def render_put_resource(self, render_id, resource):
+        # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
+        render_id = render_id or "NONE"
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
@@ -519,14 +520,14 @@ class ServerConnector(object):
         argument_guard.not_none(content)
         logger.debug(
             "resource hash: {} url: {} render id: {}"
-            "".format(resource.hash, resource.url, running_render.render_id)
+            "".format(resource.hash, resource.url, render_id)
         )
         response = self._ufg_request(
             "put",
             self.RESOURCES_SHA_256 + resource.hash,
             use_api_key=False,
             data=content,
-            params={"render-id": running_render.render_id},
+            params={"render-id": render_id},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:
@@ -591,3 +592,13 @@ class ServerConnector(object):
             locator_id: json_utils.attr_from_dict(regions, Region)
             for locator_id, regions in iteritems(response.json())
         }
+
+    def check_resource_status(self, render_id, *hashes):
+        render_id = render_id or "NONE"
+        response = self._ufg_request(
+            "post",
+            self.RESOURCE_STATUS,
+            data=json.dumps(hashes),
+            params={"rg_render-id": render_id},
+        )
+        return response.json()

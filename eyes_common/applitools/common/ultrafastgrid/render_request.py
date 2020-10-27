@@ -240,7 +240,7 @@ class VGResource(object):
         )
 
 
-@attr.s
+@attr.s(hash=True)
 class RenderRequest(object):
     webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     agent_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
