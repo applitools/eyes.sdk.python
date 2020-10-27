@@ -189,8 +189,10 @@ def move_js_resources_to(pack):
     paths = [
         path.join("dom-capture", "dist", "captureDomAndPoll.js"),
         path.join("dom-capture", "dist", "captureDomAndPollForIE.js"),
-        path.join("dom-snapshot", "dist", "processPageAndSerializePoll.js"),
-        path.join("dom-snapshot", "dist", "processPageAndSerializePollForIE.js"),
+        path.join("dom-snapshot", "dist", "pollResult.js"),
+        path.join("dom-snapshot", "dist", "pollResultForIE.js"),
+        path.join("dom-snapshot", "dist", "processPagePoll.js"),
+        path.join("dom-snapshot", "dist", "processPagePollForIE.js"),
     ]
     node_resources = path.join(pack, "applitools", "selenium", "resources")
     node_modules = path.join(pack, "node_modules", "@applitools")
