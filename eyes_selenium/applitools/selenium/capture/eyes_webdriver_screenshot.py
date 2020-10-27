@@ -40,10 +40,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     _driver = attr.ib()  # type: EyesWebDriver
     _image = attr.ib()  # type: Image.Image
     _screenshot_type = attr.ib()  # type: ScreenshotType
+    # The top/left coordinates of the frame window(!) relative to the top/left
+    # of the screenshot. Used for calculations, so can also be outside(!)
+    # the screenshot.
     _frame_location_in_screenshot = attr.ib()  # type: Point
     _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
     frame_window = attr.ib(default=None)  # type: Region
-    region_window = attr.ib(default=Region(0, 0, 0, 0))  # type: Region
     _frame_chain = attr.ib(init=False)  # type: FrameChain
 
     @classmethod
@@ -59,27 +61,34 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         return cls(driver, image, None, frame_location_in_screenshot)
 
     @classmethod
-    def create_entire_frame(cls, driver, image, entire_frame_size):
-        # type: (EyesWebDriver, Image.Image, RectangleSize) -> EyesWebDriverScreenshot
+    def create_entire_element(
+        cls,
+        driver,  # type: EyesWebDriver
+        image,  # type: Image.Image
+        entire_element_size,  # type: RectangleSize
+        frame_location_in_screenshot,  # type: Point
+    ):
+        # type: (...) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            frame_location_in_screenshot=Point(0, 0),
+            frame_location_in_screenshot,
             current_frame_scroll_position=Point(0, 0),
-            frame_window=Region.from_(Point(0, 0), entire_frame_size),
+            frame_window=Region.from_(Point(0, 0), entire_element_size),
         )
 
     @classmethod
-    def from_screenshot(cls, driver, image, screenshot_region):
-        # type: (EyesWebDriver, Image.Image, Region) -> EyesWebDriverScreenshot
+    def from_screenshot(
+        cls, driver, image, screenshot_region, frame_location_in_parent_screenshot
+    ):
+        # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            Point.ZERO(),
+            frame_location_in_parent_screenshot - screenshot_region.location,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
-            region_window=Region.from_(screenshot_region),
         )
 
     def __attrs_post_init__(self):
@@ -189,6 +198,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
+            self._frame_location_in_screenshot,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
@@ -219,10 +229,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             ):
                 # If this is not a sub-screenshot, this will have no effect.
                 result = result.offset(self._frame_location_in_screenshot)
-                # If this is not a region subscreenshot, this will have no effect.
-                result = result.offset(
-                    -self.region_window.left, -self.region_window.top
-                )
             elif from_ == self.SCREENSHOT_AS_IS and to in [
                 self.CONTEXT_RELATIVE,
                 self.CONTEXT_AS_IS,
