@@ -23,6 +23,7 @@ def _retrieve_urls(data):
     )
 
 
+@pytest.mark.skip("Test need rewrite")
 def test_ufg_skip_list(driver, fake_connector_class):
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
