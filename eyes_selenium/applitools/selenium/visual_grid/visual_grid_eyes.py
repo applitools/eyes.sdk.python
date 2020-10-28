@@ -53,8 +53,6 @@ el = parent;
 return '/' + xpath;"""
 
 
-PROCESS_RESOURCES = resource.get_resource("processPageAndSerializePoll.js")
-PROCESS_RESOURCES_FOR_IE = resource.get_resource("processPageAndSerializePollForIE.js")
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
