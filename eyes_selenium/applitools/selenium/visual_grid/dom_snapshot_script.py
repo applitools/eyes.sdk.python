@@ -10,7 +10,7 @@ from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
 
 RESPONSE_LIMIT_IOS = 10 * 1024 * 1024
-RESPONSE_LIMIT_GENERIC = 1 * 1024 * 1024
+RESPONSE_LIMIT_GENERIC = 256 * 1024 * 1024
 
 
 class DomSnapshotFailure(Exception):
