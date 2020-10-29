@@ -17,18 +17,15 @@ class DomSnapshotFailure(Exception):
     pass
 
 
+class DomSnapshotScriptError(DomSnapshotFailure):
+    pass
+
+
 class DomSnapshotTimeout(DomSnapshotFailure):
     def __init__(self, timeout_ms):
         super(DomSnapshotTimeout, self).__init__(
             "Dom-Snapshot polling took more than {} ms".format(timeout_ms)
         )
-
-
-class DomSnapshotScriptError(DomSnapshotFailure):
-    @classmethod
-    def check(cls, process_page_result):
-        if process_page_result.status is ProcessPageStatus.ERROR:
-            raise cls(process_page_result.error)
 
 
 @attr.s
@@ -154,17 +151,20 @@ def create_dom_snapshot_loop(
     chunks = []
     deadline = time.monotonic() + timeout_ms / 1000.0
     result = script.run(**script_args)
-    DomSnapshotScriptError.check(result)
     while result.status in (ProcessPageStatus.WIP, ProcessPageStatus.SUCCESS_CHUNKED):
         if time.monotonic() > deadline:
             raise DomSnapshotTimeout(timeout_ms)
         result = script.poll_result(chunk_byte_length)
-        if result.status is ProcessPageStatus.SUCCESS:
-            return result.value
-        elif result.status is ProcessPageStatus.SUCCESS_CHUNKED:
+        if result.status is ProcessPageStatus.SUCCESS_CHUNKED:
             chunks.append(result.value)
             if result.done:
-                return json.loads("".join(chunks))
+                break
         datetime_utils.sleep(poll_interval_ms, "Waiting for the end of DOM extraction")
-    DomSnapshotScriptError.check(result)
-    raise DomSnapshotFailure("Unexpected script result", result)
+    if result.status is ProcessPageStatus.SUCCESS:
+        return result.value
+    elif result.status.SUCCESS_CHUNKED and result.done:
+        return json.loads("".join(chunks))
+    elif result.status is ProcessPageStatus.ERROR:
+        raise DomSnapshotScriptError(result.error)
+    else:
+        raise DomSnapshotFailure("Unexpected script result", result)
