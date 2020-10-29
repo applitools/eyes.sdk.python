@@ -181,6 +181,11 @@ class VisualGridEyes(object):
             self.configure, check_settings
         )
         script_result = self.get_script_result(dont_fetch_resources)
+        logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
+        logger.debug(
+            "Blobs urls: {}".format(list(b["url"] for b in script_result["blobs"]))
+        )
+        logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
         source = eyes_selenium_utils.get_check_source(self.driver)
         try:
             for test in self.test_list:
