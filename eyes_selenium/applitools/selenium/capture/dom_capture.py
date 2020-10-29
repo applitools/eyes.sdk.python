@@ -2,7 +2,9 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 import re
+import threading
 import typing as tp
+from collections import OrderedDict
 from concurrent.futures.thread import ThreadPoolExecutor
 from itertools import chain
 from typing import Dict, Generator, List, Optional, Text, Union
@@ -11,7 +13,7 @@ import attr
 import requests
 import tinycss2
 
-from applitools.common import logger
+from applitools.common import EyesError, logger
 from applitools.common.utils import (
     datetime_utils,
     is_absolute_url,
@@ -29,6 +31,7 @@ from applitools.selenium.positioning import ScrollPositionProvider
 from applitools.selenium.resource import get_resource
 
 if tp.TYPE_CHECKING:
+    from applitools.common.utils.custom_types import AnyWebDriver
     from applitools.selenium.webdriver import EyesWebDriver
 
 __all__ = ("get_full_window_dom",)
@@ -136,7 +139,7 @@ def get_frame_dom(driver, css_downoader):
     # type: (EyesWebDriver, CssDownloader) -> Text
     is_ie = driver.user_agent.is_internet_explorer
     script = _CAPTURE_FRAME_SCRIPT_FOR_IE if is_ie else _CAPTURE_FRAME_SCRIPT
-    script_result = eyes_selenium_utils.get_dom_script_result(
+    script_result = get_dom_script_result(
         driver, DOM_EXTRACTION_TIMEOUT, "DomCapture_StopWatch", script
     )
     separators, missing_css, missing_frames, data = _parse_script_result(script_result)
@@ -177,6 +180,45 @@ def get_full_window_dom(driver, return_as_dict=False):
         script_result = get_dom(driver)
 
     return json.loads(script_result) if return_as_dict else script_result
+
+
+def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for_run):
+    # type: (AnyWebDriver, int, Text, Text) -> Dict
+    is_check_timer_timeout = []
+    script_response = {}
+    status = None
+
+    def start_timer():
+        def set_timer():
+            is_check_timer_timeout.append(True)
+
+        timer = threading.Timer(
+            datetime_utils.to_sec(dom_extraction_timeout), set_timer
+        )
+        timer.daemon = True
+        timer.setName(timer_name)
+        timer.start()
+        return timer
+
+    timer = start_timer()
+    while True:
+        if status == "SUCCESS" or is_check_timer_timeout:
+            del is_check_timer_timeout[:]
+            break
+        script_result_string = driver.execute_script(script_for_run)
+        try:
+            script_response = json.loads(
+                script_result_string, object_pairs_hook=OrderedDict
+            )
+            status = script_response.get("status")
+        except Exception as e:
+            logger.exception(e)
+        datetime_utils.sleep(1000, "Waiting for the end of DOM extraction")
+    timer.cancel()
+    script_result = script_response.get("value")
+    if script_result is None or status == "ERROR":
+        raise EyesError("Failed to capture script_result")
+    return script_result
 
 
 def _download_jsonify_node(url, node):
