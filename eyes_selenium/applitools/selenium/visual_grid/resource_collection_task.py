@@ -121,7 +121,7 @@ class ResourceCollectionTask(VGTask):
         result = self.server_connector.check_resource_status(None, *resources_hashes)
 
         for hash_obj, exists in zip(resources_hashes, result):
-            if exists and not self.is_force_put_needed:
+            if exists or not self.is_force_put_needed:
                 continue
             hash_ = hash_obj["hash"]
             resource_url = hash_to_resource_url[hash_]
