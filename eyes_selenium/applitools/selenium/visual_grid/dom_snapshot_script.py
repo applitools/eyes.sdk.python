@@ -28,6 +28,25 @@ class DomSnapshotTimeout(DomSnapshotFailure):
         )
 
 
+def create_dom_snapshot(
+    driver, dont_fetch_resources, skip_resources, timeout_ms=5 * 60 * 1000
+):
+    is_ie = driver.user_agent.is_internet_explorer
+    script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
+    script = script_type(driver)
+    is_ios = "ios" in driver.desired_capabilities.get("platformName")
+    chunk_byte_length = RESPONSE_LIMIT_IOS if is_ios else RESPONSE_LIMIT_GENERIC
+    return create_dom_snapshot_loop(
+        script,
+        timeout_ms,
+        1000,
+        chunk_byte_length,
+        dont_fetch_resources=dont_fetch_resources,
+        skip_resources=skip_resources,
+        serialize_resources=True,
+    )
+
+
 @attr.s
 class ProcessPageArgs(object):
     show_logs = attr.ib(type=bool, metadata={JsonInclude.NON_NONE: True})
@@ -90,16 +109,16 @@ class DomSnapshotScript(object):
         compress_resources=None,
         serialize_resources=None,
     ):
-        args = {k: v for k, v in locals().items() if k != "self"}
-        arguments = ProcessPageArgs(**args)
-        code = self.process_page_script_code(to_json(arguments))
-        result_json = self._driver.execute_script(code)
-        return ProcessPageResult.from_json(result_json)
+        return self._run_script(
+            locals(), ProcessPageArgs, self.process_page_script_code
+        )
 
     def poll_result(self, chunk_byte_length=None):
-        args = {k: v for k, v in locals().items() if k != "self"}
-        arguments = PollResultArgs(**args)
-        code = self.poll_result_script_code(to_json(arguments))
+        return self._run_script(locals(), PollResultArgs, self.poll_result_script_code)
+
+    def _run_script(self, args, args_type, code_gen_func):
+        args = {k: v for k, v in args.items() if k != "self"}
+        code = code_gen_func(to_json(args_type(**args)))
         result_json = self._driver.execute_script(code)
         return ProcessPageResult.from_json(result_json)
 
@@ -124,25 +143,6 @@ class DomSnapshotScriptForIE(DomSnapshotScript):
 
     def poll_result_script_code(self, args):
         return "{} return __pollResultForIE({});".format(self._poll_result_code, args)
-
-
-def create_dom_snapshot(
-    driver, dont_fetch_resources, skip_resources, timeout_ms=5 * 60 * 1000
-):
-    is_ie = driver.user_agent.is_internet_explorer
-    script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
-    script = script_type(driver)
-    is_ios = "ios" in driver.desired_capabilities.get("platformName")
-    chunk_byte_length = RESPONSE_LIMIT_IOS if is_ios else RESPONSE_LIMIT_GENERIC
-    return create_dom_snapshot_loop(
-        script,
-        timeout_ms,
-        1000,
-        chunk_byte_length,
-        dont_fetch_resources=dont_fetch_resources,
-        skip_resources=skip_resources,
-        serialize_resources=True,
-    )
 
 
 def create_dom_snapshot_loop(
