@@ -270,7 +270,7 @@ def test_create_dom_snapshot_loop_calls_run_with_args():
     )
 
     create_dom_snapshot_loop(
-        script, 1, 2, 3, dont_fetch_resources=True, skip_resources=[]
+        script, 10, 2, 3, dont_fetch_resources=True, skip_resources=[]
     )
 
     calls = script.run.call_args_list
@@ -342,6 +342,6 @@ def test_create_dom_snapshot_loop_chunks():
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=True, value=':"b"}'),
     ]
 
-    res = create_dom_snapshot_loop(script, 1, 2, 3)
+    res = create_dom_snapshot_loop(script, 3, 1, 3)
 
     assert res == {"a": "b"}
