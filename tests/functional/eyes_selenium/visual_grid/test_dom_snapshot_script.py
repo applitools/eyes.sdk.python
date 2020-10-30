@@ -342,6 +342,6 @@ def test_create_dom_snapshot_loop_chunks():
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=True, value=':"b"}'),
     ]
 
-    res = create_dom_snapshot_loop(script, 3, 1, 3)
+    res = create_dom_snapshot_loop(script, 100, 1, 3)
 
     assert res == {"a": "b"}
