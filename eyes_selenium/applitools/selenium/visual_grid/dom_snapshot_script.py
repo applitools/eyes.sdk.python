@@ -5,6 +5,7 @@ from typing import Dict, Optional, Text, Union
 
 import attr
 
+from applitools.common import logger
 from applitools.common.utils import datetime_utils
 from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
@@ -151,14 +152,15 @@ def create_dom_snapshot_loop(
     chunks = []
     deadline = time.monotonic() + timeout_ms / 1000.0
     result = script.run(**script_args)
-    while result.status in (ProcessPageStatus.WIP, ProcessPageStatus.SUCCESS_CHUNKED):
+    while result.status is ProcessPageStatus.WIP or (
+        result.status is ProcessPageStatus.SUCCESS_CHUNKED and not result.done
+    ):
         if time.monotonic() > deadline:
             raise DomSnapshotTimeout(timeout_ms)
         result = script.poll_result(chunk_byte_length)
         if result.status is ProcessPageStatus.SUCCESS_CHUNKED:
+            logger.info("Snapshot chunk {}, {}b".format(len(chunks), len(result.value)))
             chunks.append(result.value)
-            if result.done:
-                break
         datetime_utils.sleep(poll_interval_ms, "Waiting for the end of DOM extraction")
     if result.status is ProcessPageStatus.SUCCESS:
         return result.value
