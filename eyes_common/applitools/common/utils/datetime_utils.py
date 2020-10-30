@@ -68,8 +68,8 @@ def current_time_in_rfc1123():
 
 
 def to_sec(millisecond):
-    # type: (Union[int, float]) -> int
-    return int(millisecond / 1000.0)
+    # type: (Union[int, float]) -> float
+    return millisecond / 1000.0
 
 
 def to_ms(seconds):
