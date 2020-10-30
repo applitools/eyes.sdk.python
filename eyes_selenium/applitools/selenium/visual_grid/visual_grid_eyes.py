@@ -1,4 +1,3 @@
-import json
 import typing
 import uuid
 from copy import copy
@@ -14,12 +13,9 @@ from applitools.common.ultrafastgrid import (
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
-from applitools.selenium import __version__, eyes_selenium_utils, resource
+from applitools.selenium import __version__, eyes_selenium_utils
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.visual_grid.dom_snapshot_script import (
-    DomSnapshotFailure,
-    create_dom_snapshot,
-)
+from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
@@ -147,13 +143,13 @@ class VisualGridEyes(object):
         # type: (bool) -> Dict
         logger.debug("get_script_result()")
         try:
-            return create_dom_snapshot(
+            return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
                 dont_fetch_resources,
                 list(copy(self.vg_manager.resource_cache.keys())),
                 DOM_EXTRACTION_TIMEOUT,
             )
-        except DomSnapshotFailure as e:
+        except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)
 
     def check(self, check_settings):

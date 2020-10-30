@@ -1,19 +1,7 @@
-import json
-import re
-
 import pytest
-from mock import patch
 
-from applitools.selenium import Eyes, Target, VisualGridRunner, eyes_selenium_utils
-from applitools.selenium.visual_grid import VisualGridEyes
-
-
-def _fetch_skip_resources(resource_script_string):
-    skip_list_pattern = re.compile(r"\"skipResources\": (\[[\w\W]+\])")
-    skip_resources = re.search(skip_list_pattern, resource_script_string)
-    if not skip_resources:
-        return None
-    return json.loads(skip_resources.group(1))
+from applitools.selenium import Eyes, Target, VisualGridRunner
+from applitools.selenium.visual_grid import VisualGridEyes, dom_snapshot_script
 
 
 def _retrieve_urls(data):
@@ -23,36 +11,27 @@ def _retrieve_urls(data):
     )
 
 
-@pytest.mark.skip("Test need rewrite")
-def test_ufg_skip_list(driver, fake_connector_class):
+def test_ufg_skip_list(driver, fake_connector_class, spy):
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
     driver.get(
-        "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
+        "https://applitools.github.io/demo/TestPages/"
+        "VisualGridTestPageWithRelativeBGImage/index.html"
     )
     eyes.open(driver, app_name="TestUFGEyes", test_name="TestUFGSkipList")
-
     running_test = vg_runner._get_all_running_tests()[0]
+    create_dom_snapshot_spy = spy(dom_snapshot_script, "create_dom_snapshot")
+    check_spy = spy(running_test, "check")
 
     eyes.check_window("check 1")
     eyes.check_window("check 2")
-
-    with patch(
-        "applitools.selenium.eyes_selenium_utils.get_dom_script_result",
-        wraps=eyes_selenium_utils.get_dom_script_result,
-    ) as get_script_result:
-        with patch(
-            "applitools.selenium.visual_grid.running_test.RunningTest.check",
-            wraps=running_test.check,
-        ) as running_check:
-            eyes.check_window("check 3")
-
-            skip_list = _fetch_skip_resources(get_script_result.call_args[0][3])
-            script_result = _retrieve_urls(running_check.call_args[1]["script_result"])
-            assert set(skip_list).difference(script_result["resource_urls"])
-
+    eyes.check_window("check 3")
     eyes.close(False)
+
+    skip_list = create_dom_snapshot_spy.call_args.args[2]
+    script_result = _retrieve_urls(check_spy.call_args.kwargs["script_result"])
+    assert set(skip_list) - set(script_result["resource_urls"])
 
 
 def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
