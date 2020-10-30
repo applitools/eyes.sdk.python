@@ -1,10 +1,10 @@
 import base64
 import json
 import zlib
+from typing import Text
 
 import mock
 import pytest
-from selenium.webdriver.remote.webdriver import WebDriver
 
 from applitools.selenium.visual_grid.dom_snapshot_script import (
     DomSnapshotScript,
@@ -60,7 +60,7 @@ def test_dom_snapshot_args_conversion():
     assert json.loads(script.poll_args) == {"chunkByteLength": 100}
 
 
-def test_dom_snapshot_default(driver: WebDriver):
+def test_dom_snapshot_default(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -74,7 +74,7 @@ def test_dom_snapshot_default(driver: WebDriver):
     assert "compressed" not in poll_res.value["blobs"][0]
 
 
-def test_dom_snapshot_serialize_resources(driver: WebDriver):
+def test_dom_snapshot_serialize_resources(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -90,7 +90,7 @@ def test_dom_snapshot_serialize_resources(driver: WebDriver):
     assert len(pic) == 22721
 
 
-def test_dom_snapshot_compressed(driver: WebDriver):
+def test_dom_snapshot_compressed(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -106,12 +106,12 @@ def test_dom_snapshot_compressed(driver: WebDriver):
     assert poll_res.value["blobs"][0]["compressed"] is True
     assert len(poll_res.value["blobs"][0]["value"]) == 21674
     compressed_dict = poll_res.value["blobs"][0]["value"]
-    compressed = bytes(compressed_dict[str(i)] for i in range(len(compressed_dict)))
-    pic = zlib.decompress(compressed)
+    compressed = bytearray(compressed_dict[str(i)] for i in range(len(compressed_dict)))
+    pic = zlib.decompress(bytes(compressed))
     assert len(pic) == 22721
 
 
-def test_dom_snapshot_compressed_serialized(driver: WebDriver):
+def test_dom_snapshot_compressed_serialized(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -132,7 +132,7 @@ def test_dom_snapshot_compressed_serialized(driver: WebDriver):
     assert len(pic) == 22721
 
 
-def test_dom_snapshot_dont_fetch_resources(driver: WebDriver):
+def test_dom_snapshot_dont_fetch_resources(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -145,7 +145,7 @@ def test_dom_snapshot_dont_fetch_resources(driver: WebDriver):
     assert poll_res.value["resourceUrls"] == [picture_url]
 
 
-def test_dom_snapshot_serialize_chunks(driver: WebDriver):
+def test_dom_snapshot_serialize_chunks(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -158,11 +158,11 @@ def test_dom_snapshot_serialize_chunks(driver: WebDriver):
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS_CHUNKED
     assert poll_res.done is False
-    assert type(poll_res.value) is str
+    assert type(poll_res.value) is Text
     assert len(poll_res.value) == 100
 
 
-def test_dom_snapshot_serialize_chunks_until_done(driver: WebDriver):
+def test_dom_snapshot_serialize_chunks_until_done(driver):
     driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(driver)
 
@@ -180,7 +180,7 @@ def test_dom_snapshot_serialize_chunks_until_done(driver: WebDriver):
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS_CHUNKED
     assert poll_res.done is True
-    assert type(poll_res.value) is str
+    assert type(poll_res.value) is Text
     assert len(poll_res.value) == 7247
 
 

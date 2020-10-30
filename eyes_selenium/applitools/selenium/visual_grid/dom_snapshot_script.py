@@ -1,12 +1,15 @@
+from __future__ import unicode_literals
+
 import json
 import time
 import typing
+from abc import abstractmethod
 from enum import Enum
 
 import attr
 
 from applitools.common import logger
-from applitools.common.utils import datetime_utils
+from applitools.common.utils import ABC, datetime_utils
 from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
 
@@ -114,16 +117,18 @@ class ProcessPageResult(object):
         )
 
 
-class DomSnapshotScript(object):
+class DomSnapshotScript(ABC):
     """Base class for different flavors of dom-snapshot script"""
 
+    @abstractmethod
     def process_page_script_code(self, args):
         # type: (Text) -> Text
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def poll_result_script_code(self, args):
         # type: (Text) -> Text
-        raise NotImplementedError
+        pass
 
     def __init__(self, driver):
         # type: (EyesWebDriver) -> None
@@ -187,12 +192,12 @@ def create_dom_snapshot_loop(
 ):
     # type: (DomSnapshotScript, int, int, int, **Any) -> Dict
     chunks = []
-    deadline = time.monotonic() + datetime_utils.to_sec(timeout_ms)
+    deadline = time.time() + datetime_utils.to_sec(timeout_ms)
     result = script.run(**script_args)
     while result.status is ProcessPageStatus.WIP or (
         result.status is ProcessPageStatus.SUCCESS_CHUNKED and not result.done
     ):
-        if time.monotonic() > deadline:
+        if time.time() > deadline:
             raise DomSnapshotTimeout(timeout_ms)
         result = script.poll_result(chunk_byte_length)
         if result.status is ProcessPageStatus.SUCCESS_CHUNKED:
