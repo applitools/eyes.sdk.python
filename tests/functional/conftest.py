@@ -1,4 +1,3 @@
-import contextlib
 import functools
 import itertools
 import os
@@ -27,6 +26,11 @@ from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from applitools.core import ServerConnector
 from tests.utils import get_session_results, send_result_report
+
+try:
+    import contextlib2 as contextlib
+except ImportError:
+    import contextlib
 
 logger.set_logger(StdoutLogger())
 
