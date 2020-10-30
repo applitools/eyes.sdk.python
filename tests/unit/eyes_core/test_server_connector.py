@@ -24,6 +24,7 @@ from applitools.common.server import SessionType
 from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
+from applitools.common.utils.datetime_utils import to_sec
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import ServerConnector
 from applitools.core.server_connector import ClientSession
@@ -389,7 +390,7 @@ def test_stop_session(started_connector):
 
 def test_request_with_changed_values(configured_connector):
     new_timeout = 99999
-    new_timeout_sec = int(new_timeout / 1000.0)
+    new_timeout_sec = to_sec(new_timeout)
     new_api_key = "NEW API KEY"
     new_server_url = "http://new-server.com/"
     conf = Configuration(
