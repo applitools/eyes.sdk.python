@@ -262,7 +262,7 @@ def test_visual_viewport(driver, batch_info, vg_runner):
         assert isinstance(app_output.viewport, RectangleSize)
 
 
-def test_render_resource_not_found(driver, fake_connector_class):
+def test_render_resource_not_found(driver, fake_connector_class, spy):
     driver.get("http://applitools.github.io/demo/DomSnapshot/test-visual-grid.html")
     missing_blob_url = "http://applitools.github.io/blabla"
     missing_resource_url = "http://localhost:7374/get-cors.css"
@@ -277,17 +277,17 @@ def test_render_resource_not_found(driver, fake_connector_class):
     )
 
     running_test = vg_runner._get_all_running_tests()[0]
-    with patch(
-        "applitools.selenium.visual_grid.running_test.RunningTest.check",
-        wraps=running_test.check,
-    ) as running_check:
-        eyes.check_window("check")
-        blobs = running_check.call_args[1]["script_result"]["blobs"]
-        error_blob = [b for b in blobs if b["url"] == missing_blob_url][-1]
-        assert error_blob["errorStatusCode"] == 404
-        assert error_blob["url"] == missing_blob_url
+    running_check = spy(running_test, "check")
 
+    eyes.check_window("check")
     eyes.close(False)
+    vg_runner.get_all_test_results(False)
+
+    blobs = running_check.call_args[1]["script_result"]["blobs"]
+    error_blob = [b for b in blobs if b["url"] == missing_blob_url][-1]
+    assert error_blob["errorStatusCode"] == 404
+    assert error_blob["url"] == missing_blob_url
+
     render_request = eyes.server_connector.calls["render"][0]
     assert render_request.resources[missing_blob_url].error_status_code == "404"
     assert render_request.resources[missing_resource_url].error_status_code in [
