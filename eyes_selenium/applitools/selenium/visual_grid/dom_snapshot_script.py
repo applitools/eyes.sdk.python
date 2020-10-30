@@ -34,7 +34,7 @@ def create_dom_snapshot(
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
-    is_ios = "ios" in driver.desired_capabilities.get("platformName")
+    is_ios = "ios" in driver.desired_capabilities.get("platformName", "").lower()
     chunk_byte_length = RESPONSE_LIMIT_IOS if is_ios else RESPONSE_LIMIT_GENERIC
     return create_dom_snapshot_loop(
         script,
