@@ -146,7 +146,7 @@ class VisualGridEyes(object):
             return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
                 dont_fetch_resources,
-                list(copy(self.vg_manager.resource_cache.keys())),
+                list(self.vg_manager.resource_cache.keys()),
                 DOM_EXTRACTION_TIMEOUT,
             )
         except dom_snapshot_script.DomSnapshotFailure as e:
