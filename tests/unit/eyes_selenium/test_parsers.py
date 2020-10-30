@@ -23,10 +23,28 @@ def test_parse_invalid_svg_with_comment_on_top():
     parsers.get_urls_from_svg_resource(content)
 
 
-def test_collect_urls_from_css():
+def test_get_urls_from_css_resource_imports():
     content = b'@import "1.css";@import url(2.css);@import url("3.css")'
-    content_type = "text/css"
 
-    urls = parsers.collect_urls_from_(content_type, content)
+    urls = parsers.get_urls_from_css_resource(content)
 
-    assert list(urls) == ["1.css", "2.css", "3.css"]
+    assert urls == ["1.css", "2.css", "3.css"]
+
+
+def test_get_urls_from_css_resource_fonts():
+    content = b"""@font-face {
+    font-family: "A";
+    src: url(1);
+    src: url("2") format("f1"), url("3") format("f2");}"""
+
+    urls = parsers.get_urls_from_css_resource(content)
+
+    assert urls == ["1", "2", "3"]
+
+
+def test_get_urls_from_css_resource_background_img():
+    content = b'p {background-image: url("1");} a {background-image: url(2);}'
+
+    urls = parsers.get_urls_from_css_resource(content)
+
+    assert urls == ["1", "2"]
