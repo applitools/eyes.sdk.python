@@ -16,7 +16,8 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
         self.lock = threading.RLock()
 
     def __str__(self):
-        return str(self.cache_map)[:25]
+        with self.lock:
+            return str(self.cache_map)[:25]
 
     def _process_future(self, url, val):
         if isinstance(val, Future):
@@ -49,7 +50,8 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
             self.executor.shutdown()
 
     def __iter__(self):
-        return iter(self.cache_map)
+        with self.lock:
+            return iter(list(self.cache_map))
 
     def fetch_and_store(self, url, fetch_function, force=False):
         # type: (typing.Text, typing.Callable[[typing.Text], VGResource], bool) -> bool
