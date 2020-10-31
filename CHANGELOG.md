@@ -1,4 +1,6 @@
 ## [vNext]
+### Fixed
+- DOM-Snapshot hangs on pages with huge DOM [Trello 1983](https://trello.com/c/lOJ8QQse)
 ### Updated
 - Restrict tinycss2 dependency below 1.1.0 as it breaks css parsing [Trello 2287](https://trello.com/c/7dilOPNv)
 
