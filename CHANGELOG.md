@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Restrict tinycss2 dependency below 1.1.0 as it breaks css parsing [Trello 2287](https://trello.com/c/7dilOPNv)
+
 ## [4.11.1] - 2020-10-29
 ### Updated
 - New logs for printing dom snapshot result [Trello 2252](https://trello.com/c/7aalHb28)
