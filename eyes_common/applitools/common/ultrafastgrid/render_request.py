@@ -214,13 +214,13 @@ class VGResource(object):
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
         url = blob.get("url")
-        error_status = blob.get("errorStatusCode")
+        error_status = str(blob.get("errorStatusCode"))
 
         return cls(
             url,
             content_type,
             content,
-            error_status_code=error_status,
+            error_status_code=str(error_status) if error_status is not None else None,
             get_child_resource_urls_func=get_child_resource_urls_func,
         )
 
