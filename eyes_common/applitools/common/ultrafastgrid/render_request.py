@@ -214,7 +214,7 @@ class VGResource(object):
         content = base64.b64decode(blob.get("value", ""))
         content_type = blob.get("type")
         url = blob.get("url")
-        error_status = str(blob.get("errorStatusCode"))
+        error_status = blob.get("errorStatusCode")
 
         return cls(
             url,
