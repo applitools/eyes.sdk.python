@@ -561,45 +561,6 @@ def get_default_content_scroll_position(current_frames, driver):
     return scroll_position
 
 
-def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for_run):
-    # type: (AnyWebDriver, int, Text, Text) -> Dict
-    is_check_timer_timeout = []
-    script_response = {}
-    status = None
-
-    def start_timer():
-        def set_timer():
-            is_check_timer_timeout.append(True)
-
-        timer = threading.Timer(
-            datetime_utils.to_sec(dom_extraction_timeout), set_timer
-        )
-        timer.daemon = True
-        timer.setName(timer_name)
-        timer.start()
-        return timer
-
-    timer = start_timer()
-    while True:
-        if status == "SUCCESS" or is_check_timer_timeout:
-            del is_check_timer_timeout[:]
-            break
-        script_result_string = driver.execute_script(script_for_run)
-        try:
-            script_response = json.loads(
-                script_result_string, object_pairs_hook=OrderedDict
-            )
-            status = script_response.get("status")
-        except Exception as e:
-            logger.exception(e)
-        datetime_utils.sleep(1000, "Waiting for the end of DOM extraction")
-    timer.cancel()
-    script_result = script_response.get("value")
-    if script_result is None or status == "ERROR":
-        raise EyesError("Failed to capture script_result")
-    return script_result
-
-
 def get_app_name(driver):
     caps = driver.desired_capabilities
     return caps.get("appPackage", None) or caps.get("app", "").split("/")[-1] or None

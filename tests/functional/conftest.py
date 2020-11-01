@@ -1,4 +1,3 @@
-import contextlib
 import functools
 import itertools
 import os
@@ -27,6 +26,11 @@ from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from applitools.core import ServerConnector
 from tests.utils import get_session_results, send_result_report
+
+try:
+    from contextlib import ExitStack
+except ImportError:
+    from contextlib2 import ExitStack
 
 logger.set_logger(StdoutLogger())
 
@@ -350,7 +354,7 @@ def spy():
         patched.raised_list = []
         return patched
 
-    exit_stack = contextlib.ExitStack()
+    exit_stack = ExitStack()
     make_spy.ANY = mock.ANY
     make_spy.call = mock.call
     with exit_stack:

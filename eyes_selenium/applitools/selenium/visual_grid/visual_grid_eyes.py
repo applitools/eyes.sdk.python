@@ -1,4 +1,3 @@
-import json
 import typing
 import uuid
 from copy import copy
@@ -12,9 +11,11 @@ from applitools.common.ultrafastgrid import (
     VisualGridSelector,
 )
 from applitools.common.utils import argument_guard
+from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
-from applitools.selenium import __version__, eyes_selenium_utils, resource
+from applitools.selenium import __version__, eyes_selenium_utils
 from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
@@ -48,8 +49,6 @@ el = parent;
 return '/' + xpath;"""
 
 
-PROCESS_RESOURCES = resource.get_resource("processPageAndSerializePoll.js")
-PROCESS_RESOURCES_FOR_IE = resource.get_resource("processPageAndSerializePollForIE.js")
 DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
 
 
@@ -143,25 +142,15 @@ class VisualGridEyes(object):
     def get_script_result(self, dont_fetch_resources):
         # type: (bool) -> Dict
         logger.debug("get_script_result()")
-        options = json.dumps(
-            {
-                "dontFetchResources": dont_fetch_resources,
-                "skipResources": list(copy(self.vg_manager.resource_cache.keys())),
-            }
-        )
-        process_resources = (
-            PROCESS_RESOURCES
-            + "return __processPageAndSerializePoll({});".format(options)
-        )
-        if self.driver.user_agent.is_internet_explorer:
-            process_resources = (
-                PROCESS_RESOURCES_FOR_IE
-                + "return __processPageAndSerializePollForIE({});".format(options)
+        try:
+            return dom_snapshot_script.create_dom_snapshot(
+                self.driver,
+                dont_fetch_resources,
+                list(self.vg_manager.resource_cache.keys()),
+                DOM_EXTRACTION_TIMEOUT,
             )
-
-        return eyes_selenium_utils.get_dom_script_result(
-            self.driver, DOM_EXTRACTION_TIMEOUT, "VG_StopWatch", process_resources
-        )
+        except dom_snapshot_script.DomSnapshotFailure as e:
+            raise_from(EyesError("Failed to capture dom snapshot"), e)
 
     def check(self, check_settings):
         # type: (SeleniumCheckSettings) -> None

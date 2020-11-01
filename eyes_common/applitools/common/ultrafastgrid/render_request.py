@@ -220,7 +220,7 @@ class VGResource(object):
             url,
             content_type,
             content,
-            error_status_code=error_status,
+            error_status_code=str(error_status) if error_status is not None else None,
             get_child_resource_urls_func=get_child_resource_urls_func,
         )
 
