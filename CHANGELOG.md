@@ -1,4 +1,4 @@
-## [vNext]
+## [4.11.2] - 2020-11-01
 ### Fixed
 - DOM-Snapshot hangs on pages with huge DOM [Trello 1983](https://trello.com/c/lOJ8QQse)
 ### Updated
