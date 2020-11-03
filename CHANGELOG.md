@@ -1,4 +1,4 @@
-## [vNext]
+## [4.11.3] - 2020-11-03
 ### Fixed
 - Native app error message on eyes.open [Trello 2291](https://trello.com/c/zS2Khlqq)
 
