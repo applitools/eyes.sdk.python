@@ -300,7 +300,11 @@ class EyesWebDriver(object):
         if self.is_mobile_app:
             major_version = minor_version = None
             if self.platform_version:
-                major_version, minor_version = self.platform_version.split(".", 2)[:2]
+                if "." in self.platform_version:
+                    version_parts = self.platform_version.split(".", 2)
+                    major_version, minor_version = version_parts[:2]
+                else:
+                    major_version = self.platform_version
             self._user_agent = useragent.UserAgent(
                 os=self.platform_name,
                 os_major_version=major_version,
