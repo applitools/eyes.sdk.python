@@ -18,6 +18,7 @@ from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.ultrafastgrid import (
+    JobInfo,
     RenderingInfo,
     RenderRequest,
     RenderStatusResults,
@@ -47,6 +48,14 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
 __all__ = ("ServerConnector",)
+
+
+def retry(
+    delays=tuple(itertools.chain((1000,), (5000,) * 4, (10000,) * 4)),
+    exception=(EyesError, requests.ConnectionError, requests.HTTPError),
+    report=lambda *args: logger.debug,
+):
+    return datetime_utils.retry(delays, exception, report)
 
 
 @attr.s
@@ -231,6 +240,7 @@ class ServerConnector(object):
     RESOURCE_STATUS = "/query/resources-exist"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
+    RENDERER_INFO = "/job-info"
 
     _is_session_started = False
 
@@ -376,11 +386,7 @@ class ServerConnector(object):
                 logger.error("Error uploading {}".format(media_type))
                 logger.exception(e)
 
-    @datetime_utils.retry(
-        delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
-        exception=(EyesError, requests.ConnectionError),
-        report=logger.debug,
-    )
+    @retry()
     def _upload_data(
         self, data_bytes, rendering_info, target_url, content_type, media_type
     ):
@@ -538,7 +544,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
+    @retry()
     def download_resource(self, url):
         # type: (Text) -> Response
         headers = {
@@ -592,6 +598,20 @@ class ServerConnector(object):
             locator_id: json_utils.attr_from_dict(regions, Region)
             for locator_id, regions in iteritems(response.json())
         }
+
+    def job_info(self, render_request):
+        # type: (List[RenderRequest]) -> List[JobInfo]
+        resp = self._ufg_request(
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+        )
+        resp.raise_for_status()
+        # TODO: improve parser to skip parsing of inner structures if required
+        return [
+            JobInfo(
+                renderer=d.get("renderer"), eyes_environment=d.get("eyesEnvironment")
+            )
+            for d in resp.json()
+        ]
 
     def check_resource_status(self, render_id, *hashes):
         render_id = render_id or "NONE"

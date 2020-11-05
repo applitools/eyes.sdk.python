@@ -34,6 +34,7 @@ __all__ = (
     "VGResource",
     "RenderRequest",
     "RenderStatusResults",
+    "JobInfo",
 )
 
 
@@ -344,3 +345,9 @@ class RenderStatusResults(object):
         converter=attr.converters.optional(RectangleSize.from_),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]
+
+
+@attr.s
+class JobInfo(object):
+    renderer = attr.ib(default="", metadata={JsonInclude.THIS: True})
+    eyes_environment = attr.ib(default="", type=dict, metadata={JsonInclude.THIS: True})
