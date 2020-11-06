@@ -8,11 +8,11 @@ import attr
 from applitools.common import EyesError, TestResults, logger
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
-    RenderBrowserInfo,
-    VisualGridSelector,
     JobInfo,
-    RenderRequest,
+    RenderBrowserInfo,
     RenderInfo,
+    RenderRequest,
+    VisualGridSelector,
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
@@ -245,12 +245,12 @@ class VisualGridEyes(object):
         )
 
         def collected_task(render_requests):
-            render_task = RenderTask(
-                name="RunningTest.render {} - {}".format(short_description, tag),
-                server_connector=self.server_connector,
-                render_requests=render_requests,
-                running_tests=running_tests,
-            )
+            # render_task = RenderTask(
+            #     name="RunningTest.render {} - {}".format(short_description, tag),
+            #     server_connector=self.server_connector,
+            #     render_requests=render_requests,
+            #     running_tests=running_tests,
+            # )
             try:
                 for test in running_tests:
                     test.check(

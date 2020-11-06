@@ -10,10 +10,10 @@ from applitools.common import (
 )
 from applitools.common.ultrafastgrid import (
     IRenderBrowserInfo,
+    JobInfo,
     RenderRequest,
     RunningRender,
     VGResource,
-    JobInfo,
 )
 from applitools.core import (
     NULL_REGION_PROVIDER,
