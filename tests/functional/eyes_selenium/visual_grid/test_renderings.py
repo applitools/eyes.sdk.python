@@ -149,7 +149,7 @@ def test_special_rendering(url, test_name, batch_info, driver):
     datetime_utils.sleep(500)
     eyes.check(test_name, Target.window().fully())
     eyes.close(False)
-    all_results = runner.get_all_test_results(False)
+    all_results = runner.get_all_test_results()
 
 
 def test_svg_parsing(driver, eyes, batch_info, vg_runner):
@@ -165,7 +165,7 @@ def test_svg_parsing(driver, eyes, batch_info, vg_runner):
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    all_results = vg_runner.get_all_test_results(False)
+    all_results = vg_runner.get_all_test_results()
 
 
 def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner):
@@ -192,7 +192,7 @@ def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner)
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    all_results = vg_runner.get_all_test_results(False)
+    all_results = vg_runner.get_all_test_results()
     assert len(all_results) == 9
 
 
