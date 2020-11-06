@@ -1,7 +1,6 @@
 import typing
 
 from applitools.common import (
-    AppEnvironment,
     AppOutput,
     EyesError,
     RectangleSize,
@@ -14,6 +13,7 @@ from applitools.common.ultrafastgrid import (
     RenderRequest,
     RunningRender,
     VGResource,
+    JobInfo,
 )
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -47,6 +47,7 @@ class EyesConnector(EyesBase):
         config,  # type: Configuration
         ua_string,  # type: Text
         rendering_info,  # type: Optional[RenderingInfo]
+        job_info,  # type: JobInfo
     ):
         # type: (...) -> None
         super(EyesConnector, self).__init__()
@@ -61,6 +62,7 @@ class EyesConnector(EyesBase):
         self._region_selectors = None
         self._regions = None
         self.device_size = None
+        self.job_info = job_info
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -131,16 +133,14 @@ class EyesConnector(EyesBase):
         return ""
 
     @property
+    def renderer(self):
+        # type: () -> Text
+        return self.job_info.renderer
+
+    @property
     def _environment(self):
-        # type: () -> AppEnvironment
-        # TODO: Add proper browser info handling
-        app_env = AppEnvironment(
-            display_size=self._browser_info.viewport_size,
-            os=self._browser_info.platform.capitalize(),
-            device_info=self.device_name,
-            hosting_app=self._browser_info.browser,
-        )
-        return app_env
+        # type: () -> Text
+        return self.job_info.eyes_environment
 
     def render_info(self):
         # type: () -> RenderingInfo

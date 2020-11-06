@@ -75,6 +75,7 @@ from .ultrafastgrid.render_request import (  # noqa
     RunningRender,
     VGResource,
     VisualGridSelector,
+    JobInfo,
 )
 
 __all__ = (

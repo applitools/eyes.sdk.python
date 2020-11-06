@@ -1,6 +1,7 @@
 import itertools
 import typing
 import uuid
+from collections import Generator
 
 import attr
 
@@ -9,6 +10,9 @@ from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     RenderBrowserInfo,
     VisualGridSelector,
+    JobInfo,
+    RenderRequest,
+    RenderInfo,
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
@@ -116,6 +120,26 @@ class VisualGridEyes(object):
             return self.base_agent_id
         return "{} [{}]".format(agent_id, self.base_agent_id)
 
+    def _job_info_for_browser_info(self, browser_infos):
+        # type: (List[RenderBrowserInfo]) -> Generator[RenderBrowserInfo, JobInfo]
+        render_requests = [
+            RenderRequest(
+                render_info=RenderInfo.from_(
+                    size_mode=None,
+                    region=None,
+                    selector=None,
+                    render_browser_info=b_info,
+                ),
+                platform_name=b_info.platform,
+                browser_name=b_info.browser,
+            )
+            for b_info in browser_infos
+        ]
+
+        job_infos = self.server_connector.job_info(render_requests)
+        for b_info, job_info in zip(browser_infos, job_infos):
+            yield b_info, job_info
+
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
@@ -125,14 +149,16 @@ class VisualGridEyes(object):
         self._driver = driver
         self._set_viewport_size()
         self.server_connector.update_config(self.configure, self.full_agent_id)
-
-        for b_info in self.configure.browsers_info:
+        self.server_connector.render_info()
+        for browser_info, job_info in self._job_info_for_browser_info(
+            self.configure.browsers_info
+        ):
             test = RunningTest(
                 self._create_vgeyes_connector(
-                    b_info, self._driver.user_agent.origin_ua_string
+                    browser_info, self._driver.user_agent.origin_ua_string, job_info
                 ),
                 self.configure.clone(),
-                b_info,
+                browser_info,
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
@@ -234,6 +260,7 @@ class VisualGridEyes(object):
                         render_request=render_requests[test],
                         source=source,
                     )
+                    # TODO: move it to eyes.open
                     if test.state == "new":
                         test.becomes_not_opened()
             except Exception as e:
@@ -310,16 +337,13 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info, ua_string):
-        # type: (RenderBrowserInfo, Text) -> EyesConnector
+    def _create_vgeyes_connector(self, b_info, ua_string, job_info):
+        # type: (RenderBrowserInfo, Text, JobInfo) -> EyesConnector
         if self.rendering_info is None:
             self.rendering_info = self.server_connector.render_info()
 
         return EyesConnector(
-            b_info,
-            self.configure.clone(),
-            ua_string,
-            self.rendering_info,
+            b_info, self.configure.clone(), ua_string, self.rendering_info, job_info
         )
 
     def _try_set_target_selector(self, check_settings):

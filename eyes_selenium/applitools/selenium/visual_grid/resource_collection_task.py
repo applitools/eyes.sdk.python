@@ -161,6 +161,7 @@ class ResourceCollectionTask(VGTask):
                 dom=dom,
                 resources=request_resources,
                 render_info=r_info,
+                renderer=running_test.eyes.renderer,
                 browser_name=running_test.browser_info.browser,
                 platform_name=running_test.browser_info.platform,
                 script_hooks=self.script_hooks,
