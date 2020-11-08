@@ -12,11 +12,10 @@ from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 from . import eyes_selenium_utils
-from .positioning import ScrollPositionProvider
 from .useragent import BrowserNames, OSNames
 
 if tp.TYPE_CHECKING:
-    from typing import Dict, Optional, Text, Union
+    from typing import Optional, Text, Union
 
     from appium.webdriver.webdriver import MobileWebElement
 
@@ -361,93 +360,45 @@ class SizeAndBorders(object):
         return "SizeAndBorders(size={}, borders={})".format(self.size, self.borders)
 
 
-class ElementAdapter(object):
-    def __init__(self, eyes_element):
-        # type: (EyesWebElement) -> None
-        self._dir = []
-        self._element = eyes_element
-        self._driver = eyes_element.driver
-
-    def __getattr__(self, item):
-        return getattr(self._element, item)
-
-    def __dir__(self):
-        if not self._dir:
-            self._dir = [
-                name for name in dir(self._element) if not name.startswith("_")
-            ]
-        return self._dir
-
-    def __subclasscheck__(self, subclass):
-        return isinstance(self._element.__class__, subclass)
-
-
-class AndroidChromeElementAdapter(ElementAdapter):
+class AndroidChromeElementAdapter(EyesWebElement):
     """
     Appium set _w3c to False for Android Chrome which cause
     an error during execution of script
     """
 
-    def __init__(self, eyes_element):
-        eyes_element.element._w3c = True
-        super(AndroidChromeElementAdapter, self).__init__(eyes_element)
+    def __init__(self, element, driver):
+        # type: (WebElement, EyesWebDriver) -> None
+        element._w3c = True
+        super(AndroidChromeElementAdapter, self).__init__(element, driver)
 
 
-class MobileSafariElementAdapter(ElementAdapter):
+class MobileSafariElementAdapter(EyesWebElement):
     """
     Some browser, like MobileSafari returns relative position parameters for element.
     This is class helper converts relative position to absolute.
     """
-
-    def __init__(self, eyes_element):
-        # type: (EyesWebElement) -> None
-        super(MobileSafariElementAdapter, self).__init__(eyes_element)
-        self._position_provider = ScrollPositionProvider(
-            eyes_element.driver, eyes_element
-        )
 
     @property
     def location(self):
         # type: () -> Point
         loc = Point.from_(self._element.location)  # scroll into view at this point
         curr_pos = eyes_selenium_utils.get_current_position(
-            self._driver, eyes_selenium_utils.scroll_root_element_from(self._driver)
+            self._eyes_driver,
+            eyes_selenium_utils.scroll_root_element_from(self._eyes_driver),
         )
         return loc + curr_pos
 
-    @property
-    def bounding_client_rect(self):
-        # type: () -> Dict[str, int]
-        rect = self._element.bounding_client_rect
-        x, y = self.location
-        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
-
-    @property
-    def bounds(self):
-        # type: () -> Region
-        bounds = self._element.bounds
-        bounds.left, bounds.top = self.location
-        return bounds
-
-    @property
-    def rect(self):
-        # type: () -> Dict[str, int]
-        rect = self._element.rect
-        x, y = self.location
-        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
-
 
 def adapt_element(eyes_element):
-    # type: (EyesWebElement) -> Union[EyesWebElement,ElementAdapter]
-    user_agent = eyes_element.driver.user_agent
-    is_simulator = eyes_element.driver.eyes.configure.is_simulator
+    # type: (EyesWebElement) -> EyesWebElement
+
+    element, driver = eyes_element.element, eyes_element.driver
+    user_agent = driver.user_agent
+    is_simulator = driver.eyes.configure.is_simulator
 
     if is_simulator:
         if user_agent.browser == BrowserNames.MobileSafari:
-            return MobileSafariElementAdapter(eyes_element)
-        elif (
-            user_agent.browser in [BrowserNames.Chrome, BrowserNames.Unknown]
-            and user_agent.os == OSNames.Android
-        ):
-            return AndroidChromeElementAdapter(eyes_element)
+            return MobileSafariElementAdapter(element, driver)
+        elif user_agent.is_chrome and user_agent.os == OSNames.Android:
+            return AndroidChromeElementAdapter(element, driver)
     return eyes_element

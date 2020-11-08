@@ -101,7 +101,7 @@ def proxy_to(proxy_obj_name, fields=None):
             proxy_obj = getattr(self, proxy_obj_name)
             setattr(proxy_obj, key, value)
         else:
-            super(self.__class__, self).__setattr__(key, value)
+            self.__dict__[key] = value
 
     def __dir__(self):
         _fields = fields or self._proxy_to_fields or []
