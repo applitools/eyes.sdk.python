@@ -1,3 +1,7 @@
+## [vnext]
+### Fixed
+- Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)
+
 ## [4.11.3] - 2020-11-03
 ### Fixed
 - Native app error message on eyes.open [Trello 2291](https://trello.com/c/zS2Khlqq)
@@ -18,7 +22,6 @@
 ### Fixed
 - Coded Layout region placed in the wrong spot [Trello 2200](https://trello.com/c/4b40ZKOa)
 - Resources grabbed from cached resources *are still sent* in the render's resource map [Trello 2129](https://trello.com/c/kCsU9aM4)
-- Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)
 
 ## [4.10.0] - 2020-10-16
 ### Added
