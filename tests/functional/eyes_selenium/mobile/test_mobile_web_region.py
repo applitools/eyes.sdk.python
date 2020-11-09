@@ -14,12 +14,12 @@ def _region_test_flow(eyes):
     eyes.configure.stitch_mode = StitchMode.Scroll
     eyes.check(
         "region-scroll",
-        Target.region([By.ID, "footer-menus"]),
+        Target.region([By.TAG_NAME, "footer"]),
     )
     eyes.configure.stitch_mode = StitchMode.CSS
     eyes.check(
         "region-css",
-        Target.region([By.ID, "footer-menus"]).timeout(0),
+        Target.region([By.TAG_NAME, "footer"]).timeout(0),
     )
 
 
@@ -32,7 +32,9 @@ def _region_test_flow(eyes):
         "platformVersion": "13.4",
     }
 )
-@pytest.mark.test_page_url("https://applitools.com")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
+)
 def test_region_capture_ios(eyes, driver):
     eyes.configure.is_simulator = True
     eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_iOS")
@@ -49,7 +51,9 @@ def test_region_capture_ios(eyes, driver):
         "platformVersion": "9.0",
     }
 )
-@pytest.mark.test_page_url("https://applitools.com")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
+)
 def test_region_capture_android(eyes, driver):
     eyes.configure.is_simulator = True
     eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_Android")
