@@ -23,9 +23,23 @@ class TestObj(object):
         return "test_method"
 
 
+class TestObjInheritance(TestObj):
+    def test_method2(self):
+        return "test_method2"
+
+
 def test_proxy_to():
     obj = TestObj()
     assert obj.test_method() == "test_method"
     assert obj.test_var == "test_var"
     assert obj.test_var_in_proxy == "test_var_in_proxy"
     assert obj.test_method_in_proxy() == "test_method_in_proxy"
+
+
+def test_proxy_to_with_inheritance():
+    obj2 = TestObjInheritance()
+    assert obj2.test_method() == "test_method"
+    assert obj2.test_var == "test_var"
+    assert obj2.test_var_in_proxy == "test_var_in_proxy"
+    assert obj2.test_method_in_proxy() == "test_method_in_proxy"
+    assert obj2.test_method2() == "test_method2"
