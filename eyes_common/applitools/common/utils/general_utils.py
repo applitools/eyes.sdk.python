@@ -77,9 +77,6 @@ def proxy_to(proxy_obj_name, fields=None):
     Adds to decorated class __getter__ and __setter__ methods that allow to access
     attributes from proxy_object in the parent class.
 
-    :exception Decorator should be used only on highest class in hierarchy otherwise the
-    RuntimeError will happen because recursion.
-
     :param proxy_obj_name: The name of the proxy object that has decorated class.
     :param fields:
         Fields which should be accessible in parent object from the proxy object.
@@ -95,13 +92,20 @@ def proxy_to(proxy_obj_name, fields=None):
         )
         raise AttributeError("{} has not attr `{}`".format(module_with_class, name))
 
-    def __setattr__(self, key, value):
-        _fields = fields or self._proxy_to_fields or []
-        if key in _fields:
-            proxy_obj = getattr(self, proxy_obj_name)
-            setattr(proxy_obj, key, value)
-        else:
-            self.__dict__[key] = value
+    def _setattr(cls):
+        def __setattr__(self, key, value):
+            _fields = fields or self._proxy_to_fields or []
+            if key in _fields:
+                proxy_obj = getattr(self, proxy_obj_name)
+                setattr(proxy_obj, key, value)
+            elif self.__class__ is cls:
+                # if current class is the same that we've decorated
+                super(self.__class__, self).__setattr__(key, value)
+            else:
+                # to prevent recursion error if not the current class is decorated one
+                self.__dict__[key] = value
+
+        return __setattr__
 
     def __dir__(self):
         _fields = fields or self._proxy_to_fields or []
@@ -111,7 +115,7 @@ def proxy_to(proxy_obj_name, fields=None):
     def dec(cls):
         cls._proxy_to_fields = None
         cls.__getattr__ = __getattr__
-        cls.__setattr__ = __setattr__
+        cls.__setattr__ = _setattr(cls)
         cls.__dir__ = __dir__
         return cls
 
