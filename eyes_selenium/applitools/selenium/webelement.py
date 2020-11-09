@@ -15,7 +15,7 @@ from . import eyes_selenium_utils
 from .useragent import BrowserNames, OSNames
 
 if tp.TYPE_CHECKING:
-    from typing import Optional, Text, Union
+    from typing import Optional, Text, Union, Dict
 
     from appium.webdriver.webdriver import MobileWebElement
 
@@ -381,12 +381,35 @@ class MobileSafariElementAdapter(EyesWebElement):
     @property
     def location(self):
         # type: () -> Point
-        loc = Point.from_(self._element.location)  # scroll into view at this point
+        loc = Point.from_(
+            super(MobileSafariElementAdapter, self).location
+        )  # scroll into view at this point
         curr_pos = eyes_selenium_utils.get_current_position(
             self._eyes_driver,
             eyes_selenium_utils.scroll_root_element_from(self._eyes_driver),
         )
         return loc + curr_pos
+
+    @property
+    def bounding_client_rect(self):
+        # type: () -> Dict[str, int]
+        rect = super(MobileSafariElementAdapter, self).bounding_client_rect
+        x, y = self.location
+        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
+
+    @property
+    def bounds(self):
+        # type: () -> Region
+        bounds = super(MobileSafariElementAdapter, self).bounds
+        bounds.left, bounds.top = self.location
+        return bounds
+
+    @property
+    def rect(self):
+        # type: () -> Dict[str, int]
+        rect = super(MobileSafariElementAdapter, self).rect
+        x, y = self.location
+        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
 
 
 def adapt_element(eyes_element):
