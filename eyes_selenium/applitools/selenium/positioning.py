@@ -240,15 +240,13 @@ class CSSMobileSafariPositionProvider(CSSTranslatePositionProvider):
         )
 
 
-def create_position_provider(
-    driver, stitch_mode, scroll_root_element, target_element=None
-):
-    # type: (EyesWebDriver,StitchMode,EyesWebElement,EyesWebElement)->PositionProvider
+def create_position_provider(driver, stitch_mode, scroll_root_element, target_element):
+    # type: (EyesWebDriver,StitchMode,EyesWebElement,Optional[EyesWebElement])->PositionProvider
     logger.debug("initializing position provider. stitch_mode: {}".format(stitch_mode))
     if stitch_mode == StitchMode.Scroll:
         return ScrollPositionProvider(driver, scroll_root_element)
     elif stitch_mode == StitchMode.CSS:
-        if driver.user_agent.browser == BrowserNames.MobileSafari and target_element:
+        if driver.user_agent.browser == BrowserNames.MobileSafari:
             return CSSMobileSafariPositionProvider(
                 driver, scroll_root_element, target_element
             )
