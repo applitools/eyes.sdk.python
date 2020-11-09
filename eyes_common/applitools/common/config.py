@@ -376,8 +376,9 @@ class Configuration(object):
         return self
 
     def set_features(self, *features):
-        # type: (*Feature) -> None
+        # type: (*Feature) -> Self
         self.features = set(features)
+        return self
 
     def is_feature_activated(self, feature):
         # type: (Feature) -> bool
