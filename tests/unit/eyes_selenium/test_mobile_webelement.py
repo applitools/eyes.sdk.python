@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, patch
 from selenium.webdriver.remote.webelement import WebElement
 
-from applitools.common import Point, Region, CoordinatesType
+from applitools.common import CoordinatesType, Point, Region
 from applitools.selenium import Eyes
 from applitools.selenium.useragent import UserAgent
 from applitools.selenium.webelement import EyesWebElement, adapt_element

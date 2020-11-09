@@ -15,7 +15,7 @@ from . import eyes_selenium_utils
 from .useragent import BrowserNames, OSNames
 
 if tp.TYPE_CHECKING:
-    from typing import Optional, Text, Union, Dict
+    from typing import Dict, Optional, Text, Union
 
     from appium.webdriver.webdriver import MobileWebElement
 
