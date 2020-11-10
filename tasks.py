@@ -149,8 +149,14 @@ def install_packages(
     _fetch_js_libs_if_required(c, common, core, selenium, images)
 
     editable = "-e" if editable else ""
+    if sys.platform == "darwin":
+        # This is needed to find zlib when installing pillow on osx+xcode
+        xcode_sdk_path = c.run("xcrun --show-sdk-path", hide=True).stdout.strip()
+        env = {"CPATH": xcode_sdk_path + "/usr/include"}
+    else:
+        env = {}
     for pack in packages:
-        c.run("pip install -U {} {}".format(editable, pack), echo=True)
+        c.run("pip install -U {} {}".format(editable, pack), echo=True, env=env)
 
 
 @task
