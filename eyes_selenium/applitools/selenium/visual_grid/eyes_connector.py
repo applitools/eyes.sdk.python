@@ -83,9 +83,9 @@ class EyesConnector(EyesBase):
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
 
-    def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> Text
-        return self._server_connector.render_put_resource(running_render, resource)
+    def render_put_resource(self, render_id, resource):
+        # type: (Text, VGResource) -> Text
+        return self._server_connector.render_put_resource(render_id, resource)
 
     def render(self, *render_requests):
         # type: (*RenderRequest) -> List[RunningRender]
