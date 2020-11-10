@@ -18,6 +18,7 @@ from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.ultrafastgrid import (
+    JobInfo,
     RenderingInfo,
     RenderRequest,
     RenderStatusResults,
@@ -238,6 +239,7 @@ class ServerConnector(object):
     RESOURCES_SHA_256 = "/resources/sha256/"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
+    RENDERER_INFO = "/job-info"
 
     _is_session_started = False
 
@@ -592,3 +594,17 @@ class ServerConnector(object):
             locator_id: json_utils.attr_from_dict(regions, Region)
             for locator_id, regions in iteritems(response.json())
         }
+
+    def job_info(self, render_request):
+        # type: (List[RenderRequest]) -> List[JobInfo]
+        resp = self._ufg_request(
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+        )
+        resp.raise_for_status()
+        # TODO: improve parser to skip parsing of inner structures if required
+        return [
+            JobInfo(
+                renderer=d.get("renderer"), eyes_environment=d.get("eyesEnvironment")
+            )
+            for d in resp.json()
+        ]

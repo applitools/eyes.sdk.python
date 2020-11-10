@@ -11,6 +11,7 @@ from applitools.common import (
 )
 from applitools.common.ultrafastgrid import (
     IRenderBrowserInfo,
+    JobInfo,
     RenderRequest,
     RunningRender,
     VGResource,
@@ -63,6 +64,7 @@ class EyesConnector(EyesBase):
         )
         self._region_selectors = None
         self._regions = None
+        self.job_info = None  # type: Optional[JobInfo]
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -132,8 +134,16 @@ class EyesConnector(EyesBase):
         return ""
 
     @property
+    def renderer(self):
+        # type: () -> Text
+        return self.job_info.renderer
+
+    @property
     def _environment(self):
-        # type: () -> AppEnvironment
+        # type: () -> Union[AppEnvironment, Text]
+        if self.job_info:
+            return self.job_info.eyes_environment
+
         app_env = AppEnvironment(
             display_size=self.render_status.device_size,
             inferred="useragent: {}".format(self.render_status.user_agent),
