@@ -6,6 +6,7 @@ from applitools.common import (
     EyesError,
     RectangleSize,
     Region,
+    RenderInfo,
     VisualGridSelector,
     logger,
 )
@@ -27,7 +28,7 @@ from applitools.selenium import Configuration
 from applitools.selenium.__version__ import __version__
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Text
+    from typing import Any, Dict, List, Optional, Text, Union
 
     from requests import Response
 
@@ -58,7 +59,7 @@ class EyesConnector(EyesBase):
         self._server_connector = server_connector
         self._region_selectors = None
         self._regions = None
-        self.job_info = None  # type: Optional[JobInfo]
+        self._job_info = None  # type: Optional[JobInfo]
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -133,16 +134,40 @@ class EyesConnector(EyesBase):
         return self.job_info.renderer
 
     @property
+    def job_info(self):
+        # type: () ->  JobInfo
+        if self._job_info:
+            return self._job_info
+
+        render_requests = [
+            RenderRequest(
+                render_info=RenderInfo.from_(
+                    size_mode=None,
+                    region=None,
+                    selector=None,
+                    render_browser_info=self._browser_info,
+                ),
+                platform_name=self._browser_info.platform,
+                browser_name=self._browser_info.browser,
+            )
+        ]
+
+        self._job_info = self.server_connector.job_info(render_requests)[0]
+        return self._job_info
+
+    @property
     def _environment(self):
         # type: () -> Union[AppEnvironment, Text]
-        if self.job_info:
+        try:
+            app_env = AppEnvironment(
+                display_size=self.render_status.device_size,
+                inferred="useragent: {}".format(self.render_status.user_agent),
+                device_info=self.device_name,
+            )
+        except EyesError:
+            logger.debug("RenderStatus is empty. Using JobInfo instead")
             return self.job_info.eyes_environment
 
-        app_env = AppEnvironment(
-            display_size=self.render_status.device_size,
-            inferred="useragent: {}".format(self.render_status.user_agent),
-            device_info=self.device_name,
-        )
         return app_env
 
     def render_info(self):
