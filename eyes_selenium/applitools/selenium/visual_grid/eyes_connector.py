@@ -46,9 +46,7 @@ class EyesConnector(EyesBase):
         self,
         browser_info,  # type: RenderBrowserInfo
         config,  # type: Configuration
-        ua_string,  # type: Text
-        rendering_info,  # type: Optional[RenderingInfo]
-        server_connector,  # type: Optional[ServerConnector]
+        server_connector,  # type: ServerConnector
     ):
         # type: (...) -> None
         super(EyesConnector, self).__init__()
@@ -57,11 +55,7 @@ class EyesConnector(EyesBase):
         self._current_uuid = None
         self._render_statuses = {}  # type: Dict[Text, RenderStatusResults]
         self.set_configuration(config)
-        if server_connector is not None:
-            self.server_connector = server_connector
-        self.server_connector.update_config(
-            config, self.full_agent_id, rendering_info, ua_string
-        )
+        self._server_connector = server_connector
         self._region_selectors = None
         self._regions = None
         self.job_info = None  # type: Optional[JobInfo]

@@ -78,7 +78,7 @@ class VisualGridEyes(object):
         self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
-        self.server_connector = None  # type: Optional[ServerConnector]
+        self.server_connector = ServerConnector()  # type: ServerConnector
 
     @property
     def is_open(self):
@@ -122,12 +122,16 @@ class VisualGridEyes(object):
 
         self._driver = driver
         self._set_viewport_size()
+        self.server_connector.update_config(
+            self.configure,
+            self.full_agent_id,
+            ua_string=self.driver.user_agent.origin_ua_string,
+        )
+        self.server_connector.render_info()
 
         for b_info in self.configure.browsers_info:
             test = RunningTest(
-                self._create_vgeyes_connector(
-                    b_info, self._driver.user_agent.origin_ua_string
-                ),
+                self._create_vgeyes_connector(b_info),
                 self.configure.clone(),
                 b_info,
             )
@@ -172,7 +176,7 @@ class VisualGridEyes(object):
         script_result = self.get_script_result(dont_fetch_resources)
         logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
         logger.debug(
-            "Blobs urls: {}".format(list(b["url"] for b in script_result["blobs"]))
+            "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
         )
         logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
         source = eyes_selenium_utils.get_check_source(self.driver)
@@ -262,18 +266,13 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info, ua_string):
-        # type: (RenderBrowserInfo, Text) -> EyesConnector
-        vgeyes_connector = EyesConnector(
+    def _create_vgeyes_connector(self, b_info):
+        # type: (RenderBrowserInfo) -> EyesConnector
+        return EyesConnector(
             b_info,
             self.configure.clone(),
-            ua_string,
-            self.rendering_info,
             self.server_connector,
         )
-        if self.rendering_info is None:
-            self.rendering_info = vgeyes_connector.render_info()
-        return vgeyes_connector
 
     def _try_set_target_selector(self, check_settings):
         # type: (SeleniumCheckSettings) -> None
