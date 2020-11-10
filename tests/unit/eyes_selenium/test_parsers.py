@@ -48,3 +48,11 @@ def test_get_urls_from_css_resource_background_img():
     urls = parsers.get_urls_from_css_resource(content)
 
     assert urls == ["1", "2"]
+
+
+def test_get_urls_charset_rule_does_not_crash():
+    content = b'@charset "UTF-8";'
+
+    urls = parsers.get_urls_from_css_resource(content)
+
+    assert urls == []
