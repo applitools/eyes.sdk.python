@@ -49,6 +49,14 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
 __all__ = ("ServerConnector",)
 
 
+def retry(
+    delays=tuple(itertools.chain((1000,), (5000,) * 4, (10000,) * 4)),
+    exception=(EyesError, requests.ConnectionError, requests.HTTPError),
+    report=lambda *args: logger.debug,
+):
+    return datetime_utils.retry(delays, exception, report)
+
+
 @attr.s
 class ClientSession(object):
     """ A proxy to requests.Session """
@@ -372,11 +380,7 @@ class ServerConnector(object):
                 logger.error("Error uploading {}".format(media_type))
                 logger.exception(e)
 
-    @datetime_utils.retry(
-        delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
-        exception=(EyesError, requests.ConnectionError),
-        report=logger.debug,
-    )
+    @retry()
     def _upload_data(
         self, data_bytes, rendering_info, target_url, content_type, media_type
     ):
@@ -465,6 +469,13 @@ class ServerConnector(object):
             dom_bytes, "application/octet-stream", "application/json"
         )
 
+    def _ufg_request(self, method, url_resource, **kwargs):
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        full_url = urljoin(self._render_info.service_url, url_resource)
+        return self._com.request(method, full_url, headers=headers, **kwargs)
+
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
@@ -488,16 +499,8 @@ class ServerConnector(object):
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
-        url = urljoin(self._render_info.service_url, self.RENDER)
-
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-
         data = json_utils.to_json(render_requests)
-        response = self._com.request(
-            "post", url_resource=url, use_api_key=False, headers=headers, data=data
-        )
+        response = self._ufg_request("post", self.RENDER, use_api_key=False, data=data)
         if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
@@ -506,10 +509,10 @@ class ServerConnector(object):
             )
         )
 
-    def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> Text
-        argument_guard.not_none(running_render)
+    def render_put_resource(self, render_id, resource):
+        # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
+        render_id = render_id or "NONE"
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
@@ -517,22 +520,14 @@ class ServerConnector(object):
         argument_guard.not_none(content)
         logger.debug(
             "resource hash: {} url: {} render id: {}"
-            "".format(resource.hash, resource.url, running_render.render_id)
+            "".format(resource.hash, resource.url, render_id)
         )
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = resource.content_type
-        headers["X-Auth-Token"] = self._render_info.access_token
-
-        url = urljoin(
-            self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
-        )
-        response = self._com.request(
+        response = self._ufg_request(
             "put",
-            url,
+            self.RESOURCES_SHA_256 + resource.hash,
             use_api_key=False,
-            headers=headers,
             data=content,
-            params={"render-id": running_render.render_id},
+            params={"render-id": render_id},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:
@@ -543,7 +538,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
+    @retry()
     def download_resource(self, url):
         # type: (Text) -> Response
         headers = {
@@ -573,15 +568,10 @@ class ServerConnector(object):
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._com.request(
+        response = self._ufg_request(
             "post",
-            url,
+            self.RENDER_STATUS,
             use_api_key=False,
-            headers=headers,
             data=json.dumps(render_ids),
         )
         if not response.ok:
