@@ -49,7 +49,7 @@ el = parent;
 return '/' + xpath;"""
 
 
-DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
+DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
 
 
 @attr.s
