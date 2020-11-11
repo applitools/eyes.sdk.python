@@ -1,5 +1,6 @@
 import typing
 import uuid
+from copy import deepcopy
 
 import attr
 from selenium.common.exceptions import TimeoutException
@@ -278,7 +279,7 @@ class VisualGridEyes(object):
         return EyesConnector(
             b_info,
             self.configure.clone(),
-            self.server_connector,
+            deepcopy(self.server_connector),
         )
 
     def _try_set_target_selector(self, check_settings):
