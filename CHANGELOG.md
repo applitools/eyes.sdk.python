@@ -1,6 +1,8 @@
 ## [vnext]
 ### Fixed
 - Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)
+### Updated
+- Lifted pillow restriction to support python 3.9 [Trello 2303](https://trello.com/c/EcpNN2tY)
 
 ## [4.11.3] - 2020-11-03
 ### Fixed

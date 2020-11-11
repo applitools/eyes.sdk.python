@@ -40,7 +40,7 @@ if sys.version_info[:2] <= (2, 7):
     install_requires.append("Appium-Python-Client>=0.4,<1.0.0")
     install_requires.append("tinycss2==0.6.1")
 else:
-    install_requires.append("Pillow >= 5.0.0,<8")
+    install_requires.append("Pillow >= 5.0.0")
     install_requires.append("Appium-Python-Client>=0.4,<2")
     install_requires.append("tinycss2>=0.6.1,<1.1.0")
 
