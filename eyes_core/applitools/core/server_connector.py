@@ -471,6 +471,13 @@ class ServerConnector(object):
             dom_bytes, "application/octet-stream", "application/json"
         )
 
+    def _ufg_request(self, method, url_resource, **kwargs):
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        full_url = urljoin(self._render_info.service_url, url_resource)
+        return self._com.request(method, full_url, headers=headers, **kwargs)
+
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")

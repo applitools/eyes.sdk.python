@@ -207,8 +207,10 @@ class VisualGridEyes(object):
         except Exception as e:
             logger.exception(e)
             for test in running_tests:
-                test.abort()
-                test.becomes_tested()
+                if test.state != "tested":
+                    # already aborted or closed
+                    test.abort()
+                    test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
 
     def close_async(self):
