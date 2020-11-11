@@ -265,7 +265,7 @@ class RenderRequest(object):
         default=None,
     )  # type: Text
     script_hooks = attr.ib(
-        default=dict, metadata={JsonInclude.NON_NONE: True}
+        factory=dict, metadata={JsonInclude.NON_NONE: True}
     )  # type: Dict
     selectors_to_find_regions_for = attr.ib(
         factory=list, metadata={JsonInclude.THIS: True}
