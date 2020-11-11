@@ -668,5 +668,5 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
     @property
     def _original_scroll_position(self):
         if self._selenium_eyes:
-            return self._selenium_eyes._original_scroll_position
+            return self._selenium_eyes._position_memento.position
         return None

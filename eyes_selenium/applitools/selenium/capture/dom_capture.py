@@ -254,7 +254,7 @@ def _process_raw_css_node(node, minimize_css=True):
     return "".join(iterate_css_sub_nodes(node))
 
 
-def _parse_and_serialize_css(node, text, minimize=False):
+def _parse_and_serialize_css(node, text, minimize=False):  # noqa
     # type: (CssNode, Text, bool) -> Generator
     def is_import_node(n):
         return n.type == "at-rule" and n.lower_at_keyword == "import"
@@ -269,9 +269,15 @@ def _parse_and_serialize_css(node, text, minimize=False):
                     logger.debug("The node has import")
                     yield CssNode.create_sub_node(parent_node=node, href=tag.value)
             continue
-
+        if getattr(style_node, "kind", None) == "invalid":
+            logger.warning(
+                "Cannot serialize item: {}, ParseError: {}".format(
+                    style_node, style_node.message
+                )
+            )
+            continue
         try:
-            if minimize and style_node.content:
+            if minimize and style_node and style_node.content:
                 try:
                     # remove whitespaces inside blocks
                     style_node.content = [

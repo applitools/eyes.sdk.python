@@ -103,6 +103,8 @@ def driver(request, browser_config, webdriver_module):
     test_name = request.node.name
     test_page_url = request.node.get_closest_marker("test_page_url")
     test_page_url = test_page_url.args[-1] if test_page_url else None
+    capabilities = request.node.get_closest_marker("capabilities")
+    capabilities = capabilities.kwargs if capabilities else {}
 
     force_remote = bool(os.getenv("TEST_REMOTE", False))
     if "appiumVersion" in browser_config:
@@ -121,6 +123,7 @@ def driver(request, browser_config, webdriver_module):
         desired_caps = browser_config.copy()
         desired_caps["build"] = os.getenv("BUILD_TAG", None)
         desired_caps["tunnelIdentifier"] = os.getenv("TUNNEL_IDENTIFIER", None)
+        desired_caps.update(capabilities)
         desired_caps["name"] = test_name
 
         browser = open_webdriver(
@@ -271,9 +274,9 @@ SUPPORTED_PLATFORMS = [
         browsers=COMMON_BROWSERS + [("safari", "latest")],
         extra=None,
     ),
-    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.13.0"}),
+    Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.17.1"}),
     Platform(
-        name="Android", version="", browsers=[], extra={"appiumVersion": "1.13.0"}
+        name="Android", version="", browsers=[], extra={"appiumVersion": "1.17.1"}
     ),
 ]
 SUPPORTED_PLATFORMS_DICT = {

@@ -4,18 +4,19 @@ import typing
 
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import Point, logger
+from applitools.common import EyesError, Point, StitchMode, logger
 from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
+from .useragent import BrowserNames, OSNames
 
 if typing.TYPE_CHECKING:
     from typing import Optional
 
     from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
 
-    from . import EyesWebDriver
+    from . import EyesWebDriver, EyesWebElement
 
 
 class SeleniumPositionProvider(PositionProvider):
@@ -211,3 +212,47 @@ class ElementPositionProvider(SeleniumPositionProvider):
             raise WebDriverException("Failed to extract entire size! \n {}".format(e))
         logger.debug("ElementPositionProvider - Entire size: {}".format(size))
         return RectangleSize(**size)
+
+
+class CSSMobileSafariPositionProvider(CSSTranslatePositionProvider):
+    def __init__(self, driver, scroll_root_element, target_element):
+        # type: (EyesWebDriver, AnyWebElement, EyesWebElement) -> None
+        super(CSSMobileSafariPositionProvider, self).__init__(
+            driver, scroll_root_element
+        )
+        self._element = target_element
+
+    def set_position(self, location):
+        if self._element:
+            element_location = self._element.location  # scroll to element
+            if Point.from_(location) == element_location:
+                # hide header which hides actual element
+                self._driver.execute_script(
+                    "arguments[0].style.transform='translate(0px,0px)';",
+                    self._scroll_root_element,
+                )
+                return Point.from_(element_location)
+        return super(CSSMobileSafariPositionProvider, self).set_position(location)
+
+    def get_current_position(self):
+        return eyes_selenium_utils.get_current_position(
+            self._driver, self._scroll_root_element
+        )
+
+
+def create_position_provider(driver, stitch_mode, scroll_root_element, target_element):
+    # type: (EyesWebDriver,StitchMode,EyesWebElement,Optional[EyesWebElement])->PositionProvider
+    logger.debug("initializing position provider. stitch_mode: {}".format(stitch_mode))
+    if stitch_mode == StitchMode.Scroll:
+        return ScrollPositionProvider(driver, scroll_root_element)
+    elif stitch_mode == StitchMode.CSS:
+        if (
+            driver.user_agent.os == OSNames.IOS
+            and driver.user_agent.browser == BrowserNames.MobileSafari
+        ):
+            return CSSMobileSafariPositionProvider(
+                driver, scroll_root_element, target_element
+            )
+        return CSSTranslatePositionProvider(driver, scroll_root_element)
+    else:
+        raise EyesError("Wrong sitch_mode")

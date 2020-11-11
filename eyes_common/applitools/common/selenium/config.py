@@ -36,6 +36,8 @@ class Configuration(ConfigurationBase):
     stitch_mode = attr.ib(default=StitchMode.Scroll)  # type: StitchMode
     hide_scrollbars = attr.ib(default=False)  # type: bool
     hide_caret = attr.ib(default=False)  # type: bool
+    # Indicates that a mobile simulator is being used
+    is_simulator = attr.ib(default=None)  # type: Optional[bool]
 
     # Rendering Configuration
     _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]

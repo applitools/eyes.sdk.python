@@ -1,3 +1,7 @@
+## [vnext]
+### Fixed
+- Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)
+
 ## [4.11.3] - 2020-11-03
 ### Fixed
 - Native app error message on eyes.open [Trello 2291](https://trello.com/c/zS2Khlqq)
