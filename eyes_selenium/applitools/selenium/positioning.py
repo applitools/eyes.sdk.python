@@ -9,7 +9,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
-from .useragent import BrowserNames
+from .useragent import BrowserNames, OSNames
 
 if typing.TYPE_CHECKING:
     from typing import Optional
@@ -246,7 +246,10 @@ def create_position_provider(driver, stitch_mode, scroll_root_element, target_el
     if stitch_mode == StitchMode.Scroll:
         return ScrollPositionProvider(driver, scroll_root_element)
     elif stitch_mode == StitchMode.CSS:
-        if driver.user_agent.browser == BrowserNames.MobileSafari:
+        if (
+            driver.user_agent.os == OSNames.IOS
+            and driver.user_agent.browser == BrowserNames.MobileSafari
+        ):
             return CSSMobileSafariPositionProvider(
                 driver, scroll_root_element, target_element
             )
