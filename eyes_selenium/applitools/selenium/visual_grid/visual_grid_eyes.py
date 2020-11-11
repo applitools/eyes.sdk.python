@@ -1,8 +1,9 @@
 import typing
 import uuid
-from copy import copy
+from copy import deepcopy
 
 import attr
+from selenium.common.exceptions import TimeoutException
 
 from applitools.common import EyesError, TestResults, logger
 from applitools.common.ultrafastgrid import (
@@ -10,7 +11,7 @@ from applitools.common.ultrafastgrid import (
     RenderBrowserInfo,
     VisualGridSelector,
 )
-from applitools.common.utils import argument_guard
+from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import __version__, eyes_selenium_utils
@@ -49,7 +50,7 @@ el = parent;
 return '/' + xpath;"""
 
 
-DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
+DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
 
 
 @attr.s
@@ -78,7 +79,7 @@ class VisualGridEyes(object):
         self.vg_manager = runner  # type: VisualGridRunner
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
-        self.server_connector = None  # type: Optional[ServerConnector]
+        self.server_connector = ServerConnector()  # type: ServerConnector
 
     @property
     def is_open(self):
@@ -122,12 +123,16 @@ class VisualGridEyes(object):
 
         self._driver = driver
         self._set_viewport_size()
+        self.server_connector.update_config(
+            self.configure,
+            self.full_agent_id,
+            ua_string=self.driver.user_agent.origin_ua_string,
+        )
+        self.server_connector.render_info()
 
         for b_info in self.configure.browsers_info:
             test = RunningTest(
-                self._create_vgeyes_connector(
-                    b_info, self._driver.user_agent.origin_ua_string
-                ),
+                self._create_vgeyes_connector(b_info),
                 self.configure.clone(),
                 b_info,
             )
@@ -139,9 +144,12 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
+    @datetime_utils.retry(exception=(TimeoutException, EyesError), report=logger.debug)
     def get_script_result(self, dont_fetch_resources):
         # type: (bool) -> Dict
-        logger.debug("get_script_result()")
+        logger.debug(
+            "get_script_result(dont_fetch_resources={})".format(dont_fetch_resources)
+        )
         try:
             return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
@@ -169,17 +177,21 @@ class VisualGridEyes(object):
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
-        script_result = self.get_script_result(dont_fetch_resources)
-        logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
-        logger.debug(
-            "Blobs urls: {}".format(list(b["url"] for b in script_result["blobs"]))
-        )
-        logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
-        source = eyes_selenium_utils.get_check_source(self.driver)
+        running_tests = [
+            test for test in self.test_list if self._test_uuid == test.test_uuid
+        ]
+
         try:
-            for test in self.test_list:
-                if self._test_uuid != test.test_uuid:
-                    continue
+            script_result = self.get_script_result(dont_fetch_resources)
+
+            logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
+            logger.debug(
+                "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
+            )
+            logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
+            source = eyes_selenium_utils.get_check_source(self.driver)
+
+            for test in running_tests:
                 test.check(
                     tag=name,
                     check_settings=check_settings,
@@ -194,9 +206,11 @@ class VisualGridEyes(object):
                     test.becomes_not_rendered()
         except Exception as e:
             logger.exception(e)
-            self.abort()
-            for test in self.test_list:
-                test.becomes_tested()
+            for test in running_tests:
+                if test.state != "tested":
+                    # already aborted or closed
+                    test.abort()
+                    test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
 
     def close_async(self):
@@ -262,18 +276,13 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info, ua_string):
-        # type: (RenderBrowserInfo, Text) -> EyesConnector
-        vgeyes_connector = EyesConnector(
+    def _create_vgeyes_connector(self, b_info):
+        # type: (RenderBrowserInfo) -> EyesConnector
+        return EyesConnector(
             b_info,
             self.configure.clone(),
-            ua_string,
-            self.rendering_info,
-            self.server_connector,
+            deepcopy(self.server_connector),
         )
-        if self.rendering_info is None:
-            self.rendering_info = vgeyes_connector.render_info()
-        return vgeyes_connector
 
     def _try_set_target_selector(self, check_settings):
         # type: (SeleniumCheckSettings) -> None
@@ -367,9 +376,7 @@ class VisualGridEyes(object):
 
         if viewport_size is None:
             for render_bi in self.configure.browsers_info:
-                if isinstance(render_bi, DesktopBrowserInfo) or isinstance(
-                    render_bi, RenderBrowserInfo
-                ):
+                if isinstance(render_bi, (DesktopBrowserInfo, RenderBrowserInfo)):
                     viewport_size = render_bi.viewport_size
                     break
 

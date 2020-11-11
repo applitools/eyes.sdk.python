@@ -77,7 +77,7 @@ class RenderTask(VGTask):
                 )
             )
             resource = self.full_request_resources.get(url)
-            self.eyes_connector.render_put_resource(running_render, resource)
+            self.eyes_connector.render_put_resource(running_render.render_id, resource)
             return resource
 
         requests = self.prepare_data_for_rg(self.script)
@@ -130,7 +130,7 @@ class RenderTask(VGTask):
 
                 if need_more_dom:
                     self.eyes_connector.render_put_resource(
-                        running_render, dom_resource
+                        running_render.render_id, dom_resource
                     )
             still_running = (
                 need_more_resources

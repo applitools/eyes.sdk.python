@@ -443,28 +443,25 @@ class EyesBase(
         if self.configure.is_disabled:
             logger.debug("abort(): ignored (disabled)")
             return
-        try:
-            self._reset_last_screenshot()
+        self._reset_last_screenshot()
 
-            if self._running_session:
-                results_url = self._running_session.url
+        if self._running_session:
+            results_url = self._running_session.url
 
-                logger.debug("abort(): Aborting session...")
-                try:
-                    logger.info(
-                        "--- Test aborted. \n\tSee details at {}".format(results_url)
-                    )
-                    results = self._server_connector.stop_session(
-                        self._running_session, True, False
-                    )
-                    results.url = results_url
-                    return results
-                except EyesError as e:
-                    logger.info("Failed to abort server session: %s " % e)
-                finally:
-                    self._running_session = None
-        finally:
-            logger.close()
+            logger.debug("abort(): Aborting session...")
+            try:
+                logger.info(
+                    "--- Test aborted. \n\tSee details at {}".format(results_url)
+                )
+                results = self._server_connector.stop_session(
+                    self._running_session, True, False
+                )
+                results.url = results_url
+                return results
+            except EyesError as e:
+                logger.info("Failed to abort server session: %s " % e)
+            finally:
+                self._running_session = None
 
     def abort_if_not_closed(self):
         logger.deprecation("Use `abort()` instead")

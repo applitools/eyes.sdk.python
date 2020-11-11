@@ -18,6 +18,7 @@ from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
 from applitools.common.ultrafastgrid import (
+    JobInfo,
     RenderingInfo,
     RenderRequest,
     RenderStatusResults,
@@ -47,6 +48,14 @@ if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
     urllib3.disable_warnings()
 
 __all__ = ("ServerConnector",)
+
+
+def retry(
+    delays=tuple(itertools.chain((1000,), (5000,) * 4, (10000,) * 4)),
+    exception=(EyesError, requests.ConnectionError, requests.HTTPError),
+    report=lambda *args: logger.debug,
+):
+    return datetime_utils.retry(delays, exception, report)
 
 
 @attr.s
@@ -230,6 +239,7 @@ class ServerConnector(object):
     RESOURCES_SHA_256 = "/resources/sha256/"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
+    RENDERER_INFO = "/job-info"
 
     _is_session_started = False
 
@@ -372,11 +382,7 @@ class ServerConnector(object):
                 logger.error("Error uploading {}".format(media_type))
                 logger.exception(e)
 
-    @datetime_utils.retry(
-        delays=itertools.chain((1000,), (5000,) * 4, (10000,) * 4),
-        exception=(EyesError, requests.ConnectionError),
-        report=logger.debug,
-    )
+    @retry()
     def _upload_data(
         self, data_bytes, rendering_info, target_url, content_type, media_type
     ):
@@ -465,6 +471,13 @@ class ServerConnector(object):
             dom_bytes, "application/octet-stream", "application/json"
         )
 
+    def _ufg_request(self, method, url_resource, **kwargs):
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        full_url = urljoin(self._render_info.service_url, url_resource)
+        return self._com.request(method, full_url, headers=headers, **kwargs)
+
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
@@ -506,10 +519,10 @@ class ServerConnector(object):
             )
         )
 
-    def render_put_resource(self, running_render, resource):
-        # type: (RunningRender, VGResource) -> Text
-        argument_guard.not_none(running_render)
+    def render_put_resource(self, render_id, resource):
+        # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
+        render_id = render_id or "NONE"
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
@@ -517,7 +530,7 @@ class ServerConnector(object):
         argument_guard.not_none(content)
         logger.debug(
             "resource hash: {} url: {} render id: {}"
-            "".format(resource.hash, resource.url, running_render.render_id)
+            "".format(resource.hash, resource.url, render_id)
         )
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = resource.content_type
@@ -532,7 +545,7 @@ class ServerConnector(object):
             use_api_key=False,
             headers=headers,
             data=content,
-            params={"render-id": running_render.render_id},
+            params={"render-id": render_id},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:
@@ -543,7 +556,7 @@ class ServerConnector(object):
             )
         return resource.hash
 
-    @datetime_utils.retry(delays=(0.5, 1, 10), report=logger.debug)
+    @retry()
     def download_resource(self, url):
         # type: (Text) -> Response
         headers = {
@@ -593,6 +606,7 @@ class ServerConnector(object):
         # TODO: improve parser to handle similar names
         return json_utils.attr_from_response(response, RenderStatusResults)
 
+    @retry()
     def post_locators(self, visual_locators_data):
         # type: (VisualLocatorsData) -> LOCATORS_TYPE
         data = json_utils.to_json(visual_locators_data)
@@ -602,3 +616,18 @@ class ServerConnector(object):
             locator_id: json_utils.attr_from_dict(regions, Region)
             for locator_id, regions in iteritems(response.json())
         }
+
+    @retry()
+    def job_info(self, render_request):
+        # type: (List[RenderRequest]) -> List[JobInfo]
+        resp = self._ufg_request(
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+        )
+        resp.raise_for_status()
+        # TODO: improve parser to skip parsing of inner structures if required
+        return [
+            JobInfo(
+                renderer=d.get("renderer"), eyes_environment=d.get("eyesEnvironment")
+            )
+            for d in resp.json()
+        ]

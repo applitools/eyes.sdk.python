@@ -34,6 +34,7 @@ __all__ = (
     "VGResource",
     "RenderRequest",
     "RenderStatusResults",
+    "JobInfo",
 )
 
 
@@ -240,19 +241,31 @@ class VGResource(object):
         )
 
 
-@attr.s
+@attr.s(hash=True)
 class RenderRequest(object):
-    webhook = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    agent_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    url = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    stitching_service = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    dom = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: RGridDom
-    resources = attr.ib(repr=False, metadata={JsonInclude.NON_NONE: True})  # type: dict
-    render_info = attr.ib(metadata={JsonInclude.THIS: True})  # type: RenderInfo
-    platform_name = attr.ib()  # type: Text
-    browser_name = attr.ib()  # type: Text
+    webhook = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})  # type: Text
+    agent_id = attr.ib(default=None, metadata={JsonInclude.THIS: True})  # type: Text
+    url = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})  # type: Text
+    stitching_service = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Text
+    dom = attr.ib(
+        repr=False, default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: RGridDom
+    resources = attr.ib(
+        repr=False, default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: dict
+    render_info = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: RenderInfo
+    platform_name = attr.ib(
+        default=None,
+    )  # type: Text
+    browser_name = attr.ib(
+        default=None,
+    )  # type: Text
     script_hooks = attr.ib(
-        default=dict, metadata={JsonInclude.NON_NONE: True}
+        factory=dict, metadata={JsonInclude.NON_NONE: True}
     )  # type: Dict
     selectors_to_find_regions_for = attr.ib(
         factory=list, metadata={JsonInclude.THIS: True}
@@ -271,6 +284,9 @@ class RenderRequest(object):
     options = attr.ib(
         factory=dict, metadata={JsonInclude.THIS: True}
     )  # type: Dict[str, Any]
+    renderer = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
 
     def __attrs_post_init__(self):
         if self.browser_name is None:
@@ -344,3 +360,9 @@ class RenderStatusResults(object):
         converter=attr.converters.optional(RectangleSize.from_),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]
+
+
+@attr.s
+class JobInfo(object):
+    renderer = attr.ib(default="", metadata={JsonInclude.THIS: True})
+    eyes_environment = attr.ib(default="", type=dict, metadata={JsonInclude.THIS: True})

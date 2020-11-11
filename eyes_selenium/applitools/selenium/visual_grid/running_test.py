@@ -378,7 +378,7 @@ class RunningTest(object):
             logger.debug("abort_task_succeeded: task.uuid: {}".format(abort_task.uuid))
             self.test_result = test_result
             if callable(self.on_results):
-                self.on_results(test_result)
+                self.on_results(test=self, test_result=test_result)
 
         def abort_task_completed():
             # type: () -> None
