@@ -613,11 +613,9 @@ class ServerConnector(object):
     @retry()
     def job_info(self, render_request):
         # type: (List[RenderRequest]) -> List[JobInfo]
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-        url = urljoin(self._render_info.service_url, self.RENDERER_INFO)
-        resp = self._com.request("post", url, data=json_utils.to_json(render_request))
+        resp = self._ufg_request(
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+        )
         resp.raise_for_status()
         # TODO: improve parser to skip parsing of inner structures if required
         return [
