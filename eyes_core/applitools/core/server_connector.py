@@ -585,6 +585,7 @@ class ServerConnector(object):
         # TODO: improve parser to handle similar names
         return json_utils.attr_from_response(response, RenderStatusResults)
 
+    @retry()
     def post_locators(self, visual_locators_data):
         # type: (VisualLocatorsData) -> LOCATORS_TYPE
         data = json_utils.to_json(visual_locators_data)
@@ -595,6 +596,7 @@ class ServerConnector(object):
             for locator_id, regions in iteritems(response.json())
         }
 
+    @retry()
     def job_info(self, render_request):
         # type: (List[RenderRequest]) -> List[JobInfo]
         resp = self._ufg_request(
