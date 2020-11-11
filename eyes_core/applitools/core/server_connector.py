@@ -471,13 +471,6 @@ class ServerConnector(object):
             dom_bytes, "application/octet-stream", "application/json"
         )
 
-    def _ufg_request(self, method, url_resource, **kwargs):
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-        full_url = urljoin(self._render_info.service_url, url_resource)
-        return self._com.request(method, full_url, headers=headers, **kwargs)
-
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
@@ -501,8 +494,16 @@ class ServerConnector(object):
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
+        url = urljoin(self._render_info.service_url, self.RENDER)
+
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+
         data = json_utils.to_json(render_requests)
-        response = self._ufg_request("post", self.RENDER, use_api_key=False, data=data)
+        response = self._com.request(
+            "post", url_resource=url, use_api_key=False, headers=headers, data=data
+        )
         if response.ok or response.status_code == requests.codes.not_found:
             return json_utils.attr_from_response(response, RunningRender)
         raise EyesError(
@@ -524,10 +525,18 @@ class ServerConnector(object):
             "resource hash: {} url: {} render id: {}"
             "".format(resource.hash, resource.url, render_id)
         )
-        response = self._ufg_request(
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = resource.content_type
+        headers["X-Auth-Token"] = self._render_info.access_token
+
+        url = urljoin(
+            self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
+        )
+        response = self._com.request(
             "put",
-            self.RESOURCES_SHA_256 + resource.hash,
+            url,
             use_api_key=False,
+            headers=headers,
             data=content,
             params={"render-id": render_id},
         )
@@ -570,10 +579,15 @@ class ServerConnector(object):
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
-        response = self._ufg_request(
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
+        response = self._com.request(
             "post",
-            self.RENDER_STATUS,
+            url,
             use_api_key=False,
+            headers=headers,
             data=json.dumps(render_ids),
         )
         if not response.ok:
@@ -599,9 +613,11 @@ class ServerConnector(object):
     @retry()
     def job_info(self, render_request):
         # type: (List[RenderRequest]) -> List[JobInfo]
-        resp = self._ufg_request(
-            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
-        )
+        headers = ServerConnector.DEFAULT_HEADERS.copy()
+        headers["Content-Type"] = "application/json"
+        headers["X-Auth-Token"] = self._render_info.access_token
+        url = urljoin(self._render_info.service_url, self.RENDERER_INFO)
+        resp = self._com.request("post", url, data=json_utils.to_json(render_request))
         resp.raise_for_status()
         # TODO: improve parser to skip parsing of inner structures if required
         return [
