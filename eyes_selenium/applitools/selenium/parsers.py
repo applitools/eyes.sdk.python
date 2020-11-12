@@ -21,10 +21,7 @@ def _url_from_tags(tags, url_tag_types):
 def get_urls_from_css_resource(bytes_text):
     # type: (bytes) -> List[Text]
     def is_import_node(n):
-        return n.type == "at-rule" and n.lower_at_keyword == "import"
-
-    def is_font_node(n):
-        return n.type == "at-rule" and n.lower_at_keyword == "font-face"
+        return n.prelude and n.type == "at-rule" and n.lower_at_keyword == "import"
 
     try:
         rules, encoding = tinycss2.parse_stylesheet_bytes(
@@ -36,13 +33,11 @@ def get_urls_from_css_resource(bytes_text):
     urls = []
     for rule in rules:
         if is_import_node(rule):
-            logger.debug("The node has @import")
             extracted = _url_from_tags(rule.prelude, ("url", "string"))
-        elif is_font_node(rule):
-            logger.debug("The node has @font-face")
+        elif rule.content:
             extracted = _url_from_tags(rule.content, ("url",))
         else:
-            extracted = _url_from_tags(rule.content, ("url",))
+            continue
         urls.extend(list(extracted))
     return urls
 

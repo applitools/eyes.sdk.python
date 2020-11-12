@@ -1,9 +1,11 @@
 import itertools
 import typing
 import uuid
+from copy import deepcopy
 from collections import Generator
 
 import attr
+from selenium.common.exceptions import TimeoutException
 
 from applitools.common import EyesError, TestResults, logger
 from applitools.common.ultrafastgrid import (
@@ -14,7 +16,7 @@ from applitools.common.ultrafastgrid import (
     RenderRequest,
     VisualGridSelector,
 )
-from applitools.common.utils import argument_guard
+from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import __version__, eyes_selenium_utils
@@ -55,7 +57,7 @@ el = parent;
 return '/' + xpath;"""
 
 
-DOM_EXTRACTION_TIMEOUT = 5 * 60 * 1000
+DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
 
 
 @attr.s
@@ -148,15 +150,18 @@ class VisualGridEyes(object):
 
         self._driver = driver
         self._set_viewport_size()
-        self.server_connector.update_config(self.configure, self.full_agent_id)
+        self.server_connector.update_config(
+            self.configure,
+            self.full_agent_id,
+            ua_string=self.driver.user_agent.origin_ua_string,
+        )
         self.server_connector.render_info()
+
         for browser_info, job_info in self._job_info_for_browser_info(
             self.configure.browsers_info
         ):
             test = RunningTest(
-                self._create_vgeyes_connector(
-                    browser_info, self._driver.user_agent.origin_ua_string, job_info
-                ),
+                self._create_vgeyes_connector(browser_info, job_info),
                 self.configure.clone(),
                 browser_info,
             )
@@ -168,9 +173,12 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
+    @datetime_utils.retry(exception=(TimeoutException, EyesError), report=logger.debug)
     def get_script_result(self, dont_fetch_resources):
         # type: (bool) -> Dict
-        logger.debug("get_script_result()")
+        logger.debug(
+            "get_script_result(dont_fetch_resources={})".format(dont_fetch_resources)
+        )
         try:
             return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
@@ -207,51 +215,53 @@ class VisualGridEyes(object):
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
-        script_result = self.get_script_result(dont_fetch_resources)
-        logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
-        logger.debug(
-            "Blobs urls: {}".format(list(b["url"] for b in script_result["blobs"]))
-        )
-        logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
-        source = eyes_selenium_utils.get_check_source(self.driver)
         tag = check_settings.values.name
         short_description = "{} of {}".format(
             self.configure.test_name, self.configure.app_name
         )
-        running_tests = [t for t in self.test_list if self._test_uuid == t.test_uuid]
+        source = eyes_selenium_utils.get_check_source(self.driver)
 
-        self.server_connector.update_config(self.configure, self.full_agent_id)
+        running_tests = [
+            test for test in self.test_list if self._test_uuid == test.test_uuid
+        ]
 
-        resource_collection_task = ResourceCollectionTask(
-            name="VisualGridEyes.check-resource_collection {} - {}".format(
-                short_description, tag
-            ),
-            script=script_result,
-            resource_cache=self.vg_manager.resource_cache,
-            put_cache=self.vg_manager.put_cache,
-            rendering_info=self.server_connector.render_info(),
-            server_connector=self.server_connector,
-            region_selectors=region_xpaths,
-            size_mode=check_settings.values.size_mode,
-            region_to_check=check_settings.values.target_region,
-            script_hooks=check_settings.values.script_hooks,
-            agent_id=self.base_agent_id,
-            selector=check_settings.values.selector,
-            running_tests=running_tests,
-            request_options=self._options_dict(
-                self.configure.visual_grid_options,
-                check_settings.values.visual_grid_options,
-            ),
-        )
+        try:
+            script_result = self.get_script_result(dont_fetch_resources)
 
-        def collected_task(render_requests):
-            # render_task = RenderTask(
-            #     name="RunningTest.render {} - {}".format(short_description, tag),
-            #     server_connector=self.server_connector,
-            #     render_requests=render_requests,
-            #     running_tests=running_tests,
-            # )
-            try:
+            logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
+            logger.debug(
+                "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
+            )
+            logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
+            resource_collection_task = ResourceCollectionTask(
+                name="VisualGridEyes.check-resource_collection {} - {}".format(
+                    short_description, tag
+                ),
+                script=script_result,
+                resource_cache=self.vg_manager.resource_cache,
+                put_cache=self.vg_manager.put_cache,
+                rendering_info=self.server_connector.render_info(),
+                server_connector=self.server_connector,
+                region_selectors=region_xpaths,
+                size_mode=check_settings.values.size_mode,
+                region_to_check=check_settings.values.target_region,
+                script_hooks=check_settings.values.script_hooks,
+                agent_id=self.base_agent_id,
+                selector=check_settings.values.selector,
+                running_tests=running_tests,
+                request_options=self._options_dict(
+                    self.configure.visual_grid_options,
+                    check_settings.values.visual_grid_options,
+                ),
+            )
+
+            def collected_task(render_requests):
+                # render_task = RenderTask(
+                #     name="RunningTest.render {} - {}".format(short_description, tag),
+                #     server_connector=self.server_connector,
+                #     render_requests=render_requests,
+                #     running_tests=running_tests,
+                # )
                 for test in running_tests:
                     test.check(
                         check_settings=check_settings,
@@ -260,18 +270,18 @@ class VisualGridEyes(object):
                         render_request=render_requests[test],
                         source=source,
                     )
-                    # TODO: move it to eyes.open
                     if test.state == "new":
                         test.becomes_not_opened()
-            except Exception as e:
-                logger.exception(e)
-                self.abort()
-                for test in self.test_list:
+
+            resource_collection_task.on_task_succeeded(collected_task)
+            resource_collection_task()
+        except Exception as e:
+            logger.exception(e)
+            for test in running_tests:
+                if test.state != "tested":
+                    # already aborted or closed
+                    test.abort()
                     test.becomes_tested()
-
-        resource_collection_task.on_task_succeeded(collected_task)
-        resource_collection_task()
-
         logger.info("added check tasks  {}".format(check_settings))
 
     def close_async(self):
@@ -337,13 +347,10 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info, ua_string, job_info):
-        # type: (RenderBrowserInfo, Text, JobInfo) -> EyesConnector
-        if self.rendering_info is None:
-            self.rendering_info = self.server_connector.render_info()
-
+    def _create_vgeyes_connector(self, b_info, job_info):
+        # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
         return EyesConnector(
-            b_info, self.configure.clone(), ua_string, self.rendering_info, job_info
+            b_info, self.configure.clone(), deepcopy(self.server_connector), job_info
         )
 
     def _try_set_target_selector(self, check_settings):
@@ -438,9 +445,7 @@ class VisualGridEyes(object):
 
         if viewport_size is None:
             for render_bi in self.configure.browsers_info:
-                if isinstance(render_bi, DesktopBrowserInfo) or isinstance(
-                    render_bi, RenderBrowserInfo
-                ):
+                if isinstance(render_bi, (DesktopBrowserInfo, RenderBrowserInfo)):
                     viewport_size = render_bi.viewport_size
                     break
 

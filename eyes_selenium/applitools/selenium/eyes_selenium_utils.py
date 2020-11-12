@@ -42,8 +42,8 @@ __all__ = (
     "hide_scrollbars",
     "set_overflow",
     "parse_location_string",
-    "get_cur_position_provider",
     "get_updated_scroll_position",
+    "curr_frame_scroll_root_element",
 )
 
 _NATIVE_APP = "NATIVE_APP"
@@ -522,15 +522,6 @@ def curr_frame_scroll_root_element(driver, scroll_root_element=None):
         else:
             root_element = driver.find_element_by_tag_name("html")
     return root_element
-
-
-def get_cur_position_provider(driver):
-    # type: (EyesWebDriver) -> SeleniumPositionProvider
-    cur_frame_position_provider = driver.eyes.current_frame_position_provider
-    if cur_frame_position_provider:
-        return cur_frame_position_provider
-    else:
-        return driver.eyes.position_provider
 
 
 def get_updated_scroll_position(position_provider):

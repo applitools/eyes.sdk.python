@@ -25,8 +25,8 @@ Please check the applitools website for usage instructions:
 
 .. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
-.. |Build Status| image:: https://travis-ci.org/applitools/eyes.sdk.python.svg?branch=v4.11.3
-   :target: https://travis-ci.org/applitools/eyes.sdk.python
+.. |Build Status| image:: https://travis-ci.com/applitools/eyes.sdk.python.svg?branch=v4.11.4
+   :target: https://travis-ci.com/applitools/eyes.sdk.python
 
 
 Development
