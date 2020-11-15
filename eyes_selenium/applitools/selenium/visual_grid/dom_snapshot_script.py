@@ -200,10 +200,13 @@ def create_dom_snapshot_loop(
         if time.time() > deadline:
             raise DomSnapshotTimeout(timeout_ms)
         result = script.poll_result(chunk_byte_length)
-        if result.status is ProcessPageStatus.SUCCESS_CHUNKED:
+        if result.status is ProcessPageStatus.WIP:
+            datetime_utils.sleep(
+                poll_interval_ms, "Waiting for the end of DOM extraction"
+            )
+        elif result.status is ProcessPageStatus.SUCCESS_CHUNKED:
             logger.info("Snapshot chunk {}, {}B".format(len(chunks), len(result.value)))
             chunks.append(result.value)
-        datetime_utils.sleep(poll_interval_ms, "Waiting for the end of DOM extraction")
     if result.status is ProcessPageStatus.SUCCESS:
         return result.value
     elif result.status.SUCCESS_CHUNKED and result.done:
