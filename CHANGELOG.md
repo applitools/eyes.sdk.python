@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Dom Snapshot Timeout exceptions on heavy pages [Trello 2227](https://trello.com/c/2AjLHPFw)
+
 ## [4.11.4] - 2020-11-11
 ### Fixed
 - Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)
