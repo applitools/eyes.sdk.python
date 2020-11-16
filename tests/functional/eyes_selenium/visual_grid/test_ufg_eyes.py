@@ -1,5 +1,6 @@
 import pytest
 
+from applitools.common import Region
 from applitools.selenium import Eyes, Target, VisualGridRunner
 from applitools.selenium.visual_grid import VisualGridEyes, dom_snapshot_script
 
@@ -61,3 +62,21 @@ def test_fetch_deep_css_chain(driver, vg_runner, target):
 
     eyes.close()
     vg_runner.get_all_test_results()
+
+
+def test_layout_regions_passed_to_match_window_request(
+    driver, fake_connector_class, vg_runner, spy
+):
+    eyes = Eyes(vg_runner)
+    match_window_spy = spy(fake_connector_class, "match_window")
+    eyes.server_connector = fake_connector_class()
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+    eyes.open(driver, "Test Visual Grid", "Test regions are passed to render request")
+
+    eyes.check(Target.window().fully().layout(Region(1, 2, 3, 4)))
+    eyes.close_async()
+    vg_runner.get_all_test_results()
+    ims = match_window_spy.call_args.args[2].options.image_match_settings
+
+    assert match_window_spy.call_count == 1
+    assert ims.layout_regions == [Region(1, 2, 3, 4)]
