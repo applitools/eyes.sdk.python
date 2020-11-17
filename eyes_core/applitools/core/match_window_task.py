@@ -337,16 +337,15 @@ class MatchWindowTask(object):
             image_match_settings = collect_regions_from_screenshot(
                 check_settings, image_match_settings, screenshot, eyes
             )
-        else:
+        elif regions and region_selectors:
             # visual grid
-            if regions and region_selectors:
-                image_match_settings = collect_regions_from_selectors(
-                    image_match_settings, regions, region_selectors
-                )
-            image_match_settings = collect_append_coded_regions(
-                check_settings, image_match_settings
+            image_match_settings = collect_regions_from_selectors(
+                image_match_settings, regions, region_selectors
             )
-
+            if check_settings:
+                image_match_settings = collect_append_coded_regions(
+                    check_settings, image_match_settings
+                )
         user_inputs = user_inputs or []
         agent_setup = self._eyes.agent_setup
         return self._perform_match(
