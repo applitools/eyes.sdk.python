@@ -181,19 +181,10 @@ def test_execute_script_with_eyes_webelement(driver, eyes):
         ),
     ],
 )
-def test_replace_matched_step(params, driver, eyes):
+def test_replace_matched_step(params, driver, eyes, fake_connector_class):
     test_url, replace_last_expected = params
     driver.get(test_url)
-    actual_replace_last = []
-
-    class CustomServerConnector(ServerConnector):
-        def match_window(self, running_session, match_data):
-            actual_replace_last.append(match_data.options.replace_last)
-            return super(CustomServerConnector, self).match_window(
-                running_session, match_data
-            )
-
-    eyes.server_connector = CustomServerConnector()
+    eyes.server_connector = fake_connector_class()
     eyes.open(
         driver,
         "Applitools Eyes SDK",
@@ -202,10 +193,14 @@ def test_replace_matched_step(params, driver, eyes):
     )
     eyes.check_window("Step 1")
     eyes.close(False)
-    assert actual_replace_last == replace_last_expected
+    match_data_results = eyes.server_connector.input_calls["match_window"]
+    for match_data_result, expected in zip(match_data_results, replace_last_expected):
+        _, match_data = match_data_result
+        assert match_data.options.replace_last == expected
 
 
-def test_screenshot_too_big(driver, eyes):
+def test_screenshot_too_big(driver, eyes, fake_connector_class):
+    eyes.server_connector = fake_connector_class()
     driver = eyes.open(
         driver,
         "Applitools Eyes SDK",
