@@ -14,6 +14,16 @@ test_fluent_api.py:
       - Scroll
    test_check_region_by_selector_after_manual_scroll__fluent:
       - Scroll
+   test_scrollbars_hidden_and_returned__fluent:
+      - Scroll
+
+test_scroll_root_element.py:
+  test_check_window__simple__body:
+      - Scroll
+
+test_fluent_api_frames.py:
+  test_check_region_in_frame_in_frame__fluent:
+      - Scroll
 
 test_other_desktop_tests.py:
    test_duplicatedIFrames:

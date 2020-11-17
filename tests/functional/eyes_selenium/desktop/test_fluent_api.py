@@ -227,13 +227,13 @@ def test_accessibility_regions(eyes_opened, check_test_result):
                 "actual_name": "accessibility",
                 "expected": [
                     AccessibilityRegion(
-                        10, 284, 800, 500, AccessibilityRegionType.LargeText
+                        10, 286, 800, 500, AccessibilityRegionType.LargeText
                     ),
                     AccessibilityRegion(
-                        122, 928, 456, 306, AccessibilityRegionType.LargeText
+                        122, 933, 456, 306, AccessibilityRegionType.LargeText
                     ),
                     AccessibilityRegion(
-                        8, 1270, 690, 206, AccessibilityRegionType.LargeText
+                        8, 1277, 690, 206, AccessibilityRegionType.LargeText
                     ),
                 ],
             }

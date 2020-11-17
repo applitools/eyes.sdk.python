@@ -262,11 +262,9 @@ def fake_connector_class():
 class FakeServerConnector(ServerConnector):
     def __init__(self):
         super(FakeServerConnector, self).__init__()
-        self.calls = {}
-
-    def start_session(self, session_start_info):
-        self.calls["start_session"] = session_start_info
-        return RunningSession(
+        self.input_calls = defaultdict(list)
+        self.output_calls = defaultdict(list)
+        self.running_session_result = RunningSession(
             **{
                 "id": "MDAwMDANzk~",
                 "session_id": "000002518",
@@ -276,18 +274,31 @@ class FakeServerConnector(ServerConnector):
                 "url": "https://eyes.applitools.com/app/batches/2124/04235423?accountId=asfd1124~~",
             }
         )
+        self.test_result = TestResults(status="Passed")
+
+    @property
+    def calls(self):
+        return {key: results[0] for key, results in iteritems(self.input_calls)}
+
+    def start_session(self, session_start_info):
+        self.input_calls["start_session"].append(session_start_info)
+        self.output_calls["start_session"].append(self.running_session_result)
+        return self.running_session_result
 
     def stop_session(self, running_session, is_aborted, save):
-        self.calls["stop_session"] = (running_session, is_aborted, save)
-        return TestResults()
+        self.input_calls["stop_session"].append((running_session, is_aborted, save))
+        self.output_calls["stop_session"].append(self.test_result)
+        return self.test_result
 
     def match_window(self, running_session, match_data):
-        self.calls["match_window"] = (running_session, match_data)
-        return MatchResult(as_expected=True)
+        self.input_calls["match_window"].append((running_session, match_data))
+        result = MatchResult(as_expected=True)
+        self.output_calls["match_window"].append(result)
+        return result
 
     def render(self, *render_requests):
-        self.calls["render"] = render_requests
-        return [
+        self.input_calls["render"].append(render_requests)
+        result = [
             RunningRender(
                 **{
                     "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
@@ -296,10 +307,12 @@ class FakeServerConnector(ServerConnector):
                 }
             )
         ]
+        self.output_calls["render"].append(result)
+        return result
 
     def render_status_by_id(self, *render_ids):
-        self.calls["render_status_by_id"] = render_ids
-        return [
+        self.input_calls["render_status_by_id"].append(render_ids)
+        result = [
             RenderStatusResults(
                 **{
                     "image_location": "https://eyesapi.applitools.com/api/images/sti/se%-4e8e-9fd7-c01b33e47dcc?accessKey=None",
@@ -314,14 +327,18 @@ class FakeServerConnector(ServerConnector):
                 }
             )
         ]
+        self.output_calls["render_status_by_id"].append(result)
+        return result
 
     def render_put_resource(self, running_render, resource):
-        self.calls["render_put_resource"] = running_render, resource
+        self.input_calls["render_put_resource"].append((running_render, resource))
+        self.output_calls["render_put_resource"].append(resource.hash)
         return resource.hash
 
     def render_info(self):
-        self.calls["render_info"] = True
-        return RenderingInfo(
+        self.input_calls["render_info"].append(True)
+
+        result = RenderingInfo(
             **{
                 "service_url": "https://render.applitools.com",
                 "stitching_service_url": "https://eyesapi.applitools.com/api/images/s?accessKey=None",
@@ -331,6 +348,8 @@ class FakeServerConnector(ServerConnector):
                 "max_image_area": 37500000,
             }
         )
+        self.output_calls["render_info"].append(result)
+        return result
 
 
 @pytest.fixture(scope="function")
