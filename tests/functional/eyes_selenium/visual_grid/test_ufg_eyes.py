@@ -88,7 +88,7 @@ def test_coded_layout_regions_passed_to_match_window_request(
     )
 
     eyes.close_async()
-    vg_runner.get_all_test_results()
+    vg_runner.get_all_test_results(False)
     ims = match_window_spy.call_args.args[2].options.image_match_settings
 
     assert match_window_spy.call_count == 1
