@@ -18,4 +18,4 @@ def test_visual_locator(driver, eyes_runner):
     eyes.close_async()
 
     assert len(result) == 1
-    assert result["applitools_title"][0] == Region(2, 11, 173, 58)
+    assert result["applitools_title"][0] == Region(3, 19, 158, 38)
