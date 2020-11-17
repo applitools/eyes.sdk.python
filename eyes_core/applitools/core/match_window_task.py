@@ -11,6 +11,7 @@ from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.ultrafastgrid import VisualGridSelector
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
+from applitools.core.fluent.region import RegionByRectangle
 
 from .fluent import CheckSettings, GetAccessibilityRegion, GetFloatingRegion, GetRegion
 
@@ -122,6 +123,47 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     logger.debug(
         """
     finish collect_regions_from_selectors()
+
+        image_match_settings: {}
+    """.format(
+            image_match_settings
+        )
+    )
+    return image_match_settings
+
+
+def _coded_regions(region_providers):
+    regions = []
+    for rp in region_providers:
+        if isinstance(rp, RegionByRectangle):
+            regions.extend(rp.get_regions(None, None))
+    return regions
+
+
+def collect_append_coded_regions(check_settings, image_match_settings):
+    # type:(CheckSettings,ImageMatchSettings,EyesScreenshot,EyesBase)->ImageMatchSettings
+
+    image_match_settings.ignore_regions.extend(
+        _coded_regions(check_settings.values.ignore_regions)
+    )
+    image_match_settings.layout_regions.extend(
+        _coded_regions(check_settings.values.layout_regions)
+    )
+    image_match_settings.strict_regions.extend(
+        _coded_regions(check_settings.values.strict_regions)
+    )
+    image_match_settings.content_regions.extend(
+        _coded_regions(check_settings.values.content_regions)
+    )
+    image_match_settings.floating_match_settings.extend(
+        _coded_regions(check_settings.values.floating_regions)
+    )
+    image_match_settings.accessibility.extend(
+        _coded_regions(check_settings.values.accessibility_regions)
+    )
+    logger.debug(
+        """
+    finish collect_append_coded_regions()
 
         image_match_settings: {}
     """.format(
@@ -289,10 +331,14 @@ class MatchWindowTask(object):
             image_match_settings = collect_regions_from_screenshot(
                 check_settings, image_match_settings, screenshot, eyes
             )
-        elif regions and region_selectors:
+        else:
             # visual grid
-            image_match_settings = collect_regions_from_selectors(
-                image_match_settings, regions, region_selectors
+            if regions and region_selectors:
+                image_match_settings = collect_regions_from_selectors(
+                    image_match_settings, regions, region_selectors
+                )
+            image_match_settings = collect_append_coded_regions(
+                check_settings, image_match_settings
             )
 
         user_inputs = user_inputs or []

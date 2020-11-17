@@ -64,7 +64,7 @@ def test_fetch_deep_css_chain(driver, vg_runner, target):
     vg_runner.get_all_test_results()
 
 
-def test_layout_regions_passed_to_match_window_request(
+def test_coded_layout_regions_passed_to_match_window_request(
     driver, fake_connector_class, vg_runner, spy
 ):
     eyes = Eyes(vg_runner)
