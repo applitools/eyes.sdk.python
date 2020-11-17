@@ -1,5 +1,6 @@
 ## [vNext]
 ### Fixed
+- Manually applied layout regions do not work on the Visual Grid [Trello 2317](https://trello.com/c/8qG51ind)
 - Dom Snapshot Timeout exceptions on heavy pages [Trello 2227](https://trello.com/c/2AjLHPFw)
 
 ## [4.11.4] - 2020-11-11

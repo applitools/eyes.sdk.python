@@ -387,7 +387,7 @@ class SeleniumCheckSettings(CheckSettings):
             by, value = region
             logger.debug("accessibility: AccessibilityRegionBySelector")
             return AccessibilityRegionBySelector(by, value, accessibility_region_type)
-        return super(SeleniumCheckSettings, self)._floating_provider_from(
+        return super(SeleniumCheckSettings, self)._accessibility_provider_from(
             region, accessibility_region_type
         )
 
