@@ -142,25 +142,22 @@ def _coded_regions(region_providers):
 
 def collect_append_coded_regions(check_settings, image_match_settings):
     # type:(CheckSettings,ImageMatchSettings,EyesScreenshot,EyesBase)->ImageMatchSettings
+    for ims_region, settings_region in (
+        (image_match_settings.ignore_regions, check_settings.values.ignore_regions),
+        (image_match_settings.layout_regions, check_settings.values.layout_regions),
+        (image_match_settings.strict_regions, check_settings.values.strict_regions),
+        (image_match_settings.content_regions, check_settings.values.content_regions),
+        (
+            image_match_settings.floating_match_settings,
+            check_settings.values.floating_regions,
+        ),
+        (
+            image_match_settings.accessibility,
+            check_settings.values.accessibility_regions,
+        ),
+    ):
+        ims_region.extend(_coded_regions(settings_region))
 
-    image_match_settings.ignore_regions.extend(
-        _coded_regions(check_settings.values.ignore_regions)
-    )
-    image_match_settings.layout_regions.extend(
-        _coded_regions(check_settings.values.layout_regions)
-    )
-    image_match_settings.strict_regions.extend(
-        _coded_regions(check_settings.values.strict_regions)
-    )
-    image_match_settings.content_regions.extend(
-        _coded_regions(check_settings.values.content_regions)
-    )
-    image_match_settings.floating_match_settings.extend(
-        _coded_regions(check_settings.values.floating_regions)
-    )
-    image_match_settings.accessibility.extend(
-        _coded_regions(check_settings.values.accessibility_regions)
-    )
     logger.debug(
         """
     finish collect_append_coded_regions()
