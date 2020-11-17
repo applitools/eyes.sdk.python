@@ -11,7 +11,11 @@ from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.ultrafastgrid import VisualGridSelector
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
-from applitools.core.fluent.region import RegionByRectangle
+from applitools.core.fluent.region import (
+    AccessibilityRegionByRectangle,
+    FloatingRegionByRectangle,
+    RegionByRectangle,
+)
 
 from .fluent import CheckSettings, GetAccessibilityRegion, GetFloatingRegion, GetRegion
 
@@ -134,8 +138,13 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
 
 def _coded_regions(region_providers):
     regions = []
+    coded_region_types = (
+        RegionByRectangle,
+        AccessibilityRegionByRectangle,
+        FloatingRegionByRectangle,
+    )
     for rp in region_providers:
-        if isinstance(rp, RegionByRectangle):
+        if isinstance(rp, coded_region_types):
             regions.extend(rp.get_regions(None, None))
     return regions
 
