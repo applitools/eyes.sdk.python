@@ -270,7 +270,7 @@ class FakeServerConnector(ServerConnector):
                 "session_id": "000002518",
                 "batch_id": "000002518010",
                 "baseline_id": "5411539b-558a-44c6-8a93-d95ddf909552",
-                "is_new_session": True,
+                "is_new_session": False,
                 "url": "https://eyes.applitools.com/app/batches/2124/04235423?accountId=asfd1124~~",
             }
         )

@@ -1,6 +1,3 @@
-test_additional.py:
-    test_check_element_and_window_in_sequence:
-
 test_specific_cases.py:
    test_switch_back_to_frame_after_check:
    test_region_selector_in_check_fluent_interface:
@@ -52,9 +49,6 @@ test_mobile.py:
 test_app_native.py:
    test_ios_native:
 
-test_bad_selectors.py:
-   test_check_region_with_bad_ignore_selector:
-
 test_hello_world.py:
    test_hello_world:
       - [VisualGridRunner]
@@ -68,6 +62,3 @@ test_timeouts.py:
 test_visual_grid_rca.py:
    test_VG_RCA_config:
    test_VG_RCA_fluent:
-
-test_renderings.py:
-  test_mobile_only:
