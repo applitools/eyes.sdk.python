@@ -1,6 +1,7 @@
 import base64
 import json
 import zlib
+from time import sleep
 from typing import Text
 
 import mock
@@ -65,7 +66,12 @@ def test_dom_snapshot_default(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run()
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -79,7 +85,12 @@ def test_dom_snapshot_serialize_resources(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(serialize_resources=True)
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -95,9 +106,11 @@ def test_dom_snapshot_compressed(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(compress_resources=True)
-    for _ in range(3):
+    for _ in range(10):
         poll_res = script.poll_result()
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -116,9 +129,11 @@ def test_dom_snapshot_compressed_serialized(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(compress_resources=True, serialize_resources=True)
-    for _ in range(3):
+    for _ in range(10):
         poll_res = script.poll_result()
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -137,7 +152,12 @@ def test_dom_snapshot_dont_fetch_resources(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(dont_fetch_resources=True)
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -150,9 +170,11 @@ def test_dom_snapshot_serialize_chunks(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(serialize_resources=True)
-    while True:
+    for _ in range(10):
         poll_res = script.poll_result(chunk_byte_length=100)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -169,12 +191,16 @@ def test_dom_snapshot_serialize_chunks_until_done(driver):
     run_res = script.run(serialize_resources=True)
     while True:
         poll_res = script.poll_result(chunk_byte_length=2 ** 15)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     while True:
         poll_res = script.poll_result(chunk_byte_length=2 ** 15)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
