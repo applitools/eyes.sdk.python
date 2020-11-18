@@ -1,6 +1,6 @@
 ##[vNext]
 ### Updated
-- Pin keyring dependency for travis deploy stage [Trello 2309](https://trello.com/c/aIWIFRcY)
+- Pin keyring dependency for travis deploy stage. Update some tests [Trello 2309](https://trello.com/c/aIWIFRcY)
 
 ## [4.11.5] - 2020-11-17
 ### Fixed
