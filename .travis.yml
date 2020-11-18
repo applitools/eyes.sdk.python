@@ -271,7 +271,7 @@ jobs:
           script:
               # Deploy to PyPi and send notification about the tests execution status
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
-              - pip install -U invoke twine
+              - pip install -U invoke twine keyring==21.4.0
               - echo "v$SDK_VERSION $CHANGELOG"
               - echo $TMP_CHANGELOG
               # Save the email of the person who did this commit in COMMITTER_EMAIL
