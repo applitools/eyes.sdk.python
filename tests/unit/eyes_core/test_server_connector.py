@@ -4,7 +4,8 @@ from copy import copy
 from typing import Any
 
 import pytest
-from mock import patch
+import requests
+from mock import MagicMock, patch
 
 from applitools.common import (
     AppEnvironment,
@@ -27,7 +28,7 @@ from applitools.common.utils.compat import urljoin
 from applitools.common.utils.datetime_utils import to_sec
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import ServerConnector
-from applitools.core.server_connector import ClientSession
+from applitools.core.server_connector import ClientSession, _RequestCommunicator
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -469,3 +470,46 @@ def test_parse_render_info_no_error(render_json):
         assert ri.results_url == "result"
     if ri.stitching_service_url:
         assert ri.stitching_service_url == "stitching"
+
+
+def test_server_communicator_request_sets_random_request_id_header():
+    session_mock = MagicMock()
+    communicator = _RequestCommunicator({}, 1, "a", "b", client_session=session_mock)
+
+    communicator.request("get", "https://c.com/")
+
+    assert (
+        "x-applitools-eyes-client-request-id"
+        in session_mock.request.call_args.kwargs["headers"]
+    )
+
+
+def test_server_communicator_request_sets_provided_request_id_header():
+    session_mock = MagicMock()
+    communicator = _RequestCommunicator({}, 1, "a", "b", client_session=session_mock)
+
+    communicator.request("get", "https://c.com/", request_id="d")
+
+    headers = session_mock.request.call_args.kwargs["headers"]
+    assert headers["x-applitools-eyes-client-request-id"] == "d"
+
+
+def test_server_communicator_long_request_calls_all_have_same_request_id():
+    response1 = MagicMock()
+    response1.status_code = requests.codes.accepted
+    response1.headers = {"Location": "e"}
+    response2 = MagicMock()
+    response2.status_code = requests.codes.created
+    response2.headers = {"Location": "f"}
+    session_mock = MagicMock()
+    session_mock.request = MagicMock(side_effect=[response1, response2, MagicMock()])
+    communicator = _RequestCommunicator({}, 1, "a", "b", client_session=session_mock)
+
+    communicator.long_request("get", "https://c.com/")
+
+    calls = session_mock.request.call_args_list
+    assert (
+        calls[0].kwargs["headers"]["x-applitools-eyes-client-request-id"]
+        == calls[1].kwargs["headers"]["x-applitools-eyes-client-request-id"]
+        == calls[2].kwargs["headers"]["x-applitools-eyes-client-request-id"]
+    )
