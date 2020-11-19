@@ -217,7 +217,11 @@ class _RequestCommunicator(object):
             self.MAX_LONG_REQUEST_DELAY_MS,
             math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
         )
-        logger.debug("Long request. Still running... Retrying in {} ms".format(delay))
+        logger.debug(
+            "Long request {}. Still running... Retrying in {} ms".format(
+                request_id, delay
+            )
+        )
 
         datetime_utils.sleep(delay)
         response = self.request(
