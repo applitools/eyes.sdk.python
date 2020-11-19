@@ -38,6 +38,7 @@ from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
 
 if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
+    from uuid import UUID
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -138,8 +139,11 @@ class _RequestCommunicator(object):
         """
         self.client_session.close()
 
-    def request(self, method, url_resource, use_api_key=True, **kwargs):
-        # type: (Text, Text, bool, **Any) -> Response
+    def request(
+        self, method, url_resource, use_api_key=True, request_id=None, **kwargs
+    ):
+        # type: (Text, Text, bool, Optional[UUID], **Any) -> Response
+        req_id = str(uuid.uuid4() if request_id is None else request_id)
         if url_resource is not None:
             # makes URL relative
             url_resource = url_resource.lstrip("/")
@@ -150,6 +154,7 @@ class _RequestCommunicator(object):
         params.update(kwargs.get("params", {}))
         headers = self.headers.copy()
         headers.update(kwargs.get("headers", {}))
+        headers["x-applitools-eyes-client-request-id"] = req_id
         timeout_sec = kwargs.get("timeout", None)
         if timeout_sec is None:
             timeout_sec = datetime_utils.to_sec(self.timeout_ms)
@@ -174,11 +179,14 @@ class _RequestCommunicator(object):
         headers["Eyes-Expect"] = "202+location"
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
         kwargs["headers"] = headers
-        response = self.request(method, url_resource, **kwargs)
-        logger.debug("Long request `{}` for {}".format(method, response.url))
-        return self._long_request_check_status(response)
+        request_id = uuid.uuid4()
+        response = self.request(method, url_resource, request_id=request_id, **kwargs)
+        logger.debug(
+            "Long request {} `{}` for {}".format(request_id, method, response.url)
+        )
+        return self._long_request_check_status(response, request_id)
 
-    def _long_request_check_status(self, response):
+    def _long_request_check_status(self, response, request_id):
         if (
             response.status_code == requests.codes.ok
             or "Location" not in response.headers
@@ -188,14 +196,15 @@ class _RequestCommunicator(object):
         elif response.status_code == requests.codes.accepted:
             # long request here; calling received url to know that request was processed
             url = response.headers["Location"]
-            response = self._long_request_loop(url)
-            return self._long_request_check_status(response)
+            response = self._long_request_loop(url, request_id)
+            return self._long_request_check_status(response, request_id)
         elif response.status_code == requests.codes.created:
             # delete url that was used before
             url = response.headers["Location"]
             return self.request(
                 "delete",
                 url,
+                request_id=request_id,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
         elif response.status_code == requests.codes.gone:
@@ -203,7 +212,7 @@ class _RequestCommunicator(object):
         else:
             raise EyesError("Unknown error during long request: {}".format(response))
 
-    def _long_request_loop(self, url, delay=LONG_REQUEST_DELAY_MS):
+    def _long_request_loop(self, url, request_id, delay=LONG_REQUEST_DELAY_MS):
         delay = min(
             self.MAX_LONG_REQUEST_DELAY_MS,
             math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
@@ -212,11 +221,14 @@ class _RequestCommunicator(object):
 
         datetime_utils.sleep(delay)
         response = self.request(
-            "get", url, headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()}
+            "get",
+            url,
+            request_id=request_id,
+            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
         )
         if response.status_code != requests.codes.ok:
             return response
-        return self._long_request_loop(url, delay)
+        return self._long_request_loop(url, request_id, delay)
 
 
 class ServerConnector(object):
