@@ -262,6 +262,5 @@ def test_region_padding_are_added(method_name):
 
     assert regions_region[0]._padding == {"height": 200, "top": 5}
     assert regions_region[1]._padding == {"height": 200, "top": 5}
-    assert regions_region[0].get_regions(mock.ANY, mock.ANY) == [Region(0, 5, 0, 200)]
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
     assert regions_element[0]._padding == {"width": 200, "left": 5}
