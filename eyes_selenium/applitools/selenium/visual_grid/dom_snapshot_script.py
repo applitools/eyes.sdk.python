@@ -1,17 +1,19 @@
 from __future__ import unicode_literals
 
 import json
-import time
 import typing
 from abc import abstractmethod
 from enum import Enum
+from time import time
 
 import attr
+from selenium.webdriver.common.by import By
 
 from applitools.common import logger
 from applitools.common.utils import ABC, datetime_utils
 from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
+from applitools.selenium.fluent import FrameLocator
 
 if typing.TYPE_CHECKING:
     from typing import Any, Callable, Dict, List, Optional, Text, Union
@@ -48,9 +50,11 @@ def create_dom_snapshot(
     script = script_type(driver)
     is_ios = "ios" in driver.desired_capabilities.get("platformName", "").lower()
     chunk_byte_length = MAX_CHUNK_BYTES_IOS if is_ios else MAX_CHUNK_BYTES_GENERIC
-    return create_dom_snapshot_loop(
+    deadline = time() + datetime_utils.to_sec(timeout_ms)
+    return create_cross_frames_dom_snapshots(
+        driver.switch_to,
         script,
-        timeout_ms,
+        deadline,
         SCRIPT_POLL_INTERVAL_MS,
         chunk_byte_length,
         dont_fetch_resources=dont_fetch_resources,
@@ -188,17 +192,16 @@ class DomSnapshotScriptForIE(DomSnapshotScript):
 
 
 def create_dom_snapshot_loop(
-    script, timeout_ms, poll_interval_ms, chunk_byte_length, **script_args
+    script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
 ):
     # type: (DomSnapshotScript, int, int, int, **Any) -> Dict
     chunks = []
-    deadline = time.time() + datetime_utils.to_sec(timeout_ms)
     result = script.run(**script_args)
     while result.status is ProcessPageStatus.WIP or (
         result.status is ProcessPageStatus.SUCCESS_CHUNKED and not result.done
     ):
-        if time.time() > deadline:
-            raise DomSnapshotTimeout(timeout_ms)
+        if time() > deadline_time:
+            raise DomSnapshotTimeout(deadline_time)
         result = script.poll_result(chunk_byte_length)
         if result.status is ProcessPageStatus.WIP:
             datetime_utils.sleep(
@@ -215,3 +218,85 @@ def create_dom_snapshot_loop(
         raise DomSnapshotScriptError(result.error)
     else:
         raise DomSnapshotFailure("Unexpected script result", result)
+
+
+def create_cross_frames_dom_snapshots(
+    switch_to, script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
+):
+    dom = create_dom_snapshot_loop(
+        script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
+    )
+    return process_dom_snapshot_frames(
+        dom,
+        switch_to,
+        script,
+        deadline_time,
+        poll_interval_ms,
+        chunk_byte_length,
+        **script_args
+    )
+
+
+def process_dom_snapshot_frames(
+    dom,
+    switch_to,
+    script,
+    deadline_time,
+    poll_interval_ms,
+    chunk_byte_length,
+    **script_args
+):
+    for frame in dom["crossFrames"]:
+        selector = frame.get("selector", None)
+        if not selector:
+            logger.warning("cross frame with null selector")
+            continue
+        frame_index = frame["index"]
+        try:
+            with switch_to.frame_and_back(
+                FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
+            ):
+                frame_dom = create_cross_frames_dom_snapshots(
+                    switch_to,
+                    script,
+                    deadline_time,
+                    poll_interval_ms,
+                    chunk_byte_length,
+                    **script_args
+                )
+                dom.setdefault("frames", []).append(frame_dom)
+                dom["cdt"][frame_index]["attributes"].append(
+                    {"name": "data-applitools-src", "value": frame_dom["url"]}
+                )
+        except Exception as e:
+            logger.warning(
+                "Failed extracting cross frame with selector {}. Reason: {!r}".format(
+                    selector, e
+                )
+            )
+    for frame in dom["frames"]:
+        selector = frame.get("selector", None)
+        if not selector:
+            logger.warning("inner frame with null selector")
+            continue
+        try:
+            with switch_to.frame_and_back(
+                FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
+            ):
+                process_dom_snapshot_frames(
+                    frame,
+                    switch_to,
+                    script,
+                    deadline_time,
+                    poll_interval_ms,
+                    chunk_byte_length,
+                    **script_args
+                )
+        except Exception as e:
+            logger.warning(
+                "Failed switching to frame with selector {}. Reason: {!r}".format(
+                    selector, e
+                )
+            )
+
+    return dom
