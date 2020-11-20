@@ -8,9 +8,10 @@ from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
+from applitools.common.utils.custom_types import MatchRegionPadding
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional, Text, Union
+    from typing import List, Optional, Union
 
     from applitools.common.capture import EyesScreenshot
     from applitools.core.eyes_base import EyesBase
@@ -33,7 +34,7 @@ class GetRegion(ABC):
 
     @property
     def padding(self):
-        # type: () -> Dict[Text, int]
+        # type: () -> Optional[MatchRegionPadding]
         return getattr(self, "_padding", None)
 
 
