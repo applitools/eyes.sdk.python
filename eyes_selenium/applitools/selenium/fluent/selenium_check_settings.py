@@ -30,6 +30,7 @@ if TYPE_CHECKING:
         FLOATING_VALUES,
         AnyWebElement,
         BySelector,
+        CodedRegionPadding,
         CssSelector,
         FrameIndex,
         FrameNameOrId,
@@ -95,96 +96,128 @@ class SeleniumCheckSettings(CheckSettings):
     _frame = attr.ib(default=None)
 
     @overload  # noqa
-    def layout(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def layout(self, *by, **kwargs):
+        # type: (*BySelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def layout(self, *element, **kwargs):
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def layout(self, *css_selector, **kwargs):
+        # type: (*CssSelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
+    def layout(self, *region, **kwargs):
+        # type: (*Region,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
-    def layout(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).layout(*region)
+    def layout(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more layout regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
+        return super(SeleniumCheckSettings, self).layout(*region, **kwargs)
 
     @overload  # noqa
-    def strict(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def strict(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def strict(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def strict(self, *by, **kwargs):
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def strict(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
-        pass
-
-    def strict(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).strict(*region)
-
-    @overload  # noqa
-    def content(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def strict(self, *element, **kwargs):
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def strict(self, *css_selector, **kwargs):
+        # type: (*CssSelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def strict(self, *region, **kwargs):
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    def strict(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more strict regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
+        return super(SeleniumCheckSettings, self).strict(*region, **kwargs)
+
+    @overload  # noqa
+    def content(self, *by, **kwargs):
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
-        pass
-
-    def content(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).content(*region)
-
-    @overload  # noqa
-    def ignore(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def content(self, *element, **kwargs):
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def content(self, *css_selector, **kwargs):
+        # type: (*CssSelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def content(self, *region, **kwargs):
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    def content(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more content regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
+        return super(SeleniumCheckSettings, self).content(*region, **kwargs)
+
+    @overload  # noqa
+    def ignore(self, *by, **kwargs):
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
+    def ignore(self, *element, **kwargs):
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
-    def ignore(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).ignore(*region)
+    @overload  # noqa
+    def ignore(self, *css_selector, **kwargs):
+        # type: (*CssSelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *region, **kwargs):
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    def ignore(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more ignore regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
+        return super(SeleniumCheckSettings, self).ignore(*region, **kwargs)
 
     @overload  # noqa
     def floating(self, max_offset, region):
@@ -307,19 +340,19 @@ class SeleniumCheckSettings(CheckSettings):
         self.values.script_hooks[BEFORE_CAPTURE_SCREENSHOT] = hook
         return self
 
-    def _region_provider_from(self, region, method_name):
+    def _region_provider_from(self, region, method_name, padding):
         if isinstance(region, basestring):
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionBySelector(By.CSS_SELECTOR, region)
+            return RegionBySelector(By.CSS_SELECTOR, region, padding)
         if is_list_or_tuple(region):
             by, val = region
             logger.debug("{name}: RegionBySelector".format(name=method_name))
-            return RegionBySelector(by, val)
+            return RegionBySelector(by, val, padding)
         elif is_webelement(region):
             logger.debug("{name}: RegionByElement".format(name=method_name))
-            return RegionByElement(region)
+            return RegionByElement(region, padding)
         return super(SeleniumCheckSettings, self)._region_provider_from(
-            region, method_name
+            region, method_name, padding
         )
 
     def _set_scroll_root_selector(self, by, value):

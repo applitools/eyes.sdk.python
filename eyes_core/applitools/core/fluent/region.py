@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
     from typing import List, Optional, Union
 
     from applitools.common.capture import EyesScreenshot
+    from applitools.common.utils.custom_types import CodedRegionPadding
     from applitools.core.eyes_base import EyesBase
 
 __all__ = (
@@ -30,6 +31,11 @@ class GetRegion(ABC):
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List
         pass
+
+    @property
+    def padding(self):
+        # type: () -> Optional[CodedRegionPadding]
+        return getattr(self, "_padding", None)
 
 
 class GetFloatingRegion(GetRegion, ABC):

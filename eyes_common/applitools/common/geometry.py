@@ -17,6 +17,7 @@ from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
     from .ultrafastgrid.render_browser_info import IRenderBrowserinfo
+    from .utils.custom_types import CodedRegionPadding
 
 __all__ = (
     "Point",
@@ -24,6 +25,7 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
+    "AccessibilityRegion",
 )
 
 
@@ -444,6 +446,19 @@ class Region(Rectangle):
             height=self.height,
             type=self.coordinates_type.value,
         )
+
+    def padding(self, other):
+        # type: (CodedRegionPadding) -> Region
+        if isinstance(other, dict):
+            return Region(
+                left=self.left + other.get("left", 0),
+                top=self.top + other.get("top", 0),
+                width=self.width + other.get("right", 0),
+                height=self.height + other.get("bottom", 0),
+                coordinates_type=self.coordinates_type,
+            )
+        else:
+            raise TypeError("Unsupported flow")
 
     @classmethod  # noqa
     @overload

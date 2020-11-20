@@ -31,6 +31,7 @@ from .errors import (  # noqa
     TestFailedError,
 )
 from .geometry import (  # noqa
+    AccessibilityRegion,
     CoordinatesType,
     Point,
     RectangleSize,

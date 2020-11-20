@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar, overload
 
 import attr
 
@@ -18,7 +18,7 @@ from .region import (
 )
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import Num
+    from applitools.common.utils.custom_types import CodedRegionPadding, Num
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 
@@ -67,59 +67,59 @@ class CheckSettings(object):
         init=False, factory=CheckSettingsValues
     )  # type: CheckSettingsValues
 
-    def layout(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def layout(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         if not regions:
             self.values.match_level = MatchLevel.LAYOUT
             return self
         try:
             self.values.layout_regions = self.__regions(
-                regions, method_name="layout_regions"
+                regions, method_name="layout_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .layout()"), e)
         return self
 
     def exact(self):
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT` if no args """
         self.values.match_level = MatchLevel.EXACT
         return self
 
-    def strict(self, *regions):
-        # type: (Self, *Region)  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
+    def strict(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT` if no args """
         if not regions:
             self.values.match_level = MatchLevel.STRICT
             return self
         try:
             self.values.strict_regions = self.__regions(
-                regions, method_name="strict_regions"
+                regions, method_name="strict_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .strict()"), e)
         return self
 
-    def content(self, *regions):
-        # type: (Self, *Region)  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
+    def content(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT` if no args """
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
             return self
         try:
             self.values.content_regions = self.__regions(
-                regions, method_name="content_regions"
+                regions, method_name="content_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .content()"), e)
         return self
 
-    def ignore(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def ignore(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Adds one or more ignore regions. """
         try:
             self.values.ignore_regions = self.__regions(
-                regions, method_name="ignore_regions"
+                regions, method_name="ignore_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError, e)
@@ -260,7 +260,7 @@ class CheckSettings(object):
         self.values.timeout = timeout
         return self
 
-    def __regions(self, regions, method_name):
+    def __regions(self, regions, method_name, padding):
         if not regions:
             raise TypeError(
                 "{name} method called without arguments!".format(name=method_name)
@@ -268,10 +268,12 @@ class CheckSettings(object):
 
         regions_list = getattr(self.values, method_name)
         for region in regions:
-            regions_list.append(self._region_provider_from(region, method_name))
+            regions_list.append(
+                self._region_provider_from(region, method_name, padding)
+            )
         return regions_list
 
-    def _region_provider_from(self, region, method_name):
+    def _region_provider_from(self, region, method_name, padding):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
@@ -293,9 +295,7 @@ class CheckSettings(object):
         )
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
-        if (
-            isinstance(region, Region) or isinstance(region, Rectangle)
-        ) and accessibility_region_type:
+        if isinstance(region, (Region, Rectangle)) and accessibility_region_type:
             logger.debug("accessibility: AccessibilityRegionByRectangle")
             return AccessibilityRegionByRectangle(region, accessibility_region_type)
         elif isinstance(region, AccessibilityRegion):
