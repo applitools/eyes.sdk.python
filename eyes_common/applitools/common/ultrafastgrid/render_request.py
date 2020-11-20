@@ -87,7 +87,7 @@ class RenderingInfo(object):
 @attr.s(hash=True, slots=True)
 class VisualGridSelector(object):
     selector = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
-    category = attr.ib()  # type: Union[Text, GetRegion]
+    category = attr.ib()  # type: Union[Text, 'GetRegion']  # noqa
     type = attr.ib(default="xpath", metadata={JsonInclude.THIS: True})
 
 

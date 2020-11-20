@@ -4,7 +4,7 @@ import typing
 from datetime import datetime
 
 from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
-from applitools.common.errors import EyesError, OutOfBoundsError
+from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
