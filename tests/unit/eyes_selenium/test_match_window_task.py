@@ -67,7 +67,7 @@ def test_collect_regions_from_selectors(mwt, eyes_base_mock):
             VisualGridSelector(
                 ".selector3",
                 RegionBySelector(
-                    By.CLASS_NAME, "some-class", {"width": 40, "height": 10}
+                    By.CLASS_NAME, "some-class", {"right": 40, "bottom": 10}
                 ),
             ),
             VisualGridSelector(

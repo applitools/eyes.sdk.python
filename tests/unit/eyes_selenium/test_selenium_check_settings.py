@@ -251,8 +251,8 @@ def test_region_padding_are_added(method_name):
         method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}
     )
     regions_element = get_regions_from_(
-        method_name, MagicMock(EyesWebElement), padding={"width": 200, "left": 5}
+        method_name, MagicMock(EyesWebElement), padding={"right": 200, "left": 5}
     )
 
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
-    assert regions_element[0]._padding == {"width": 200, "left": 5}
+    assert regions_element[0]._padding == {"right": 200, "left": 5}
