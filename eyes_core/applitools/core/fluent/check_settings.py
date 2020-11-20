@@ -82,13 +82,13 @@ class CheckSettings(object):
         return self
 
     def exact(self):
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT`. """
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT` if no args """
         self.values.match_level = MatchLevel.EXACT
         return self
 
     def strict(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT` if no args """
         if not regions:
             self.values.match_level = MatchLevel.STRICT
             return self
@@ -102,7 +102,7 @@ class CheckSettings(object):
 
     def content(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
+        """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT` if no args """
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
             return self

@@ -30,10 +30,10 @@ if TYPE_CHECKING:
         FLOATING_VALUES,
         AnyWebElement,
         BySelector,
+        CodedRegionPadding,
         CssSelector,
         FrameIndex,
         FrameNameOrId,
-        CodedRegionPadding,
     )
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
@@ -116,6 +116,14 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def layout(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more layout regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
         return super(SeleniumCheckSettings, self).layout(*region, **kwargs)
 
     @overload  # noqa
@@ -139,6 +147,14 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def strict(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more strict regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
         return super(SeleniumCheckSettings, self).strict(*region, **kwargs)
 
     @overload  # noqa
@@ -162,6 +178,14 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def content(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more content regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
         return super(SeleniumCheckSettings, self).content(*region, **kwargs)
 
     @overload  # noqa
@@ -185,6 +209,14 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     def ignore(self, *region, **kwargs):  # noqa
+        """
+        Adds one or more ignore regions. And allow to set up paddings for them.
+
+        :param kwargs: accepts `padding` parameter where there region paddings
+         could be specified.
+         Example of definition: `padding=dict(top=10, left=10, right=11, bottom=12)`
+          where each keys are optional
+        """
         return super(SeleniumCheckSettings, self).ignore(*region, **kwargs)
 
     @overload  # noqa
