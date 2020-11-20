@@ -223,7 +223,7 @@ def create_cross_frames_dom_snapshots(
     deadline_time,  # type: float
     poll_interval_ms,  # type: int
     chunk_byte_length,  # type: int
-    **script_args,  # type: Any
+    **script_args  # type: Any
 ):
     # type: (...) -> Dict
     dom = create_dom_snapshot_loop(
@@ -236,7 +236,7 @@ def create_cross_frames_dom_snapshots(
         deadline_time,
         poll_interval_ms,
         chunk_byte_length,
-        **script_args,
+        **script_args
     )
     return dom
 
@@ -248,7 +248,7 @@ def process_dom_snapshot_frames(
     deadline_time,  # type: float
     poll_interval_ms,  # type: int
     chunk_byte_length,  # type: int
-    **script_args,  # type: Any
+    **script_args  # type: Any
 ):
     # type: (...) -> None
     for frame in dom["crossFrames"]:
@@ -267,7 +267,7 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
-                    **script_args,
+                    **script_args
                 )
                 dom.setdefault("frames", []).append(frame_dom)
                 dom["cdt"][frame_index]["attributes"].append(
@@ -295,7 +295,7 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
-                    **script_args,
+                    **script_args
                 )
         except Exception as e:
             logger.warning(
