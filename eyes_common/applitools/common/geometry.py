@@ -24,6 +24,7 @@ __all__ = (
     "CoordinatesType",
     "RectangleSize",
     "SubregionForStitching",
+    "AccessibilityRegion",
 )
 
 

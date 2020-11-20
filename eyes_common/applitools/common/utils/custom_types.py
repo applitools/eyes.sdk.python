@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from applitools.selenium.webelement import EyesWebElement
 
     ViewPort = Union[Dict[Text, int], RectangleSize]  # typedef
+    MatchRegionPadding = Dict[Text, int]  # typedef
     Num = Union[int, float]
 
     AnyWebDriver = Union[EyesWebDriver, WebDriver]  # typedef

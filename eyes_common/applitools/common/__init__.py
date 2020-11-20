@@ -36,6 +36,7 @@ from .geometry import (  # noqa
     RectangleSize,
     Region,
     SubregionForStitching,
+    AccessibilityRegion,
 )
 from .logger import FileLogger, NullLogger, StdoutLogger  # noqa
 from .match import (  # noqa

@@ -66,15 +66,10 @@ class GetAccessibilityRegion(GetRegion, ABC):
 @attr.s
 class RegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Union[Region, Rectangle]
-    _padding = attr.ib()
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[Region]
-        return [
-            self._region + self._padding
-            if self._padding
-            else Region.from_(self._region)
-        ]
+        return [Region.from_(self._region)]
 
 
 @attr.s
