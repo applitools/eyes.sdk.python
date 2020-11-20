@@ -17,7 +17,7 @@ from applitools.core.fluent.region import (
     RegionByRectangle,
 )
 from applitools.core.match_window_task import collect_regions_from_selectors
-from applitools.selenium.fluent import RegionBySelector, RegionByElement
+from applitools.selenium.fluent import RegionByElement, RegionBySelector
 
 
 @pytest.fixture

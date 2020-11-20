@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Optional, Text, Tuple, overload, Dict
+from typing import TYPE_CHECKING, Dict, List, Optional, Text, Tuple, overload
 
 import attr
 from selenium.webdriver.common.by import By

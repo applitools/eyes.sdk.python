@@ -31,12 +31,12 @@ from .errors import (  # noqa
     TestFailedError,
 )
 from .geometry import (  # noqa
+    AccessibilityRegion,
     CoordinatesType,
     Point,
     RectangleSize,
     Region,
     SubregionForStitching,
-    AccessibilityRegion,
 )
 from .logger import FileLogger, NullLogger, StdoutLogger  # noqa
 from .match import (  # noqa

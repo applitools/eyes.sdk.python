@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Dict
+from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar, overload
 
 import attr
 
@@ -18,7 +18,7 @@ from .region import (
 )
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import Num, MatchRegionPadding
+    from applitools.common.utils.custom_types import MatchRegionPadding, Num
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 

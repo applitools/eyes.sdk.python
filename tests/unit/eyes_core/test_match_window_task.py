@@ -2,13 +2,13 @@ import pytest
 from mock import patch
 
 from applitools.common import (
+    AccessibilityRegion,
+    AccessibilityRegionType,
     FloatingBounds,
     FloatingMatchSettings,
     MatchLevel,
     MatchWindowData,
     Region,
-    AccessibilityRegionType,
-    AccessibilityRegion,
 )
 from applitools.core import CheckSettings, MatchWindowTask
 

@@ -10,7 +10,7 @@ from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Union, Dict, Text
+    from typing import Dict, List, Optional, Text, Union
 
     from applitools.common.capture import EyesScreenshot
     from applitools.core.eyes_base import EyesBase
