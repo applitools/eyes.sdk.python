@@ -1,3 +1,4 @@
+import mock
 import pytest
 from appium.webdriver import WebElement as AppiumWebElement
 from mock import MagicMock
@@ -9,7 +10,7 @@ from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 
-def get_cs_from_method(method_name, *args):
+def get_cs_from_method(method_name, *args, **kwargs):
     """
     Return initialized CheckSettings instance and invoked `method_name` with `args`
 
@@ -17,16 +18,16 @@ def get_cs_from_method(method_name, *args):
 
         cs = SeleniumCheckSettings().region(*args)
     """
-    return getattr(SeleniumCheckSettings(), method_name)(*args)
+    return getattr(SeleniumCheckSettings(), method_name)(*args, **kwargs)
 
 
-def get_regions_from_(method_name, *args):
+def get_regions_from_(method_name, *args, **kwargs):
     """
         Return regions for invoked method from CheckSettings
 
     :param method_name: layout, ignore, strict or content
     """
-    cs = get_cs_from_method(method_name, *args)
+    cs = get_cs_from_method(method_name, *args, **kwargs)
     regions = getattr(cs.values, "{}_regions".format(method_name))
     return regions
 
@@ -242,3 +243,25 @@ def test_disable_browser_fetching_combinations():
     assert (
         effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
     )
+
+
+@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+def test_region_padding_are_added(method_name):
+    regions_region = get_regions_from_(
+        method_name,
+        Region(0, 0, 0, 0),
+        Region(1, 2, 1, 2),
+        padding={"height": 200, "top": 5},
+    )
+    regions_selector = get_regions_from_(
+        method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}
+    )
+    regions_element = get_regions_from_(
+        method_name, MagicMock(EyesWebElement), padding={"width": 200, "left": 5}
+    )
+
+    assert regions_region[0]._padding == {"height": 200, "top": 5}
+    assert regions_region[1]._padding == {"height": 200, "top": 5}
+    assert regions_region[0].get_regions(mock.ANY, mock.ANY) == [Region(0, 5, 0, 200)]
+    assert regions_selector[0]._padding == {"top": 1, "left": 2}
+    assert regions_element[0]._padding == {"width": 200, "left": 5}
