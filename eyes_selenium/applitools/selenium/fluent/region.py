@@ -32,7 +32,7 @@ __all__ = (
 )
 
 
-def _region_from_element(element, screenshot, padding):
+def _region_from_element(element, screenshot, padding=None):
     # type: (AnyWebElement,EyesWebDriverScreenshot,Optional[MatchRegionPadding])->Region
     location = element.location
     if screenshot:
