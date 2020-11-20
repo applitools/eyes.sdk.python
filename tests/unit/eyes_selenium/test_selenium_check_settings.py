@@ -247,12 +247,6 @@ def test_disable_browser_fetching_combinations():
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_region_padding_are_added(method_name):
-    regions_region = get_regions_from_(
-        method_name,
-        Region(0, 0, 0, 0),
-        Region(1, 2, 1, 2),
-        padding={"height": 200, "top": 5},
-    )
     regions_selector = get_regions_from_(
         method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}
     )
@@ -260,7 +254,5 @@ def test_region_padding_are_added(method_name):
         method_name, MagicMock(EyesWebElement), padding={"width": 200, "left": 5}
     )
 
-    assert regions_region[0]._padding == {"height": 200, "top": 5}
-    assert regions_region[1]._padding == {"height": 200, "top": 5}
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
     assert regions_element[0]._padding == {"width": 200, "left": 5}
