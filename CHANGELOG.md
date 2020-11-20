@@ -1,6 +1,7 @@
-##[vNext]
+## [vNext]
 ### Added
 - Add x-applitools-eyes-client-request-id header to API requests [Trello 2332](https://trello.com/c/yuBGjW6u)
+- Add padding option to match regions [Trello 2337](https://trello.com/c/RNNcgMv7)
 ### Updated
 - Pin keyring dependency for travis deploy stage. Update some tests [Trello 2309](https://trello.com/c/aIWIFRcY)
 
