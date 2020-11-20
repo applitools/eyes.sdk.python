@@ -7,17 +7,10 @@ from applitools.common import (
     MatchLevel,
     MatchWindowData,
     Region,
-    VisualGridSelector,
+    AccessibilityRegionType,
+    AccessibilityRegion,
 )
-from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.geometry import AccessibilityRegion, Rectangle
-from applitools.core import AppOutputWithScreenshot, CheckSettings, MatchWindowTask
-from applitools.core.fluent.region import (
-    AccessibilityRegionByRectangle,
-    FloatingRegionByRectangle,
-    RegionByRectangle,
-)
-from applitools.core.match_window_task import collect_regions_from_selectors
+from applitools.core import CheckSettings, MatchWindowTask
 
 
 @pytest.fixture
@@ -60,71 +53,6 @@ def test_perform_match_with_no_regions(
     assert ims.strict_regions == []
     assert ims.content_regions == []
     assert ims.floating_match_settings == []
-
-
-def test_collect_regions_from_selectors(mwt, eyes_base_mock):
-    REGIONS = [
-        Region(1, 1, 1, 1),
-        Region(2, 2, 2, 2),
-        Region(3, 3, 3, 3),
-        Region(4, 4, 4, 4),
-        Region(5, 5, 5, 5),
-        Region(6, 6, 6, 6),
-        Region(6, 6, 6, 6),
-        Region(7, 7, 7, 7),
-    ]
-    REGIONS_SELECTORS = [
-        [VisualGridSelector(".selector1", RegionByRectangle(Region(1, 1, 1, 1)))],
-        [],
-        [
-            VisualGridSelector(".selector2", RegionByRectangle(Region(2, 2, 2, 2))),
-            VisualGridSelector(".selector3", RegionByRectangle(Region(3, 3, 3, 3))),
-        ],
-        [
-            VisualGridSelector(".selector3", RegionByRectangle(Region(4, 4, 4, 4))),
-            VisualGridSelector(".selector3", RegionByRectangle(Region(5, 5, 5, 5))),
-            VisualGridSelector(".selector3", RegionByRectangle(Region(6, 6, 6, 6))),
-        ],
-        [
-            VisualGridSelector(
-                ".selector4",
-                FloatingRegionByRectangle(
-                    Rectangle(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0)
-                ),
-            ),
-        ],
-        [
-            VisualGridSelector(
-                ".selector5",
-                AccessibilityRegionByRectangle(
-                    AccessibilityRegion(
-                        7, 7, 7, 7, AccessibilityRegionType.GraphicalObject
-                    )
-                ),
-            )
-        ],
-        [],
-    ]
-    check_settings = CheckSettings()
-    image_match_settings = mwt.create_image_match_settings(
-        check_settings, eyes_base_mock
-    )
-    img = collect_regions_from_selectors(
-        image_match_settings, REGIONS, REGIONS_SELECTORS
-    )
-    assert img.ignore_regions == [Region(1, 1, 1, 1)]
-    assert img.strict_regions == [Region(2, 2, 2, 2), Region(3, 3, 3, 3)]
-    assert img.content_regions == [
-        Region(4, 4, 4, 4),
-        Region(5, 5, 5, 5),
-        Region(6, 6, 6, 6),
-    ]
-    assert img.floating_match_settings == [
-        FloatingMatchSettings(Region(6, 6, 6, 6), FloatingBounds(0, 2, 0, 0))
-    ]
-    assert img.accessibility == [
-        AccessibilityRegion(7, 7, 7, 7, AccessibilityRegionType.GraphicalObject)
-    ]
 
 
 def test_perform_match_collect_regions_from_screenshot(
