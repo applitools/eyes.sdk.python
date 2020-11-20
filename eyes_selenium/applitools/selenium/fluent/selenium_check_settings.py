@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Optional, Text, Tuple, overload
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, overload, Dict
 
 import attr
 from selenium.webdriver.common.by import By
@@ -95,96 +95,96 @@ class SeleniumCheckSettings(CheckSettings):
     _frame = attr.ib(default=None)
 
     @overload  # noqa
-    def layout(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def layout(self, *by, padding=None):
+        # type: (*BySelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def layout(self, *element, padding=None):
+        # type: (*AnyWebElement, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def layout(self, *css_selector, padding=None):
+        # type: (*CssSelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def layout(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
+    def layout(self, *region, padding=None):
+        # type: (*Region, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
-    def layout(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).layout(*region)
+    def layout(self, *region, padding=None):  # noqa
+        return super(SeleniumCheckSettings, self).layout(*region, padding=padding)
 
     @overload  # noqa
-    def strict(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def strict(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def strict(self, *by, padding=None):
+        # type: (*BySelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def strict(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def strict(self, *element, padding=None):
+        # type: (*AnyWebElement, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def strict(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
-        pass
-
-    def strict(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).strict(*region)
-
-    @overload  # noqa
-    def content(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def strict(self, *css_selector, padding=None):
+        # type: (*CssSelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def strict(self, *region, padding=None):
+        # type: (*Region, Optional[Dict])  -> SeleniumCheckSettings
+        pass
+
+    def strict(self, *region, padding=None):  # noqa
+        return super(SeleniumCheckSettings, self).strict(*region, padding=padding)
+
+    @overload  # noqa
+    def content(self, *by, padding=None):
+        # type: (*BySelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def content(self, *element, padding=None):
+        # type: (*AnyWebElement, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def content(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
-        pass
-
-    def content(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).content(*region)
-
-    @overload  # noqa
-    def ignore(self, *by):
-        # type: (*BySelector)  -> SeleniumCheckSettings
+    def content(self, *css_selector, padding=None):
+        # type: (*CssSelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *element):
-        # type: (*AnyWebElement)  -> SeleniumCheckSettings
+    def content(self, *region, padding=None):
+        # type: (*Region, Optional[Dict])  -> SeleniumCheckSettings
+        pass
+
+    def content(self, *region, padding=None):  # noqa
+        return super(SeleniumCheckSettings, self).content(*region, padding=padding)
+
+    @overload  # noqa
+    def ignore(self, *by, padding=None):
+        # type: (*BySelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *css_selector):
-        # type: (*CssSelector)  -> SeleniumCheckSettings
+    def ignore(self, *element, padding=None):
+        # type: (*AnyWebElement, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
-    def ignore(self, *region):
-        # type: (*Region)  -> SeleniumCheckSettings
+    def ignore(self, *css_selector, padding=None):
+        # type: (*CssSelector, Optional[Dict])  -> SeleniumCheckSettings
         pass
 
-    def ignore(self, *region):  # noqa
-        return super(SeleniumCheckSettings, self).ignore(*region)
+    @overload  # noqa
+    def ignore(self, *region, padding=None):
+        # type: (*Region, Optional[Dict])  -> SeleniumCheckSettings
+        pass
+
+    def ignore(self, *region, padding=None):  # noqa
+        return super(SeleniumCheckSettings, self).ignore(*region, padding=padding)
 
     @overload  # noqa
     def floating(self, max_offset, region):
@@ -307,19 +307,19 @@ class SeleniumCheckSettings(CheckSettings):
         self.values.script_hooks[BEFORE_CAPTURE_SCREENSHOT] = hook
         return self
 
-    def _region_provider_from(self, region, method_name):
+    def _region_provider_from(self, region, method_name, padding):
         if isinstance(region, basestring):
             logger.debug("{name}: RegionByCssSelector".format(name=method_name))
-            return RegionBySelector(By.CSS_SELECTOR, region)
+            return RegionBySelector(By.CSS_SELECTOR, region, padding)
         if is_list_or_tuple(region):
             by, val = region
             logger.debug("{name}: RegionBySelector".format(name=method_name))
-            return RegionBySelector(by, val)
+            return RegionBySelector(by, val, padding)
         elif is_webelement(region):
             logger.debug("{name}: RegionByElement".format(name=method_name))
-            return RegionByElement(region)
+            return RegionByElement(region, padding)
         return super(SeleniumCheckSettings, self)._region_provider_from(
-            region, method_name
+            region, method_name, padding
         )
 
     def _set_scroll_root_selector(self, by, value):

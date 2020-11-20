@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload, Dict
 
 import attr
 
@@ -67,15 +67,15 @@ class CheckSettings(object):
         init=False, factory=CheckSettingsValues
     )  # type: CheckSettingsValues
 
-    def layout(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def layout(self, *regions, padding=None):
+        # type: (Self, *Region, Optional[Dict])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         if not regions:
             self.values.match_level = MatchLevel.LAYOUT
             return self
         try:
             self.values.layout_regions = self.__regions(
-                regions, method_name="layout_regions"
+                regions, method_name="layout_regions", padding=padding
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .layout()"), e)
@@ -86,40 +86,40 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.EXACT
         return self
 
-    def strict(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def strict(self, *regions, padding=None):
+        # type: (Self, *Region, Optional[Dict])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         if not regions:
             self.values.match_level = MatchLevel.STRICT
             return self
         try:
             self.values.strict_regions = self.__regions(
-                regions, method_name="strict_regions"
+                regions, method_name="strict_regions", padding=padding
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .strict()"), e)
         return self
 
-    def content(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def content(self, *regions, padding=None):
+        # type: (Self, *Region, Optional[Dict])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
             return self
         try:
             self.values.content_regions = self.__regions(
-                regions, method_name="content_regions"
+                regions, method_name="content_regions", padding=padding
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .content()"), e)
         return self
 
-    def ignore(self, *regions):
-        # type: (Self, *Region)  -> Self
+    def ignore(self, *regions, padding=None):
+        # type: (Self, *Region, Optional[Dict])  -> Self
         """ Adds one or more ignore regions. """
         try:
             self.values.ignore_regions = self.__regions(
-                regions, method_name="ignore_regions"
+                regions, method_name="ignore_regions", padding=padding
             )
         except TypeError as e:
             raise_from(TypeError, e)
@@ -260,7 +260,7 @@ class CheckSettings(object):
         self.values.timeout = timeout
         return self
 
-    def __regions(self, regions, method_name):
+    def __regions(self, regions, method_name, padding):
         if not regions:
             raise TypeError(
                 "{name} method called without arguments!".format(name=method_name)
@@ -268,14 +268,16 @@ class CheckSettings(object):
 
         regions_list = getattr(self.values, method_name)
         for region in regions:
-            regions_list.append(self._region_provider_from(region, method_name))
+            regions_list.append(
+                self._region_provider_from(region, method_name, padding)
+            )
         return regions_list
 
-    def _region_provider_from(self, region, method_name):
+    def _region_provider_from(self, region, method_name, padding):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
-            return RegionByRectangle(region)
+            return RegionByRectangle(region, padding)
         raise TypeError(
             "Unsupported region: \n\ttype: {} \n\tvalue: {}".format(
                 type(region), region

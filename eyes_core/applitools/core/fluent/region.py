@@ -10,7 +10,7 @@ from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Union
+    from typing import List, Optional, Union, Dict, Text
 
     from applitools.common.capture import EyesScreenshot
     from applitools.core.eyes_base import EyesBase
@@ -26,6 +26,8 @@ __all__ = (
 
 
 class GetRegion(ABC):
+    padding = attr.ib()
+
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List
@@ -61,10 +63,15 @@ class GetAccessibilityRegion(GetRegion, ABC):
 @attr.s
 class RegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Union[Region, Rectangle]
+    _padding = attr.ib()
 
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List[Region]
-        return [Region.from_(self._region)]
+        return [
+            self._region + self._padding
+            if self._padding
+            else Region.from_(self._region)
+        ]
 
 
 @attr.s

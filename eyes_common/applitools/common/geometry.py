@@ -445,6 +445,30 @@ class Region(Rectangle):
             type=self.coordinates_type.value,
         )
 
+    def __add__(self, other):
+        # type: (Union[Region, Dict]) -> Region
+        if (
+            isinstance(other, Region)
+            and self.coordinates_type == other.coordinates_type
+        ):
+            return Region(
+                left=self.left + other.left,
+                top=self.top + other.top,
+                width=self.width + other.width,
+                height=self.height + other.height,
+                coordinates_type=self.coordinates_type,
+            )
+        elif isinstance(other, dict):
+            return Region(
+                left=self.left + other.get("left", 0),
+                top=self.top + other.get("top", 0),
+                width=self.width + other.get("width", 0),
+                height=self.height + other.get("height", 0),
+                coordinates_type=self.coordinates_type,
+            )
+        else:
+            raise TypeError("Unsupported flow")
+
     @classmethod  # noqa
     @overload
     def from_(cls, location, image):
