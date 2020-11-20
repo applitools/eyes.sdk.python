@@ -289,7 +289,7 @@ def test_create_dom_snapshot_loop_timeout():
     script.run.return_value = ProcessPageResult(ProcessPageStatus.WIP)
     script.poll_result.return_value = ProcessPageResult(ProcessPageStatus.WIP)
 
-    with pytest.raises(DomSnapshotTimeout, match="took more than 5 ms"):
+    with pytest.raises(DomSnapshotTimeout):
         create_dom_snapshot_loop(script, 5, 2, 3)
 
 
