@@ -19,6 +19,7 @@ if typing.TYPE_CHECKING:
     from typing import Any, Callable, Dict, List, Optional, Text, Union
 
     from applitools.selenium import EyesWebDriver
+    from applitools.selenium.webdriver import _EyesSwitchTo
 
 MAX_CHUNK_BYTES_IOS = 10 * 1024 * 1024
 MAX_CHUNK_BYTES_GENERIC = 50 * 1024 * 1024
@@ -190,7 +191,7 @@ class DomSnapshotScriptForIE(DomSnapshotScript):
 def create_dom_snapshot_loop(
     script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
 ):
-    # type: (DomSnapshotScript, int, int, int, **Any) -> Dict
+    # type: (DomSnapshotScript, float, int, int, **Any) -> Dict
     chunks = []
     result = script.run(**script_args)
     while result.status is ProcessPageStatus.WIP or (
@@ -217,31 +218,39 @@ def create_dom_snapshot_loop(
 
 
 def create_cross_frames_dom_snapshots(
-    switch_to, script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
+    switch_to,  # type: _EyesSwitchTo
+    script,  # type: DomSnapshotScript
+    deadline_time,  # type: float
+    poll_interval_ms,  # type: int
+    chunk_byte_length,  # type: int
+    **script_args,  # type: Any
 ):
+    # type: (...) -> Dict
     dom = create_dom_snapshot_loop(
         script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
     )
-    return process_dom_snapshot_frames(
+    process_dom_snapshot_frames(
         dom,
         switch_to,
         script,
         deadline_time,
         poll_interval_ms,
         chunk_byte_length,
-        **script_args
+        **script_args,
     )
+    return dom
 
 
 def process_dom_snapshot_frames(
-    dom,
-    switch_to,
-    script,
-    deadline_time,
-    poll_interval_ms,
-    chunk_byte_length,
-    **script_args
+    dom,  # type: Dict
+    switch_to,  # type : _EyesSwitchTo
+    script,  # type: DomSnapshotScript
+    deadline_time,  # type: float
+    poll_interval_ms,  # type: int
+    chunk_byte_length,  # type: int
+    **script_args,  # type: Any
 ):
+    # type: (...) -> None
     for frame in dom["crossFrames"]:
         selector = frame.get("selector", None)
         if not selector:
@@ -258,7 +267,7 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
-                    **script_args
+                    **script_args,
                 )
                 dom.setdefault("frames", []).append(frame_dom)
                 dom["cdt"][frame_index]["attributes"].append(
@@ -286,7 +295,7 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
-                    **script_args
+                    **script_args,
                 )
         except Exception as e:
             logger.warning(
@@ -294,5 +303,3 @@ def process_dom_snapshot_frames(
                     selector, e
                 )
             )
-
-    return dom
