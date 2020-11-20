@@ -277,7 +277,7 @@ class CheckSettings(object):
         logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
             logger.debug("{name}: RegionByRectangle".format(name=method_name))
-            return RegionByRectangle(region, padding)
+            return RegionByRectangle(region)
         raise TypeError(
             "Unsupported region: \n\ttype: {} \n\tvalue: {}".format(
                 type(region), region
