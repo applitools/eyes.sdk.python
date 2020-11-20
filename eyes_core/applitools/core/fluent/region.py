@@ -8,12 +8,12 @@ from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
-from applitools.common.utils.custom_types import MatchRegionPadding
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Union
 
     from applitools.common.capture import EyesScreenshot
+    from applitools.common.utils.custom_types import MatchRegionPadding
     from applitools.core.eyes_base import EyesBase
 
 __all__ = (
