@@ -433,6 +433,7 @@ class ServerConnector(object):
         except EyesError as e:
             raise_from(EyesError("Failed to Upload Image"), e)
 
+    @retry()
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """
@@ -471,6 +472,7 @@ class ServerConnector(object):
         )
         return json_utils.attr_from_response(response, MatchResult)
 
+    @retry()
     def post_dom_capture(self, dom_json):
         # type: (Text) -> Optional[Text]
         """
@@ -494,6 +496,7 @@ class ServerConnector(object):
         full_url = urljoin(self._render_info.service_url, url_resource)
         return self._com.request(method, full_url, headers=headers, **kwargs)
 
+    @retry()
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
@@ -511,6 +514,7 @@ class ServerConnector(object):
         self._render_info = json_utils.attr_from_response(response, RenderingInfo)
         return self._render_info
 
+    @retry()
     def render(self, *render_requests):
         # type: (*RenderRequest) -> List[RunningRender]
         logger.debug("render called with {}".format(render_requests))
@@ -535,6 +539,7 @@ class ServerConnector(object):
             )
         )
 
+    @retry()
     def render_put_resource(self, render_id, resource):
         # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
@@ -596,6 +601,7 @@ class ServerConnector(object):
             response.status_code = requests.codes.no_response
             return response
 
+    @retry()
     def render_status_by_id(self, *render_ids):
         # type: (*Text) -> List[RenderStatusResults]
         argument_guard.not_none(render_ids)
