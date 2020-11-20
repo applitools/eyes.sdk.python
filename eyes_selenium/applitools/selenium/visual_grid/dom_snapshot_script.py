@@ -34,11 +34,7 @@ class DomSnapshotScriptError(DomSnapshotFailure):
 
 
 class DomSnapshotTimeout(DomSnapshotFailure):
-    def __init__(self, timeout_ms):
-        # type: (int) -> None
-        super(DomSnapshotTimeout, self).__init__(
-            "Dom-Snapshot polling took more than {} ms".format(timeout_ms)
-        )
+    pass
 
 
 def create_dom_snapshot(
@@ -201,7 +197,7 @@ def create_dom_snapshot_loop(
         result.status is ProcessPageStatus.SUCCESS_CHUNKED and not result.done
     ):
         if time() > deadline_time:
-            raise DomSnapshotTimeout(deadline_time)
+            raise DomSnapshotTimeout
         result = script.poll_result(chunk_byte_length)
         if result.status is ProcessPageStatus.WIP:
             datetime_utils.sleep(
