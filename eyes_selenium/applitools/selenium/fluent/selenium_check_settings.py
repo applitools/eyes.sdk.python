@@ -33,7 +33,7 @@ if TYPE_CHECKING:
         CssSelector,
         FrameIndex,
         FrameNameOrId,
-        MatchRegionPadding,
+        CodedRegionPadding,
     )
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
@@ -97,22 +97,22 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def layout(self, *by, **kwargs):
-        # type: (*BySelector,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*BySelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def layout(self, *element, **kwargs):
-        # type: (*AnyWebElement,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def layout(self, *css_selector, **kwargs):
-        # type: (*CssSelector,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*CssSelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def layout(self, *region, **kwargs):
-        # type: (*Region,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Region,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     def layout(self, *region, **kwargs):  # noqa
@@ -120,22 +120,22 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def strict(self, *by, **kwargs):
-        # type: (*BySelector, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def strict(self, *element, **kwargs):
-        # type: (*AnyWebElement,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def strict(self, *css_selector, **kwargs):
-        # type: (*CssSelector,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*CssSelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def strict(self, *region, **kwargs):
-        # type: (*Region, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     def strict(self, *region, **kwargs):  # noqa
@@ -143,22 +143,22 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def content(self, *by, **kwargs):
-        # type: (*BySelector, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def content(self, *element, **kwargs):
-        # type: (*AnyWebElement,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def content(self, *css_selector, **kwargs):
-        # type: (*CssSelector, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*CssSelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def content(self, *region, **kwargs):
-        # type: (*Region, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     def content(self, *region, **kwargs):  # noqa
@@ -166,22 +166,22 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def ignore(self, *by, **kwargs):
-        # type: (*BySelector, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*BySelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def ignore(self, *element, **kwargs):
-        # type: (*AnyWebElement,**Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*AnyWebElement,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def ignore(self, *css_selector, **kwargs):
-        # type: (*CssSelector, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*CssSelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
     def ignore(self, *region, **kwargs):
-        # type: (*Region, **Optional[MatchRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     def ignore(self, *region, **kwargs):  # noqa

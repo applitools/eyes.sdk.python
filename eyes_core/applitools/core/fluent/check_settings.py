@@ -18,7 +18,7 @@ from .region import (
 )
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import MatchRegionPadding, Num
+    from applitools.common.utils.custom_types import CodedRegionPadding, Num
 
 __all__ = ("CheckSettings", "CheckSettingsValues")
 
@@ -68,7 +68,7 @@ class CheckSettings(object):
     )  # type: CheckSettingsValues
 
     def layout(self, *regions, **kwargs):
-        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         if not regions:
             self.values.match_level = MatchLevel.LAYOUT
@@ -87,7 +87,7 @@ class CheckSettings(object):
         return self
 
     def strict(self, *regions, **kwargs):
-        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         if not regions:
             self.values.match_level = MatchLevel.STRICT
@@ -101,7 +101,7 @@ class CheckSettings(object):
         return self
 
     def content(self, *regions, **kwargs):
-        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
@@ -115,7 +115,7 @@ class CheckSettings(object):
         return self
 
     def ignore(self, *regions, **kwargs):
-        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
+        # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
         """ Adds one or more ignore regions. """
         try:
             self.values.ignore_regions = self.__regions(

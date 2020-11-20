@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
         AnyWebDriver,
         AnyWebElement,
-        MatchRegionPadding,
+        CodedRegionPadding,
     )
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
@@ -33,7 +33,7 @@ __all__ = (
 
 
 def _region_from_element(element, screenshot, padding=None):
-    # type: (AnyWebElement,EyesWebDriverScreenshot,Optional[MatchRegionPadding])->Region
+    # type: (AnyWebElement,EyesWebDriverScreenshot,Optional[CodedRegionPadding])->Region
     location = element.location
     if screenshot:
         # Element's coordinates are context relative, so we need to convert them first.
@@ -68,7 +68,7 @@ class GetSeleniumRegion(GetRegion, ABC):
 @attr.s
 class RegionByElement(GetSeleniumRegion):
     _element = attr.ib()  # type: AnyWebElement
-    _padding = attr.ib(default=None)  # type: Optional[MatchRegionPadding]
+    _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
@@ -86,7 +86,7 @@ class RegionBySelector(GetSeleniumRegion):
 
     _by = attr.ib()
     _value = attr.ib()
-    _padding = attr.ib(default=None)  # type: Optional[MatchRegionPadding]
+    _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
