@@ -433,7 +433,6 @@ class ServerConnector(object):
         except EyesError as e:
             raise_from(EyesError("Failed to Upload Image"), e)
 
-    @retry()
     def match_window(self, running_session, match_data):
         # type: (RunningSession, MatchWindowData) -> MatchResult
         """

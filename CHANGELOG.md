@@ -1,4 +1,4 @@
-## [vNext]
+## [4.12.0] - 2020-11-20
 ### Added
 - Support cross origin iframes in UFG [Trello 551](https://trello.com/c/iJKPvd75)
 - Add x-applitools-eyes-client-request-id header to API requests [Trello 2332](https://trello.com/c/yuBGjW6u)
