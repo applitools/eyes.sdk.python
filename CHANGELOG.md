@@ -5,6 +5,7 @@
 - Add padding option to match regions [Trello 2337](https://trello.com/c/RNNcgMv7)
 ### Updated
 - Pin keyring dependency for travis deploy stage. Update some tests [Trello 2309](https://trello.com/c/aIWIFRcY)
+- Add more retries for connection to server [Trello 2335](https://trello.com/c/jVEn0ZfD)
 
 ## [4.11.5] - 2020-11-17
 ### Fixed
