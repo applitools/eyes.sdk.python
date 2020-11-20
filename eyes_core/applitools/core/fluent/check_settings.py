@@ -67,15 +67,15 @@ class CheckSettings(object):
         init=False, factory=CheckSettingsValues
     )  # type: CheckSettingsValues
 
-    def layout(self, *regions, padding=None):
-        # type: (Self, *Region, Optional[MatchRegionPadding])  -> Self
+    def layout(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
         if not regions:
             self.values.match_level = MatchLevel.LAYOUT
             return self
         try:
             self.values.layout_regions = self.__regions(
-                regions, method_name="layout_regions", padding=padding
+                regions, method_name="layout_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .layout()"), e)
@@ -86,40 +86,40 @@ class CheckSettings(object):
         self.values.match_level = MatchLevel.EXACT
         return self
 
-    def strict(self, *regions, padding=None):
-        # type: (Self, *Region, Optional[MatchRegionPadding])  -> Self
+    def strict(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT`. """
         if not regions:
             self.values.match_level = MatchLevel.STRICT
             return self
         try:
             self.values.strict_regions = self.__regions(
-                regions, method_name="strict_regions", padding=padding
+                regions, method_name="strict_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .strict()"), e)
         return self
 
-    def content(self, *regions, padding=None):
-        # type: (Self, *Region, Optional[MatchRegionPadding])  -> Self
+    def content(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
         """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT`. """
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
             return self
         try:
             self.values.content_regions = self.__regions(
-                regions, method_name="content_regions", padding=padding
+                regions, method_name="content_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError("Wrong argument in .content()"), e)
         return self
 
-    def ignore(self, *regions, padding=None):
-        # type: (Self, *Region, Optional[MatchRegionPadding])  -> Self
+    def ignore(self, *regions, **kwargs):
+        # type: (Self, *Region, **Optional[MatchRegionPadding])  -> Self
         """ Adds one or more ignore regions. """
         try:
             self.values.ignore_regions = self.__regions(
-                regions, method_name="ignore_regions", padding=padding
+                regions, method_name="ignore_regions", padding=kwargs.get("padding")
             )
         except TypeError as e:
             raise_from(TypeError, e)
@@ -295,9 +295,7 @@ class CheckSettings(object):
         )
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
-        if (
-            isinstance(region, Region) or isinstance(region, Rectangle)
-        ) and accessibility_region_type:
+        if isinstance(region, (Region, Rectangle)) and accessibility_region_type:
             logger.debug("accessibility: AccessibilityRegionByRectangle")
             return AccessibilityRegionByRectangle(region, accessibility_region_type)
         elif isinstance(region, AccessibilityRegion):
