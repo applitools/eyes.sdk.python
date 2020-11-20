@@ -250,8 +250,8 @@ def test_check_window_with_match_region_paddings__fluent(
         .fully()
         .ignore(".ignore", padding=dict(left=10))
         .content("#stretched", padding=dict(top=10))
-        .layout("#centered", padding=dict(top=10, width=50))
-        .strict("overflowing-div", padding=dict(height=100)),
+        .layout("#centered", padding=dict(top=10, right=50))
+        .strict("overflowing-div", padding=dict(bottom=100)),
     )
     check_test_result.send(
         [
