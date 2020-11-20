@@ -446,7 +446,7 @@ class Region(Rectangle):
             type=self.coordinates_type.value,
         )
 
-    def __add__(self, other):
+    def padding(self, other):
         # type: (Union[Region, Dict]) -> Region
         if (
             isinstance(other, Region)

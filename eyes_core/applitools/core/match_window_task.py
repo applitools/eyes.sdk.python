@@ -95,7 +95,7 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
         ):
             padding = getattr(region_selector.category, "padding", None)
             if padding:
-                region = region + padding
+                region = region.padding(padding)
             m_specific_regions.append(region)
         prev_count = next_count
 

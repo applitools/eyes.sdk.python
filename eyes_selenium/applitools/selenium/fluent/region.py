@@ -45,7 +45,7 @@ def _region_from_element(element, screenshot, padding=None):
     region = Region.from_(adjusted_location, element.size)
 
     if padding:
-        region = region + padding
+        region = region.padding(padding)
     return region
 
 
