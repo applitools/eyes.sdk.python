@@ -84,11 +84,19 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     ]
     r_selector_counts = [len(r) for r in region_selectors]  # mapping of
     prev_count = 0
-    for selectors_count, m_specific_regions in zip(r_selector_counts, mutable_regions):
+    for i, (selectors_count, m_specific_regions) in enumerate(
+        zip(r_selector_counts, mutable_regions)
+    ):
         if selectors_count == 0:
             continue
         next_count = prev_count + selectors_count
-        m_specific_regions.extend(regions[prev_count:next_count])
+        for region_selector, region in zip(
+            region_selectors[i], regions[prev_count:next_count]
+        ):
+            padding = getattr(region_selector.category, "padding", None)
+            if padding:
+                region = region + padding
+            m_specific_regions.append(region)
         prev_count = next_count
 
     location = Point.ZERO()

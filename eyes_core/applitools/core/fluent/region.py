@@ -26,12 +26,15 @@ __all__ = (
 
 
 class GetRegion(ABC):
-    padding = attr.ib()
-
     @abc.abstractmethod
     def get_regions(self, eyes, screenshot):
         # type: (EyesBase, EyesScreenshot) -> List
         pass
+
+    @property
+    def padding(self):
+        # type: () -> Dict[Text, int]
+        return getattr(self, "_padding", None)
 
 
 class GetFloatingRegion(GetRegion, ABC):
