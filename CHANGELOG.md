@@ -1,5 +1,6 @@
 ##[vNext]
 ### Added
+- Support cross origin iframes in UFG [Trello 551](https://trello.com/c/iJKPvd75)
 - Add x-applitools-eyes-client-request-id header to API requests [Trello 2332](https://trello.com/c/yuBGjW6u)
 ### Updated
 - Pin keyring dependency for travis deploy stage. Update some tests [Trello 2309](https://trello.com/c/aIWIFRcY)
