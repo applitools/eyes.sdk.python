@@ -17,6 +17,7 @@ from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
     from .ultrafastgrid.render_browser_info import IRenderBrowserinfo
+    from .utils.custom_types import CodedRegionPadding
 
 __all__ = (
     "Point",
@@ -447,24 +448,13 @@ class Region(Rectangle):
         )
 
     def padding(self, other):
-        # type: (Union[Region, Dict]) -> Region
-        if (
-            isinstance(other, Region)
-            and self.coordinates_type == other.coordinates_type
-        ):
-            return Region(
-                left=self.left + other.left,
-                top=self.top + other.top,
-                width=self.width + other.width,
-                height=self.height + other.height,
-                coordinates_type=self.coordinates_type,
-            )
-        elif isinstance(other, dict):
+        # type: (CodedRegionPadding) -> Region
+        if isinstance(other, dict):
             return Region(
                 left=self.left + other.get("left", 0),
                 top=self.top + other.get("top", 0),
-                width=self.width + other.get("width", 0),
-                height=self.height + other.get("height", 0),
+                width=self.width + other.get("right", 0),
+                height=self.height + other.get("bottom", 0),
                 coordinates_type=self.coordinates_type,
             )
         else:
