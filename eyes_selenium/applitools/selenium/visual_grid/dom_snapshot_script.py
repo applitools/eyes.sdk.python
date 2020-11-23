@@ -25,6 +25,8 @@ MAX_CHUNK_BYTES_IOS = 10 * 1024 * 1024
 MAX_CHUNK_BYTES_GENERIC = 50 * 1024 * 1024
 SCRIPT_POLL_INTERVAL_MS = 1000
 
+CORS_IFRAME_PROCESSING_ENABLED = False
+
 
 class DomSnapshotFailure(Exception):
     pass
@@ -229,15 +231,16 @@ def create_cross_frames_dom_snapshots(
     dom = create_dom_snapshot_loop(
         script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
     )
-    process_dom_snapshot_frames(
-        dom,
-        switch_to,
-        script,
-        deadline_time,
-        poll_interval_ms,
-        chunk_byte_length,
-        **script_args
-    )
+    if CORS_IFRAME_PROCESSING_ENABLED:
+        process_dom_snapshot_frames(
+            dom,
+            switch_to,
+            script,
+            deadline_time,
+            poll_interval_ms,
+            chunk_byte_length,
+            **script_args
+        )
     return dom
 
 
