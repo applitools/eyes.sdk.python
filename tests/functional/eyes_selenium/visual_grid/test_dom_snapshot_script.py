@@ -17,7 +17,6 @@ from applitools.selenium.visual_grid.dom_snapshot_script import (
     DomSnapshotTimeout,
     ProcessPageResult,
     ProcessPageStatus,
-    create_cross_frames_dom_snapshots,
     create_dom_snapshot,
     create_dom_snapshot_loop,
 )
@@ -390,6 +389,7 @@ def test_create_dom_snapshot_with_cors_iframe(driver):
 
 
 def test_create_dom_snapshot_has_cors_iframe_data(driver):
+    dom_snapshot_script.CORS_IFRAME_PROCESSING_ENABLED = True
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
