@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Temporarily disabled support for cross origin iframes in UFG [Trello 2335](https://trello.com/c/jVEn0ZfD)
+
 ## [4.12.0] - 2020-11-20
 ### Added
 - Support cross origin iframes in UFG [Trello 551](https://trello.com/c/iJKPvd75)
