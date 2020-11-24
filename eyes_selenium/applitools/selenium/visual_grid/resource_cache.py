@@ -6,6 +6,11 @@ from concurrent.futures import Future, ThreadPoolExecutor
 
 from applitools.common import VGResource, logger
 
+if typing.TYPE_CHECKING:
+    from typing import Dict, Iterable, Text
+
+    from applitools.selenium.visual_grid import EyesConnector
+
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def __init__(self):
@@ -92,12 +97,13 @@ class PutCache(object):
 
     def put(
         self,
-        urls,
-        full_request_resources,
-        render_id,
-        eyes_connector,
-        force=False,
+        urls,  # type: Iterable[Text]
+        full_request_resources,  # type: Dict[Text, VGResource]
+        render_id,  # type: Text
+        eyes_connector,  # type: EyesConnector
+        force=False,  # type: bool
     ):
+        # type: (...) -> None
         logger.debug(
             "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
         )
@@ -117,14 +123,17 @@ class PutCache(object):
                 self._currently_uploading.append(future)
 
     def wait_for_all_uploaded(self):
+        # type: () -> None
         with self._lock:
             for future in self._currently_uploading:
                 future.result()
             self._currently_uploading.clear()
 
     def shutdown(self):
+        # type: () -> None
         with self._lock:
             self._executor.shutdown()
 
     def __del__(self):
+        # type: () -> None
         self.shutdown()
