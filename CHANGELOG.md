@@ -1,6 +1,6 @@
 ## [vNext]
-### Updated
-- Temporarily disabled support for cross origin iframes in UFG [Trello 2335](https://trello.com/c/jVEn0ZfD)
+### Fixed
+- Steps/checks stuck in running state [Trello 2340](https://trello.com/c/yZUP5h0f)
 
 ## [4.12.0] - 2020-11-20
 ### Added
