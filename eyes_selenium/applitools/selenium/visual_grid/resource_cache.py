@@ -94,11 +94,11 @@ class PutCache(object):
         eyes_connector,
         force=False,
     ):
+        logger.debug(
+            "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
+        )
         with self._lock:
             for url in urls:
-                logger.debug(
-                    "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
-                )
                 resource = full_request_resources.get(url)
                 if resource.hash in self._sent_hashes:
                     if not force:

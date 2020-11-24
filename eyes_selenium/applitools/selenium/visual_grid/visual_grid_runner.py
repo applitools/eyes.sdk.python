@@ -85,7 +85,7 @@ class VisualGridRunner(EyesRunner):
             else:
                 logger.debug("%s task ran" % task)
 
-        self.put_cache.executor.shutdown()
+        del self.put_cache
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
