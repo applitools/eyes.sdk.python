@@ -81,7 +81,11 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
 
 class PutCache(object):
     def __init__(self):
-        self._executor = ThreadPoolExecutor(thread_name_prefix=self.__class__.__name__)
+        if sys.version_info[:2] >= (3, 6):
+            executor_args = dict(thread_name_prefix=self.__class__.__name__)
+        else:
+            executor_args = dict()
+        self._executor = ThreadPoolExecutor(**executor_args)
         self._lock = threading.Lock()
         self._sent_hashes = set()
         self._currently_uploading = deque()
@@ -105,18 +109,22 @@ class PutCache(object):
                         continue
                 else:
                     self._sent_hashes.add(resource.hash)
-                future = self._executor.submit(
-                    lambda: eyes_connector.render_put_resource(render_id, resource)
-                )
+
+                def put_resource(resource=resource):
+                    eyes_connector.render_put_resource(render_id, resource)
+
+                future = self._executor.submit(put_resource)
                 self._currently_uploading.append(future)
 
     def wait_for_all_uploaded(self):
-        while self._currently_uploading:
-            with self._lock:
-                if self._currently_uploading:
-                    self._currently_uploading[0].result()
-                    self._currently_uploading.popleft()
+        with self._lock:
+            for future in self._currently_uploading:
+                future.result()
+            self._currently_uploading.clear()
 
-    def __del__(self):
+    def shutdown(self):
         with self._lock:
             self._executor.shutdown()
+
+    def __del__(self):
+        self.shutdown()
