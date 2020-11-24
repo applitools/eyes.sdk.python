@@ -1,6 +1,7 @@
 import sys
 import threading
 import typing
+from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 
 from applitools.common import VGResource, logger
@@ -76,3 +77,46 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def process_all(self):
         with self.lock:
             return [self[r_url] for r_url in self]
+
+
+class PutCache(object):
+    def __init__(self):
+        self._executor = ThreadPoolExecutor(thread_name_prefix=self.__class__.__name__)
+        self._lock = threading.Lock()
+        self._sent_hashes = set()
+        self._currently_uploading = deque()
+
+    def put(
+        self,
+        urls,
+        full_request_resources,
+        render_id,
+        eyes_connector,
+        force=False,
+    ):
+        with self._lock:
+            for url in urls:
+                logger.debug(
+                    "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
+                )
+                resource = full_request_resources.get(url)
+                if resource.hash in self._sent_hashes:
+                    if not force:
+                        continue
+                else:
+                    self._sent_hashes.add(resource.hash)
+                future = self._executor.submit(
+                    lambda: eyes_connector.render_put_resource(render_id, resource)
+                )
+                self._currently_uploading.append(future)
+
+    def wait_for_all_uploaded(self):
+        while self._currently_uploading:
+            with self._lock:
+                if self._currently_uploading:
+                    self._currently_uploading[0].result()
+                    self._currently_uploading.popleft()
+
+    def __del__(self):
+        with self._lock:
+            self._executor.shutdown()

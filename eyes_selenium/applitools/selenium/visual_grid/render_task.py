@@ -29,6 +29,7 @@ if typing.TYPE_CHECKING:
     from applitools.common import Region, RenderingInfo, RenderStatusResults
     from applitools.selenium.visual_grid import (
         EyesConnector,
+        PutCache,
         ResourceCache,
         RunningTest,
     )
@@ -41,7 +42,7 @@ class RenderTask(VGTask):
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
-    put_cache = attr.ib(hash=False, repr=False)
+    put_cache = attr.ib(hash=False, repr=False)  # type: PutCache
     eyes_connector = attr.ib(hash=False, repr=False)  # type: EyesConnector
     rendering_info = attr.ib()  # type: RenderingInfo
     region_selectors = attr.ib(
@@ -69,24 +70,13 @@ class RenderTask(VGTask):
     def perform(self):  # noqa
         # type: () -> List[RenderStatusResults]
 
-        def get_and_put_resource(url, running_render):
-            # type: (str, RunningRender) -> VGResource
-            logger.debug(
-                "get_and_put_resource({0}, render_id={1}) call".format(
-                    url, running_render.render_id
-                )
-            )
-            resource = self.full_request_resources.get(url)
-            self.eyes_connector.render_put_resource(running_render.render_id, resource)
-            return resource
-
         requests = self.prepare_data_for_rg(self.script)
         fetch_fails = 0
         render_requests = None
         already_force_putted = False
         while True:
             try:
-                self.put_cache.process_all()
+                self.put_cache.wait_for_all_uploaded()
                 render_requests = self.eyes_connector.render(*requests)
             except Exception:
                 logger.exception("During rendering for requests {}".format(requests))
@@ -110,23 +100,25 @@ class RenderTask(VGTask):
                 need_more_resources = (
                     running_render.render_status == RenderStatus.NEED_MORE_RESOURCE
                 )
-                get_and_put_resource_wtih_render = partial(
-                    get_and_put_resource, running_render=running_render
-                )
                 dom_resource = requests[i].dom.resource
 
                 if self.is_force_put_needed and not already_force_putted:
-                    for url in self.full_request_resources:
-                        self.put_cache.fetch_and_store(
-                            url, get_and_put_resource_wtih_render, force=True
-                        )
+                    self.put_cache.put(
+                        self.full_request_resources,
+                        self.full_request_resources,
+                        running_render.render_id,
+                        self.eyes_connector,
+                        force=True,
+                    )
                     already_force_putted = True
 
                 if need_more_resources:
-                    for url in running_render.need_more_resources:
-                        self.put_cache.fetch_and_store(
-                            url, get_and_put_resource_wtih_render
-                        )
+                    self.put_cache.put(
+                        running_render.need_more_resources,
+                        self.full_request_resources,
+                        running_render.render_id,
+                        self.eyes_connector,
+                    )
 
                 if need_more_dom:
                     self.eyes_connector.render_put_resource(
