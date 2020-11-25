@@ -42,8 +42,8 @@ def create_dom_snapshot(
     driver,
     dont_fetch_resources,
     skip_resources,
-    timeout_ms=5 * 60 * 1000,
-    cross_origin_rendering=True,
+    timeout_ms,
+    cross_origin_rendering,
 ):
     # type: (EyesWebDriver, bool, List[Text], int, bool) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
