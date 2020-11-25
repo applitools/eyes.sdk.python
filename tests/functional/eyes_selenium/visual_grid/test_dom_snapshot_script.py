@@ -350,7 +350,7 @@ def test_create_dom_snapshot_loop_raises_if_poll_result_returns_error():
     )
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
-        create_dom_snapshot_loop(script, time() + 0.001, 2, 3)
+        create_dom_snapshot_loop(script, time() + 10, 2, 3)
 
 
 def test_create_dom_snapshot_loop_success():
