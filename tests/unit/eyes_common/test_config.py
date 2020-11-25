@@ -108,6 +108,7 @@ def test_default_values_selenium_configuration():
     conf = SeleniumConfiguration()
 
     assert conf.disable_browser_fetching is False
+    assert conf.enable_cross_origin_rendering is True
 
 
 def test_set_value_to_sel_conf():
@@ -116,6 +117,7 @@ def test_set_value_to_sel_conf():
         10000000
     ).set_stitch_mode(StitchMode.CSS).set_hide_scrollbars(True).set_hide_caret(True)
     conf.set_disable_browser_fetching(True)
+    conf.set_enable_cross_origin_rendering(False)
 
     assert conf.force_full_page_screenshot == True
     assert conf.wait_before_screenshots == 10000000
@@ -123,6 +125,7 @@ def test_set_value_to_sel_conf():
     assert conf.hide_scrollbars == True
     assert conf.hide_caret == True
     assert conf.disable_browser_fetching is True
+    assert conf.enable_cross_origin_rendering is False
 
 
 def test_add_browser():
