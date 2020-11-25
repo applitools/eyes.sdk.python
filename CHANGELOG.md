@@ -1,4 +1,4 @@
-## [vNext]
+## [4.13.0] - 2020-11-25
 ### Added
 - API to disable cross origin rendering [Trello 2346](https://trello.com/c/y7x48jmT)
 ### Fixed
