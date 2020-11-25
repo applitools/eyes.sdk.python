@@ -45,6 +45,7 @@ class Configuration(ConfigurationBase):
         default=None
     )  # type: Optional[Tuple[VisualGridOption]]
     disable_browser_fetching = attr.ib(default=False)  # type: bool
+    enable_cross_origin_rendering = attr.ib(default=True)  # type: bool
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -83,6 +84,11 @@ class Configuration(ConfigurationBase):
     def set_disable_browser_fetching(self, disable_browser_fetching):
         # type: (bool) -> Configuration
         self.disable_browser_fetching = disable_browser_fetching
+        return self
+
+    def set_enable_cross_origin_rendering(self, enable_cross_origin_rendering):
+        # type: (bool) -> Configuration
+        self.enable_cross_origin_rendering = enable_cross_origin_rendering
         return self
 
     @overload  # noqa

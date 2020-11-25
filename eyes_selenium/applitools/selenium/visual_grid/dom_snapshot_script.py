@@ -39,9 +39,13 @@ class DomSnapshotTimeout(DomSnapshotFailure):
 
 
 def create_dom_snapshot(
-    driver, dont_fetch_resources, skip_resources, timeout_ms=5 * 60 * 1000
+    driver,
+    dont_fetch_resources,
+    skip_resources,
+    timeout_ms,
+    cross_origin_rendering,
 ):
-    # type: (EyesWebDriver, bool, List[Text], int) -> Dict
+    # type: (EyesWebDriver, bool, List[Text], int, bool) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
@@ -54,6 +58,7 @@ def create_dom_snapshot(
         deadline,
         SCRIPT_POLL_INTERVAL_MS,
         chunk_byte_length,
+        cross_origin_rendering,
         dont_fetch_resources=dont_fetch_resources,
         skip_resources=skip_resources,
         serialize_resources=True,
@@ -223,21 +228,23 @@ def create_cross_frames_dom_snapshots(
     deadline_time,  # type: float
     poll_interval_ms,  # type: int
     chunk_byte_length,  # type: int
+    cross_origin_rendering,  # type: bool
     **script_args  # type: Any
 ):
     # type: (...) -> Dict
     dom = create_dom_snapshot_loop(
         script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
     )
-    process_dom_snapshot_frames(
-        dom,
-        switch_to,
-        script,
-        deadline_time,
-        poll_interval_ms,
-        chunk_byte_length,
-        **script_args
-    )
+    if cross_origin_rendering:
+        process_dom_snapshot_frames(
+            dom,
+            switch_to,
+            script,
+            deadline_time,
+            poll_interval_ms,
+            chunk_byte_length,
+            **script_args
+        )
     return dom
 
 
@@ -267,12 +274,15 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
+                    cross_origin_rendering=True,
                     **script_args
                 )
                 dom.setdefault("frames", []).append(frame_dom)
+                frame_url = frame_dom["url"]
                 dom["cdt"][frame_index]["attributes"].append(
-                    {"name": "data-applitools-src", "value": frame_dom["url"]}
+                    {"name": "data-applitools-src", "value": frame_url}
                 )
+                logger.info("Created cross origin frame snapshot {}".format(frame_url))
         except Exception as e:
             logger.warning(
                 "Failed extracting cross frame with selector {}. Reason: {!r}".format(

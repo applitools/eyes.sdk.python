@@ -156,6 +156,7 @@ class VisualGridEyes(object):
                 dont_fetch_resources,
                 list(self.vg_manager.resource_cache.keys()),
                 DOM_EXTRACTION_TIMEOUT,
+                self.configure.enable_cross_origin_rendering,
             )
         except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)

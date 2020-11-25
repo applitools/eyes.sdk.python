@@ -224,7 +224,7 @@ def mocked_create_dom_snapshot_loop():
 def test_create_dom_snapshot_ie(mocked_create_dom_snapshot_loop):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = True
-    create_dom_snapshot(driver, False, [])
+    create_dom_snapshot(driver, False, [], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
@@ -246,13 +246,13 @@ def test_create_dom_snapshot_generic(mocked_create_dom_snapshot_loop):
     driver.user_agent.is_internet_explorer = False
 
     with mock.patch.object(dom_snapshot_script, "time", return_value=1.0) as time_mock:
-        create_dom_snapshot(driver, True, [""])
+        create_dom_snapshot(driver, True, [""], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
         mock.call(
             mock.ANY,
-            301,
+            1.001,
             1000,
             52428800,
             dont_fetch_resources=True,
@@ -267,7 +267,7 @@ def test_create_dom_snapshot_ios(mocked_create_dom_snapshot_loop):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = False
     driver.desired_capabilities = {"platformName": "ios"}
-    create_dom_snapshot(driver, True, [])
+    create_dom_snapshot(driver, True, [], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
@@ -350,7 +350,7 @@ def test_create_dom_snapshot_loop_raises_if_poll_result_returns_error():
     )
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
-        create_dom_snapshot_loop(script, time() + 0.001, 2, 3)
+        create_dom_snapshot_loop(script, time() + 10, 2, 3)
 
 
 def test_create_dom_snapshot_loop_success():
@@ -382,7 +382,7 @@ def test_create_dom_snapshot_with_cors_iframe(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, False, [])
+    dom = create_dom_snapshot(driver, False, [], 10000, True)
 
     assert len(dom["frames"][0]["crossFrames"]) == 1
     assert dom["frames"][0]["crossFrames"][0]["index"] == 16
@@ -393,7 +393,7 @@ def test_create_dom_snapshot_has_cors_iframe_data(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, False, [])
+    dom = create_dom_snapshot(driver, False, [], 10000, True)
 
     assert len(dom["frames"][0]["frames"]) == 1
     assert (
@@ -427,3 +427,12 @@ def test_has_cross_sub_frames_two_level_empty():
     }
 
     assert has_cross_subframes(dom) is False
+
+
+def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], 10000, False)
+
+    assert len(dom["frames"][0]["frames"]) == 0
