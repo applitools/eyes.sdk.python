@@ -433,6 +433,6 @@ def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, False, [], 1000, False)
+    dom = create_dom_snapshot(driver, False, [], 10000, False)
 
     assert len(dom["frames"][0]["frames"]) == 0
