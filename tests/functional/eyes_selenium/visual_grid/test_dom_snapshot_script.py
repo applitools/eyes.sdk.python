@@ -427,3 +427,12 @@ def test_has_cross_sub_frames_two_level_empty():
     }
 
     assert has_cross_subframes(dom) is False
+
+
+def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], cross_origin_rendering=False)
+
+    assert len(dom["frames"][0]["frames"]) == 0
