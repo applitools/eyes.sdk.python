@@ -205,7 +205,7 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
             test_name="UFG Mobile Web Happy Flow",
             batch=batch_info,
         ).add_browser(
-            IosDeviceInfo(IosDeviceName.iPhone_XR, ScreenOrientation.LANDSCAPE)
+            IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.LANDSCAPE)
         )
     )
     eyes.open(driver, viewport_size=RectangleSize(800, 600))
