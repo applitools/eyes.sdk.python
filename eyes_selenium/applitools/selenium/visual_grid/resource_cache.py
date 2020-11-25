@@ -87,11 +87,10 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
 
 class PutCache(object):
     def __init__(self):
+        kwargs = {}
         if sys.version_info[:2] >= (3, 6):
-            executor_args = dict(thread_name_prefix=self.__class__.__name__)
-        else:
-            executor_args = dict()
-        self._executor = ThreadPoolExecutor(**executor_args)
+            kwargs["thread_name_prefix"] = self.__class__.__name__
+        self._executor = ThreadPoolExecutor(**kwargs)
         self._lock = threading.Lock()
         self._sent_hashes = set()
         self._currently_uploading = deque()
