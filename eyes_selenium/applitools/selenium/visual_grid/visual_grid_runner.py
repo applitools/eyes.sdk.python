@@ -12,7 +12,7 @@ from applitools.common.utils import counted, datetime_utils, iteritems
 from applitools.core import EyesRunner
 
 from .helpers import collect_test_results, wait_till_tests_completed
-from .resource_cache import ResourceCache
+from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
     from typing import Dict, List, Optional
@@ -31,7 +31,7 @@ class VisualGridRunner(EyesRunner):
             kwargs["thread_name_prefix"] = "VGR-Executor"
 
         self.resource_cache = ResourceCache()  # type:ResourceCache
-        self.put_cache = ResourceCache()  # type:ResourceCache
+        self.put_cache = PutCache()  # type: PutCache
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 
@@ -85,7 +85,7 @@ class VisualGridRunner(EyesRunner):
             else:
                 logger.debug("%s task ran" % task)
 
-        self.put_cache.executor.shutdown()
+        self.put_cache.shutdown()
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()

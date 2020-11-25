@@ -17,9 +17,9 @@ from applitools.selenium.visual_grid.dom_snapshot_script import (
     DomSnapshotTimeout,
     ProcessPageResult,
     ProcessPageStatus,
-    create_cross_frames_dom_snapshots,
     create_dom_snapshot,
     create_dom_snapshot_loop,
+    has_cross_subframes,
 )
 
 picture_url = (
@@ -400,3 +400,30 @@ def test_create_dom_snapshot_has_cors_iframe_data(driver):
         dom["frames"][0]["frames"][0]["url"]
         == "https://afternoon-savannah-68940.herokuapp.com/#"
     )
+
+
+def test_has_cross_sub_frames_one_level_empty():
+    dom = {"frames": [], "crossFrames": []}
+
+    assert has_cross_subframes(dom) is False
+
+
+def test_has_cross_sub_frames_one_level():
+    dom = {"frames": [], "crossFrames": [{}]}
+
+    assert has_cross_subframes(dom) is True
+
+
+def test_has_cross_sub_frames_two_level():
+    dom = {"frames": [{"frames": [], "crossFrames": [{}]}], "crossFrames": []}
+
+    assert has_cross_subframes(dom) is True
+
+
+def test_has_cross_sub_frames_two_level_empty():
+    dom = {
+        "frames": [{"frames": [{"frames": [], "crossFrames": []}], "crossFrames": []}],
+        "crossFrames": [],
+    }
+
+    assert has_cross_subframes(dom) is False

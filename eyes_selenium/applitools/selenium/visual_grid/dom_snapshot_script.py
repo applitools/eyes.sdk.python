@@ -280,6 +280,8 @@ def process_dom_snapshot_frames(
                 )
             )
     for frame in dom["frames"]:
+        if not has_cross_subframes(frame):
+            continue
         selector = frame.get("selector", None)
         if not selector:
             logger.warning("inner frame with null selector")
@@ -303,3 +305,9 @@ def process_dom_snapshot_frames(
                     selector, e
                 )
             )
+
+
+def has_cross_subframes(dom):
+    if dom["crossFrames"]:
+        return True
+    return any(has_cross_subframes(frame) for frame in dom["frames"])

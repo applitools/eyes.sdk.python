@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Steps/checks stuck in running state [Trello 2340](https://trello.com/c/yZUP5h0f)
+
 ## [4.12.0] - 2020-11-20
 ### Added
 - Support cross origin iframes in UFG [Trello 551](https://trello.com/c/iJKPvd75)

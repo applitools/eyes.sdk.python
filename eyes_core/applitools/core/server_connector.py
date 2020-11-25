@@ -171,6 +171,7 @@ class _RequestCommunicator(object):
             response.raise_for_status()
         except requests.HTTPError as e:
             logger.exception(e)
+            logger.error("Error response content is: {}".format(response.text))
         return response
 
     def long_request(self, method, url_resource, **kwargs):
