@@ -113,17 +113,18 @@ class PutCache(object):
                 r for r in all_resources if force or r.hash not in self._sent_hashes
             ]
             self._sent_hashes.update(r.hash for r in put_resources)
-            futures = self._executor.map(
+            results_iterable = self._executor.map(
                 partial(eyes_connector.render_put_resource, render_id),
                 put_resources,
             )
-            self._currently_uploading.append(futures)
+            self._currently_uploading.append(results_iterable)
 
     def wait_for_all_uploaded(self):
         # type: () -> None
         with self._lock:
-            for futures in self._currently_uploading:
-                list(futures)
+            for results_iterable in self._currently_uploading:
+                # consume results iterable effectively waiting on tasks completion
+                list(results_iterable)
             self._currently_uploading.clear()
 
     def shutdown(self):
