@@ -12,10 +12,14 @@ from applitools.core.fluent.region import GetAccessibilityRegion
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
-    from typing import List
+    from typing import List, Optional
 
     from applitools.common import FloatingBounds
-    from applitools.common.utils.custom_types import AnyWebDriver, AnyWebElement
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        AnyWebElement,
+        CodedRegionPadding,
+    )
     from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (
@@ -28,8 +32,8 @@ __all__ = (
 )
 
 
-def _region_from_element(element, screenshot):
-    # type: (AnyWebElement, EyesWebDriverScreenshot) -> Region
+def _region_from_element(element, screenshot, padding=None):
+    # type: (AnyWebElement,EyesWebDriverScreenshot,Optional[CodedRegionPadding])->Region
     location = element.location
     if screenshot:
         # Element's coordinates are context relative, so we need to convert them first.
@@ -39,6 +43,9 @@ def _region_from_element(element, screenshot):
     else:
         adjusted_location = Point.from_(location)
     region = Region.from_(adjusted_location, element.size)
+
+    if padding:
+        region = region.padding(padding)
     return region
 
 
@@ -46,7 +53,7 @@ class GetSeleniumRegion(GetRegion, ABC):
     def get_regions(self, eyes, screenshot):
         # type: (SeleniumEyes, EyesWebDriverScreenshot) -> List[Region]
         elements = self._fetch_elements(eyes.driver)
-        return [_region_from_element(el, screenshot) for el in elements]
+        return [_region_from_element(el, screenshot, self._padding) for el in elements]
 
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
@@ -61,6 +68,7 @@ class GetSeleniumRegion(GetRegion, ABC):
 @attr.s
 class RegionByElement(GetSeleniumRegion):
     _element = attr.ib()  # type: AnyWebElement
+    _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
@@ -78,6 +86,7 @@ class RegionBySelector(GetSeleniumRegion):
 
     _by = attr.ib()
     _value = attr.ib()
+    _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]

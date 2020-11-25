@@ -4,13 +4,18 @@ import typing
 from datetime import datetime
 
 from applitools.common import FloatingMatchSettings, MatchResult, RunningSession, logger
-from applitools.common.errors import EyesError, OutOfBoundsError
+from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
 from applitools.common.ultrafastgrid import VisualGridSelector
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
+from applitools.core.fluent.region import (
+    AccessibilityRegionByRectangle,
+    FloatingRegionByRectangle,
+    RegionByRectangle,
+)
 
 from .fluent import CheckSettings, GetAccessibilityRegion, GetFloatingRegion, GetRegion
 
@@ -79,11 +84,19 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     ]
     r_selector_counts = [len(r) for r in region_selectors]  # mapping of
     prev_count = 0
-    for selectors_count, m_specific_regions in zip(r_selector_counts, mutable_regions):
+    for i, (selectors_count, m_specific_regions) in enumerate(
+        zip(r_selector_counts, mutable_regions)
+    ):
         if selectors_count == 0:
             continue
         next_count = prev_count + selectors_count
-        m_specific_regions.extend(regions[prev_count:next_count])
+        for region_selector, region in zip(
+            region_selectors[i], regions[prev_count:next_count]
+        ):
+            padding = getattr(region_selector.category, "padding", None)
+            if padding:
+                region = region.padding(padding)
+            m_specific_regions.append(region)
         prev_count = next_count
 
     location = Point.ZERO()
@@ -122,6 +135,49 @@ def collect_regions_from_selectors(image_match_settings, regions, region_selecto
     logger.debug(
         """
     finish collect_regions_from_selectors()
+
+        image_match_settings: {}
+    """.format(
+            image_match_settings
+        )
+    )
+    return image_match_settings
+
+
+def _coded_regions(region_providers):
+    regions = []
+    coded_region_types = (
+        RegionByRectangle,
+        AccessibilityRegionByRectangle,
+        FloatingRegionByRectangle,
+    )
+    for rp in region_providers:
+        if isinstance(rp, coded_region_types):
+            regions.extend(rp.get_regions(None, None))
+    return regions
+
+
+def collect_append_coded_regions(check_settings, image_match_settings):
+    # type:(CheckSettings,ImageMatchSettings,EyesScreenshot,EyesBase)->ImageMatchSettings
+    for ims_region, settings_region in (
+        (image_match_settings.ignore_regions, check_settings.values.ignore_regions),
+        (image_match_settings.layout_regions, check_settings.values.layout_regions),
+        (image_match_settings.strict_regions, check_settings.values.strict_regions),
+        (image_match_settings.content_regions, check_settings.values.content_regions),
+        (
+            image_match_settings.floating_match_settings,
+            check_settings.values.floating_regions,
+        ),
+        (
+            image_match_settings.accessibility,
+            check_settings.values.accessibility_regions,
+        ),
+    ):
+        ims_region.extend(_coded_regions(settings_region))
+
+    logger.debug(
+        """
+    finish collect_append_coded_regions()
 
         image_match_settings: {}
     """.format(
@@ -289,12 +345,16 @@ class MatchWindowTask(object):
             image_match_settings = collect_regions_from_screenshot(
                 check_settings, image_match_settings, screenshot, eyes
             )
-        elif regions and region_selectors:
+        else:
             # visual grid
-            image_match_settings = collect_regions_from_selectors(
-                image_match_settings, regions, region_selectors
-            )
-
+            if regions and region_selectors:
+                image_match_settings = collect_regions_from_selectors(
+                    image_match_settings, regions, region_selectors
+                )
+            if check_settings:
+                image_match_settings = collect_append_coded_regions(
+                    check_settings, image_match_settings
+                )
         user_inputs = user_inputs or []
         agent_setup = self._eyes.agent_setup
         return self._perform_match(

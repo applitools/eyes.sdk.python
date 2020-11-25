@@ -1,11 +1,14 @@
 import base64
 import json
 import zlib
+from time import sleep, time
 from typing import Text
 
 import mock
 import pytest
 
+from applitools.selenium import EyesWebDriver
+from applitools.selenium.visual_grid import dom_snapshot_script
 from applitools.selenium.visual_grid.dom_snapshot_script import (
     DomSnapshotScript,
     DomSnapshotScriptError,
@@ -16,6 +19,7 @@ from applitools.selenium.visual_grid.dom_snapshot_script import (
     ProcessPageStatus,
     create_dom_snapshot,
     create_dom_snapshot_loop,
+    has_cross_subframes,
 )
 
 picture_url = (
@@ -65,7 +69,12 @@ def test_dom_snapshot_default(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run()
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -79,7 +88,12 @@ def test_dom_snapshot_serialize_resources(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(serialize_resources=True)
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -95,9 +109,11 @@ def test_dom_snapshot_compressed(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(compress_resources=True)
-    for _ in range(3):
+    for _ in range(10):
         poll_res = script.poll_result()
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -116,9 +132,11 @@ def test_dom_snapshot_compressed_serialized(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(compress_resources=True, serialize_resources=True)
-    for _ in range(3):
+    for _ in range(10):
         poll_res = script.poll_result()
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -137,7 +155,12 @@ def test_dom_snapshot_dont_fetch_resources(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(dont_fetch_resources=True)
-    poll_res = script.poll_result()
+    for _ in range(10):
+        poll_res = script.poll_result()
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
+            break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
     assert poll_res.status == ProcessPageStatus.SUCCESS
@@ -150,9 +173,11 @@ def test_dom_snapshot_serialize_chunks(driver):
     script = DomSnapshotScriptGeneric(driver)
 
     run_res = script.run(serialize_resources=True)
-    while True:
+    for _ in range(10):
         poll_res = script.poll_result(chunk_byte_length=100)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -169,12 +194,16 @@ def test_dom_snapshot_serialize_chunks_until_done(driver):
     run_res = script.run(serialize_resources=True)
     while True:
         poll_res = script.poll_result(chunk_byte_length=2 ** 15)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     while True:
         poll_res = script.poll_result(chunk_byte_length=2 ** 15)
-        if poll_res.status != ProcessPageStatus.WIP:
+        if poll_res.status is ProcessPageStatus.WIP:
+            sleep(1)
+        else:
             break
 
     assert run_res == ProcessPageResult(ProcessPageStatus.WIP)
@@ -195,15 +224,15 @@ def mocked_create_dom_snapshot_loop():
 def test_create_dom_snapshot_ie(mocked_create_dom_snapshot_loop):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = True
-    create_dom_snapshot(driver, False, [])
+    create_dom_snapshot(driver, False, [], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
         mock.call(
             mock.ANY,
-            300000,
+            mock.ANY,
             1000,
-            268435456,
+            52428800,
             dont_fetch_resources=False,
             skip_resources=[],
             serialize_resources=True,
@@ -215,15 +244,17 @@ def test_create_dom_snapshot_ie(mocked_create_dom_snapshot_loop):
 def test_create_dom_snapshot_generic(mocked_create_dom_snapshot_loop):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = False
-    create_dom_snapshot(driver, True, [""])
+
+    with mock.patch.object(dom_snapshot_script, "time", return_value=1.0) as time_mock:
+        create_dom_snapshot(driver, True, [""], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
         mock.call(
             mock.ANY,
-            300000,
+            1.001,
             1000,
-            268435456,
+            52428800,
             dont_fetch_resources=True,
             skip_resources=[""],
             serialize_resources=True,
@@ -236,13 +267,13 @@ def test_create_dom_snapshot_ios(mocked_create_dom_snapshot_loop):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = False
     driver.desired_capabilities = {"platformName": "ios"}
-    create_dom_snapshot(driver, True, [])
+    create_dom_snapshot(driver, True, [], 1, True)
 
     calls = mocked_create_dom_snapshot_loop.call_args_list
     assert calls == [
         mock.call(
             mock.ANY,
-            300000,
+            mock.ANY,
             1000,
             10485760,
             dont_fetch_resources=True,
@@ -258,7 +289,7 @@ def test_create_dom_snapshot_loop_timeout():
     script.run.return_value = ProcessPageResult(ProcessPageStatus.WIP)
     script.poll_result.return_value = ProcessPageResult(ProcessPageStatus.WIP)
 
-    with pytest.raises(DomSnapshotTimeout, match="took more than 5 ms"):
+    with pytest.raises(DomSnapshotTimeout):
         create_dom_snapshot_loop(script, 5, 2, 3)
 
 
@@ -270,7 +301,7 @@ def test_create_dom_snapshot_loop_calls_run_with_args():
     )
 
     create_dom_snapshot_loop(
-        script, 10, 2, 3, dont_fetch_resources=True, skip_resources=[]
+        script, time() + 1, 2, 3, dont_fetch_resources=True, skip_resources=[]
     )
 
     calls = script.run.call_args_list
@@ -284,7 +315,7 @@ def test_create_dom_snapshot_loop_calls_poll_result():
         ProcessPageStatus.SUCCESS, value={}
     )
 
-    create_dom_snapshot_loop(script, 1, 2, 3)
+    create_dom_snapshot_loop(script, time() + 1, 2, 3)
 
     calls = script.poll_result.call_args_list
     assert calls == [mock.call(3)]
@@ -297,7 +328,7 @@ def test_create_dom_snapshot_loop_calls_poll_result_with_chunk_byte_length():
         ProcessPageStatus.SUCCESS, value={}
     )
 
-    create_dom_snapshot_loop(script, 1, 2, 3)
+    create_dom_snapshot_loop(script, time() + 1, 2, 3)
 
     calls = script.poll_result.call_args_list
     assert calls == [mock.call(3)]
@@ -319,7 +350,7 @@ def test_create_dom_snapshot_loop_raises_if_poll_result_returns_error():
     )
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
-        create_dom_snapshot_loop(script, 1, 2, 3)
+        create_dom_snapshot_loop(script, time() + 10, 2, 3)
 
 
 def test_create_dom_snapshot_loop_success():
@@ -329,7 +360,7 @@ def test_create_dom_snapshot_loop_success():
         ProcessPageStatus.SUCCESS, value={"a": "b"}
     )
 
-    res = create_dom_snapshot_loop(script, 1, 2, 3)
+    res = create_dom_snapshot_loop(script, time() + 1, 2, 3)
 
     assert res == {"a": "b"}
 
@@ -342,6 +373,66 @@ def test_create_dom_snapshot_loop_chunks():
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=True, value=':"b"}'),
     ]
 
-    res = create_dom_snapshot_loop(script, 100, 1, 3)
+    res = create_dom_snapshot_loop(script, time() + 1, 1, 3)
 
     assert res == {"a": "b"}
+
+
+def test_create_dom_snapshot_with_cors_iframe(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], 10000, True)
+
+    assert len(dom["frames"][0]["crossFrames"]) == 1
+    assert dom["frames"][0]["crossFrames"][0]["index"] == 16
+    assert "selector" in dom["frames"][0]["crossFrames"][0]
+
+
+def test_create_dom_snapshot_has_cors_iframe_data(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], 10000, True)
+
+    assert len(dom["frames"][0]["frames"]) == 1
+    assert (
+        dom["frames"][0]["frames"][0]["url"]
+        == "https://afternoon-savannah-68940.herokuapp.com/#"
+    )
+
+
+def test_has_cross_sub_frames_one_level_empty():
+    dom = {"frames": [], "crossFrames": []}
+
+    assert has_cross_subframes(dom) is False
+
+
+def test_has_cross_sub_frames_one_level():
+    dom = {"frames": [], "crossFrames": [{}]}
+
+    assert has_cross_subframes(dom) is True
+
+
+def test_has_cross_sub_frames_two_level():
+    dom = {"frames": [{"frames": [], "crossFrames": [{}]}], "crossFrames": []}
+
+    assert has_cross_subframes(dom) is True
+
+
+def test_has_cross_sub_frames_two_level_empty():
+    dom = {
+        "frames": [{"frames": [{"frames": [], "crossFrames": []}], "crossFrames": []}],
+        "crossFrames": [],
+    }
+
+    assert has_cross_subframes(dom) is False
+
+
+def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], 10000, False)
+
+    assert len(dom["frames"][0]["frames"]) == 0

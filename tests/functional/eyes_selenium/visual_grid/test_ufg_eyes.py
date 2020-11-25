@@ -1,5 +1,12 @@
 import pytest
 
+from applitools.common import (
+    AccessibilityRegionType,
+    FloatingBounds,
+    FloatingMatchSettings,
+    Region,
+)
+from applitools.common.geometry import AccessibilityRegion
 from applitools.selenium import Eyes, Target, VisualGridRunner
 from applitools.selenium.visual_grid import VisualGridEyes, dom_snapshot_script
 
@@ -61,3 +68,35 @@ def test_fetch_deep_css_chain(driver, vg_runner, target):
 
     eyes.close()
     vg_runner.get_all_test_results()
+
+
+def test_coded_layout_regions_passed_to_match_window_request(
+    driver, fake_connector_class, vg_runner, spy
+):
+    eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+    eyes.open(driver, "Test Visual Grid", "Test regions are passed to render request")
+
+    eyes.check(
+        Target.window()
+        .fully()
+        .layout(Region(1, 2, 3, 4))
+        .floating(5, Region(6, 7, 8, 9))
+        .accessibility(Region(10, 11, 12, 13), AccessibilityRegionType.LargeText)
+    )
+
+    eyes.close_async()
+    server_connector = vg_runner._get_all_running_tests()[0].eyes.server_connector
+    vg_runner.get_all_test_results(False)
+    _, match_data = server_connector.input_calls["match_window"][0]
+    ims = match_data.options.image_match_settings
+
+    assert len(server_connector.input_calls["match_window"]) == 1
+    assert ims.layout_regions == [Region(1, 2, 3, 4)]
+    assert ims.floating_match_settings == [
+        FloatingMatchSettings(Region(6, 7, 8, 9), FloatingBounds(5, 5, 5, 5))
+    ]
+    assert ims.accessibility == [
+        AccessibilityRegion(10, 11, 12, 13, AccessibilityRegionType.LargeText)
+    ]

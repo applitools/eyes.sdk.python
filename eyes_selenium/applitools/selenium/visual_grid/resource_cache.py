@@ -1,9 +1,16 @@
 import sys
 import threading
 import typing
+from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
+from functools import partial
 
 from applitools.common import VGResource, logger
+
+if typing.TYPE_CHECKING:
+    from typing import Dict, Iterable, Text
+
+    from applitools.selenium.visual_grid import EyesConnector
 
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
@@ -76,3 +83,55 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
     def process_all(self):
         with self.lock:
             return [self[r_url] for r_url in self]
+
+
+class PutCache(object):
+    def __init__(self):
+        kwargs = {}
+        if sys.version_info[:2] >= (3, 6):
+            kwargs["thread_name_prefix"] = self.__class__.__name__
+        self._executor = ThreadPoolExecutor(**kwargs)
+        self._lock = threading.Lock()
+        self._sent_hashes = set()
+        self._currently_uploading = deque()
+
+    def put(
+        self,
+        urls,  # type: Iterable[Text]
+        full_request_resources,  # type: Dict[Text, VGResource]
+        render_id,  # type: Text
+        eyes_connector,  # type: EyesConnector
+        force=False,  # type: bool
+    ):
+        # type: (...) -> None
+        logger.debug(
+            "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
+        )
+        with self._lock:
+            all_resources = [full_request_resources.get(url) for url in urls]
+            put_resources = [
+                r for r in all_resources if force or r.hash not in self._sent_hashes
+            ]
+            self._sent_hashes.update(r.hash for r in put_resources)
+            results_iterable = self._executor.map(
+                partial(eyes_connector.render_put_resource, render_id),
+                put_resources,
+            )
+            self._currently_uploading.append(results_iterable)
+
+    def wait_for_all_uploaded(self):
+        # type: () -> None
+        with self._lock:
+            for results_iterable in self._currently_uploading:
+                # consume results iterable effectively waiting on tasks completion
+                list(results_iterable)
+            self._currently_uploading.clear()
+
+    def shutdown(self):
+        # type: () -> None
+        with self._lock:
+            self._executor.shutdown()
+
+    def __del__(self):
+        # type: () -> None
+        self.shutdown()

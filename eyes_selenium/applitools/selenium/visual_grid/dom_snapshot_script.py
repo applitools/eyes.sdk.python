@@ -1,25 +1,28 @@
 from __future__ import unicode_literals
 
 import json
-import time
 import typing
 from abc import abstractmethod
 from enum import Enum
+from time import time
 
 import attr
+from selenium.webdriver.common.by import By
 
 from applitools.common import logger
 from applitools.common.utils import ABC, datetime_utils
 from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
+from applitools.selenium.fluent import FrameLocator
 
 if typing.TYPE_CHECKING:
     from typing import Any, Callable, Dict, List, Optional, Text, Union
 
     from applitools.selenium import EyesWebDriver
+    from applitools.selenium.webdriver import _EyesSwitchTo
 
 MAX_CHUNK_BYTES_IOS = 10 * 1024 * 1024
-MAX_CHUNK_BYTES_GENERIC = 256 * 1024 * 1024
+MAX_CHUNK_BYTES_GENERIC = 50 * 1024 * 1024
 SCRIPT_POLL_INTERVAL_MS = 1000
 
 
@@ -32,27 +35,30 @@ class DomSnapshotScriptError(DomSnapshotFailure):
 
 
 class DomSnapshotTimeout(DomSnapshotFailure):
-    def __init__(self, timeout_ms):
-        # type: (int) -> None
-        super(DomSnapshotTimeout, self).__init__(
-            "Dom-Snapshot polling took more than {} ms".format(timeout_ms)
-        )
+    pass
 
 
 def create_dom_snapshot(
-    driver, dont_fetch_resources, skip_resources, timeout_ms=5 * 60 * 1000
+    driver,
+    dont_fetch_resources,
+    skip_resources,
+    timeout_ms,
+    cross_origin_rendering,
 ):
-    # type: (EyesWebDriver, bool, List[Text], int) -> Dict
+    # type: (EyesWebDriver, bool, List[Text], int, bool) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
     is_ios = "ios" in driver.desired_capabilities.get("platformName", "").lower()
     chunk_byte_length = MAX_CHUNK_BYTES_IOS if is_ios else MAX_CHUNK_BYTES_GENERIC
-    return create_dom_snapshot_loop(
+    deadline = time() + datetime_utils.to_sec(timeout_ms)
+    return create_cross_frames_dom_snapshots(
+        driver.switch_to,
         script,
-        timeout_ms,
+        deadline,
         SCRIPT_POLL_INTERVAL_MS,
         chunk_byte_length,
+        cross_origin_rendering,
         dont_fetch_resources=dont_fetch_resources,
         skip_resources=skip_resources,
         serialize_resources=True,
@@ -188,22 +194,24 @@ class DomSnapshotScriptForIE(DomSnapshotScript):
 
 
 def create_dom_snapshot_loop(
-    script, timeout_ms, poll_interval_ms, chunk_byte_length, **script_args
+    script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
 ):
-    # type: (DomSnapshotScript, int, int, int, **Any) -> Dict
+    # type: (DomSnapshotScript, float, int, int, **Any) -> Dict
     chunks = []
-    deadline = time.time() + datetime_utils.to_sec(timeout_ms)
     result = script.run(**script_args)
     while result.status is ProcessPageStatus.WIP or (
         result.status is ProcessPageStatus.SUCCESS_CHUNKED and not result.done
     ):
-        if time.time() > deadline:
-            raise DomSnapshotTimeout(timeout_ms)
+        if time() > deadline_time:
+            raise DomSnapshotTimeout
         result = script.poll_result(chunk_byte_length)
-        if result.status is ProcessPageStatus.SUCCESS_CHUNKED:
+        if result.status is ProcessPageStatus.WIP:
+            datetime_utils.sleep(
+                poll_interval_ms, "Waiting for the end of DOM extraction"
+            )
+        elif result.status is ProcessPageStatus.SUCCESS_CHUNKED:
             logger.info("Snapshot chunk {}, {}B".format(len(chunks), len(result.value)))
             chunks.append(result.value)
-        datetime_utils.sleep(poll_interval_ms, "Waiting for the end of DOM extraction")
     if result.status is ProcessPageStatus.SUCCESS:
         return result.value
     elif result.status.SUCCESS_CHUNKED and result.done:
@@ -212,3 +220,104 @@ def create_dom_snapshot_loop(
         raise DomSnapshotScriptError(result.error)
     else:
         raise DomSnapshotFailure("Unexpected script result", result)
+
+
+def create_cross_frames_dom_snapshots(
+    switch_to,  # type: _EyesSwitchTo
+    script,  # type: DomSnapshotScript
+    deadline_time,  # type: float
+    poll_interval_ms,  # type: int
+    chunk_byte_length,  # type: int
+    cross_origin_rendering,  # type: bool
+    **script_args  # type: Any
+):
+    # type: (...) -> Dict
+    dom = create_dom_snapshot_loop(
+        script, deadline_time, poll_interval_ms, chunk_byte_length, **script_args
+    )
+    if cross_origin_rendering:
+        process_dom_snapshot_frames(
+            dom,
+            switch_to,
+            script,
+            deadline_time,
+            poll_interval_ms,
+            chunk_byte_length,
+            **script_args
+        )
+    return dom
+
+
+def process_dom_snapshot_frames(
+    dom,  # type: Dict
+    switch_to,  # type : _EyesSwitchTo
+    script,  # type: DomSnapshotScript
+    deadline_time,  # type: float
+    poll_interval_ms,  # type: int
+    chunk_byte_length,  # type: int
+    **script_args  # type: Any
+):
+    # type: (...) -> None
+    for frame in dom["crossFrames"]:
+        selector = frame.get("selector", None)
+        if not selector:
+            logger.warning("cross frame with null selector")
+            continue
+        frame_index = frame["index"]
+        try:
+            with switch_to.frame_and_back(
+                FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
+            ):
+                frame_dom = create_cross_frames_dom_snapshots(
+                    switch_to,
+                    script,
+                    deadline_time,
+                    poll_interval_ms,
+                    chunk_byte_length,
+                    cross_origin_rendering=True,
+                    **script_args
+                )
+                dom.setdefault("frames", []).append(frame_dom)
+                frame_url = frame_dom["url"]
+                dom["cdt"][frame_index]["attributes"].append(
+                    {"name": "data-applitools-src", "value": frame_url}
+                )
+                logger.info("Created cross origin frame snapshot {}".format(frame_url))
+        except Exception as e:
+            logger.warning(
+                "Failed extracting cross frame with selector {}. Reason: {!r}".format(
+                    selector, e
+                )
+            )
+    for frame in dom["frames"]:
+        if not has_cross_subframes(frame):
+            continue
+        selector = frame.get("selector", None)
+        if not selector:
+            logger.warning("inner frame with null selector")
+            continue
+        try:
+            with switch_to.frame_and_back(
+                FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
+            ):
+                process_dom_snapshot_frames(
+                    frame,
+                    switch_to,
+                    script,
+                    deadline_time,
+                    poll_interval_ms,
+                    chunk_byte_length,
+                    **script_args
+                )
+        except Exception as e:
+            logger.warning(
+                "Failed switching to frame with selector {}. Reason: {!r}".format(
+                    selector, e
+                )
+            )
+
+
+def has_cross_subframes(dom):
+    if dom["crossFrames"]:
+        return True
+    return any(has_cross_subframes(frame) for frame in dom["frames"])

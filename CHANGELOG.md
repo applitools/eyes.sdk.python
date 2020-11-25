@@ -1,3 +1,23 @@
+## [4.13.0] - 2020-11-25
+### Added
+- API to disable cross origin rendering [Trello 2346](https://trello.com/c/y7x48jmT)
+### Fixed
+- Steps/checks stuck in running state [Trello 2340](https://trello.com/c/yZUP5h0f)
+
+## [4.12.0] - 2020-11-20
+### Added
+- Support cross origin iframes in UFG [Trello 551](https://trello.com/c/iJKPvd75)
+- Add x-applitools-eyes-client-request-id header to API requests [Trello 2332](https://trello.com/c/yuBGjW6u)
+- Add padding option to match regions [Trello 2337](https://trello.com/c/RNNcgMv7)
+### Updated
+- Pin keyring dependency for travis deploy stage. Update some tests [Trello 2309](https://trello.com/c/aIWIFRcY)
+- Add more retries for connection to server [Trello 2335](https://trello.com/c/jVEn0ZfD)
+
+## [4.11.5] - 2020-11-17
+### Fixed
+- Manually applied layout regions do not work on the Visual Grid [Trello 2317](https://trello.com/c/8qG51ind)
+- Dom Snapshot Timeout exceptions on heavy pages [Trello 2227](https://trello.com/c/2AjLHPFw)
+
 ## [4.11.4] - 2020-11-11
 ### Fixed
 - Target.region() outside of viewport on MobileSafari with iOS Simulator doesn't work correctly [Trello 1708](https://trello.com/c/wrMoRDPY)

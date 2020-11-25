@@ -13,7 +13,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeDriverManager, IEDriverManager
+from webdriver_manager.microsoft import IEDriverManager
 
 from applitools.selenium import Configuration, Eyes, StitchMode, logger
 from applitools.selenium.__version__ import __version__
@@ -32,9 +32,12 @@ if TYPE_CHECKING:
 
 BROWSERS_WEBDRIVERS = {
     "firefox": (GeckoDriverManager, webdriver.Firefox, webdriver.FirefoxOptions),
-    "chrome": (ChromeDriverManager, webdriver.Chrome, webdriver.ChromeOptions),
+    "chrome": (
+        lambda: ChromeDriverManager(version="86.0.4240.22"),
+        webdriver.Chrome,
+        webdriver.ChromeOptions,
+    ),
     "internet explorer": (IEDriverManager, webdriver.Ie, webdriver.IeOptions),
-    "MicrosoftEdge": (EdgeDriverManager, webdriver.Edge, None),
     "safari": (None, webdriver.Safari, None),
 }
 
@@ -144,7 +147,8 @@ def driver(request, browser_config, webdriver_module):
         if driver_manager_class:
             browser = open_webdriver(
                 lambda: webdriver_class(
-                    executable_path=driver_manager_class().install(), options=options
+                    executable_path=driver_manager_class().install(),
+                    options=options,
                 ),
             )
         else:

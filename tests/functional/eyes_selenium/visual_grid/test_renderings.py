@@ -148,7 +148,7 @@ def test_special_rendering(url, test_name, batch_info, driver):
     driver.get(url)
     datetime_utils.sleep(500)
     eyes.check(test_name, Target.window().fully())
-    eyes.close(False)
+    eyes.close_async()
     all_results = runner.get_all_test_results()
 
 
@@ -168,7 +168,7 @@ def test_svg_parsing(driver, eyes, batch_info, vg_runner):
     all_results = vg_runner.get_all_test_results()
 
 
-def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner):
+def test_css_relative_url_on_another_domain(driver, batch_info, vg_runner):
     driver.get(
         "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
     )
@@ -192,7 +192,7 @@ def test_css_relative_url_on_another_domain(driver, eyes, batch_info, vg_runner)
     eyes.open(driver)
     eyes.check_window()
     eyes.close_async()
-    all_results = vg_runner.get_all_test_results()
+    all_results = vg_runner.get_all_test_results(False)
     assert len(all_results) == 9
 
 
@@ -242,9 +242,10 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     assert len(vg_runner.get_all_test_results()) == 3
 
 
-def test_visual_viewport(driver, batch_info, vg_runner):
+def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
     eyes.set_configuration(
         Configuration(
             app_name="Visual Grid Render Test",
@@ -253,13 +254,11 @@ def test_visual_viewport(driver, batch_info, vg_runner):
         ).add_browser(IosDeviceInfo("iPhone 7"))
     )
     eyes.open(driver)
-    with patch(
-        "applitools.core.server_connector.ServerConnector.match_window",
-    ) as patched:
-        eyes.check_window()
-        eyes.close(False)
-        app_output = patched.call_args.args[1].app_output
-        assert isinstance(app_output.viewport, RectangleSize)
+    eyes.check_window()
+    eyes.close(False)
+    running_test = vg_runner._get_all_running_tests()[0]
+    _, match_data = running_test.eyes.server_connector.input_calls["match_window"][0]
+    assert isinstance(match_data.app_output.viewport, RectangleSize)
 
 
 def test_render_resource_not_found(driver, fake_connector_class, spy):
