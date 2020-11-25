@@ -76,6 +76,10 @@ class IosVersion(Enum):
 
 
 class IosDeviceName(Enum):
+    iPhone_12_Pro = "iPhone 12 Pro"
+    iPhone_12_Pro_Max = "iPhone 12 Pro Max"
+    iPhone_12 = "iPhone 12"
+    iPhone_12_mini = "iPhone 12 mini"
     iPhone_11_Pro = "iPhone 11 Pro"
     iPhone_11_Pro_Max = "iPhone 11 Pro Max"
     iPhone_11 = "iPhone 11"
