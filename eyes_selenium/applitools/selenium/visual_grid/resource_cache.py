@@ -3,6 +3,7 @@ import threading
 import typing
 from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
+from functools import partial
 
 from applitools.common import VGResource, logger
 
@@ -108,25 +109,22 @@ class PutCache(object):
             "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
         )
         with self._lock:
-            for url in urls:
-                resource = full_request_resources.get(url)
-                if resource.hash in self._sent_hashes:
-                    if not force:
-                        continue
-                else:
-                    self._sent_hashes.add(resource.hash)
-
-                def put_resource(resource=resource):
-                    eyes_connector.render_put_resource(render_id, resource)
-
-                future = self._executor.submit(put_resource)
-                self._currently_uploading.append(future)
+            all_resources = [full_request_resources.get(url) for url in urls]
+            put_resources = [
+                r for r in all_resources if force or r.hash not in self._sent_hashes
+            ]
+            self._sent_hashes.update(r.hash for r in put_resources)
+            futures = self._executor.map(
+                partial(eyes_connector.render_put_resource, render_id),
+                put_resources,
+            )
+            self._currently_uploading.append(futures)
 
     def wait_for_all_uploaded(self):
         # type: () -> None
         with self._lock:
-            for future in self._currently_uploading:
-                future.result()
+            for futures in self._currently_uploading:
+                list(futures)
             self._currently_uploading.clear()
 
     def shutdown(self):
