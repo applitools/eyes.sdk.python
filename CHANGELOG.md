@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- API to disable cross origin rendering [Trello 2346](https://trello.com/c/y7x48jmT)
 ### Fixed
 - Steps/checks stuck in running state [Trello 2340](https://trello.com/c/yZUP5h0f)
 
