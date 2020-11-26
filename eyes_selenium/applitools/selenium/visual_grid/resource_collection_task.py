@@ -13,7 +13,7 @@ from applitools.common import (
     VisualGridSelector,
     logger,
 )
-from applitools.common.utils import apply_base_url, iteritems
+from applitools.common.utils import apply_base_url
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium.parsers import collect_urls_from_
@@ -35,11 +35,7 @@ if typing.TYPE_CHECKING:
 
     from applitools.common import Region, RenderingInfo
     from applitools.core import ServerConnector
-    from applitools.selenium.visual_grid import (
-        EyesConnector,
-        ResourceCache,
-        RunningTest,
-    )
+    from applitools.selenium.visual_grid import PutCache, ResourceCache, RunningTest
 
 
 @attr.s(hash=True)
@@ -49,7 +45,7 @@ class ResourceCollectionTask(VGTask):
 
     script = attr.ib(hash=False, repr=False)  # type: Dict[str, Any]
     resource_cache = attr.ib(hash=False, repr=False)  # type: ResourceCache
-    put_cache = attr.ib(hash=False, repr=False)
+    put_cache = attr.ib(hash=False, repr=False)  # type: PutCache
     server_connector = attr.ib(hash=False, repr=False)  # type: ServerConnector
     rendering_info = attr.ib()  # type: RenderingInfo
     region_selectors = attr.ib(
@@ -75,7 +71,7 @@ class ResourceCollectionTask(VGTask):
         )  # type: Callable
 
     def prepare_data_for_rg(self, data):
-        # type: (Dict) -> List[RenderRequest]
+        # type: (Dict) -> Dict[RunningTest,RenderRequest]
         dom = self.parse_frame_dom_resources(data)
         render_requests = self.prepare_rg_requests(dom, self.full_request_resources)
         logger.debug(
@@ -85,48 +81,12 @@ class ResourceCollectionTask(VGTask):
         )
         render_request = list(render_requests.values())[0]
         logger.debug("Uploading missing resources")
-        self.check_resources_status_and_upload(
-            render_request.dom, render_request.resources
+        self.put_cache.put(
+            list(render_request.resources.values()) + [render_request.dom.resource],
+            self.server_connector,
+            self.is_force_put_needed,
         )
         return render_requests
-
-    def check_resources_status_and_upload(self, dom, resource_map):
-        cached_request_resources = self.full_request_resources.copy()
-
-        def get_and_put_resource(url):
-            # type: (str) -> VGResource
-            logger.debug("get_and_put_resource({}) call".format(url))
-            resource = cached_request_resources.get(url)
-            self.server_connector.render_put_resource("NONE", resource)
-            return resource
-
-        hash_to_resource_url = {}
-        for url, resource in iteritems(resource_map):
-            if url in self.put_cache:
-                continue
-            hash_to_resource_url[resource.hash] = url
-
-        if dom.url not in self.put_cache:
-            hash_to_resource_url[dom.resource.hash] = dom.url
-            cached_request_resources[dom.url] = dom.resource
-
-        resources_hashes = []
-        for resource_url in hash_to_resource_url.values():
-            resource = cached_request_resources[resource_url]
-            if resource.error_status_code:
-                continue
-            resources_hashes.append(
-                {"hashFormat": resource.hash_format, "hash": resource.hash}
-            )
-        result = self.server_connector.check_resource_status(None, *resources_hashes)
-
-        for hash_obj, exists in zip(resources_hashes, result):
-            if exists or not self.is_force_put_needed:
-                continue
-            hash_ = hash_obj["hash"]
-            resource_url = hash_to_resource_url[hash_]
-            self.put_cache.fetch_and_store(resource_url, get_and_put_resource)
-        self.put_cache.process_all()
 
     def prepare_rg_requests(self, dom, request_resources):
         # type: (RGridDom, Dict) -> Dict[RunningTest,RenderRequest]

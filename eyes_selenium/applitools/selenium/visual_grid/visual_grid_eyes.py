@@ -1,8 +1,8 @@
 import itertools
 import typing
 import uuid
-from copy import deepcopy
 from collections import Generator
+from copy import deepcopy
 
 import attr
 from selenium.common.exceptions import TimeoutException

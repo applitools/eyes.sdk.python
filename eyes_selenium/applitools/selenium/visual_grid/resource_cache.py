@@ -1,16 +1,14 @@
 import sys
 import threading
 import typing
-from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import partial
 
 from applitools.common import VGResource, logger
+from applitools.core import ServerConnector
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, Iterable, Text
-
-    from applitools.selenium.visual_grid import EyesConnector
+    from typing import List
 
 
 class ResourceCache(typing.Mapping[typing.Text, VGResource]):
@@ -93,39 +91,35 @@ class PutCache(object):
         self._executor = ThreadPoolExecutor(**kwargs)
         self._lock = threading.Lock()
         self._sent_hashes = set()
-        self._currently_uploading = deque()
 
     def put(
         self,
-        urls,  # type: Iterable[Text]
-        full_request_resources,  # type: Dict[Text, VGResource]
-        render_id,  # type: Text
-        eyes_connector,  # type: EyesConnector
+        all_resources,  # type: List[VGResource]
+        server_connector,  # type: ServerConnector
         force=False,  # type: bool
     ):
         # type: (...) -> None
-        logger.debug(
-            "PutCache.put({}, render_id={}) call".format(list(urls), render_id)
-        )
-        with self._lock:
-            all_resources = [full_request_resources.get(url) for url in urls]
-            put_resources = [
-                r for r in all_resources if force or r.hash not in self._sent_hashes
+        logger.debug("PutCache.put({} call".format(all_resources))
+        if not force:
+            check_result = server_connector.check_resource_status(
+                None,
+                *[{"hashFormat": r.hash_format, "hash": r.hash} for r in all_resources]
+            )
+            resources_to_upload = [
+                resource
+                for resource, exists in zip(all_resources, check_result)
+                if not exists
             ]
-            self._sent_hashes.update(r.hash for r in put_resources)
+        else:
+            resources_to_upload = all_resources
+
+        with self._lock:
+            put_resources = [r for r in resources_to_upload if force or r.hash]
             results_iterable = self._executor.map(
-                partial(eyes_connector.render_put_resource, render_id),
+                partial(server_connector.render_put_resource, None),
                 put_resources,
             )
-            self._currently_uploading.append(results_iterable)
-
-    def wait_for_all_uploaded(self):
-        # type: () -> None
-        with self._lock:
-            for results_iterable in self._currently_uploading:
-                # consume results iterable effectively waiting on tasks completion
-                list(results_iterable)
-            self._currently_uploading.clear()
+            self._sent_hashes.update(list(results_iterable))
 
     def shutdown(self):
         # type: () -> None
