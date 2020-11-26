@@ -3,7 +3,7 @@ import os
 import mock
 import pytest
 
-from applitools.core import ServerConnector
+from applitools.core import ServerConnector, __version__
 from applitools.core.debug import (
     FileDebugScreenshotsProvider,
     NullDebugScreenshotsProvider,
@@ -25,6 +25,11 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize(
             "eyes", ["selenium", "visual_grid", "images"], indirect=True
         )
+
+
+def test_base_agent_id(eyes):
+    _, version = eyes.base_agent_id.split("/")
+    assert version == __version__.__version__
 
 
 def test_is_disabled_True(eyes):

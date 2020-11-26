@@ -19,13 +19,13 @@ from applitools.common.ultrafastgrid import (
 from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
-from applitools.selenium import __version__, eyes_selenium_utils
+from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.__version__ import __version__
 from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
-from .render_task import RenderTask
 from .resource_collection_task import ResourceCollectionTask
 from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
@@ -87,6 +87,7 @@ class VisualGridEyes(object):
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
         self.server_connector = ServerConnector()  # type: ServerConnector
+        self.resource_collection_queue = []  # type: List[ResourceCollectionTask]
 
     @property
     def is_open(self):
@@ -168,6 +169,7 @@ class VisualGridEyes(object):
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
             self.test_list.append(test)
+            test.becomes_not_opened()
         self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
@@ -216,66 +218,21 @@ class VisualGridEyes(object):
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
-        tag = check_settings.values.name
-        short_description = "{} of {}".format(
-            self.configure.test_name, self.configure.app_name
-        )
-        source = eyes_selenium_utils.get_check_source(self.driver)
-
         running_tests = [
             test for test in self.test_list if self._test_uuid == test.test_uuid
         ]
 
         try:
             script_result = self.get_script_result(dont_fetch_resources)
-
             logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
             logger.debug(
                 "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
             )
             logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
-            resource_collection_task = ResourceCollectionTask(
-                name="VisualGridEyes.check-resource_collection {} - {}".format(
-                    short_description, tag
-                ),
-                script=script_result,
-                resource_cache=self.vg_manager.resource_cache,
-                put_cache=self.vg_manager.put_cache,
-                rendering_info=self.server_connector.render_info(),
-                server_connector=self.server_connector,
-                region_selectors=region_xpaths,
-                size_mode=check_settings.values.size_mode,
-                region_to_check=check_settings.values.target_region,
-                script_hooks=check_settings.values.script_hooks,
-                agent_id=self.base_agent_id,
-                selector=check_settings.values.selector,
-                running_tests=running_tests,
-                request_options=self._options_dict(
-                    self.configure.visual_grid_options,
-                    check_settings.values.visual_grid_options,
-                ),
+            resource_collection_task = self._resource_collection_task(
+                check_settings, region_xpaths, running_tests, script_result
             )
-
-            def collected_task(render_requests):
-                # render_task = RenderTask(
-                #     name="RunningTest.render {} - {}".format(short_description, tag),
-                #     server_connector=self.server_connector,
-                #     render_requests=render_requests,
-                #     running_tests=running_tests,
-                # )
-                for test in running_tests:
-                    test.check(
-                        check_settings=check_settings,
-                        visual_grid_manager=self.vg_manager,
-                        region_selectors=region_xpaths,
-                        render_request=render_requests[test],
-                        source=source,
-                    )
-                    if test.state == "new":
-                        test.becomes_not_opened()
-
-            resource_collection_task.on_task_succeeded(collected_task)
-            resource_collection_task()
+            self.resource_collection_queue.append(resource_collection_task)
         except Exception as e:
             logger.exception(e)
             for test in running_tests:
@@ -284,6 +241,51 @@ class VisualGridEyes(object):
                     test.abort()
                     test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
+
+    def _resource_collection_task(
+        self, check_settings, region_xpaths, running_tests, script_result
+    ):
+        tag = check_settings.values.name
+        short_description = "{} of {}".format(
+            self.configure.test_name, self.configure.app_name
+        )
+        source = eyes_selenium_utils.get_check_source(self.driver)
+        resource_collection_task = ResourceCollectionTask(
+            name="VisualGridEyes.check-resource_collection {} - {}".format(
+                short_description, tag
+            ),
+            script=script_result,
+            resource_cache=self.vg_manager.resource_cache,
+            put_cache=self.vg_manager.put_cache,
+            rendering_info=self.server_connector.render_info(),
+            server_connector=self.server_connector,
+            region_selectors=region_xpaths,
+            size_mode=check_settings.values.size_mode,
+            region_to_check=check_settings.values.target_region,
+            script_hooks=check_settings.values.script_hooks,
+            agent_id=self.base_agent_id,
+            selector=check_settings.values.selector,
+            running_tests=running_tests,
+            request_options=self._options_dict(
+                self.configure.visual_grid_options,
+                check_settings.values.visual_grid_options,
+            ),
+        )
+
+        def collected_task(render_requests):
+            for test in running_tests:
+                test.check(
+                    check_settings=check_settings,
+                    visual_grid_manager=self.vg_manager,
+                    region_selectors=region_xpaths,
+                    render_request=render_requests[test],
+                    source=source,
+                )
+
+        # def on_error(e):
+
+        resource_collection_task.on_task_succeeded(collected_task)
+        return resource_collection_task
 
     def close_async(self):
         for test in self.test_list:
