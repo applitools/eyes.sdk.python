@@ -3,6 +3,8 @@
 - API to disable cross origin rendering [Trello 2346](https://trello.com/c/y7x48jmT)
 ### Fixed
 - Steps/checks stuck in running state [Trello 2340](https://trello.com/c/yZUP5h0f)
+### Updated
+- Supporting iPhone 12 in `IosDeviceName` class. [Trello 2269](https://trello.com/c/yWFy2pRE)
 
 ## [4.12.0] - 2020-11-20
 ### Added
