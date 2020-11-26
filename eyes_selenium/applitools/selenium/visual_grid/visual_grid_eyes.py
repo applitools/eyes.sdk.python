@@ -285,7 +285,7 @@ class VisualGridEyes(object):
         # def on_error(e):
 
         resource_collection_task.on_task_succeeded(collected_task)
-        return resource_collection_task
+        return resource_collection_task()
 
     def close_async(self):
         for test in self.test_list:

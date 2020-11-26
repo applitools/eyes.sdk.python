@@ -12,7 +12,7 @@ from .resource_collection_task import ResourceCollectionTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Text
+    from typing import Any, Dict, List, Optional, Text, Callable
 
     from applitools.common import (
         RenderBrowserInfo,
@@ -33,14 +33,13 @@ RENDERED = "rendered"
 COMPLETED = "completed"
 TESTED = "tested"
 
-STATES = [NEW, OPENED, NOT_OPENED, RENDERED, COMPLETED, TESTED]
+STATES = [NEW, OPENED, NOT_OPENED, COMPLETED, TESTED]
 TRANSITIONS = [
     {"trigger": "becomes_not_opened", "source": NEW, "dest": NOT_OPENED},
     {"trigger": "becomes_opened", "source": NOT_OPENED, "dest": OPENED},
-    {"trigger": "becomes_rendered", "source": OPENED, "dest": RENDERED},
     {
         "trigger": "becomes_tested",
-        "source": [NEW, NOT_OPENED, RENDERED, OPENED],
+        "source": [NEW, NOT_OPENED, OPENED],
         "dest": TESTED,
     },
     {
@@ -51,16 +50,132 @@ TRANSITIONS = [
 ]
 
 
+@attr.s(hash=False, str=False)
+class RunningTestCheck(VGTask):
+    running_test = attr.ib(hash=False, repr=False)  # type: RunningTest
+
+    check_settings = attr.ib(hash=False)  # type: SeleniumCheckSettings
+    render_request = attr.ib()  # type: RenderRequest
+    region_selectors = attr.ib(hash=False)  # type: List[List[VisualGridSelector]]
+    source = attr.ib()  # type: Text
+
+    regions = attr.ib(init=False, factory=list, hash=False)
+    func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
+
+    def __attrs_post_init__(self):
+        # type: () -> None
+        self.func_to_run = self.perform  # type: Callable
+
+    def __hash__(self):
+        return hash(self.name + self.uuid)
+
+    def perform(self):
+        short_description = "{} of {}".format(
+            self.running_test.configuration.test_name,
+            self.running_test.configuration.app_name,
+        )
+        tag = self.check_settings.values.name
+
+        render_task = self._render_task(tag, short_description)
+
+        def check_run():
+            logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
+            self.running_test.eyes.check(
+                self.check_settings,
+                render_task.uuid,
+                self.region_selectors,
+                self.regions,
+                self.source,
+            )
+
+        check_task = VGTask(
+            "perform check {} {}".format(tag, self.check_settings), check_run
+        )
+
+        def check_task_completed():
+            # type: () -> None
+            logger.debug("check_task_completed: task.uuid: {}".format(check_task.uuid))
+            if self.running_test.all_tasks_completed(
+                self.running_test.watch_running_test_check_close
+            ):
+                self.running_test.becomes_tested()
+
+        def check_task_error(e):
+            logger.debug("check_task_error: task.uuid: {}".format(check_task.uuid))
+            self.running_test.pending_exceptions.append(e)
+
+        check_task.on_task_completed(check_task_completed)
+        check_task.on_task_error(check_task_error)
+
+        return render_task(), check_task()
+
+    def _render_task(self, tag, short_description):
+
+        render_task = RenderTask(
+            name="RunningTest.render {} - {}".format(short_description, tag),
+            server_connector=self.running_test.eyes,
+            render_requests=[self.render_request],
+        )
+
+        def render_task_succeeded(render_statuses):
+            # type: (List[RenderStatusResults]) -> None
+            logger.debug(
+                "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
+            )
+            render_status = render_statuses[0]
+
+            if render_status:
+                self.running_test.eyes.render_status_for_task(
+                    render_task.uuid, render_status
+                )
+                if render_status.status == RenderStatus.RENDERED:
+                    for vgr in render_status.selector_regions:
+                        if vgr.error:
+                            logger.error(vgr.error)
+                        else:
+                            self.regions.append(vgr.to_region())
+                    logger.debug(
+                        "render_task_succeeded: uuid: {}\n\tregions {}".format(
+                            render_task.uuid, self.regions
+                        )
+                    )
+                elif render_status and render_status.status == RenderStatus.ERROR:
+                    del self.running_test.running_test_check_queue[:]
+                    del self.running_test.open_queue[:]
+                    del self.running_test.close_queue[:]
+                    self.watch_open = {}
+                    self.watch_task = {}
+                    self.watch_close = {}
+                    self.running_test.abort()
+                    if self.running_test.all_tasks_completed(
+                        self.running_test.watch_running_test_check_close
+                    ):
+                        self.running_test.becomes_tested()
+            else:
+                logger.error(
+                    "Wrong render status! Render returned status {}".format(
+                        render_status
+                    )
+                )
+                self.running_test.becomes_completed()
+
+        def render_task_error(e):
+            logger.debug(
+                "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
+            )
+            self.running_test.pending_exceptions.append(e)
+            self.running_test.becomes_completed()
+
+        render_task.on_task_succeeded(render_task_succeeded)
+        render_task.on_task_error(render_task_error)
+        return render_task
+
+
 @attr.s(hash=True, str=False)
 class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
     configuration = attr.ib(hash=False, repr=False)  # type: Configuration
     browser_info = attr.ib()  # type: RenderBrowserInfo
-    # listener = attr.ib()  # type:
-    region_selectors = attr.ib(
-        init=False, factory=list, hash=False
-    )  # type: List[List[VisualGridSelector]]
-    regions = attr.ib(init=False, factory=lambda: defaultdict(list), hash=False)
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     test_uuid = attr.ib(init=False)
@@ -81,12 +196,10 @@ class RunningTest(object):
     def _initialize_vars(self):
         # type: () -> None
         self.open_queue = []  # type: List[VGTask]
-        self.task_queue = []  # type: List[VGTask]
-        self.render_queue = []  # type: List[RenderTask]
+        self.running_test_check_queue = []  # type: List[RunningTestCheck]
         self.close_queue = []  # type: List[VGTask]
         self.watch_open = {}  # type: Dict[VGTask, bool]
-        self.watch_task = {}  # type: Dict[VGTask, bool]
-        self.watch_render = {}  # type: Dict[RenderTask, bool]
+        self.watch_running_test_check_close = {}  # type: Dict[RunningTestCheck, bool]
         self.watch_close = {}  # type: Dict[VGTask, bool]
         self.task_lock = None  # type: Optional[VGTask]
         self.test_result = None  # type: Optional[TestResults]
@@ -115,13 +228,7 @@ class RunningTest(object):
         elif self.state == NOT_OPENED:
             return self.open_queue
         elif self.state == OPENED:
-            return self.render_queue
-        elif self.state == RENDERED:
-            if self.task_lock:
-                return []
-            elif self.task_queue:
-                self.task_lock = self.task_queue[-1]
-                return self.task_queue
+            return self.running_test_check_queue
         elif self.state == TESTED:
             return self.close_queue
         elif self.state == COMPLETED:
@@ -137,9 +244,7 @@ class RunningTest(object):
         elif self.state == NOT_OPENED:
             return len(self.open_queue)
         elif self.state == OPENED:
-            return len(self.render_queue)
-        elif self.state == RENDERED:
-            return len(self.task_queue)
+            return len(self.running_test_check_queue)
         elif self.state == TESTED:
             return len(self.close_queue)
         elif self.state == COMPLETED:
@@ -184,116 +289,39 @@ class RunningTest(object):
     ):
         # type: (...) -> None
         logger.debug("RunningTest %s" % check_settings)
-        render_task = self._render_task(render_request, check_settings)
-        tag = check_settings.values.name
-
-        def check_run():
-            logger.debug("check_run: render_task.uuid: {}".format(render_task.uuid))
-            self.eyes.check(
-                check_settings,
-                render_task.uuid,
-                region_selectors,
-                self.regions[render_task],
-                source,
-            )
-
-        check_task = VGTask(
-            "perform check {} {}".format(tag, check_settings), check_run
+        running_test_check_task = RunningTestCheck(
+            "RunningTestCheck({})".format(check_settings.values.name),
+            self,
+            check_settings,
+            render_request,
+            region_selectors,
+            source,
         )
 
         def check_task_completed():
             # type: () -> None
-            logger.debug("check_task_completed: task.uuid: {}".format(check_task.uuid))
-            self.watch_task[check_task] = True
-            if self.task_lock and self.task_lock.uuid == check_task.uuid:
+            logger.debug(
+                "check_task_completed: task.uuid: {}".format(
+                    running_test_check_task.uuid
+                )
+            )
+            self.watch_running_test_check_close[running_test_check_task] = True
+            if self.task_lock and self.task_lock.uuid == running_test_check_task.uuid:
                 self.task_lock = None
-            if self.all_tasks_completed(self.watch_task):
+            if self.all_tasks_completed(self.watch_running_test_check_close):
                 self.becomes_tested()
 
         def check_task_error(e):
-            logger.debug("check_task_error: task.uuid: {}".format(check_task.uuid))
-            self.pending_exceptions.append(e)
-
-        check_task.on_task_completed(check_task_completed)
-        check_task.on_task_error(check_task_error)
-        self.task_queue.insert(0, check_task)
-        self.watch_task[check_task] = False
-
-    def _render_task(
-        self,
-        render_request,  # type: RenderRequest
-        check_settings,  # type: SeleniumCheckSettings
-    ):
-        # type: (...) -> RenderTask
-        short_description = "{} of {}".format(
-            self.configuration.test_name, self.configuration.app_name
-        )
-        tag = check_settings.values.name
-
-        # resource_collection_task.on_task_error()
-        render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(short_description, tag),
-            server_connector=self.eyes,
-            render_requests=[render_request],
-        )
-        logger.debug("RunningTest %s" % render_task.name)
-        render_index = render_task.add_running_test(self)
-
-        def render_task_succeeded(render_statuses):
-            # type: (List[RenderStatusResults]) -> None
             logger.debug(
-                "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
-            )
-            render_status = render_statuses[render_index]
-            if render_status:
-                # if not render_status.device_size:
-                #     render_status.device_size = self.browser_info.viewport_size
-                self.eyes.render_status_for_task(render_task.uuid, render_status)
-                if render_status.status == RenderStatus.RENDERED:
-                    for vgr in render_status.selector_regions:
-                        if vgr.error:
-                            logger.error(vgr.error)
-                        else:
-                            self.regions[render_task].append(vgr.to_region())
-                    self.watch_render[render_task] = True
-                    if self.all_tasks_completed(self.watch_render):
-                        self.becomes_rendered()
-                    logger.debug(
-                        "render_task_succeeded: uuid: {}\n\tregions {}".format(
-                            render_task.uuid, self.regions.get(render_task)
-                        )
-                    )
-                elif render_status and render_status.status == RenderStatus.ERROR:
-                    self.watch_render[render_task] = True
-                    del self.task_queue[:]
-                    del self.open_queue[:]
-                    del self.close_queue[:]
-                    self.watch_open = {}
-                    self.watch_task = {}
-                    self.watch_close = {}
-                    self.abort()
-                    if self.all_tasks_completed(self.watch_render):
-                        self.becomes_tested()
-            else:
-                logger.error(
-                    "Wrong render status! Render returned status {}".format(
-                        render_status
-                    )
-                )
-                self.becomes_completed()
-
-        def render_task_error(e):
-            logger.debug(
-                "render_task_error: task.uuid: {}\n{}".format(render_task.uuid, str(e))
+                "check_task_error: task.uuid: {}".format(running_test_check_task.uuid)
             )
             self.pending_exceptions.append(e)
-            self.becomes_completed()
 
-        render_task.on_task_succeeded(render_task_succeeded)
-        render_task.on_task_error(render_task_error)
-        self.render_queue.append(render_task)
-        self.watch_render[render_task] = False
-        return render_task
+        running_test_check_task.on_task_completed(check_task_completed)
+        running_test_check_task.on_task_error(check_task_error)
+
+        self.running_test_check_queue.insert(0, running_test_check_task)
+        self.watch_running_test_check_close[running_test_check_task] = False
 
     def close(self):
         # type: () -> Optional[Any]

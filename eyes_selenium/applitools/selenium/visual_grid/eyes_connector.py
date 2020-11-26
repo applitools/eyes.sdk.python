@@ -181,7 +181,7 @@ class EyesConnector(EyesBase):
         self,
         check_settings,  # type: SeleniumCheckSettings
         check_task_uuid,  # type:  Text
-        region_selectors,  # type: List[VisualGridSelector]
+        region_selectors,  # type: List[List[VisualGridSelector]]
         regions,  # type: List[Region]
         source,  # type: Optional[Text]
     ):
