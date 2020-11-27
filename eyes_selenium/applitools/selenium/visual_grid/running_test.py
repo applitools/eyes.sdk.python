@@ -95,14 +95,16 @@ class RunningTestCheck(VGTask):
         def check_task_completed():
             # type: () -> None
             logger.debug("check_task_completed: task.uuid: {}".format(check_task.uuid))
-            if self.running_test.all_tasks_completed(
-                self.running_test.watch_running_test_check_close
+            if (
+                self.running_test.task_lock
+                and self.running_test.task_lock.uuid == self.uuid
             ):
-                self.running_test.becomes_tested()
+                self.running_test.task_lock = None
 
         def check_task_error(e):
             logger.debug("check_task_error: task.uuid: {}".format(check_task.uuid))
             self.running_test.pending_exceptions.append(e)
+            self.running_test.becomes_completed()
 
         check_task.on_task_completed(check_task_completed)
         check_task.on_task_error(check_task_error)
@@ -150,7 +152,7 @@ class RunningTestCheck(VGTask):
                     if self.running_test.all_tasks_completed(
                         self.running_test.watch_running_test_check_close
                     ):
-                        self.running_test.becomes_tested()
+                        self.running_test.becomes_completed()
             else:
                 logger.error(
                     "Wrong render status! Render returned status {}".format(
@@ -310,8 +312,6 @@ class RunningTest(object):
                 )
             )
             self.watch_running_test_check_close[running_test_check_task] = True
-            if self.task_lock and self.task_lock.uuid == running_test_check_task.uuid:
-                self.task_lock = None
             if self.all_tasks_completed(self.watch_running_test_check_close):
                 self.becomes_tested()
 

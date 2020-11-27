@@ -73,17 +73,16 @@ class VisualGridRunner(EyesRunner):
 
     def _run(self):
         logger.debug("VisualGridRunner.run()")
-        for test in self._get_parallel_tests_by_round_robbin():
-            if self.still_running:
-                queue = test.queue
-                try:
-                    task = queue.pop()
-                    logger.debug("VisualGridRunner got task %s" % task)
-                except IndexError:
-                    datetime_utils.sleep(1000, msg="Waiting for task")
-                    continue
-                future = self._executor.submit(task)
-                self._future_to_task[future] = task
+        for test_queue in self._get_parallel_tests_by_round_robbin():
+            try:
+                task = test_queue.pop()
+                logger.debug("VisualGridRunner got task %s" % task)
+            except IndexError:
+                datetime_utils.sleep(1000, msg="Waiting for task")
+                continue
+            future = self._executor.submit(task)
+            self._future_to_task[future] = task
+        logger.debug("VisualGridRunner.run() done")
 
     def _stop(self):
         # type: () -> None
@@ -104,6 +103,7 @@ class VisualGridRunner(EyesRunner):
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
+        logger.debug("VisualGridRunner.stop() done")
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
@@ -137,14 +137,17 @@ class VisualGridRunner(EyesRunner):
         return not_opened[:n]
 
     def _get_parallel_tests_by_round_robbin(self):
-        # type: () -> List[RunningTest]
+        # type: () -> List[VGTask]
         done = False
         next_test = 0
         while not done:
             current_tests = self._current_parallel_tests()
             if current_tests:
                 index = next_test % len(current_tests)
-                yield current_tests[index]
+                yield current_tests[index].queue
                 next_test += 1
             else:
-                done = True
+                if self.still_running:
+                    yield []
+                else:
+                    done = True
