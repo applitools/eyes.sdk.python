@@ -12,7 +12,7 @@ from .resource_collection_task import ResourceCollectionTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Text, Callable
+    from typing import Any, Callable, Dict, List, Optional, Text
 
     from applitools.common import (
         RenderBrowserInfo,
@@ -228,7 +228,11 @@ class RunningTest(object):
         elif self.state == NOT_OPENED:
             return self.open_queue
         elif self.state == OPENED:
-            return self.running_test_check_queue
+            if self.task_lock:
+                return []
+            elif self.running_test_check_queue:
+                self.task_lock = self.running_test_check_queue[-1]
+                return self.running_test_check_queue
         elif self.state == TESTED:
             return self.close_queue
         elif self.state == COMPLETED:

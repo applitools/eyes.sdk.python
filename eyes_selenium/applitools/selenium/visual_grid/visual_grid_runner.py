@@ -1,6 +1,5 @@
 import concurrent
 import itertools
-import operator
 import sys
 import threading
 import typing
@@ -10,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.utils import counted, datetime_utils, iteritems
 from applitools.core import EyesRunner
+from applitools.selenium.visual_grid.running_test import COMPLETED, NOT_OPENED
 
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
@@ -37,6 +37,8 @@ class VisualGridRunner(EyesRunner):
 
         self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
         self._future_to_task = ResourceCache()  # type:ResourceCache
+        self._concurrent_sessions = concurrent_sessions  # type: int
+        self._parallel_tests = []  # type: List[RunningTest]
         thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
         thread.daemon = True
@@ -58,17 +60,30 @@ class VisualGridRunner(EyesRunner):
         self.all_eyes.append(eyes)
         logger.debug("VisualGridRunner.open(%s)" % eyes)
 
+    def _current_parallel_tests(self):
+        parallel_tests = [
+            test for test in self._parallel_tests if test.state != COMPLETED
+        ]
+        tests_left = len(parallel_tests)
+        if tests_left < self._concurrent_sessions:
+            tests_to_add = self._concurrent_sessions - tests_left
+            parallel_tests += self._get_n_not_opened_tests(tests_to_add)
+            self._parallel_tests = parallel_tests
+        return self._parallel_tests
+
     def _run(self):
         logger.debug("VisualGridRunner.run()")
-        while self.still_running:
-            try:
-                task = self._task_queue.pop()
-                logger.debug("VisualGridRunner got task %s" % task)
-            except IndexError:
-                datetime_utils.sleep(1000, msg="Waiting for task")
-                continue
-            future = self._executor.submit(task)
-            self._future_to_task[future] = task
+        for test in self._get_parallel_tests_by_round_robbin():
+            if self.still_running:
+                queue = test.queue
+                try:
+                    task = queue.pop()
+                    logger.debug("VisualGridRunner got task %s" % task)
+                except IndexError:
+                    datetime_utils.sleep(1000, msg="Waiting for task")
+                    continue
+                future = self._executor.submit(task)
+                self._future_to_task[future] = task
 
     def _stop(self):
         # type: () -> None
@@ -116,21 +131,20 @@ class VisualGridRunner(EyesRunner):
             )
         return tests
 
-    def _get_all_running_tests_by_score(self):
-        # type: () -> List[RunningTest]
-        return sorted(
-            self._get_all_running_tests(),
-            key=operator.attrgetter("score"),
-            reverse=True,
-        )
+    def _get_n_not_opened_tests(self, n):
+        all_tests = self._get_all_running_tests()
+        not_opened = [test for test in all_tests if test.state is NOT_OPENED]
+        return not_opened[:n]
 
-    @property
-    def _task_queue(self):
-        # type: () -> List[VGTask]
-        tests_to_run = self._get_all_running_tests_by_score()
-        if tests_to_run:
-            test_to_run = tests_to_run[0]
-            queue = test_to_run.queue
-        else:
-            queue = []
-        return queue
+    def _get_parallel_tests_by_round_robbin(self):
+        # type: () -> List[RunningTest]
+        done = False
+        next_test = 0
+        while not done:
+            current_tests = self._current_parallel_tests()
+            if current_tests:
+                index = next_test % len(current_tests)
+                yield current_tests[index]
+                next_test += 1
+            else:
+                done = True
