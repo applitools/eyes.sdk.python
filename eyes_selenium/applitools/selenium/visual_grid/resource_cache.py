@@ -121,6 +121,9 @@ class PutCache(object):
             )
             self._sent_hashes.update(list(results_iterable))
 
+            for resource in all_resources:
+                resource.clear()
+
     def shutdown(self):
         # type: () -> None
         with self._lock:

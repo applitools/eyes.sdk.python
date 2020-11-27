@@ -235,6 +235,7 @@ class RunningTest(object):
             elif self.running_test_check_queue:
                 self.task_lock = self.running_test_check_queue[-1]
                 return self.running_test_check_queue
+            return []
         elif self.state == TESTED:
             return self.close_queue
         elif self.state == COMPLETED:
