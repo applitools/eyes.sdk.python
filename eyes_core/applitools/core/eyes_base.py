@@ -565,7 +565,6 @@ class EyesBase(
                 return None
             except EyesError as e:
                 logger.exception(e)
-                logger.close()
                 raise e
 
         raise EyesError("eyes.open_base() failed")
