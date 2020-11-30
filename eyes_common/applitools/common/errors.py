@@ -21,6 +21,10 @@ class OutOfBoundsError(EyesError):
     """
 
 
+class EyesServiceUnavailableError(EyesError):
+    """Indicates that Eyes concurrency limit is exceeded"""
+
+
 class TestFailedError(Exception):
     """
     Indicates that a test did not pass (i.e., test either failed or is a new test).

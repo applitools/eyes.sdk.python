@@ -12,7 +12,7 @@ from requests import Response
 from requests.packages import urllib3  # noqa
 
 from applitools.common import Region, RunningSession, logger
-from applitools.common.errors import EyesError
+from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
@@ -202,12 +202,15 @@ class _RequestCommunicator(object):
         elif response.status_code == requests.codes.created:
             # delete url that was used before
             url = response.headers["Location"]
-            return self.request(
+            response = self.request(
                 "delete",
                 url,
                 request_id=request_id,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
+            return self._long_request_check_status(response, request_id)
+        elif response.status_code == requests.codes.service_unavailable:
+            raise EyesServiceUnavailableError
         elif response.status_code == requests.codes.gone:
             raise EyesError("The server task has gone.")
         else:
