@@ -243,22 +243,6 @@ class RunningTest(object):
         else:
             raise TypeError("Unsupported state")
 
-    @property
-    def score(self):
-        # type: () -> int
-        if self.state == NEW:
-            return 0
-        elif self.state == NOT_OPENED:
-            return len(self.open_queue)
-        elif self.state == OPENED:
-            return len(self.running_test_check_queue)
-        elif self.state == TESTED:
-            return len(self.close_queue)
-        elif self.state == COMPLETED:
-            return 0
-        else:
-            raise TypeError("Unsupported state")
-
     def open(self):
         # type: () -> None
         open_task = VGTask(

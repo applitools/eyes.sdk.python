@@ -87,7 +87,7 @@ class VisualGridRunner(EyesRunner):
     def _stop(self):
         # type: () -> None
         logger.debug("VisualGridRunner.stop()")
-        while sum(r.score for r in self._get_all_running_tests()) > 0:
+        while any(r.state != COMPLETED for r in self._get_all_running_tests()):
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
         for future in concurrent.futures.as_completed(self._future_to_task):
