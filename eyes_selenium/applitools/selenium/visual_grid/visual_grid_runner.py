@@ -133,7 +133,11 @@ class VisualGridRunner(EyesRunner):
 
     def _get_n_not_opened_tests(self, n):
         all_tests = self._get_all_running_tests()
-        not_opened = [test for test in all_tests if test.state is NOT_OPENED]
+        not_opened = [
+            test
+            for test in all_tests
+            if test.state is NOT_OPENED and test not in self._parallel_tests
+        ]
         return not_opened[:n]
 
     def _get_parallel_tests_by_round_robbin(self):
