@@ -5,6 +5,8 @@ import json
 import math
 import typing
 import uuid
+from threading import Condition
+from time import sleep, time
 
 import attr
 import requests
@@ -239,6 +241,39 @@ class _RequestCommunicator(object):
         return self._long_request_loop(url, request_id, delay)
 
 
+class _SessionRetryLimiter(object):
+    def __init__(self, max_retry_time=60 * 60, sleep_time=5):
+        self._condvar = Condition()
+        self._retrying = False
+        self._max_retry_time = max_retry_time
+        self._sleep_time = sleep_time
+
+    def limit_parallel_retries(self, method):
+        deadline = time() + self._max_retry_time
+        with self._condvar:
+            while self._retrying:
+                self._condvar.wait()
+        try:
+            return method()
+        except EyesServiceUnavailableError:
+            with self._condvar:
+                while self._retrying:
+                    self._condvar.wait()
+                self._retrying = True
+            try:
+                while True:
+                    try:
+                        return method()
+                    except EyesServiceUnavailableError:
+                        if time() > deadline:
+                            raise EyesError("Session opening timeout reached")
+                        sleep(self._sleep_time)
+            finally:
+                with self._condvar:
+                    self._retrying = False
+                    self._condvar.notify_all()
+
+
 class ServerConnector(object):
     """
     Provides an API for communication with the Applitools server.
@@ -263,6 +298,7 @@ class ServerConnector(object):
     RENDERER_INFO = "/job-info"
 
     _is_session_started = False
+    _retry_limiter = _SessionRetryLimiter()
 
     def __init__(self, client_session=None):
         # type: (Optional[ClientSession]) -> None
@@ -340,6 +376,12 @@ class ServerConnector(object):
         :param session_start_info: The start params for the session.
         :return: Represents the current running session.
         """
+        return self._retry_limiter.limit_parallel_retries(
+            lambda: self._start_session(session_start_info)
+        )
+
+    def _start_session(self, session_start_info):
+        # type: (SessionStartInfo) -> RunningSession
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.long_request(
