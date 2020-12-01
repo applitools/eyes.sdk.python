@@ -1,7 +1,6 @@
 import itertools
 import typing
 import uuid
-from collections import Generator
 from copy import deepcopy
 
 import attr
@@ -31,7 +30,7 @@ from .running_test import RunningTest
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional, Text, Union
+    from typing import Dict, Generator, List, Optional, Text, Union
 
     from applitools.common.utils.custom_types import AnyWebElement
     from applitools.selenium import Configuration, Eyes, EyesWebDriver
