@@ -686,10 +686,10 @@ class ServerConnector(object):
         }
 
     @retry()
-    def job_info(self, render_request):
+    def job_info(self, render_requests):
         # type: (List[RenderRequest]) -> List[JobInfo]
         resp = self._ufg_request(
-            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_requests)
         )
         resp.raise_for_status()
         # TODO: improve parser to skip parsing of inner structures if required
