@@ -21,6 +21,7 @@ from applitools.common import (
     StdoutLogger,
     TestResults,
     logger,
+    JobInfo,
 )
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
@@ -349,6 +350,21 @@ class FakeServerConnector(ServerConnector):
             }
         )
         self.output_calls["render_info"].append(result)
+        return result
+
+    def job_info(self, render_requests):
+        self.input_calls["job_info"].append(render_requests)
+        result = [
+            JobInfo(renderer=rr.renderer, eyes_environment=rr.browser_name)
+            for rr in render_requests
+        ]
+        self.output_calls["job_info"].append(result)
+        return result
+
+    def check_resource_status(self, render_id, *hashes):
+        self.input_calls["check_resource_status"].append((render_id, hashes))
+        result = [True for _ in hashes]
+        self.output_calls["check_resource_status"].append(result)
         return result
 
 
