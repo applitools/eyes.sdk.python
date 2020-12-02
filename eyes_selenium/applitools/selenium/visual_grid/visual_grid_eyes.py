@@ -26,7 +26,7 @@ from applitools.selenium.visual_grid import dom_snapshot_script
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_collection_task import ResourceCollectionTask
-from .running_test import RunningTest, TESTED
+from .running_test import TESTED, RunningTest
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:

@@ -13,6 +13,7 @@ import yaml
 from applitools.common import (
     BatchInfo,
     Configuration,
+    JobInfo,
     MatchResult,
     RenderingInfo,
     RenderStatusResults,
@@ -21,7 +22,6 @@ from applitools.common import (
     StdoutLogger,
     TestResults,
     logger,
-    JobInfo,
 )
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
