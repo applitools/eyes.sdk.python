@@ -26,7 +26,7 @@ from applitools.selenium.visual_grid import dom_snapshot_script
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_collection_task import ResourceCollectionTask
-from .running_test import RunningTest
+from .running_test import RunningTest, TESTED
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
@@ -235,7 +235,7 @@ class VisualGridEyes(object):
         except Exception as e:
             logger.exception(e)
             for test in running_tests:
-                if test.state != "tested":
+                if test.state != TESTED:
                     # already aborted or closed
                     test.abort()
                     test.becomes_tested()
@@ -275,7 +275,6 @@ class VisualGridEyes(object):
             for test in running_tests:
                 test.check(
                     check_settings=check_settings,
-                    visual_grid_manager=self.vg_manager,
                     region_selectors=region_xpaths,
                     render_request=render_requests[test],
                     source=source,

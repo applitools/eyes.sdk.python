@@ -1,14 +1,12 @@
 import itertools
 import typing
-from collections import defaultdict
 
 import attr
 from transitions import Machine
 
-from applitools.common import Region, RenderRequest, RenderStatus, logger
+from applitools.common import RenderRequest, RenderStatus, logger
 
 from .render_task import RenderTask
-from .resource_collection_task import ResourceCollectionTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
@@ -24,7 +22,6 @@ if typing.TYPE_CHECKING:
     from applitools.selenium.fluent import SeleniumCheckSettings
 
     from .eyes_connector import EyesConnector
-    from .visual_grid_runner import VisualGridRunner
 
 NEW = "new"
 NOT_OPENED = "not_opened"
@@ -256,6 +253,9 @@ class RunningTest(object):
             logger.debug("open_task_succeeded: task.uuid: {}".format(open_task.uuid))
             self.watch_open[open_task] = True
             if self.all_tasks_completed(self.watch_open):
+                if self.state == TESTED:
+                    logger.debug("open_task_succeeded: test session was aborted")
+                    return
                 self.becomes_opened()
 
         def open_task_error(e):
@@ -273,7 +273,6 @@ class RunningTest(object):
     def check(
         self,
         check_settings,  # type: SeleniumCheckSettings
-        visual_grid_manager,  # type: VisualGridRunner
         region_selectors,  # type: Dict
         render_request,  # type: RenderRequest
         source,  # type: Optional[Text]
@@ -360,7 +359,9 @@ class RunningTest(object):
             return None
 
         def ensure_and_abort():
-            self.eyes._ensure_running_session()
+            if self.state in [NEW, NOT_OPENED]:
+                # open new session if no opened
+                self.eyes._ensure_running_session()
             return self.eyes.abort()
 
         abort_task = VGTask("abort {}".format(self.browser_info), ensure_and_abort)
