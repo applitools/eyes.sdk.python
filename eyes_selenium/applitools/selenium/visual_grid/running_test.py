@@ -273,7 +273,7 @@ class RunningTest(object):
     def check(
         self,
         check_settings,  # type: SeleniumCheckSettings
-        region_selectors,  # type: Dict
+        region_selectors,  # type: List[List[VisualGridSelector]]
         render_request,  # type: RenderRequest
         source,  # type: Optional[Text]
     ):

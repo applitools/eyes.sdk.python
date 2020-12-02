@@ -271,7 +271,7 @@ class VisualGridEyes(object):
             ),
         )
 
-        def collected_task(render_requests):
+        def on_collected_task_succeeded(render_requests):
             for test in running_tests:
                 test.check(
                     check_settings=check_settings,
@@ -280,9 +280,17 @@ class VisualGridEyes(object):
                     source=source,
                 )
 
-        # def on_error(e):
+        def on_collected_task_error(e):
+            # TODO: Improve exception handling
+            running_tests[0].pending_exceptions.append(e)
+            for test in running_tests:
+                if test.state != TESTED:
+                    # already aborted or closed
+                    test.abort()
+                    test.becomes_tested()
 
-        resource_collection_task.on_task_succeeded(collected_task)
+        resource_collection_task.on_task_succeeded(on_collected_task_succeeded)
+        resource_collection_task.on_task_error(on_collected_task_error)
         return resource_collection_task()
 
     def close_async(self):
