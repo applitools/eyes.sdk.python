@@ -27,9 +27,8 @@ def test_ufg_skip_list(driver, fake_connector_class, spy):
         "VisualGridTestPageWithRelativeBGImage/index.html"
     )
     eyes.open(driver, app_name="TestUFGEyes", test_name="TestUFGSkipList")
-    running_test = vg_runner._get_all_running_tests()[0]
     create_dom_snapshot_spy = spy(dom_snapshot_script, "create_dom_snapshot")
-    check_spy = spy(running_test, "check")
+    rc_task_factory_spy = spy(VisualGridEyes, "_resource_collection_task")
 
     eyes.check_window("check 1")
     eyes.check_window("check 2")
@@ -37,7 +36,7 @@ def test_ufg_skip_list(driver, fake_connector_class, spy):
     eyes.close(False)
 
     skip_list = create_dom_snapshot_spy.call_args.args[2]
-    script_result = _retrieve_urls(check_spy.call_args.kwargs["script_result"])
+    script_result = _retrieve_urls(rc_task_factory_spy.call_args.args[4])
     assert set(skip_list) - set(script_result["resource_urls"])
 
 
