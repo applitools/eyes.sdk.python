@@ -270,15 +270,18 @@ class VisualGridEyes(object):
                 check_settings.values.visual_grid_options,
             ),
         )
+        checks = [
+            test.check(
+                check_settings=check_settings,
+                region_selectors=region_xpaths,
+                source=source,
+            )
+            for test in running_tests
+        ]
 
         def on_collected_task_succeeded(render_requests):
-            for test in running_tests:
-                test.check(
-                    check_settings=check_settings,
-                    region_selectors=region_xpaths,
-                    render_request=render_requests[test],
-                    source=source,
-                )
+            for check in checks:
+                check.set_render_request(render_requests[check.running_test])
 
         def on_collected_task_error(e):
             # TODO: Improve exception handling
