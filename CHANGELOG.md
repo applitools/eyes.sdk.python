@@ -1,4 +1,4 @@
-## [vNext]
+## [4.13.1] - 2020-12-03
 ### Updated
 - Temporarily disabled skip list [Trello 2363](https://trello.com/c/ynLHfleQ)
 
