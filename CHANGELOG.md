@@ -1,6 +1,7 @@
 ## [4.13.1] - 2020-12-03
 ### Updated
 - Temporarily disabled skip list [Trello 2363](https://trello.com/c/ynLHfleQ)
+- DOM snapshot and DOM capture scripts to *4.2.8* and *8.0.1*
 
 ## [4.13.0] - 2020-11-25
 ### Added
