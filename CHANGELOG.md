@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Temporarily disabled skip list [Trello 2363](https://trello.com/c/ynLHfleQ)
+
 ## [4.13.0] - 2020-11-25
 ### Added
 - API to disable cross origin rendering [Trello 2346](https://trello.com/c/y7x48jmT)
