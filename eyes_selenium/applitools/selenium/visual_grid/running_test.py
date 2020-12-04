@@ -232,7 +232,7 @@ class RunningTest(object):
             if self.task_lock and self.task_lock.queue:
                 return self.task_lock.queue
             elif self.task_queue:
-                self.task_lock = self.task_queue[-1]
+                self.task_lock = self.task_queue.popleft()
                 return self.task_lock.queue
             elif self.close_queue:
                 # in case no checks, but close scheduled
@@ -291,17 +291,6 @@ class RunningTest(object):
             source,
         )
 
-        def check_task_completed():
-            # type: () -> None
-            logger.debug(
-                "check_task_completed: task.uuid: {}".format(
-                    running_test_check_task.uuid
-                )
-            )
-            self.watch_task[running_test_check_task] = True
-            if self.all_tasks_completed(self.watch_task):
-                self.becomes_tested()
-
         self.task_queue.append(running_test_check_task)
         self.watch_task[running_test_check_task] = False
         return running_test_check_task
@@ -311,7 +300,7 @@ class RunningTest(object):
         if self.state == NEW:
             self.becomes_completed()
             return None
-        elif self.state in [OPENED, TESTED]:
+        elif self.state in [NOT_OPENED, OPENED, TESTED]:
             close_task = VGTask(
                 "close {}".format(self.browser_info),
                 lambda: self.eyes.is_open and self.eyes.close(False),
