@@ -6,13 +6,13 @@ from collections import deque
 import attr
 from transitions import Machine
 
-from applitools.common import RenderRequest, RenderStatus, logger
+from applitools.common import RenderStatus, logger
 
 from .render_task import RenderTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Callable, Dict, List, Optional, Text
+    from typing import Any, Dict, List, Optional, Text
 
     from applitools.common import (
         RenderBrowserInfo,
@@ -103,20 +103,18 @@ class RunningTestCheck(object):
                             render_task.uuid, self.regions
                         )
                     )
+                    # schedule check task
+                    self.queue.append(self._check_task(render_task, tag))
                 elif render_status and render_status.status == RenderStatus.ERROR:
                     self.running_test.task_queue.clear()
                     self.running_test.open_queue.clear()
                     self.running_test.close_queue.clear()
-                    self.watch_open = {}
-                    self.watch_task = {}
-                    self.watch_close = {}
+                    self.running_test.watch_open = {}
+                    self.running_test.watch_task = {}
+                    self.running_test.watch_close = {}
+
                     self.running_test.abort()
-                    if self.running_test.all_tasks_completed(
-                        self.running_test.watch_task
-                    ):
-                        self.running_test.becomes_completed()
-                # schedule check task
-                self.queue.append(self._check_task(render_task, tag))
+                    self.running_test.becomes_tested()
             else:
                 logger.error(
                     "Wrong render status! Render returned status {}".format(
