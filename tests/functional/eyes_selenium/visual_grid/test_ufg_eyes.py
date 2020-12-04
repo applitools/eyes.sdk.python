@@ -18,6 +18,7 @@ def _retrieve_urls(data):
     )
 
 
+@pytest.mark.skip("Skip list temporary disabled. Trello 2363")
 def test_ufg_skip_list(driver, fake_connector_class, spy):
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)

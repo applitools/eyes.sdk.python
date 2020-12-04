@@ -184,7 +184,7 @@ class VisualGridEyes(object):
             return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
                 dont_fetch_resources,
-                list(self.vg_manager.resource_cache.keys()),
+                None,
                 DOM_EXTRACTION_TIMEOUT,
                 self.configure.enable_cross_origin_rendering,
             )
