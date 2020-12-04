@@ -1,4 +1,4 @@
-## [4.13.2] - 2020-12-03
+## [4.13.2] - 2020-12-04
 ### Updated
 - DOM snapshot script to *4.2.9* [Trello 2364](https://trello.com/c/97wQruS9)
 
