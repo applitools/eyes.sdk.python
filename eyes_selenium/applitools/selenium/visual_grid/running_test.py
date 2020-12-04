@@ -1,6 +1,7 @@
 import itertools
 import typing
 import uuid
+from collections import deque
 
 import attr
 from transitions import Machine
@@ -58,7 +59,7 @@ class RunningTestCheck(object):
     source = attr.ib()  # type: Text
 
     regions = attr.ib(init=False, factory=list)
-    queue = attr.ib(init=False, factory=list)
+    queue = attr.ib(init=False, factory=deque)
 
     def set_render_request(self, render_request):
         short_description = "{} of {}".format(
@@ -67,7 +68,7 @@ class RunningTestCheck(object):
         )
         tag = self.check_settings.values.name
         render_task = self._render_task(tag, short_description, render_request)
-        self.queue = [render_task]
+        self.queue = deque([render_task])
 
     def __hash__(self):
         return hash(self.name + self.uuid)
@@ -103,9 +104,9 @@ class RunningTestCheck(object):
                         )
                     )
                 elif render_status and render_status.status == RenderStatus.ERROR:
-                    del self.running_test.task_queue[:]
-                    del self.running_test.open_queue[:]
-                    del self.running_test.close_queue[:]
+                    self.running_test.task_queue.clear()
+                    self.running_test.open_queue.clear()
+                    self.running_test.close_queue.clear()
                     self.watch_open = {}
                     self.watch_task = {}
                     self.watch_close = {}
@@ -197,15 +198,15 @@ class RunningTest(object):
 
     def _initialize_vars(self):
         # type: () -> None
-        self.open_queue = []  # type: List[VGTask]
-        self.task_queue = []  # type: List[RunningTestCheck]
-        self.close_queue = []  # type: List[VGTask]
+        self.open_queue = deque()  # type: deque[VGTask]
+        self.task_queue = deque()  # type: deque[RunningTestCheck]
+        self.close_queue = deque()  # type: deque[VGTask]
         self.watch_open = {}  # type: Dict[VGTask, bool]
         self.watch_task = {}  # type: Dict[RunningTestCheck, bool]
         self.watch_close = {}  # type: Dict[VGTask, bool]
         self.task_lock = None  # type: Optional[VGTask]
         self.test_result = None  # type: Optional[TestResults]
-        self.pending_exceptions = []  # type: List[Exception]
+        self.pending_exceptions = deque()  # type: deque[Exception]
 
     def _initialize_state_machine(self):
         # type: () -> None
@@ -224,9 +225,9 @@ class RunningTest(object):
 
     @property
     def queue(self):
-        # type: () -> List
+        # type: () -> deque[VGTask]
         if self.state == NEW:
-            return []
+            return deque()
         elif self.state == NOT_OPENED:
             return self.open_queue
         elif self.state == OPENED:
@@ -238,11 +239,11 @@ class RunningTest(object):
             elif self.close_queue:
                 # in case no checks, but close scheduled
                 return self.close_queue
-            return []
+            return deque()
         elif self.state == TESTED:
             return self.close_queue
         elif self.state == COMPLETED:
-            return []
+            return deque()
         else:
             raise TypeError("Unsupported state")
 
@@ -303,7 +304,7 @@ class RunningTest(object):
             if self.all_tasks_completed(self.watch_task):
                 self.becomes_tested()
 
-        self.task_queue.insert(0, running_test_check_task)
+        self.task_queue.append(running_test_check_task)
         self.watch_task[running_test_check_task] = False
         return running_test_check_task
 
@@ -312,9 +313,10 @@ class RunningTest(object):
         if self.state == NEW:
             self.becomes_completed()
             return None
-        elif self.state in [NOT_OPENED, OPENED, TESTED]:
+        elif self.state in [OPENED, TESTED]:
             close_task = VGTask(
-                "close {}".format(self.browser_info), lambda: self.eyes.close(False)
+                "close {}".format(self.browser_info),
+                lambda: self.eyes.is_open and self.eyes.close(False),
             )
             logger.debug("RunningTest %s" % close_task.name)
 
@@ -322,9 +324,11 @@ class RunningTest(object):
                 logger.debug(
                     "close_task_succeeded: task.uuid: {}".format(close_task.uuid)
                 )
-                self.test_result = test_result
-                if callable(self.on_results):
-                    self.on_results(test=self, test_result=test_result)
+                # abort() could add test_result already
+                if self.test_result is None and test_result:
+                    self.test_result = test_result
+                    if callable(self.on_results):
+                        self.on_results(test=self, test_result=test_result)
 
             def close_task_completed():
                 # type: () -> None
@@ -355,7 +359,7 @@ class RunningTest(object):
             return None
 
         def ensure_and_abort():
-            if self.state in [NEW, NOT_OPENED]:
+            if not self.eyes.is_open:
                 # open new session if no opened
                 self.eyes._ensure_running_session()
             return self.eyes.abort()

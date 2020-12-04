@@ -3,7 +3,7 @@ import itertools
 import sys
 import threading
 import typing
-from collections import Counter
+from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import TestResults, TestResultsSummary, logger
@@ -67,7 +67,7 @@ class VisualGridRunner(EyesRunner):
         tests_left = len(parallel_tests)
         if tests_left < self._concurrent_sessions:
             tests_to_add = self._concurrent_sessions - tests_left
-            parallel_tests += self._get_n_not_opened_tests(tests_to_add)
+            parallel_tests += self._get_n_not_completed_tests(tests_to_add)
             self._parallel_tests = parallel_tests
         return self._parallel_tests
 
@@ -75,7 +75,7 @@ class VisualGridRunner(EyesRunner):
         logger.debug("VisualGridRunner.run()")
         for test_queue in self._get_parallel_tests_by_round_robbin():
             try:
-                task = test_queue.pop()
+                task = test_queue.popleft()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
                 datetime_utils.sleep(1000, msg="Waiting for task")
@@ -131,12 +131,12 @@ class VisualGridRunner(EyesRunner):
             )
         return tests
 
-    def _get_n_not_opened_tests(self, n):
+    def _get_n_not_completed_tests(self, n):
         all_tests = self._get_all_running_tests()
         not_opened = [
             test
             for test in all_tests
-            if test.state is NOT_OPENED and test not in self._parallel_tests
+            if test.state != COMPLETED and test not in self._parallel_tests
         ]
         return not_opened[:n]
 
@@ -152,6 +152,6 @@ class VisualGridRunner(EyesRunner):
                 next_test += 1
             else:
                 if self.still_running:
-                    yield []
+                    yield deque()
                 else:
                     done = True
