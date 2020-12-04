@@ -37,7 +37,7 @@ def test_abort_when_dom_snapshot_error(driver, vg_runner, batch_info):
         eyes.open(driver)
         eyes.check(Target.window())
         eyes.close_async()
-        all_results = vg_runner.get_all_test_results()
+        all_results = vg_runner.get_all_test_results(False)
         assert len(all_results) == 1
 
 
