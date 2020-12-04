@@ -231,7 +231,7 @@ class VisualGridEyes(object):
             resource_collection_task = self._resource_collection_task(
                 check_settings, region_xpaths, running_tests, script_result
             )
-            self.resource_collection_queue.append(resource_collection_task)
+            self.vg_manager.add_resource_collection_task(resource_collection_task)
         except Exception as e:
             logger.exception(e)
             for test in running_tests:
@@ -294,7 +294,7 @@ class VisualGridEyes(object):
 
         resource_collection_task.on_task_succeeded(on_collected_task_succeeded)
         resource_collection_task.on_task_error(on_collected_task_error)
-        return resource_collection_task()
+        return resource_collection_task
 
     def close_async(self):
         for test in self.test_list:

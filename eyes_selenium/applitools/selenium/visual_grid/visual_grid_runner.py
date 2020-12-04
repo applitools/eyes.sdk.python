@@ -1,5 +1,6 @@
 import concurrent
 import itertools
+import queue
 import sys
 import threading
 import typing
@@ -44,6 +45,23 @@ class VisualGridRunner(EyesRunner):
         thread.daemon = True
         thread.start()
         self._thread = thread
+
+        self._resource_tasks_queue = queue.Queue()
+        self._resource_collection_thread = threading.Thread(
+            target=self._resource_collection, args=()
+        )
+        self._resource_collection_thread.setName("ResourceCollectionService")
+        self._resource_collection_thread.start()
+
+    def add_resource_collection_task(self, task):
+        self._resource_tasks_queue.put(task)
+
+    def _resource_collection(self):
+        while True:
+            task = self._resource_tasks_queue.get()
+            if task is None:
+                break
+            task()
 
     def __del__(self):
         self._stop()
@@ -100,6 +118,7 @@ class VisualGridRunner(EyesRunner):
                 logger.debug("%s task ran" % task)
 
         self.put_cache.shutdown()
+        self._resource_tasks_queue.put(None)
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
