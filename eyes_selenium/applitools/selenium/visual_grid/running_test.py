@@ -229,7 +229,7 @@ class RunningTest(object):
         elif self.state == NOT_OPENED:
             return self.open_queue
         elif self.state == OPENED:
-            if self.task_lock and self.task_lock.queue:
+            if self.task_lock:
                 return self.task_lock.queue
             elif self.task_queue:
                 self.task_lock = self.task_queue.popleft()
