@@ -470,7 +470,7 @@ class VisualGridEyes(object):
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
             logger.exception(e)
-            raise EyesError(str(e))
+            raise_from(EyesError("Failed to set viewport size"), e)
 
     @staticmethod
     def _effective_disable_browser_fetching(config, check_settings):
