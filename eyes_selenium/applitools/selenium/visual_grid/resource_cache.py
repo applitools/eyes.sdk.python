@@ -100,20 +100,23 @@ class PutCache(object):
     ):
         # type: (...) -> None
         logger.debug("PutCache.put({} call".format(all_resources))
-        if not force:
-            check_result = server_connector.check_resource_status(
-                None,
-                *[{"hashFormat": r.hash_format, "hash": r.hash} for r in all_resources]
-            )
-            resources_to_upload = [
-                resource
-                for resource, exists in zip(all_resources, check_result)
-                if not exists
-            ]
-        else:
-            resources_to_upload = all_resources
-
         with self._lock:
+            if not force:
+                check_result = server_connector.check_resource_status(
+                    None,
+                    *[
+                        {"hashFormat": r.hash_format, "hash": r.hash}
+                        for r in all_resources
+                    ]
+                )
+                resources_to_upload = [
+                    resource
+                    for resource, exists in zip(all_resources, check_result)
+                    if not exists
+                ]
+            else:
+                resources_to_upload = all_resources
+
             put_resources = [r for r in resources_to_upload if force or r.hash]
             results_iterable = self._executor.map(
                 partial(server_connector.render_put_resource, None),
