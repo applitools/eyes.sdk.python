@@ -108,15 +108,27 @@ class PutCache(object):
                     for resource, exists in zip(all_resources, check_result)
                     if not exists
                 ]
+                already_sent = [
+                    r for r in resources_to_upload if r.hash in self._sent_hashes
+                ]
+                missing_content = [r for r in resources_to_upload if r.content is None]
+                if already_sent:
+                    logger.warning(
+                        "These resources were already uploaded but requested by server"
+                        " again: {}".format([(r.url, r.hash) for r in already_sent])
+                    )
+                if missing_content:
+                    logger.warning(
+                        "These resources were requested by server but are cleared: "
+                        "{}".format([(r.url, r.hash) for r in missing_content])
+                    )
             else:
                 resources_to_upload = all_resources
-
             results_iterable = self._executor.map(
                 server_connector.render_put_resource,
-                resources_to_upload,
+                [r for r in resources_to_upload if r.content is not None],
             )
             self._sent_hashes.update(list(results_iterable))
-
             for resource in all_resources:
                 resource.clear()
 
