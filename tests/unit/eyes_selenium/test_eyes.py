@@ -1,5 +1,6 @@
 import datetime
 import json
+import sys
 
 import pytest
 from mock import MagicMock, call, patch
@@ -213,16 +214,20 @@ def eyes_check_mock():
 
 
 def test_selenium_eyes_check_args_empty(eyes_check_mock):
-    with pytest.raises(
-        TypeError, match="missing 1 required positional argument: 'check_settings'"
-    ):
+    if sys.version_info < (3,):
+        message = "takes at least 2 arguments"
+    else:
+        message = "missing 1 required positional argument: 'check_settings'"
+    with pytest.raises(TypeError, match=message):
         eyes_check_mock.check()
 
 
 def test_selenium_eyes_check_args_only_name_keyword(eyes_check_mock):
-    with pytest.raises(
-        TypeError, match="missing 1 required positional argument: 'check_settings'"
-    ):
+    if sys.version_info < (3,):
+        message = "takes at least 2 arguments"
+    else:
+        message = "missing 1 required positional argument: 'check_settings'"
+    with pytest.raises(TypeError, match=message):
         eyes_check_mock.check(name="A")
 
 
