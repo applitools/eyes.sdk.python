@@ -166,6 +166,7 @@ class VisualGridEyes(object):
                 self._create_vgeyes_connector(browser_info, job_info),
                 self.configure.clone(),
                 browser_info,
+                self.vg_manager.rendering_service,
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
