@@ -214,14 +214,14 @@ def eyes_check_mock():
 
 def test_selenium_eyes_check_args_empty(eyes_check_mock):
     with pytest.raises(
-        TypeError, message="missing 1 required positional argument: 'check_settings'"
+        TypeError, match="missing 1 required positional argument: 'check_settings'"
     ):
         eyes_check_mock.check()
 
 
 def test_selenium_eyes_check_args_only_name_keyword(eyes_check_mock):
     with pytest.raises(
-        TypeError, message="missing 1 required positional argument: 'check_settings'"
+        TypeError, match="missing 1 required positional argument: 'check_settings'"
     ):
         eyes_check_mock.check(name="A")
 
