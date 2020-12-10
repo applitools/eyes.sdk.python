@@ -102,13 +102,7 @@ class PutCache(object):
         logger.debug("PutCache.put({} call".format(all_resources))
         with self._lock:
             if not force:
-                check_result = server_connector.check_resource_status(
-                    None,
-                    *[
-                        {"hashFormat": r.hash_format, "hash": r.hash}
-                        for r in all_resources
-                    ]
-                )
+                check_result = server_connector.check_resource_status(all_resources)
                 resources_to_upload = [
                     resource
                     for resource, exists in zip(all_resources, check_result)

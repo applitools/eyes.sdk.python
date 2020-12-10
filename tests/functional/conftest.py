@@ -361,9 +361,9 @@ class FakeServerConnector(ServerConnector):
         self.output_calls["job_info"].append(result)
         return result
 
-    def check_resource_status(self, render_id, *hashes):
-        self.input_calls["check_resource_status"].append((render_id, hashes))
-        result = [True for _ in hashes]
+    def check_resource_status(self, resources):
+        self.input_calls["check_resource_status"].append(resources)
+        result = [True for _ in resources]
         self.output_calls["check_resource_status"].append(result)
         return result
 

@@ -701,12 +701,12 @@ class ServerConnector(object):
         ]
 
     @retry()
-    def check_resource_status(self, render_id, *hashes):
-        render_id = render_id or "NONE"
+    def check_resource_status(self, resources):
+        hashes = [{"hashFormat": r.hash_format, "hash": r.hash} for r in resources]
         response = self._ufg_request(
             "post",
             self.RESOURCE_STATUS,
             data=json.dumps(hashes),
-            params={"rg_render-id": render_id},
+            params={"rg_render-id": "NONE"},
         )
         return response.json()
