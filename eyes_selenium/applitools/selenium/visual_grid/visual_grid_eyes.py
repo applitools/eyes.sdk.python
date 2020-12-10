@@ -35,6 +35,8 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
     from applitools.selenium import Configuration, Eyes, EyesWebDriver
 
+    from .running_test import RunningTestCheck
+
 
 GET_ELEMENT_XPATH_JS = """
 var el = arguments[0];
@@ -228,8 +230,18 @@ class VisualGridEyes(object):
                 "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
             )
             logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
+            source = eyes_selenium_utils.get_check_source(self.driver)
+            checks = [
+                test.check(
+                    check_settings=check_settings,
+                    region_selectors=region_xpaths,
+                    source=source,
+                )
+                for test in running_tests
+            ]
+
             resource_collection_task = self._resource_collection_task(
-                check_settings, region_xpaths, running_tests, script_result
+                check_settings, region_xpaths, running_tests, script_result, checks
             )
             self.vg_manager.add_resource_collection_task(resource_collection_task)
         except Exception as e:
@@ -247,13 +259,13 @@ class VisualGridEyes(object):
         region_xpaths,  # type: List[List[VisualGridSelector]]
         running_tests,  # type: List[RunningTest]
         script_result,  # type: Dict
+        checks,  # type: List[RunningTestCheck]
     ):
         # type: (...) -> ResourceCollectionTask
         tag = check_settings.values.name
         short_description = "{} of {}".format(
             self.configure.test_name, self.configure.app_name
         )
-        source = eyes_selenium_utils.get_check_source(self.driver)
         resource_collection_task = ResourceCollectionTask(
             name="VisualGridEyes.check-resource_collection {} - {}".format(
                 short_description, tag
@@ -275,14 +287,6 @@ class VisualGridEyes(object):
                 check_settings.values.visual_grid_options,
             ),
         )
-        checks = [
-            test.check(
-                check_settings=check_settings,
-                region_selectors=region_xpaths,
-                source=source,
-            )
-            for test in running_tests
-        ]
 
         def on_collected_task_succeeded(render_requests):
             for check in checks:

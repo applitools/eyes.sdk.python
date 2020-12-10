@@ -61,7 +61,6 @@ class EyesConnector(EyesBase):
         self._region_selectors = None
         self._regions = None
         self._job_info = job_info  # type: Optional[JobInfo]
-        self.device_size = None
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -73,11 +72,6 @@ class EyesConnector(EyesBase):
         )
         # TODO: Add proper browser info handling
         self._config = config.clone()
-        if self.device_size:
-            self._config.viewport_size = self.device_size
-        elif self._browser_info.viewport_size:
-            self._config.viewport_size = self._browser_info.viewport_size
-
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
 
@@ -142,6 +136,7 @@ class EyesConnector(EyesBase):
         if self._job_info:
             return self._job_info
 
+        logger.warning("JobInfo is empty. Calling it again")
         render_requests = [
             RenderRequest(
                 render_info=RenderInfo.from_(
@@ -160,18 +155,8 @@ class EyesConnector(EyesBase):
 
     @property
     def _environment(self):
-        # type: () -> Union[AppEnvironment, Text]
-        try:
-            app_env = AppEnvironment(
-                display_size=self.render_status.device_size,
-                inferred="useragent: {}".format(self.render_status.user_agent),
-                device_info=self.device_name,
-            )
-        except EyesError:
-            logger.debug("RenderStatus is empty. Using JobInfo instead")
-            return self.job_info.eyes_environment
-
-        return app_env
+        # type: () -> Text
+        return self.job_info.eyes_environment
 
     def render_info(self):
         # type: () -> RenderingInfo

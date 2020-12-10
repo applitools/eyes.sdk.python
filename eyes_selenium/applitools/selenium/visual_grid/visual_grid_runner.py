@@ -100,7 +100,7 @@ class VisualGridRunner(EyesRunner):
 
     def _run(self):
         logger.debug("VisualGridRunner.run()")
-        for test_queue in self._get_parallel_tests_by_round_robbin():
+        for test_queue in self._get_parallel_tests_by_round_robin():
             try:
                 task = test_queue.popleft()
                 logger.debug("VisualGridRunner got task %s" % task)
@@ -168,7 +168,7 @@ class VisualGridRunner(EyesRunner):
         ]
         return not_opened[:n]
 
-    def _get_parallel_tests_by_round_robbin(self):
+    def _get_parallel_tests_by_round_robin(self):
         # type: () -> List[VGTask]
         done = False
         next_test = 0
