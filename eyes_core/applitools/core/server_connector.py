@@ -586,17 +586,13 @@ class ServerConnector(object):
         )
 
     @retry()
-    def render_put_resource(self, render_id, resource):
+    def render_put_resource(self, resource):
         # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
-        render_id = render_id or "NONE"
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
-        logger.debug(
-            "resource hash: {} url: {} render id: {}"
-            "".format(resource.hash, resource.url, render_id)
-        )
+        logger.debug("resource hash: {} url: {}".format(resource.hash, resource.url))
         content = resource.content
         argument_guard.not_none(content)
         headers = ServerConnector.DEFAULT_HEADERS.copy()
@@ -612,7 +608,7 @@ class ServerConnector(object):
             use_api_key=False,
             headers=headers,
             data=content,
-            params={"render-id": render_id},
+            params={"render-id": "NONE"},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:

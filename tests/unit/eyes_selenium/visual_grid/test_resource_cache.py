@@ -19,9 +19,7 @@ def test_put_cache_uploads_provided_url_once():
     put_cache.shutdown()
     put_mock = eyes_connector_mock.render_put_resource
 
-    assert put_mock.call_args_list == [
-        call(None, DummyResource("http://1", "hash1", "sha1"))
-    ]
+    assert put_mock.call_args_list == [call(DummyResource("http://1", "hash1", "sha1"))]
 
 
 def test_put_cache_uploads_same_url_with_different_hashes():
@@ -37,6 +35,6 @@ def test_put_cache_uploads_same_url_with_different_hashes():
     put_mock = eyes_connector_mock.render_put_resource
 
     assert put_mock.call_args_list == [
-        call(None, DummyResource("http://1", "hash1", "sha1")),
-        call(None, DummyResource("http://1", "hash2", "sha1")),
+        call(DummyResource("http://1", "hash1", "sha1")),
+        call(DummyResource("http://1", "hash2", "sha1")),
     ]

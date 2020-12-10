@@ -331,8 +331,8 @@ class FakeServerConnector(ServerConnector):
         self.output_calls["render_status_by_id"].append(result)
         return result
 
-    def render_put_resource(self, running_render, resource):
-        self.input_calls["render_put_resource"].append((running_render, resource))
+    def render_put_resource(self, resource):
+        self.input_calls["render_put_resource"].append(resource)
         self.output_calls["render_put_resource"].append(resource.hash)
         return resource.hash
 

@@ -111,10 +111,9 @@ class PutCache(object):
             else:
                 resources_to_upload = all_resources
 
-            put_resources = [r for r in resources_to_upload if force or r.hash]
             results_iterable = self._executor.map(
-                partial(server_connector.render_put_resource, None),
-                put_resources,
+                server_connector.render_put_resource,
+                resources_to_upload,
             )
             self._sent_hashes.update(list(results_iterable))
 
