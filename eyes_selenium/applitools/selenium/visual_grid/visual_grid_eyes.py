@@ -242,8 +242,13 @@ class VisualGridEyes(object):
         logger.info("added check tasks  {}".format(check_settings))
 
     def _resource_collection_task(
-        self, check_settings, region_xpaths, running_tests, script_result
+        self,
+        check_settings,  # type: SeleniumCheckSettings
+        region_xpaths,  # type: List[List[VisualGridSelector]]
+        running_tests,  # type: List[RunningTest]
+        script_result,  # type: Dict
     ):
+        # type: (...) -> ResourceCollectionTask
         tag = check_settings.values.name
         short_description = "{} of {}".format(
             self.configure.test_name, self.configure.app_name

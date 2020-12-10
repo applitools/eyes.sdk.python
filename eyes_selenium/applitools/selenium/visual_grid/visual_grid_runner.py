@@ -1,6 +1,5 @@
 import concurrent
 import itertools
-import queue
 import sys
 import threading
 import typing
@@ -9,8 +8,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.utils import counted, datetime_utils, iteritems
+from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
-from applitools.selenium.visual_grid.running_test import COMPLETED, NOT_OPENED
+from applitools.selenium.visual_grid.running_test import COMPLETED
 
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
@@ -19,6 +19,27 @@ if typing.TYPE_CHECKING:
     from typing import Dict, List, Optional
 
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
+
+
+class _ResourceCollectionService(object):
+    def __init__(self):
+        self._queue = Queue()
+        self._thread = threading.Thread(target=self._resource_collection, args=())
+        self._thread.setName(self.__class__.__name__)
+        self._thread.start()
+
+    def _resource_collection(self):
+        while True:
+            task = self._queue.get()
+            if task is None:
+                break
+            task()
+
+    def add_task(self, task):
+        self._queue.put(task)
+
+    def shutdown(self):
+        self._queue.put(None)
 
 
 class VisualGridRunner(EyesRunner):
@@ -46,22 +67,10 @@ class VisualGridRunner(EyesRunner):
         thread.start()
         self._thread = thread
 
-        self._resource_tasks_queue = queue.Queue()
-        self._resource_collection_thread = threading.Thread(
-            target=self._resource_collection, args=()
-        )
-        self._resource_collection_thread.setName("ResourceCollectionService")
-        self._resource_collection_thread.start()
+        self._resource_collection_service = _ResourceCollectionService()
 
     def add_resource_collection_task(self, task):
-        self._resource_tasks_queue.put(task)
-
-    def _resource_collection(self):
-        while True:
-            task = self._resource_tasks_queue.get()
-            if task is None:
-                break
-            task()
+        self._resource_collection_service.add_task(task)
 
     def __del__(self):
         self._stop()
@@ -118,7 +127,7 @@ class VisualGridRunner(EyesRunner):
                 logger.debug("%s task ran" % task)
 
         self.put_cache.shutdown()
-        self._resource_tasks_queue.put(None)
+        self._resource_collection_service.shutdown()
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
