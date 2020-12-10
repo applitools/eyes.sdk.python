@@ -593,12 +593,12 @@ class ServerConnector(object):
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
-        content = resource.content
-        argument_guard.not_none(content)
         logger.debug(
             "resource hash: {} url: {} render id: {}"
             "".format(resource.hash, resource.url, render_id)
         )
+        content = resource.content
+        argument_guard.not_none(content)
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = resource.content_type
         headers["X-Auth-Token"] = self._render_info.access_token
