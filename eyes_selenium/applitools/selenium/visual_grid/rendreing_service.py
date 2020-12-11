@@ -52,10 +52,12 @@ class RenderingService(object):
 
     def _run_render_status_requests(self):
         status_tasks = []
-        while not self._shutdown:
+        while True:
             with self._have_status_tasks:
                 while not (self._shutdown or status_tasks or self._status_tasks):
                     self._have_status_tasks.wait()
+                if self._shutdown:
+                    break
                 new_tasks, self._status_tasks = self._status_tasks, []
             status_tasks.extend(new_tasks)
             render_requests = sum((t.render_requests for t in status_tasks), [])
