@@ -25,6 +25,7 @@ class _ResourceCollectionService(object):
     def __init__(self):
         self._queue = Queue()
         self._thread = threading.Thread(target=self._resource_collection, args=())
+        self._thread.daemon = True
         self._thread.setName(self.__class__.__name__)
         self._thread.start()
 
