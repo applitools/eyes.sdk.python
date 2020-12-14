@@ -5,6 +5,8 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from functools import partial
 
 from applitools.common import VGResource, logger
+from applitools.common.utils.converters import str2bool
+from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.core import ServerConnector
 
 if typing.TYPE_CHECKING:
@@ -85,6 +87,9 @@ class ResourceCache(typing.Mapping[typing.Text, VGResource]):
 
 class PutCache(object):
     def __init__(self):
+        self._force_put = str2bool(
+            get_env_with_prefix("APPLITOOLS_UFG_FORCE_PUT_RESOURCES")
+        )
         kwargs = {}
         if sys.version_info[:2] >= (3, 6):
             kwargs["thread_name_prefix"] = self.__class__.__name__
@@ -96,12 +101,11 @@ class PutCache(object):
         self,
         all_resources,  # type: List[VGResource]
         server_connector,  # type: ServerConnector
-        force=False,  # type: bool
     ):
         # type: (...) -> None
         logger.debug("PutCache.put({} call".format(all_resources))
         with self._lock:
-            if not force:
+            if not self._force_put:
                 check_result = server_connector.check_resource_status(all_resources)
                 resources_to_upload = [
                     resource

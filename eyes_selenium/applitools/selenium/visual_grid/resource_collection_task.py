@@ -14,8 +14,6 @@ from applitools.common import (
     logger,
 )
 from applitools.common.utils import apply_base_url
-from applitools.common.utils.converters import str2bool
-from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.selenium.parsers import collect_urls_from_
 
 from .vg_task import VGTask
@@ -59,9 +57,6 @@ class ResourceCollectionTask(VGTask):
     func_to_run = attr.ib(default=None, hash=False, repr=False)  # type: Callable
     running_tests = attr.ib(hash=False, factory=list)  # type: List[RunningTest]
     request_options = attr.ib(hash=False, factory=dict)  # type: Dict[str, Any]
-    is_force_put_needed = attr.ib(
-        default=str2bool(get_env_with_prefix("APPLITOOLS_UFG_FORCE_PUT_RESOURCES"))
-    )  # type: bool
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -84,7 +79,6 @@ class ResourceCollectionTask(VGTask):
         self.put_cache.put(
             list(render_request.resources.values()) + [render_request.dom.resource],
             self.server_connector,
-            self.is_force_put_needed,
         )
         return render_requests
 
