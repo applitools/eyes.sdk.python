@@ -105,35 +105,29 @@ class PutCache(object):
         # type: (...) -> None
         logger.debug("PutCache.put({} call".format(all_resources))
         with self._lock:
+            not_puted = [r for r in all_resources if r.hash not in self._sent_hashes]
             if not self._force_put:
-                check_result = server_connector.check_resource_status(all_resources)
-                resources_to_upload = [
-                    resource
-                    for resource, exists in zip(all_resources, check_result)
-                    if not exists
-                ]
-                already_sent = [
-                    r for r in resources_to_upload if r.hash in self._sent_hashes
-                ]
-                missing_content = [r for r in resources_to_upload if r.content is None]
-                if already_sent:
-                    logger.warning(
-                        "These resources were already uploaded but requested by server"
-                        " again: {}".format([(r.url, r.hash) for r in already_sent])
-                    )
-                if missing_content:
-                    logger.warning(
-                        "These resources were requested by server but are cleared: "
-                        "{}".format([(r.url, r.hash) for r in missing_content])
-                    )
+                check_result = server_connector.check_resource_status(not_puted)
+                resources_to_upload = []
+                for resource, exists in zip(not_puted, check_result):
+                    if exists:
+                        self._sent_hashes.add(resource.hash)
+                        resource.clear()
+                        continue
+                    if resource.content is None:
+                        logger.warning(
+                            "This resource was requested by server but is cleared: "
+                            "{} {}".format(resource.hash, resource.url)
+                        )
+                    else:
+                        resources_to_upload.append(resource)
             else:
-                resources_to_upload = all_resources
+                resources_to_upload = not_puted
             results_iterable = self._executor.map(
-                server_connector.render_put_resource,
-                [r for r in resources_to_upload if r.content is not None],
+                server_connector.render_put_resource, resources_to_upload
             )
             self._sent_hashes.update(list(results_iterable))
-            for resource in all_resources:
+            for resource in resources_to_upload:
                 resource.clear()
 
     def shutdown(self):

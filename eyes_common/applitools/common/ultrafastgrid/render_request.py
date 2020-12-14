@@ -241,6 +241,7 @@ class VGResource(object):
         )
 
     def clear(self):
+        logger.debug("Clearing resource: {} {}".format(self.hash, self.url))
         self.content = None
 
 
