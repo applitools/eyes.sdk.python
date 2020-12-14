@@ -16,7 +16,9 @@ class RenderingService(object):
         self._status_tasks = []
         self._have_status_tasks = Condition()
         self._render_request_thread = Thread(target=self._run_render_requests)
+        self._render_request_thread.daemon = True
         self._render_status_thread = Thread(target=self._run_render_status_requests)
+        self._render_status_thread.daemon = True
         self._render_request_thread.start()
         self._render_status_thread.start()
 
