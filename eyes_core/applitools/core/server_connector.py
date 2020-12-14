@@ -56,7 +56,7 @@ __all__ = ("ServerConnector",)
 def retry(
     delays=tuple(itertools.chain((1000,), (5000,) * 4, (10000,) * 4)),
     exception=(EyesError, requests.ConnectionError, requests.HTTPError),
-    report=lambda *args: logger.debug,
+    report=logger.debug,
 ):
     return datetime_utils.retry(delays, exception, report)
 
