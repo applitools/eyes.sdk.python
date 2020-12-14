@@ -123,6 +123,11 @@ class _Logger(object):
         if self._logger:
             self._logger.error(msg, *args, **kwargs)
 
+    def warning(self, msg, *args, **kwargs):
+        # type: (tp.Text, *tp.Any, **tp.Any) -> None
+        if self._logger:
+            self._logger.warning(msg, *args, **kwargs)
+
 
 class StdoutLogger(_Logger):
     """
@@ -260,7 +265,8 @@ def warning(msg):
 
     :param msg: The message that will be written to the log.
     """
-    warnings.warn(msg, stacklevel=2)
+    if _logger is not None:
+        _logger.warning(msg)
 
 
 def deprecation(msg):
