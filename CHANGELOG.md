@@ -3,10 +3,14 @@
 - Updated concurrency model [Trello 2152](https://trello.com/c/yNzhBkBh)
 - DOM snapshot script to *4.4.0* [Trello 2370](https://trello.com/c/LtZ0SU2B) [Trello 2380](https://trello.com/c/yeMEtWhN)
 
+## [4.13.2] - 2020-12-04
+### Updated
+- DOM snapshot script to *4.2.9* [Trello 2364](https://trello.com/c/97wQruS9)
+
 ## [4.13.1] - 2020-12-03
 ### Updated
 - Temporarily disabled skip list [Trello 2363](https://trello.com/c/ynLHfleQ)
-- DOM snapshot and DOM capture scripts to *4.2.8* and *8.0.1*
+- DOM snapshot and DOM capture scripts to *4.2.8* and *8.0.1* [Trello 2364](https://trello.com/c/97wQruS9)
 
 ## [4.13.0] - 2020-11-25
 ### Added
