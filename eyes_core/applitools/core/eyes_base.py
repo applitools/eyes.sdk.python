@@ -4,7 +4,15 @@ import abc
 import platform
 import typing
 
-from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
+from applitools.common import (
+    AppOutput,
+    RectangleSize,
+    Region,
+    RunningSession,
+    logger,
+    Point,
+    CoordinatesType,
+)
 from applitools.common.config import Configuration
 from applitools.common.errors import (
     DiffsFoundError,
@@ -671,7 +679,10 @@ class EyesBase(
             logger.info("Captured DOM URL: {}".format(self._dom_url))
 
         app_output = AppOutput(
-            title=self._title, screenshot_bytes=None, dom_url=self._dom_url
+            title=self._title,
+            location=screenshot.frame_location_in_screenshot,
+            screenshot_bytes=None,
+            dom_url=self._dom_url,
         )
         result = AppOutputWithScreenshot(app_output, screenshot)
         logger.info("Done getting screenshot and DOM!")
