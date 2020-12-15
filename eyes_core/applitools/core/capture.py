@@ -27,7 +27,6 @@ __all__ = (
 class AppOutputWithScreenshot(object):
     app_output = attr.ib(type=AppOutput)  # type: AppOutput
     screenshot = attr.ib()  # type: Optional[EyesScreenshot]
-    location = attr.ib(default=None)  # type: Optional[Point]
 
 
 @attr.s
