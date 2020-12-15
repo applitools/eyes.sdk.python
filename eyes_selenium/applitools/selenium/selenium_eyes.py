@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.geometry import Point
-from applitools.common.selenium import StitchMode
+from applitools.common.selenium import StitchMode, Configuration
 from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -49,7 +49,6 @@ from .region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
 )
-from .useragent import BrowserNames
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement, adapt_element
 
@@ -125,7 +124,12 @@ class SeleniumEyes(EyesBase):
         self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_content = False  # type: bool
-        self._runner = runner if runner else ClassicRunner()
+        self._runner = runner or ClassicRunner()
+
+    @property
+    def configure(self):
+        # type:() -> Configuration
+        return super(SeleniumEyes, self).configure
 
     @property
     def original_fc(self):
@@ -243,7 +247,7 @@ class SeleniumEyes(EyesBase):
         )
 
     def check(self, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> MatchResult
+        # type: (SeleniumCheckSettings) -> MatchResult
         source = eyes_selenium_utils.get_check_source(self.driver)
         name = check_settings.values.name
 
