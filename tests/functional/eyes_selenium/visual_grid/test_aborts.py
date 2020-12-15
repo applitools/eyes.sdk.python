@@ -23,9 +23,7 @@ def test_abort_when_not_rendered(driver, vg_runner, batch_info):
         all_results = vg_runner.get_all_test_results(False)
 
 
-def test_abort_when_dom_snapshot_error(
-    driver, vg_runner, batch_info, fake_connector_class
-):
+def test_abort_when_dom_snapshot_error(driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "TestAbortWhenDonSnapshotError"
     eyes.configure.app_name = "Visual Grid Render Test"

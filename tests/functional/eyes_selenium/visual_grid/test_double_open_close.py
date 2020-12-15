@@ -4,7 +4,7 @@ from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 
 
 def pytest_generate_tests(metafunc):
-    metafunc.parametrize("eyes_runner", [ClassicRunner(), VisualGridRunner(1)])
+    metafunc.parametrize("eyes_runner", [ClassicRunner(), VisualGridRunner(5)])
 
 
 @pytest.fixture()

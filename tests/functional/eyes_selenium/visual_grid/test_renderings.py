@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import pytest
-from mock import patch
 
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
@@ -20,6 +19,7 @@ from applitools.selenium import (
     VisualGridRunner,
     logger,
 )
+from applitools.selenium.visual_grid import VisualGridEyes
 from tests.utils import get_session_results
 
 
@@ -276,13 +276,13 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
     )
 
     running_test = vg_runner._get_all_running_tests()[0]
-    running_check = spy(running_test, "check")
+    rc_task_factory_spy = spy(VisualGridEyes, "_resource_collection_task")
 
     eyes.check_window("check")
     eyes.close(False)
     vg_runner.get_all_test_results(False)
 
-    blobs = running_check.call_args[1]["script_result"]["blobs"]
+    blobs = rc_task_factory_spy.call_args.args[4]["blobs"]
     error_blob = [b for b in blobs if b["url"] == missing_blob_url][-1]
     assert error_blob["errorStatusCode"] == 404
     assert error_blob["url"] == missing_blob_url

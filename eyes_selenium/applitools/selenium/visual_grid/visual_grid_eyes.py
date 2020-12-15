@@ -1,3 +1,4 @@
+import itertools
 import typing
 import uuid
 from copy import deepcopy
@@ -8,26 +9,33 @@ from selenium.common.exceptions import TimeoutException
 from applitools.common import EyesError, TestResults, logger
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
+    JobInfo,
     RenderBrowserInfo,
+    RenderInfo,
+    RenderRequest,
     VisualGridSelector,
 )
 from applitools.common.utils import argument_guard, datetime_utils
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
-from applitools.selenium import __version__, eyes_selenium_utils
+from applitools.selenium import eyes_selenium_utils
+from applitools.selenium.__version__ import __version__
 from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
-from .running_test import RunningTest
+from .resource_collection_task import ResourceCollectionTask
+from .running_test import TESTED, RunningTest
 from .visual_grid_runner import VisualGridRunner
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional, Text, Union
+    from typing import Dict, Generator, List, Optional, Text, Union
 
     from applitools.common.utils.custom_types import AnyWebElement
     from applitools.selenium import Configuration, Eyes, EyesWebDriver
+
+    from .running_test import RunningTestCheck
 
 
 GET_ELEMENT_XPATH_JS = """
@@ -80,6 +88,7 @@ class VisualGridEyes(object):
         self.test_list = []  # type: List[RunningTest]
         self._test_uuid = None
         self.server_connector = ServerConnector()  # type: ServerConnector
+        self.resource_collection_queue = []  # type: List[ResourceCollectionTask]
 
     @property
     def is_open(self):
@@ -115,6 +124,26 @@ class VisualGridEyes(object):
             return self.base_agent_id
         return "{} [{}]".format(agent_id, self.base_agent_id)
 
+    def _job_info_for_browser_info(self, browser_infos):
+        # type: (List[RenderBrowserInfo]) -> Generator[RenderBrowserInfo, JobInfo]
+        render_requests = [
+            RenderRequest(
+                render_info=RenderInfo.from_(
+                    size_mode=None,
+                    region=None,
+                    selector=None,
+                    render_browser_info=b_info,
+                ),
+                platform_name=b_info.platform,
+                browser_name=b_info.browser,
+            )
+            for b_info in browser_infos
+        ]
+
+        job_infos = self.server_connector.job_info(render_requests)
+        for b_info, job_info in zip(browser_infos, job_infos):
+            yield b_info, job_info
+
     def open(self, driver):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
@@ -130,15 +159,18 @@ class VisualGridEyes(object):
         )
         self.server_connector.render_info()
 
-        for b_info in self.configure.browsers_info:
+        for browser_info, job_info in self._job_info_for_browser_info(
+            self.configure.browsers_info
+        ):
             test = RunningTest(
-                self._create_vgeyes_connector(b_info),
+                self._create_vgeyes_connector(browser_info, job_info),
                 self.configure.clone(),
-                b_info,
+                browser_info,
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
             self.test_list.append(test)
+            test.becomes_not_opened()
         self._is_opened = True
         self.vg_manager.open(self)
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
@@ -160,6 +192,15 @@ class VisualGridEyes(object):
             )
         except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)
+
+    @staticmethod
+    def _options_dict(configuration_options, check_settings_options):
+        return {
+            o.key: o.value
+            for o in itertools.chain(
+                configuration_options or (), check_settings_options or ()
+            )
+        }
 
     def check(self, check_settings):
         # type: (SeleniumCheckSettings) -> None
@@ -184,35 +225,85 @@ class VisualGridEyes(object):
 
         try:
             script_result = self.get_script_result(dont_fetch_resources)
-
             logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
             logger.debug(
                 "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
             )
             logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
             source = eyes_selenium_utils.get_check_source(self.driver)
-
-            for test in running_tests:
+            checks = [
                 test.check(
-                    tag=name,
                     check_settings=check_settings,
-                    script_result=script_result,
-                    visual_grid_manager=self.vg_manager,
                     region_selectors=region_xpaths,
-                    region_to_check=check_settings.values.target_region,
-                    script_hooks=check_settings.values.script_hooks,
                     source=source,
                 )
-                if test.state == "new":
-                    test.becomes_not_rendered()
+                for test in running_tests
+            ]
+
+            resource_collection_task = self._resource_collection_task(
+                check_settings, region_xpaths, running_tests, script_result, checks
+            )
+            self.vg_manager.add_resource_collection_task(resource_collection_task)
         except Exception as e:
             logger.exception(e)
             for test in running_tests:
-                if test.state != "tested":
+                if test.state != TESTED:
                     # already aborted or closed
                     test.abort()
                     test.becomes_tested()
         logger.info("added check tasks  {}".format(check_settings))
+
+    def _resource_collection_task(
+        self,
+        check_settings,  # type: SeleniumCheckSettings
+        region_xpaths,  # type: List[List[VisualGridSelector]]
+        running_tests,  # type: List[RunningTest]
+        script_result,  # type: Dict
+        checks,  # type: List[RunningTestCheck]
+    ):
+        # type: (...) -> ResourceCollectionTask
+        tag = check_settings.values.name
+        short_description = "{} of {}".format(
+            self.configure.test_name, self.configure.app_name
+        )
+        resource_collection_task = ResourceCollectionTask(
+            name="VisualGridEyes.check-resource_collection {} - {}".format(
+                short_description, tag
+            ),
+            script=script_result,
+            resource_cache=self.vg_manager.resource_cache,
+            put_cache=self.vg_manager.put_cache,
+            rendering_info=self.server_connector.render_info(),
+            server_connector=self.server_connector,
+            region_selectors=region_xpaths,
+            size_mode=check_settings.values.size_mode,
+            region_to_check=check_settings.values.target_region,
+            script_hooks=check_settings.values.script_hooks,
+            agent_id=self.base_agent_id,
+            selector=check_settings.values.selector,
+            running_tests=running_tests,
+            request_options=self._options_dict(
+                self.configure.visual_grid_options,
+                check_settings.values.visual_grid_options,
+            ),
+        )
+
+        def on_collected_task_succeeded(render_requests):
+            for check in checks:
+                check.set_render_request(render_requests[check.running_test])
+
+        def on_collected_task_error(e):
+            # TODO: Improve exception handling
+            running_tests[0].pending_exceptions.append(e)
+            for test in running_tests:
+                if test.state != TESTED:
+                    # already aborted or closed
+                    test.abort()
+                    test.becomes_tested()
+
+        resource_collection_task.on_task_succeeded(on_collected_task_succeeded)
+        resource_collection_task.on_task_error(on_collected_task_error)
+        return resource_collection_task
 
     def close_async(self):
         for test in self.test_list:
@@ -277,12 +368,10 @@ class VisualGridEyes(object):
             )
         return check_settings
 
-    def _create_vgeyes_connector(self, b_info):
-        # type: (RenderBrowserInfo) -> EyesConnector
+    def _create_vgeyes_connector(self, b_info, job_info):
+        # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
         return EyesConnector(
-            b_info,
-            self.configure.clone(),
-            deepcopy(self.server_connector),
+            b_info, self.configure.clone(), deepcopy(self.server_connector), job_info
         )
 
     def _try_set_target_selector(self, check_settings):
@@ -390,7 +479,7 @@ class VisualGridEyes(object):
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
             logger.exception(e)
-            raise EyesError(str(e))
+            raise_from(EyesError("Failed to set viewport size"), e)
 
     @staticmethod
     def _effective_disable_browser_fetching(config, check_settings):

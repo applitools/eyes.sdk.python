@@ -175,7 +175,7 @@ class VGResource(object):
 
     url = attr.ib()  # type: Text
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    content = attr.ib(repr=False)  # type: bytes
+    content = attr.ib(repr=False)  # type: Optional[bytes]
     msg = attr.ib(default=None)  # type: Optional[Text]
     error_status_code = attr.ib(
         default=None, hash=False, metadata={JsonInclude.NON_NONE: True}
@@ -228,7 +228,7 @@ class VGResource(object):
     @classmethod
     def from_response(cls, url, response, get_child_resource_urls_func):
         # type: (Text, Response, Callable) -> VGResource
-        content = response.content
+        content = response.content or b""
         content_type = response.headers.get("Content-Type")
         error_status = None if response.ok else str(response.status_code)
 
@@ -239,6 +239,10 @@ class VGResource(object):
             error_status_code=error_status,
             get_child_resource_urls_func=get_child_resource_urls_func,
         )
+
+    def clear(self):
+        logger.debug("Clearing resource: {} {}".format(self.hash, self.url))
+        self.content = None
 
 
 @attr.s(hash=True)

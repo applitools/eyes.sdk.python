@@ -5,6 +5,8 @@ import json
 import math
 import typing
 import uuid
+from threading import Condition
+from time import sleep, time
 
 import attr
 import requests
@@ -12,7 +14,7 @@ from requests import Response
 from requests.packages import urllib3  # noqa
 
 from applitools.common import Region, RunningSession, logger
-from applitools.common.errors import EyesError
+from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
@@ -53,8 +55,13 @@ __all__ = ("ServerConnector",)
 
 def retry(
     delays=tuple(itertools.chain((1000,), (5000,) * 4, (10000,) * 4)),
-    exception=(EyesError, requests.ConnectionError, requests.HTTPError),
-    report=lambda *args: logger.debug,
+    exception=(
+        EyesError,
+        requests.ReadTimeout,
+        requests.ConnectionError,
+        requests.HTTPError,
+    ),
+    report=logger.debug,
 ):
     return datetime_utils.retry(delays, exception, report)
 
@@ -202,12 +209,15 @@ class _RequestCommunicator(object):
         elif response.status_code == requests.codes.created:
             # delete url that was used before
             url = response.headers["Location"]
-            return self.request(
+            response = self.request(
                 "delete",
                 url,
                 request_id=request_id,
                 headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
             )
+            return self._long_request_check_status(response, request_id)
+        elif response.status_code == requests.codes.service_unavailable:
+            raise EyesServiceUnavailableError
         elif response.status_code == requests.codes.gone:
             raise EyesError("The server task has gone.")
         else:
@@ -236,6 +246,39 @@ class _RequestCommunicator(object):
         return self._long_request_loop(url, request_id, delay)
 
 
+class _SessionRetryLimiter(object):
+    def __init__(self, max_retry_time=60 * 60, sleep_time=5):
+        self._condvar = Condition()
+        self._retrying = False
+        self._max_retry_time = max_retry_time
+        self._sleep_time = sleep_time
+
+    def limit_parallel_retries(self, method):
+        deadline = time() + self._max_retry_time
+        with self._condvar:
+            while self._retrying:
+                self._condvar.wait()
+        try:
+            return method()
+        except EyesServiceUnavailableError:
+            with self._condvar:
+                while self._retrying:
+                    self._condvar.wait()
+                self._retrying = True
+            try:
+                while True:
+                    try:
+                        return method()
+                    except EyesServiceUnavailableError:
+                        if time() > deadline:
+                            raise EyesError("Session opening timeout reached")
+                        sleep(self._sleep_time)
+            finally:
+                with self._condvar:
+                    self._retrying = False
+                    self._condvar.notify_all()
+
+
 class ServerConnector(object):
     """
     Provides an API for communication with the Applitools server.
@@ -254,11 +297,13 @@ class ServerConnector(object):
     # Rendering Grid
     RENDER_INFO_PATH = API_SESSIONS + "/renderinfo"
     RESOURCES_SHA_256 = "/resources/sha256/"
+    RESOURCE_STATUS = "/query/resources-exist"
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
     RENDERER_INFO = "/job-info"
 
     _is_session_started = False
+    _retry_limiter = _SessionRetryLimiter()
 
     def __init__(self, client_session=None):
         # type: (Optional[ClientSession]) -> None
@@ -336,6 +381,12 @@ class ServerConnector(object):
         :param session_start_info: The start params for the session.
         :return: Represents the current running session.
         """
+        return self._retry_limiter.limit_parallel_retries(
+            lambda: self._start_session(session_start_info)
+        )
+
+    def _start_session(self, session_start_info):
+        # type: (SessionStartInfo) -> RunningSession
         logger.debug("start_session called.")
         data = json_utils.to_json(session_start_info)
         response = self._com.long_request(
@@ -540,19 +591,15 @@ class ServerConnector(object):
         )
 
     @retry()
-    def render_put_resource(self, render_id, resource):
+    def render_put_resource(self, resource):
         # type: (Text, VGResource) -> Text
         argument_guard.not_none(resource)
-        render_id = render_id or "NONE"
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
 
+        logger.debug("resource hash: {} url: {}".format(resource.hash, resource.url))
         content = resource.content
         argument_guard.not_none(content)
-        logger.debug(
-            "resource hash: {} url: {} render id: {}"
-            "".format(resource.hash, resource.url, render_id)
-        )
         headers = ServerConnector.DEFAULT_HEADERS.copy()
         headers["Content-Type"] = resource.content_type
         headers["X-Auth-Token"] = self._render_info.access_token
@@ -566,7 +613,7 @@ class ServerConnector(object):
             use_api_key=False,
             headers=headers,
             data=content,
-            params={"render-id": render_id},
+            params={"render-id": "NONE"},
         )
         logger.debug("ServerConnector.put_resource - request succeeded")
         if not response.ok:
@@ -640,10 +687,10 @@ class ServerConnector(object):
         }
 
     @retry()
-    def job_info(self, render_request):
+    def job_info(self, render_requests):
         # type: (List[RenderRequest]) -> List[JobInfo]
         resp = self._ufg_request(
-            "post", self.RENDERER_INFO, data=json_utils.to_json(render_request)
+            "post", self.RENDERER_INFO, data=json_utils.to_json(render_requests)
         )
         resp.raise_for_status()
         # TODO: improve parser to skip parsing of inner structures if required
@@ -653,3 +700,14 @@ class ServerConnector(object):
             )
             for d in resp.json()
         ]
+
+    @retry()
+    def check_resource_status(self, resources):
+        hashes = [{"hashFormat": r.hash_format, "hash": r.hash} for r in resources]
+        response = self._ufg_request(
+            "post",
+            self.RESOURCE_STATUS,
+            data=json.dumps(hashes),
+            params={"rg_render-id": "NONE"},
+        )
+        return response.json()

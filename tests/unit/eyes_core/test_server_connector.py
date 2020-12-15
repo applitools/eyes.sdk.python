@@ -1,6 +1,8 @@
 import json
 import os
-from copy import copy
+from collections import deque
+from concurrent.futures.thread import ThreadPoolExecutor
+from copy import copy, deepcopy
 from typing import Any
 
 import pytest
@@ -21,14 +23,19 @@ from applitools.common import (
     TestResults,
 )
 from applitools.common.config import DEFAULT_SERVER_URL, Configuration
+from applitools.common.errors import EyesServiceUnavailableError
 from applitools.common.server import SessionType
 from applitools.common.ultrafastgrid import RenderingInfo
 from applitools.common.utils import image_utils
 from applitools.common.utils.compat import urljoin
-from applitools.common.utils.datetime_utils import to_sec
+from applitools.common.utils.datetime_utils import sleep, to_sec
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import ServerConnector
-from applitools.core.server_connector import ClientSession, _RequestCommunicator
+from applitools.core.server_connector import (
+    ClientSession,
+    _RequestCommunicator,
+    _SessionRetryLimiter,
+)
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -513,3 +520,58 @@ def test_server_communicator_long_request_calls_all_have_same_request_id():
         == calls[1].kwargs["headers"]["x-applitools-eyes-client-request-id"]
         == calls[2].kwargs["headers"]["x-applitools-eyes-client-request-id"]
     )
+
+
+def test_retry_limiter_serializes_open_session_calls(monkeypatch):
+    monkeypatch.setattr(ServerConnector, "_retry_limiter", _SessionRetryLimiter(9, 0.1))
+    response = MagicMock()
+    response.text = (
+        '{"id": 1, "session_id": 2, "batch_id": 3, "baseline_id": 4, "url": 5}'
+    )
+    long_request_calls = []
+    # Simulate sequential errors from eyes server that should make server connector
+    # allow only one parallel start_session call at a time
+    returns = deque(
+        (
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            response,
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            response,
+            EyesServiceUnavailableError(),
+            EyesServiceUnavailableError(),
+            response,
+        )
+    )
+
+    def long_request_mock(*args, **kwargs):
+        long_request_calls.append((args, kwargs))
+        sleep(0.01)
+        res = returns.popleft()
+        if isinstance(res, Exception):
+            raise res
+        else:
+            return res
+
+    connector1 = ServerConnector()
+    connector1._com = MagicMock()
+    connector1._com.long_request = long_request_mock
+    connector2 = deepcopy(connector1)
+    connector3 = deepcopy(connector1)
+
+    with ThreadPoolExecutor(3) as executor:
+        future1 = executor.submit(connector1.start_session, 1)
+        future2 = executor.submit(connector2.start_session, 2)
+        future3 = executor.submit(connector3.start_session, 3)
+    future1.result(), future2.result(), future3.result()
+    request_ids = "".join(c[1]["data"] for c in long_request_calls)
+    assert len(request_ids) == 14
+    assert "111" in request_ids
+    assert "222" in request_ids
+    assert "333" in request_ids

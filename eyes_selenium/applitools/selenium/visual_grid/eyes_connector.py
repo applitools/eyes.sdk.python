@@ -48,6 +48,7 @@ class EyesConnector(EyesBase):
         browser_info,  # type: RenderBrowserInfo
         config,  # type: Configuration
         server_connector,  # type: ServerConnector
+        job_info=None,  # type: Optional[JobInfo]
     ):
         # type: (...) -> None
         super(EyesConnector, self).__init__()
@@ -59,7 +60,7 @@ class EyesConnector(EyesBase):
         self._server_connector = server_connector
         self._region_selectors = None
         self._regions = None
-        self._job_info = None  # type: Optional[JobInfo]
+        self._job_info = job_info  # type: Optional[JobInfo]
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -69,18 +70,14 @@ class EyesConnector(EyesBase):
                 self._browser_info.viewport_size
             )
         )
+        # TODO: Add proper browser info handling
         self._config = config.clone()
-        if self.device_name and self.render_status.device_size:
-            self._config.viewport_size = self.render_status.device_size
-        else:
-            self._config.viewport_size = self._browser_info.viewport_size
-
         self._config.baseline_env_name = self._browser_info.baseline_env_name
         self._open_base()
 
-    def render_put_resource(self, render_id, resource):
-        # type: (Text, VGResource) -> Text
-        return self._server_connector.render_put_resource(render_id, resource)
+    def render_put_resource(self, resource):
+        # type: (VGResource) -> Text
+        return self._server_connector.render_put_resource(resource)
 
     def render(self, *render_requests):
         # type: (*RenderRequest) -> List[RunningRender]
@@ -139,6 +136,7 @@ class EyesConnector(EyesBase):
         if self._job_info:
             return self._job_info
 
+        logger.warning("JobInfo is empty. Calling it again")
         render_requests = [
             RenderRequest(
                 render_info=RenderInfo.from_(
@@ -157,18 +155,8 @@ class EyesConnector(EyesBase):
 
     @property
     def _environment(self):
-        # type: () -> Union[AppEnvironment, Text]
-        try:
-            app_env = AppEnvironment(
-                display_size=self.render_status.device_size,
-                inferred="useragent: {}".format(self.render_status.user_agent),
-                device_info=self.device_name,
-            )
-        except EyesError:
-            logger.debug("RenderStatus is empty. Using JobInfo instead")
-            return self.job_info.eyes_environment
-
-        return app_env
+        # type: () -> Text
+        return self.job_info.eyes_environment
 
     def render_info(self):
         # type: () -> RenderingInfo
@@ -176,17 +164,16 @@ class EyesConnector(EyesBase):
 
     def check(
         self,
-        name,  # type: Text
         check_settings,  # type: SeleniumCheckSettings
         check_task_uuid,  # type:  Text
-        region_selectors,  # type: List[VisualGridSelector]
+        region_selectors,  # type: List[List[VisualGridSelector]]
         regions,  # type: List[Region]
         source,  # type: Optional[Text]
     ):
         # type:(...)->MatchResult
         self._current_uuid = check_task_uuid
-        if name:
-            check_settings = check_settings.with_name(name)
+        name = check_settings.values.name
+
         logger.debug("EyesConnector.check({}, {})".format(name, check_task_uuid))
         self._region_selectors = region_selectors
         self._regions = regions

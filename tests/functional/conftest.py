@@ -13,6 +13,7 @@ import yaml
 from applitools.common import (
     BatchInfo,
     Configuration,
+    JobInfo,
     MatchResult,
     RenderingInfo,
     RenderStatusResults,
@@ -330,8 +331,8 @@ class FakeServerConnector(ServerConnector):
         self.output_calls["render_status_by_id"].append(result)
         return result
 
-    def render_put_resource(self, running_render, resource):
-        self.input_calls["render_put_resource"].append((running_render, resource))
+    def render_put_resource(self, resource):
+        self.input_calls["render_put_resource"].append(resource)
         self.output_calls["render_put_resource"].append(resource.hash)
         return resource.hash
 
@@ -349,6 +350,21 @@ class FakeServerConnector(ServerConnector):
             }
         )
         self.output_calls["render_info"].append(result)
+        return result
+
+    def job_info(self, render_requests):
+        self.input_calls["job_info"].append(render_requests)
+        result = [
+            JobInfo(renderer=rr.renderer, eyes_environment=rr.browser_name)
+            for rr in render_requests
+        ]
+        self.output_calls["job_info"].append(result)
+        return result
+
+    def check_resource_status(self, resources):
+        self.input_calls["check_resource_status"].append(resources)
+        result = [True for _ in resources]
+        self.output_calls["check_resource_status"].append(result)
         return result
 
 

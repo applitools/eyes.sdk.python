@@ -67,6 +67,7 @@ from .ultrafastgrid.render_browser_info import (
     RenderBrowserInfo,
 )
 from .ultrafastgrid.render_request import (  # noqa
+    JobInfo,
     RenderInfo,
     RenderingInfo,
     RenderRequest,
