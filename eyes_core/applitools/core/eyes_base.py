@@ -711,9 +711,13 @@ class EyesBase(
             self._dom_url = self._try_post_dom_capture(dom_json)
             logger.info("Captured DOM URL: {}".format(self._dom_url))
 
+        location = region.location if region else None
+        if screenshot and screenshot.original_location:
+            location = screenshot.original_location
+
         app_output = AppOutput(
             title=self._title,
-            location=screenshot.frame_location_in_screenshot,
+            location=location,
             screenshot_bytes=None,
             dom_url=self._dom_url,
         )
