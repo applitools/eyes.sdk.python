@@ -1,3 +1,4 @@
+from copy import deepcopy
 from threading import Condition, Thread
 
 from applitools.common import EyesError, RenderStatus, logger
@@ -22,9 +23,11 @@ class RenderingService(object):
         self._render_request_thread.start()
         self._render_status_thread.start()
 
+    def maybe_set_server_connector(self, server_connector):
+        if not self._server_connector:
+            self._server_connector = deepcopy(server_connector)
+
     def render(self, render_task):
-        if self._server_connector is None:
-            self._server_connector = render_task.server_connector
         with self._have_render_tasks:
             self._render_tasks.append(render_task)
             self._have_render_tasks.notify()

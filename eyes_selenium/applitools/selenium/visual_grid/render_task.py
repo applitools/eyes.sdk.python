@@ -20,7 +20,6 @@ class RenderTask(VGTask):
     MAX_FAILS_COUNT = 5
     MAX_ITERATIONS = 2400  # poll_render_status for 1 hour
 
-    server_connector = attr.ib(repr=False)  # type: ServerConnector
     render_requests = attr.ib(hash=False, repr=False)  # type: List[RenderRequest]
     on_success = attr.ib(hash=False, repr=False)
     on_error = attr.ib(hash=False, repr=False)

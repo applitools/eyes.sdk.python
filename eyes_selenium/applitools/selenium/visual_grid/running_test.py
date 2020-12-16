@@ -123,7 +123,6 @@ class RunningTestCheck(object):
 
         render_task = RenderTask(
             name="RunningTest.render {} - {}".format(short_description, tag),
-            server_connector=self.running_test.eyes,
             render_requests=[render_request],
             on_success=render_task_succeeded,
             on_error=render_task_error,

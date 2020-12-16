@@ -158,6 +158,9 @@ class VisualGridEyes(object):
             ua_string=self.driver.user_agent.origin_ua_string,
         )
         self.server_connector.render_info()
+        self.vg_manager.rendering_service.maybe_set_server_connector(
+            self.server_connector
+        )
 
         for browser_info, job_info in self._job_info_for_browser_info(
             self.configure.browsers_info
