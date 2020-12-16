@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Optional
 
 from . import logger
 from .geometry import CoordinatesType, Region
@@ -24,6 +24,7 @@ class EyesScreenshot(ABC):
         # type: (Image) -> None
         argument_guard.not_none(image)
         self._image = image
+        self.original_location = None  # type: Optional[Point]
 
     def __hash__(self):
         return hash(image_utils.get_base64(self._image))

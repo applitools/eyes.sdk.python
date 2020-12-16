@@ -46,6 +46,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     _frame_location_in_screenshot = attr.ib()  # type: Point
     _current_frame_scroll_position = attr.ib(default=None)  # type: Optional[Point]
     frame_window = attr.ib(default=None)  # type: Region
+    original_location = attr.ib(default=None)  # type: Region
     _frame_chain = attr.ib(init=False)  # type: FrameChain
 
     @classmethod
