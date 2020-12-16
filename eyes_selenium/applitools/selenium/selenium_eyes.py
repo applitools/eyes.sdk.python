@@ -271,7 +271,10 @@ class SeleniumEyes(EyesBase):
             self._try_hide_scrollbars()
 
             logger.info("Current URL: {}".format(self._driver.current_url))
-            with self._switch_to_frame(check_settings):
+            with self._switch_to_frame(check_settings) as cur_frame:
+                self._current_frame_position_provider = self._create_position_provider(
+                    cur_frame.scroll_root_element
+                )
                 result = self._check_result_flow(check_settings, source)
 
             # restore scrollbar of main window
@@ -621,7 +624,7 @@ class SeleniumEyes(EyesBase):
             frames[self._switched_to_frame_count] = cur_frame
             self._switched_to_frame_count += 1
 
-        yield
+        yield cur_frame
 
         while self._switched_to_frame_count > 0:
             cur_frame = frames.get(self._switched_to_frame_count - 1)
