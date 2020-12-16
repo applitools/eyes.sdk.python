@@ -702,29 +702,29 @@ class EyesBase(
     def _check_window_base(
         self,
         region_provider,  # type: RegionProvider
-        tag=None,  # type: Optional[Text]
         ignore_mismatch=False,  # type: bool
         check_settings=None,  # type: CheckSettings
         source=None,  # type: Optional[Text]
     ):
         # type: (...) -> MatchResult
         if self.configure.is_disabled:
-            logger.info("check_window(%s): ignored (disabled)" % tag)
+            logger.info(
+                "check_window(%s): ignored (disabled)" % check_settings.values.name
+            )
             return MatchResult(as_expected=True)
 
         self._ensure_running_session()
 
         self._before_match_window()
 
-        tag = tag if tag is not None else ""
-        result = self._match_window(region_provider, tag, check_settings, source)
+        result = self._match_window(region_provider, check_settings, source)
 
         if not ignore_mismatch:
             del self._user_inputs[:]
             self._last_screenshot = result.screenshot
 
         self._after_match_window()
-        self._handle_match_result(result, tag)
+        self._handle_match_result(result, check_settings.values.name)
         return result
 
     def _handle_match_result(self, result, tag):
@@ -760,20 +760,23 @@ class EyesBase(
             )
             return None
 
-    def _match_window(self, region_provider, tag, check_settings, source):
-        # type: (RegionProvider, Text, CheckSettings, Optional[Text]) -> MatchResult
+    def _match_window(self, region_provider, check_settings, source):
+        # type: (RegionProvider, CheckSettings, Optional[Text]) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: Num
         if check_settings:
             retry_timeout_ms = check_settings.values.timeout
 
         region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
+        logger.debug(
+            "params: ([{}], {}, {} ms)".format(
+                region, check_settings.values.name, retry_timeout_ms
+            )
+        )
 
         result = self._match_window_task.match_window(
             self._user_inputs,
             region,
-            tag,
             self._should_match_once_on_timeout,
             check_settings,
             retry_timeout_ms,
