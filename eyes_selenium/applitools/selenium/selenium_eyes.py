@@ -317,17 +317,20 @@ class SeleniumEyes(EyesBase):
                 logger.debug("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
-                    result = self._check_element(name, check_settings, source)
+                    result = self._check_full_element(name, check_settings, source)
                 else:
-                    result = self._check_region(name, check_settings, source)
+                    result = self._check_element(name, check_settings, source)
                 self._target_element = None
             elif total_frames > 0:
                 logger.debug("have frame chain")
                 if self._stitch_content:
-                    result = self._check_full_frame_or_element(
-                        name, check_settings, source
-                    )
+                    result = self._check_full_frame(name, check_settings, source)
                 else:
+                    logger.debug("Target.Frame(frame).Fully(false)")
+                    logger.debug(
+                        "WARNING: This shouldn't have been called, as it is covered "
+                        "by `_сheck_element(...)` "
+                    )
                     result = self._check_frame_fluent(name, check_settings, source)
             else:
                 logger.debug("default case")
@@ -358,7 +361,7 @@ class SeleniumEyes(EyesBase):
         else:
             return self.position_provider
 
-    def _check_full_frame_or_element(self, name, check_settings, source):
+    def _check_full_frame(self, name, check_settings, source):
         self._check_frame_or_element = True
 
         def full_frame_or_element_region(check_settings):
@@ -402,11 +405,11 @@ class SeleniumEyes(EyesBase):
         self._target_element = target_frame.reference
 
         self.driver.switch_to.frames_do_scroll(fc)
-        result = self._check_region(name, check_settings, source)
+        result = self._check_element(name, check_settings, source)
         self._target_element = None
         return result
 
-    def _check_element(self, name, check_settings, source):
+    def _check_full_element(self, name, check_settings, source):
         element = self._target_element  # type: EyesWebElement
 
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
@@ -491,7 +494,7 @@ class SeleniumEyes(EyesBase):
                     self._effective_viewport = None
         return result
 
-    def _check_region(self, name, check_settings, source):
+    def _check_element(self, name, check_settings, source):
         self._is_check_region = True
 
         def get_region():
