@@ -433,7 +433,6 @@ class EyesBase(
             return results
         finally:
             self._running_session = None
-            logger.close()
 
     def abort(self):
         # type: () -> Optional[TestResults]
@@ -488,7 +487,6 @@ class EyesBase(
         :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
-        logger.open_()
         if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
@@ -540,7 +538,6 @@ class EyesBase(
         if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
-        logger.open_()
         self._log_open_base()
 
         retry = 0
