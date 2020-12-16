@@ -345,26 +345,39 @@ class SeleniumEyes(EyesBase):
                     )
                     result = self._check_frame_fluent(check_settings, source)
             else:
-                logger.debug("default case")
-                if not self.driver.is_mobile_app:
-                    # required to prevent cut line on the last stitched part of the
-                    # page on some browsers (like firefox).
-                    self.driver.switch_to.default_content()
-                    self._current_frame_position_provider = (
-                        self._create_position_provider(
-                            self.driver.find_element_by_tag_name("html")
-                        )
-                    )
-                result = self._check_window_base(
-                    NULL_REGION_PROVIDER,
-                    name,
-                    False,
-                    check_settings,
-                    source,
-                )
+                if self._stitch_content:
+                    self._check_full_window(check_settings, source)
+                else:
+                    self._check_window(check_settings, source)
+
         if result is None:
             result = MatchResult()
         return result
+
+    def _check_full_window(self, check_settings, source):
+        logger.debug("Target.window().fully()")
+        self._original_location = Point.ZERO()
+        return self._check_window_base(
+            NULL_REGION_PROVIDER,
+            False,
+            check_settings,
+            source,
+        )
+
+    def _check_window(self, check_settings, source):
+        logger.debug("Target.window()")
+        location = Point.ZERO()
+        if not self.driver.is_mobile_app:
+            location = ScrollPositionProvider(
+                self.driver, self.scroll_root_element
+            ).get_current_position()
+        self._original_location = location
+        return self._check_window_base(
+            NULL_REGION_PROVIDER,
+            False,
+            check_settings,
+            source,
+        )
 
     @property
     def current_frame_position_provider(self):
