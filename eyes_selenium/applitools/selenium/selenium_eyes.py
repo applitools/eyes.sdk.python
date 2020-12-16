@@ -88,7 +88,7 @@ class SeleniumEyes(EyesBase):
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
     _check_frame_or_element = None  # type: bool
     _original_fc = None  # type: Optional[FrameChain]
-    _scroll_root_element = None  # type: Optional[EyesWebElement]
+    _user_defined_SRE = None  # type: Optional[EyesWebElement]
     _effective_viewport = None  # type: Optional[Region]
     _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
@@ -243,12 +243,10 @@ class SeleniumEyes(EyesBase):
 
         # Set up required settings
         self._stitch_content = check_settings.values.stitch_content
-        self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+        self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
             self.driver, check_settings
         )
-        self._position_provider = self._create_position_provider(
-            self._scroll_root_element
-        )
+        self._position_provider = self._create_position_provider(self._user_defined_SRE)
 
         self._original_fc = self.driver.frame_chain.clone()
 
@@ -265,7 +263,7 @@ class SeleniumEyes(EyesBase):
                 result = self._check_result_flow(check_settings, source)
 
             # restore scrollbar of main window
-            self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+            self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
                 self.driver, check_settings
             )
             self._try_restore_scrollbars()
@@ -273,7 +271,7 @@ class SeleniumEyes(EyesBase):
             result = self._check_result_flow(check_settings, source)
 
         self._stitch_content = False
-        self._scroll_root_element = None
+        self._user_defined_SRE = None
         if self._position_memento:
             ScrollPositionProvider(self.driver, self.scroll_root_element).restore_state(
                 self._position_memento
@@ -425,7 +423,7 @@ class SeleniumEyes(EyesBase):
         element = self._target_element  # type: EyesWebElement
 
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-            self.driver, self._scroll_root_element
+            self.driver, self._user_defined_SRE
         )
         pos_provider = self._create_position_provider(scroll_root_element)
 
@@ -547,7 +545,7 @@ class SeleniumEyes(EyesBase):
         return result
 
     def _ensure_frame_visible(self):
-        logger.debug("scroll_root_element_: {}".format(self._scroll_root_element))
+        logger.debug("scroll_root_element_: {}".format(self._user_defined_SRE))
         current_fc = self.driver.frame_chain.clone()
         if not current_fc:
             # if no frames no point to go below
@@ -566,7 +564,7 @@ class SeleniumEyes(EyesBase):
             if fc.size == self._original_fc.size:
                 logger.debug("PositionProvider: {}".format(self.position_provider))
                 self._position_memento = self.position_provider.get_state()
-                scroll_root_element = self._scroll_root_element
+                scroll_root_element = self._user_defined_SRE
             else:
                 if parent_frame:
                     scroll_root_element = parent_frame.scroll_root_element
@@ -623,11 +621,11 @@ class SeleniumEyes(EyesBase):
 
     @property
     def scroll_root_element(self):
-        if self._scroll_root_element is None:
-            self._scroll_root_element = self.driver.find_element_by_tag_name("html")
-        if not self._scroll_root_element.is_attached_to_page:
+        if self._user_defined_SRE is None:
+            self._user_defined_SRE = self.driver.find_element_by_tag_name("html")
+        if not self._user_defined_SRE.is_attached_to_page:
             return self.driver.find_element_by_tag_name("html")
-        return self._scroll_root_element
+        return self._user_defined_SRE
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (Text, AnyWebElement) -> None
@@ -847,7 +845,7 @@ class SeleniumEyes(EyesBase):
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-            self.driver, self._scroll_root_element
+            self.driver, self._user_defined_SRE
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
@@ -1037,7 +1035,7 @@ class SeleniumEyes(EyesBase):
                     self.driver.switch_to.frames(original_fc)
                     scroll_root_element = (
                         eyes_selenium_utils.curr_frame_scroll_root_element(
-                            self.driver, self._scroll_root_element
+                            self.driver, self._user_defined_SRE
                         )
                     )
                 # This might happen when scroll root element is calculated in the
