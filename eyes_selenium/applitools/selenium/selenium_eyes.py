@@ -544,6 +544,9 @@ class SeleniumEyes(EyesBase):
                 w = min(p.x + s["width"], rect.right) - x
                 h = min(p.y + s["height"], rect.bottom) - y
                 region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
+            self._original_location = region.offset(
+                self.current_frame_position_provider.get_current_position()
+            ).location
             return region
 
         result = self._check_window_base(
@@ -634,6 +637,8 @@ class SeleniumEyes(EyesBase):
     def scroll_root_element(self):
         if self._scroll_root_element is None:
             self._scroll_root_element = self.driver.find_element_by_tag_name("html")
+        if not self._scroll_root_element.is_attached_to_page:
+            return self.driver.find_element_by_tag_name("html")
         return self._scroll_root_element
 
     def add_mouse_trigger_by_element(self, action, element):
@@ -907,6 +912,7 @@ class SeleniumEyes(EyesBase):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.restore_state(state)
 
+        self._last_screenshot.original_location = self._original_location
         return self._last_screenshot
 
     def _crop_if_needed(self, image):
