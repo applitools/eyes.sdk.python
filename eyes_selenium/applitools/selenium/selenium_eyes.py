@@ -226,7 +226,7 @@ class SeleniumEyes(EyesBase):
         return False
 
     def _create_position_provider(self, scroll_root_element):
-
+        # type: (AnyWebElement) -> PositionProvider
         return create_position_provider(
             self.driver,
             self.configure.stitch_mode,
@@ -260,9 +260,10 @@ class SeleniumEyes(EyesBase):
 
             logger.info("Current URL: {}".format(self._driver.current_url))
             with self._switch_to_frame(check_settings) as cur_frame:
-                self._current_frame_position_provider = self._create_position_provider(
-                    cur_frame.scroll_root_element
-                )
+                if cur_frame:
+                    self._current_frame_position_provider = (
+                        self._create_position_provider(cur_frame.scroll_root_element)
+                    )
                 result = self._check_result_flow(check_settings, source)
 
             # restore scrollbar of main window
@@ -327,12 +328,7 @@ class SeleniumEyes(EyesBase):
                 if self._stitch_content:
                     result = self._check_full_frame(check_settings, source)
                 else:
-                    logger.debug("Target.Frame(frame).Fully(false)")
-                    logger.debug(
-                        "WARNING: This shouldn't have been called, as it is covered "
-                        "by `_сheck_element(...)` "
-                    )
-                    result = self._check_frame_fluent(check_settings, source)
+                    result = self._check_frame(check_settings, source)
             else:
                 if self._stitch_content:
                     self._check_full_window(check_settings, source)
@@ -402,6 +398,7 @@ class SeleniumEyes(EyesBase):
                 target_region = Region.EMPTY()
             return target_region
 
+        self._original_location = Point.ZERO()
         result = self._check_window_base(
             RegionProvider(lambda: full_frame_or_element_region(check_settings)),
             False,
@@ -412,7 +409,7 @@ class SeleniumEyes(EyesBase):
         self._region_to_check = None
         return result
 
-    def _check_frame_fluent(self, check_settings, source):
+    def _check_frame(self, check_settings, source):
         fc = self.driver.frame_chain.clone()
         target_frame = fc.pop()
         self._target_element = target_frame.reference
@@ -487,6 +484,7 @@ class SeleniumEyes(EyesBase):
                             self._effective_viewport
                         )
 
+                    self._original_location = self._region_to_check.location
                     result = self._check_window_base(
                         NULL_REGION_PROVIDER,
                         False,
@@ -508,6 +506,7 @@ class SeleniumEyes(EyesBase):
 
     def _check_element(self, check_settings, source):
         self._is_check_region = True
+        location = self.current_frame_position_provider.get_current_position()
 
         def get_region():
             rect = check_settings.values.target_region
@@ -534,9 +533,8 @@ class SeleniumEyes(EyesBase):
                 w = min(p.x + s["width"], rect.right) - x
                 h = min(p.y + s["height"], rect.bottom) - y
                 region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
-            self._original_location = region.offset(
-                self.current_frame_position_provider.get_current_position()
-            ).location
+
+            self._original_location = region.offset(location).location
             return region
 
         result = self._check_window_base(
@@ -601,6 +599,7 @@ class SeleniumEyes(EyesBase):
         self._switched_to_frame_count = 0
         # TODO: refactor frames storing
         frames = {}
+        cur_frame = None
         frame_chain = check_settings.values.frame_chain
         for frame_locator in frame_chain:
             self.driver.switch_to.frame(frame_locator)

@@ -517,7 +517,7 @@ def curr_frame_scroll_root_element(driver, scroll_root_element=None):
     if cur_frame:
         root_element = cur_frame.scroll_root_element
     if root_element is None and not driver.is_mobile_app:
-        if scroll_root_element:
+        if scroll_root_element and scroll_root_element.is_attached_to_page:
             root_element = scroll_root_element
         else:
             root_element = driver.find_element_by_tag_name("html")
