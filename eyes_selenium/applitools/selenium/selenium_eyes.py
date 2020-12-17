@@ -226,7 +226,7 @@ class SeleniumEyes(EyesBase):
         return False
 
     def _create_position_provider(self, scroll_root_element):
-
+        # type: (AnyWebElement) -> PositionProvider
         return create_position_provider(
             self.driver,
             self.configure.stitch_mode,
@@ -341,7 +341,7 @@ class SeleniumEyes(EyesBase):
                         "WARNING: This shouldn't have been called, as it is covered "
                         "by `_сheck_element(...)` "
                     )
-                    result = self._check_frame_fluent(check_settings, source)
+                    result = self._check_frame(check_settings, source)
             else:
                 if self._stitch_content:
                     self._check_full_window(check_settings, source)
@@ -422,7 +422,7 @@ class SeleniumEyes(EyesBase):
         self._region_to_check = None
         return result
 
-    def _check_frame_fluent(self, check_settings, source):
+    def _check_frame(self, check_settings, source):
         fc = self.driver.frame_chain.clone()
         target_frame = fc.pop()
         self._target_element = target_frame.reference
@@ -648,8 +648,6 @@ class SeleniumEyes(EyesBase):
     def scroll_root_element(self):
         if self._user_defined_SRE is None:
             self._user_defined_SRE = self.driver.find_element_by_tag_name("html")
-        if not self._user_defined_SRE.is_attached_to_page:
-            return self.driver.find_element_by_tag_name("html")
         return self._user_defined_SRE
 
     def add_mouse_trigger_by_element(self, action, element):
