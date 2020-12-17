@@ -6,12 +6,12 @@ import typing
 
 from applitools.common import (
     AppOutput,
+    CoordinatesType,
+    Point,
     RectangleSize,
     Region,
     RunningSession,
     logger,
-    Point,
-    CoordinatesType,
 )
 from applitools.common.config import Configuration
 from applitools.common.errors import (

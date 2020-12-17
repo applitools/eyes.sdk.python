@@ -7,7 +7,7 @@ from .utils.json_utils import JsonInclude
 if TYPE_CHECKING:
     from typing import Optional, Text
 
-    from .geometry import RectangleSize, Point
+    from .geometry import Point, RectangleSize
 
 __all__ = ("AppOutput",)
 
