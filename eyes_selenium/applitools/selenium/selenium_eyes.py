@@ -125,6 +125,7 @@ class SeleniumEyes(EyesBase):
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_content = False  # type: bool
         self._runner = runner or ClassicRunner()
+        self._original_location = None  # type: Optional[Point]
 
     @property
     def configure(self):
@@ -514,10 +515,10 @@ class SeleniumEyes(EyesBase):
                     self._full_region_to_check = None
         return result
 
-    def _check_element(self, check_settings, source, frame_location=None):
+    def _check_element(self, check_settings, source, prev_frame_location=None):
         self._is_check_region = True
-        if frame_location is None:
-            frame_location = self.current_frame_position_provider.get_current_position()
+        if prev_frame_location is None:
+            location = self.current_frame_position_provider.get_current_position()
 
         def get_region():
             rect = check_settings.values.target_region
@@ -545,9 +546,7 @@ class SeleniumEyes(EyesBase):
                 h = min(p.y + s["height"], rect.bottom) - y
                 region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
 
-            self._original_location = region.offset(
-                Point.from_(frame_location)
-            ).location
+            self._original_location = region.offset(Point.from_(location)).location
             return region
 
         result = self._check_window_base(
@@ -642,8 +641,6 @@ class SeleniumEyes(EyesBase):
     def scroll_root_element(self):
         if self._user_defined_SRE is None:
             self._user_defined_SRE = self.driver.find_element_by_tag_name("html")
-        if not self._user_defined_SRE.is_attached_to_page:
-            return self.driver.find_element_by_tag_name("html")
         return self._user_defined_SRE
 
     def add_mouse_trigger_by_element(self, action, element):
