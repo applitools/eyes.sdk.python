@@ -137,6 +137,19 @@ class _EyesSwitchTo(object):
         frame_res = FrameResolver(frame_reference, self._driver)
         self._do_switch_to_frame(frame_res.eyes_webelement)
 
+    def frame_and_return_location(self, frame_reference):
+        # type: (FrameReference) -> Point
+
+        """
+        Switch to a given frame.
+
+        :param frame_reference: The reference to the frame.
+        """
+        frame_res = FrameResolver(frame_reference, self._driver)
+        location = frame_res.eyes_webelement.location
+        self._do_switch_to_frame(frame_res.eyes_webelement)
+        return location
+
     def frames(self, frame_chain):
         # type: (FrameChain) -> None
         """
