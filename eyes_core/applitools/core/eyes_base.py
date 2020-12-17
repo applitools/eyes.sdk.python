@@ -7,13 +7,13 @@ import uuid
 
 from applitools.common import (
     AppOutput,
+    CoordinatesType,
+    Point,
     RectangleSize,
     Region,
     RunningSession,
     deprecated,
     logger,
-    Point,
-    CoordinatesType,
 )
 from applitools.common.config import Configuration
 from applitools.common.errors import (
