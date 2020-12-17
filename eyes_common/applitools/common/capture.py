@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, TypeVar, Optional
+from typing import TYPE_CHECKING, Optional, TypeVar
 
 from . import logger
 from .geometry import CoordinatesType, Region

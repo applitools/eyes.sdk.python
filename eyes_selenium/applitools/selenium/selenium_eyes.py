@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.geometry import Point
-from applitools.common.selenium import StitchMode, Configuration
+from applitools.common.selenium import Configuration, StitchMode
 from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
