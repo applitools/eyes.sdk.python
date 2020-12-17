@@ -519,6 +519,8 @@ class SeleniumEyes(EyesBase):
         self._is_check_region = True
         if prev_frame_location is None:
             location = self.current_frame_position_provider.get_current_position()
+        else:
+            location = prev_frame_location
 
         def get_region():
             rect = check_settings.values.target_region
