@@ -209,7 +209,7 @@ class EyesConnector(EyesBase):
             )
         return status
 
-    def _match_window(self, region_provider, tag, check_settings, source):
+    def _match_window(self, region_provider, check_settings, source):
         # type: (RegionProvider, Text, SeleniumCheckSettings, Optional[Text]) -> MatchResult
         # Update retry timeout if it wasn't specified.
         retry_timeout_ms = -1  # type: int
@@ -217,7 +217,11 @@ class EyesConnector(EyesBase):
             retry_timeout_ms = check_settings.values.timeout
 
         region = region_provider.get_region()
-        logger.debug("params: ([{}], {}, {} ms)".format(region, tag, retry_timeout_ms))
+        logger.debug(
+            "params: ([{}], {}, {} ms)".format(
+                region, check_settings.values.name, retry_timeout_ms
+            )
+        )
 
         app_output = self._get_app_output_with_screenshot(None, None, check_settings)
         image_match_settings = self._match_window_task.create_image_match_settings(
@@ -226,7 +230,6 @@ class EyesConnector(EyesBase):
         return self._match_window_task.perform_match(
             app_output=app_output,
             replace_last=False,
-            name=tag,
             image_match_settings=image_match_settings,
             eyes=self,
             user_inputs=self._user_inputs,
