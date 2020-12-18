@@ -18,6 +18,7 @@ from applitools.common import (
     MatchLevel,
     MatchWindowData,
     Options,
+    Point,
     RunningSession,
     SessionStartInfo,
     TestResults,
@@ -234,7 +235,10 @@ MATCH_WINDOW_DATA_OBJ = MatchWindowData(
     ignore_mismatch=False,
     user_inputs=[],
     app_output=AppOutput(
-        title="Title", screenshot_bytes=b"some", screenshot_url="http"
+        title="Title",
+        location=Point(0, 0),
+        screenshot_bytes=b"some",
+        screenshot_url="http",
     ),
     tag="Tag",
     options=Options(
