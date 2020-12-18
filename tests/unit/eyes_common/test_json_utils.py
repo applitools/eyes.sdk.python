@@ -24,7 +24,7 @@ from applitools.common.accessibility import (
     AccessibilityStatus,
     SessionAccessibilityStatus,
 )
-from applitools.common.geometry import AccessibilityRegion
+from applitools.common.geometry import AccessibilityRegion, Point
 from applitools.common.selenium import BrowserType
 from applitools.common.test_results import TestResultsStatus
 from applitools.common.utils import json_utils
@@ -103,10 +103,11 @@ def test_multithreading_serialization(i):
     mwd = MatchWindowData(
         agent_setup=None,
         app_output=AppOutput(
+            title="",
+            location=Point(0, 0),
             dom_url="https://eyespublicwusi0.core/bl9crP4n81pwT9anq3r1Xr8g0e97eMliN8f7etrM110",
             screenshot_url="https://eyespublicwusi0.blob.core/g0e97eMliN8f7etrM110",
             viewport=RectangleSize(height=1300, width=2560),
-            title="",
             screenshot_bytes=None,
         ),
         ignore_mismatch=False,
