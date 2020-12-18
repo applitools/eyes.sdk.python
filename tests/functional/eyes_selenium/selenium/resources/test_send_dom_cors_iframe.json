@@ -1786,7 +1786,7 @@
                             "top": 0,
                             "width": 435
                           },
-                          "scriptVersion": "8.0.1",
+                          "scriptVersion": "9.0.0",
                           "style": {
                             "background-color": "rgba(0, 0, 0, 0)",
                             "background-image": "none",
@@ -2376,7 +2376,7 @@
     "top": 0,
     "width": 1024
   },
-  "scriptVersion": "8.0.1",
+  "scriptVersion": "9.0.0",
   "style": {
     "background-color": "rgba(0, 0, 0, 0)",
     "background-image": "none",
