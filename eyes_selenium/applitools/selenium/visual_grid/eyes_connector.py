@@ -178,7 +178,7 @@ class EyesConnector(EyesBase):
         self._region_selectors = region_selectors
         self._regions = regions
         check_result = self._check_window_base(
-            NULL_REGION_PROVIDER, name, False, check_settings, source
+            NULL_REGION_PROVIDER, False, check_settings, source
         )
         self._current_uuid = None
         self._region_selectors = []
@@ -245,6 +245,7 @@ class EyesConnector(EyesBase):
         logger.debug("render_task.uuid: {}".format(self._current_uuid))
         app_output = AppOutput(
             title=self._title,
+            location=None,
             screenshot_bytes=None,
             screenshot_url=self.render_status.image_location,
             dom_url=self.render_status.dom_location,
