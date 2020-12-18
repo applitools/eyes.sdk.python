@@ -1,3 +1,7 @@
+[vNext]
+### Updated
+- Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
+
 ## [4.15.1] - 2021-01-27
 ### Added
 - StdoutLogger accepts true/false for debug/info levels [Trello 376](https://trello.com/c/1xzNhRlm)
