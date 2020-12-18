@@ -87,7 +87,7 @@ def screenshot(image):
 
 @pytest.fixture
 def app_output():
-    return AppOutput("output", None)
+    return AppOutput("output", None, None)
 
 
 @pytest.fixture
