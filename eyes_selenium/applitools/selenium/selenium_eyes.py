@@ -613,9 +613,9 @@ class SeleniumEyes(EyesBase):
         self._switched_to_frame_count = 0
         # TODO: refactor frames storing
         frames = {}
-        cur_frame = None
-        prev_location = None
         frame_chain = check_settings.values.frame_chain
+        cur_frame = self._driver.frame_chain.peek
+        prev_location = cur_frame.location if cur_frame else None
         for frame_locator in frame_chain:
             prev_location = self.driver.switch_to.frame_and_return_location(
                 frame_locator
