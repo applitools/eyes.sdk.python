@@ -106,7 +106,7 @@ class VisualGridRunner(EyesRunner):
                 task = test_queue.popleft()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
-                datetime_utils.sleep(1000, msg="Waiting for task")
+                datetime_utils.sleep(10, msg="Waiting for task", verbose=False)
                 continue
             future = self._executor.submit(task)
             self._future_to_task[future] = task
