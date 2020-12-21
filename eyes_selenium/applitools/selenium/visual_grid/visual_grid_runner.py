@@ -16,9 +16,23 @@ from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional
+    from typing import Dict, List, Union
 
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
+
+LEGACY_CONCURRENCY_FACTOR = 5
+
+
+class RunnerOptions(object):
+    def __init__(self, test_concurrency=5):
+        self._test_concurrency = test_concurrency
+
+    def test_concurrency(self, test_concurrency):
+        self._test_concurrency = test_concurrency
+        return self
+
+    def get_test_concurrency(self):
+        return self._test_concurrency
 
 
 class _ResourceCollectionService(object):
@@ -44,8 +58,15 @@ class _ResourceCollectionService(object):
 
 
 class VisualGridRunner(EyesRunner):
-    def __init__(self, concurrent_sessions=5):
-        # type: (Optional[int]) -> None
+    def __init__(self, options_or_concurrency=RunnerOptions()):
+        # type: (Union[RunnerOptions, int]) -> None
+        if isinstance(options_or_concurrency, int):
+            self._options = RunnerOptions(
+                test_concurrency=options_or_concurrency * LEGACY_CONCURRENCY_FACTOR
+            )
+        else:
+            self._options = options_or_concurrency
+
         super(VisualGridRunner, self).__init__()
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
@@ -58,9 +79,10 @@ class VisualGridRunner(EyesRunner):
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 
-        self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
+        self._executor = ThreadPoolExecutor(
+            max_workers=self._options.get_test_concurrency(), **kwargs
+        )
         self._future_to_task = ResourceCache()  # type:ResourceCache
-        self._concurrent_sessions = concurrent_sessions  # type: int
         self._parallel_tests = []  # type: List[RunningTest]
         thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
@@ -89,12 +111,13 @@ class VisualGridRunner(EyesRunner):
         logger.debug("VisualGridRunner.open(%s)" % eyes)
 
     def _current_parallel_tests(self):
+        concurrent_sessions = self._options.get_test_concurrency()
         parallel_tests = [
             test for test in self._parallel_tests if test.state != COMPLETED
         ]
         tests_left = len(parallel_tests)
-        if tests_left < self._concurrent_sessions:
-            tests_to_add = self._concurrent_sessions - tests_left
+        if tests_left < concurrent_sessions:
+            tests_to_add = concurrent_sessions - tests_left
             parallel_tests += self._get_n_not_completed_tests(tests_to_add)
             self._parallel_tests = parallel_tests
         return self._parallel_tests
