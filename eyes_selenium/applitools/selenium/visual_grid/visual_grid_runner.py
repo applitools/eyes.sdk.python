@@ -5,6 +5,7 @@ import threading
 import typing
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
+from time import time
 
 from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.utils import counted, datetime_utils, iteritems
@@ -68,6 +69,7 @@ class VisualGridRunner(EyesRunner):
             self._options = options_or_concurrency
 
         super(VisualGridRunner, self).__init__()
+        self._last_states_logging_time = time()
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
@@ -169,12 +171,12 @@ class VisualGridRunner(EyesRunner):
         )
         return TestResultsSummary(all_results)
 
-    @counted
     def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
         tests = list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
-        if not bool(self._get_all_running_tests.calls % 15):
-            # print state every 15 call
+        if time() - self._last_states_logging_time > 15:
+            self._last_states_logging_time = time()
+            # print states every 15 seconds
             counter = Counter(t.state for t in tests)
             logger.info(
                 "Current tests states: \n{}".format(
