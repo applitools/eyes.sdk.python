@@ -2,11 +2,11 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 import re
-import threading
 import typing as tp
 from collections import OrderedDict
 from concurrent.futures.thread import ThreadPoolExecutor
 from itertools import chain
+from time import time
 from typing import Dict, Generator, List, Optional, Text, Union
 
 import attr
@@ -139,9 +139,7 @@ def get_frame_dom(driver, css_downoader):
     # type: (EyesWebDriver, CssDownloader) -> Text
     is_ie = driver.user_agent.is_internet_explorer
     script = _CAPTURE_FRAME_SCRIPT_FOR_IE if is_ie else _CAPTURE_FRAME_SCRIPT
-    script_result = get_dom_script_result(
-        driver, DOM_EXTRACTION_TIMEOUT, "DomCapture_StopWatch", script
-    )
+    script_result = get_dom_script_result(driver, DOM_EXTRACTION_TIMEOUT, script)
     separators, missing_css, missing_frames, data = _parse_script_result(script_result)
 
     css_downoader.fetch_css_files(
@@ -182,29 +180,13 @@ def get_full_window_dom(driver, return_as_dict=False):
     return json.loads(script_result) if return_as_dict else script_result
 
 
-def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for_run):
+def get_dom_script_result(driver, dom_extraction_timeout, script_for_run):
     # type: (AnyWebDriver, int, Text, Text) -> Dict
-    is_check_timer_timeout = []
+    deadline_time = time() + datetime_utils.to_sec(dom_extraction_timeout)
     script_response = {}
     status = None
 
-    def start_timer():
-        def set_timer():
-            is_check_timer_timeout.append(True)
-
-        timer = threading.Timer(
-            datetime_utils.to_sec(dom_extraction_timeout), set_timer
-        )
-        timer.daemon = True
-        timer.setName(timer_name)
-        timer.start()
-        return timer
-
-    timer = start_timer()
-    while True:
-        if status == "SUCCESS" or is_check_timer_timeout:
-            del is_check_timer_timeout[:]
-            break
+    while time() < deadline_time:
         script_result_string = driver.execute_script(script_for_run)
         try:
             script_response = json.loads(
@@ -213,11 +195,12 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
             status = script_response.get("status")
         except Exception as e:
             logger.exception(e)
+        if status == "SUCCESS":
+            break
         datetime_utils.sleep(1000, "Waiting for the end of DOM extraction")
-    timer.cancel()
     script_result = script_response.get("value")
-    if script_result is None or status == "ERROR":
-        raise EyesError("Failed to capture script_result")
+    if script_result is None or status != "SUCCESS":
+        raise EyesError("Failed to capture script_result: {}".format(script_response))
     return script_result
 
 
