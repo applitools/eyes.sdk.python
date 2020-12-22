@@ -157,6 +157,7 @@ def get_frame_dom(driver, css_downoader):
 def get_dom(driver):
     # type: (EyesWebDriver) -> Text
     with CssDownloader() as css_downloader, driver.saved_frame_chain():
+        driver.switch_to.default_content()
         dom = get_frame_dom(driver, css_downloader)
         return efficient_string_replace(
             css_downloader.css_start_token,
