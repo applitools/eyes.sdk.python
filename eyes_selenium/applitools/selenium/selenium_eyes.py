@@ -274,7 +274,7 @@ class SeleniumEyes(EyesBase):
             )
             self._try_restore_scrollbars()
         else:
-            result = self._check_result_flow(check_settings, source)
+            result = self._check_result_flow(check_settings, source, None, None)
 
         self._stitch_content = False
         self._user_defined_SRE = None
