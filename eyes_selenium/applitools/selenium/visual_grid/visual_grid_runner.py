@@ -11,6 +11,7 @@ from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.utils import counted, datetime_utils, iteritems
 from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
+from applitools.selenium.visual_grid.rendreing_service import RenderingService
 from applitools.selenium.visual_grid.running_test import COMPLETED
 
 from .helpers import collect_test_results, wait_till_tests_completed
@@ -93,6 +94,7 @@ class VisualGridRunner(EyesRunner):
         self._thread = thread
 
         self._resource_collection_service = _ResourceCollectionService()
+        self.rendering_service = RenderingService()
 
     def add_resource_collection_task(self, task):
         self._resource_collection_service.add_task(task)
@@ -157,6 +159,7 @@ class VisualGridRunner(EyesRunner):
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
+        self.rendering_service.shutdown()
         logger.debug("VisualGridRunner.stop() done")
 
     def _get_all_test_results_impl(self, should_raise_exception=True):

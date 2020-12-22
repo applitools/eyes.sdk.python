@@ -197,8 +197,6 @@ class NullLogger(_Logger):
         super(NullLogger, self).__init__(name, level)
 
 
-# This will be set by the user.
-_logger_to_use = None  # type: tp.Optional[_Logger]
 # Holds the actual logger after open is called.
 _logger = None  # type: tp.Optional[_Logger]
 
@@ -210,30 +208,12 @@ def set_logger(logger=None):
 
     :param logger: The logger to use.
     """
-    global _logger_to_use
-    _logger_to_use = logger
-
-
-def open_():
-    # type: () -> None
-    """
-    Opens a new logger.
-    """
     global _logger
-    _logger = _logger_to_use
-    if _logger is not None and not _logger.is_opened:
-        _logger.open()
-
-
-def close():
-    # type: () -> None
-    """
-    Closed the logger.
-    """
-    global _logger
-    if _logger is not None:
+    if _logger is not None and _logger.is_opened:
         _logger.close()
-        _logger = None
+    if logger is not None and not logger.is_opened:
+        logger.open()
+    _logger = logger
 
 
 def info(msg):

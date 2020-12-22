@@ -6,7 +6,7 @@ from applitools.common.utils import ABC, iteritems
 
 class EyesRunner(ABC):
     def __init__(self):
-        logger.open_()
+        pass
 
     @abstractmethod
     def _get_all_test_results_impl(self, should_raise_exception):
@@ -17,5 +17,4 @@ class EyesRunner(ABC):
         logger.debug("get_all_test_results({}) called".format(should_raise_exception))
         summary = self._get_all_test_results_impl(should_raise_exception)
         logger.debug(str(summary))
-        logger.close()
         return summary
