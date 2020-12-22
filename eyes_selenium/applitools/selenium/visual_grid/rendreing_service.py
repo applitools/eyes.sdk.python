@@ -36,7 +36,7 @@ class RenderingService(object):
     def maybe_set_server_connector(self, server_connector):
         # type: (ServerConnector) -> None
         if not self._server_connector:
-            self._server_connector = deepcopy(server_connector)
+            self._server_connector = server_connector
 
     def render(self, render_request, on_success, on_error):
         # type: (RenderRequest, Callable, Callable) -> None
