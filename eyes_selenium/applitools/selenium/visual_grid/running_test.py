@@ -8,7 +8,6 @@ from transitions import Machine
 
 from applitools.common import RenderStatus, logger
 
-from .render_task import RenderTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
@@ -121,12 +120,11 @@ class RunningTestCheck(object):
             self.running_test.pending_exceptions.append(e)
             self.running_test.becomes_completed()
 
-        render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(short_description, tag),
-            render_requests=[render_request],
-            on_success=render_task_succeeded,
-            on_error=render_task_error,
-            rendering_service=self.running_test.rendering_service,
+        render_task = VGTask(
+            "RunningTest.render {} - {}".format(short_description, tag),
+            lambda: self.running_test.rendering_service.render(
+                render_request, render_task_succeeded, render_task_error
+            ),
         )
         return render_task
 
