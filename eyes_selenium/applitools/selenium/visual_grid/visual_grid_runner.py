@@ -5,7 +5,10 @@ import threading
 import typing
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from time import time
+
+import attr
 
 from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.utils import counted, datetime_utils, iteritems
@@ -18,23 +21,37 @@ from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Union
+    from typing import Dict, List, Text, Union
 
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
 
-LEGACY_CONCURRENCY_FACTOR = 5
-
 
 class RunnerOptions(object):
-    def __init__(self, test_concurrency=5):
-        self._test_concurrency = test_concurrency
+    def __init__(self):
+        self._test_concurrency = _TestConcurrency()
 
-    def test_concurrency(self, test_concurrency):
-        self._test_concurrency = test_concurrency
+    def test_concurrency(self, value):
+        # type: (int) -> RunnerOptions
+        self._test_concurrency = _TestConcurrency(
+            _TestConcurrency.Kind.TEST_CONCURRENCY, value
+        )
         return self
 
     def get_test_concurrency(self):
+        # type: () -> _TestConcurrency
         return self._test_concurrency
+
+
+@attr.s
+class _TestConcurrency(object):
+    class Kind(Enum):
+        DEFAULT = "defaultConcurrency"
+        TEST_CONCURRENCY = "testConcurrency"
+        LEGACY = "concurrency"
+
+    LEGACY_CONCURRENCY_FACTOR = 5
+    kind = attr.ib(default=Kind.DEFAULT)  # type: Text
+    value = attr.ib(default=5)  # type: int
 
 
 class _ResourceCollectionService(object):
@@ -63,11 +80,12 @@ class VisualGridRunner(EyesRunner):
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
         if isinstance(options_or_concurrency, int):
-            self._options = RunnerOptions(
-                test_concurrency=options_or_concurrency * LEGACY_CONCURRENCY_FACTOR
+            self._concurrency = _TestConcurrency(
+                _TestConcurrency.Kind.LEGACY,
+                options_or_concurrency * _TestConcurrency.LEGACY_CONCURRENCY_FACTOR,
             )
         else:
-            self._options = options_or_concurrency
+            self._concurrency = options_or_concurrency.get_test_concurrency()
 
         super(VisualGridRunner, self).__init__()
         self._last_states_logging_time = time()
@@ -83,7 +101,7 @@ class VisualGridRunner(EyesRunner):
         self.still_running = True  # type: bool
 
         self._executor = ThreadPoolExecutor(
-            max_workers=self._options.get_test_concurrency(), **kwargs
+            max_workers=self._concurrency.value, **kwargs
         )
         self._future_to_task = ResourceCache()  # type:ResourceCache
         self._parallel_tests = []  # type: List[RunningTest]
@@ -115,7 +133,7 @@ class VisualGridRunner(EyesRunner):
         logger.debug("VisualGridRunner.open(%s)" % eyes)
 
     def _current_parallel_tests(self):
-        concurrent_sessions = self._options.get_test_concurrency()
+        concurrent_sessions = self._concurrency.value
         parallel_tests = [
             test for test in self._parallel_tests if test.state != COMPLETED
         ]

@@ -6,7 +6,8 @@ def test_visual_gird_runner_no_args():
 
     runner.get_all_test_results()
 
-    assert runner._options.get_test_concurrency() == 5
+    assert runner._concurrency.kind.value == "defaultConcurrency"
+    assert runner._concurrency.value == 5
 
 
 def test_visual_gird_runner_legacy_concurrency_1():
@@ -14,7 +15,8 @@ def test_visual_gird_runner_legacy_concurrency_1():
 
     runner.get_all_test_results()
 
-    assert runner._options.get_test_concurrency() == 5
+    assert runner._concurrency.kind.value == "concurrency"
+    assert runner._concurrency.value == 5
 
 
 def test_visual_gird_runner_legacy_concurrency_2():
@@ -22,7 +24,8 @@ def test_visual_gird_runner_legacy_concurrency_2():
 
     runner.get_all_test_results()
 
-    assert runner._options.get_test_concurrency() == 10
+    assert runner._concurrency.kind.value == "concurrency"
+    assert runner._concurrency.value == 10
 
 
 def test_visual_gird_runner_default_runner_options():
@@ -30,15 +33,8 @@ def test_visual_gird_runner_default_runner_options():
 
     runner.get_all_test_results()
 
-    assert runner._options.get_test_concurrency() == 5
-
-
-def test_visual_gird_runner_runner_options_1():
-    runner = VisualGridRunner(RunnerOptions(test_concurrency=1))
-
-    runner.get_all_test_results()
-
-    assert runner._options.get_test_concurrency() == 1
+    assert runner._concurrency.kind.value == "defaultConcurrency"
+    assert runner._concurrency.value == 5
 
 
 def test_visual_gird_runner_runner_options_2():
@@ -46,4 +42,5 @@ def test_visual_gird_runner_runner_options_2():
 
     runner.get_all_test_results()
 
-    assert runner._options.get_test_concurrency() == 2
+    assert runner._concurrency.kind.value == "testConcurrency"
+    assert runner._concurrency.value == 2
