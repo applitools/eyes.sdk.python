@@ -874,8 +874,6 @@ class SeleniumEyes(EyesBase):
             return adapt_element(target_element)
 
     def _set_element_attribute(self, element, name, value):
-        if self.driver.is_mobile_app:
-            return
         self.driver.execute_script(
             "arguments[0].setAttribute('{}', {});".format(name, value), element
         )
@@ -920,9 +918,12 @@ class SeleniumEyes(EyesBase):
         with self._driver.switch_to.frames_and_back(self._original_fc):
             if self.position_provider and not self.driver.is_mobile_platform:
                 state = self.position_provider.get_state()
-        self._set_element_attribute(
-            self.driver.find_element_by_tag_name("html"), ACTIVE_FRAME_ATTRIBUTE, "true"
-        )
+        if not self.driver.is_mobile_app:
+            self._set_element_attribute(
+                self.driver.find_element_by_tag_name("html"),
+                ACTIVE_FRAME_ATTRIBUTE,
+                "true",
+            )
         with self._try_hide_caret():
             scale_provider = self.update_scaling_params()
 
