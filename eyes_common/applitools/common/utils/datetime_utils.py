@@ -5,7 +5,12 @@ from typing import Optional, Text, Union
 
 from applitools.common import logger
 
-__all__ = ("UTC", "to_rfc1123_datetime", "current_time_in_rfc1123")
+__all__ = (
+    "UTC",
+    "to_rfc1123_datetime",
+    "current_time_in_rfc1123",
+    "current_time_in_iso8601",
+)
 
 
 class _UtcTz(tzinfo):
@@ -65,6 +70,11 @@ def to_rfc1123_datetime(dt):
 def current_time_in_rfc1123():
     # type: () -> Text
     return to_rfc1123_datetime(datetime.now(UTC))
+
+
+def current_time_in_iso8601():
+    # type: () -> Text
+    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
 
 def to_sec(millisecond):
