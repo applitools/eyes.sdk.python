@@ -11,7 +11,7 @@ from time import time
 import attr
 
 from applitools.common import TestResults, TestResultsSummary, logger
-from applitools.common.utils import counted, datetime_utils, iteritems
+from applitools.common.utils import datetime_utils, iteritems, json_utils
 from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
 from applitools.selenium.visual_grid.rendreing_service import RenderingService
@@ -23,6 +23,7 @@ from .resource_cache import PutCache, ResourceCache
 if typing.TYPE_CHECKING:
     from typing import Dict, List, Text, Union
 
+    from applitools.core import ServerConnector
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
 
 
@@ -131,6 +132,7 @@ class VisualGridRunner(EyesRunner):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
         logger.debug("VisualGridRunner.open(%s)" % eyes)
+        self._send_runner_started_log_message(eyes.server_connector)
 
     def _current_parallel_tests(self):
         concurrent_sessions = self._concurrency.value
@@ -230,3 +232,14 @@ class VisualGridRunner(EyesRunner):
                     yield deque()
                 else:
                     done = True
+
+    def _send_runner_started_log_message(self, server_connector):
+        # type: (ServerConnector) -> None
+        message = {
+            "type": "runnerStarted",
+            self._concurrency.kind.value: self._concurrency.value,
+            # ... other properties like node version, os, architecture, etc.
+        }
+        server_connector.send_logs(
+            logger.ClientEvent(logger.TraceLevel.Notice, json_utils.to_json(message))
+        )

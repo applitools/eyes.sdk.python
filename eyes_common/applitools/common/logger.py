@@ -9,9 +9,15 @@ import os
 import sys
 import typing as tp
 import warnings
+from enum import Enum
 from logging import Logger
+from typing import Text
 
+import attr
+
+from applitools.common.utils import datetime_utils
 from applitools.common.utils.general_utils import get_env_with_prefix
+from applitools.common.utils.json_utils import JsonInclude
 
 _DEFAULT_EYES_LOGGER_NAME = "eyes"
 _DEFAULT_EYES_FORMATTER = logging.Formatter(
@@ -22,6 +28,31 @@ _DEBUG_SCREENSHOT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "scree
 _DEBUG_SCREENSHOT_PATH = get_env_with_prefix("DEBUG_SCREENSHOT_PATH", ".")
 
 __all__ = ("StdoutLogger", "FileLogger", "NullLogger")
+
+
+class TraceLevel(Enum):
+    Debug = 0
+    Info = 1
+    Notice = 2
+    Warn = 3
+    Error = 4
+
+
+@attr.s
+class ClientEvent(object):
+    level = attr.ib(type=TraceLevel, metadata={JsonInclude.THIS: True})
+    event = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    timestamp = attr.ib(
+        factory=lambda: datetime_utils.current_time_in_iso8601(),
+        metadata={JsonInclude.THIS: True},
+    )  # type: Text
+
+
+@attr.s
+class LogSessionsClientEvents(object):
+    events = attr.ib(
+        factory=list, metadata={JsonInclude.THIS: True}
+    )  # type List[ClientEvent]
 
 
 class _Logger(object):

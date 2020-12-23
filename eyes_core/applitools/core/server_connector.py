@@ -42,6 +42,8 @@ if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
     from uuid import UUID
 
+    from applitools.common.logger import ClientEvent
+
 # Prints out all data sent/received through 'requests'
 # import httplib
 # httplib.HTTPConnection.debuglevel = 1
@@ -291,6 +293,7 @@ class ServerConnector(object):
     }
 
     API_SESSIONS = "api/sessions"
+    API_SESSIONS_LOG = "/api/sessions/log"
     API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
     RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
 
@@ -711,3 +714,12 @@ class ServerConnector(object):
             params={"rg_render-id": "NONE"},
         )
         return response.json()
+
+    def send_logs(self, *client_events):
+        # type: (*ClientEvent) -> None
+        # try once
+        try:
+            events = json_utils.to_json(logger.LogSessionsClientEvents(client_events))
+            self._com.request("post", self.API_SESSIONS_LOG, data=events)
+        except Exception:
+            logger.exception("send_logs failed")
