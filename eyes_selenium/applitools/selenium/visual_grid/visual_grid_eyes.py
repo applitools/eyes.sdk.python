@@ -187,13 +187,14 @@ class VisualGridEyes(object):
             "get_script_result call", dont_fetch_resources=dont_fetch_resources
         )
         try:
-            return dom_snapshot_script.create_dom_snapshot(
-                self.driver,
-                dont_fetch_resources,
-                None,
-                DOM_EXTRACTION_TIMEOUT,
-                self.configure.enable_cross_origin_rendering,
-            )
+            with self.driver.switch_to.frames_and_back(()):
+                return dom_snapshot_script.create_dom_snapshot(
+                    self.driver,
+                    dont_fetch_resources,
+                    None,
+                    DOM_EXTRACTION_TIMEOUT,
+                    self.configure.enable_cross_origin_rendering,
+                )
         except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)
 
@@ -230,6 +231,9 @@ class VisualGridEyes(object):
         ]
 
         try:
+            eyes_selenium_utils.add_data_active_frame_to_element(
+                self.driver, self.driver.find_element_by_tag_name("html")
+            )
             script_result = self.get_script_result(dont_fetch_resources)
             self.logger.debug(
                 "Got script result",
