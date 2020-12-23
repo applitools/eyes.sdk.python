@@ -1,5 +1,6 @@
 {
   "attributes": {
+    "data-applitools-active-frame": "true",
     "data-applitools-original-overflow": "",
     "data-applitools-scroll": "true",
     "style": "overflow: hidden;"
