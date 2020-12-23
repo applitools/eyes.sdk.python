@@ -93,9 +93,6 @@ if ('%s'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN')
 arguments[0].setAttribute('data-applitools-original-overflow',origOF);
 return origOF;
 """
-_JS_DATA_APPLITOOLS_SCROLL = (
-    "arguments[0].setAttribute('data-applitools-scroll', 'true');"
-)
 _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
     "arguments[0].setAttribute('data-applitools-original-overflow', '%s');"
 )
@@ -384,8 +381,20 @@ def add_data_overflow_to_element(driver, element, overflow):
 
 
 def add_data_scroll_to_element(driver, element):
-    # type: (EyesWebDriver, WebElement) -> Optional[Any]
-    return driver.execute_script(_JS_DATA_APPLITOOLS_SCROLL, element)
+    # type: (EyesWebDriver, WebElement) -> None
+    set_element_attribute(driver, element, "data-applitools-scroll", "true")
+
+
+def add_data_active_frame_to_element(driver, element):
+    # type: (EyesWebDriver, WebElement) -> None
+    set_element_attribute(driver, element, "data-applitools-active-frame", "true")
+
+
+def set_element_attribute(driver, element, name, value):
+    # type: (EyesWebDriver, WebElement, Text, Text) -> None
+    driver.execute_script(
+        "arguments[0].setAttribute('{}', '{}');".format(name, value), element
+    )
 
 
 @contextmanager
