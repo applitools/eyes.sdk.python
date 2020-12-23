@@ -68,9 +68,6 @@ if typing.TYPE_CHECKING:
     from .frames import Frame
 
 
-ACTIVE_FRAME_ATTRIBUTE = "data-applitools-active-frame"
-
-
 class ScreenshotType(object):
     ENTIRE_ELEMENT_SCREENSHOT = "EntireElementScreenshot"
     REGION_OR_ELEMENT_SCREENSHOT = "RegionOrElementScreenshot"
@@ -873,11 +870,6 @@ class SeleniumEyes(EyesBase):
                 target_element = EyesWebElement(target_element, self.driver)
             return adapt_element(target_element)
 
-    def _set_element_attribute(self, element, name, value):
-        self.driver.execute_script(
-            "arguments[0].setAttribute('{}', {});".format(name, value), element
-        )
-
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
             self.driver, self._user_defined_SRE
@@ -919,10 +911,8 @@ class SeleniumEyes(EyesBase):
             if self.position_provider and not self.driver.is_mobile_platform:
                 state = self.position_provider.get_state()
         if not self.driver.is_mobile_app:
-            self._set_element_attribute(
-                self.driver.find_element_by_tag_name("html"),
-                ACTIVE_FRAME_ATTRIBUTE,
-                "true",
+            eyes_selenium_utils.add_data_active_frame_to_element(
+                self.driver, self.driver.find_element_by_tag_name("html")
             )
         with self._try_hide_caret():
             scale_provider = self.update_scaling_params()

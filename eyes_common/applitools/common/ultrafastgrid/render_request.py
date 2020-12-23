@@ -5,7 +5,7 @@ from enum import Enum
 import attr
 
 from applitools.common import logger
-from applitools.common.geometry import RectangleSize, Region
+from applitools.common.geometry import Point, RectangleSize, Region
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -364,6 +364,12 @@ class RenderStatusResults(object):
         converter=attr.converters.optional(RectangleSize.from_),
         metadata={JsonInclude.THIS: True},
     )  # type: Optional[RectangleSize]
+    image_position_in_active_frame = attr.ib(
+        default=None,
+        type=Point,
+        converter=attr.converters.optional(Point.from_),
+        metadata={JsonInclude.THIS: True},
+    )  # type: Optional[Point]
 
 
 @attr.s
