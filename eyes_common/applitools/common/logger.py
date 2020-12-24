@@ -15,7 +15,6 @@ from typing import Text
 
 import attr
 
-from applitools.common.utils import datetime_utils
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -38,12 +37,21 @@ class TraceLevel(Enum):
     Error = 4
 
 
+def current_time_in_iso8601():
+    # break circular import in python2
+    from . import utils
+
+    global current_time_in_iso8601
+    current_time_in_iso8601 = utils.current_time_in_iso8601
+    return current_time_in_iso8601()
+
+
 @attr.s
 class ClientEvent(object):
     level = attr.ib(type=TraceLevel, metadata={JsonInclude.THIS: True})
     event = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     timestamp = attr.ib(
-        factory=lambda: datetime_utils.current_time_in_iso8601(),
+        factory=current_time_in_iso8601,
         metadata={JsonInclude.THIS: True},
     )  # type: Text
 
