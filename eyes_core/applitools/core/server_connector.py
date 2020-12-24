@@ -427,6 +427,8 @@ class ServerConnector(object):
         )
 
         test_results = json_utils.attr_from_response(response, TestResults)
+        test_results.set_server_connector(self)
+
         logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         self._com.close_session()

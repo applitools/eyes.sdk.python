@@ -12,6 +12,8 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if TYPE_CHECKING:
+    from applitools.core import ServerConnector
+
     from .ultrafastgrid import RenderBrowserInfo
 
 
@@ -187,6 +189,9 @@ class TestResults(object):
         type=SessionAccessibilityStatus,
         metadata={JsonInclude.THIS: True},
     )  # type: SessionAccessibilityStatus
+    _server_connector = attr.ib(
+        default=None, metadata={JsonInclude.THIS: False}
+    )  # type: ServerConnector
 
     @property
     def is_passed(self):
@@ -202,6 +207,15 @@ class TestResults(object):
     def is_failed(self):
         # type: () -> bool
         return self.status == TestResultsStatus.Failed
+
+    def set_server_connector(self, server_connector):
+        # type: (ServerConnector) -> None
+        self._server_connector = server_connector
+
+    def delete(self):
+        # type: () -> None
+        if self._server_connector:
+            self._server_connector.delete_session(self)
 
     def __str__(self):
         origin_str = super(TestResults, self).__str__()
