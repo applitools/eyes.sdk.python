@@ -1,4 +1,6 @@
 [vNext]
+### Added
+-  delete() method to TestResults class [Trello 2371](https://trello.com/c/d0OZ3bvH)
 ### Updated
 - Updated concurrency model, added RunnerOptions [Trello 2152](https://trello.com/c/yNzhBkBh)
 - DOM snapshot script to *4.4.1* [Trello 2370](https://trello.com/c/LtZ0SU2B) [Trello 2380](https://trello.com/c/yeMEtWhN)
