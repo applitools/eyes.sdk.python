@@ -1,4 +1,6 @@
 [vNext]
+### Added
+- Add SAFARI_EARLY_ACCESS BrowserType [Trello 2385](https://trello.com/c/5PncFGDO)
 ### Updated
 - Updated concurrency model [Trello 2152](https://trello.com/c/yNzhBkBh)
 - DOM snapshot script to *4.4.1* [Trello 2370](https://trello.com/c/LtZ0SU2B) [Trello 2380](https://trello.com/c/yeMEtWhN)
