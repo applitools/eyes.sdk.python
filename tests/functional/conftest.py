@@ -367,6 +367,9 @@ class FakeServerConnector(ServerConnector):
         self.output_calls["check_resource_status"].append(result)
         return result
 
+    def send_logs(self, *events):
+        self.input_calls["send_logs"].append(events)
+
 
 @pytest.fixture(scope="function")
 def spy():

@@ -8,7 +8,6 @@ from transitions import Machine
 
 from applitools.common import RenderStatus, logger
 
-from .render_task import RenderTask
 from .vg_task import VGTask
 
 if typing.TYPE_CHECKING:
@@ -74,20 +73,11 @@ class RunningTestCheck(object):
         return hash(self.name + self.uuid)
 
     def _render_task(self, tag, short_description, render_request):
-
-        render_task = RenderTask(
-            name="RunningTest.render {} - {}".format(short_description, tag),
-            server_connector=self.running_test.eyes,
-            render_requests=[render_request],
-        )
-
-        def render_task_succeeded(render_statuses):
+        def render_task_succeeded(render_status):
             # type: (List[RenderStatusResults]) -> None
             logger.debug(
                 "render_task_succeeded: task.uuid: {}".format(render_task.uuid)
             )
-            render_status = render_statuses[0]
-
             if render_status:
                 self.running_test.eyes.render_status_for_task(
                     render_task.uuid, render_status
@@ -130,8 +120,12 @@ class RunningTestCheck(object):
             self.running_test.pending_exceptions.append(e)
             self.running_test.becomes_completed()
 
-        render_task.on_task_succeeded(render_task_succeeded)
-        render_task.on_task_error(render_task_error)
+        render_task = VGTask(
+            "RunningTest.render {} - {}".format(short_description, tag),
+            lambda: self.running_test.rendering_service.render(
+                render_request, render_task_succeeded, render_task_error
+            ),
+        )
         return render_task
 
     def _check_task(self, render_task, tag):
@@ -177,6 +171,7 @@ class RunningTest(object):
     eyes = attr.ib(hash=False, repr=False)  # type: EyesConnector
     configuration = attr.ib(hash=False, repr=False)  # type: Configuration
     browser_info = attr.ib()  # type: RenderBrowserInfo
+    rendering_service = attr.ib()
 
     tasks_list = attr.ib(init=False, factory=list, hash=False)
     test_uuid = attr.ib(init=False)

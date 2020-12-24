@@ -1,13 +1,12 @@
-from mock import patch
-
 from applitools.common import VisualGridOption
 from applitools.common.selenium import BrowserType
 from applitools.selenium import Eyes, Target, VisualGridRunner
 
 
-def test_ufg_options(driver):
+def test_ufg_options(driver, fake_connector_class):
     runner = VisualGridRunner(1)
     eyes = Eyes(runner)
+    eyes.server_connector = fake_connector_class()
 
     (
         eyes.configure.add_browser(
@@ -18,23 +17,22 @@ def test_ufg_options(driver):
     )
 
     driver.get("https://google.com")
-    with patch("applitools.core.server_connector.ServerConnector.render") as patched:
-        eyes.open(driver, "Mock app", "Mock Test")
-        eyes.check(
-            "",
-            Target.window().visual_grid_options(
-                VisualGridOption("option3", "value3"),
-                VisualGridOption("option4", 5),
-                VisualGridOption("option1", 5),
-            ),
-        )
-        eyes.close_async()
-        res = runner.get_all_test_results()
+    eyes.open(driver, "Mock app", "Mock Test")
+    eyes.check(
+        "",
+        Target.window().visual_grid_options(
+            VisualGridOption("option3", "value3"),
+            VisualGridOption("option4", 5),
+            VisualGridOption("option1", 5),
+        ),
+    )
+    eyes.close_async()
+    runner.get_all_test_results()
 
-        request_options = patched.call_args.args[0].options
-        assert request_options == {
-            "option1": 5,
-            "option2": False,
-            "option3": "value3",
-            "option4": 5,
-        }
+    request_options = eyes.server_connector.input_calls["render"][0][0].options
+    assert request_options == {
+        "option1": 5,
+        "option2": False,
+        "option3": "value3",
+        "option4": 5,
+    }

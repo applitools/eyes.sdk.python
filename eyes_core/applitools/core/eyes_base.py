@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import abc
 import platform
 import typing
+import uuid
 
 from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
 from applitools.common.config import Configuration
@@ -433,7 +434,7 @@ class EyesBase(
             return results
         finally:
             self._running_session = None
-            logger.close()
+            self._session_start_info = None
 
     def abort(self):
         # type: () -> Optional[TestResults]
@@ -488,7 +489,6 @@ class EyesBase(
         :return: An updated web driver
         :raise EyesError: If the session was already open.
         """
-        logger.open_()
         if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
@@ -540,7 +540,6 @@ class EyesBase(
         if self.configure.is_disabled:
             logger.debug("open_base(): ignored (disabled)")
             return
-        logger.open_()
         self._log_open_base()
 
         retry = 0
@@ -594,7 +593,7 @@ class EyesBase(
 
     def _create_session_start_info(self):
         # type: () -> None
-        self._session_start_info = SessionStartInfo(
+        self._session_start_info = self._session_start_info or SessionStartInfo(
             agent_id=self.full_agent_id,
             session_type=self.configure.session_type,
             app_id_or_name=self.configure.app_name,
@@ -611,6 +610,7 @@ class EyesBase(
             save_diffs=self.configure.save_diffs,
             render=self._render,
             properties=self.configure.properties,
+            agent_session_id=str(uuid.uuid4()),
         )
 
     def _start_session(self):
