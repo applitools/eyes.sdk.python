@@ -45,6 +45,15 @@ def test_check_raw_image_fluent(eyes):
     eyes.close()
 
 
+def test_check_raw_image_delete_result(eyes):
+    # type: (Eyes) -> None
+    eyes.open("images", "TestCheckImage_DeleteResult")
+    origin_image = Image.new("RGBA", (600, 600))
+    eyes.check("TestCheckImage_Fluent", Target.image(origin_image))
+    result = eyes.close(False)
+    result.delete()
+
+
 def test_check_raw_image_fluent_must_fail(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestCheckImage_Fluent")
