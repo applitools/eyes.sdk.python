@@ -42,6 +42,8 @@ if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
     from uuid import UUID
 
+    from applitools.common.logger import ClientEvent
+
 # Prints out all data sent/received through 'requests'
 # import httplib
 # httplib.HTTPConnection.debuglevel = 1
@@ -291,6 +293,8 @@ class ServerConnector(object):
     }
 
     API_SESSIONS = "api/sessions"
+    API_SESSIONS_LOG = "/api/sessions/log"
+    API_SESSIONS_BATCHES = "/api/sessions/batches"
     API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
     RUNNING_DATA_PATH = API_SESSIONS + "/running/data"
 
@@ -423,6 +427,8 @@ class ServerConnector(object):
         )
 
         test_results = json_utils.attr_from_response(response, TestResults)
+        test_results.set_server_connector(self)
+
         logger.debug("stop_session(): parsed response: {}".format(test_results))
 
         self._com.close_session()
@@ -711,3 +717,27 @@ class ServerConnector(object):
             params={"rg_render-id": "NONE"},
         )
         return response.json()
+
+    def send_logs(self, *client_events):
+        # type: (*ClientEvent) -> None
+        # try once
+        try:
+            events = json_utils.to_json(logger.LogSessionsClientEvents(client_events))
+            self._com.request("post", self.API_SESSIONS_LOG, data=events)
+        except Exception:
+            logger.exception("send_logs failed")
+
+    @retry()
+    def delete_session(self, test_results):
+        # type: (TestResults) -> None
+        argument_guard.not_none(test_results)
+        if None in (test_results.id, test_results.batch_id, test_results.secret_token):
+            logger.error("Can't delete session, results are None")
+            return
+        self._com.request(
+            "delete",
+            "{}/{}/{}".format(
+                self.API_SESSIONS_BATCHES, test_results.batch_id, test_results.id
+            ),
+            params={"AccessToken": test_results.secret_token},
+        ).raise_for_status()

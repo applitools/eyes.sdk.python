@@ -5,20 +5,54 @@ import threading
 import typing
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
+from time import time
+
+import attr
 
 from applitools.common import TestResults, TestResultsSummary, logger
-from applitools.common.utils import counted, datetime_utils, iteritems
+from applitools.common.utils import datetime_utils, iteritems, json_utils
 from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
+from applitools.selenium.visual_grid.rendreing_service import RenderingService
 from applitools.selenium.visual_grid.running_test import COMPLETED
 
 from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional
+    from typing import Dict, List, Text, Union
 
+    from applitools.core import ServerConnector
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
+
+
+class RunnerOptions(object):
+    def __init__(self):
+        self._test_concurrency = _TestConcurrency()
+
+    def test_concurrency(self, value):
+        # type: (int) -> RunnerOptions
+        self._test_concurrency = _TestConcurrency(
+            _TestConcurrency.Kind.TEST_CONCURRENCY, value
+        )
+        return self
+
+    def get_test_concurrency(self):
+        # type: () -> _TestConcurrency
+        return self._test_concurrency
+
+
+@attr.s
+class _TestConcurrency(object):
+    class Kind(Enum):
+        DEFAULT = "defaultConcurrency"
+        TEST_CONCURRENCY = "testConcurrency"
+        LEGACY = "concurrency"
+
+    LEGACY_FACTOR = 5
+    kind = attr.ib(default=Kind.DEFAULT)  # type: Text
+    value = attr.ib(default=5)  # type: int
 
 
 class _ResourceCollectionService(object):
@@ -44,9 +78,19 @@ class _ResourceCollectionService(object):
 
 
 class VisualGridRunner(EyesRunner):
-    def __init__(self, concurrent_sessions=5):
-        # type: (Optional[int]) -> None
+    def __init__(self, options_or_concurrency=RunnerOptions()):
+        # type: (Union[RunnerOptions, int]) -> None
+        if isinstance(options_or_concurrency, int):
+            self._concurrency = _TestConcurrency(
+                _TestConcurrency.Kind.LEGACY,
+                options_or_concurrency * _TestConcurrency.LEGACY_FACTOR,
+            )
+        else:
+            self._concurrency = options_or_concurrency.get_test_concurrency()
+
         super(VisualGridRunner, self).__init__()
+        self._runner_started_log_sent = False
+        self._last_states_logging_time = time()
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
         kwargs = {}
@@ -58,9 +102,10 @@ class VisualGridRunner(EyesRunner):
         self.all_eyes = []  # type: List[VisualGridEyes]
         self.still_running = True  # type: bool
 
-        self._executor = ThreadPoolExecutor(max_workers=concurrent_sessions, **kwargs)
+        self._executor = ThreadPoolExecutor(
+            max_workers=self._concurrency.value, **kwargs
+        )
         self._future_to_task = ResourceCache()  # type:ResourceCache
-        self._concurrent_sessions = concurrent_sessions  # type: int
         self._parallel_tests = []  # type: List[RunningTest]
         thread = threading.Thread(target=self._run, args=())
         thread.setName(self.__class__.__name__)
@@ -69,6 +114,7 @@ class VisualGridRunner(EyesRunner):
         self._thread = thread
 
         self._resource_collection_service = _ResourceCollectionService()
+        self.rendering_service = RenderingService()
 
     def add_resource_collection_task(self, task):
         self._resource_collection_service.add_task(task)
@@ -87,14 +133,18 @@ class VisualGridRunner(EyesRunner):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
         logger.debug("VisualGridRunner.open(%s)" % eyes)
+        if not self._runner_started_log_sent:
+            self._runner_started_log_sent = True
+            self._send_runner_started_log_message(eyes.server_connector)
 
     def _current_parallel_tests(self):
+        concurrent_sessions = self._concurrency.value
         parallel_tests = [
             test for test in self._parallel_tests if test.state != COMPLETED
         ]
         tests_left = len(parallel_tests)
-        if tests_left < self._concurrent_sessions:
-            tests_to_add = self._concurrent_sessions - tests_left
+        if tests_left < concurrent_sessions:
+            tests_to_add = concurrent_sessions - tests_left
             parallel_tests += self._get_n_not_completed_tests(tests_to_add)
             self._parallel_tests = parallel_tests
         return self._parallel_tests
@@ -106,7 +156,7 @@ class VisualGridRunner(EyesRunner):
                 task = test_queue.popleft()
                 logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
-                datetime_utils.sleep(1000, msg="Waiting for task")
+                datetime_utils.sleep(10, msg="Waiting for task", verbose=False)
                 continue
             future = self._executor.submit(task)
             self._future_to_task[future] = task
@@ -132,6 +182,7 @@ class VisualGridRunner(EyesRunner):
         self.resource_cache.executor.shutdown()
         self._executor.shutdown()
         self._thread.join()
+        self.rendering_service.shutdown()
         logger.debug("VisualGridRunner.stop() done")
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
@@ -146,12 +197,12 @@ class VisualGridRunner(EyesRunner):
         )
         return TestResultsSummary(all_results)
 
-    @counted
     def _get_all_running_tests(self):
         # type: ()-> List[RunningTest]
         tests = list(itertools.chain.from_iterable(e.test_list for e in self.all_eyes))
-        if not bool(self._get_all_running_tests.calls % 15):
-            # print state every 15 call
+        if time() - self._last_states_logging_time > 15:
+            self._last_states_logging_time = time()
+            # print states every 15 seconds
             counter = Counter(t.state for t in tests)
             logger.info(
                 "Current tests states: \n{}".format(
@@ -184,3 +235,14 @@ class VisualGridRunner(EyesRunner):
                     yield deque()
                 else:
                     done = True
+
+    def _send_runner_started_log_message(self, server_connector):
+        # type: (ServerConnector) -> None
+        message = {
+            "type": "runnerStarted",
+            self._concurrency.kind.value: self._concurrency.value,
+            # ... other properties like node version, os, architecture, etc.
+        }
+        server_connector.send_logs(
+            logger.ClientEvent(logger.TraceLevel.Notice, json_utils.to_json(message))
+        )

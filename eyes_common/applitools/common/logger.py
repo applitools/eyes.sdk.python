@@ -9,9 +9,14 @@ import os
 import sys
 import typing as tp
 import warnings
+from enum import Enum
 from logging import Logger
+from typing import Text
+
+import attr
 
 from applitools.common.utils.general_utils import get_env_with_prefix
+from applitools.common.utils.json_utils import JsonInclude
 
 _DEFAULT_EYES_LOGGER_NAME = "eyes"
 _DEFAULT_EYES_FORMATTER = logging.Formatter(
@@ -22,6 +27,40 @@ _DEBUG_SCREENSHOT_PREFIX = get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "scree
 _DEBUG_SCREENSHOT_PATH = get_env_with_prefix("DEBUG_SCREENSHOT_PATH", ".")
 
 __all__ = ("StdoutLogger", "FileLogger", "NullLogger")
+
+
+class TraceLevel(Enum):
+    Debug = 0
+    Info = 1
+    Notice = 2
+    Warn = 3
+    Error = 4
+
+
+def current_time_in_iso8601():
+    # break circular import in python2
+    from . import utils
+
+    global current_time_in_iso8601
+    current_time_in_iso8601 = utils.current_time_in_iso8601
+    return current_time_in_iso8601()
+
+
+@attr.s
+class ClientEvent(object):
+    level = attr.ib(type=TraceLevel, metadata={JsonInclude.THIS: True})
+    event = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    timestamp = attr.ib(
+        factory=current_time_in_iso8601,
+        metadata={JsonInclude.THIS: True},
+    )  # type: Text
+
+
+@attr.s
+class LogSessionsClientEvents(object):
+    events = attr.ib(
+        factory=list, metadata={JsonInclude.THIS: True}
+    )  # type List[ClientEvent]
 
 
 class _Logger(object):
@@ -197,8 +236,6 @@ class NullLogger(_Logger):
         super(NullLogger, self).__init__(name, level)
 
 
-# This will be set by the user.
-_logger_to_use = None  # type: tp.Optional[_Logger]
 # Holds the actual logger after open is called.
 _logger = None  # type: tp.Optional[_Logger]
 
@@ -210,30 +247,12 @@ def set_logger(logger=None):
 
     :param logger: The logger to use.
     """
-    global _logger_to_use
-    _logger_to_use = logger
-
-
-def open_():
-    # type: () -> None
-    """
-    Opens a new logger.
-    """
     global _logger
-    _logger = _logger_to_use
-    if _logger is not None and not _logger.is_opened:
-        _logger.open()
-
-
-def close():
-    # type: () -> None
-    """
-    Closed the logger.
-    """
-    global _logger
-    if _logger is not None:
+    if _logger is not None and _logger.is_opened:
         _logger.close()
-        _logger = None
+    if logger is not None and not logger.is_opened:
+        logger.open()
+    _logger = logger
 
 
 def info(msg):

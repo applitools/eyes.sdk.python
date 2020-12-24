@@ -39,7 +39,7 @@ from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 from .classic_runner import ClassicRunner  # noqa
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
-from .visual_grid import VisualGridRunner  # noqa
+from .visual_grid import RunnerOptions, VisualGridRunner  # noqa
 from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
 
@@ -56,6 +56,7 @@ __all__ = (
     "FailureReports",
     "StitchMode",
     "VisualGridRunner",
+    "RunnerOptions",
     "BrowserType",
     "DeviceName",
     "Configuration",

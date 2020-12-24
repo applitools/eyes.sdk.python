@@ -106,3 +106,7 @@ class SessionStartInfo(object):
     save_diffs = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     render = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     properties = attr.ib(metadata={JsonInclude.THIS: True})  # type: list
+    agent_session_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    concurrency_version = attr.ib(
+        default=1, metadata={JsonInclude.THIS: True}
+    )  # type: int

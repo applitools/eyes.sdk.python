@@ -152,6 +152,7 @@ def test_special_rendering(url, test_name, batch_info, driver):
     all_results = runner.get_all_test_results()
 
 
+@pytest.mark.skip("Page is missing")
 def test_svg_parsing(driver, eyes, batch_info, vg_runner):
     driver.get("https://danielschwartz85.github.io/static-test-page2/index.html")
     eyes = Eyes(vg_runner)
@@ -287,7 +288,7 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
     assert error_blob["errorStatusCode"] == 404
     assert error_blob["url"] == missing_blob_url
 
-    render_request = running_test.eyes.server_connector.calls["render"][0]
+    render_request = eyes.server_connector.calls["render"][0]
     assert render_request.resources[missing_blob_url].error_status_code == "404"
     assert render_request.resources[missing_resource_url].error_status_code in [
         "404",

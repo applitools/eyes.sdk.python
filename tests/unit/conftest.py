@@ -152,4 +152,5 @@ def session_start_info():
         save_diffs=True,
         render=False,
         properties=[],
+        agent_session_id="1",
     )
