@@ -190,7 +190,7 @@ class TestResults(object):
         metadata={JsonInclude.THIS: True},
     )  # type: SessionAccessibilityStatus
     _server_connector = attr.ib(
-        default=None, metadata={JsonInclude.THIS: False}
+        default=None, eq=False, order=False, metadata={JsonInclude.THIS: False}
     )  # type: ServerConnector
 
     @property
