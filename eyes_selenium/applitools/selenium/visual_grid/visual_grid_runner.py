@@ -50,7 +50,7 @@ class _TestConcurrency(object):
         TEST_CONCURRENCY = "testConcurrency"
         LEGACY = "concurrency"
 
-    LEGACY_CONCURRENCY_FACTOR = 5
+    LEGACY_FACTOR = 5
     kind = attr.ib(default=Kind.DEFAULT)  # type: Text
     value = attr.ib(default=5)  # type: int
 
@@ -83,12 +83,13 @@ class VisualGridRunner(EyesRunner):
         if isinstance(options_or_concurrency, int):
             self._concurrency = _TestConcurrency(
                 _TestConcurrency.Kind.LEGACY,
-                options_or_concurrency * _TestConcurrency.LEGACY_CONCURRENCY_FACTOR,
+                options_or_concurrency * _TestConcurrency.LEGACY_FACTOR,
             )
         else:
             self._concurrency = options_or_concurrency.get_test_concurrency()
 
         super(VisualGridRunner, self).__init__()
+        self._runner_started_log_sent = False
         self._last_states_logging_time = time()
         self._all_test_results = {}  # type: Dict[RunningTest, TestResults]
 
@@ -132,7 +133,9 @@ class VisualGridRunner(EyesRunner):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
         logger.debug("VisualGridRunner.open(%s)" % eyes)
-        self._send_runner_started_log_message(eyes.server_connector)
+        if not self._runner_started_log_sent:
+            self._runner_started_log_sent = True
+            self._send_runner_started_log_message(eyes.server_connector)
 
     def _current_parallel_tests(self):
         concurrent_sessions = self._concurrency.value
