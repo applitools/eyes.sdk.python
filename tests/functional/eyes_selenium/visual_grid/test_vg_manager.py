@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.common import EyesError, RectangleSize
+from applitools.common import EyesError, Point, RectangleSize
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 
 
@@ -54,3 +54,20 @@ def test_vgwith_bad_webhook(vg_runner, driver):
 
     assert e
     assert "failed to run before_capture_screenshot hook script" in str(e)
+
+
+def test_image_position_in_active_frame_forwarded_to_match_window(
+    spy, vg_runner, fake_connector_class, driver
+):
+    eyes = Eyes(vg_runner)
+    match_spy = spy(fake_connector_class, "match_window")
+    eyes.server_connector = fake_connector_class()
+    eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+
+    eyes.open(driver, "a", "b")
+    eyes.check(Target.window())
+    eyes.close(False)
+    vg_runner.get_all_test_results()
+
+    assert match_spy.call_args.args[2].app_output.location == Point(1, 2)

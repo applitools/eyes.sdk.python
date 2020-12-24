@@ -325,6 +325,7 @@ class FakeServerConnector(ServerConnector):
                     "retry_count": 0,
                     "dom_location": "https://eyespublicw0.blob.core/a255-se/40b1-bf12df29cd5?sv=2017-04-17&sr=c&sig=1smaTPYU27cwPZuGx9pEooNNc%3D&se=2015%3A11%3A50Z&sp=w&accessKey=None",
                     "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
+                    "image_position_in_active_frame": {"x": 1, "y": 2},
                 }
             )
         ]
