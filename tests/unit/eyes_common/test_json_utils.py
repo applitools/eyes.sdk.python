@@ -42,6 +42,7 @@ from tests.utils import get_resource
         BrowserType.FIREFOX_TWO_VERSIONS_BACK,
         BrowserType.SAFARI_ONE_VERSION_BACK,
         BrowserType.SAFARI_TWO_VERSIONS_BACK,
+        BrowserType.SAFARI_EARLY_ACCESS,
     ],
 )
 def test_render_request_serialize(browser_type):

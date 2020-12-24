@@ -178,6 +178,7 @@ class RenderBrowserInfo(IRenderBrowserInfo):
             BrowserType.SAFARI,
             BrowserType.SAFARI_ONE_VERSION_BACK,
             BrowserType.SAFARI_TWO_VERSIONS_BACK,
+            BrowserType.SAFARI_EARLY_ACCESS,
         ]:
             return "mac os x"
         return "linux"
@@ -228,6 +229,7 @@ class DesktopBrowserInfo(IRenderBrowserInfo):
             BrowserType.SAFARI,
             BrowserType.SAFARI_ONE_VERSION_BACK,
             BrowserType.SAFARI_TWO_VERSIONS_BACK,
+            BrowserType.SAFARI_EARLY_ACCESS,
         ]:
             return "mac os x"
         return "linux"
