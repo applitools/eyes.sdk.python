@@ -1,4 +1,4 @@
-[vNext]
+## [4.14.0] - 2020-12-25
 ### Added
 - Add SAFARI_EARLY_ACCESS BrowserType [Trello 2385](https://trello.com/c/5PncFGDO)
 - delete() method to TestResults class [Trello 2371](https://trello.com/c/d0OZ3bvH)
