@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Unable to capture multiple scrolled region screenshots [Trello 2397](https://trello.com/c/3RvCvojV)
+
 ## [4.14.0] - 2020-12-25
 ### Added
 - Add SAFARI_EARLY_ACCESS BrowserType [Trello 2385](https://trello.com/c/5PncFGDO)
