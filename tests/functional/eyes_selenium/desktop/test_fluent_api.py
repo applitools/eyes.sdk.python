@@ -94,6 +94,26 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
         Target.region(element).ignore(ignore_element),
     )
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
+)
+def test_check_two_scrolled_regions__fluent(eyes_opened):
+    top_element = eyes_opened.driver.find_element_by_xpath(
+        "/html/body/div[4]/main/div[1]/div[2]"
+    )
+    bottom_element = eyes_opened.driver.find_element_by_xpath(
+        "/html/body/div[4]/main/div[1]/div[7]"
+    )
+
+    eyes_opened.check(
+        "Fluent - Region by element - fully",
+        Target.region(top_element).fully(),
+    )
+    eyes_opened.check(
+        "Fluent - Region by element - fully",
+        Target.region(bottom_element).fully(),
+    )
+
 
 def test_check_element_with_ignore_region_by_element_outside_the_viewport__fluent(
     eyes_opened,
