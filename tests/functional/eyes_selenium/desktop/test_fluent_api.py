@@ -94,6 +94,7 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
         Target.region(element).ignore(ignore_element),
     )
 
+
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
@@ -106,11 +107,11 @@ def test_check_two_scrolled_regions__fluent(eyes_opened):
     )
 
     eyes_opened.check(
-        "Fluent - Region by element - fully",
+        "Get started with",
         Target.region(top_element).fully(),
     )
     eyes_opened.check(
-        "Fluent - Region by element - fully",
+        "Customize your process with",
         Target.region(bottom_element).fully(),
     )
 
