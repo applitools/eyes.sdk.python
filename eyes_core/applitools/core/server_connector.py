@@ -232,7 +232,7 @@ class _RequestCommunicator(object):
             raise EyesError("Unknown error during long request: {}".format(response))
 
     def _long_request_loop(self, url, request_id):
-        delays = delays_gen(500, 5, 2, 10000)
+        delays = delays_gen(500, 5, 2, 5000)
         delay = next(delays)
         while True:
             datetime_utils.sleep(
