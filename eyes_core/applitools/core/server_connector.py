@@ -187,6 +187,7 @@ class _RequestCommunicator(object):
         # type: (Text, Text, **Any) -> Response
         headers = kwargs.get("headers", self.headers).copy()
         headers["Eyes-Expect"] = "202+location"
+        headers["Eyes-Expect-Version"] = "2"
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
         kwargs["headers"] = headers
         request_id = uuid.uuid4()
@@ -243,9 +244,12 @@ class _RequestCommunicator(object):
             request_id=request_id,
             headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
         )
-        if response.status_code != requests.codes.ok:
-            return response
-        return self._long_request_loop(url, request_id, delay)
+        if response.status_code == requests.codes.ok:
+            url = response.headers.get("Location", url)
+            if "Retry-After" in response.headers:
+                delay = int(response.headers["Retry-After"]) * 1000
+            return self._long_request_loop(url, request_id, delay)
+        return response
 
 
 class _SessionRetryLimiter(object):
