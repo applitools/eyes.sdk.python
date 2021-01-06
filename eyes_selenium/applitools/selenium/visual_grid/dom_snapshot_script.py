@@ -59,6 +59,7 @@ def create_dom_snapshot(
         SCRIPT_POLL_INTERVAL_MS,
         chunk_byte_length,
         cross_origin_rendering,
+        should_skip_failed_frames=True,
         dont_fetch_resources=dont_fetch_resources,
         skip_resources=skip_resources,
         serialize_resources=True,
@@ -229,6 +230,7 @@ def create_cross_frames_dom_snapshots(
     poll_interval_ms,  # type: int
     chunk_byte_length,  # type: int
     cross_origin_rendering,  # type: bool
+    should_skip_failed_frames,  # type: bool
     **script_args  # type: Any
 ):
     # type: (...) -> Dict
@@ -243,6 +245,7 @@ def create_cross_frames_dom_snapshots(
             deadline_time,
             poll_interval_ms,
             chunk_byte_length,
+            should_skip_failed_frames,
             **script_args
         )
     return dom
@@ -255,6 +258,7 @@ def process_dom_snapshot_frames(
     deadline_time,  # type: float
     poll_interval_ms,  # type: int
     chunk_byte_length,  # type: int
+    should_skip_failed_frames,  # type: bool
     **script_args  # type: Any
 ):
     # type: (...) -> None
@@ -275,6 +279,7 @@ def process_dom_snapshot_frames(
                     poll_interval_ms,
                     chunk_byte_length,
                     cross_origin_rendering=True,
+                    should_skip_failed_frames=should_skip_failed_frames,
                     **script_args
                 )
                 dom.setdefault("frames", []).append(frame_dom)
@@ -307,6 +312,7 @@ def process_dom_snapshot_frames(
                     deadline_time,
                     poll_interval_ms,
                     chunk_byte_length,
+                    should_skip_failed_frames,
                     **script_args
                 )
         except Exception as e:
