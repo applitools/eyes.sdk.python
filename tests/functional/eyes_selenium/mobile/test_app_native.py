@@ -22,7 +22,7 @@ IOS_CAPS = {
     "noReset": True,
     "browserName": "",
     "platformName": "iOS",
-    "platformVersion": "12.2",
+    "platformVersion": "13.4",
     "automationName": "XCUITest",
     "appiumVersion": "1.13.0",
     "deviceName": "iPhone XR Simulator",

@@ -73,7 +73,7 @@ def ios_desired_capabilities(request):
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
     desired_caps["deviceName"] = "iPhone XS Simulator"
-    desired_caps["platformVersion"] = "12.2"
+    desired_caps["platformVersion"] = "13.4"
     desired_caps["platformName"] = "iOS"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
