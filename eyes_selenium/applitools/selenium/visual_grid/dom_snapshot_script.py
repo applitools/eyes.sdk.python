@@ -52,18 +52,36 @@ def create_dom_snapshot(
     is_ios = "ios" in driver.desired_capabilities.get("platformName", "").lower()
     chunk_byte_length = MAX_CHUNK_BYTES_IOS if is_ios else MAX_CHUNK_BYTES_GENERIC
     deadline = time() + datetime_utils.to_sec(timeout_ms)
-    return create_cross_frames_dom_snapshots(
-        driver.switch_to,
-        script,
-        deadline,
-        SCRIPT_POLL_INTERVAL_MS,
-        chunk_byte_length,
-        cross_origin_rendering,
-        should_skip_failed_frames=True,
-        dont_fetch_resources=dont_fetch_resources,
-        skip_resources=skip_resources,
-        serialize_resources=True,
-    )
+    try:
+        return create_cross_frames_dom_snapshots(
+            driver.switch_to,
+            script,
+            deadline,
+            SCRIPT_POLL_INTERVAL_MS,
+            chunk_byte_length,
+            cross_origin_rendering,
+            should_skip_failed_frames=False,
+            dont_fetch_resources=dont_fetch_resources,
+            skip_resources=skip_resources,
+            serialize_resources=True,
+        )
+    except Exception:
+        logger.info(
+            "Failed to create dom-snapshot, retrying ignoring failing frames",
+            exc_info=True,
+        )
+        return create_cross_frames_dom_snapshots(
+            driver.switch_to,
+            script,
+            deadline,
+            SCRIPT_POLL_INTERVAL_MS,
+            chunk_byte_length,
+            cross_origin_rendering,
+            should_skip_failed_frames=True,
+            dont_fetch_resources=dont_fetch_resources,
+            skip_resources=skip_resources,
+            serialize_resources=True,
+        )
 
 
 @attr.s
@@ -288,12 +306,14 @@ def process_dom_snapshot_frames(
                     {"name": "data-applitools-src", "value": frame_url}
                 )
                 logger.info("Created cross origin frame snapshot {}".format(frame_url))
-        except Exception as e:
-            logger.warning(
-                "Failed extracting cross frame with selector {}. Reason: {!r}".format(
-                    selector, e
+        except Exception:
+            if should_skip_failed_frames:
+                logger.warning(
+                    "Failed extracting cross frame with selector {}.".format(selector),
+                    exc_info=True,
                 )
-            )
+            else:
+                raise
     for frame in dom["frames"]:
         if not has_cross_subframes(frame):
             continue
@@ -315,12 +335,14 @@ def process_dom_snapshot_frames(
                     should_skip_failed_frames,
                     **script_args
                 )
-        except Exception as e:
-            logger.warning(
-                "Failed switching to frame with selector {}. Reason: {!r}".format(
-                    selector, e
+        except Exception:
+            if should_skip_failed_frames:
+                logger.warning(
+                    "Failed switching to frame with selector {}.".format(selector),
+                    exc_info=True,
                 )
-            )
+            else:
+                raise
 
 
 def has_cross_subframes(dom):
