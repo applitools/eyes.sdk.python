@@ -23,7 +23,7 @@ def webdriver_module():
         "browserName": "Chrome",
         "platformName": "Android",
         "platformVersion": "6.0",
-        "appiumVersion": "1.13.0",
+        "appiumVersion": "1.17.1",
         "deviceName": "Android Emulator",
         "deviceOrientation": "portrait",
     }

@@ -11,7 +11,7 @@ ANDROID_CAPS = {
     "automationName": "UiAutomator2",
     "platformName": "Android",
     "platformVersion": "6.0",
-    "appiumVersion": "1.13.0",
+    "appiumVersion": "1.17.1",
     "deviceName": "Android Emulator",
     "deviceOrientation": "portrait",
 }
@@ -24,7 +24,7 @@ IOS_CAPS = {
     "platformName": "iOS",
     "platformVersion": "13.4",
     "automationName": "XCUITest",
-    "appiumVersion": "1.13.0",
+    "appiumVersion": "1.17.1",
     "deviceName": "iPhone XR Simulator",
     "deviceOrientation": "portrait",
 }
