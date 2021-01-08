@@ -79,7 +79,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "virtualenv==16.3.0",
         "pytest-virtualenv==1.4.0",
         "mock",
-        "webdriver_manager==2.4.0",
+        "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
         "tox==3.14.3",
         "pytest-rerunfailures",
         "pytest-dictsdiff",
