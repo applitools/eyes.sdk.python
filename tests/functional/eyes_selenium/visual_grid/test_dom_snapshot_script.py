@@ -210,7 +210,7 @@ def test_dom_snapshot_serialize_chunks_until_done(driver):
     assert poll_res.status == ProcessPageStatus.SUCCESS_CHUNKED
     assert poll_res.done is True
     assert type(poll_res.value) is Text
-    assert len(poll_res.value) == 7247
+    assert len(poll_res.value) == 7245
 
 
 @pytest.fixture

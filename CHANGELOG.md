@@ -1,6 +1,8 @@
 ## [vNext]
 ### Fixed
 - Unable to capture multiple scrolled region screenshots [Trello 2397](https://trello.com/c/3RvCvojV)
+### Updated
+- DOM snapshot script to *4.4.3* [Trello 2405](https://trello.com/c/wBy9nGQi)
 
 ## [4.14.0] - 2020-12-25
 ### Added
