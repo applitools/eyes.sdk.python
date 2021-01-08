@@ -7,6 +7,7 @@ from mock import patch
 from selenium.common.exceptions import WebDriverException
 
 from applitools.common import logger
+from applitools.core import Feature
 from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
@@ -114,6 +115,7 @@ def test_iOS_native__sauce_labs(mobile_eyes):
 @pytest.mark.platform("iOS")
 def test_iOS_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 375, 712)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
