@@ -8,6 +8,8 @@ install:
 before_script:
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
+    # Alias for webdriver_manager package
+    - export GH_TOKEN=${GITHUB_TOKEN}
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
