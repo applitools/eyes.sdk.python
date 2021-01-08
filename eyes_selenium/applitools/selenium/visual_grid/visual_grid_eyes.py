@@ -180,7 +180,6 @@ class VisualGridEyes(object):
         logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
         return driver
 
-    @datetime_utils.retry(exception=(TimeoutException, EyesError), report=logger.debug)
     def get_script_result(self, dont_fetch_resources):
         # type: (bool) -> Dict
         logger.debug(
