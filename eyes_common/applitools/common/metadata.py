@@ -108,5 +108,5 @@ class SessionStartInfo(object):
     properties = attr.ib(metadata={JsonInclude.THIS: True})  # type: list
     agent_session_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     concurrency_version = attr.ib(
-        default=1, metadata={JsonInclude.THIS: True}
+        default=2, metadata={JsonInclude.THIS: True}
     )  # type: int

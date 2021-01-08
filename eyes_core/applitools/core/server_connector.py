@@ -68,6 +68,15 @@ def retry(
     return datetime_utils.retry(delays, exception, report)
 
 
+def delays_gen(delay, repeat, factor, max):
+    while delay < max:
+        for _ in range(repeat):
+            yield delay
+        delay *= factor
+    while True:
+        yield max
+
+
 @attr.s
 class ClientSession(object):
     """ A proxy to requests.Session """
@@ -132,10 +141,6 @@ class ClientSession(object):
 
 @attr.s
 class _RequestCommunicator(object):
-    LONG_REQUEST_DELAY_MS = 2000  # type: int
-    MAX_LONG_REQUEST_DELAY_MS = 10000  # type: int
-    LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR = 1.5  # type: float
-
     headers = attr.ib()  # type: Dict
     timeout_ms = attr.ib(default=None)  # type: int
     api_key = attr.ib(default=None)  # type: Text
@@ -187,6 +192,7 @@ class _RequestCommunicator(object):
         # type: (Text, Text, **Any) -> Response
         headers = kwargs.get("headers", self.headers).copy()
         headers["Eyes-Expect"] = "202+location"
+        headers["Eyes-Expect-Version"] = "2"
         headers["Eyes-Date"] = datetime_utils.current_time_in_rfc1123()
         kwargs["headers"] = headers
         request_id = uuid.uuid4()
@@ -225,27 +231,27 @@ class _RequestCommunicator(object):
         else:
             raise EyesError("Unknown error during long request: {}".format(response))
 
-    def _long_request_loop(self, url, request_id, delay=LONG_REQUEST_DELAY_MS):
-        delay = min(
-            self.MAX_LONG_REQUEST_DELAY_MS,
-            math.floor(delay * self.LONG_REQUEST_DELAY_MULTIPLICATIVE_INCREASE_FACTOR),
-        )
-        logger.debug(
-            "Long request {}. Still running... Retrying in {} ms".format(
-                request_id, delay
+    def _long_request_loop(self, url, request_id):
+        delays = delays_gen(500, 5, 2, 5000)
+        delay = next(delays)
+        while True:
+            datetime_utils.sleep(
+                delay, "Long request {} still running".format(request_id)
             )
-        )
-
-        datetime_utils.sleep(delay)
-        response = self.request(
-            "get",
-            url,
-            request_id=request_id,
-            headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
-        )
-        if response.status_code != requests.codes.ok:
-            return response
-        return self._long_request_loop(url, request_id, delay)
+            response = self.request(
+                "get",
+                url,
+                request_id=request_id,
+                headers={"Eyes-Date": datetime_utils.current_time_in_rfc1123()},
+            )
+            if response.status_code == requests.codes.ok:
+                url = response.headers.get("Location", url)
+                if "Retry-After" in response.headers:
+                    delay = int(response.headers["Retry-After"]) * 1000
+                else:
+                    delay = next(delays)
+            else:
+                return response
 
 
 class _SessionRetryLimiter(object):

@@ -7,6 +7,7 @@ from mock import patch
 from selenium.common.exceptions import WebDriverException
 
 from applitools.common import logger
+from applitools.core import Feature
 from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
@@ -73,7 +74,7 @@ def ios_desired_capabilities(request):
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
     desired_caps["deviceName"] = "iPhone XS Simulator"
-    desired_caps["platformVersion"] = "12.2"
+    desired_caps["platformVersion"] = "13.4"
     desired_caps["platformName"] = "iOS"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
@@ -114,6 +115,7 @@ def test_iOS_native__sauce_labs(mobile_eyes):
 @pytest.mark.platform("iOS")
 def test_iOS_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 375, 712)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
@@ -140,4 +142,4 @@ def test_iOS_native_region_sauce_labs_tracking_id_sent(mobile_eyes):
         eyes.check("Contact list", Target.window())
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
 
-    assert match_window_data.options.source == "HelloWorldiOS.app"
+    assert match_window_data.options.source == "HelloWorldiOS_1_0.zip"

@@ -49,7 +49,7 @@ jobs:
               - if [[ "$TMP_CHANGELOG" ]]; then
                   pip install bump2version;
                   bumpversion --new-version $SDK_VERSION patch;
-                  git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+                  git remote set-url origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
                   git push --tags origin HEAD:$RELEASE_BRANCH;
                 else
                   echo "THE CHANGELOG IS NOT CORRECT";
