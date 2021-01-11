@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Concurrency version 2 protocol optimizations [Trello 2368](https://trello.com/c/0qi2c0jW)
+### Fixed
+- Unable to capture multiple scrolled region screenshots [Trello 2397](https://trello.com/c/3RvCvojV)
 ### Updated
 - DOM snapshot script to *4.4.3* [Trello 2405](https://trello.com/c/wBy9nGQi)
 

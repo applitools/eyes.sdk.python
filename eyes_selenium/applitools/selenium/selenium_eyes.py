@@ -484,7 +484,6 @@ class SeleniumEyes(EyesBase):
                     self._region_to_check = None
                     self._element_position_provider = None
                     self._full_region_to_check = None
-                    self._effective_viewport = None
         return result
 
     def _check_region(self, name, check_settings, source):

@@ -13,6 +13,8 @@ test_fluent_api.py:
       - Scroll
    test_scrollbars_hidden_and_returned__fluent:
       - Scroll
+   test_check_two_scrolled_regions__fluent:
+      - Scroll
 
 test_scroll_root_element.py:
   test_check_window__simple__body:
