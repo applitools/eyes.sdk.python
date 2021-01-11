@@ -436,3 +436,28 @@ def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
     dom = create_dom_snapshot(driver, False, [], 10000, False)
 
     assert len(dom["frames"][0]["frames"]) == 0
+
+
+def test_create_dom_snapshot_retries_on_single_failure(driver, monkeypatch):
+    create_dom_snapshot_loop = dom_snapshot_script.create_dom_snapshot_loop
+
+    def failing_once_loop(*args, **kwargs):
+        failing_once_loop.call_count += 1
+        if failing_once_loop.call_count == 2:
+            raise Exception
+        else:
+            return create_dom_snapshot_loop(*args, **kwargs)
+
+    failing_once_loop.call_count = 0
+    monkeypatch.setattr(
+        dom_snapshot_script, "create_dom_snapshot_loop", failing_once_loop
+    )
+
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
+
+    dom = create_dom_snapshot(driver, False, [], 1000000, True)
+
+    assert len(dom["frames"][0]["crossFrames"]) == 1
+    assert dom["frames"][0]["crossFrames"][0]["index"] == 16
+    assert "selector" in dom["frames"][0]["crossFrames"][0]

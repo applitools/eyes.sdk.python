@@ -574,7 +574,6 @@ def test_retry_limiter_serializes_open_session_calls(monkeypatch):
     request_ids = "".join(c[1]["data"] for c in long_request_calls)
     assert len(request_ids) == 14
     assert "111" in request_ids
-    assert "222" in request_ids
     assert "333" in request_ids
 
 

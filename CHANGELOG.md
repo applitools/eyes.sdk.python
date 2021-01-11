@@ -1,6 +1,7 @@
 ## [vNext]
 ### Added
 - Concurrency version 2 protocol optimizations [Trello 2368](https://trello.com/c/0qi2c0jW)
+- Retry on dom-snapshot frame capture error [Trello 2212](https://trello.com/c/iBY0LLki)
 ### Fixed
 - Unable to capture multiple scrolled region screenshots [Trello 2397](https://trello.com/c/3RvCvojV)
 ### Updated

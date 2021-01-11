@@ -255,37 +255,37 @@ def set_logger(logger=None):
     _logger = logger
 
 
-def info(msg):
-    # type: (tp.Text) -> None
+def info(msg, *args, **kwargs):
+    # type: (tp.Text, *tp.Any, **tp.Any) -> None
     """
     Writes info level msg to the logger.
 
     :param msg: The message that will be written to the log.
     """
     if _logger is not None:
-        _logger.info(msg)
+        _logger.info(msg, *args, **kwargs)
 
 
-def debug(msg):
-    # type: (tp.Text) -> None
+def debug(msg, *args, **kwargs):
+    # type: (tp.Text, *tp.Any, **tp.Any) -> None
     """
     Writes debug level msg to the logger.
 
     :param msg: The message that will be written to the log.
     """
     if _logger is not None:
-        _logger.debug(msg)
+        _logger.debug(msg, *args, **kwargs)
 
 
-def warning(msg):
-    # type: (tp.Text) -> None
+def warning(msg, *args, **kwargs):
+    # type: (tp.Text, *tp.Any, **tp.Any) -> None
     """
-    Writes info level msg to the logger.
+    Writes warning level msg to the logger.
 
     :param msg: The message that will be written to the log.
     """
     if _logger is not None:
-        _logger.warning(msg)
+        _logger.warning(msg, *args, **kwargs)
 
 
 def deprecation(msg):
@@ -293,11 +293,24 @@ def deprecation(msg):
     warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
-def exception(msg):
+def exception(msg, *args, **kwargs):
+    # type: (tp.Text, *tp.Any, **tp.Any) -> None
+    """
+    Writes error level msg to the logger with exception stack trace.
+
+    :param msg: The message that will be written to the log.
+    """
+
     if _logger is not None:
-        _logger.exception(msg)
+        _logger.exception(msg, *args, **kwargs)
 
 
-def error(msg):
+def error(msg, *args, **kwargs):
+    # type: (tp.Text, *tp.Any, **tp.Any) -> None
+    """
+    Writes error level msg to the logger.
+
+    :param msg: The message that will be written to the log.
+    """
     if _logger is not None:
-        _logger.error(msg)
+        _logger.error(msg, *args, **kwargs)

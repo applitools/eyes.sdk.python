@@ -107,11 +107,11 @@ class _EyesSwitchTo(object):
         if not self._driver.is_mobile_app:
             self.frame(frame_reference)
             cur_frame = self._driver.frame_chain.peek
-
-        yield cur_frame
-
-        if not self._driver.is_mobile_app:
-            self.parent_frame()
+        try:
+            yield cur_frame
+        finally:
+            if not self._driver.is_mobile_app:
+                self.parent_frame()
 
     @contextlib.contextmanager
     def frames_and_back(self, frame_chain):
@@ -121,11 +121,11 @@ class _EyesSwitchTo(object):
         if not self._driver.is_mobile_app:
             self.frames(frame_chain)
             cur_frame = self._driver.frame_chain.peek
-
-        yield cur_frame
-
-        if not self._driver.is_mobile_app:
-            self.frames(origin_fc)
+        try:
+            yield cur_frame
+        finally:
+            if not self._driver.is_mobile_app:
+                self.frames(origin_fc)
 
     def frame(self, frame_reference):
         # type: (FrameReference) -> None
