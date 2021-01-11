@@ -1,4 +1,4 @@
-## [vNext]
+## [4.15.0] - 2021-01-11
 ### Added
 - Concurrency version 2 protocol optimizations [Trello 2368](https://trello.com/c/0qi2c0jW)
 - Retry on dom-snapshot frame capture error [Trello 2212](https://trello.com/c/iBY0LLki)
