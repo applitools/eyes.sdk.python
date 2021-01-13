@@ -14,6 +14,11 @@ from logging import Logger
 from typing import Text
 
 import attr
+import structlog
+from structlog import BoundLoggerBase, PrintLogger, BoundLogger, PrintLoggerFactory
+
+from structlog.stdlib import ProcessorFormatter
+from structlog.processors import StackInfoRenderer
 
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
@@ -168,76 +173,61 @@ class _Logger(object):
             self._logger.warning(msg, *args, **kwargs)
 
 
-class StdoutLogger(_Logger):
-    """
-    A simple logger class for printing to STDOUT.
-    """
-
-    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
-        # type: (tp.Text, int) -> None
-        """
-        Ctor.
-
-        :param name: The logger name.
-        :param level: The log level (default is logging.DEBUG).
-        """
-        handler_factory = functools.partial(logging.StreamHandler, sys.stdout)
-        super(StdoutLogger, self).__init__(
-            name, level, handler_factory, _DEFAULT_EYES_FORMATTER
-        )
-
-
-class FileLogger(_Logger):
-    """
-    A simple logger class for outputting log messages to a file
-    """
-
-    def __init__(
-        self,
-        filename="eyes.log",
-        mode="a",
-        encoding=None,
-        delay=0,
-        name=_DEFAULT_EYES_LOGGER_NAME,
-        level=_DEFAULT_LOGGER_LEVEL,
-    ):
-        """
-        Ctor.
-
-        :param filename: The name of this file to which logs should be written.
-        :param mode: The mode in which the log file is opened
-                     ('a' for appending, 'w' for overwrite).
-        :param encoding: The encoding in which logs will be written to the file.
-        :param delay: If True, file will not be opened until the first log message
-                      is emitted.
-        :param name: The logger name.
-        :param level: The log level (e.g., logging.DEBUG)
-        """
-        handler_factory = functools.partial(
-            logging.FileHandler, filename, mode, encoding, delay
-        )
-        super(FileLogger, self).__init__(
-            name, level, handler_factory, _DEFAULT_EYES_FORMATTER
-        )
-
-
-class NullLogger(_Logger):
+@attr.s
+class NullLogger(object):
     """
     A simple logger class which does nothing (log messages are ignored).
+
+    :param name: The logger name.
+    :param level: The log level (e.g., logging.DEBUG)
     """
 
-    def __init__(self, name=_DEFAULT_EYES_LOGGER_NAME, level=_DEFAULT_LOGGER_LEVEL):
-        """
-        Ctor.
+    name = attr.ib(default=_DEFAULT_EYES_LOGGER_NAME)  # type: Text
+    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
 
-        :param name: The logger name.
-        :param level: The log level (e.g., logging.DEBUG).
-        """
-        super(NullLogger, self).__init__(name, level)
+
+@attr.s
+class StdoutLogger(object):
+    """
+    A simple logger class for printing to STDOUT.
+
+    :param name: The logger name.
+    :param level: The log level (e.g., logging.DEBUG)
+    """
+
+    name = attr.ib(default=_DEFAULT_EYES_LOGGER_NAME)  # type: Text
+    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
+
+
+@attr.ib
+class FileLogger(object):
+    """
+    A simple logger class for outputting log messages to a file
+
+    :param filename: The name of this file to which logs should be written.
+    :param mode: The mode in which the log file is opened
+                 ('a' for appending, 'w' for overwrite).
+    :param encoding: The encoding in which logs will be written to the file.
+    :param delay: If True, file will not be opened until the first log message
+                  is emitted.
+    :param name: The logger name.
+    :param level: The log level (e.g., logging.DEBUG)
+    """
+
+    filename = attr.ib(default="eyes.log")
+    mode = attr.ib(default="a")
+    encoding = attr.ib(default=None)
+    delay = attr.ib(default=0)
+    name = attr.ib(default=_DEFAULT_EYES_LOGGER_NAME)  # type: Text
+    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
 
 
 # Holds the actual logger after open is called.
-_logger = None  # type: tp.Optional[_Logger]
+_logger_origin = _Logger()  # type: _Logger
+_logger_origin.set_handler(NullLogger())
+_logger = structlog.wrap_logger(
+    _logger_origin, wrapper_class=structlog.BoundLogger
+)  # type: structlog.BoundLoggerBase
 
 
 def set_logger(logger=None):
@@ -247,12 +237,17 @@ def set_logger(logger=None):
 
     :param logger: The logger to use.
     """
-    global _logger
-    if _logger is not None and _logger.is_opened:
-        _logger.close()
+    global _logger, _logger_origin
+    if _logger_origin.is_opened:
+        _logger_origin.close()
     if logger is not None and not logger.is_opened:
         logger.open()
-    _logger = logger
+    _logger_origin = logger
+    _logger = structlog.wrap_logger(logger, wrapper_class=structlog.BoundLogger)
+
+
+def get_logger():
+    return _logger
 
 
 def info(msg, *args, **kwargs):
