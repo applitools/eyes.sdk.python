@@ -27,7 +27,7 @@ install_requires = [
     "eyes-common=={}".format(get_version("core")),
     "attrs>=19.2.0,<20",
     "requests>=2.22.0",
-    "structlog==19.2.0",
+    "structlog<=20.1.0",
 ]
 if sys.version_info[:2] <= (2, 7):
     install_requires.append("Pillow >= 5.0.0,<7.0.0")
