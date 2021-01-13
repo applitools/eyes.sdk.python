@@ -11,6 +11,7 @@ from time import time
 import attr
 
 from applitools.common import TestResults, TestResultsSummary, logger
+from applitools.common.client_event import ClientEvent, TraceLevel
 from applitools.common.utils import datetime_utils, iteritems, json_utils
 from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
@@ -244,5 +245,5 @@ class VisualGridRunner(EyesRunner):
             # ... other properties like node version, os, architecture, etc.
         }
         server_connector.send_logs(
-            logger.ClientEvent(logger.TraceLevel.Notice, json_utils.to_json(message))
+            ClientEvent(TraceLevel.Notice, json_utils.to_json(message))
         )
