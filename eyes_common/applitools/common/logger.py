@@ -3,33 +3,21 @@ Logs handling.
 """
 from __future__ import absolute_import
 
-import functools
-import json
 import logging
-import os
+import logging.config
 import sys
 import typing as tp
 import warnings
-from enum import Enum
-from logging import Logger
 from typing import Text
 
 import attr
 import structlog
 import structlog.dev
-from structlog import BoundLogger, BoundLoggerBase, PrintLogger, PrintLoggerFactory
-from structlog.processors import StackInfoRenderer
-from structlog.stdlib import ProcessorFormatter
 
 from applitools.common.utils.general_utils import get_env_with_prefix
-from applitools.common.utils.json_utils import JsonInclude
-
-_DEFAULT_EYES_FORMATTER = logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(threadName)-9s) %(name)s: %(message)s"
-)
-_DEFAULT_LOGGER_LEVEL = int(get_env_with_prefix("LOGGER_LEVEL", logging.INFO))
 
 __all__ = ("StdoutLogger", "FileLogger", "NullLogger")
+_DEFAULT_HANDLER_LEVEL = int(get_env_with_prefix("LOGGER_LEVEL", logging.INFO))
 
 
 @attr.s
@@ -42,7 +30,7 @@ class NullLogger(object):
     """
 
     name = attr.ib(default=None)
-    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
+    level = attr.ib(default=_DEFAULT_HANDLER_LEVEL)  # type: int
 
     def configure(self, std_logger):
         # type: (logging.Logger) -> None
@@ -59,12 +47,18 @@ class StdoutLogger(object):
     """
 
     name = attr.ib(default=None)
-    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
+    level = attr.ib(default=_DEFAULT_HANDLER_LEVEL)  # type: int
 
     def configure(self, std_logger):
         # type: (logging.Logger) -> None
-        std_logger.addHandler(logging.StreamHandler(sys.stdout))
-        std_logger.setLevel(self.level)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(self.level)
+        handler.setFormatter(
+            structlog.stdlib.ProcessorFormatter(
+                structlog.dev.ConsoleRenderer(), _pre_chain
+            )
+        )
+        std_logger.addHandler(handler)
 
 
 @attr.s
@@ -87,32 +81,20 @@ class FileLogger(object):
     encoding = attr.ib(default=None)
     delay = attr.ib(default=0)
     name = attr.ib(default=None)
-    level = attr.ib(default=_DEFAULT_LOGGER_LEVEL)  # type: int
+    level = attr.ib(default=_DEFAULT_HANDLER_LEVEL)  # type: int
 
     def configure(self, std_logger):
         # type: (logging.Logger) -> None
-        std_logger.addHandler(
-            logging.FileHandler(self.filename, self.mode, self.encoding, self.delay)
+        handler = logging.FileHandler(
+            self.filename, self.mode, self.encoding, self.delay
         )
-        std_logger.setLevel(self.level)
-
-
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S.%f", utc=False),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.dev.set_exc_info,
-        structlog.dev.ConsoleRenderer(colors=False),
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-)
-
-_logger = structlog.get_logger().bind()
+        handler.setLevel(self.level)
+        handler.setFormatter(
+            structlog.stdlib.ProcessorFormatter(
+                structlog.processors.JSONRenderer(), _pre_chain
+            )
+        )
+        std_logger.addHandler(handler)
 
 
 def set_logger(logger=None):
@@ -126,6 +108,29 @@ def deprecation(msg):
     warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
+_timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S.%f", utc=False)
+_pre_chain = [
+    structlog.stdlib.add_log_level,
+    _timestamper,
+]
+structlog.configure(
+    processors=_pre_chain
+    + [
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+# Allow everything so handlers can filter on their levels
+logging.getLogger(__name__).setLevel(logging.DEBUG)
+
+_logger = structlog.get_logger().bind()
 bind = _logger.bind
 info = _logger.info
 debug = _logger.debug
