@@ -6,6 +6,7 @@ from __future__ import absolute_import
 import logging
 import logging.config
 import sys
+import threading
 import typing as tp
 import warnings
 from typing import Text
@@ -54,9 +55,7 @@ class StdoutLogger(object):
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(self.level)
         handler.setFormatter(
-            structlog.stdlib.ProcessorFormatter(
-                structlog.dev.ConsoleRenderer(), _pre_chain
-            )
+            structlog.stdlib.ProcessorFormatter(ConsoleRenderer(), _pre_chain)
         )
         std_logger.addHandler(handler)
 
@@ -97,6 +96,14 @@ class FileLogger(object):
         std_logger.addHandler(handler)
 
 
+class ConsoleRenderer(structlog.dev.ConsoleRenderer):
+    def __call__(self, logger, name, event_dict):
+        return "{} {}".format(
+            event_dict.pop("thread_name", ""),
+            super(ConsoleRenderer, self).__call__(logger, name, event_dict),
+        )
+
+
 def set_logger(logger=None):
     # type: (tp.Union[StdoutLogger, FileLogger, NullLogger]) -> None
     std_logger = logging.getLogger(__name__)
@@ -108,10 +115,16 @@ def deprecation(msg):
     warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
+def _add_thread_name(_, __, event_dict):
+    event_dict["thread_name"] = threading.current_thread().name
+    return event_dict
+
+
 _timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S.%f", utc=False)
 _pre_chain = [
     structlog.stdlib.add_log_level,
     _timestamper,
+    _add_thread_name,
 ]
 structlog.configure(
     processors=_pre_chain
