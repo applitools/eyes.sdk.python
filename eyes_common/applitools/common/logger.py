@@ -37,7 +37,9 @@ class StdoutLogger(object):
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(self.level)
         handler.setFormatter(
-            structlog.stdlib.ProcessorFormatter(ConsoleRenderer(), _pre_chain)
+            structlog.stdlib.ProcessorFormatter(
+                structlog.dev.ConsoleRenderer(), _pre_chain
+            )
         )
         std_logger.addHandler(handler)
 
@@ -78,14 +80,6 @@ class FileLogger(object):
         std_logger.addHandler(handler)
 
 
-class ConsoleRenderer(structlog.dev.ConsoleRenderer):
-    def __call__(self, logger, name, event_dict):
-        return "{} {}".format(
-            event_dict.pop("thread_name", ""),
-            super(ConsoleRenderer, self).__call__(logger, name, event_dict),
-        )
-
-
 def set_logger(logger=None):
     # type: (tp.Union[StdoutLogger, FileLogger]) -> None
     std_logger = logging.getLogger(__name__)
@@ -98,7 +92,7 @@ def deprecation(msg):
 
 
 def _add_thread_name(_, __, event_dict):
-    event_dict["thread_name"] = threading.current_thread().name
+    event_dict["_thread_name"] = threading.current_thread().name
     return event_dict
 
 
