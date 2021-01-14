@@ -125,7 +125,7 @@ class VisualGridRunner(EyesRunner):
 
     def aggregate_result(self, test, test_result):
         # type: (RunningTest, TestResults) -> None
-        logger.debug(
+        self._logger.debug(
             "aggregate_result({}, {}) called".format(test.test_uuid, test_result)
         )
         self._all_test_results[test] = test_result
@@ -133,7 +133,7 @@ class VisualGridRunner(EyesRunner):
     def open(self, eyes):
         # type: (VisualGridEyes) -> None
         self.all_eyes.append(eyes)
-        logger.debug("VisualGridRunner.open(%s)" % eyes)
+        self._logger.debug("VisualGridRunner.open()", eyes_id=id(eyes))
         if not self._runner_started_log_sent:
             self._runner_started_log_sent = True
             self._send_runner_started_log_message(eyes.server_connector)
@@ -151,21 +151,21 @@ class VisualGridRunner(EyesRunner):
         return self._parallel_tests
 
     def _run(self):
-        logger.debug("VisualGridRunner.run()")
+        self._logger.debug("VisualGridRunner.run()")
         for test_queue in self._get_parallel_tests_by_round_robin():
             try:
                 task = test_queue.popleft()
-                logger.debug("VisualGridRunner got task %s" % task)
+                self._logger.debug("VisualGridRunner got task %s" % task)
             except IndexError:
                 datetime_utils.sleep(10, msg="Waiting for task", verbose=False)
                 continue
             future = self._executor.submit(task)
             self._future_to_task[future] = task
-        logger.debug("VisualGridRunner.run() done")
+        self._logger.debug("VisualGridRunner.run() done")
 
     def _stop(self):
         # type: () -> None
-        logger.debug("VisualGridRunner.stop()")
+        self._logger.debug("VisualGridRunner.stop()")
         while any(r.state != COMPLETED for r in self._get_all_running_tests()):
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
@@ -173,10 +173,10 @@ class VisualGridRunner(EyesRunner):
             task = self._future_to_task[future]
             try:
                 future.result()
-            except Exception as exc:
-                logger.exception("%r generated an exception: %s" % (task, exc))
+            except Exception:
+                self._logger.exception("Task generated an exception", task=task)
             else:
-                logger.debug("%s task ran" % task)
+                self._logger.debug("Task done", task=task)
 
         self.put_cache.shutdown()
         self._resource_collection_service.shutdown()
@@ -184,7 +184,7 @@ class VisualGridRunner(EyesRunner):
         self._executor.shutdown()
         self._thread.join()
         self.rendering_service.shutdown()
-        logger.debug("VisualGridRunner.stop() done")
+        self._logger.debug("VisualGridRunner.stop() done")
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
@@ -205,11 +205,7 @@ class VisualGridRunner(EyesRunner):
             self._last_states_logging_time = time()
             # print states every 15 seconds
             counter = Counter(t.state for t in tests)
-            logger.info(
-                "Current tests states: \n{}".format(
-                    "\n".join(["\t{} - {}".format(t, c) for t, c in iteritems(counter)])
-                )
-            )
+            self._logger.info("Current tests states", **counter)
         return tests
 
     def _get_n_not_completed_tests(self, n):
