@@ -6,7 +6,7 @@ from applitools.common.utils import ABC, iteritems
 
 class EyesRunner(ABC):
     def __init__(self):
-        self._logger = logger.bind(runner_id=id(self))
+        self.logger = logger.bind(runner_id=id(self))
 
     @abstractmethod
     def _get_all_test_results_impl(self, should_raise_exception):
@@ -14,9 +14,9 @@ class EyesRunner(ABC):
 
     def get_all_test_results(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
-        self._logger.debug(
+        self.logger.debug(
             "get_all_test_results called", should_raise_exception=should_raise_exception
         )
         summary = self._get_all_test_results_impl(should_raise_exception)
-        self._logger.debug(str(summary))
+        self.logger.debug(str(summary))
         return summary
