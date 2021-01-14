@@ -89,6 +89,7 @@ class VisualGridEyes(object):
         self._test_uuid = None
         self.server_connector = ServerConnector()  # type: ServerConnector
         self.resource_collection_queue = []  # type: List[ResourceCollectionTask]
+        self.logger = runner.logger.bind(eyes_id=id(self))
 
     @property
     def is_open(self):
@@ -148,7 +149,7 @@ class VisualGridEyes(object):
         # type: (EyesWebDriver) -> EyesWebDriver
         self._test_uuid = uuid.uuid4()
         argument_guard.not_none(driver)
-        logger.debug("VisualGridEyes.open(%s)" % self.configure)
+        self.logger.debug("VisualGridEyes.open()", config=self.configure)
 
         self._driver = driver
         self._set_viewport_size()
@@ -177,13 +178,13 @@ class VisualGridEyes(object):
             test.becomes_not_opened()
         self._is_opened = True
         self.vg_manager.open(self)
-        logger.info("VisualGridEyes opening {} tests...".format(len(self.test_list)))
+        self.logger.info("VisualGridEyes opening", tests_count=len(self.test_list))
         return driver
 
     def get_script_result(self, dont_fetch_resources):
         # type: (bool) -> Dict
-        logger.debug(
-            "get_script_result(dont_fetch_resources={})".format(dont_fetch_resources)
+        self.logger.debug(
+            "get_script_result call", dont_fetch_resources=dont_fetch_resources
         )
         try:
             return dom_snapshot_script.create_dom_snapshot(
@@ -209,16 +210,18 @@ class VisualGridEyes(object):
         # type: (SeleniumCheckSettings) -> None
         argument_guard.is_a(check_settings, CheckSettings)
         name = check_settings.values.name
-        logger.debug("VisualGridEyes.check(%s, %s)" % (name, check_settings))
+        self.logger.debug(
+            "VisualGridEyes.check", name=name, check_settings=check_settings
+        )
         self._try_set_target_selector(check_settings)
 
         self.configure.send_dom = check_settings.values.send_dom
 
         check_settings = self._update_check_settings(check_settings)
-        logger.info("check('{}', check_settings) - begin".format(name))
+        self.logger.info("check begin", name=name)
 
         region_xpaths = self.get_region_xpaths(check_settings)
-        logger.info("region_xpaths: {}".format(region_xpaths))
+        self.logger.info("check region xpaths", region_xpaths=region_xpaths)
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
@@ -228,11 +231,12 @@ class VisualGridEyes(object):
 
         try:
             script_result = self.get_script_result(dont_fetch_resources)
-            logger.debug("Cdt length: {}".format(len(script_result["cdt"])))
-            logger.debug(
-                "Blobs urls: {}".format([b["url"] for b in script_result["blobs"]])
+            self.logger.debug(
+                "Got script result",
+                cdt_len=len(script_result["cdt"]),
+                blob_urls=[b["url"] for b in script_result["blobs"]],
+                resource_urls=script_result["resourceUrls"],
             )
-            logger.debug("Resources urls: {}".format(script_result["resourceUrls"]))
             source = eyes_selenium_utils.get_check_source(self.driver)
             checks = [
                 test.check(
@@ -247,14 +251,14 @@ class VisualGridEyes(object):
                 check_settings, region_xpaths, running_tests, script_result, checks
             )
             self.vg_manager.add_resource_collection_task(resource_collection_task)
-        except Exception as e:
-            logger.exception(e)
+        except Exception:
+            self.logger.exception("Check failure")
             for test in running_tests:
                 if test.state != TESTED:
                     # already aborted or closed
                     test.abort()
                     test.becomes_tested()
-        logger.info("added check tasks  {}".format(check_settings))
+        self.logger.info("added check tasks", check_settings=check_settings)
 
     def _resource_collection_task(
         self,
@@ -316,7 +320,7 @@ class VisualGridEyes(object):
         # type: (Optional[bool]) -> Optional[TestResults]
         if not self.test_list:
             return TestResults(status="Failed")
-        logger.debug("VisualGridEyes.close()\n\t test_list %s" % self.test_list)
+        self.logger.debug("VisualGridEyes.close()", test_list=self.test_list)
         self.close_async()
 
         wait_till_tests_completed(self.test_list)
@@ -481,7 +485,7 @@ class VisualGridEyes(object):
         try:
             eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
         except Exception as e:
-            logger.exception(e)
+            self.logger.exception("set_viewport_size failure")
             raise_from(EyesError("Failed to set viewport size"), e)
 
     @staticmethod
