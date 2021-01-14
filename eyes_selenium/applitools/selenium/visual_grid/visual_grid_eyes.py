@@ -171,6 +171,7 @@ class VisualGridEyes(object):
                 self.configure.clone(),
                 browser_info,
                 self.vg_manager.rendering_service,
+                self.logger,
             )
             test.on_results_received(self.vg_manager.aggregate_result)
             test.test_uuid = self._test_uuid
@@ -277,6 +278,7 @@ class VisualGridEyes(object):
             name="VisualGridEyes.check-resource_collection {} - {}".format(
                 short_description, tag
             ),
+            logger=self.logger,
             script=script_result,
             resource_cache=self.vg_manager.resource_cache,
             put_cache=self.vg_manager.put_cache,
