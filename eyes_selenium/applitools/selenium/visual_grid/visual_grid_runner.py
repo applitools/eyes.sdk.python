@@ -12,7 +12,7 @@ import attr
 
 from applitools.common import TestResults, TestResultsSummary, logger
 from applitools.common.client_event import ClientEvent, TraceLevel
-from applitools.common.utils import datetime_utils, iteritems, json_utils
+from applitools.common.utils import datetime_utils, json_utils
 from applitools.common.utils.compat import Queue
 from applitools.core import EyesRunner
 from applitools.selenium.visual_grid.rendreing_service import RenderingService
@@ -126,7 +126,7 @@ class VisualGridRunner(EyesRunner):
     def aggregate_result(self, test, test_result):
         # type: (RunningTest, TestResults) -> None
         self._logger.debug(
-            "aggregate_result({}, {}) called".format(test.test_uuid, test_result)
+            "aggregate_result called", test_id=test.test_uuid, test_result=test_result
         )
         self._all_test_results[test] = test_result
 
@@ -155,7 +155,7 @@ class VisualGridRunner(EyesRunner):
         for test_queue in self._get_parallel_tests_by_round_robin():
             try:
                 task = test_queue.popleft()
-                self._logger.debug("VisualGridRunner got task %s" % task)
+                self._logger.debug("VisualGridRunner got task", task=task)
             except IndexError:
                 datetime_utils.sleep(10, msg="Waiting for task", verbose=False)
                 continue
