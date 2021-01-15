@@ -113,10 +113,11 @@ def _format_exc_stack_trace_with_vars(_, __, event_dict):
             pass
         elif exc_info:
             exc_info = sys.exc_info()
-        if exc_info[2] is not None:
+        try:
             match = _frames_regex.search(cgitb.text(exc_info))
-            if match:
-                event_dict["stack_trace_with_vars"] = match[1]
+            event_dict["stack_trace_with_vars"] = match[1]
+        except Exception as e:
+            event_dict["stack_trace_with_vars"] = "Collection failure: {}".format(e)
     return event_dict
 
 
