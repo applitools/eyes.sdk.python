@@ -3,6 +3,7 @@ Logs handling.
 """
 from __future__ import absolute_import
 
+import cgitb
 import logging
 import logging.config
 import sys
@@ -18,6 +19,7 @@ from applitools.common.utils.general_utils import get_env_with_prefix
 
 __all__ = ("StdoutLogger", "FileLogger")
 _DEFAULT_HANDLER_LEVEL = int(get_env_with_prefix("LOGGER_LEVEL", logging.INFO))
+_IRRELEVANT_TEXT = "function calls leading up to the error, in the order they occurred."
 
 
 @attr.s
@@ -96,6 +98,26 @@ def _add_thread_name(_, __, event_dict):
     return event_dict
 
 
+def _format_exc_info(_, __, event_dict):
+    exc_info = event_dict.pop("exc_info", None)
+    if exc_info:
+        if sys.version_info[0] >= 3 and isinstance(exc_info, BaseException):
+            exc_info = (exc_info.__class__, exc_info, exc_info.__traceback__)
+        elif isinstance(exc_info, tuple):
+            pass
+        elif exc_info:
+            exc_info = sys.exc_info()
+        if exc_info[2] is None:
+            formatted = repr(exc_info[1])
+        else:
+            formatted = cgitb.text(exc_info)
+            formatted = formatted[
+                formatted.find(_IRRELEVANT_TEXT) + len(_IRRELEVANT_TEXT) :
+            ]
+        event_dict["exception"] = formatted.strip()
+    return event_dict
+
+
 _timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S.%f", utc=False)
 _pre_chain = [
     structlog.stdlib.add_log_level,
@@ -107,7 +129,7 @@ structlog.configure(
     + [
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
+        _format_exc_info,
         structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
     context_class=dict,
