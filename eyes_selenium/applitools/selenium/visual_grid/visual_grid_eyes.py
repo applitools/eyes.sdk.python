@@ -4,9 +4,8 @@ import uuid
 from copy import deepcopy
 
 import attr
-from selenium.common.exceptions import TimeoutException
 
-from applitools.common import EyesError, TestResults, logger
+from applitools.common import EyesError, TestResults, deprecated
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     JobInfo,
@@ -15,7 +14,7 @@ from applitools.common.ultrafastgrid import (
     RenderRequest,
     VisualGridSelector,
 )
-from applitools.common.utils import argument_guard, datetime_utils
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
@@ -350,8 +349,8 @@ class VisualGridEyes(object):
         self._is_opened = False
         self.abort_async()
 
+    @deprecated.attribute("use `abort()` instead")
     def abort_if_not_closed(self):
-        logger.deprecation("Use `abort()` instead")
         self.abort()
 
     def _update_check_settings(self, check_settings):
