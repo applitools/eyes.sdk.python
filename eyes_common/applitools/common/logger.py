@@ -10,7 +10,6 @@ import re
 import sys
 import threading
 import typing as tp
-import warnings
 
 import attr
 import structlog
@@ -111,11 +110,6 @@ def set_logger(logger=None):
     # type: (tp.Union[StdoutLogger, FileLogger]) -> None
     std_logger = logging.getLogger(__name__)
     logger.configure(std_logger)
-
-
-def deprecation(msg):
-    # type: (tp.Text) -> None
-    warnings.warn(msg, stacklevel=2, category=DeprecationWarning)
 
 
 def _add_thread_name(_, __, event_dict):
