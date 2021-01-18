@@ -1,4 +1,4 @@
-from . import logger
+from . import deprecated
 from .ultrafastgrid import *  # noqa
 
-logger.deprecation("Use `applitools.common.ultrafastgrid` package instead")
+deprecated.module(__name__, "please use applitools.common.ultrafastgrid module instead")
