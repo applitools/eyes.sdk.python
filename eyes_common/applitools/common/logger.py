@@ -28,17 +28,36 @@ _frames_regex = re.compile(
 )
 
 
-@attr.s
 class StdoutLogger(object):
     """
     A simple logger class for printing to STDOUT.
-
-    :param name: unused
-    :param level: The log level (e.g., logging.DEBUG)
     """
 
-    name = attr.ib(default=None)
-    level = attr.ib(default=_DEFAULT_HANDLER_LEVEL)  # type: int
+    @tp.overload
+    def __init__(self, is_verbose):
+        # type: (bool) -> None
+        """
+        :param is_verbose: enables logging DEBUG messages
+        """
+        pass
+
+    @tp.overload
+    def __init__(self, name, level):
+        # type: (tp.Text, int) -> None
+        """
+        :param name: unused
+        :param level: log level (e.g. logging.WARNING)
+        """
+        pass
+
+    def __init__(self, name=None, level=_DEFAULT_HANDLER_LEVEL, is_verbose=None):
+        is_verbose = is_verbose if is_verbose is not None else name
+        if is_verbose is True:
+            self.level = logging.DEBUG
+        elif is_verbose is False:
+            self.level = logging.INFO
+        else:
+            self.level = level
 
     def configure(self, std_logger):
         # type: (logging.Logger) -> None
