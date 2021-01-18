@@ -165,7 +165,6 @@ class VisualGridRunner(EyesRunner):
 
     def _stop(self):
         # type: () -> None
-        self.logger.debug("VisualGridRunner.stop()")
         while any(r.state != COMPLETED for r in self._get_all_running_tests()):
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
@@ -175,8 +174,6 @@ class VisualGridRunner(EyesRunner):
                 future.result()
             except Exception:
                 self.logger.exception("Task generated an exception", task=task)
-            else:
-                self.logger.debug("Task done", task=task)
 
         self.put_cache.shutdown()
         self._resource_collection_service.shutdown()
@@ -184,7 +181,6 @@ class VisualGridRunner(EyesRunner):
         self._executor.shutdown()
         self._thread.join()
         self.rendering_service.shutdown()
-        self.logger.debug("VisualGridRunner.stop() done")
 
     def _get_all_test_results_impl(self, should_raise_exception=True):
         # type: (bool) -> TestResultsSummary
