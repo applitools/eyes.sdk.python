@@ -41,3 +41,6 @@ def attribute(recommendation):
         return wrapped
 
     return wrapper
+
+
+warnings.filterwarnings("default", module="applitools")
