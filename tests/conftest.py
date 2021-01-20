@@ -6,6 +6,11 @@ import pytest
 
 __all__ = ("image",)
 
+import structlog
+from _pytest import logging
+
+from applitools.common import logger
+
 
 @pytest.fixture
 def image():
@@ -43,3 +48,16 @@ def fake_httpserver():
     )
     yield
     server.terminate()
+
+
+class StructlogLoggingPlugin(logging.LoggingPlugin):
+    """Replacement logging plugin that uses structlog console renderer"""
+
+    def _create_formatter(self, *args, **kwargs):
+        return structlog.stdlib.ProcessorFormatter(
+            structlog.dev.ConsoleRenderer(), logger._pre_chain
+        )
+
+
+def pytest_configure(config):
+    config.pluginmanager.get_plugin("logging").LoggingPlugin = StructlogLoggingPlugin
