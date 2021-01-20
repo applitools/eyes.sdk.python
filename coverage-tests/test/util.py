@@ -1,8 +1,11 @@
-import os
 import json
+import os
+
 import requests
 from pip._vendor.retrying import retry
+
 from applitools.common.utils import urlencode, urlsplit, urlunsplit
+
 
 # @retry(exception=requests.HTTPError)
 def get_test_info(api_key, results):
@@ -23,7 +26,12 @@ def get_dom(results, dom_id):
     accountId = urlsplit_app_session_url.query
     url = urlunsplit(
         urlsplit_app_session_url._replace(
-            path="/api/images/dom/" + dom_id + "/", query = accountId + "&" + urlencode({"apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None), "format": "json"})
+            path="/api/images/dom/" + dom_id + "/",
+            query=accountId
+            + "&"
+            + urlencode(
+                {"apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None), "format": "json"}
+            ),
         )
     )
     res = requests.get(url)
