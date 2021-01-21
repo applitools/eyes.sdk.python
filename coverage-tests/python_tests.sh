@@ -4,7 +4,7 @@ if [ $? -ne 0 ]; then
     RESULT=1
     echo "npm install have failed"
 fi
-npm run python:generate
+npm run python:generate:local
 if [ $? -ne 0 ]; then
     RESULT=1
     echo "npm run python:generate have failed"
