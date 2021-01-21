@@ -1,4 +1,4 @@
-from applitools.common import Configuration, logger
+from applitools.common import Configuration, deprecated
 
 
 class EyesConfigurationMixin(object):
@@ -36,14 +36,11 @@ class EyesConfigurationMixin(object):
         return self._config_provider.configure
 
     @property
+    @deprecated.attribute("use `configure` instead")
     def configuration(self):
-        logger.deprecation("`configuration` is deprecated. Use `configure` instead")
         return self.configure
 
     @configuration.setter
+    @deprecated.attribute("use `set_configuration` instead")
     def configuration(self, configuration):
-        logger.deprecation(
-            "Assign to `configuration` is deprecated. "
-            "Use `set_configuration` instead"
-        )
         self.set_configuration(configuration)

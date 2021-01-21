@@ -1,9 +1,8 @@
 from enum import Enum
-from typing import Text
 
 import attr
 
-from applitools.common import logger
+from applitools.common import deprecated
 from applitools.common.utils.json_utils import JsonInclude
 
 
@@ -78,7 +77,7 @@ class SessionAccessibilityStatus(object):
         self.status = AccessibilityStatus(status)
 
     @property
+    @deprecated.attribute("use `version` instead")
     def guidelines_version(self):
         # type: () -> AccessibilityGuidelinesVersion
-        logger.deprecation("Use `version` instead `guidelines_version`")
         return self.version

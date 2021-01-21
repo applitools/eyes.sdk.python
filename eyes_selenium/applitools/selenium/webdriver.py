@@ -10,7 +10,7 @@ from selenium.webdriver.remote.switch_to import SwitchTo
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 
-from applitools.common import RectangleSize, logger
+from applitools.common import RectangleSize, deprecated, logger
 from applitools.common.geometry import Point
 from applitools.common.utils import argument_guard, cached_property, image_utils
 from applitools.common.utils.compat import basestring
@@ -333,8 +333,8 @@ class EyesWebDriver(object):
         # type: () -> Optional[Text]
         return self._driver.desired_capabilities.get("platformVersion", None)
 
+    @deprecated.attribute("use `is_mobile_platform` property instead")
     def is_mobile_device(self):
-        logger.deprecation("Use `is_mobile_platform` property instead")
         return self.is_mobile_platform
 
     @property

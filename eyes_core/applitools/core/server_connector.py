@@ -14,6 +14,7 @@ from requests import Response
 from requests.packages import urllib3  # noqa
 
 from applitools.common import Region, RunningSession, logger
+from applitools.common.client_event import LogSessionsClientEvents
 from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
@@ -42,7 +43,7 @@ if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
     from uuid import UUID
 
-    from applitools.common.logger import ClientEvent
+    from applitools.common.client_event import ClientEvent
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -728,7 +729,7 @@ class ServerConnector(object):
         # type: (*ClientEvent) -> None
         # try once
         try:
-            events = json_utils.to_json(logger.LogSessionsClientEvents(client_events))
+            events = json_utils.to_json(LogSessionsClientEvents(client_events))
             self._com.request("post", self.API_SESSIONS_LOG, data=events)
         except Exception:
             logger.exception("send_logs failed")

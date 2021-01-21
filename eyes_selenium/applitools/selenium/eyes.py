@@ -4,7 +4,7 @@ import typing
 
 from appium.webdriver import Remote as AppiumWebDriver
 
-from applitools.common import EyesError, MatchResult, logger
+from applitools.common import EyesError, MatchResult, deprecated, logger
 from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
@@ -632,8 +632,8 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         else:
             return self._selenium_eyes.abort()
 
+    @deprecated.attribute("use `abort()` instead")
     def abort_if_not_closed(self):
-        logger.deprecation("Use `abort()` instead")
         self.abort()
 
     def _init_driver(self, driver):

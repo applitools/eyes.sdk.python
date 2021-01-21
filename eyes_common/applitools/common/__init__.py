@@ -38,7 +38,7 @@ from .geometry import (  # noqa
     Region,
     SubregionForStitching,
 )
-from .logger import FileLogger, NullLogger, StdoutLogger  # noqa
+from .logger import FileLogger, StdoutLogger  # noqa
 from .match import (  # noqa
     ExactMatchSettings,
     FloatingBounds,

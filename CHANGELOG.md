@@ -1,3 +1,9 @@
+## [vNext]
+### Added
+- StdoutLogger accepts true/false for debug/info levels [Trello 376](https://trello.com/c/1xzNhRlm)
+### Updated
+- Structured logging [Trello 2395](https://trello.com/c/NuhnOCD6)
+
 ## [4.15.0] - 2021-01-11
 ### Added
 - Concurrency version 2 protocol optimizations [Trello 2368](https://trello.com/c/0qi2c0jW)

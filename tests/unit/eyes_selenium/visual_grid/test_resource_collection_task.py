@@ -1,3 +1,4 @@
+from applitools.common import logger
 from applitools.selenium.visual_grid import ResourceCache, ResourceCollectionTask
 from tests.unit.eyes_core.test_server_connector import MockResponse
 
@@ -24,7 +25,7 @@ def test_cached_child_resources_get_into_render_request():
         "resourceUrls": ["https://a.com/1.css"],
     }
     cache = ResourceCache()
-    task = ResourceCollectionTask("A", "", cache, None, ConnectorMock, None)
+    task = ResourceCollectionTask("A", logger, "", cache, None, ConnectorMock, None)
 
     vg_dom1 = task.parse_frame_dom_resources(capture_result)
     assert set(vg_dom1.resources) == {
@@ -70,7 +71,7 @@ def test_recursive_resources_downloaded_once():
         "resourceUrls": ["https://a.com/1.css"],
     }
     cache = ResourceCache()
-    task = ResourceCollectionTask("A", "", cache, None, ConnectorMock, None)
+    task = ResourceCollectionTask("A", logger, "", cache, None, ConnectorMock, None)
 
     vg_dom1 = task.parse_frame_dom_resources(capture_result)
     assert ConnectorMock.call_count == 2

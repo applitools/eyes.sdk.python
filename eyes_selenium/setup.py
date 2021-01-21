@@ -32,6 +32,7 @@ install_requires = [
     "attrs>=19.2.0,<20",
     "transitions>=0.6,<=0.8.3",
     "lxml>=4.4,<5",
+    "structlog<=20.1.0",
 ]
 
 

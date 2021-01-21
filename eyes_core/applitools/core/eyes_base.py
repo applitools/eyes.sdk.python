@@ -5,7 +5,14 @@ import platform
 import typing
 import uuid
 
-from applitools.common import AppOutput, RectangleSize, Region, RunningSession, logger
+from applitools.common import (
+    AppOutput,
+    RectangleSize,
+    Region,
+    RunningSession,
+    deprecated,
+    logger,
+)
 from applitools.common.config import Configuration
 from applitools.common.errors import (
     DiffsFoundError,
@@ -464,8 +471,8 @@ class EyesBase(
             finally:
                 self._running_session = None
 
+    @deprecated.attribute("use `abort()` instead")
     def abort_if_not_closed(self):
-        logger.deprecation("Use `abort()` instead")
         self.abort()
 
     def open_base(

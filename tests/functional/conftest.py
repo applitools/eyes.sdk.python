@@ -33,7 +33,7 @@ try:
 except ImportError:
     from contextlib2 import ExitStack
 
-logger.set_logger(StdoutLogger())
+logger.set_logger(StdoutLogger(is_verbose=True))
 
 here = path.abspath(path.dirname(__file__))
 
