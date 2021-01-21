@@ -157,6 +157,7 @@ structlog.configure(
 
 # Allow everything so handlers can filter on their levels
 logging.getLogger(__name__).setLevel(logging.DEBUG)
+logging.getLogger(__name__).propagate = False
 
 _logger = structlog.get_logger().bind()
 bind = _logger.bind
