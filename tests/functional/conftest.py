@@ -8,9 +8,7 @@ from os import path
 import attr
 import mock
 import pytest
-import structlog
 import yaml
-from _pytest import logging
 
 from applitools.common import (
     BatchInfo,
@@ -399,16 +397,3 @@ def spy():
     make_spy.call = mock.call
     with exit_stack:
         yield make_spy
-
-
-class StructlogLoggingPlugin(logging.LoggingPlugin):
-    """Replacement logging plugin that uses structlog console renderer"""
-
-    def _create_formatter(self, *args, **kwargs):
-        return structlog.stdlib.ProcessorFormatter(
-            structlog.dev.ConsoleRenderer(), logger._pre_chain
-        )
-
-
-def pytest_configure(config):
-    config.pluginmanager.get_plugin("logging").LoggingPlugin = StructlogLoggingPlugin
