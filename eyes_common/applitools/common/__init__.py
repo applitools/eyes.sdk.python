@@ -21,7 +21,7 @@ from .accessibility import (  # noqa
 )
 from .app_output import AppOutput  # noqa
 from .capture import EyesScreenshot  # noqa
-from .config import BatchInfo, Configuration  # noqa
+from .config import BatchInfo, Configuration, ProxySettings  # noqa
 from .errors import (  # noqa
     CoordinatesTypeConversionError,
     DiffsFoundError,
