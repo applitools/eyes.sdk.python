@@ -8,6 +8,7 @@ from applitools.common import (
     Configuration,
     FailureReports,
     MatchLevel,
+    ProxySettings,
     Region,
     SessionType,
     StitchMode,
@@ -192,3 +193,33 @@ def test_config_cloning():
     assert id(conf._browsers_info[0]) != id(cloned_conf._browsers_info[0])
     assert id(conf.viewport_size) != id(cloned_conf.viewport_size)
     assert id(conf.visual_grid_options[0]) != id(cloned_conf.visual_grid_options[0])
+
+
+def test_proxy_settings_from_host():
+    ps = ProxySettings("localhost")
+
+    assert ps.host == "localhost"
+    assert ps.port == 8888
+    assert ps.username is None
+    assert ps.password is None
+    assert ps.scheme == "http"
+
+
+def test_proxy_settings_from_url():
+    ps = ProxySettings("https://user:password@127.0.0.1:8000")
+
+    assert ps.host == "127.0.0.1"
+    assert ps.port == 8000
+    assert ps.username == "user"
+    assert ps.password == "password"
+    assert ps.scheme == "https"
+
+
+def test_proxy_settings_from_url_override_port():
+    ps = ProxySettings("http://localhost", 8000)
+
+    assert ps.host == "localhost"
+    assert ps.port == 8000
+    assert ps.username is None
+    assert ps.password is None
+    assert ps.scheme == "http"

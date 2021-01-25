@@ -10,6 +10,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
+from applitools.common.utils.compat import urlparse
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
@@ -92,6 +93,31 @@ class BatchInfo(object):
         """
         del self.properties[:]
         return self
+
+
+class ProxySettings(object):
+    def __init__(
+        self,
+        host_or_url,  # type: Text
+        port=None,  # type: Optional[int]
+        username=None,  # type: Optional[Text]
+        password=None,  # type: Optional[Text]
+        scheme=None,  # type: Text
+    ):
+        # type: (...) -> None
+        if host_or_url.startswith("http://") or host_or_url.startswith("https://"):
+            parsed = urlparse(host_or_url)
+            self.host = parsed.hostname
+            self.port = port or parsed.port or 8888
+            self.username = username or parsed.username
+            self.password = password or parsed.password
+            self.scheme = scheme or parsed.scheme or "http"
+        else:
+            self.host = host_or_url
+            self.port = port or 8888
+            self.username = username
+            self.password = password
+            self.scheme = scheme or "http"
 
 
 @attr.s
