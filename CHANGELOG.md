@@ -3,6 +3,7 @@
 - StdoutLogger accepts true/false for debug/info levels [Trello 376](https://trello.com/c/1xzNhRlm)
 ### Updated
 - Structured logging [Trello 2395](https://trello.com/c/NuhnOCD6)
+- DOM snapshot script to *4.4.8* [Trello 1835](https://trello.com/c/OyWRWqJm)
 
 ## [4.15.0] - 2021-01-11
 ### Added
