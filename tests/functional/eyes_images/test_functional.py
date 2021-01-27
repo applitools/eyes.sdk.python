@@ -57,7 +57,7 @@ def test_check_region(eyes):
 
 def test_check_region_fluent(eyes):
     # type: (Eyes) -> None
-    eyes.open("images", "TestCheckRegion")
+    eyes.open("images", "TestCheckRegion_Fluent")
     eyes.check(
         Target.region(
             path.join(here, "resources/minions-800x500.jpg"),
