@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Region screenshots not working with images.Eyes [Trello 2432](https://trello.com/c/VYqhbSIJ)
+
 ## [4.15.1] - 2021-01-27
 ### Added
 - StdoutLogger accepts true/false for debug/info levels [Trello 376](https://trello.com/c/1xzNhRlm)
