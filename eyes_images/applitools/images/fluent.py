@@ -18,7 +18,7 @@ class ImagesCheckSettingsValues(CheckSettingsValues):
 @attr.s
 class ImagesCheckSettings(CheckSettings):
     values = attr.ib(
-        default=ImagesCheckSettingsValues()
+        factory=ImagesCheckSettingsValues
     )  # type: ImagesCheckSettingsValues
 
 
