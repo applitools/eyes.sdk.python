@@ -98,8 +98,15 @@ class Eyes(EyesBase):
         if self.configure.viewport_size is None:
             self.configure.viewport_size = RectangleSize.from_(image)
 
+        if check_settings.values.target_region:
+            region_provider = RegionProvider(check_settings.values.target_region)
+        else:
+            region_provider = NULL_REGION_PROVIDER
         return self._check_image(
-            NULL_REGION_PROVIDER, check_settings.values.name, False, check_settings
+            region_provider,
+            check_settings.values.name,
+            False,
+            check_settings,
         )
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
@@ -125,7 +132,7 @@ class Eyes(EyesBase):
             )
         )
         return self._check_image(
-            NULL_REGION_PROVIDER, tag, ignore_mismatch, Target.region(image, region)
+            RegionProvider(region), tag, ignore_mismatch, Target.region(image, region)
         )
 
     def _check_image(self, region_provider, name, ignore_mismatch, check_settings):
