@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import itertools
 import json
-import math
 import typing
 import uuid
 from threading import Condition
@@ -44,6 +43,7 @@ if typing.TYPE_CHECKING:
     from uuid import UUID
 
     from applitools.common.client_event import ClientEvent
+    from applitools.common.text_regions import OCRRegion, TextRegion, TextRegionSettings
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -750,3 +750,11 @@ class ServerConnector(object):
             ),
             params={"AccessToken": test_results.secret_token},
         ).raise_for_status()
+
+    def get_text_in_running_session_image(self, ocr_region):
+        # type: (OCRRegion) -> List[Text]
+        pass
+
+    def get_text_regions_in_running_session_image(self, text_region_settings):
+        # type: (TextRegionSettings) -> List[TextRegion]
+        pass
