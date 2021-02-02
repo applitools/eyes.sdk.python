@@ -127,3 +127,65 @@ def test_match_region_screenshot_location(driver, fake_connector_class):
     _, match_data = eyes.server_connector.calls["match_window"]
 
     assert match_data.app_output.location == Point(8, 2100)
+
+
+def test_match_frame_fully_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.frame(0).fully())
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(0, 0)
+
+
+def test_match_frame_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.frame(0))
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(58, 506)
+
+
+def test_match_frame_region_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.frame(0).region("#inner-frame-div"))
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(8, 8)
+
+
+def test_match_context_frame_window_fully_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    driver.switch_to.frame(0)
+    eyes.check(Target.window().fully())
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(0, 0)
+
+
+def test_match_context_frame_region_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    driver.switch_to.frame(0)
+    eyes.check(Target.region("#inner-frame-div"))
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(8, 8)
