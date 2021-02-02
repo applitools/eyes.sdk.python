@@ -955,6 +955,7 @@ class SeleniumEyes(EyesBase):
             elem_position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
+        elem_position_provider.add_data_attribute_to_element()
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
@@ -988,7 +989,7 @@ class SeleniumEyes(EyesBase):
                 size_and_borders.size["width"],
                 size_and_borders.size["height"],
             )
-
+            self.position_provider.add_data_attribute_to_element()
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(
                 region, Region.EMPTY(), self.position_provider
