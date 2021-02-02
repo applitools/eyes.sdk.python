@@ -62,7 +62,7 @@ def test_check_window_with_send_dom(eyes, driver):
         "Fluent - Window with Ignore region",
         Target.window().send_dom().use_dom().ignore_caret(),
     )
-    assert "data-applitools-scroll" in driver.page_source
+    assert "data-applitools-scroll" not in driver.page_source
     assert "data-applitools-original-overflow" in driver.page_source
     eyes.close()
 

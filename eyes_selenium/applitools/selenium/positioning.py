@@ -74,7 +74,7 @@ class SeleniumPositionProvider(PositionProvider):
             raise WebDriverException("Failed to extract entire size! \n{}".format(e))
         return RectangleSize(width=width, height=height)
 
-    def _add_data_attribute_to_element(self):
+    def add_data_attribute_to_element(self):
         # type: () -> None
         if not self._data_attribute_added:
             if hasattr(self, "_element"):
@@ -102,7 +102,6 @@ class ScrollPositionProvider(SeleniumPositionProvider):
         self._last_set_position = eyes_selenium_utils.parse_location_string(
             self._driver.execute_script(scroll_command, self._scroll_root_element)
         )
-        self._add_data_attribute_to_element()
         return self._last_set_position
 
     def get_current_position(self):
@@ -156,7 +155,6 @@ class CSSTranslatePositionProvider(SeleniumPositionProvider):
             self._scroll_root_element,
         )
         self._last_set_position = location.clone()
-        self._add_data_attribute_to_element()
         return self._last_set_position
 
     def get_state(self):
@@ -199,7 +197,6 @@ class ElementPositionProvider(SeleniumPositionProvider):
         logger.debug("Scrolling element to {}".format(location))
         position = self._element.scroll_to(location)
         logger.debug("Done scrolling element!")
-        self._add_data_attribute_to_element()
         return position
 
     def get_entire_size(self):
