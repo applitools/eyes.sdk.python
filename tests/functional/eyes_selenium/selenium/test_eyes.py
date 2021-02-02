@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from applitools.common import RectangleSize, Region
+from applitools.common import Point, RectangleSize, Region
 from applitools.selenium import Eyes, Target
 
 
@@ -90,3 +90,40 @@ def test_layout_region_calculation_for_frame_fully_target(driver, fake_connector
     assert match_data.options.image_match_settings.layout_regions == [
         Region(8, 8, 304, 184)
     ]
+
+
+def test_match_window_fully_screenshot_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+
+    eyes.check(Target.window().fully())
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(0, 0)
+
+
+def test_match_window_scrolled_screenshot_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+    driver.execute_script("window.scrollBy(0,1000)")
+
+    eyes.check(Target.window())
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(0, 1000)
+
+
+def test_match_region_screenshot_location(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html")
+
+    eyes.check(Target.region("#overflowing-div > img:nth-child(32)"))
+    _, match_data = eyes.server_connector.calls["match_window"]
+
+    assert match_data.app_output.location == Point(8, 2100)
