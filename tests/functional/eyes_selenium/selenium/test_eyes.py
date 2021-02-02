@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -189,3 +191,116 @@ def test_match_context_frame_region_location(driver, fake_connector_class):
     _, match_data = eyes.server_connector.calls["match_window"]
 
     assert match_data.app_output.location == Point(8, 8)
+
+
+def test_check_window_doesnt_mark_data_scroll(driver, fake_connector_class, spy):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.window())
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert "data-applitools-scroll" not in dom
+    assert dom_json["attributes"]["data-applitools-active-frame"] == "true"
+
+
+def test_check_window_fully_marks_data_scroll(driver, fake_connector_class, spy):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.window().fully())
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert dom_json["attributes"]["data-applitools-active-frame"] == "true"
+    assert dom_json["attributes"]["data-applitools-scroll"] == "true"
+
+
+def test_check_region_fully_marks_data_scroll(driver, fake_connector_class, spy):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.region("#overflowing-div-image").fully())
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert dom_json["attributes"]["data-applitools-active-frame"] == "true"
+    assert (
+        dom_json["childNodes"][1]["childNodes"][7]["attributes"][
+            "data-applitools-scroll"
+        ]
+        == "true"
+    )
+
+
+def test_check_region_doesnt_mark_data_scroll(driver, fake_connector_class, spy):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.region("#overflowing-div-image"))
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert dom_json["attributes"]["data-applitools-active-frame"] == "true"
+    assert "data-applitools-scroll" not in dom
+
+
+def test_check_frame_marks_active_frame_and_data_scroll_of_frame(
+    driver, fake_connector_class, spy
+):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+
+    eyes.check(Target.frame(0).fully())
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert (
+        dom_json["childNodes"][1]["childNodes"][13]["childNodes"][0]["attributes"][
+            "data-applitools-active-frame"
+        ]
+        == "true"
+    )
+    assert (
+        dom_json["childNodes"][1]["childNodes"][13]["childNodes"][0]["attributes"][
+            "data-applitools-scroll"
+        ]
+        == "true"
+    )
+
+
+def test_check_context_frame_doesnt_mark_data_scroll(driver, fake_connector_class, spy):
+    eyes = Eyes()
+    capture_spy = spy(eyes._selenium_eyes, "_try_capture_dom")
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(height=600, width=800))
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+    driver.switch_to.frame(0)
+
+    eyes.check(Target.window())
+
+    dom = capture_spy.return_list[-1]
+    dom_json = json.loads(dom)
+    assert (
+        dom_json["childNodes"][1]["childNodes"][13]["childNodes"][0]["attributes"][
+            "data-applitools-active-frame"
+        ]
+        == "true"
+    )
+    assert "data-applitools-scroll" not in dom
