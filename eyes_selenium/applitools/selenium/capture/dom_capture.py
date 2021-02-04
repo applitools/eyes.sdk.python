@@ -13,7 +13,7 @@ import attr
 import requests
 import tinycss2
 
-from applitools.common import EyesError, logger
+from applitools.common import EyesError, Point, logger
 from applitools.common.utils import (
     datetime_utils,
     is_absolute_url,
@@ -171,10 +171,9 @@ def get_dom(driver):
 def get_full_window_dom(driver, return_as_dict=False):
     # type: (EyesWebDriver, bool) -> Union[str, dict]
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
-
-    with eyes_selenium_utils.get_and_restore_state(
-        ScrollPositionProvider(driver, current_root_element)
-    ):
+    position_provider = ScrollPositionProvider(driver, current_root_element)
+    with eyes_selenium_utils.get_and_restore_state(position_provider):
+        position_provider.set_position(Point.ZERO())
         logger.debug("Traverse DOM Tree")
         script_result = get_dom(driver)
 
