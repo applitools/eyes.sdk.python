@@ -506,6 +506,8 @@ def scroll_root_element_from(driver, container=None):
                 # check settings
                 container = container.values  # type: ignore
             scroll_root_element = container.scroll_root_element  # type: ignore
+            if isinstance(scroll_root_element, WebElement):
+                scroll_root_element = EyesWebElement(scroll_root_element, driver)
             if not scroll_root_element:
                 scroll_root_selector = container.scroll_root_selector  # type: ignore
                 if scroll_root_selector:
