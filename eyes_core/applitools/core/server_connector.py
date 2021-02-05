@@ -12,7 +12,13 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import Region, RunningSession, logger
+from applitools.common import (
+    Region,
+    RunningSession,
+    TextRegion,
+    TextSettingsData,
+    logger,
+)
 from applitools.common.client_event import LogSessionsClientEvents
 from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
@@ -43,7 +49,7 @@ if typing.TYPE_CHECKING:
     from uuid import UUID
 
     from applitools.common.client_event import ClientEvent
-    from applitools.common.text_regions import OCRRegion, TextRegion, TextRegionSettings
+    from applitools.common.text_regions import PATTERN_TEXT_REGIONS, OCRRegion
 
 # Prints out all data sent/received through 'requests'
 # import httplib
@@ -299,7 +305,7 @@ class ServerConnector(object):
         "x-applitools-eyes-client": None,
     }
 
-    API_SESSIONS = "api/sessions"
+    API_SESSIONS = "/api/sessions"
     API_SESSIONS_LOG = "/api/sessions/log"
     API_SESSIONS_BATCHES = "/api/sessions/batches"
     API_SESSIONS_RUNNING = API_SESSIONS + "/running/"
@@ -605,7 +611,7 @@ class ServerConnector(object):
 
     @retry()
     def render_put_resource(self, resource):
-        # type: (Text, VGResource) -> Text
+        # type: (VGResource) -> Text
         argument_guard.not_none(resource)
         if self._render_info is None:
             raise EyesError("render_info must be fetched first")
@@ -751,10 +757,47 @@ class ServerConnector(object):
             params={"AccessToken": test_results.secret_token},
         ).raise_for_status()
 
-    def get_text_in_running_session_image(self, ocr_region):
-        # type: (OCRRegion) -> List[Text]
-        pass
+    def extract_text(self, text_region_data):
+        # type: (TextSettingsData) -> List[TextRegion]
+        logger.debug(
+            "call",
+            _class=self.__class__.__name__,
+            _method="extract_text",
+            text_region_data=text_region_data,
+        )
+        resp = self._com.long_request(
+            "get",
+            urljoin(self.API_SESSIONS, "/running/images/text"),
+            data=json_utils.to_json(text_region_data),
+        )
+        if resp.ok:
+            return resp.json()
+        raise EyesError(
+            "ServerConnector.extract_text - unexpected status {}".format(
+                resp.status_code
+            )
+        )
 
-    def get_text_regions_in_running_session_image(self, text_region_settings):
-        # type: (TextRegionSettings) -> List[TextRegion]
-        pass
+    def extract_text_regions(self, text_region_data):
+        # type: (TextSettingsData) -> PATTERN_TEXT_REGIONS
+        logger.debug(
+            "call",
+            _class=self.__class__.__name__,
+            _method="extract_text_regions",
+            text_region_settings=text_region_data,
+        )
+        resp = self._com.long_request(
+            "post",
+            urljoin(self.API_SESSIONS_RUNNING, "images/textregions"),
+            data=json_utils.to_json(text_region_data),
+        )
+        if resp.ok:
+            return {
+                pattern: json_utils.attr_from_dict(regions, TextRegion)
+                for pattern, regions in iteritems(resp.json())
+            }
+        raise EyesError(
+            "ServerConnector.extract_text_regions - unexpected status {}".format(
+                resp.status_code
+            )
+        )

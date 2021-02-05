@@ -53,6 +53,7 @@ from .scale_provider import ScaleProvider
 from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
 from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
+from .text_regions import OCRRegion, TextRegion, TextSettingsData
 from .ultrafastgrid.config import (  # noqa
     DeviceName,
     IosDeviceName,
