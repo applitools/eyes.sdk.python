@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
+
 ## [4.15.1] - 2021-01-27
 ### Added
 - StdoutLogger accepts true/false for debug/info levels [Trello 376](https://trello.com/c/1xzNhRlm)
