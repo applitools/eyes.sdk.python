@@ -7,8 +7,8 @@ from applitools.core.debug import DebugScreenshotsProvider
 from applitools.core.text_regions import (
     PATTERN_TEXT_REGIONS,
     OCRRegion,
+    TextRegionProvider,
     TextRegionSettings,
-    TextRegionsProvider,
     TextSettingsData,
 )
 from applitools.selenium.selenium_eyes import SeleniumEyes
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
 
 
-class SeleniumTextRegionsProvider(TextRegionsProvider):
+class SeleniumTextRegionsProvider(TextRegionProvider):
     def __init__(self, driver, eyes):
         # type: (AnyWebDriver, SeleniumEyes) -> None
         self._driver = driver

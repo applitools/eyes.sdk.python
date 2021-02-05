@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement, CssSelector
 
 
-class TextRegionsProvider(ABC):
+class TextRegionProvider(ABC):
     @abstractmethod
     def get_text(self, *regions):
         # type: (*OCRRegion) -> Text
@@ -47,7 +47,7 @@ class TextRegionSettings(object):
 
     def _add_patterns(self, patterns):
         if not patterns:
-            return
+            return self
         if len(patterns) == 1 and argument_guard.is_list_or_tuple(patterns[0]):
             patterns = patterns[0]
         argument_guard.is_list_or_tuple(patterns)
@@ -56,9 +56,11 @@ class TextRegionSettings(object):
         return cloned
 
     def patterns(self, *patterns):
+        # type: (*Text) -> TextRegionSettings
         return self._add_patterns(patterns)
 
     def ignore_case(self, ignore=True):
+        # type: (bool) -> TextRegionSettings
         cloned = self.clone()
         cloned.values.ignore_case = ignore
         return cloned
@@ -77,6 +79,7 @@ class TextRegionSettings(object):
         return cloned
 
     def clone(self):
+        # type: () -> TextRegionSettings
         cloned = copy(self)
         cloned.values.patterns = copy(cloned.values.patterns)
         return self
@@ -156,13 +159,19 @@ class TextSettingsData(object):
     language = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     min_match = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: float
+    )  # type: Optional[float]
     regions = attr.ib(
         default=None, type=TextRegion, metadata={JsonInclude.NON_NONE: True}
-    )  # type: List[ExpectedTextRegion]
-    patterns = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    ignore_case = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
-    first_only = attr.ib(default=None, metadata={JsonInclude.NON_NONE: True})
+    )  # type: Optional[List[ExpectedTextRegion]]
+    patterns = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[List[Text]]
+    ignore_case = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[bool]
+    first_only = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[bool]
 
 
 PATTERN_TEXT_REGIONS = Dict[Text, TextRegion]  # typedef

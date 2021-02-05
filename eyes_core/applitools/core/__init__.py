@@ -35,7 +35,7 @@ from .scaling import (
     ScaleProvider,
 )
 from .server_connector import ServerConnector
-from .text_regions import TextRegionSettings, TextRegionsProvider
+from .text_regions import TextRegionProvider, TextRegionSettings
 from .triggers import MouseTrigger, TextTrigger
 
 __all__ = (
@@ -74,5 +74,5 @@ __all__ = (
     "VisualLocatorSettings",
     "Feature",
     "TextRegionSettings",
-    "TextRegionsProvider",
+    "TextRegionProvider",
 )
