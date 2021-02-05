@@ -28,9 +28,9 @@ class TextRegionProvider(ABC):
 
 @attr.s
 class TextRegionSettingsValues(object):
-    first_only = attr.ib(default=None)  # type: bool
+    first_only = attr.ib(default=None)  # type: Optional[bool]
     language = attr.ib(default="eng")  # type: Text
-    ignore_case = attr.ib(default=None)  # type: bool
+    ignore_case = attr.ib(default=None)  # type: Optional[bool]
     patterns = attr.ib(factory=list)  # type: List[Text]
 
     @property
