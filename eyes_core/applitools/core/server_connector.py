@@ -12,13 +12,7 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import (
-    Region,
-    RunningSession,
-    TextRegion,
-    TextSettingsData,
-    logger,
-)
+from applitools.common import Region, RunningSession, logger
 from applitools.common.client_event import LogSessionsClientEvents
 from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
@@ -43,13 +37,18 @@ from applitools.common.utils import (
 )
 from applitools.common.utils.compat import raise_from
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
+from applitools.core.text_regions import (
+    PATTERN_TEXT_REGIONS,
+    OCRRegion,
+    TextRegion,
+    TextSettingsData,
+)
 
 if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
     from uuid import UUID
 
     from applitools.common.client_event import ClientEvent
-    from applitools.common.text_regions import PATTERN_TEXT_REGIONS, OCRRegion
 
 # Prints out all data sent/received through 'requests'
 # import httplib

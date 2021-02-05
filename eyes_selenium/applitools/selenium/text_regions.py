@@ -1,15 +1,19 @@
 from typing import TYPE_CHECKING, Text
 
 from applitools.common import AppOutput, Point, Region
-from applitools.common.text_regions import PATTERN_TEXT_REGIONS, TextSettingsData
 from applitools.common.utils import argument_guard, image_utils
 from applitools.core import ServerConnector
 from applitools.core.debug import DebugScreenshotsProvider
-from applitools.core.text_regions import TextRegionSettings, TextRegionsProvider
+from applitools.core.text_regions import (
+    PATTERN_TEXT_REGIONS,
+    OCRRegion,
+    TextRegionSettings,
+    TextRegionsProvider,
+    TextSettingsData,
+)
 from applitools.selenium.selenium_eyes import SeleniumEyes
 
 if TYPE_CHECKING:
-    from applitools.common.text_regions import OCRRegion
     from applitools.common.utils.custom_types import AnyWebDriver
 
 
