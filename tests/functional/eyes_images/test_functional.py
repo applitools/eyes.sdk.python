@@ -45,6 +45,28 @@ def test_check_raw_image_fluent(eyes):
     eyes.close()
 
 
+def test_check_region(eyes):
+    # type: (Eyes) -> None
+    eyes.open("images", "TestCheckRegion")
+    eyes.check_region(
+        path.join(here, "resources/minions-800x500.jpg"),
+        Region(left=200, top=100, width=400, height=400),
+    )
+    eyes.close()
+
+
+def test_check_region_fluent(eyes):
+    # type: (Eyes) -> None
+    eyes.open("images", "TestCheckRegion_Fluent")
+    eyes.check(
+        Target.region(
+            path.join(here, "resources/minions-800x500.jpg"),
+            Region(left=200, top=100, width=400, height=400),
+        )
+    )
+    eyes.close()
+
+
 def test_check_raw_image_delete_result(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestCheckImage_DeleteResult")
