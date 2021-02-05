@@ -35,6 +35,7 @@ from applitools.core.cut import (  # noqa
     UnscaledFixedCutProvider,
 )
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
+from applitools.core.text_regions import TextRegionSettings  # noqa
 
 from .classic_runner import ClassicRunner  # noqa
 from .eyes import Eyes  # noqa

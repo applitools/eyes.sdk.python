@@ -19,6 +19,7 @@ from applitools.selenium import ClassicRunner, eyes_selenium_utils
 from .fluent import SeleniumCheckSettings, Target
 from .locators import SeleniumVisualLocatorsProvider
 from .selenium_eyes import SeleniumEyes
+from .text_regions import SeleniumTextRegionsProvider, TextRegionSettings
 from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
 
@@ -571,7 +572,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         )
 
         self._init_driver(driver)
-        self._init_locator_provider()
+        self._init_additional_providers()
         if self._is_visual_grid_eyes:
             self._selenium_eyes.open(self._driver, skip_start_session=True)
 
@@ -584,6 +585,17 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         argument_guard.is_a(visual_locator_settings, VisualLocatorSettings)
         logger.info("locate({})".format(visual_locator_settings))
         return self._visual_locators_provider.get_locators(visual_locator_settings)
+
+    # def extract_text(self, *regions):
+    #     # type: (*OCRRegion) -> Text
+    #     logger.info("extract_text", regions=regions)
+    #     return self._text_regions_provider.get_text(regions)
+
+    def extract_text_regions(self, config):
+        # type: (TextRegionSettings) -> Text
+        argument_guard.is_a(config, TextRegionSettings)
+        logger.info("extract_text_regions", config=config)
+        return self._text_regions_provider.get_text_regions(config)
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -652,8 +664,11 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
                     "For mobile app testing the appium driver should be used"
                 )
 
-    def _init_locator_provider(self):
+    def _init_additional_providers(self):
         self._visual_locators_provider = SeleniumVisualLocatorsProvider(
+            self._driver, self._selenium_eyes
+        )
+        self._text_regions_provider = SeleniumTextRegionsProvider(
             self._driver, self._selenium_eyes
         )
 
