@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from copy import copy
 from typing import Dict, List, Text
 
@@ -7,7 +7,7 @@ import attr
 from applitools.common import AppOutput, CoordinatesType, Region
 from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring
+from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
 
 
