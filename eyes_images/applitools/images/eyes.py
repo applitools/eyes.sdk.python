@@ -99,7 +99,9 @@ class Eyes(EyesBase):
             self.configure.viewport_size = RectangleSize.from_(image)
 
         return self._check_image(
-            NULL_REGION_PROVIDER, check_settings.values.name, False, check_settings
+            check_settings.values.name,
+            False,
+            check_settings,
         )
 
     def check_image(self, image, tag=None, ignore_mismatch=False):
@@ -111,9 +113,7 @@ class Eyes(EyesBase):
                 image, tag, ignore_mismatch
             )
         )
-        return self._check_image(
-            NULL_REGION_PROVIDER, tag, ignore_mismatch, Target.image(image)
-        )
+        return self._check_image(tag, ignore_mismatch, Target.image(image))
 
     def check_region(self, image, region, tag=None, ignore_mismatch=False):
         # type: (Image.Image, Region, Optional[Text], bool) -> Optional[bool]
@@ -124,12 +124,10 @@ class Eyes(EyesBase):
                 image, region, tag, ignore_mismatch
             )
         )
-        return self._check_image(
-            NULL_REGION_PROVIDER, tag, ignore_mismatch, Target.region(image, region)
-        )
+        return self._check_image(tag, ignore_mismatch, Target.region(image, region))
 
-    def _check_image(self, region_provider, name, ignore_mismatch, check_settings):
-        # type: (RegionProvider, Text, bool, ImagesCheckSettings) -> bool
+    def _check_image(self, name, ignore_mismatch, check_settings):
+        # type: (Text, bool, ImagesCheckSettings) -> bool
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
@@ -138,6 +136,10 @@ class Eyes(EyesBase):
             raise EyesError("you must call open() before checking")
 
         image = check_settings.values.image  # type: Image.Image
+        if check_settings.values.target_region:
+            region_provider = RegionProvider(check_settings.values.target_region)
+        else:
+            region_provider = NULL_REGION_PROVIDER
 
         if not isinstance(self.cut_provider, NullCutProvider):
             logger.debug("cutting...")

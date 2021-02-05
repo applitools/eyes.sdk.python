@@ -1,6 +1,8 @@
 ## [vNext]
 ### Added
 - Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
+### Fixed
+- Region screenshots not working with images.Eyes [Trello 2432](https://trello.com/c/VYqhbSIJ)
 
 ## [4.15.1] - 2021-01-27
 ### Added
