@@ -199,6 +199,8 @@ def get_dom_script_result(driver, dom_extraction_timeout, script_for_run):
         if status == "SUCCESS":
             break
         datetime_utils.sleep(1000, "Waiting for the end of DOM extraction")
+    else:
+        raise EyesError("dom-capture script timed out")
     script_result = script_response.get("value")
     if script_result is None or status != "SUCCESS":
         raise EyesError("Failed to capture script_result: {}".format(script_response))
