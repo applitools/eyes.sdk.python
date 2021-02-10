@@ -195,12 +195,16 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 % (region, self.frame_window)
             )
         sub_image = image_utils.get_image_part(self.image, as_is_sub_screenshot_region)
-        return EyesWebDriverScreenshot.from_screenshot(
+        screenshot = EyesWebDriverScreenshot.from_screenshot(
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
             self._frame_location_in_screenshot,
         )
+        screenshot.original_location = (
+            self.original_location + as_is_sub_screenshot_region.location
+        )
+        return screenshot
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
     SCREENSHOT_AS_IS = CoordinatesType.SCREENSHOT_AS_IS

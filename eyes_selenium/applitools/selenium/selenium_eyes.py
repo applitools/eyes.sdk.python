@@ -930,7 +930,6 @@ class SeleniumEyes(EyesBase):
             if self.position_provider and not self.driver.is_mobile_platform:
                 self.position_provider.restore_state(state)
 
-        self._last_screenshot.original_location = self._original_location
         return self._last_screenshot
 
     def _crop_if_needed(self, image):
@@ -956,18 +955,30 @@ class SeleniumEyes(EyesBase):
                 scroll_root_element
             )
         elem_position_provider.add_data_attribute_to_element()
+        if not self._dom_url and (
+            # self.configure.send_dom or check_settings.values.send_dom
+            True
+        ):
+            logger.info("Capturing DOM")
+            dom_json = self._try_capture_dom()
+            self._dom_url = self._try_post_dom_capture(dom_json)
+            logger.info("Captured DOM URL: {}".format(self._dom_url))
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
             self._region_to_check, self._full_region_to_check, elem_position_provider
         )
         image = self._crop_if_needed(image)
-        return EyesWebDriverScreenshot.create_entire_element(
+        screenshot = EyesWebDriverScreenshot.create_entire_element(
             self._driver,
             image,
             RectangleSize.from_(image),
             -self._full_region_to_check.location,
         )
+        screenshot.original_location = (
+            self._region_to_check.location - algo.origin_provider.get_current_position()
+        )
+        return screenshot
 
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
@@ -990,26 +1001,47 @@ class SeleniumEyes(EyesBase):
                 size_and_borders.size["height"],
             )
             self.position_provider.add_data_attribute_to_element()
+            if not self._dom_url and (
+                # self.configure.send_dom or check_settings.values.send_dom
+                True
+            ):
+                logger.info("Capturing DOM")
+                dom_json = self._try_capture_dom()
+                self._dom_url = self._try_post_dom_capture(dom_json)
+                logger.info("Captured DOM URL: {}".format(self._dom_url))
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(
                 region, Region.EMPTY(), self.position_provider
             )
             image = self._crop_if_needed(image)
-            return EyesWebDriverScreenshot.create_full_page(
+            screenshot = EyesWebDriverScreenshot.create_full_page(
                 self._driver, image, -region.location
             )
+            screenshot.original_location = Point.ZERO()
+            return screenshot
 
     def _element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
+            if not self._dom_url and (
+                # self.configure.send_dom or check_settings.values.send_dom
+                True
+            ):
+                logger.info("Capturing DOM")
+                dom_json = self._try_capture_dom()
+                self._dom_url = self._try_post_dom_capture(dom_json)
+                logger.info("Captured DOM URL: {}".format(self._dom_url))
+
             datetime_utils.sleep(self.configure.wait_before_screenshots)
             image = self.get_scaled_cropped_viewport_image(scale_provider)
             if not (self._is_check_region or self._driver.is_mobile_platform):
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
-            return EyesWebDriverScreenshot.create_viewport(self._driver, image)
+            screenshot = EyesWebDriverScreenshot.create_viewport(self._driver, image)
+            screenshot.original_location = Point.ZERO()
+            return screenshot
 
     def get_scaled_cropped_viewport_image(self, scale_provider):
         image = self._image_provider.get_image()

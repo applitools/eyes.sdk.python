@@ -703,21 +703,9 @@ class EyesBase(
             screenshot = screenshot.sub_screenshot(region)
             self._debug_screenshots_provider.save(screenshot.image, "sub_screenshot")
 
-        if not self._dom_url and (
-            self.configure.send_dom or check_settings.values.send_dom
-        ):
-            logger.info("Capturing DOM")
-            dom_json = self._try_capture_dom()
-            self._dom_url = self._try_post_dom_capture(dom_json)
-            logger.info("Captured DOM URL: {}".format(self._dom_url))
-
-        location = region.location if region else None
-        if screenshot and screenshot.original_location:
-            location = screenshot.original_location
-
         app_output = AppOutput(
             title=self._title,
-            location=location,
+            location=screenshot.original_location if screenshot else None,
             screenshot_bytes=None,
             dom_url=self._dom_url,
         )
