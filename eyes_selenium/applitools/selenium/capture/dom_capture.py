@@ -173,7 +173,6 @@ def get_full_window_dom(driver, return_as_dict=False):
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
     position_provider = ScrollPositionProvider(driver, current_root_element)
     with eyes_selenium_utils.get_and_restore_state(position_provider):
-        position_provider.set_position(Point.ZERO())
         logger.debug("Traverse DOM Tree")
         script_result = get_dom(driver)
 
