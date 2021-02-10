@@ -26,6 +26,8 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
+    from applitools.selenium.webelement import EyesWebElement
+
 
     from .webelement import EyesWebElement
 
@@ -507,6 +509,8 @@ def scroll_root_element_from(driver, container=None):
                 container = container.values  # type: ignore
             scroll_root_element = container.scroll_root_element  # type: ignore
             if isinstance(scroll_root_element, WebElement):
+                from applitools.selenium.webelement import EyesWebElement
+
                 scroll_root_element = EyesWebElement(scroll_root_element, driver)
             if not scroll_root_element:
                 scroll_root_selector = container.scroll_root_selector  # type: ignore
