@@ -39,9 +39,9 @@ from applitools.common.utils.compat import raise_from
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
 from applitools.core.text_regions import (
     PATTERN_TEXT_REGIONS,
-    OCRRegion,
     TextRegion,
     TextSettingsData,
+    BaseOCRRegion,
 )
 
 if typing.TYPE_CHECKING:
@@ -757,7 +757,7 @@ class ServerConnector(object):
         ).raise_for_status()
 
     def extract_text(self, text_region_data):
-        # type: (TextSettingsData) -> List[TextRegion]
+        # type: (BaseOCRRegion) -> List[Text]
         logger.debug(
             "call",
             _class=self.__class__.__name__,
@@ -765,8 +765,8 @@ class ServerConnector(object):
             text_region_data=text_region_data,
         )
         resp = self._com.long_request(
-            "get",
-            urljoin(self.API_SESSIONS, "/running/images/text"),
+            "post",
+            urljoin(self.API_SESSIONS_RUNNING, "images/text"),
             data=json_utils.to_json(text_region_data),
         )
         if resp.ok:
