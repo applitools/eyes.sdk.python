@@ -100,6 +100,7 @@ class SeleniumEyes(EyesBase):
     _is_check_region = None  # type: Optional[bool]
     _current_frame_position_provider = None  # type: Optional[PositionProvider]
     _runner = None  # type: Optional[ClassicRunner]
+    _send_dom = True  # type: bool
 
     @staticmethod
     @deprecated.argument("viewportsize", "use `size` argument instead")
@@ -255,6 +256,7 @@ class SeleniumEyes(EyesBase):
         logger.info("check('{}', check_settings) - begin".format(name))
 
         # Set up required settings
+        self._send_dom = self.configure.send_dom or check_settings.values.send_dom
         self._stitch_content = check_settings.values.stitch_content
         self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
             self.driver, check_settings
@@ -955,14 +957,7 @@ class SeleniumEyes(EyesBase):
                 scroll_root_element
             )
         elem_position_provider.add_data_attribute_to_element()
-        if not self._dom_url and (
-            # self.configure.send_dom or check_settings.values.send_dom
-            True
-        ):
-            logger.info("Capturing DOM")
-            dom_json = self._try_capture_dom()
-            self._dom_url = self._try_post_dom_capture(dom_json)
-            logger.info("Captured DOM URL: {}".format(self._dom_url))
+        self._maybe_capture_and_send_dom()
         algo = self._create_full_page_capture_algorithm(scale_provider)
 
         image = algo.get_stitched_region(
@@ -979,6 +974,13 @@ class SeleniumEyes(EyesBase):
             self._region_to_check.location - algo.origin_provider.get_current_position()
         )
         return screenshot
+
+    def _maybe_capture_and_send_dom(self):
+        if self._send_dom and not self._dom_url:
+            logger.info("Capturing DOM")
+            dom_json = self._try_capture_dom()
+            self._dom_url = self._try_post_dom_capture(dom_json)
+            logger.info("Captured DOM URL: {}".format(self._dom_url))
 
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
@@ -1001,14 +1003,7 @@ class SeleniumEyes(EyesBase):
                 size_and_borders.size["height"],
             )
             self.position_provider.add_data_attribute_to_element()
-            if not self._dom_url and (
-                # self.configure.send_dom or check_settings.values.send_dom
-                True
-            ):
-                logger.info("Capturing DOM")
-                dom_json = self._try_capture_dom()
-                self._dom_url = self._try_post_dom_capture(dom_json)
-                logger.info("Captured DOM URL: {}".format(self._dom_url))
+            self._maybe_capture_and_send_dom()
             algo = self._create_full_page_capture_algorithm(scale_provider)
             image = algo.get_stitched_region(
                 region, Region.EMPTY(), self.position_provider
@@ -1024,15 +1019,7 @@ class SeleniumEyes(EyesBase):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Element screenshot requested")
         with self._ensure_element_visible(self._target_element):
-            if not self._dom_url and (
-                # self.configure.send_dom or check_settings.values.send_dom
-                True
-            ):
-                logger.info("Capturing DOM")
-                dom_json = self._try_capture_dom()
-                self._dom_url = self._try_post_dom_capture(dom_json)
-                logger.info("Captured DOM URL: {}".format(self._dom_url))
-
+            self._maybe_capture_and_send_dom()
             datetime_utils.sleep(self.configure.wait_before_screenshots)
             image = self.get_scaled_cropped_viewport_image(scale_provider)
             if not (self._is_check_region or self._driver.is_mobile_platform):
