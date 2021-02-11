@@ -25,6 +25,7 @@ module.exports = {
     'should hide and restore scrollbars with vg': {skip: true},				// Unable to locate element: {"method":"css selector","selector":"#inner-frame-div"}
     'should send floating region by coordinates in frame with vg': {skip: true},	//diffs
     'should not send dom': {skip: true},						//diffs - info["actualAppOutput"][0]["image"]["hasDom"] == False,    assert True == False
+    'should send dom and location when check window with vg': {skip: true}, // not implemented in VG
     'should send dom on ie': {skip: true},						//diffs - assert info["actualAppOutput"][0]["image"]["hasDom"] == True   assert False == True
     'should send dom on edge legacy': {skip: true},					//eyes.open(driver)   -  EyesError: eyes.open_base() failed
     'should set viewport size on edge legacy': {skip: true},				//EyesError: Failed to set the viewport size
@@ -78,23 +79,6 @@ module.exports = {
     'check frame in frame fully with vg': {skip: true},						//diffs
     'check frame fully with scroll stitching': {skip: true},					//diffs
     'check frame fully with vg': {skip: true},							//diffs
-    //'should send dom and location when check frame fully with vg': {skipEmit: true},
-    //'should send dom and location when check frame fully': {skipEmit: true},
-    //'should send dom and location when check frame': {skipEmit: true},
-    //'should send dom and location when check region by selector fully with custom scroll root': {skipEmit: true},
-    //'should send dom and location when check region by selector fully with vg': {skipEmit: true},
-    //'should send dom and location when check region by selector fully': {skipEmit: true},
-    //'should send dom and location when check region by selector in frame with vg': {skipEmit: true},
-    //'should send dom and location when check region by selector in frame': {skipEmit: true},
-    //'should send dom and location when check region by selector with custom scroll root with vg': {skipEmit: true},
-    //'should send dom and location when check region by selector with custom scroll root': {skipEmit: true},
-    //'should send dom and location when check region by selector with vg': {skipEmit: true},
-    //'should send dom and location when check region by selector': {skipEmit: true},
-    //'should send dom and location when check window fully with vg': {skipEmit: true},
-    //'should send dom and location when check window fully': {skipEmit: true},
-    //'should send dom and location when check window with vg': {skipEmit: true},
-    //'should send dom and location when check window': {skipEmit: true},
-    //'should send dom of version 11': {skipEmit: true},
     'appium android check window': {skip: true},						//assertion for ignored region fails
     'appium android check region with ignore region': {skip: true},				//assertion for ignored region fails
     'appium iOS check window': {skip: true},							//assertion for ignored region fails
