@@ -1,4 +1,4 @@
-## [vNext]
+## [4.17.0] - 2021-02-12
 - Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
 ### Updated
 - Better logging to aid dom-capture script errors debugging [Trello 2457](https://trello.com/c/6CcbvxWU)
