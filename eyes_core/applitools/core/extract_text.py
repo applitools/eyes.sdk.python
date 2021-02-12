@@ -26,9 +26,9 @@ class ExtractTextProvider(ABC):
 class TextRegionSettings(object):
     def __init__(self, *patterns):
         # type: (*Union[Text, List[Text]]) -> None
-        self._first_only = False  # type: Optional[bool]
+        self._first_only = None  # type: Optional[bool]
         self._language = "eng"  # type: Text
-        self._ignore_case = True  # type: Optional[bool]
+        self._ignore_case = None  # type: Optional[bool]
         self._patterns = []  # type: List[Text]
         self._add_patterns(*patterns)
 

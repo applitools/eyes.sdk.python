@@ -112,7 +112,9 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
                     )
                 ],
             )
-            result.extend(self._server_connector.extract_text(data))
+            result.extend(
+                self._server_connector.get_text_in_running_session_image(data)
+            )
         return result
 
     def get_text_regions(self, config):
@@ -139,4 +141,4 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
             first_only=config._first_only,
             language=config._language,
         )
-        return self._server_connector.extract_text_regions(data)
+        return self._server_connector.get_text_regions_in_running_session_image(data)

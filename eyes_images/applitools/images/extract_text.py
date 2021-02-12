@@ -65,7 +65,7 @@ class ImagesExtractTextProvider(ExtractTextProvider):
                     )
                 ],
             )
-            result = self._server_connector.extract_text(data)
+            result = self._server_connector.get_text_in_running_session_image(data)
             results.extend(result)
         return results
 
@@ -82,4 +82,4 @@ class ImagesExtractTextProvider(ExtractTextProvider):
             first_only=config.is_first_only,
             ignore_case=config._ignore_case,
         )
-        return self._server_connector.extract_text_regions(data)
+        return self._server_connector.get_text_regions_in_running_session_image(data)

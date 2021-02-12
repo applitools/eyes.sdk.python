@@ -755,7 +755,7 @@ class ServerConnector(object):
             params={"AccessToken": test_results.secret_token},
         ).raise_for_status()
 
-    def extract_text(self, data):
+    def get_text_in_running_session_image(self, data):
         # type: (TextSettingsData) -> List[Text]
         logger.debug(
             "call",
@@ -776,7 +776,7 @@ class ServerConnector(object):
             )
         )
 
-    def extract_text_regions(self, data):
+    def get_text_regions_in_running_session_image(self, data):
         # type: (TextSettingsData) -> PATTERN_TEXT_REGIONS
         logger.debug(
             "call",
