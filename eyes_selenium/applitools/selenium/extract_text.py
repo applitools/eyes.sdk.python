@@ -22,7 +22,7 @@ if TYPE_CHECKING:
         AnyWebElement,
         CssSelector,
     )
-    from applitools.selenium import EyesWebElement, EyesWebDriver
+    from applitools.selenium import EyesWebDriver, EyesWebElement
 
 
 def _element_from_check_settings(driver, check_settings):

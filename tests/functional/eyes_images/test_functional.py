@@ -4,7 +4,6 @@ from os import path
 import pytest
 from PIL import Image, ImageDraw
 
-from applitools.core import TextRegionSettings
 from applitools.core.extract_text import TextRegion
 from applitools.images import (
     AccessibilityGuidelinesVersion,

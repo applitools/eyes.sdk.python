@@ -12,7 +12,6 @@ from applitools.common import EyesError, Point, RectangleSize, logger
 from applitools.common.utils import datetime_utils
 from applitools.common.utils.compat import urlparse
 
-
 if tp.TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Union
 
@@ -27,6 +26,7 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
+
     from .webelement import EyesWebElement
 
 __all__ = (

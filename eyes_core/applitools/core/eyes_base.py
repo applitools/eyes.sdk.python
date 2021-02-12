@@ -39,13 +39,13 @@ from applitools.core.debug import (
 )
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
+from . import __version__
 from .extract_text import (
     PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
     ExtractTextProvider,
     TextRegionSettings,
 )
-from . import __version__
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
