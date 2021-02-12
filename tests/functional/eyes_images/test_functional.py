@@ -117,7 +117,7 @@ def test_extract_text(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestExtractText")
     result = eyes.extract_text_regions(
-        TextRegionSettings(".+").image(path.join(here, "resources/minions-800x500.jpg"))
+        TextRegionSettings(".+").image(path.join(here, "resources/extractText.png"))
     )
     assert result[".+"] == [TextRegion(10, 11, 214, 18, "This is the navigation bar")]
 
