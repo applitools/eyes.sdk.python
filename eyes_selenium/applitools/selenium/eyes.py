@@ -61,7 +61,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
     _driver = None  # type: Optional[EyesWebDriver]
     _is_opened = False  # type: bool
     _config_cls = Configuration
-    _text_regions_provider = None  # type: Optional[SeleniumExtractTextProvider]
+    _extract_text_provider = None  # type: Optional[SeleniumExtractTextProvider]
 
     def __init__(self, runner=None):
         # type: (Union[Text, VisualGridRunner, ClassicRunner, None]) -> None
@@ -671,7 +671,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
         self._visual_locators_provider = SeleniumVisualLocatorsProvider(
             self._driver, self._selenium_eyes
         )
-        self._text_regions_provider = SeleniumExtractTextProvider(
+        self._extract_text_provider = SeleniumExtractTextProvider(
             self._driver, self._selenium_eyes
         )
 

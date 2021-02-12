@@ -28,10 +28,10 @@ class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
-    _text_regions_provider = None  # type: Optional[ImagesExtractTextProvider]
+    _extract_text_provider = None  # type: Optional[ImagesExtractTextProvider]
 
     def _init_additional_providers(self):
-        self._text_regions_provider = ImagesExtractTextProvider(self)
+        self._extract_text_provider = ImagesExtractTextProvider(self)
 
     @property
     def full_agent_id(self):

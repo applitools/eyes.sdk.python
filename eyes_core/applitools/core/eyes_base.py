@@ -161,20 +161,20 @@ class DebugScreenshotsAbstract(ABC):
 
 
 class ExtractTextMixin(object):
-    _text_regions_provider = None  # type: Optional[TextRegionProvider]
+    _extract_text_provider = None  # type: Optional[ExtractTextProvider]
 
     def extract_text(self, *regions):
         # type: (*BaseOCRRegion) -> List[Text]
-        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.not_none(self._extract_text_provider)
         logger.info("extract_text", regions=regions)
-        return self._text_regions_provider.get_text(*regions)
+        return self._extract_text_provider.get_text(*regions)
 
     def extract_text_regions(self, config):
         # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
-        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.not_none(self._extract_text_provider)
         argument_guard.is_a(config, TextRegionSettings)
         logger.info("extract_text_regions", config=config)
-        return self._text_regions_provider.get_text_regions(config)
+        return self._extract_text_provider.get_text_regions(config)
 
 
 class EyesBase(
@@ -551,16 +551,16 @@ class EyesBase(
 
     def extract_text(self, *regions):
         # type: (*BaseOCRRegion) -> List[Text]
-        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.not_none(self._extract_text_provider)
         logger.info("extract_text", regions=regions)
-        return self._text_regions_provider.get_text(*regions)
+        return self._extract_text_provider.get_text(*regions)
 
     def extract_text_regions(self, config):
         # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
-        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.not_none(self._extract_text_provider)
         argument_guard.is_a(config, TextRegionSettings)
         logger.info("extract_text_regions", config=config)
-        return self._text_regions_provider.get_text_regions(config)
+        return self._extract_text_provider.get_text_regions(config)
 
     def _before_open(self):
         pass
@@ -755,11 +755,7 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-        if check_settings.values.ocr_region:
-            check_settings.values.ocr_region.process_app_output(
-                check_settings, region_provider.get_region()
-            )
-            return MatchResult(as_expected=True)
+
         result = self._match_window(region_provider, tag, check_settings, source)
 
         if not ignore_mismatch:

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from copy import copy
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Text, Union
+from typing import Dict, List, Optional, Text, Union
 
 import attr
 
@@ -9,9 +9,6 @@ from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
-
-if TYPE_CHECKING:
-    from applitools.core import AppOutputWithScreenshot
 
 
 class ExtractTextProvider(ABC):
@@ -122,42 +119,31 @@ class ExpectedTextRegion(Rectangle):
         self.expected = expected
 
 
-@attr.s(init=False)
 class BaseOCRRegion(object):
-    target = attr.ib()
-    _hint = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[Text]
-    _language = attr.ib(default="eng", metadata={JsonInclude.THIS: True})  # type: Text
-    _min_match = attr.ib(
-        default=None, metadata={JsonInclude.THIS: True}
-    )  # type: Optional[float]
-
     def __init__(self, target):
         # type: (Region) -> None
         self.target = target
-        self._hint = None
-        self._language = "eng"
-        self._min_match = None
-        self.process_app_output = None  # type: Optional[Callable]
+        self._hint = None  # type: Optional[Text]
+        self._language = "eng"  # type: Optional[Text]
+        self._min_match = None  # type: Optional[float]
 
     def min_match(self, min_match):
-        self._min_match = min_match
-        return self
+        cloned = self.clone()
+        cloned._min_match = min_match
+        return cloned
 
     def hint(self, hint):
-        self._hint = hint
-        return self
+        cloned = self.clone()
+        cloned._hint = hint
+        return cloned
 
     def language(self, language):
-        self._language = language
-        return self
+        cloned = self.clone()
+        cloned._language = language
+        return cloned
 
-    def add_process_app_output(self, callback):
-        # type: (Callable) -> None
-        if not callable(callback):
-            raise ValueError
-        self.process_app_output = callback
+    def clone(self):
+        return copy(self)
 
 
 @attr.s

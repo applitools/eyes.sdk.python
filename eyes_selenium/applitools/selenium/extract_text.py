@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Text, Union
+from typing import TYPE_CHECKING, Callable, List, Optional, Text, Union
 
 from applitools.common import AppOutput, Point, Region
 from applitools.common.utils import argument_guard, image_utils
@@ -28,9 +28,16 @@ class OCRRegion(BaseOCRRegion):
     def __init__(self, target):
         # type:(Union[Region,CssSelector,AnyWebElement])->None
         super(OCRRegion, self).__init__(target)
+        self.process_app_output = None  # type: Optional[Callable]
         self.app_output_with_screenshot = (
             None
         )  # type: Optional[AppOutputWithScreenshot]
+
+    def add_process_app_output(self, callback):
+        # type: (Callable) -> None
+        if not callable(callback):
+            raise ValueError
+        self.process_app_output = callback
 
 
 class SeleniumExtractTextProvider(ExtractTextProvider):

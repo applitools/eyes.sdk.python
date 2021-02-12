@@ -53,7 +53,6 @@ class CheckSettingsValues(object):
     accessibility_regions = attr.ib(
         init=False, factory=list
     )  # type: List[GetAccessibilityRegion]
-    ocr_region = attr.ib(init=False, default=None)  # type: Optional[BaseOCRRegion]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
