@@ -22,6 +22,21 @@ if TYPE_CHECKING:
         AnyWebElement,
         CssSelector,
     )
+    from applitools.selenium import EyesWebElement, EyesWebDriver
+
+
+def _element_from_check_settings(driver, check_settings):
+    # type: (EyesWebDriver, SeleniumCheckSettings) -> EyesWebElement
+    from .webelement import EyesWebElement
+
+    if check_settings.values.target_element:
+        element = check_settings.values.target_element
+    elif check_settings.values.target_selector:
+        by, value = check_settings.values.target_selector
+        element = driver.find_element(by, value)
+    else:
+        raise ValueError
+    return EyesWebElement(element, driver)
 
 
 class OCRRegion(BaseOCRRegion):
@@ -58,9 +73,7 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
 
         def app_output_callback(check_settings, region):
             if not check_settings.values.target_region:
-                element = eyes_selenium_utils.get_element_from_check_settings(
-                    self._driver, check_settings
-                )
+                element = _element_from_check_settings(self._driver, check_settings)
                 ocr_region.hint = eyes_selenium_utils.get_inner_text(
                     self._driver, element
                 )

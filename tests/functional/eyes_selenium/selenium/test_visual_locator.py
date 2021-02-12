@@ -62,13 +62,13 @@ def test_extract_text(driver, eyes_runner):
 
     eyes.open(driver, "Applitools Eyes SDK", test_name)
     element = driver.find_element_by_css_selector("#overflowing-div")
-    text_results = eyes.extract_text(OCRRegion(element))
+    text_results = eyes.extract_text(
+        OCRRegion(element),
+        OCRRegion("#overflowing-div"),
+        OCRRegion(Region(0, 0, 400, 800)),
+    )
     assert len(text_results[0]) == 904
-
-    text_results = eyes.extract_text(OCRRegion("#overflowing-div"))
-    assert len(text_results[0]) == 904
-
-    text_results = eyes.extract_text(OCRRegion(Region(0, 0, 400, 800)))
-    assert len(text_results[0]) > 600
+    assert len(text_results[1]) == 904
+    assert len(text_results[2]) > 600
 
     eyes.close_async()

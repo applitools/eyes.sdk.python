@@ -12,7 +12,6 @@ from applitools.common import EyesError, Point, RectangleSize, logger
 from applitools.common.utils import datetime_utils
 from applitools.common.utils.compat import urlparse
 
-from .webelement import EyesWebElement
 
 if tp.TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Union
@@ -28,6 +27,7 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
+    from .webelement import EyesWebElement
 
 __all__ = (
     "get_current_frame_content_entire_size",
@@ -561,16 +561,6 @@ def get_webapp_domain(driver):
 
 def get_check_source(driver):
     return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)
-
-
-def get_element_from_check_settings(driver, check_settings):
-    # type: (EyesWebDriver, SeleniumCheckSettings) -> EyesWebElement
-    if check_settings.values.target_element:
-        element = check_settings.values.target_element
-    elif check_settings.values.target_selector:
-        by, value = check_settings.values.target_selector
-        element = driver.find_element(by, value)
-    return EyesWebElement(element, driver)
 
 
 def get_inner_text(driver, element):
