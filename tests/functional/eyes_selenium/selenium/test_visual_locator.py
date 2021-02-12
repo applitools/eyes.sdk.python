@@ -44,12 +44,12 @@ def test_extract_text_regions(driver, eyes_runner):
 
     assert len(regions) == 3
     assert regions[patterns[0]][0].text == "Header1: Hello world!"
-    assert regions[patterns[0]][1].text == "Header3: HEllQ w@rld!!"
+    assert regions[patterns[0]][1].text == "Header2: He110 w0rld!!"
 
-    assert regions[patterns[1]][1].text == "1. One"
-    assert regions[patterns[1]][2].text == "2. Two"
-    assert regions[patterns[1]][3].text == "3. Three"
-    assert regions[patterns[1]][4].text == "4. Four"
+    assert regions[patterns[1]][0].text == "1. One"
+    assert regions[patterns[1]][1].text == "2. Two"
+    assert regions[patterns[1]][2].text == "3. Three"
+    assert regions[patterns[1]][3].text == "4. Four"
 
     assert (
         regions[patterns[2]][0].text
@@ -87,7 +87,7 @@ OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"""
     assert len(text_results) == 1
     assert text_results == expected
 
-    text_results = eyes.extract_text(OCRRegion([By.CSS_SELECTOR, "#overflowing-div"]))
+    text_results = eyes.extract_text(OCRRegion("#overflowing-div"))
     assert len(text_results) == 1
     assert text_results == expected
 

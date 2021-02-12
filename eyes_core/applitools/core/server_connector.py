@@ -39,9 +39,9 @@ from applitools.common.utils.compat import raise_from
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
 from applitools.core.text_regions import (
     PATTERN_TEXT_REGIONS,
+    BaseOCRRegion,
     TextRegion,
     TextSettingsData,
-    BaseOCRRegion,
 )
 
 if typing.TYPE_CHECKING:

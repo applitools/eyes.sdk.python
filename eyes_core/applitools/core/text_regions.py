@@ -1,23 +1,21 @@
 from abc import abstractmethod
 from copy import copy
-from typing import TYPE_CHECKING, Dict, List, Optional, Text, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Text, Union
 
 import attr
 
-from applitools.common import AppOutput, CoordinatesType, Region
+from applitools.common import AppOutput, Region
 from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
-
-if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import AnyWebElement, CssSelector
+from applitools.core import AppOutputWithScreenshot
 
 
 class TextRegionProvider(ABC):
     @abstractmethod
     def get_text(self, *regions):
-        # type: (*OCRRegion) -> Text
+        # type: (*BaseOCRRegion) -> Text
         pass
 
     @abstractmethod
@@ -41,11 +39,11 @@ class TextRegionSettingsValues(object):
 
 class TextRegionSettings(object):
     def __init__(self, *patterns):
-        # type: (Text) -> None
+        # type: (*Union[Text, List[Text]]) -> None
         self.values = TextRegionSettingsValues()
-        self._add_patterns(patterns)
+        self._add_patterns(*patterns)
 
-    def _add_patterns(self, patterns):
+    def _add_patterns(self, *patterns):
         if not patterns:
             return self
         if len(patterns) == 1 and argument_guard.is_list_or_tuple(patterns[0]):
@@ -56,8 +54,8 @@ class TextRegionSettings(object):
         return cloned
 
     def patterns(self, *patterns):
-        # type: (*Text) -> TextRegionSettings
-        return self._add_patterns(patterns)
+        # type: (*Union[Text, List[Text]]) -> TextRegionSettings
+        return self._add_patterns(*patterns)
 
     def ignore_case(self, ignore=True):
         # type: (bool) -> TextRegionSettings
@@ -115,17 +113,8 @@ class TextRegion(Rectangle):
 
 
 @attr.s(slots=True, init=False)
-class ExpectedTextRegion(Region):
-    left = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    top = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    width = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    height = attr.ib(metadata={JsonInclude.THIS: True})  # type: int
-    coordinates_type = attr.ib(
-        converter=CoordinatesType,
-        type=CoordinatesType,
-        metadata={JsonInclude.THIS: True},
-    )  # type: CoordinatesType
-    expected = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
+class ExpectedTextRegion(Rectangle):
+    expected = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
 
     def __init__(
         self,
@@ -133,22 +122,45 @@ class ExpectedTextRegion(Region):
         top,  # type: int
         width,  # type: int
         height,  # type: int
-        coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
         expected=None,  # type: Text
     ):
         # type: (...) -> None
-        super(TextRegion, self).__init__(left, top, width, height, coordinates_type)
+        super(ExpectedTextRegion, self).__init__(left, top, width, height)
         self.expected = expected
 
 
-@attr.s
-class OCRRegion(object):
-    target = attr.ib()  # type: Union[Region, AnyWebElement, CssSelector]
-    hint = attr.ib(default="")  # type: Text
-    language = attr.ib(default="eng")  # type: Text
+@attr.s(init=False)
+class BaseOCRRegion(object):
+    target = attr.ib()
+    hint = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
+    language = attr.ib(default="eng", metadata={JsonInclude.THIS: True})  # type: Text
     min_match = attr.ib(
-        default=None,
+        default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[float]
+    app_output = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[AppOutputWithScreenshot]
+    regions = attr.ib(
+        factory=list, metadata={JsonInclude.THIS: True}
+    )  # type: List[ExpectedTextRegion]
+
+    def __init__(self, target, hint="", language="eng", min_match=None):
+        # type: (Region, Text, Text, Optional[float]) -> None
+        argument_guard.not_list_or_tuple(target)
+        self.target = target
+        self.hint = hint
+        self.language = language
+        self.min_match = min_match
+        self.process_app_output = None  # type: Optional[Callable]
+        self.regions = []
+
+    def add_process_app_output(self, callback):
+        # type: (Callable) -> None
+        if not callable(callback):
+            raise ValueError
+        self.process_app_output = callback
 
 
 @attr.s
@@ -161,7 +173,7 @@ class TextSettingsData(object):
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[float]
     regions = attr.ib(
-        default=None, type=TextRegion, metadata={JsonInclude.NON_NONE: True}
+        default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[List[ExpectedTextRegion]]
     patterns = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
@@ -172,6 +184,9 @@ class TextSettingsData(object):
     first_only = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[bool]
+    hint = attr.ib(
+        default=None, metadata={JsonInclude.NON_NONE: True}
+    )  # type: Optional[Text]
 
 
 PATTERN_TEXT_REGIONS = Dict[Text, TextRegion]  # typedef

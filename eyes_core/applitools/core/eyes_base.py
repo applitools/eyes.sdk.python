@@ -43,9 +43,15 @@ from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
+from .text_regions import (
+    PATTERN_TEXT_REGIONS,
+    BaseOCRRegion,
+    TextRegionProvider,
+    TextRegionSettings,
+)
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text, Union
+    from typing import List, Optional, Text, Union
 
     from applitools.common import MatchLevel
     from applitools.common.capture import EyesScreenshot
@@ -154,8 +160,29 @@ class DebugScreenshotsAbstract(ABC):
         pass
 
 
+class _ExtractTextBase(object):
+    _text_regions_provider = None  # type: Optional[TextRegionProvider]
+
+    def extract_text(self, *regions):
+        # type: (*BaseOCRRegion) -> List[Text]
+        argument_guard.not_none(self._text_regions_provider)
+        logger.info("extract_text", regions=regions)
+        return self._text_regions_provider.get_text(*regions)
+
+    def extract_text_regions(self, config):
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.is_a(config, TextRegionSettings)
+        logger.info("extract_text_regions", config=config)
+        return self._text_regions_provider.get_text_regions(config)
+
+
 class EyesBase(
-    EyesConfigurationMixin, DebugScreenshotsAbstract, _EyesBaseAbstract, ABC
+    EyesConfigurationMixin,
+    DebugScreenshotsAbstract,
+    _EyesBaseAbstract,
+    _ExtractTextBase,
+    ABC,
 ):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
@@ -168,6 +195,7 @@ class EyesBase(
     _should_match_once_on_timeout = False  # type: bool
     _is_opened = False  # type: bool
     _render_info = None  # type: Optional[RenderingInfo]
+    _app_output_provider = None  # type: Optional[AppOutputProvider]
     _render = False
     _cut_provider = None
     _should_get_title = False  # type: bool
@@ -521,6 +549,19 @@ class EyesBase(
 
         self._open_base()
 
+    def extract_text(self, *regions):
+        # type: (*BaseOCRRegion) -> List[Text]
+        argument_guard.not_none(self._text_regions_provider)
+        logger.info("extract_text", regions=regions)
+        return self._text_regions_provider.get_text(*regions)
+
+    def extract_text_regions(self, config):
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        argument_guard.not_none(self._text_regions_provider)
+        argument_guard.is_a(config, TextRegionSettings)
+        logger.info("extract_text_regions", config=config)
+        return self._text_regions_provider.get_text_regions(config)
+
     def _before_open(self):
         pass
 
@@ -651,13 +692,15 @@ class EyesBase(
         logger.debug("No running session, calling start session...")
         self._start_session()
 
-        output_provider = AppOutputProvider(self._get_app_output_with_screenshot)
+        self._app_output_provider = AppOutputProvider(
+            self._get_app_output_with_screenshot
+        )
         self._match_window_task = MatchWindowTask(
             self._server_connector,
             self._running_session,
             self.configure.match_timeout,
             eyes=self,
-            app_output_provider=output_provider,
+            app_output_provider=self._app_output_provider,
         )
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):
@@ -712,6 +755,11 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
+        if check_settings.values.ocr_region:
+            check_settings.values.ocr_region.process_app_output(
+                check_settings, region_provider.get_region()
+            )
+            return MatchResult(as_expected=True)
         result = self._match_window(region_provider, tag, check_settings, source)
 
         if not ignore_mismatch:

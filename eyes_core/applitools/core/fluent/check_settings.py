@@ -7,6 +7,7 @@ from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.core.text_regions import BaseOCRRegion
 
 from .region import (
     AccessibilityRegionByRectangle,
@@ -52,6 +53,7 @@ class CheckSettingsValues(object):
     accessibility_regions = attr.ib(
         init=False, factory=list
     )  # type: List[GetAccessibilityRegion]
+    ocr_region = attr.ib(init=False, default=None)  # type: Optional[BaseOCRRegion]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
