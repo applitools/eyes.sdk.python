@@ -342,18 +342,14 @@ class SeleniumEyes(EyesBase):
                 if self._stitch_content:
                     result = self._check_full_element(check_settings, source)
                 else:
-                    result = self._check_element(
-                        check_settings, source, prev_frame_location
-                    )
+                    result = self._check_element(check_settings, source)
                 self._target_element = None
             elif total_frames > 0:
                 logger.debug("have frame chain")
                 if self._stitch_content:
                     result = self._check_full_frame(check_settings, source)
                 else:
-                    result = self._check_frame(
-                        check_settings, source, prev_frame_location
-                    )
+                    result = self._check_frame(check_settings, source)
             else:
                 if self._stitch_content:
                     self._check_full_window(check_settings, source)
@@ -426,13 +422,13 @@ class SeleniumEyes(EyesBase):
         self._region_to_check = None
         return result
 
-    def _check_frame(self, check_settings, source, prev_frame_location):
+    def _check_frame(self, check_settings, source):
         fc = self.driver.frame_chain.clone()
         target_frame = fc.pop()
         self._target_element = target_frame.reference
 
         self.driver.switch_to.frames_do_scroll(fc)
-        result = self._check_element(check_settings, source, prev_frame_location)
+        result = self._check_element(check_settings, source)
         self._target_element = None
         return result
 
@@ -519,7 +515,7 @@ class SeleniumEyes(EyesBase):
                     self._full_region_to_check = None
         return result
 
-    def _check_element(self, check_settings, source, prev_frame_location=None):
+    def _check_element(self, check_settings, source):
         self._is_check_region = True
 
         def get_region():
@@ -959,13 +955,6 @@ class SeleniumEyes(EyesBase):
         )
         return screenshot
 
-    def _maybe_capture_and_send_dom(self):
-        if self._send_dom and not self._dom_url:
-            logger.info("Capturing DOM")
-            dom_json = self._try_capture_dom()
-            self._dom_url = self._try_post_dom_capture(dom_json)
-            logger.info("Captured DOM URL: {}".format(self._dom_url))
-
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
         logger.info("Full page screenshot requested")
@@ -1013,6 +1002,13 @@ class SeleniumEyes(EyesBase):
             screenshot = EyesWebDriverScreenshot.create_viewport(self._driver, image)
             screenshot.original_location = Point.ZERO()
             return screenshot
+
+    def _maybe_capture_and_send_dom(self):
+        if self._send_dom and not self._dom_url:
+            logger.info("Capturing DOM")
+            dom_json = self._try_capture_dom()
+            self._dom_url = self._try_post_dom_capture(dom_json)
+            logger.info("Captured DOM URL: {}".format(self._dom_url))
 
     def get_scaled_cropped_viewport_image(self, scale_provider):
         image = self._image_provider.get_image()
