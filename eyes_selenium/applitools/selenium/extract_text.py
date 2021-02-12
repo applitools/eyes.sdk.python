@@ -51,12 +51,12 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
         )  # type: DebugScreenshotsProvider
 
     def _process_app_output(self, ocr_region):
-        check_settings = SeleniumCheckSettings().fully()
-        check_settings.values.ocr_region = ocr_region
+        settings = SeleniumCheckSettings().fully()
+        settings.values.ocr_region = ocr_region
 
-        check_settings = check_settings.region(ocr_region.target)
+        settings = settings.region(ocr_region.target)
 
-        def process_app_output(check_settings, region):
+        def app_output_callback(check_settings, region):
             if not check_settings.values.target_region:
                 element = eyes_selenium_utils.get_element_from_check_settings(
                     self._driver, check_settings
@@ -69,20 +69,8 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
             )
             ocr_region.app_output_with_screenshot = app_output
 
-        ocr_region.add_process_app_output(process_app_output)
-        self._eyes.check(check_settings)
-
-    def _get_viewport_screenshot_url(self):
-        scale_provider = self._eyes.update_scaling_params()
-        viewport_screenshot = self._eyes.get_scaled_cropped_viewport_image(
-            scale_provider
-        )
-        image = image_utils.get_bytes(viewport_screenshot)
-        return self._server_connector.try_upload_image(image)
-
-    def _get_dom_url(self):
-        dom_json = self._eyes._try_capture_dom()
-        return self._eyes._try_post_dom_capture(dom_json)
+        ocr_region.add_process_app_output(app_output_callback)
+        self._eyes.check(settings)
 
     def get_text(self, *regions):
         # type: (*OCRRegion) -> List[Text]
@@ -116,13 +104,23 @@ class SeleniumExtractTextProvider(ExtractTextProvider):
 
     def get_text_regions(self, config):
         # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        def get_app_output():
+            scale_provider = self._eyes.update_scaling_params()
+            viewport_screenshot = self._eyes.get_scaled_cropped_viewport_image(
+                scale_provider
+            )
+            image = image_utils.get_bytes(viewport_screenshot)
+            screenshot_url = self._server_connector.try_upload_image(image)
+
+            dom_json = self._eyes._try_capture_dom()
+            dom_url = self._eyes._try_post_dom_capture(dom_json)
+            return AppOutput(
+                dom_url=dom_url, screenshot_url=screenshot_url, location=Point.ZERO()
+            )
+
         argument_guard.not_none(config._patterns)
         data = TextSettingsData(
-            app_output=AppOutput(
-                dom_url=self._get_dom_url(),
-                screenshot_url=self._get_viewport_screenshot_url(),
-                location=Point.ZERO(),
-            ),
+            app_output=get_app_output(),
             patterns=config._patterns,
             ignore_case=config._ignore_case,
             first_only=config._first_only,
