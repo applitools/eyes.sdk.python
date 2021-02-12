@@ -52,14 +52,22 @@ class EyesWebDriverScreenshot(EyesScreenshot):
     @classmethod
     def create_viewport(cls, driver, image):
         # type: (EyesWebDriver, Image.Image) -> EyesWebDriverScreenshot
-        instance = cls(driver, image, ScreenshotType.VIEWPORT, None)
+        instance = cls(
+            driver, image, ScreenshotType.VIEWPORT, None, original_location=Point.ZERO()
+        )
         instance._validate_frame_window()
         return instance
 
     @classmethod
     def create_full_page(cls, driver, image, frame_location_in_screenshot):
         # type: (EyesWebDriver, Image.Image, Point) -> EyesWebDriverScreenshot
-        return cls(driver, image, None, frame_location_in_screenshot)
+        return cls(
+            driver,
+            image,
+            None,
+            frame_location_in_screenshot,
+            original_location=Point.ZERO(),
+        )
 
     @classmethod
     def create_entire_element(
@@ -68,6 +76,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         image,  # type: Image.Image
         entire_element_size,  # type: RectangleSize
         frame_location_in_screenshot,  # type: Point
+        original_location,  # type: Point
     ):
         # type: (...) -> EyesWebDriverScreenshot
         return cls(
@@ -77,6 +86,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             frame_location_in_screenshot,
             current_frame_scroll_position=Point(0, 0),
             frame_window=Region.from_(Point(0, 0), entire_element_size),
+            original_location=original_location,
         )
 
     @classmethod
