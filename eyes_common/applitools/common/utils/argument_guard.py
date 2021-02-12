@@ -26,7 +26,7 @@ def not_list_or_tuple(param, exc_info=None):
     if not is_list_or_tuple(param):
         if exc_info:
             raise exc_info
-        raise ValueError("{} is not list or tuple")
+        raise ValueError("{} is not list or tuple".format(get_name_from_param(param)))
 
 
 def not_none_or_empty(param, exc_info=None):

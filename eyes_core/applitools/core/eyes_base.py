@@ -40,13 +40,19 @@ from applitools.core.debug import (
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
 from . import __version__
+from .extract_text import (
+    PATTERN_TEXT_REGIONS,
+    BaseOCRRegion,
+    ExtractTextProvider,
+    TextRegionSettings,
+)
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
 
 if typing.TYPE_CHECKING:
-    from typing import Optional, Text, Union
+    from typing import List, Optional, Text, Union
 
     from applitools.common import MatchLevel
     from applitools.common.capture import EyesScreenshot
@@ -155,8 +161,29 @@ class DebugScreenshotsAbstract(ABC):
         pass
 
 
+class ExtractTextMixin(object):
+    _extract_text_provider = None  # type: Optional[ExtractTextProvider]
+
+    def extract_text(self, *regions):
+        # type: (*BaseOCRRegion) -> List[Text]
+        argument_guard.not_none(self._extract_text_provider)
+        logger.info("extract_text", regions=regions)
+        return self._extract_text_provider.get_text(*regions)
+
+    def extract_text_regions(self, config):
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        argument_guard.not_none(self._extract_text_provider)
+        argument_guard.is_a(config, TextRegionSettings)
+        logger.info("extract_text_regions", config=config)
+        return self._extract_text_provider.get_text_regions(config)
+
+
 class EyesBase(
-    EyesConfigurationMixin, DebugScreenshotsAbstract, _EyesBaseAbstract, ABC
+    EyesConfigurationMixin,
+    DebugScreenshotsAbstract,
+    _EyesBaseAbstract,
+    ExtractTextMixin,
+    ABC,
 ):
     _MAX_ITERATIONS = 10
     _running_session = None  # type: Optional[RunningSession]
@@ -169,6 +196,7 @@ class EyesBase(
     _should_match_once_on_timeout = False  # type: bool
     _is_opened = False  # type: bool
     _render_info = None  # type: Optional[RenderingInfo]
+    _app_output_provider = None  # type: Optional[AppOutputProvider]
     _render = False
     _cut_provider = None
     _should_get_title = False  # type: bool
@@ -653,13 +681,15 @@ class EyesBase(
         logger.debug("No running session, calling start session...")
         self._start_session()
 
-        output_provider = AppOutputProvider(self._get_app_output_with_screenshot)
+        self._app_output_provider = AppOutputProvider(
+            self._get_app_output_with_screenshot
+        )
         self._match_window_task = MatchWindowTask(
             self._server_connector,
             self._running_session,
             self.configure.match_timeout,
             eyes=self,
-            app_output_provider=output_provider,
+            app_output_provider=self._app_output_provider,
         )
 
     def _get_app_output_with_screenshot(self, region, last_screenshot, check_settings):

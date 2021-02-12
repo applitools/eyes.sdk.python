@@ -23,9 +23,10 @@ from applitools.core.cut import (
     UnscaledFixedCutProvider,
 )
 from applitools.core.fluent.region import AccessibilityRegionByRectangle
-from applitools.images.fluent import Target
 
+from .extract_text import OCRRegion, TextRegionSettings
 from .eyes import Eyes
+from .fluent import Target
 
 __all__ = (
     "Eyes",
@@ -51,4 +52,6 @@ __all__ = (
     "AccessibilityGuidelinesVersion",
     "AccessibilityRegionByRectangle",
     "AccessibilityRegion",
+    "OCRRegion",
+    "TextRegionSettings",
 )

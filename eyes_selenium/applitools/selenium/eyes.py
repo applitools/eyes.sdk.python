@@ -9,17 +9,22 @@ from applitools.common.selenium import Configuration
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
 from applitools.common.utils.general_utils import all_fields, proxy_to
-from applitools.core.eyes_base import DebugScreenshotsAbstract
+from applitools.core.eyes_base import DebugScreenshotsAbstract, ExtractTextMixin
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 from applitools.core.feature import Feature
 from applitools.core.locators import LOCATORS_TYPE, VisualLocatorSettings
 from applitools.core.server_connector import ServerConnector
 from applitools.selenium import ClassicRunner, eyes_selenium_utils
 
+from .extract_text import (
+    PATTERN_TEXT_REGIONS,
+    OCRRegion,
+    SeleniumExtractTextProvider,
+    TextRegionSettings,
+)
 from .fluent import SeleniumCheckSettings, Target
 from .locators import SeleniumVisualLocatorsProvider
 from .selenium_eyes import SeleniumEyes
-from .text_regions import SeleniumTextRegionsProvider, TextRegionSettings
 from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
 
@@ -47,7 +52,7 @@ if typing.TYPE_CHECKING:
 
 
 @proxy_to("configure", all_fields(Configuration))
-class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
+class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
     _is_visual_grid_eyes = False  # type: bool
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
@@ -56,6 +61,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
     _driver = None  # type: Optional[EyesWebDriver]
     _is_opened = False  # type: bool
     _config_cls = Configuration
+    _extract_text_provider = None  # type: Optional[SeleniumExtractTextProvider]
 
     def __init__(self, runner=None):
         # type: (Union[Text, VisualGridRunner, ClassicRunner, None]) -> None
@@ -586,16 +592,13 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         logger.info("locate({})".format(visual_locator_settings))
         return self._visual_locators_provider.get_locators(visual_locator_settings)
 
-    # def extract_text(self, *regions):
-    #     # type: (*OCRRegion) -> Text
-    #     logger.info("extract_text", regions=regions)
-    #     return self._text_regions_provider.get_text(regions)
+    def extract_text(self, *regions):
+        # type: (*OCRRegion) -> List[Text]
+        return super(Eyes, self).extract_text(*regions)
 
     def extract_text_regions(self, config):
-        # type: (TextRegionSettings) -> Text
-        argument_guard.is_a(config, TextRegionSettings)
-        logger.info("extract_text_regions", config=config)
-        return self._text_regions_provider.get_text_regions(config)
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        return super(Eyes, self).extract_text_regions(config)
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
@@ -668,7 +671,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract):
         self._visual_locators_provider = SeleniumVisualLocatorsProvider(
             self._driver, self._selenium_eyes
         )
-        self._text_regions_provider = SeleniumTextRegionsProvider(
+        self._extract_text_provider = SeleniumExtractTextProvider(
             self._driver, self._selenium_eyes
         )
 

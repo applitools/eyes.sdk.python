@@ -36,13 +36,12 @@ from applitools.common.utils import (
     urljoin,
 )
 from applitools.common.utils.compat import raise_from
-from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
-from applitools.core.text_regions import (
+from applitools.core.extract_text import (
     PATTERN_TEXT_REGIONS,
-    OCRRegion,
     TextRegion,
     TextSettingsData,
 )
+from applitools.core.locators import LOCATORS_TYPE, VisualLocatorsData
 
 if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
@@ -329,7 +328,7 @@ class ServerConnector(object):
         :param client_session: session for communication with server.
         """
         self._render_info = None  # type: Optional[RenderingInfo]
-        self._ua_string = None  # type: Optional[RenderingInfo]
+        self._ua_string = None  # type: Optional[Text]
 
         if client_session:
             self._com = _RequestCommunicator(
@@ -756,18 +755,18 @@ class ServerConnector(object):
             params={"AccessToken": test_results.secret_token},
         ).raise_for_status()
 
-    def extract_text(self, text_region_data):
-        # type: (TextSettingsData) -> List[TextRegion]
+    def get_text_in_running_session_image(self, data):
+        # type: (TextSettingsData) -> List[Text]
         logger.debug(
             "call",
             _class=self.__class__.__name__,
             _method="extract_text",
-            text_region_data=text_region_data,
+            text_region_data=data,
         )
         resp = self._com.long_request(
-            "get",
-            urljoin(self.API_SESSIONS, "/running/images/text"),
-            data=json_utils.to_json(text_region_data),
+            "post",
+            urljoin(self.API_SESSIONS_RUNNING, "images/text"),
+            data=json_utils.to_json(data),
         )
         if resp.ok:
             return resp.json()
@@ -777,18 +776,18 @@ class ServerConnector(object):
             )
         )
 
-    def extract_text_regions(self, text_region_data):
+    def get_text_regions_in_running_session_image(self, data):
         # type: (TextSettingsData) -> PATTERN_TEXT_REGIONS
         logger.debug(
             "call",
             _class=self.__class__.__name__,
             _method="extract_text_regions",
-            text_region_settings=text_region_data,
+            text_region_data=data,
         )
         resp = self._com.long_request(
             "post",
             urljoin(self.API_SESSIONS_RUNNING, "images/textregions"),
-            data=json_utils.to_json(text_region_data),
+            data=json_utils.to_json(data),
         )
         if resp.ok:
             return {

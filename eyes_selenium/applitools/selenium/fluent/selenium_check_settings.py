@@ -35,6 +35,7 @@ if TYPE_CHECKING:
         FrameIndex,
         FrameNameOrId,
     )
+    from applitools.selenium.extract_text import OCRRegion
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
@@ -63,6 +64,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     script_hooks = attr.ib(factory=dict)  # type: dict
     visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
     disable_browser_fetching = attr.ib(default=None)  # type: Optional[bool]
+    ocr_region = attr.ib(init=False, default=None)  # type: Optional[OCRRegion]
 
     @property
     def size_mode(self):

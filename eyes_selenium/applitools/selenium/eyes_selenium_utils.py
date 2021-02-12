@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 
-import json
-import threading
 import typing as tp
-from collections import OrderedDict
 from contextlib import contextmanager
 
 from appium.webdriver import Remote as AppiumWebDriver
@@ -29,7 +26,8 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.frames import FrameChain
     from applitools.selenium.positioning import SeleniumPositionProvider
     from applitools.selenium.webdriver import EyesWebDriver
-    from applitools.selenium.webelement import EyesWebElement
+
+    from .webelement import EyesWebElement
 
 __all__ = (
     "get_current_frame_content_entire_size",
@@ -563,3 +561,11 @@ def get_webapp_domain(driver):
 
 def get_check_source(driver):
     return get_app_name(driver) if is_mobile_app(driver) else get_webapp_domain(driver)
+
+
+def get_inner_text(driver, element):
+    # type: (EyesWebDriver, EyesWebElement) -> Optional[Text]
+    try:
+        return driver.execute_script("return arguments[0].innerText", element)
+    except WebDriverException:
+        return None

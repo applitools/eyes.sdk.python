@@ -230,6 +230,18 @@ class SeleniumEyes(EyesBase):
             self._target_element,
         )
 
+    def _match_window(self, region_provider, tag, check_settings, source):
+        # type:(RegionProvider,Text,SeleniumCheckSettings,Optional[Text])->MatchResult
+        if check_settings.values.ocr_region:
+            check_settings.values.ocr_region.process_app_output(
+                check_settings, region_provider.get_region()
+            )
+            return MatchResult(as_expected=True)
+
+        return super(SeleniumEyes, self)._match_window(
+            region_provider, tag, check_settings, source
+        )
+
     def check(self, check_settings):
         # type: (Text, SeleniumCheckSettings) -> MatchResult
         source = eyes_selenium_utils.get_check_source(self.driver)

@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import base64
 import io
 import math
-from typing import Union
+from typing import Text, Union
 
 from PIL import Image
 
@@ -19,7 +19,7 @@ from . import argument_guard
 from .converters import round_converter
 
 __all__ = (
-    "image_from_file",
+    "image_from_path",
     "image_from_bytes",
     "image_from_base64",
     "scale_image",
@@ -29,11 +29,14 @@ __all__ = (
 )
 
 
-def image_from_file(f):
+def image_from_path(path_or_image):
+    # type: (Union[Image.Image, Text]) -> Image.Image
     """
     Reads the PNG data from the given file stream and returns a new Image instance.
     """
-    return Image.open(f)
+    if isinstance(path_or_image, Image.Image):
+        return path_or_image
+    return Image.open(path_or_image)
 
 
 def image_from_bytes(png_bytes):

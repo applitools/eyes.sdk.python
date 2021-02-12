@@ -42,15 +42,8 @@ class Target(object):
     @staticmethod  # noqa
     def image(image_or_path):
         check_settings = ImagesCheckSettings()
-        if isinstance(image_or_path, Image.Image):
-            check_settings.values.image = image_or_path
-            return check_settings
-        elif isinstance(image_or_path, str) or isinstance(image_or_path, Text):
-            check_settings.values.image = image_utils.image_from_file(image_or_path)
-            return check_settings
-        raise TypeError(
-            "Unsupported image type. Should be `PIL.Image` or path to " "image"
-        )
+        check_settings.values.image = image_utils.image_from_path(image_or_path)
+        return check_settings
 
     @staticmethod  # noqa
     @overload

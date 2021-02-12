@@ -7,6 +7,7 @@ from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.core.extract_text import BaseOCRRegion
 
 from .region import (
     AccessibilityRegionByRectangle,
