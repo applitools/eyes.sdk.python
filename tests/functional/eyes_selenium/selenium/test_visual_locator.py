@@ -38,6 +38,18 @@ def test_extract_text_regions(driver, eyes_runner):
     eyes.close_async()
 
     assert len(regions) == 3
+    assert regions[patterns[0]][0].text == "Header1: Hello world!"
+    assert regions[patterns[0]][1].text == "Header2: He110 w0rld!!"
+
+    assert regions[patterns[1]][0].text == "1. One"
+    assert regions[patterns[1]][1].text == "2. Two"
+    assert regions[patterns[1]][2].text == "3. Three"
+    assert regions[patterns[1]][3].text == "4. Four"
+
+    assert (
+        regions[patterns[2]][0].text
+        == "Consectetur eiusmod sint officia labore elit nostrud"
+    )
 
 
 @pytest.mark.parametrize("eyes_runner", [ClassicRunner()])
@@ -51,12 +63,12 @@ def test_extract_text(driver, eyes_runner):
     eyes.open(driver, "Applitools Eyes SDK", test_name)
     element = driver.find_element_by_css_selector("#overflowing-div")
     text_results = eyes.extract_text(OCRRegion(element))
-    assert len(text_results) == 1
+    assert len(text_results[0]) == 904
 
     text_results = eyes.extract_text(OCRRegion("#overflowing-div"))
-    assert len(text_results) == 1
+    assert len(text_results[0]) == 904
 
     text_results = eyes.extract_text(OCRRegion(Region(0, 0, 400, 800)))
-    assert len(text_results) == 1
+    assert len(text_results[0]) > 600
 
     eyes.close_async()
