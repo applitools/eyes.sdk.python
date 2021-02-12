@@ -550,19 +550,6 @@ class EyesBase(
 
         self._open_base()
 
-    def extract_text(self, *regions):
-        # type: (*BaseOCRRegion) -> List[Text]
-        argument_guard.not_none(self._extract_text_provider)
-        logger.info("extract_text", regions=regions)
-        return self._extract_text_provider.get_text(*regions)
-
-    def extract_text_regions(self, config):
-        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
-        argument_guard.not_none(self._extract_text_provider)
-        argument_guard.is_a(config, TextRegionSettings)
-        logger.info("extract_text_regions", config=config)
-        return self._extract_text_provider.get_text_regions(config)
-
     def _before_open(self):
         pass
 
