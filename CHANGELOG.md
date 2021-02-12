@@ -1,6 +1,7 @@
 ## [vNext]
-### Added
-- Add full OCR support for Eyes Selenium and Images [Trello 2440](https://trello.com/c/FLGKnqIS)
+- Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
+### Updated
+- Better logging to aid dom-capture script errors debugging [Trello 2457](https://trello.com/c/6CcbvxWU)
 
 ## [4.16.0] - 2021-02-05
 ### Added

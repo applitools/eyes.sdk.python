@@ -807,11 +807,8 @@ class SeleniumEyes(EyesBase):
         try:
             dom_json = dom_capture.get_full_window_dom(self._driver)
             return dom_json
-        except Exception as e:
-            logger.warning(
-                "Exception raising during capturing DOM Json. Passing...\n "
-                "Got next error: {}".format(str(e))
-            )
+        except Exception:
+            logger.warning("dom-capture script failed, skipping it", exc_info=True)
             return None
 
     def _region_from(self, check_settings):

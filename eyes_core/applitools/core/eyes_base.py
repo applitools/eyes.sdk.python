@@ -45,6 +45,7 @@ from .extract_text import (
     ExtractTextProvider,
     TextRegionSettings,
 )
+from . import __version__
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
@@ -623,7 +624,8 @@ class EyesBase(
 
     def _log_open_base(self):
         logger.info(
-            "Running on: {} {} {}".format(
+            "Applitools SDK {}, running on: {} {} {}".format(
+                __version__,
                 platform.platform(),
                 platform.python_implementation(),
                 platform.python_version(),
@@ -755,7 +757,6 @@ class EyesBase(
         self._before_match_window()
 
         tag = tag if tag is not None else ""
-
         result = self._match_window(region_provider, tag, check_settings, source)
 
         if not ignore_mismatch:
