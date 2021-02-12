@@ -2,18 +2,18 @@ from typing import TYPE_CHECKING, List, Optional, Text, Union
 
 from applitools.common import AppOutput, Point, Region
 from applitools.common.utils import argument_guard, image_utils
-from applitools.core import ServerConnector
+from applitools.core import AppOutputWithScreenshot, ServerConnector
 from applitools.core.debug import DebugScreenshotsProvider
-from applitools.core.text_regions import (
+from applitools.core.extract_text import (
     PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
     ExpectedTextRegion,
-    TextRegionProvider,
+    ExtractTextProvider,
     TextRegionSettings,
     TextSettingsData,
 )
 from applitools.selenium import eyes_selenium_utils
-from applitools.selenium.fluent import SeleniumCheckSettings, Target
+from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.selenium_eyes import SeleniumEyes
 
 if TYPE_CHECKING:
@@ -25,12 +25,15 @@ if TYPE_CHECKING:
 
 
 class OCRRegion(BaseOCRRegion):
-    def __init__(self, target, hint="", language="eng", min_match=None):
-        # type:(Union[Region,CssSelector,AnyWebElement],Text,Text,Optional[float])->None
-        super(OCRRegion, self).__init__(target, hint, language, min_match)
+    def __init__(self, target):
+        # type:(Union[Region,CssSelector,AnyWebElement])->None
+        super(OCRRegion, self).__init__(target)
+        self.app_output_with_screenshot = (
+            None
+        )  # type: Optional[AppOutputWithScreenshot]
 
 
-class SeleniumTextRegionProvider(TextRegionProvider):
+class SeleniumExtractTextProvider(ExtractTextProvider):
     def __init__(self, driver, eyes):
         # type: (AnyWebDriver, SeleniumEyes) -> None
         self._driver = driver
@@ -58,16 +61,6 @@ class SeleniumTextRegionProvider(TextRegionProvider):
                 region, self._eyes._last_screenshot, check_settings
             )
             ocr_region.app_output_with_screenshot = app_output
-            ocr_region.app_output = app_output.app_output
-            ocr_region.regions.append(
-                ExpectedTextRegion(
-                    0,
-                    0,
-                    width=app_output.screenshot.image.width,
-                    height=app_output.screenshot.image.height,
-                    expected=ocr_region.hint,
-                )
-            )
 
         ocr_region.add_process_app_output(process_app_output)
         self._eyes.check(check_settings)
@@ -89,31 +82,43 @@ class SeleniumTextRegionProvider(TextRegionProvider):
         result = []
         for ocr_region in regions:
             self._process_app_output(ocr_region)
+            image = ocr_region.app_output_with_screenshot.screenshot.image
             screenshot_url = self._server_connector.try_upload_image(
-                image_utils.get_bytes(
-                    ocr_region.app_output_with_screenshot.screenshot.image
-                )
+                image_utils.get_bytes(image)
             )
-            ocr_region.app_output_with_screenshot.app_output.screenshot_url = (
-                screenshot_url
+            data = TextSettingsData(
+                app_output=AppOutput(
+                    screenshot_url=screenshot_url,
+                    location=Point.ZERO(),
+                    dom_url=ocr_region.app_output_with_screenshot.app_output.dom_url,
+                ),
+                language=ocr_region._language,
+                min_match=ocr_region._min_match,
+                regions=[
+                    ExpectedTextRegion(
+                        0,
+                        0,
+                        width=image.width,
+                        height=image.height,
+                        expected=ocr_region._hint,
+                    )
+                ],
             )
-            result.extend(self._server_connector.extract_text(ocr_region))
+            result.extend(self._server_connector.extract_text(data))
         return result
 
     def get_text_regions(self, config):
         # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
-        argument_guard.not_none(config.values.patterns)
-        screenshot_url = self._get_viewport_screenshot_url()
-        dom_url = self._get_dom_url()
-        settings = TextSettingsData(
+        argument_guard.not_none(config._patterns)
+        data = TextSettingsData(
             app_output=AppOutput(
-                dom_url=dom_url,
-                screenshot_url=screenshot_url,
+                dom_url=self._get_dom_url(),
+                screenshot_url=self._get_viewport_screenshot_url(),
                 location=Point.ZERO(),
             ),
-            patterns=config.values.patterns,
-            ignore_case=config.values.ignore_case,
-            first_only=config.values.first_only,
-            language=config.values.language,
+            patterns=config._patterns,
+            ignore_case=config._ignore_case,
+            first_only=config._first_only,
+            language=config._language,
         )
-        return self._server_connector.extract_text_regions(settings)
+        return self._server_connector.extract_text_regions(data)

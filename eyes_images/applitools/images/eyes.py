@@ -13,6 +13,7 @@ from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
+from .extract_text import ImagesExtractTextProvider
 
 if typing.TYPE_CHECKING:
     from typing import Dict, Optional, Text, Union
@@ -27,6 +28,10 @@ class Eyes(EyesBase):
     _raw_title = None  # type: Optional[Text]
     _screenshot = None  # type: Optional[EyesImagesScreenshot]
     _inferred = None  # type: Optional[Text]
+    _text_regions_provider = None  # type: Optional[ImagesExtractTextProvider]
+
+    def _init_additional_providers(self):
+        self._text_regions_provider = ImagesExtractTextProvider(self)
 
     @property
     def full_agent_id(self):
@@ -72,6 +77,9 @@ class Eyes(EyesBase):
 
     def open(self, app_name, test_name, dimension=None):
         # type: (Text, Text, Optional[ViewPort]) -> None
+        self._init_additional_providers()
+        if dimension is None:
+            dimension = dict(width=0, height=0)
         self.open_base(app_name, test_name, dimension)
 
     @typing.overload

@@ -39,16 +39,16 @@ from applitools.core.debug import (
 )
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
+from .extract_text import (
+    PATTERN_TEXT_REGIONS,
+    BaseOCRRegion,
+    ExtractTextProvider,
+    TextRegionSettings,
+)
 from .match_window_task import MatchWindowTask
 from .positioning import InvalidPositionProvider, PositionProvider, RegionProvider
 from .scaling import FixedScaleProvider, NullScaleProvider, ScaleProvider
 from .server_connector import ServerConnector
-from .text_regions import (
-    PATTERN_TEXT_REGIONS,
-    BaseOCRRegion,
-    TextRegionProvider,
-    TextRegionSettings,
-)
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Text, Union
@@ -160,7 +160,7 @@ class DebugScreenshotsAbstract(ABC):
         pass
 
 
-class _ExtractTextBase(object):
+class ExtractTextMixin(object):
     _text_regions_provider = None  # type: Optional[TextRegionProvider]
 
     def extract_text(self, *regions):
@@ -181,7 +181,7 @@ class EyesBase(
     EyesConfigurationMixin,
     DebugScreenshotsAbstract,
     _EyesBaseAbstract,
-    _ExtractTextBase,
+    ExtractTextMixin,
     ABC,
 ):
     _MAX_ITERATIONS = 10

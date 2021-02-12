@@ -9,10 +9,12 @@ from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
-from applitools.core import AppOutputWithScreenshot
+
+if TYPE_CHECKING:
+    from applitools.core import AppOutputWithScreenshot
 
 
-class TextRegionProvider(ABC):
+class ExtractTextProvider(ABC):
     @abstractmethod
     def get_text(self, *regions):
         # type: (*BaseOCRRegion) -> Text
@@ -24,24 +26,19 @@ class TextRegionProvider(ABC):
         pass
 
 
-@attr.s
-class TextRegionSettingsValues(object):
-    first_only = attr.ib(default=None)  # type: Optional[bool]
-    language = attr.ib(default="eng")  # type: Text
-    ignore_case = attr.ib(default=None)  # type: Optional[bool]
-    patterns = attr.ib(factory=list)  # type: List[Text]
+class TextRegionSettings(object):
+    def __init__(self, *patterns):
+        # type: (*Union[Text, List[Text]]) -> None
+        self._first_only = False  # type: Optional[bool]
+        self._language = "eng"  # type: Text
+        self._ignore_case = True  # type: Optional[bool]
+        self._patterns = []  # type: List[Text]
+        self._add_patterns(*patterns)
 
     @property
     def is_first_only(self):
         # type: () -> bool
-        return self.first_only
-
-
-class TextRegionSettings(object):
-    def __init__(self, *patterns):
-        # type: (*Union[Text, List[Text]]) -> None
-        self.values = TextRegionSettingsValues()
-        self._add_patterns(*patterns)
+        return self._first_only
 
     def _add_patterns(self, *patterns):
         if not patterns:
@@ -50,22 +47,18 @@ class TextRegionSettings(object):
             patterns = patterns[0]
         argument_guard.is_list_or_tuple(patterns)
         cloned = self.clone()
-        cloned.values.patterns.extend(list(patterns))
+        cloned._patterns.extend(list(patterns))
         return cloned
-
-    def patterns(self, *patterns):
-        # type: (*Union[Text, List[Text]]) -> TextRegionSettings
-        return self._add_patterns(*patterns)
 
     def ignore_case(self, ignore=True):
         # type: (bool) -> TextRegionSettings
         cloned = self.clone()
-        cloned.values.ignore_case = ignore
+        cloned._ignore_case = ignore
         return cloned
 
     def first_only(self):
         cloned = self.clone()
-        cloned.values.first_only = True
+        cloned._first_only = True
         return cloned
 
     def language(self, language):
@@ -73,13 +66,13 @@ class TextRegionSettings(object):
         argument_guard.is_a(language, basestring)
         assert language not in ["eng"], "Unsupported language"
         cloned = self.clone()
-        cloned.values.language = language
+        cloned._language = language
         return cloned
 
     def clone(self):
         # type: () -> TextRegionSettings
         cloned = copy(self)
-        cloned.values.patterns = copy(cloned.values.patterns)
+        cloned._patterns = copy(cloned._patterns)
         return self
 
 
@@ -132,29 +125,33 @@ class ExpectedTextRegion(Rectangle):
 @attr.s(init=False)
 class BaseOCRRegion(object):
     target = attr.ib()
-    hint = attr.ib(
+    _hint = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[Text]
-    language = attr.ib(default="eng", metadata={JsonInclude.THIS: True})  # type: Text
-    min_match = attr.ib(
+    _language = attr.ib(default="eng", metadata={JsonInclude.THIS: True})  # type: Text
+    _min_match = attr.ib(
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[float]
-    app_output = attr.ib(
-        default=None, metadata={JsonInclude.THIS: True}
-    )  # type: Optional[AppOutputWithScreenshot]
-    regions = attr.ib(
-        factory=list, metadata={JsonInclude.THIS: True}
-    )  # type: List[ExpectedTextRegion]
 
-    def __init__(self, target, hint="", language="eng", min_match=None):
-        # type: (Region, Text, Text, Optional[float]) -> None
-        argument_guard.not_list_or_tuple(target)
+    def __init__(self, target):
+        # type: (Region) -> None
         self.target = target
-        self.hint = hint
-        self.language = language
-        self.min_match = min_match
+        self._hint = None
+        self._language = "eng"
+        self._min_match = None
         self.process_app_output = None  # type: Optional[Callable]
-        self.regions = []
+
+    def min_match(self, min_match):
+        self._min_match = min_match
+        return self
+
+    def hint(self, hint):
+        self._hint = hint
+        return self
+
+    def language(self, language):
+        self._language = language
+        return self
 
     def add_process_app_output(self, callback):
         # type: (Callable) -> None
@@ -184,9 +181,6 @@ class TextSettingsData(object):
     first_only = attr.ib(
         default=None, metadata={JsonInclude.NON_NONE: True}
     )  # type: Optional[bool]
-    hint = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[Text]
 
 
 PATTERN_TEXT_REGIONS = Dict[Text, TextRegion]  # typedef

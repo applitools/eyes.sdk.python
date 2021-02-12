@@ -25,6 +25,7 @@ from applitools.core.cut import (
 from applitools.core.fluent.region import AccessibilityRegionByRectangle
 from applitools.images.fluent import Target
 
+from .extract_text import OCRRegion, TextRegionSettings
 from .eyes import Eyes
 
 __all__ = (

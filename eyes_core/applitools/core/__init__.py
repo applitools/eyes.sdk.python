@@ -6,6 +6,7 @@ from .capture import (
     ImageProvider,
 )
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
+from .extract_text import ExtractTextProvider, TextRegionSettings
 from .eyes_base import EyesBase
 from .eyes_runner import EyesRunner
 from .feature import Feature
@@ -35,7 +36,6 @@ from .scaling import (
     ScaleProvider,
 )
 from .server_connector import ServerConnector
-from .text_regions import TextRegionProvider, TextRegionSettings
 from .triggers import MouseTrigger, TextTrigger
 
 __all__ = (
@@ -74,5 +74,5 @@ __all__ = (
     "VisualLocatorSettings",
     "Feature",
     "TextRegionSettings",
-    "TextRegionProvider",
+    "ExtractTextProvider",
 )
