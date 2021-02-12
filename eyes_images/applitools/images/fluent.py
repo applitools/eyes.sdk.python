@@ -43,9 +43,7 @@ class Target(object):
     def image(image_or_path):
         check_settings = ImagesCheckSettings()
         check_settings.values.image = image_utils.image_from_path(image_or_path)
-        raise TypeError(
-            "Unsupported image type. Should be `PIL.Image` or path to " "image"
-        )
+        return check_settings
 
     @staticmethod  # noqa
     @overload
