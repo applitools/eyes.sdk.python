@@ -934,16 +934,14 @@ class SeleniumEyes(EyesBase):
             self._region_to_check, self._full_region_to_check, elem_position_provider
         )
         image = self._crop_if_needed(image)
-        screenshot = EyesWebDriverScreenshot.create_entire_element(
+        return EyesWebDriverScreenshot.create_entire_element(
             self._driver,
             image,
             RectangleSize.from_(image),
             -self._full_region_to_check.location,
+            self._region_to_check.location
+            - algo.origin_provider.get_current_position(),
         )
-        screenshot.original_location = (
-            self._region_to_check.location - algo.origin_provider.get_current_position()
-        )
-        return screenshot
 
     def _full_page_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
@@ -972,11 +970,9 @@ class SeleniumEyes(EyesBase):
                 region, Region.EMPTY(), self.position_provider
             )
             image = self._crop_if_needed(image)
-            screenshot = EyesWebDriverScreenshot.create_full_page(
+            return EyesWebDriverScreenshot.create_full_page(
                 self._driver, image, -region.location
             )
-            screenshot.original_location = Point.ZERO()
-            return screenshot
 
     def _element_screenshot(self, scale_provider):
         # type: (ScaleProvider) -> EyesWebDriverScreenshot
@@ -989,9 +985,7 @@ class SeleniumEyes(EyesBase):
                 # Some browsers return always full page screenshot (IE).
                 # So we cut such images to viewport size
                 image = cut_to_viewport_size_if_required(self.driver, image)
-            screenshot = EyesWebDriverScreenshot.create_viewport(self._driver, image)
-            screenshot.original_location = Point.ZERO()
-            return screenshot
+            return EyesWebDriverScreenshot.create_viewport(self._driver, image)
 
     def _maybe_capture_and_send_dom(self):
         if self._send_dom and not self._dom_url:
