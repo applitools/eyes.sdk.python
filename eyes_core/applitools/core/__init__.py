@@ -6,7 +6,7 @@ from .capture import (
     ImageProvider,
 )
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
-from .extract_text import ExtractTextProvider, TextRegionSettings
+from .extract_text import BaseOCRRegion, ExtractTextProvider, TextRegionSettings
 from .eyes_base import EyesBase
 from .eyes_runner import EyesRunner
 from .feature import Feature
@@ -75,4 +75,5 @@ __all__ = (
     "Feature",
     "TextRegionSettings",
     "ExtractTextProvider",
+    "BaseOCRRegion",
 )

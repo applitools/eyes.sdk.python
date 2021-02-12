@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List, Text, Union
 
 from PIL import Image
 
-from applitools.common import AppOutput, Point
+from applitools.common import AppOutput
 from applitools.common.utils import image_utils
 from applitools.core import TextRegionSettings as TextRegionSettingsBase
 from applitools.core.extract_text import (

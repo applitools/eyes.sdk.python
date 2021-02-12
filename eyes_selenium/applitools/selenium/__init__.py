@@ -34,11 +34,10 @@ from applitools.core.cut import (  # noqa
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
-from applitools.core.extract_text import TextRegionSettings  # noqa
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 
 from .classic_runner import ClassicRunner  # noqa
-from .extract_text import OCRRegion
+from .extract_text import OCRRegion, TextRegionSettings
 from .eyes import Eyes  # noqa
 from .fluent.target import Target  # noqa
 from .visual_grid import RunnerOptions, VisualGridRunner  # noqa
@@ -84,4 +83,5 @@ __all__ = (
     "ChromeEmulationInfo",
     "DesktopBrowserInfo",
     "OCRRegion",
+    "TextRegionSettings",
 )
