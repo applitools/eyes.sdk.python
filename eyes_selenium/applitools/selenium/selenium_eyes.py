@@ -126,7 +126,6 @@ class SeleniumEyes(EyesBase):
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_content = False  # type: bool
         self._runner = runner or ClassicRunner()
-        self._original_location = None  # type: Optional[Point]
 
     @property
     def configure(self):
@@ -367,7 +366,6 @@ class SeleniumEyes(EyesBase):
 
     def _check_full_window(self, check_settings, source):
         logger.debug("Target.window().fully()")
-        self._original_location = Point.ZERO()
         return self._check_window_base(
             NULL_REGION_PROVIDER,
             False,
@@ -377,12 +375,6 @@ class SeleniumEyes(EyesBase):
 
     def _check_window(self, check_settings, source):
         logger.debug("Target.window()")
-        location = Point.ZERO()
-        if not self.driver.is_mobile_app:
-            location = ScrollPositionProvider(
-                self.driver, self.scroll_root_element
-            ).get_current_position()
-        self._original_location = location
         return self._check_window_base(
             NULL_REGION_PROVIDER,
             False,
@@ -424,7 +416,6 @@ class SeleniumEyes(EyesBase):
                 target_region = Region.EMPTY()
             return target_region
 
-        self._original_location = Point.ZERO()
         result = self._check_window_base(
             RegionProvider(lambda: full_frame_or_element_region(check_settings)),
             False,
@@ -510,7 +501,6 @@ class SeleniumEyes(EyesBase):
                             self._effective_viewport
                         )
 
-                    self._original_location = self._region_to_check.location
                     result = self._check_window_base(
                         NULL_REGION_PROVIDER,
                         False,
@@ -531,10 +521,6 @@ class SeleniumEyes(EyesBase):
 
     def _check_element(self, check_settings, source, prev_frame_location=None):
         self._is_check_region = True
-        if prev_frame_location is None:
-            location = self.current_frame_position_provider.get_current_position()
-        else:
-            location = prev_frame_location
 
         def get_region():
             rect = check_settings.values.target_region
@@ -561,8 +547,6 @@ class SeleniumEyes(EyesBase):
                 w = min(p.x + s["width"], rect.right) - x
                 h = min(p.y + s["height"], rect.bottom) - y
                 region = Region(x, y, w, h, CoordinatesType.CONTEXT_RELATIVE)
-
-            self._original_location = region.offset(Point.from_(location)).location
             return region
 
         result = self._check_window_base(
