@@ -43,7 +43,7 @@ def test_check_image_path_fluent(eyes):
 def test_check_raw_image_fluent(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestCheckImage_Fluent")
-    origin_image = Image.new("RGBA", (600, 600))
+    origin_image = Image.open(path.join(here, "resources/minions-800x500.jpg"))
     eyes.check("TestCheckImage_Fluent", Target.image(origin_image))
     eyes.close()
 
@@ -117,7 +117,7 @@ def test_extract_text(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestExtractText")
     result = eyes.extract_text_regions(
-        TextRegionSettings(".+").image("resources/extractText.png")
+        TextRegionSettings(".+").image(path.join(here, "resources/minions-800x500.jpg"))
     )
     assert result[".+"] == [TextRegion(10, 11, 214, 18, "This is the navigation bar")]
 
