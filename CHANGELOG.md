@@ -1,8 +1,11 @@
+## [vNext]
+### Updated
+- Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
+
 ## [4.17.0] - 2021-02-12
 - Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
 ### Updated
 - Better logging to aid dom-capture script errors debugging [Trello 2457](https://trello.com/c/6CcbvxWU)
-- Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
 
 ## [4.16.0] - 2021-02-05
 ### Added
