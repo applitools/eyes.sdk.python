@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
+
 ## [4.17.1] - 2021-02-25
 ### Fixed
 - Some checks in multi-checks tests might be skipped [Trello 2463](https://trello.com/c/YAMPDWIM)
