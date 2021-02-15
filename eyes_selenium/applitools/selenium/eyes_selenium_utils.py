@@ -28,7 +28,6 @@ if tp.TYPE_CHECKING:
     from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
 
-
     from .webelement import EyesWebElement
 
 __all__ = (
