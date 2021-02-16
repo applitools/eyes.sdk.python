@@ -30,7 +30,7 @@ def get_dom(results, dom_id):
             + "&"
             + urlencode(
                 {
-                    "apiKey": "SsEfrro4C1h0AJBhWkjDG9ZIM5IPZRG8WWMhdR1EMU4110",#"apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None)
+                    "apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None)
                     "format": "json",
                 }
             ),
