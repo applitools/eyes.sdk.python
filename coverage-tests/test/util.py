@@ -1,8 +1,10 @@
 import json
 import os
 import sys
+
 import requests
 from pip._vendor.retrying import retry
+
 from applitools.common.utils import urlencode, urlsplit, urlunsplit
 
 
@@ -30,7 +32,7 @@ def get_dom(results, dom_id):
             + "&"
             + urlencode(
                 {
-                    "apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None)
+                    "apiKey": os.getenv("APPLITOOLS_API_KEY_READ", None),
                     "format": "json",
                 }
             ),
