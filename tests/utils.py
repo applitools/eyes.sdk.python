@@ -55,6 +55,7 @@ def prepare_result_data(test_name, passed, parameters):
     return dict(
         test_name=test_name,
         passed=passed,
+        isSkipped=false,
         parameters=dict(browser=browser, stitching=stitching),
     )
 
