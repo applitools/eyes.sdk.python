@@ -266,26 +266,23 @@ jobs:
             - inv install-requirements
             - inv install-packages
             - bash ./tutorials/tutorials.sh
-        - stage: deploy
-          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
+        - stage: send_mail
           python: 3.6
           script:
               # Deploy to PyPi and send notification about the tests execution status
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
-              - pip install -U invoke twine keyring==21.4.0
               - echo "v$SDK_VERSION $CHANGELOG"
               - echo $TMP_CHANGELOG
               # Save the email of the person who did this commit in COMMITTER_EMAIL
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
-              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
+              - if [[ 1 ]]; then
                   echo "DEPLOY";
                   TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
                   bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
-                  inv dist --from-env;
 
-                  echo "DEPLOY SUCCESSFUL";
+                  echo "send_mail SUCCESSFUL";
                 else
-                  echo "DEPLOYMENT FAILED";
+                  echo "send_mail FAILED";
                   exit 1;
                 fi
