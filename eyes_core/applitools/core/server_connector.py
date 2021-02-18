@@ -647,12 +647,13 @@ class ServerConnector(object):
             "Accept-Encoding": "identity",
             "Accept-Language": "*",
         }
+        cookies = {c["name"]: c["value"] for c in cookies}
         if self._ua_string:
             headers["User-Agent"] = self._ua_string
         logger.debug("Fetching URL {}\nwith headers {}".format(url, headers))
         timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
         try:
-            return self._try_download_resources(headers, timeout_sec, url)
+            return self._try_download_resources(headers, timeout_sec, url, cookies)
         except (requests.HTTPError, requests.ConnectionError) as e:
             logger.warning("Failed to download resource", url=url, exc=e)
             response = Response()
@@ -661,10 +662,14 @@ class ServerConnector(object):
             return response
 
     @retry()
-    def _try_download_resources(self, headers, timeout_sec, url):
-        response = requests.get(url, headers=headers, timeout=timeout_sec, verify=False)
+    def _try_download_resources(self, headers, timeout_sec, url, cookies):
+        response = requests.get(
+            url, headers=headers, cookies=cookies, timeout=timeout_sec, verify=False
+        )
         if response.status_code == requests.codes.not_acceptable:
-            response = requests.get(url, timeout=timeout_sec, verify=False)
+            response = requests.get(
+                url, timeout=timeout_sec, cookies=cookies, verify=False
+            )
         return response
 
     @retry()

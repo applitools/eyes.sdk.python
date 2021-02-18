@@ -295,3 +295,53 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
         "444",
         "503",
     ]
+
+
+def test_cookies(driver, fake_connector_class, spy):
+    driver.get("http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/")
+    vg_runner = VisualGridRunner(1)
+    eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
+    download_resource_spy = spy(eyes.server_connector, "download_resource")
+    eyes.open(
+        driver,
+        app_name="Visual Grid Render Test",
+        test_name="TestRenderResourceNotFound",
+    )
+
+    eyes.check(Target.window().disable_browser_fetching())
+    eyes.close(False)
+    vg_runner.get_all_test_results(False)
+
+    assert download_resource_spy.call_args_list == [
+        spy.call(
+            "http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/subdir/cookie.png",
+            [
+                {
+                    "domain": "f90a520de546.ngrok.io",
+                    "httpOnly": False,
+                    "name": "frame1",
+                    "path": "/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+                {
+                    "domain": "f90a520de546.ngrok.io",
+                    "httpOnly": False,
+                    "name": "index",
+                    "path": "/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+                {
+                    "domain": "f90a520de546.ngrok.io",
+                    "httpOnly": False,
+                    "name": "frame2",
+                    "path": "/TestPages/CookiesTestPage/subdir",
+                    "secure": False,
+                    "value": "1",
+                },
+            ],
+        ),
+        spy.call("http://f90a520de546.ngrok.io/images/image_1.jpg", []),
+    ]
