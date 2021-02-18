@@ -1,3 +1,5 @@
+import mock
+
 from applitools.common import logger
 from applitools.selenium.visual_grid import ResourceCache, ResourceCollectionTask
 from tests.unit.eyes_core.test_server_connector import MockResponse
@@ -16,7 +18,7 @@ def test_cached_child_resources_get_into_render_request():
 
     class ConnectorMock:
         @staticmethod
-        def download_resource(url):
+        def download_resource(url, cookies):
             return internet[url]
 
     capture_result = {
@@ -61,7 +63,7 @@ def test_recursive_resources_downloaded_once():
         call_count = 0
 
         @staticmethod
-        def download_resource(url):
+        def download_resource(url, cookies):
             ConnectorMock.call_count += 1
             return internet[url]
 
@@ -81,3 +83,42 @@ def test_recursive_resources_downloaded_once():
     }
     assert "https://a.com/1.css" in cache
     assert "https://a.com/2.css" in cache
+
+
+def test_cookies_passed_to_server_connector():
+    connector_mock = mock.MagicMock()
+    connector_mock.download_resource.return_value = MockResponse(None, b"", 200, {})
+
+    capture_result = {
+        "cdt": [],
+        "url": "a.com",
+        "srcAttr": None,
+        "resourceUrls": ["image_1.jpg"],
+        "frames": [
+            {
+                "cdt": [],
+                "url": "a.com/frame1.html",
+                "srcAttr": "./frame1.html",
+                "frames": [
+                    {
+                        "cdt": [],
+                        "url": "a.com/subdir/frame2.html",
+                        "srcAttr": "./subdir/frame2.html",
+                        "resourceUrls": ["image_2.jpg"],
+                        "frames": [],
+                        "cookies": "cookie3",
+                    }
+                ],
+                "cookies": "cookies2",
+            }
+        ],
+        "cookies": "cookies1",
+    }
+    cache = ResourceCache()
+    task = ResourceCollectionTask("A", logger, "", cache, None, connector_mock, None)
+
+    vg_dom = task.parse_frame_dom_resources(capture_result)
+    assert connector_mock.download_resource.call_args_list == [
+        mock.call("image_2.jpg", "cookie3"),
+        mock.call("image_1.jpg", "cookies1"),
+    ]

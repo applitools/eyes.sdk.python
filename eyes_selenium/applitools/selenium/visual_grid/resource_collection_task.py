@@ -131,21 +131,14 @@ class ResourceCollectionTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        cookies = data.get("cookies", [])
         logger.debug(
-            """
-        parse_frame_dom_resources() call
-
-        base_url: {base_url}
-        count blobs: {blobs_num}
-        count resource urls: {resource_urls_num}
-        count frames: {frames_num}
-
-        """.format(
-                base_url=base_url,
-                blobs_num=len(all_blobs),
-                resource_urls_num=len(resource_urls),
-                frames_num=len(frames),
-            )
+            "parse_frame_dom_resources() call",
+            base_url=base_url,
+            blobs_count=len(all_blobs),
+            resource_urls_count=len(resource_urls),
+            frames_count=len(frames),
+            cookies_count=len(cookies),
         )
 
         def find_child_resource_urls(content_type, content, resource_url):
@@ -180,6 +173,7 @@ class ResourceCollectionTask(VGTask):
 
         resources_and_their_children = fetch_resources_recursively(
             urls_to_fetch,
+            cookies,
             self.server_connector,
             self.resource_cache,
             find_child_resource_urls,
@@ -193,6 +187,7 @@ class ResourceCollectionTask(VGTask):
 
 def fetch_resources_recursively(
     urls,  # type: Iterable[Text]
+    cookies,  # type: Dict
     eyes_connector,  # type: ServerConnector
     resource_cache,  # type: ResourceCache
     find_child_resource_urls,  # type: Callable[[Text, bytes, Text],List[Text]]
@@ -200,7 +195,7 @@ def fetch_resources_recursively(
     # type: (...) -> Iterable[Tuple[Text, VGResource]]
     def get_resource(link):
         logger.debug("get_resource({0}) call".format(link))
-        response = eyes_connector.download_resource(link)
+        response = eyes_connector.download_resource(link, cookies)
         return VGResource.from_response(link, response, find_child_resource_urls)
 
     def schedule_fetch(urls):

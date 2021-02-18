@@ -539,7 +539,7 @@ def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(driv
     driver = EyesWebDriver(driver, None)
     driver.get("http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 10000, False)
+    dom = create_dom_snapshot(driver, logger, True, [], 10000, False)
 
     assert dom["cookies"] == [
         {
