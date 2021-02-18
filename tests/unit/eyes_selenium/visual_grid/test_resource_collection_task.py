@@ -158,56 +158,60 @@ def test_cookies_passed_to_server_connector():
     cache = ResourceCache()
     task = ResourceCollectionTask("A", logger, "", cache, None, connector_mock, None)
 
-    vg_dom = task.parse_frame_dom_resources(capture_result)
+    task.parse_frame_dom_resources(capture_result)
+
+    connector_mock.download_resource.call_args_list.sort(
+        key=lambda a: (a.args[0], len(a.args[1]))
+    )
     assert connector_mock.download_resource.call_args_list == [
         mock.call(
-            "https://a.com/root.res",
+            "http://a.com/root.res",
             [
                 {
+                    "path": "/",
                     "domain": "a.com",
-                    "path": "/",
                     "secure": False,
+                    "value": "1",
                     "name": "insecure",
-                    "value": "1",
-                },
-                {
-                    "domain": ".a.com",
-                    "path": "/",
-                    "secure": True,
-                    "name": "secure",
-                    "value": "1",
-                },
+                }
             ],
         ),
         mock.call(
             "http://a.com/subdir/res",
             [
                 {
-                    "domain": "a.com",
                     "path": "/",
+                    "domain": "a.com",
                     "secure": False,
-                    "name": "insecure",
                     "value": "1",
+                    "name": "insecure",
                 },
                 {
-                    "domain": ".a.com",
                     "path": "/subdir",
+                    "domain": ".a.com",
                     "secure": False,
-                    "name": "subdir",
                     "value": "1",
+                    "name": "subdir",
                 },
             ],
         ),
         mock.call(
-            "http://a.com/root.res",
+            "https://a.com/root.res",
             [
                 {
-                    "domain": "a.com",
                     "path": "/",
+                    "domain": "a.com",
                     "secure": False,
-                    "name": "insecure",
                     "value": "1",
-                }
+                    "name": "insecure",
+                },
+                {
+                    "path": "/",
+                    "domain": ".a.com",
+                    "secure": True,
+                    "value": "1",
+                    "name": "secure",
+                },
             ],
         ),
     ]
