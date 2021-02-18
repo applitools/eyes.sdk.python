@@ -258,11 +258,8 @@ class RecursiveSnapshotter(object):
         else:
             raise DomSnapshotFailure("Unexpected script result", result)
 
-    def _process_dom_snapshot_frames(
-        self,
-        dom,  # type: Dict
-    ):
-        # type: (...) -> None
+    def _process_dom_snapshot_frames(self, dom):
+        # type: (Dict) -> None
         dom["cookies"] = self._driver.get_cookies()
         for frame in dom["frames"]:
             selector = frame.get("selector", None)
@@ -277,13 +274,17 @@ class RecursiveSnapshotter(object):
             except Exception:
                 if self.should_skip_failed_frames:
                     self._logger.warning(
-                        "Failed switching to frame with selector {}.".format(selector),
+                        "failed switching to frame",
+                        frame_selector=selector,
                         exc_info=True,
                     )
                 else:
                     raise
-        if not self._cross_origin_rendering:
-            return
+        if self._cross_origin_rendering:
+            self._snapshot_and_process_cors_frames(dom)
+
+    def _snapshot_and_process_cors_frames(self, dom):
+        # type: (Dict) -> None
         for frame in dom["crossFrames"]:
             selector = frame.get("selector", None)
             if not selector:
@@ -307,9 +308,8 @@ class RecursiveSnapshotter(object):
             except Exception:
                 if self.should_skip_failed_frames:
                     self._logger.warning(
-                        "Failed extracting cross frame with selector {}.".format(
-                            selector
-                        ),
+                        "failed extracting and processing cross frame",
+                        frame_selector=selector,
                         exc_info=True,
                     )
                 else:
