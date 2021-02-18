@@ -463,3 +463,123 @@ def test_create_dom_snapshot_retries_on_single_failure(driver, monkeypatch):
     assert len(dom["frames"][0]["crossFrames"]) == 1
     assert dom["frames"][0]["crossFrames"][0]["index"] == 16
     assert "selector" in dom["frames"][0]["crossFrames"][0]
+
+
+def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://467975653937.ngrok.io")
+
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, True)
+
+    assert dom["cookies"] == [
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame2",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame1",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "index",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+    ]
+    assert dom["frames"][0]["cookies"] == [
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame2",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame1",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "index",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+    ]
+
+
+def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("https://467975653937.ngrok.io")
+
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, False)
+
+    assert dom["cookies"] == [
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame2",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame1",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "index",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+    ]
+    assert dom["frames"][0]["cookies"] == [
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame2",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "frame1",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+        {
+            "domain": "467975653937.ngrok.io",
+            "httpOnly": False,
+            "name": "index",
+            "path": "/",
+            "secure": False,
+            "value": "1",
+        },
+    ]

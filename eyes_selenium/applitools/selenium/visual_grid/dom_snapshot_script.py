@@ -226,8 +226,7 @@ class RecursiveSnapshotter(object):
 
     def create_cross_frames_dom_snapshots(self):
         dom = self._create_dom_snapshot_loop()
-        if self._cross_origin_rendering:
-            self._process_dom_snapshot_frames(dom)
+        self._process_dom_snapshot_frames(dom)
         return dom
 
     def _create_dom_snapshot_loop(self):
@@ -264,6 +263,27 @@ class RecursiveSnapshotter(object):
         dom,  # type: Dict
     ):
         # type: (...) -> None
+        dom["cookies"] = self._driver.get_cookies()
+        for frame in dom["frames"]:
+            selector = frame.get("selector", None)
+            if not selector:
+                self._logger.warning("inner frame with null selector")
+                continue
+            try:
+                with self._driver.switch_to.frame_and_back(
+                    FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
+                ):
+                    self._process_dom_snapshot_frames(frame)
+            except Exception:
+                if self.should_skip_failed_frames:
+                    self._logger.warning(
+                        "Failed switching to frame with selector {}.".format(selector),
+                        exc_info=True,
+                    )
+                else:
+                    raise
+        if not self._cross_origin_rendering:
+            return
         for frame in dom["crossFrames"]:
             selector = frame.get("selector", None)
             if not selector:
@@ -283,32 +303,13 @@ class RecursiveSnapshotter(object):
                     self._logger.info(
                         "Created cross origin frame snapshot {}".format(frame_url)
                     )
+                    self._process_dom_snapshot_frames(frame_dom)
             except Exception:
                 if self.should_skip_failed_frames:
                     self._logger.warning(
                         "Failed extracting cross frame with selector {}.".format(
                             selector
                         ),
-                        exc_info=True,
-                    )
-                else:
-                    raise
-        for frame in dom["frames"]:
-            if not has_cross_subframes(frame):
-                continue
-            selector = frame.get("selector", None)
-            if not selector:
-                self._logger.warning("inner frame with null selector")
-                continue
-            try:
-                with self._driver.switch_to.frame_and_back(
-                    FrameLocator(frame_selector=[By.CSS_SELECTOR, selector])
-                ):
-                    self._process_dom_snapshot_frames(frame)
-            except Exception:
-                if self.should_skip_failed_frames:
-                    self._logger.warning(
-                        "Failed switching to frame with selector {}.".format(selector),
                         exc_info=True,
                     )
                 else:
