@@ -189,6 +189,7 @@ class VisualGridEyes(object):
         try:
             return dom_snapshot_script.create_dom_snapshot(
                 self.driver,
+                self.logger,
                 dont_fetch_resources,
                 None,
                 DOM_EXTRACTION_TIMEOUT,

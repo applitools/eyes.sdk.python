@@ -9,7 +9,6 @@ from time import time
 import attr
 from selenium.webdriver.common.by import By
 
-from applitools.common import logger
 from applitools.common.utils import ABC, datetime_utils
 from applitools.common.utils.json_utils import JsonInclude, to_json
 from applitools.selenium import resource
@@ -18,8 +17,10 @@ from applitools.selenium.fluent import FrameLocator
 if typing.TYPE_CHECKING:
     from typing import Any, Callable, Dict, List, Optional, Text, Union
 
+    from structlog import BoundLogger
+
     from applitools.selenium import EyesWebDriver
-    from applitools.selenium.webdriver import _EyesSwitchTo
+
 
 MAX_CHUNK_BYTES_IOS = 10 * 1024 * 1024
 MAX_CHUNK_BYTES_GENERIC = 50 * 1024 * 1024
@@ -39,12 +40,13 @@ class DomSnapshotTimeout(DomSnapshotFailure):
 
 def create_dom_snapshot(
     driver,
+    logger,
     dont_fetch_resources,
     skip_resources,
     timeout_ms,
     cross_origin_rendering,
 ):
-    # type: (EyesWebDriver, bool, List[Text], int, bool) -> Dict
+    # type: (EyesWebDriver, BoundLogger, bool, List[Text], int, bool) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
@@ -53,6 +55,7 @@ def create_dom_snapshot(
     snapshotter = RecursiveSnapshotter(
         driver,
         script,
+        logger,
         timeout_ms,
         chunk_byte_length,
         cross_origin_rendering,
@@ -206,6 +209,7 @@ class RecursiveSnapshotter(object):
         self,
         driver,  # type: EyesWebDriver
         script,  # type: DomSnapshotScript
+        logger,  # type: BoundLogger
         timeout_ms,  # type: int
         chunk_byte_length,  # type: int
         cross_origin_rendering,  # type: bool
@@ -214,6 +218,7 @@ class RecursiveSnapshotter(object):
         self.should_skip_failed_frames = False
         self._driver = driver
         self._script = script
+        self._logger = logger
         self._deadline_time = time() + datetime_utils.to_sec(timeout_ms)
         self._chunk_byte_length = chunk_byte_length
         self._cross_origin_rendering = cross_origin_rendering
@@ -241,7 +246,7 @@ class RecursiveSnapshotter(object):
                     "Waiting for the end of DOM extraction",
                 )
             elif result.status is ProcessPageStatus.SUCCESS_CHUNKED:
-                logger.info(
+                self._logger.info(
                     "Snapshot chunk {}, {}B".format(len(chunks), len(result.value))
                 )
                 chunks.append(result.value)
@@ -262,7 +267,7 @@ class RecursiveSnapshotter(object):
         for frame in dom["crossFrames"]:
             selector = frame.get("selector", None)
             if not selector:
-                logger.warning("cross frame with null selector")
+                self._logger.warning("cross frame with null selector")
                 continue
             frame_index = frame["index"]
             try:
@@ -275,12 +280,12 @@ class RecursiveSnapshotter(object):
                     dom["cdt"][frame_index]["attributes"].append(
                         {"name": "data-applitools-src", "value": frame_url}
                     )
-                    logger.info(
+                    self._logger.info(
                         "Created cross origin frame snapshot {}".format(frame_url)
                     )
             except Exception:
                 if self.should_skip_failed_frames:
-                    logger.warning(
+                    self._logger.warning(
                         "Failed extracting cross frame with selector {}.".format(
                             selector
                         ),
@@ -293,7 +298,7 @@ class RecursiveSnapshotter(object):
                 continue
             selector = frame.get("selector", None)
             if not selector:
-                logger.warning("inner frame with null selector")
+                self._logger.warning("inner frame with null selector")
                 continue
             try:
                 with self._driver.switch_to.frame_and_back(
@@ -302,7 +307,7 @@ class RecursiveSnapshotter(object):
                     self._process_dom_snapshot_frames(frame)
             except Exception:
                 if self.should_skip_failed_frames:
-                    logger.warning(
+                    self._logger.warning(
                         "Failed switching to frame with selector {}.".format(selector),
                         exc_info=True,
                     )
