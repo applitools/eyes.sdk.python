@@ -2,6 +2,7 @@ import mock
 
 from applitools.common import logger
 from applitools.selenium.visual_grid import ResourceCache, ResourceCollectionTask
+from applitools.selenium.visual_grid.resource_collection_task import is_cookie_for_url
 from tests.unit.eyes_core.test_server_connector import MockResponse
 
 
@@ -93,32 +94,250 @@ def test_cookies_passed_to_server_connector():
         "cdt": [],
         "url": "a.com",
         "srcAttr": None,
-        "resourceUrls": ["image_1.jpg"],
+        "resourceUrls": ["http://a.com/root.res"],
+        "cookies": [
+            {
+                "domain": "a.com",
+                "path": "/",
+                "secure": False,
+                "name": "insecure",
+                "value": "1",
+            },
+            {
+                "domain": ".a.com",
+                "path": "/",
+                "secure": True,
+                "name": "secure",
+                "value": "1",
+            },
+        ],
         "frames": [
             {
                 "cdt": [],
                 "url": "a.com/frame1.html",
                 "srcAttr": "./frame1.html",
+                "cookies": [],
                 "frames": [
                     {
                         "cdt": [],
                         "url": "a.com/subdir/frame2.html",
                         "srcAttr": "./subdir/frame2.html",
-                        "resourceUrls": ["image_2.jpg"],
+                        "resourceUrls": [
+                            "https://a.com/root.res",
+                            "http://a.com/subdir/res",
+                        ],
+                        "cookies": [
+                            {
+                                "domain": "a.com",
+                                "path": "/",
+                                "secure": False,
+                                "name": "insecure",
+                                "value": "1",
+                            },
+                            {
+                                "domain": ".a.com",
+                                "path": "/",
+                                "secure": True,
+                                "name": "secure",
+                                "value": "1",
+                            },
+                            {
+                                "domain": ".a.com",
+                                "path": "/subdir",
+                                "secure": False,
+                                "name": "subdir",
+                                "value": "1",
+                            },
+                        ],
                         "frames": [],
-                        "cookies": "cookie3",
                     }
                 ],
-                "cookies": "cookies2",
             }
         ],
-        "cookies": "cookies1",
     }
     cache = ResourceCache()
     task = ResourceCollectionTask("A", logger, "", cache, None, connector_mock, None)
 
     vg_dom = task.parse_frame_dom_resources(capture_result)
     assert connector_mock.download_resource.call_args_list == [
-        mock.call("image_2.jpg", "cookie3"),
-        mock.call("image_1.jpg", "cookies1"),
+        mock.call(
+            "https://a.com/root.res",
+            [
+                {
+                    "domain": "a.com",
+                    "path": "/",
+                    "secure": False,
+                    "name": "insecure",
+                    "value": "1",
+                },
+                {
+                    "domain": ".a.com",
+                    "path": "/",
+                    "secure": True,
+                    "name": "secure",
+                    "value": "1",
+                },
+            ],
+        ),
+        mock.call(
+            "http://a.com/subdir/res",
+            [
+                {
+                    "domain": "a.com",
+                    "path": "/",
+                    "secure": False,
+                    "name": "insecure",
+                    "value": "1",
+                },
+                {
+                    "domain": ".a.com",
+                    "path": "/subdir",
+                    "secure": False,
+                    "name": "subdir",
+                    "value": "1",
+                },
+            ],
+        ),
+        mock.call(
+            "http://a.com/root.res",
+            [
+                {
+                    "domain": "a.com",
+                    "path": "/",
+                    "secure": False,
+                    "name": "insecure",
+                    "value": "1",
+                }
+            ],
+        ),
     ]
+
+
+def test_is_cookie_for_url_with_dotted_correct_domain():
+    assert is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/",
+    )
+
+
+def test_is_cookie_for_url_with_dotted_correct_subdomain():
+    assert is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://b.a.com/",
+    )
+
+
+def test_is_cookie_for_url_with_not_dotted_correct_domain():
+    assert is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/",
+    )
+
+
+def test_is_cookie_for_url_with_not_dotted_correct_subdomain():
+    assert is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://b.a.com/",
+    )
+
+
+def test_is_cookie_for_url_with_dotted_incorrect_domain():
+    assert not is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://b.com/",
+    )
+
+
+def test_is_cookie_for_url_with_not_dotted_incorrect_domain():
+    assert not is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://b.com/",
+    )
+
+
+def test_is_cookie_for_url_with_not_dotted_incorrect_suffixed_domain():
+    assert not is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://ba.com/",
+    )
+
+
+def test_is_cookie_for_url_with_secure_cookie_non_secure_url():
+    assert not is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": True,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/subdir",
+    )
+
+
+def test_is_cookie_for_url_with_path_cookie_incorrect_url():
+    assert not is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/b",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/",
+    )
+
+
+def test_is_cookie_for_url_with_path_cookie_correct_subdir_url():
+    assert is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/b",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/b/c",
+    )
