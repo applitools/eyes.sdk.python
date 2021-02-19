@@ -298,7 +298,7 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
 
 
 def test_cookies(driver, fake_connector_class, spy):
-    driver.get("http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/")
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
@@ -315,33 +315,33 @@ def test_cookies(driver, fake_connector_class, spy):
 
     assert download_resource_spy.call_args_list == [
         spy.call(
-            "http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/subdir/cookie.png",
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/subdir/cookie.png",
             [
                 {
-                    "domain": "f90a520de546.ngrok.io",
+                    "domain": "applitools.github.io",
                     "httpOnly": False,
                     "name": "frame1",
-                    "path": "/TestPages/CookiesTestPage",
+                    "path": "/demo/TestPages/CookiesTestPage",
                     "secure": False,
                     "value": "1",
                 },
                 {
-                    "domain": "f90a520de546.ngrok.io",
+                    "domain": "applitools.github.io",
                     "httpOnly": False,
                     "name": "index",
-                    "path": "/TestPages/CookiesTestPage",
+                    "path": "/demo/TestPages/CookiesTestPage",
                     "secure": False,
                     "value": "1",
                 },
                 {
-                    "domain": "f90a520de546.ngrok.io",
+                    "domain": "applitools.github.io",
                     "httpOnly": False,
                     "name": "frame2",
-                    "path": "/TestPages/CookiesTestPage/subdir",
+                    "path": "/demo/TestPages/CookiesTestPage/subdir",
                     "secure": False,
                     "value": "1",
                 },
             ],
         ),
-        spy.call("http://f90a520de546.ngrok.io/images/image_1.jpg", []),
+        spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
     ]

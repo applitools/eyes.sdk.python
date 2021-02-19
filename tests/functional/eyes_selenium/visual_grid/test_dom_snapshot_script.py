@@ -467,68 +467,68 @@ def test_create_dom_snapshot_retries_on_single_failure(driver, monkeypatch):
 
 def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(driver):
     driver = EyesWebDriver(driver, None)
-    driver.get("http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/")
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
     dom = create_dom_snapshot(driver, logger, False, [], 10000, True)
 
     assert dom["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
     ]
     assert dom["frames"][0]["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
     ]
     assert dom["frames"][0]["frames"][0]["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame2",
-            "path": "/TestPages/CookiesTestPage/subdir",
+            "path": "/demo/TestPages/CookiesTestPage/subdir",
             "secure": False,
             "value": "1",
         },
@@ -537,68 +537,68 @@ def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(driver):
 
 def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(driver):
     driver = EyesWebDriver(driver, None)
-    driver.get("http://f90a520de546.ngrok.io/TestPages/CookiesTestPage/")
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
     dom = create_dom_snapshot(driver, logger, True, [], 10000, False)
 
     assert dom["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
     ]
     assert dom["frames"][0]["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
     ]
     assert dom["frames"][0]["frames"][0]["cookies"] == [
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame1",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "index",
-            "path": "/TestPages/CookiesTestPage",
+            "path": "/demo/TestPages/CookiesTestPage",
             "secure": False,
             "value": "1",
         },
         {
-            "domain": "f90a520de546.ngrok.io",
+            "domain": "applitools.github.io",
             "httpOnly": False,
             "name": "frame2",
-            "path": "/TestPages/CookiesTestPage/subdir",
+            "path": "/demo/TestPages/CookiesTestPage/subdir",
             "secure": False,
             "value": "1",
         },
