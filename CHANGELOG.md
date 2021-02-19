@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - Some checks in multi-checks tests might be skipped [Trello 2463](https://trello.com/c/YAMPDWIM)
+- UFG not loading resources with proxy [Trello 2433](https://trello.com/c/6OYDSI1Q)
 
 ## [4.17.0] - 2021-02-12
 - Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
