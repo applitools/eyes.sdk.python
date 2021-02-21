@@ -49,14 +49,16 @@ def prepare_result_data(test_name, passed, parameters):
     browser = "Chrome"
     if test_params.find("chrome") == -1:
         browser = "Firefox"
-    stitching = "css"
+    stitching = "CSS"
     if test_params.find("CSS") == -1:
-        stitching = "scroll"
+        stitching = "Scroll"
+    if parameters != None and parameters.mode:
+        stitching = parameters.mode
     return dict(
         test_name=test_name,
         passed=passed,
-        isSkipped=false,
-        parameters=dict(browser=browser, stitching=stitching),
+        #parameters=dict(browser=browser, stitching=stitching),
+        parameters=dict(mode=stitching),
     )
 
 
