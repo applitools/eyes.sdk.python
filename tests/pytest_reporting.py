@@ -50,7 +50,8 @@ def pytest_terminal_summary(terminalreporter):
 
 
 def _select_group(item):
-    test_dir_path_full = os.path.dirname(item.fspath)
+    full_test_path = item.fspath
+    test_dir_path_full = os.path.dirname(full_test_path)
     if len(test_dir_path_full.split("/")) <= 3:
         test_dir_path_base = test_dir_path_full
     else:
@@ -71,7 +72,8 @@ def _select_group(item):
         "tests/unit/eyes_common",
     ]:
         return "core"
-
+    elif full_test_path.endswith("test_integration.py"):
+        return "core"
     raise ValueError("Incorrect group: {}".format(item))
 
 
