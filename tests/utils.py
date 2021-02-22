@@ -1,8 +1,5 @@
 import json
-import os
-import uuid
 from copy import copy
-from distutils.util import strtobool
 from os import path
 from types import ModuleType
 from typing import TYPE_CHECKING, Callable, Dict, Optional, Text
@@ -11,7 +8,6 @@ import attr
 import requests
 
 from applitools.common import TestResults
-from applitools.common.utils import argument_guard, iteritems, json_utils, urljoin
 from applitools.common.utils.datetime_utils import retry
 from applitools.common.utils.json_utils import (
     _cleaned_dict_from_attrs,
@@ -90,6 +86,9 @@ def _to_json(val, params):
             if params:
                 return {name: getattr(obj, name) for name in params}
             return str(val)
+        # print names of all custom classes
+        elif val.__class__.__name__ != "type":
+            return val.__class__.__name__
         return _to_serializable(val, with_attrs=False)
 
     return json.dumps(val, default=__to_serializable, sort_keys=True)

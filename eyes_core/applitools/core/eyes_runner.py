@@ -8,6 +8,9 @@ class EyesRunner(ABC):
     def __init__(self):
         self.logger = logger.bind(runner_id=id(self))
 
+    def __str__(self):
+        return "{}({})".format(self.__class__.__name__, id(self))
+
     @abstractmethod
     def _get_all_test_results_impl(self, should_raise_exception):
         pass

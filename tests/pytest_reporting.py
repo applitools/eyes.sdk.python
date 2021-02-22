@@ -1,5 +1,7 @@
 import json
 import os
+import platform
+import sys
 import uuid
 from copy import copy
 from distutils.util import strtobool
@@ -102,6 +104,7 @@ def _prepare_tests_data(items):
         "core": [],
         "selenium": [],
         "images": [],
+        "appium": [],
     }
     for item in items:
         passed = item.outcome == "passed"
@@ -118,6 +121,9 @@ def _prepare_tests_data(items):
             "visual_grid"
         ):
             parameters["mode"] = "VisualGrid"
+        parameters["python"] = platform.python_version()
+        parameters["OS"] = sys.platform
+
         group_results[_select_group(item)].append(
             dict(
                 test_name=underscore_to_camelcase(test_name),
