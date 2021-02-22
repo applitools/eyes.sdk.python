@@ -4,12 +4,11 @@ import uuid
 from copy import copy
 from distutils.util import strtobool
 from json import JSONDecoder
-from urllib.parse import urljoin
 
 import pytest
 import requests
 
-from applitools.common.utils import iteritems
+from applitools.common.utils import iteritems, urljoin
 from applitools.common.utils.datetime_utils import retry
 from applitools.common.utils.json_utils import underscore_to_camelcase
 
