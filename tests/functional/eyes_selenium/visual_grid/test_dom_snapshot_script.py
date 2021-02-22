@@ -384,7 +384,7 @@ def test_create_dom_snapshot_loop_chunks():
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=False, value='{"a"'),
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=True, value=':"b"}'),
     ]
-    snapshotter = RecursiveSnapshotter(None, script, logger, 5, 3, True, False)
+    snapshotter = RecursiveSnapshotter(None, script, logger, 1000, 3, True, False)
 
     res = snapshotter._create_dom_snapshot_loop()
 
