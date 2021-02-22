@@ -225,7 +225,7 @@ def mocked_snapshotter():
 def test_create_dom_snapshot_ie(mocked_snapshotter):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = True
-    create_dom_snapshot(driver, None, False, [], 1, True)
+    create_dom_snapshot(driver, None, False, [], 1, True, True)
 
     calls = mocked_snapshotter.call_args_list
     assert calls == [
@@ -235,6 +235,7 @@ def test_create_dom_snapshot_ie(mocked_snapshotter):
             None,
             1,
             52428800,
+            True,
             True,
             dont_fetch_resources=False,
             skip_resources=[],
@@ -249,7 +250,7 @@ def test_create_dom_snapshot_generic(mocked_snapshotter):
     driver.user_agent.is_internet_explorer = False
 
     with mock.patch.object(dom_snapshot_script, "time", return_value=1.0) as time_mock:
-        create_dom_snapshot(driver, None, True, [""], 1, True)
+        create_dom_snapshot(driver, None, True, [""], 1, True, True)
 
     calls = mocked_snapshotter.call_args_list
     assert calls == [
@@ -259,6 +260,7 @@ def test_create_dom_snapshot_generic(mocked_snapshotter):
             None,
             1,
             52428800,
+            True,
             True,
             dont_fetch_resources=True,
             skip_resources=[""],
@@ -272,7 +274,7 @@ def test_create_dom_snapshot_ios(mocked_snapshotter):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = False
     driver.desired_capabilities = {"platformName": "ios"}
-    create_dom_snapshot(driver, None, True, [], 1, True)
+    create_dom_snapshot(driver, None, True, [], 1, True, True)
 
     calls = mocked_snapshotter.call_args_list
     assert calls == [
@@ -282,6 +284,7 @@ def test_create_dom_snapshot_ios(mocked_snapshotter):
             None,
             1,
             10485760,
+            True,
             True,
             dont_fetch_resources=True,
             skip_resources=[],
@@ -295,7 +298,7 @@ def test_create_cross_frames_dom_snapshots_timeout():
     script = mock.MagicMock()
     script.run.return_value = ProcessPageResult(ProcessPageStatus.WIP)
     script.poll_result.return_value = ProcessPageResult(ProcessPageStatus.WIP)
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
     snapshotter.POLL_INTERVAL_MS = 2
 
     with pytest.raises(DomSnapshotTimeout):
@@ -309,7 +312,15 @@ def test_create_dom_snapshot_loop_calls_run_with_args():
         ProcessPageStatus.SUCCESS, value={}
     )
     snapshotter = RecursiveSnapshotter(
-        None, script, None, 5, 3, True, dont_fetch_resources=True, skip_resources=[]
+        None,
+        script,
+        None,
+        5,
+        3,
+        True,
+        False,
+        dont_fetch_resources=True,
+        skip_resources=[],
     )
 
     snapshotter._create_dom_snapshot_loop()
@@ -324,7 +335,7 @@ def test_create_cross_frames_dom_snapshots_calls_poll_result_with_chunk_byte_len
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.SUCCESS, value={}
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
 
     snapshotter._create_dom_snapshot_loop()
 
@@ -335,7 +346,7 @@ def test_create_cross_frames_dom_snapshots_calls_poll_result_with_chunk_byte_len
 def test_create_cross_frames_dom_snapshots_raises_if_run_returns_error():
     script = mock.MagicMock()
     script.run.return_value = ProcessPageResult(ProcessPageStatus.ERROR, error="OOPS")
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
         snapshotter.create_cross_frames_dom_snapshots()
@@ -347,7 +358,7 @@ def test_create_dom_snapshot_loop_raises_if_poll_result_returns_error():
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.ERROR, error="OOPS"
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
         snapshotter.create_cross_frames_dom_snapshots()
@@ -359,7 +370,7 @@ def test_create_dom_snapshot_loop_success():
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.SUCCESS, value={"a": "b"}
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
 
     res = snapshotter._create_dom_snapshot_loop()
 
@@ -373,7 +384,7 @@ def test_create_dom_snapshot_loop_chunks():
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=False, value='{"a"'),
         ProcessPageResult(ProcessPageStatus.SUCCESS_CHUNKED, done=True, value=':"b"}'),
     ]
-    snapshotter = RecursiveSnapshotter(None, script, logger, 5, 3, True)
+    snapshotter = RecursiveSnapshotter(None, script, logger, 5, 3, True, False)
 
     res = snapshotter._create_dom_snapshot_loop()
 
@@ -384,7 +395,7 @@ def test_create_dom_snapshot_with_cors_iframe(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 10000, True)
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, True, False)
 
     assert len(dom["frames"][0]["crossFrames"]) == 1
     assert dom["frames"][0]["crossFrames"][0]["index"] == 16
@@ -395,7 +406,7 @@ def test_create_dom_snapshot_has_cors_iframe_data(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 10000, True)
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, True, False)
 
     assert len(dom["frames"][0]["frames"]) == 1
     assert (
@@ -435,7 +446,7 @@ def test_create_dom_snapshot_disable_cross_origin_rendering(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 10000, False)
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, False, False)
 
     assert len(dom["frames"][0]["frames"]) == 0
 
@@ -458,7 +469,7 @@ def test_create_dom_snapshot_retries_on_single_failure(driver, monkeypatch):
     driver = EyesWebDriver(driver, None)
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 1000000, True)
+    dom = create_dom_snapshot(driver, logger, False, [], 1000000, True, False)
 
     assert len(dom["frames"][0]["crossFrames"]) == 1
     assert dom["frames"][0]["crossFrames"][0]["index"] == 16
@@ -469,7 +480,7 @@ def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(driver):
     driver = EyesWebDriver(driver, None)
     driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, False, [], 10000, True)
+    dom = create_dom_snapshot(driver, logger, False, [], 10000, True, True)
 
     assert dom["cookies"] == [
         {
@@ -539,7 +550,7 @@ def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(driv
     driver = EyesWebDriver(driver, None)
     driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
-    dom = create_dom_snapshot(driver, logger, True, [], 10000, False)
+    dom = create_dom_snapshot(driver, logger, True, [], 10000, False, True)
 
     assert dom["cookies"] == [
         {
@@ -603,3 +614,14 @@ def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(driv
             "value": "1",
         },
     ]
+
+
+def test_create_dom_snapshot_doesnt_collect_cookies_when_disabled(driver):
+    driver = EyesWebDriver(driver, None)
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
+
+    dom = create_dom_snapshot(driver, logger, True, [], 10000, True, False)
+
+    assert "cookies" not in dom
+    assert "cookies" not in dom["frames"][0]
+    assert "cookies" not in dom["frames"][0]["frames"][0]

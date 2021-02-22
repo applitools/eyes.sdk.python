@@ -194,6 +194,7 @@ class VisualGridEyes(object):
                 None,
                 DOM_EXTRACTION_TIMEOUT,
                 self.configure.enable_cross_origin_rendering,
+                not self.configure.dont_use_cookies,
             )
         except dom_snapshot_script.DomSnapshotFailure as e:
             raise_from(EyesError("Failed to capture dom snapshot"), e)

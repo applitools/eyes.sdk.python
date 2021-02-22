@@ -100,3 +100,81 @@ def test_coded_layout_regions_passed_to_match_window_request(
     assert ims.accessibility == [
         AccessibilityRegion(10, 11, 12, 13, AccessibilityRegionType.LargeText)
     ]
+
+
+def test_cookies_passed_to_download_resource_request(driver, fake_connector_class, spy):
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
+    vg_runner = VisualGridRunner(1)
+    eyes = Eyes(vg_runner)
+    eyes.server_connector = fake_connector_class()
+    download_resource_spy = spy(eyes.server_connector, "download_resource")
+    eyes.open(
+        driver,
+        app_name="Visual Grid Render Test",
+        test_name="TestRenderResourceNotFound",
+    )
+
+    eyes.check(Target.window().disable_browser_fetching())
+    eyes.close(False)
+    vg_runner.get_all_test_results(False)
+
+    assert download_resource_spy.call_args_list == [
+        spy.call(
+            "http://applitools.github.io/demo/TestPages/"
+            "CookiesTestPage/subdir/cookie.png",
+            [
+                {
+                    "domain": "applitools.github.io",
+                    "httpOnly": False,
+                    "name": "frame1",
+                    "path": "/demo/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+                {
+                    "domain": "applitools.github.io",
+                    "httpOnly": False,
+                    "name": "index",
+                    "path": "/demo/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+                {
+                    "domain": "applitools.github.io",
+                    "httpOnly": False,
+                    "name": "frame2",
+                    "path": "/demo/TestPages/CookiesTestPage/subdir",
+                    "secure": False,
+                    "value": "1",
+                },
+            ],
+        ),
+        spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
+    ]
+
+
+def test_cookies_are_not_passed_when_disabled(driver, fake_connector_class, spy):
+    driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
+    vg_runner = VisualGridRunner(1)
+    eyes = Eyes(vg_runner)
+    eyes.configure.set_dont_use_cookies(True)
+    eyes.server_connector = fake_connector_class()
+    download_resource_spy = spy(eyes.server_connector, "download_resource")
+    eyes.open(
+        driver,
+        app_name="Visual Grid Render Test",
+        test_name="TestRenderResourceNotFound",
+    )
+
+    eyes.check(Target.window().disable_browser_fetching())
+    eyes.close(False)
+    vg_runner.get_all_test_results(False)
+
+    assert download_resource_spy.call_args_list == [
+        spy.call(
+            "http://applitools.github.io/demo/TestPages/"
+            "CookiesTestPage/subdir/cookie.png",
+            [],
+        ),
+        spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
+    ]

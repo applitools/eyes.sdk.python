@@ -45,8 +45,9 @@ def create_dom_snapshot(
     skip_resources,
     timeout_ms,
     cross_origin_rendering,
+    use_cookies,
 ):
-    # type: (EyesWebDriver, BoundLogger, bool, List[Text], int, bool) -> Dict
+    # type: (EyesWebDriver, BoundLogger, bool, List[Text], int, bool, bool) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
@@ -59,6 +60,7 @@ def create_dom_snapshot(
         timeout_ms,
         chunk_byte_length,
         cross_origin_rendering,
+        use_cookies,
         dont_fetch_resources=dont_fetch_resources,
         skip_resources=skip_resources,
         serialize_resources=True,
@@ -213,6 +215,7 @@ class RecursiveSnapshotter(object):
         timeout_ms,  # type: int
         chunk_byte_length,  # type: int
         cross_origin_rendering,  # type: bool
+        use_cookies,  # type: bool
         **script_args  # type: Any
     ):
         self.should_skip_failed_frames = False
@@ -222,6 +225,7 @@ class RecursiveSnapshotter(object):
         self._deadline_time = time() + datetime_utils.to_sec(timeout_ms)
         self._chunk_byte_length = chunk_byte_length
         self._cross_origin_rendering = cross_origin_rendering
+        self._use_cookies = use_cookies
         self._script_args = script_args
 
     def create_cross_frames_dom_snapshots(self):
@@ -260,7 +264,8 @@ class RecursiveSnapshotter(object):
 
     def _process_dom_snapshot_frames(self, dom):
         # type: (Dict) -> None
-        dom["cookies"] = self._driver.get_cookies()
+        if self._use_cookies:
+            dom["cookies"] = self._driver.get_cookies()
         for frame in dom["frames"]:
             selector = frame.get("selector", None)
             if not selector:
