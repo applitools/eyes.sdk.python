@@ -50,20 +50,29 @@ def pytest_terminal_summary(terminalreporter):
 
 
 def _select_group(item):
-    test_dir_path = os.path.dirname(item.fspath)
-    if test_dir_path.endswith("eyes_images"):
+    test_dir_path_full = os.path.dirname(item.fspath)
+    if len(test_dir_path_full.split("/")) <= 3:
+        test_dir_path_base = test_dir_path_full
+    else:
+        test_dir_path_base = "/".join(test_dir_path_full.split("/")[:3])
+
+    if test_dir_path_base in ["tests/functional/eyes_images", "tests/unit/eyes_images"]:
         return "images"
-    elif test_dir_path.endswith("eyes_selenium"):
+    elif test_dir_path_base in [
+        "tests/functional/eyes_selenium",
+        "tests/unit/eyes_selenium",
+    ]:
+        if test_dir_path_full.endswith("mobile"):
+            return "appium"
         return "selenium"
-    elif (
-        test_dir_path.endswith("eyes_core")
-        or test_dir_path.endswith("eyes_common")
-        or test_dir_path.endswith("unit")
-    ):
+    elif test_dir_path_base in [
+        "tests/unit",
+        "tests/unit/eyes_core",
+        "tests/unit/eyes_common",
+    ]:
         return "core"
-    elif test_dir_path.endswith("mobile"):
-        return "appium"
-    raise ValueError
+
+    raise ValueError("Incorrect group: {}".format(item))
 
 
 def _extract_json_objects(text, decoder=JSONDecoder()):
