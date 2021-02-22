@@ -118,10 +118,35 @@ def test_cookies_passed_to_download_resource_request(driver, fake_connector_clas
     eyes.close(False)
     vg_runner.get_all_test_results(False)
 
+    download_resource_spy.call_args_list.sort(key=lambda a: (a.args[0], len(a.args[1])))
     assert download_resource_spy.call_args_list == [
         spy.call(
-            "http://applitools.github.io/demo/TestPages/"
-            "CookiesTestPage/subdir/cookie.png",
+            # otherdir don't have subdir cookie
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
+            "otherdir/cookie.png",
+            [
+                {
+                    "domain": "applitools.github.io",
+                    "httpOnly": False,
+                    "name": "frame1",
+                    "path": "/demo/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+                {
+                    "domain": "applitools.github.io",
+                    "httpOnly": False,
+                    "name": "index",
+                    "path": "/demo/TestPages/CookiesTestPage",
+                    "secure": False,
+                    "value": "1",
+                },
+            ],
+        ),
+        # subdir has all the cookies
+        spy.call(
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
+            "subdir/cookie.png",
             [
                 {
                     "domain": "applitools.github.io",
@@ -149,7 +174,9 @@ def test_cookies_passed_to_download_resource_request(driver, fake_connector_clas
                 },
             ],
         ),
+        # outside resources have no cookies
         spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
+        spy.call("https://demo.applitools.com/img/logo-big.png", []),
     ]
 
 
@@ -172,8 +199,14 @@ def test_cookies_are_not_passed_when_disabled(driver, fake_connector_class, spy)
 
     assert download_resource_spy.call_args_list == [
         spy.call(
-            "http://applitools.github.io/demo/TestPages/"
-            "CookiesTestPage/subdir/cookie.png",
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
+            "subdir/cookie.png",
+            [],
+        ),
+        spy.call("https://demo.applitools.com/img/logo-big.png", []),
+        spy.call(
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
+            "otherdir/cookie.png",
             [],
         ),
         spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
