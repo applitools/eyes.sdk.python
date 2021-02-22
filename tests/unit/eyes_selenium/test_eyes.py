@@ -75,7 +75,7 @@ def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, eyes_open_k
         Configuration(test_name="TestName"),
         Configuration(app_name="AppName"),
     ],
-    ids=parametrize_ids("config"),
+    ids=parametrize_ids("config", "test_name,app_name"),
 )
 def test_open_with_missing_test_name_and_app_name_with_config(
     eyes, driver_mock, config
