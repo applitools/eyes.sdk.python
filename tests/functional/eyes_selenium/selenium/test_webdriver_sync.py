@@ -3,6 +3,7 @@ import time
 import pytest
 
 from applitools.selenium import EyesWebDriver
+from tests.utils import parametrize_ids
 
 
 def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, driver):
@@ -40,6 +41,7 @@ def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, driver):
         ("Far frame selected; sync", [], "far"),
         ("Far frame selected; out of sync", "far", []),
     ],
+    ids=parametrize_ids("test_desc,driver_frames,eyes_frames"),
 )
 @pytest.mark.parametrize(
     "page_desc,url,far_frame_path,load_time",
@@ -52,6 +54,7 @@ def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, driver):
         ),
         ("Complex", "https://smiledirectclub.com/invite/", (7, 2), 10),
     ],
+    ids=parametrize_ids("page_desc,url,far_frame_path,load_time"),
 )
 @pytest.mark.skip("Currently it is designed for manual performance measurement")
 def test_measure_ensure_sync_with_underlying_driver_performance(

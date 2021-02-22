@@ -2,9 +2,14 @@ import pytest
 from mock import MagicMock
 
 from applitools.selenium import EyesWebDriver
+from tests.utils import parametrize_ids
 
 
-@pytest.mark.parametrize("version, major, minor", [("9", 9, -1), ("9.1", 9, 1)])
+@pytest.mark.parametrize(
+    "version, major, minor",
+    [("9", 9, -1), ("9.1", 9, 1)],
+    ids=parametrize_ids("version, major, minor"),
+)
 def test_driver_useragent_splits_version(version, major, minor):
     driver_mock, eyes_mock = MagicMock(), MagicMock()
     driver_mock.desired_capabilities = {

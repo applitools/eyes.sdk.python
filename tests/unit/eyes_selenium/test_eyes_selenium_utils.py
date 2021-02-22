@@ -4,6 +4,7 @@ from appium.webdriver import Remote as AppiumWebDriver
 
 from applitools.common import EyesError
 from applitools.selenium import eyes_selenium_utils
+from tests.utils import parametrize_ids
 
 
 @pytest.mark.parametrize(
@@ -19,6 +20,7 @@ from applitools.selenium import eyes_selenium_utils
         "IOS",
         "ios 11",
     ],
+    ids=parametrize_ids("platform_name"),
 )
 def test_different_mobile_platform_names(driver_mock, platform_name):
     driver_mock.desired_capabilities["platformName"] = platform_name
@@ -27,7 +29,11 @@ def test_different_mobile_platform_names(driver_mock, platform_name):
     assert not eyes_selenium_utils.is_mobile_app(driver_mock)
 
 
-@pytest.mark.parametrize("platform_name", ["Windows", "Winmo", "Linux", "macOs"])
+@pytest.mark.parametrize(
+    "platform_name",
+    ["Windows", "Winmo", "Linux", "macOs"],
+    ids=parametrize_ids("platform_name"),
+)
 def test_different_not_mobile_platform_names(driver_mock, platform_name):
     driver_mock.desired_capabilities["platformName"] = platform_name
     driver_mock.desired_capabilities["browserName"] = "someBrowser"
@@ -41,9 +47,15 @@ def test_appium_webdriver(driver_mock):
     assert eyes_selenium_utils.is_mobile_platform(driver_mock)
 
 
-@pytest.mark.parametrize("platform_name", ["Android", "ios 11"])
 @pytest.mark.parametrize(
-    "param", ["app", "appActivity", "appPackage", "bundleId", "appName"]
+    "platform_name",
+    ["Android", "ios 11"],
+    ids=parametrize_ids("platform_name"),
+)
+@pytest.mark.parametrize(
+    "param",
+    ["app", "appActivity", "appPackage", "bundleId", "appName"],
+    ids=parametrize_ids("param"),
 )
 def test_using_mobile_app(driver_mock, platform_name, param):
     driver_mock.desired_capabilities[param] = "some_app"

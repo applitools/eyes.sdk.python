@@ -7,7 +7,7 @@ from pytest_dictsdiff import check_objects
 from applitools.common import RectangleSize
 from applitools.common.utils import urlencode, urlsplit, urlunsplit
 from applitools.selenium import Configuration, Target
-from tests.utils import get_session_results
+from tests.utils import get_session_results, parametrize_ids
 
 
 @pytest.fixture
@@ -24,11 +24,12 @@ def dom_intercepting_eyes(eyes):
 
 @pytest.mark.platform("Linux")
 @pytest.mark.parametrize(
-    "url, num",
+    "url,num",
     [
         ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html", "1"],
         ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture_2.html", "2"],
     ],
+    ids=parametrize_ids("url,num"),
 )
 def test_send_DOM_1_2(eyes, driver, batch_info, url, num):
     driver.get(url)

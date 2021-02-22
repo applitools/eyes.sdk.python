@@ -7,6 +7,7 @@ from applitools.common.utils import json_utils
 from applitools.core import MatchWindowTask
 from applitools.core.test_eyes import TestEyes
 from applitools.selenium import Target
+from tests.utils import parametrize_ids
 
 
 @pytest.fixture
@@ -16,15 +17,28 @@ def eyes():
 
 def pytest_generate_tests(metafunc):
     if "use_dom" in metafunc.fixturenames:
-        metafunc.parametrize("use_dom", [True, False])
+        metafunc.parametrize(
+            "use_dom",
+            [True, False],
+            ids=parametrize_ids("use_dom"),
+        )
     if "ignore_displacements" in metafunc.fixturenames:
-        metafunc.parametrize("ignore_displacements", [True, False])
+        metafunc.parametrize(
+            "ignore_displacements",
+            [True, False],
+            ids=parametrize_ids("ignore_displacements"),
+        )
     if "enable_patterns" in metafunc.fixturenames:
-        metafunc.parametrize("enable_patterns", [True, False])
+        metafunc.parametrize(
+            "enable_patterns",
+            [True, False],
+            ids=parametrize_ids("enable_patterns"),
+        )
     if "match_level" in metafunc.fixturenames:
         metafunc.parametrize(
             "match_level",
             [MatchLevel.CONTENT, MatchLevel.EXACT, MatchLevel.LAYOUT, MatchLevel.NONE],
+            ids=parametrize_ids("match_level"),
         )
 
 

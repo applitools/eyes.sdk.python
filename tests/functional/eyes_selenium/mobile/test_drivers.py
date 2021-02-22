@@ -2,6 +2,8 @@ import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver as selenium_webdriver
 
+from tests.utils import parametrize_ids
+
 
 @pytest.fixture
 def webdriver_module():
@@ -14,9 +16,7 @@ def webdriver_module():
     "eyes",
     [{"webdriver_module": appium_webdriver}, {"webdriver_module": selenium_webdriver}],
     indirect=True,
-    ids=lambda o: "with Appium"
-    if o["webdriver_module"].__name__.startswith("appium.")
-    else "with Selenium",
+    ids=parametrize_ids("eyes"),
 )
 @pytest.mark.capabilities(
     **{

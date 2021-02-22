@@ -5,9 +5,14 @@ import pytest
 from mock import patch
 
 from applitools.core import BatchClose
+from tests.utils import parametrize_ids
 
 
-@pytest.mark.parametrize("env_dont_close", ["1", "True", "true", "false", "False"])
+@pytest.mark.parametrize(
+    "env_dont_close",
+    ["1", "True", "true", "false", "False"],
+    ids=parametrize_ids("env_dont_close"),
+)
 def test_batch_no_api_key_error(env_dont_close):
     with patch.dict(
         os.environ,

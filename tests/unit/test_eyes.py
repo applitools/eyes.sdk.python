@@ -8,6 +8,7 @@ from applitools.core.debug import (
     FileDebugScreenshotsProvider,
     NullDebugScreenshotsProvider,
 )
+from tests.utils import parametrize_ids
 
 
 @pytest.fixture
@@ -23,7 +24,10 @@ def clean_environ():
 def pytest_generate_tests(metafunc):
     if "eyes" in metafunc.fixturenames:
         metafunc.parametrize(
-            "eyes", ["selenium", "visual_grid", "images"], indirect=True
+            "eyes",
+            ["selenium", "visual_grid", "images"],
+            ids=parametrize_ids("eyes"),
+            indirect=True,
         )
 
 

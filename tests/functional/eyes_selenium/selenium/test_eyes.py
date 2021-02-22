@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 
 from applitools.common import RectangleSize, Region
 from applitools.selenium import Eyes, Target
+from tests.utils import parametrize_ids
 
 
 @pytest.mark.parametrize(
@@ -34,6 +35,7 @@ from applitools.selenium import Eyes, Target
             Region(10, 30, 533, 33),
         ),
     ],
+    ids=parametrize_ids("target, expected_layout_region"),
 )
 def test_layout_region_calculation_for_targets(
     driver, fake_connector_class, target, expected_layout_region

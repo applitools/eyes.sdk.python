@@ -10,6 +10,7 @@ from applitools.selenium import (
     VisualGridRunner,
     logger,
 )
+from tests.utils import parametrize_ids
 
 
 def test_classic_runner_works_normally(driver):
@@ -56,7 +57,7 @@ def test_eyes_none_runner(driver):
 @pytest.mark.parametrize(
     "runner",
     [ClassicRunner()],
-    ids=lambda o: "VG" if isinstance(o, VisualGridRunner) else "CR",
+    ids=parametrize_ids("runner"),
 )
 def test_eyes_runner(driver, runner):
     eyes = Eyes(runner)

@@ -8,6 +8,7 @@ from selenium.common.exceptions import WebDriverException
 from applitools.common import StitchMode, logger
 from applitools.selenium import ScreenOrientation, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
+from tests.utils import parametrize_ids
 
 IOS_DEVICES = [
     ["iPad Pro (9.7 inch) Simulator", "12.0", ScreenOrientation.LANDSCAPE, False],
@@ -164,9 +165,7 @@ def create_browser_config(device, platform_name, browser_name):
     "mobile_eyes",
     [create_browser_config(device, "Android", "Chrome") for device in ANDROID_DEVICES],
     indirect=True,
-    ids=lambda o: "{}-{}-{}".format(
-        o["deviceName"], o["platformVersion"], o["deviceOrientation"]
-    ),
+    ids=parametrize_ids("mobile_eyes"),
 )
 def test_android__sauce_labs(mobile_eyes):
     eyes, fully = mobile_eyes
@@ -178,9 +177,7 @@ def test_android__sauce_labs(mobile_eyes):
     "mobile_eyes",
     [create_browser_config(device, "iOS", "Safari") for device in IOS_DEVICES],
     indirect=True,
-    ids=lambda o: "{}-{}-{}".format(
-        o["deviceName"], o["platformVersion"], o["deviceOrientation"]
-    ),
+    ids=parametrize_ids("mobile_eyes"),
 )
 def test_IOS_safari_crop__sauce_labs(mobile_eyes):
     eyes, fully = mobile_eyes

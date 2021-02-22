@@ -8,6 +8,7 @@ from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElemen
 from applitools.common import FloatingBounds
 from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
+from tests.utils import parametrize_ids
 
 
 def get_cs_from_method(method_name, *args, **kwargs):
@@ -45,7 +46,11 @@ def test_check_region_and_frame_with_unsupported_input():
         cs = get_cs_from_method("frame", set())
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_match_region_with_unsupported_input(method_name):
     with pytest.raises(TypeError):
         cs = get_cs_from_method(method_name, 1245)
@@ -90,7 +95,9 @@ def test_check_region_with_elements(method_name="region"):
 
 
 @pytest.mark.parametrize(
-    "by", [By.NAME, By.ID, By.CLASS_NAME, By.TAG_NAME, By.CSS_SELECTOR, By.XPATH]
+    "by",
+    [By.NAME, By.ID, By.CLASS_NAME, By.TAG_NAME, By.CSS_SELECTOR, By.XPATH],
+    ids=parametrize_ids("by"),
 )
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
@@ -98,7 +105,11 @@ def test_check_region_with_by_params(by, method_name="region"):
     assert cs.values.target_selector == [by, value]
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_match_regions_with_selectors_input(method_name):
     css_selector = ".cssSelector"
     regions = get_regions_from_(method_name, css_selector)
@@ -113,7 +124,11 @@ def test_match_regions_with_selectors_input(method_name):
     assert regions[1]._value == css_selector
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_match_regions_with_regions_input(method_name):
     region, region1 = Region(0, 1, 2, 3), Region(0, 2, 4, 5)
     regions = get_regions_from_(method_name, region)
@@ -127,7 +142,11 @@ def test_match_regions_with_regions_input(method_name):
     assert regions[1].get_regions(None, None) == [region1]
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_match_regions_with_elements(method_name):
     eyes_element = MagicMock(EyesWebElement)
     selenium_element = MagicMock(SeleniumWebElement)
@@ -141,7 +160,11 @@ def test_match_regions_with_elements(method_name):
     assert regions[2]._element == appium_element
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_match_regions_with_by_values(method_name):
     by_name = [By.NAME, "some-name"]
     by_id = [By.ID, "ident"]
@@ -245,7 +268,11 @@ def test_disable_browser_fetching_combinations():
     )
 
 
-@pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
+@pytest.mark.parametrize(
+    "method_name",
+    ["ignore", "layout", "strict", "content"],
+    ids=parametrize_ids("coded_region"),
+)
 def test_region_padding_are_added(method_name):
     regions_selector = get_regions_from_(
         method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}

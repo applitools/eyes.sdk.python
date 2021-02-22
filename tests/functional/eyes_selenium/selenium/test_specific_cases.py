@@ -11,6 +11,7 @@ from applitools.selenium import (
     StitchMode,
     Target,
 )
+from tests.utils import parametrize_ids
 
 
 @pytest.mark.skip("Old test. test_hello_world implemented instead of this one")
@@ -105,7 +106,7 @@ def test_coordinates_resolving(eyes, driver):
         {"force_full_page_screenshot": False, "stitch_mode": StitchMode.Scroll},
     ],
     indirect=True,
-    ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
+    ids=parametrize_ids("eyes_configure"),
 )
 @pytest.mark.platform("Windows")
 @pytest.mark.browser("internet explorer")
@@ -180,6 +181,7 @@ def test_execute_script_with_eyes_webelement(driver, eyes):
             [False],
         ),
     ],
+    ids=parametrize_ids("params"),
 )
 def test_replace_matched_step(params, driver, eyes, fake_connector_class):
     test_url, replace_last_expected = params

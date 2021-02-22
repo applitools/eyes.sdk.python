@@ -28,7 +28,7 @@ from applitools.common.geometry import AccessibilityRegion
 from applitools.common.selenium import BrowserType
 from applitools.common.test_results import TestResultsStatus
 from applitools.common.utils import json_utils
-from tests.utils import get_resource
+from tests.utils import get_resource, parametrize_ids
 
 
 @pytest.mark.parametrize(
@@ -44,6 +44,7 @@ from tests.utils import get_resource
         BrowserType.SAFARI_TWO_VERSIONS_BACK,
         BrowserType.SAFARI_EARLY_ACCESS,
     ],
+    ids=parametrize_ids("browser_type"),
 )
 def test_render_request_serialize(browser_type):
     request_resources = {
@@ -98,7 +99,11 @@ def test_running_session_serialization_and_deserialization():
     assert rs == json_utils.attr_from_json(rs_json, RunningSession)
 
 
-@pytest.mark.parametrize("i", range(5))
+@pytest.mark.parametrize(
+    "i",
+    range(5),
+    ids=parametrize_ids("i"),
+)
 def test_multithreading_serialization(i):
     mwd = MatchWindowData(
         agent_setup=None,

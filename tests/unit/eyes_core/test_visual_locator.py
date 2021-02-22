@@ -1,6 +1,7 @@
 import pytest
 
 from applitools.core import VisualLocator
+from tests.utils import parametrize_ids
 
 
 def test_wrong_visual_locator_names():
@@ -17,7 +18,11 @@ def test_wrong_visual_locator_names():
         assert exc_info.type == ValueError
 
 
-@pytest.mark.parametrize("name", ["Some name", "Create"])
+@pytest.mark.parametrize(
+    "name",
+    ["Some name", "Create"],
+    ids=parametrize_ids("name"),
+)
 def test_visual_locator_name(name):
     vl = VisualLocator.name(name)
     assert vl.values.names == [name]

@@ -12,6 +12,7 @@ from applitools.selenium import (
     StitchMode,
     Target,
 )
+from tests.utils import parametrize_ids
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
@@ -219,7 +220,11 @@ def test_simple_region(eyes_opened):
     eyes_opened.check("Simple Region", Target.window().region(Region(50, 50, 100, 100)))
 
 
-@pytest.mark.parametrize("ignore_displacements", [True, False])
+@pytest.mark.parametrize(
+    "ignore_displacements",
+    [True, False],
+    ids=parametrize_ids("ignore_displacements"),
+)
 def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_result):
     eyes_opened.check(
         "Fluent - Ignore Displacements = ({})".format(ignore_displacements),

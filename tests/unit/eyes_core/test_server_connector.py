@@ -36,6 +36,7 @@ from applitools.core.server_connector import (
     _RequestCommunicator,
     _SessionRetryLimiter,
 )
+from tests.utils import parametrize_ids
 
 API_KEY = "TEST-API-KEY"
 CUSTOM_EYES_SERVER = "http://custom-eyes-server.com"
@@ -328,7 +329,11 @@ def test_match_window(started_connector):
     assert match.as_expected
 
 
-@pytest.mark.parametrize("server_status", [500, 200, 201, 400, 404])
+@pytest.mark.parametrize(
+    "server_status",
+    [500, 200, 201, 400, 404],
+    ids=parametrize_ids("server_status"),
+)
 def test_match_window_with_image_uploading(started_connector, server_status):
     #  type: (ServerConnector, int) -> None
     data = copy(MATCH_WINDOW_DATA_OBJ)
@@ -449,7 +454,11 @@ def test_get_rendering_info(started_connector):
 
 
 @patch("requests.Session.request", return_value=MockResponse(None, None, 200))
-@pytest.mark.parametrize("http_method", ALLOWED_HTTP_METHODS + FAKE_HTTP_METHODS)
+@pytest.mark.parametrize(
+    "http_method",
+    ALLOWED_HTTP_METHODS + FAKE_HTTP_METHODS,
+    ids=parametrize_ids("http_method"),
+)
 def test_http_methods(configured_connector, http_method):
     client_session = ClientSession()
     if http_method in ALLOWED_HTTP_METHODS:
@@ -467,6 +476,7 @@ def test_http_methods(configured_connector, http_method):
         '{"ServiceUrl": "url","StitchingServiceUrl": "stitching"}',
         '{"ServiceUrl": "url","ResultsUrl": "result"}',
     ],
+    ids=parametrize_ids("render_json"),
 )
 def test_parse_render_info_no_error(render_json):
     ri = attr_from_json(render_json, RenderingInfo)

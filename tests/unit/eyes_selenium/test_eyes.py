@@ -14,11 +14,17 @@ from applitools.core import (
 )
 from applitools.selenium import Configuration, Eyes, Target
 from applitools.selenium.fluent import SeleniumCheckSettings
+from tests.utils import parametrize_ids
 
 
 def pytest_generate_tests(metafunc):
     if "eyes" in metafunc.fixturenames:
-        metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
+        metafunc.parametrize(
+            "eyes",
+            ["selenium", "visual_grid"],
+            ids=parametrize_ids("eyes"),
+            indirect=True,
+        )
 
 
 def open_and_get_start_session_info(
@@ -53,11 +59,13 @@ def open_and_get_start_session_info(
 
 
 @pytest.mark.parametrize(
-    "kwargs", [{}, {"test_name": "TestName"}, {"app_name": "AppName"}]
+    "eyes_open_kwargs",
+    [{}, {"test_name": "TestName"}, {"app_name": "AppName"}],
+    ids=parametrize_ids("eyes_open_kwargs"),
 )
-def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, kwargs):
+def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, eyes_open_kwargs):
     with pytest.raises(ValueError):
-        eyes.open(driver_mock, **kwargs)
+        eyes.open(driver_mock, **eyes_open_kwargs)
 
 
 @pytest.mark.parametrize(
@@ -67,6 +75,7 @@ def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, kwargs):
         Configuration(test_name="TestName"),
         Configuration(app_name="AppName"),
     ],
+    ids=parametrize_ids("config"),
 )
 def test_open_with_missing_test_name_and_app_name_with_config(
     eyes, driver_mock, config
@@ -291,6 +300,7 @@ def test_selenium_eyes_check_args_override_name(eyes_check_mock):
         (False, "iOS", "iPhone X", True),
         (False, "Linux", "Desktop", False),
     ],
+    ids=parametrize_ids("is_app,platform_name,device_name,is_mobile_web"),
 )
 def test_start_session_environment_for_web(
     eyes, driver_mock, is_app, platform_name, device_name, is_mobile_web
@@ -312,6 +322,7 @@ def test_start_session_environment_for_web(
         (True, "Android", "Galaxy S9", False),
         (True, "iOS", "iPhone X", False),
     ],
+    ids=parametrize_ids("is_app,platform_name,device_name,is_mobile_web"),
 )
 def test_start_session_environment_for_app(
     eyes, driver_mock, is_app, platform_name, device_name, is_mobile_web

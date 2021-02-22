@@ -9,6 +9,7 @@ from applitools.common import (
 from applitools.common.geometry import AccessibilityRegion
 from applitools.selenium import Eyes, Target, VisualGridRunner
 from applitools.selenium.visual_grid import VisualGridEyes, dom_snapshot_script
+from tests.utils import parametrize_ids
 
 
 def _retrieve_urls(data):
@@ -58,6 +59,7 @@ def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
 @pytest.mark.parametrize(
     "target",
     [Target.window(), Target.window().disable_browser_fetching()],
+    ids=parametrize_ids("target"),
 )
 def test_fetch_deep_css_chain(driver, vg_runner, target):
     eyes = Eyes(vg_runner)

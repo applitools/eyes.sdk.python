@@ -4,9 +4,14 @@ from selenium.webdriver.common.by import By
 from applitools.common import Region
 from applitools.core import TextRegionSettings, VisualLocator
 from applitools.selenium import ClassicRunner, Eyes, OCRRegion, VisualGridRunner
+from tests.utils import parametrize_ids
 
 
-@pytest.mark.parametrize("eyes_runner", [ClassicRunner(), VisualGridRunner(1)])
+@pytest.mark.parametrize(
+    "eyes_runner",
+    [ClassicRunner(), VisualGridRunner(1)],
+    ids=parametrize_ids("eyes_runner"),
+)
 def test_visual_locator(driver, eyes_runner):
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes = Eyes(eyes_runner)
@@ -23,7 +28,11 @@ def test_visual_locator(driver, eyes_runner):
 
 
 # TODO: Remove after merge of generated tests
-@pytest.mark.parametrize("eyes_runner", [ClassicRunner()])
+@pytest.mark.parametrize(
+    "eyes_runner",
+    [ClassicRunner()],
+    ids=parametrize_ids("eyes_runner"),
+)
 def test_extract_text_regions(driver, eyes_runner):
     driver.get("https://applitools.github.io/demo/TestPages/OCRPage")
     eyes = Eyes(eyes_runner)
@@ -52,7 +61,11 @@ def test_extract_text_regions(driver, eyes_runner):
     )
 
 
-@pytest.mark.parametrize("eyes_runner", [ClassicRunner()])
+@pytest.mark.parametrize(
+    "eyes_runner",
+    [ClassicRunner()],
+    ids=parametrize_ids("eyes_runner"),
+)
 def test_extract_text(driver, eyes_runner):
     driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes = Eyes(eyes_runner)

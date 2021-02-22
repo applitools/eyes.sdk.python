@@ -20,7 +20,7 @@ from applitools.selenium import (
     logger,
 )
 from applitools.selenium.visual_grid import VisualGridEyes
-from tests.utils import get_session_results
+from tests.utils import get_session_results, parametrize_ids
 
 
 def test_mobile_only(driver, batch_info):
@@ -132,6 +132,7 @@ def test_viewports_test(driver, batch_info):
             "Canvas Test",
         ),
     ],
+    ids=parametrize_ids("url,test_name"),
 )
 def test_special_rendering(url, test_name, batch_info, driver):
     runner = VisualGridRunner(30)

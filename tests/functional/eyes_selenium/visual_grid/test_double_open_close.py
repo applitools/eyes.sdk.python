@@ -1,10 +1,15 @@
 import pytest
 
 from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
+from tests.utils import parametrize_ids
 
 
 def pytest_generate_tests(metafunc):
-    metafunc.parametrize("eyes_runner", [ClassicRunner(), VisualGridRunner(5)])
+    metafunc.parametrize(
+        "eyes_runner",
+        [ClassicRunner(), VisualGridRunner(5)],
+        ids=parametrize_ids("eyes_runner"),
+    )
 
 
 @pytest.fixture()
