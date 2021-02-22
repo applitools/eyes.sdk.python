@@ -4,70 +4,27 @@ import uuid
 from copy import copy
 from distutils.util import strtobool
 from os import path
-from typing import TYPE_CHECKING, Dict, Text
+from types import ModuleType
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Text
 
+import attr
 import requests
 
 from applitools.common import TestResults
-from applitools.common.utils import urljoin
+from applitools.common.utils import argument_guard, iteritems, json_utils, urljoin
 from applitools.common.utils.datetime_utils import retry
-from applitools.common.utils.json_utils import underscore_to_camelcase
+from applitools.common.utils.json_utils import (
+    _cleaned_dict_from_attrs,
+    _to_serializable,
+)
 
 if TYPE_CHECKING:
     from http.cookiejar import CookieJar
 
     from applitools.common.utils.custom_types import AnyWebDriver
 
-REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
-REPORT_DATA = {
-    "sdk": "python",
-    "group": "selenium",
-    "id": os.getenv("TRAVIS_COMMIT", str(uuid.uuid4())),
-    "sandbox": bool(strtobool(os.getenv("TEST_REPORT_SANDBOX", "True"))),
-    "mandatory": False,
-    "results": [],
-}
+
 TESTS_DIR = path.dirname(path.abspath(__file__))
-
-
-def prepare_result_data(test_name, passed, parameters):
-    test_name = underscore_to_camelcase(test_name)
-    result = dict(test_name=test_name, passed=passed)
-    if parameters:
-        result["parameters"] = parameters
-    params_index_start = test_name.find("[")
-    if params_index_start == -1:
-        return result
-
-    test_params = test_name[params_index_start + 1 : -1]
-    test_name = test_name[:params_index_start]
-    if test_params.find("StitchMode") == -1:
-        # if not desktop tests
-        result["test_name"] = test_name
-        return result
-
-    browser = "Chrome"
-    if test_params.find("chrome") == -1:
-        browser = "Firefox"
-    stitching = "css"
-    if test_params.find("CSS") == -1:
-        stitching = "scroll"
-    return dict(
-        test_name=test_name,
-        passed=passed,
-        parameters=dict(browser=browser, stitching=stitching),
-    )
-
-
-@retry(exception=requests.HTTPError)
-def send_result_report(test_name, passed, parameters=None, group="selenium"):
-    report_data = copy(REPORT_DATA)
-    report_data["results"] = [prepare_result_data(test_name, passed, parameters)]
-    report_data["group"] = group
-    r = requests.post(urljoin(REPORT_BASE_URL, "/result"), data=json.dumps(report_data))
-    r.raise_for_status()
-    print("Result report send: {} - {}".format(r.status_code, r.text))
-    return r
 
 
 @retry(exception=requests.HTTPError)
@@ -120,3 +77,40 @@ def update_browser_cookies(cookies, required_domain, driver):
             driver.add_cookie(dict_from_cookie(cookie))
         except (UnableToSetCookieException, InvalidCookieDomainException):
             print(cookie)
+
+
+def _to_json(val, params):
+    def __to_serializable(val):
+        if isinstance(val, ModuleType):
+            return val.__name__
+        elif attr.has(val.__class__):
+            obj = _cleaned_dict_from_attrs(val)
+            if obj:
+                return obj
+            if params:
+                return {name: getattr(obj, name) for name in params}
+            return str(val)
+        return _to_serializable(val, with_attrs=False)
+
+    return json.dumps(val, default=__to_serializable, sort_keys=True)
+
+
+def parametrize_ids(parameters_ids, specify_to_display=None):
+    # type: (Text, Optional[Text]) -> Callable
+    ids = parameters_ids.split(",")
+    params = specify_to_display.split(",") if specify_to_display else []
+
+    def wrap(value):
+        wrap.res.update({ids[wrap.index]: value})
+        if len(ids) == 1 or wrap.index == len(ids) - 1:
+            res = copy(wrap.res)
+            wrap.index = 0
+            wrap.res = {}
+            return _to_json(res, params)
+        else:
+            wrap.index += 1
+        return None
+
+    wrap.index = 0
+    wrap.res = {}
+    return wrap

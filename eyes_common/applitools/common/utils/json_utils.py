@@ -150,12 +150,12 @@ def _cleaned_dict_from_attrs(val):
     return attr.asdict(val, filter=filter, dict_factory=_CamelCasedDict)
 
 
-def _to_serializable(val):
+def _to_serializable(val, with_attrs=True):
     if isinstance(val, datetime):
         return val.strftime("%Y-%m-%dT%H:%M:%SZ")
     elif isinstance(val, enum.Enum):
         return val.value
-    elif attr.has(val.__class__):
+    elif attr.has(val.__class__) and with_attrs:
         name = getattr(val, "JSON_NAME", None)
         obj = _cleaned_dict_from_attrs(val)
         if name:

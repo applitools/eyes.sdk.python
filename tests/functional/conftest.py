@@ -26,7 +26,7 @@ from applitools.common import (
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from applitools.core import ServerConnector
-from tests.utils import get_session_results, send_result_report
+from tests.utils import get_session_results
 
 try:
     from contextlib import ExitStack
@@ -119,64 +119,6 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
-
-
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    result = outcome.get_result()
-    if result.when == "setup" or not result.caplog:
-        # skip tests on setup stage and if skipped
-        return
-
-    passed = result.outcome == "passed"
-    group = "selenium"
-    test_name = item.name
-    parameters = None
-    if result.when == "call":
-        # For tests where eyes.close() inside test body
-        if not (
-            item.fspath.dirname.endswith("eyes_images")
-            or item.fspath.dirname.endswith("selenium")
-            or item.fspath.purebasename == "test_mobile"
-        ):
-            return
-
-        # if eyes_images tests
-        if item.fspath.dirname.endswith("eyes_images"):
-            group = "images"
-        # if eyes_selenium/mobile/test_mobile.py
-        if item.fspath.purebasename == "test_mobile":
-            test_name = item.originalname
-            (
-                device_name,
-                platform_version,
-                device_orientation,
-                page,
-            ) = item.callspec.id.split("-")
-            parameters = dict(
-                device_name=device_name,
-                platform_version=platform_version,
-                device_orientation=device_orientation,
-                page=page,
-            )
-        send_result_report(
-            test_name=test_name, passed=passed, parameters=parameters, group=group
-        )
-    elif result.when == "teardown":
-        # For tests where eyes.close() inside fixture
-        if not (
-            item.fspath.dirname.endswith("visual_grid")
-            or item.fspath.dirname.endswith("desktop")
-        ):
-            return
-
-        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-            test_name = item.originalname
-            parameters = dict(mode="VisualGrid")
-        send_result_report(
-            test_name=test_name, passed=passed, parameters=parameters, group=group
-        )
 
 
 if RUNNING_ON_TRAVIS_REGRESSION_SUITE:

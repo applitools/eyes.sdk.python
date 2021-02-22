@@ -6,6 +6,8 @@ import pytest
 
 __all__ = ("image",)
 
+pytest_plugins = ("tests.pytest_reporting",)
+
 
 @pytest.fixture
 def image():
