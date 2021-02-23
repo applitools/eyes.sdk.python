@@ -11,9 +11,9 @@ before_script:
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
-    - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
-        export TEST_REPORT_SANDBOX=False;
-        export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
+    - if [[ 1 ]]; then
+        export TEST_REPORT_SANDBOX=True;
+        export SDK_VERSION=4.17.0;
         export TMP_CHANGELOG=$(bash ./ci_scripts/extract_changelog.sh "$SDK_VERSION" "CHANGELOG.md");
         export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
 
@@ -266,7 +266,6 @@ jobs:
             - inv install-packages
             - bash ./tutorials/tutorials.sh
         - stage: deploy
-          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
           script:
               # Deploy to PyPi and send notification about the tests execution status
@@ -276,12 +275,11 @@ jobs:
               - echo $TMP_CHANGELOG
               # Save the email of the person who did this commit in COMMITTER_EMAIL
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
-              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
+              - if [[ 1 && $TMP_CHANGELOG ]]; then
                   echo "DEPLOY";
                   TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
                   bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
-                  inv dist --from-env;
 
                   echo "DEPLOY SUCCESSFUL";
                 else
