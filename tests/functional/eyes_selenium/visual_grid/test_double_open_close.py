@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
@@ -133,3 +135,22 @@ def test_double_check_dont_get_all_results(driver, eyes_runner, name_suffix):
     eyes.check("Step 1", Target.window().with_name("Step 1"))
     eyes.check("Step 2", Target.window().with_name("Step 2"))
     eyes.close(False)
+
+
+def test_open_check_sleep_check_close(driver, eyes_runner, name_suffix):
+    eyes = Eyes(eyes_runner)
+    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    eyes.open(
+        driver,
+        "Applitools Eyes SDK",
+        "TestOpenCheckSleepCheckClose" + name_suffix,
+        dict(width=1200, height=800),
+    )
+    eyes.check("Step 1", Target.window())
+    time.sleep(20)  # time enough for Step 1 check to finish
+    eyes.check("Step 2", Target.window())
+    eyes.close_async()
+
+    all_test_results = eyes_runner.get_all_test_results(False)
+    assert len(all_test_results.all_results) == 1
+    assert all_test_results[0].test_results.matches == 2
