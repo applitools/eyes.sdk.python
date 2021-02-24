@@ -331,7 +331,8 @@ class RunningTest(object):
             close_task.on_task_error(close_task_error)
             self.close_queue.append(close_task)
             self.watch_close[close_task] = False
-            self.maybe_becomes_tested()
+            if self.state != "tested":
+                self.maybe_becomes_tested()
 
     def abort(self):
         # skip call of abort() in tests where close() already called
