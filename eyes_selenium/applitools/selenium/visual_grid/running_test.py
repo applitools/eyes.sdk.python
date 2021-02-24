@@ -236,9 +236,8 @@ class RunningTest(object):
                 return self.task_lock.queue
             elif self.task_queue:
                 if self.task_queue == END_OF_TEST_QUEUE:
-                    if self.close_queue:
-                        # no more checks, but close scheduled
-                        return self.close_queue
+                    # all checks are done and test is finished
+                    return self.close_queue
                 else:
                     self.task_lock = self.task_queue.popleft()
                     return self.task_lock.queue
