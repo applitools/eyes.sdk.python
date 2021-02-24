@@ -50,7 +50,6 @@ TRANSITIONS = [
 ]
 
 END_OF_CHECKS = object()
-END_OF_TEST_QUEUE = deque([END_OF_CHECKS])
 
 
 @attr.s(hash=False, str=False)
@@ -235,11 +234,12 @@ class RunningTest(object):
             if self.task_lock:
                 return self.task_lock.queue
             elif self.task_queue:
-                if self.task_queue == END_OF_TEST_QUEUE:
+                item = self.task_queue.popleft()
+                if item is END_OF_CHECKS:
                     # all checks are done and test is finished
                     return self.close_queue
                 else:
-                    self.task_lock = self.task_queue.popleft()
+                    self.task_lock = item
                     return self.task_lock.queue
             return deque()
         elif self.state == TESTED:
