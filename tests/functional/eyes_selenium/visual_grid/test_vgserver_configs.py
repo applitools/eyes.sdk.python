@@ -1,3 +1,6 @@
+import pytest
+
+from applitools.common import TestFailedError
 from applitools.selenium import Configuration, Eyes
 
 
@@ -8,4 +11,5 @@ def test_vgdouble_close_no_check(driver, vg_runner, batch_info, fake_connector_c
     )
     eyes.server_connector = fake_connector_class()
     eyes.open(driver)
-    eyes.close()
+    with pytest.raises(TestFailedError):
+        eyes.close()
