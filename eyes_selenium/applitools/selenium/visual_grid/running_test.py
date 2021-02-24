@@ -376,6 +376,7 @@ class RunningTest(object):
 
         self.close_queue.append(abort_task)
         self.watch_close[abort_task] = False
+        self.task_queue.append(END_OF_CHECKS)
 
     def all_tasks_completed(self, watch):
         # type: (Dict) -> bool
