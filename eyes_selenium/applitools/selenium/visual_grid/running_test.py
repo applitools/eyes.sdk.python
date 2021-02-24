@@ -49,6 +49,9 @@ TRANSITIONS = [
     },
 ]
 
+END_OF_CHECKS = object()
+END_OF_TEST_QUEUE = deque([END_OF_CHECKS])
+
 
 @attr.s(hash=False, str=False)
 class RunningTestCheck(object):
@@ -232,11 +235,13 @@ class RunningTest(object):
             if self.task_lock:
                 return self.task_lock.queue
             elif self.task_queue:
-                self.task_lock = self.task_queue.popleft()
-                return self.task_lock.queue
-            elif self.close_queue:
-                # in case no checks, but close scheduled
-                return self.close_queue
+                if self.task_queue == END_OF_TEST_QUEUE:
+                    if self.close_queue:
+                        # no more checks, but close scheduled
+                        return self.close_queue
+                else:
+                    self.task_lock = self.task_queue.popleft()
+                    return self.task_lock.queue
             return deque()
         elif self.state == TESTED:
             return self.close_queue
@@ -331,8 +336,7 @@ class RunningTest(object):
             close_task.on_task_error(close_task_error)
             self.close_queue.append(close_task)
             self.watch_close[close_task] = False
-            if self.state != "tested":
-                self.maybe_becomes_tested()
+            self.task_queue.append(END_OF_CHECKS)
 
     def abort(self):
         # skip call of abort() in tests where close() already called
@@ -392,3 +396,7 @@ class RunningTest(object):
     def maybe_becomes_tested(self):
         if self.close_queue and self.all_tasks_completed(self.watch_task):
             self.becomes_tested()
+
+    @property
+    def has_checks(self):
+        return bool(self.watch_task)
