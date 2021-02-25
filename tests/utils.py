@@ -2,7 +2,7 @@ import json
 from copy import copy
 from os import path
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Text
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Text
 
 import attr
 import requests
@@ -76,6 +76,7 @@ def update_browser_cookies(cookies, required_domain, driver):
 
 
 def _to_json(val, params):
+    # type: (Any, List) -> Text
     def __to_serializable(val):
         if isinstance(val, ModuleType):
             return val.__name__
@@ -96,20 +97,16 @@ def _to_json(val, params):
 
 def parametrize_ids(parameters_ids, specify_to_display=None):
     # type: (Text, Optional[Text]) -> Callable
+    """Allow to display pytest.mark.parametrize ids as json"""
     ids = parameters_ids.split(",")
     params = specify_to_display.split(",") if specify_to_display else []
 
-    def wrap(value):
-        wrap.res.update({ids[wrap.index]: value})
-        if len(ids) == 1 or wrap.index == len(ids) - 1:
-            res = copy(wrap.res)
-            wrap.index = 0
-            wrap.res = {}
-            return _to_json(res, params)
-        else:
-            wrap.index += 1
-        return None
+    idgen = iter(ids)
+    res = {}
 
-    wrap.index = 0
-    wrap.res = {}
+    def wrap(value):
+        res[next(idgen)] = value
+        if len(res) == len(ids):
+            return _to_json(res, params)
+
     return wrap
