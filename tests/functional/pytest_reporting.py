@@ -59,11 +59,10 @@ def _select_group(item):
     else:
         test_dir_path_base = "/".join(test_dir_path_full.split("/")[:3])
 
-    if test_dir_path_base in ["tests/functional/eyes_images", "tests/unit/eyes_images"]:
+    if test_dir_path_base in ["tests/functional/eyes_images"]:
         return "images"
     elif test_dir_path_base in [
         "tests/functional/eyes_selenium",
-        "tests/unit/eyes_selenium",
     ]:
         if test_dir_path_full.endswith("mobile"):
             return "appium"
@@ -117,12 +116,8 @@ def _prepare_tests_data(items):
         except ValueError:
             test_name, test_params = item.location[2], None
         test_dir_path = os.path.dirname(item.fspath)
-        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")) and test_dir_path.endswith(
-            "visual_grid"
-        ):
+        if test_dir_path.endswith("visual_grid"):
             parameters["mode"] = "VisualGrid"
-        parameters["python"] = platform.python_version()
-        parameters["OS"] = sys.platform
 
         group_results[_select_group(item)].append(
             dict(

@@ -31,8 +31,8 @@ except ImportError:
 
 logger.set_logger(StdoutLogger(is_verbose=True))
 pytest_plugins = (
-    "tests.pytest_reporting",
-    "tests.pytest_skipmanager",
+    "tests.functional.pytest_reporting",
+    "tests.functional.pytest_skipmanager",
 )
 
 
