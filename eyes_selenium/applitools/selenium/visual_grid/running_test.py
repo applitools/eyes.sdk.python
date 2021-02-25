@@ -49,6 +49,8 @@ TRANSITIONS = [
     },
 ]
 
+END_OF_CHECKS = object()
+
 
 @attr.s(hash=False, str=False)
 class RunningTestCheck(object):
@@ -157,8 +159,7 @@ class RunningTestCheck(object):
                 self.running_test.task_lock = None
 
             self.running_test.watch_task[self] = True
-            if self.running_test.all_tasks_completed(self.running_test.watch_task):
-                self.running_test.becomes_tested()
+            self.running_test.maybe_becomes_tested()
 
         def check_task_error(e):
             self.logger.debug("check_task_error", task_uuid=check_task.uuid)
@@ -233,11 +234,13 @@ class RunningTest(object):
             if self.task_lock:
                 return self.task_lock.queue
             elif self.task_queue:
-                self.task_lock = self.task_queue.popleft()
-                return self.task_lock.queue
-            elif self.close_queue:
-                # in case no checks, but close scheduled
-                return self.close_queue
+                item = self.task_queue.popleft()
+                if item is END_OF_CHECKS:
+                    # all checks are done and test is finished
+                    return self.close_queue
+                else:
+                    self.task_lock = item
+                    return self.task_lock.queue
             return deque()
         elif self.state == TESTED:
             return self.close_queue
@@ -332,6 +335,7 @@ class RunningTest(object):
             close_task.on_task_error(close_task_error)
             self.close_queue.append(close_task)
             self.watch_close[close_task] = False
+            self.task_queue.append(END_OF_CHECKS)
 
     def abort(self):
         # skip call of abort() in tests where close() already called
@@ -372,6 +376,7 @@ class RunningTest(object):
 
         self.close_queue.append(abort_task)
         self.watch_close[abort_task] = False
+        self.task_queue.append(END_OF_CHECKS)
 
     def all_tasks_completed(self, watch):
         # type: (Dict) -> bool
@@ -387,3 +392,11 @@ class RunningTest(object):
                 configuration_options or (), check_settings_options or ()
             )
         }
+
+    def maybe_becomes_tested(self):
+        if self.close_queue and self.all_tasks_completed(self.watch_task):
+            self.becomes_tested()
+
+    @property
+    def has_checks(self):
+        return bool(self.watch_task)

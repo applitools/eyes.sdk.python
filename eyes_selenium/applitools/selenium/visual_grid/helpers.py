@@ -44,7 +44,10 @@ def collect_test_results(tests, should_raise_exception):
                     str(e) for e in test.pending_exceptions
                 )
             )
-        exception = None
+        if test.has_checks:
+            exception = None
+        else:
+            exception = TestFailedError("Test has no checks")
         if test_result:
             scenario_id_or_name = test_result.name
             app_id_or_name = test_result.app_name

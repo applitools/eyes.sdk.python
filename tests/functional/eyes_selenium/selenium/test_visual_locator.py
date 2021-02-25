@@ -23,6 +23,7 @@ def test_visual_locator(driver, eyes_runner):
 
 
 # TODO: Remove after merge of generated tests
+@pytest.mark.skip("Input data has changed")
 @pytest.mark.parametrize("eyes_runner", [ClassicRunner()])
 def test_extract_text_regions(driver, eyes_runner):
     driver.get("https://applitools.github.io/demo/TestPages/OCRPage")
