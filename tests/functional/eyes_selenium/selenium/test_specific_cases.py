@@ -241,3 +241,19 @@ def test_feature_target_window_captures_selected_frame(eyes, driver):
 
     eyes.check("step name", Target.window())
     eyes.close()
+
+
+@pytest.mark.platform("Linux", "Windows", "macOS")
+@pytest.mark.eyes_config(match_timeout=0, force_full_page_screenshot=False)
+def test_w3schools_iframe(eyes, driver):
+    driver = eyes.open(
+        driver,
+        app_name="Python SDK",
+        test_name="W3 Schools frame",
+        viewport_size={"width": 800, "height": 600},
+    )
+    driver.get("https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_iframe")
+    eyes.check(
+        "Entire Frame", Target.frame("iframeResult").region([By.TAG_NAME, "body"])
+    )
+    eyes.close(False)
