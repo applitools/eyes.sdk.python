@@ -10,7 +10,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
-from applitools.common.utils.compat import urlparse
+from applitools.common.utils.compat import urlparse, urlunsplit
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
@@ -111,13 +111,20 @@ class ProxySettings(object):
             self.port = port or parsed.port or 8888
             self.username = username or parsed.username
             self.password = password or parsed.password
-            self.scheme = scheme or parsed.scheme or "http"
+            self.scheme = scheme or parsed.scheme or "https"
         else:
             self.host = host_or_url
             self.port = port or 8888
             self.username = username
             self.password = password
-            self.scheme = scheme or "http"
+            self.scheme = scheme or "https"
+
+    @property
+    def url(self):
+        password = ":{}".format(self.password) if self.password else ""
+        auth = "{}{}@".format(self.username, password) if self.username else ""
+        port = ":{}".format(self.port) if self.port else ""
+        return urlunsplit((self.scheme, auth + self.host + port, "", "", ""))
 
 
 @attr.s
@@ -209,6 +216,7 @@ class Configuration(object):
     features = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, factory=set
     )  # type: Set[Feature]
+    proxy = attr.ib(default=None)  # type: ProxySettings
 
     @property
     def enable_patterns(self):
@@ -479,3 +487,8 @@ class Configuration(object):
     def is_feature_activated(self, feature):
         # type: (Feature) -> bool
         return feature in self.features
+
+    def set_proxy(self, proxy):
+        # type: (Optional[ProxySettings]) -> Self
+        self.proxy = proxy
+        return self
