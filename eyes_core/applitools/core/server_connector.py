@@ -143,6 +143,9 @@ class ClientSession(object):
     def delete(self, url, **kwargs):
         return self._session.delete(url, **kwargs)
 
+    def use_proxies(self, proxies):
+        self._session.proxies = proxies
+
 
 @attr.s
 class _RequestCommunicator(object):
@@ -329,6 +332,7 @@ class ServerConnector(object):
         """
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[Text]
+        self._proxies = None
 
         if client_session:
             self._com = _RequestCommunicator(
@@ -351,6 +355,9 @@ class ServerConnector(object):
         if ua_string:
             self._ua_string = ua_string
         self.DEFAULT_HEADERS["x-applitools-eyes-client"] = full_agent_id
+        if conf.proxy is not None:
+            self._proxies = {"http": conf.proxy.url, "https": conf.proxy.url}
+            self._com.client_session.use_proxies(self._proxies)
 
     @property
     def server_url(self):
@@ -664,11 +671,20 @@ class ServerConnector(object):
     @retry()
     def _try_download_resources(self, headers, timeout_sec, url, cookies):
         response = requests.get(
-            url, headers=headers, cookies=cookies, timeout=timeout_sec, verify=False
+            url,
+            headers=headers,
+            cookies=cookies,
+            proxies=self._proxies,
+            timeout=timeout_sec,
+            verify=False,
         )
         if response.status_code == requests.codes.not_acceptable:
             response = requests.get(
-                url, timeout=timeout_sec, cookies=cookies, verify=False
+                url,
+                cookies=cookies,
+                proxies=self._proxies,
+                timeout=timeout_sec,
+                verify=False
             )
         return response
 
