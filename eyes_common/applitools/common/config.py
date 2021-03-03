@@ -111,13 +111,13 @@ class ProxySettings(object):
             self.port = port or parsed.port or 8888
             self.username = username or parsed.username
             self.password = password or parsed.password
-            self.scheme = scheme or parsed.scheme or "https"
+            self.scheme = scheme or parsed.scheme or "http"
         else:
             self.host = host_or_url
             self.port = port or 8888
             self.username = username
             self.password = password
-            self.scheme = scheme or "https"
+            self.scheme = scheme or "http"
 
     @property
     def url(self):

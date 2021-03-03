@@ -202,7 +202,7 @@ def test_proxy_settings_from_host():
     assert ps.port == 8888
     assert ps.username is None
     assert ps.password is None
-    assert ps.scheme == "https"
+    assert ps.scheme == "http"
 
 
 def test_proxy_settings_from_url():
@@ -228,13 +228,13 @@ def test_proxy_settings_from_url_override_port():
 def test_proxy_settings_url_port():
     ps = ProxySettings("localhost", 8080)
 
-    assert ps.url == "https://localhost:8080"
+    assert ps.url == "http://localhost:8080"
 
 
 def test_proxy_settings_url_auth():
     ps = ProxySettings("localhost", 8080, "user", "pass")
 
-    assert ps.url == "https://user:pass@localhost:8080"
+    assert ps.url == "http://user:pass@localhost:8080"
 
 
 def test_proxy_settings_url_scheme():
