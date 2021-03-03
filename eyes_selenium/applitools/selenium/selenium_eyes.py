@@ -1060,11 +1060,12 @@ class SeleniumEyes(EyesBase):
                 else:
                     fc = self.driver.frame_chain.clone()
                     scroll_root_element = self.scroll_root_element
+                scroll_location = Point.from_(scroll_root_element.location)
                 position_provider = self._element_position_provider_from(
                     scroll_root_element
                 )
                 state = position_provider.get_state()
-                position_provider.set_position(element_location)
+                position_provider.set_position(element_location - scroll_location)
 
         yield position_provider
         if element and position_provider and fc and not self.driver.is_mobile_app:
