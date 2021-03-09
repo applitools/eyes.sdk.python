@@ -169,4 +169,4 @@ class TextSettingsData(object):
     )  # type: Optional[bool]
 
 
-PATTERN_TEXT_REGIONS = Dict[Text, TextRegion]  # typedef
+PATTERN_TEXT_REGIONS = Dict[Text, List[TextRegion]]  # typedef
