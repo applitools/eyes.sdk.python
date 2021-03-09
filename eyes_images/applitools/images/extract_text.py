@@ -10,6 +10,7 @@ from applitools.core.extract_text import (
     ExpectedTextRegion,
     ExtractTextProvider,
     TextSettingsData,
+    PATTERN_TEXT_REGIONS,
 )
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ class TextRegionSettings(TextRegionSettingsBase):
 
     def image(self, image):
         # type: (Union[Image.Image, Text]) -> TextRegionSettings
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._image = image_utils.image_from_path(image)
         return cloned
 
@@ -70,7 +71,7 @@ class ImagesExtractTextProvider(ExtractTextProvider):
         return results
 
     def get_text_regions(self, config):
-        # type: (TextRegionSettings) -> List[Text]
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
         image = image_utils.get_bytes(config._image)
         screenshot_url = self._server_connector.try_upload_image(image)
         data = TextSettingsData(
