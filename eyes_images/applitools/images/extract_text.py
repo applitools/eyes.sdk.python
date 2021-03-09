@@ -17,9 +17,9 @@ if TYPE_CHECKING:
 
 
 class OCRRegion(BaseOCRRegion):
-    def __init__(self, target):
+    def __init__(self, image):
         # type: (Union[Image.Image, Text]) -> None
-        super(OCRRegion, self).__init__(target)
+        super(OCRRegion, self).__init__(image)
 
 
 class TextRegionSettings(TextRegionSettingsBase):
