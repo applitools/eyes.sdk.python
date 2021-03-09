@@ -1,6 +1,6 @@
 ## [vNext]
 ### Updated
-- Update types [Trello 2494](https://trello.com/c/pqcjOUkl)
+- Update missing types [Trello 2494](https://trello.com/c/pqcjOUkl) [Trello 2471](https://trello.com/c/aTDUpWIE)
 
 ## [4.17.1] - 2021-02-25
 ### Fixed
