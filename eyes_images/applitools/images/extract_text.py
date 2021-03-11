@@ -6,11 +6,11 @@ from applitools.common import AppOutput
 from applitools.common.utils import image_utils
 from applitools.core import TextRegionSettings as TextRegionSettingsBase
 from applitools.core.extract_text import (
+    PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
     ExpectedTextRegion,
     ExtractTextProvider,
     TextSettingsData,
-    PATTERN_TEXT_REGIONS,
 )
 
 if TYPE_CHECKING:

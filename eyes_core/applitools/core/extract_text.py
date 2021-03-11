@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from copy import copy
-from typing import Dict, List, Optional, Text, TypeVar, Union, Any
+from typing import Any, Dict, List, Optional, Text, TypeVar, Union
 
 import attr
 
