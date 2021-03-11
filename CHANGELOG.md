@@ -1,4 +1,4 @@
-## [vNext]
+## [4.18.0] - 2021-03-11
 ### Added
 - Browser cookies are used when UFG resources are downloaded [Trello 2433](https://trello.com/c/6OYDSI1Q)
 ### Updated
