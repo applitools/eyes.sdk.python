@@ -1,13 +1,14 @@
+import time
+from threading import Thread
+
+import pytest
+
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from urllib.parse import unquote
 except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
     from urlparse import unquote
-
-from threading import Thread
-
-import pytest
 
 
 class TestServer(HTTPServer):
@@ -35,6 +36,50 @@ def http_server():
     finally:
         http_server.shutdown()
         thread.join()
+
+
+def test_expiring_cookie_max_age(driver, http_server):
+    http_server.headers = [("Set-Cookie", "a=b; Max-Age=60")]
+    expiry = int(time.time() + 60)
+    driver.get("http://localhost:8000/")
+
+    cookie = driver.get_cookies()[0]
+
+    assert cookie.pop("expiry") - expiry < 1
+    assert cookie == {
+        "domain": "localhost",
+        "httpOnly": False,
+        "name": "a",
+        "path": "/",
+        "secure": False,
+        "value": "b",
+    }
+
+
+def test_expiring_cookie_timestamp(driver, http_server):
+    http_server.headers = [("Set-Cookie", "a=b; Expires=Fri, 1 Jan 2100 01:01:01 GMT")]
+    driver.get("http://localhost:8000/")
+
+    cookie = driver.get_cookies()[0]
+
+    assert cookie == {
+        "domain": "localhost",
+        "expiry": 4102448461,
+        "httpOnly": False,
+        "name": "a",
+        "path": "/",
+        "secure": False,
+        "value": "b",
+    }
+
+
+def test_expired_cookie(driver, http_server):
+    http_server.headers = [("Set-Cookie", "a=b; Expires=Thu, 1 Jan 1970 00:00:00 GMT")]
+    driver.get("http://localhost:8000/")
+
+    cookies = driver.get_cookies()
+
+    assert cookies == []
 
 
 def test_secure_cookie_is_secure(driver, http_server):
