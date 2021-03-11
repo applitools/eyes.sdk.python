@@ -228,9 +228,11 @@ def is_cookie_for_url(cookie, url):
     url = urlparse(url)
     if cookie["secure"] and url.scheme != "https":
         return False
-    domain = cookie["domain"]
-    domain = domain[1:] if domain[0] == "." else domain
-    if url.hostname != domain and not url.hostname.endswith("." + domain):
+    subdomains_allowed = cookie["domain"][0] == "."
+    domain = cookie["domain"][1:] if subdomains_allowed else cookie["domain"]
+    domain_match = url.hostname == domain
+    subdomain_match = url.hostname.endswith("." + domain)
+    if not (domain_match or subdomains_allowed and subdomain_match):
         return False
     path = cookie["path"]
     path = path[:-1] if path[-1] == "/" else path

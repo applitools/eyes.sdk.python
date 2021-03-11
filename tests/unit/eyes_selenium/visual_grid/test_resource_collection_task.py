@@ -230,6 +230,19 @@ def test_is_cookie_for_url_with_dotted_correct_domain():
     )
 
 
+def test_is_cookie_for_url_with_dotted_correct_domain_ignore_port():
+    assert is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com:8080/",
+    )
+
+
 def test_is_cookie_for_url_with_dotted_correct_subdomain():
     assert is_cookie_for_url(
         {
@@ -256,8 +269,8 @@ def test_is_cookie_for_url_with_not_dotted_correct_domain():
     )
 
 
-def test_is_cookie_for_url_with_not_dotted_correct_subdomain():
-    assert is_cookie_for_url(
+def test_not_is_cookie_for_url_with_not_dotted_correct_subdomain():
+    assert not is_cookie_for_url(
         {
             "domain": "a.com",
             "path": "/",
@@ -299,6 +312,19 @@ def test_is_cookie_for_url_with_not_dotted_incorrect_suffixed_domain():
     assert not is_cookie_for_url(
         {
             "domain": "a.com",
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://ba.com/",
+    )
+
+
+def test_is_cookie_for_url_with_dotted_incorrect_suffixed_domain():
+    assert not is_cookie_for_url(
+        {
+            "domain": ".a.com",
             "path": "/",
             "secure": False,
             "name": "subdir",
