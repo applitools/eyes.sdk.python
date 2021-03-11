@@ -1,8 +1,9 @@
-## [4.18.0] - 2021-03-11
+## [vNext]
 ### Added
 - Browser cookies are used when UFG resources are downloaded [Trello 2433](https://trello.com/c/6OYDSI1Q)
 ### Updated
 - Update missing types [Trello 2494](https://trello.com/c/pqcjOUkl) [Trello 2471](https://trello.com/c/aTDUpWIE)
+- disable_browser_fetching configuration option is now True by default [Trello 2433](https://trello.com/c/6OYDSI1Q)
 ### Fixed
 - UFG not loading resources with proxy [Trello 2433](https://trello.com/c/6OYDSI1Q)
 
