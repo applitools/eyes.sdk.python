@@ -6,6 +6,7 @@ from applitools.common import AppOutput
 from applitools.common.utils import image_utils
 from applitools.core import TextRegionSettings as TextRegionSettingsBase
 from applitools.core.extract_text import (
+    PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
     ExpectedTextRegion,
     ExtractTextProvider,
@@ -17,9 +18,9 @@ if TYPE_CHECKING:
 
 
 class OCRRegion(BaseOCRRegion):
-    def __init__(self, target):
+    def __init__(self, image):
         # type: (Union[Image.Image, Text]) -> None
-        super(OCRRegion, self).__init__(target)
+        super(OCRRegion, self).__init__(image)
 
 
 class TextRegionSettings(TextRegionSettingsBase):
@@ -30,7 +31,7 @@ class TextRegionSettings(TextRegionSettingsBase):
 
     def image(self, image):
         # type: (Union[Image.Image, Text]) -> TextRegionSettings
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._image = image_utils.image_from_path(image)
         return cloned
 
@@ -70,7 +71,7 @@ class ImagesExtractTextProvider(ExtractTextProvider):
         return results
 
     def get_text_regions(self, config):
-        # type: (TextRegionSettings) -> List[Text]
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
         image = image_utils.get_bytes(config._image)
         screenshot_url = self._server_connector.try_upload_image(image)
         data = TextSettingsData(
