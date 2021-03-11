@@ -197,17 +197,18 @@ def test_cookies_are_not_passed_when_disabled(driver, fake_connector_class, spy)
     eyes.close(False)
     vg_runner.get_all_test_results(False)
 
+    download_resource_spy.call_args_list.sort(key=lambda a: (a.args[0], len(a.args[1])))
     assert download_resource_spy.call_args_list == [
-        spy.call(
-            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
-            "subdir/cookie.png",
-            [],
-        ),
-        spy.call("https://demo.applitools.com/img/logo-big.png", []),
         spy.call(
             "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
             "otherdir/cookie.png",
             [],
         ),
+        spy.call(
+            "http://applitools.github.io/demo/TestPages/CookiesTestPage/"
+            "subdir/cookie.png",
+            [],
+        ),
         spy.call("http://applitools.github.io/demo/images/image_1.jpg", []),
+        spy.call("https://demo.applitools.com/img/logo-big.png", []),
     ]
