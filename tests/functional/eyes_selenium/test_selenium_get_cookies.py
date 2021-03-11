@@ -10,19 +10,25 @@ from threading import Thread
 import pytest
 
 
-class TestServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200, "OK")
-        if ":" in self.path:
-            key, value = unquote(self.path[1:]).split(":", 1)
-            self.send_header(key, value)
-        self.end_headers()
-        self.wfile.write(b"Hello")
+class TestServer(HTTPServer):
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200, "OK")
+            if self.server.headers:
+                for header in self.server.headers:
+                    self.send_header(*header)
+            self.end_headers()
+            self.wfile.write(b"Hello")
+
+    def __init__(self):
+        # HTTPServer is an old-style class
+        HTTPServer.__init__(self, ("localhost", 8000), TestServer.Handler)
+        self.headers = []
 
 
 @pytest.fixture
 def http_server():
-    http_server = HTTPServer(("localhost", 8000), TestServer)
+    http_server = TestServer()
     thread = Thread(target=http_server.serve_forever)
     thread.start()
     try:
@@ -33,7 +39,8 @@ def http_server():
 
 
 def test_secure_cookie_is_secure(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: a=b; Secure")
+    http_server.headers = [("Set-Cookie", "a=b; Secure")]
+    driver.get("http://localhost:8000/")
 
     cookies = driver.get_cookies()
 
@@ -50,7 +57,8 @@ def test_secure_cookie_is_secure(driver, http_server):
 
 
 def test_domain_cookie_with_domain_attr_returns_dot_domain(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=www.localtest.me")
+    http_server.headers = [("Set-Cookie", "a=b; Domain=www.localtest.me")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -67,7 +75,8 @@ def test_domain_cookie_with_domain_attr_returns_dot_domain(driver, http_server):
 
 
 def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=.www.localtest.me")
+    http_server.headers = [("Set-Cookie", "a=b; Domain=.www.localtest.me")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -84,7 +93,8 @@ def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(driver, http_serv
 
 
 def test_domain_cookie_with_top_domain_attr(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=localtest.me")
+    http_server.headers = [("Set-Cookie", "a=b; Domain=localtest.me")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -101,7 +111,8 @@ def test_domain_cookie_with_top_domain_attr(driver, http_server):
 
 
 def test_domain_http_only(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; HttpOnly")
+    http_server.headers = [("Set-Cookie", "a=b; HttpOnly")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -118,8 +129,10 @@ def test_domain_http_only(driver, http_server):
 
 
 def test_two_cookies_for_same_domain(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b")
-    driver.get("http://www.localtest.me:8000/Set-Cookie: c=d")
+    http_server.headers = [("Set-Cookie", "a=b")]
+    driver.get("http://www.localtest.me:8000/a")
+    http_server.headers = [("Set-Cookie", "c=d")]
+    driver.get("http://www.localtest.me:8000/c")
 
     cookies = driver.get_cookies()
 
@@ -144,8 +157,10 @@ def test_two_cookies_for_same_domain(driver, http_server):
 
 
 def test_two_cookies_for_different_domains(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b")
-    driver.get("http://vvv.localtest.me:8000/Set-Cookie: c=d")
+    http_server.headers = [("Set-Cookie", "a=b")]
+    driver.get("http://www.localtest.me:8000/a")
+    http_server.headers = [("Set-Cookie", "c=d")]
+    driver.get("http://vvv.localtest.me:8000/c")
 
     cookies = driver.get_cookies()
 
@@ -162,7 +177,8 @@ def test_two_cookies_for_different_domains(driver, http_server):
 
 
 def test_domain_cookie_with_wrong_domain_dropped(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=www.example.com")
+    http_server.headers = [("Set-Cookie", "a=b; Domain=www.example.com")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -170,7 +186,8 @@ def test_domain_cookie_with_wrong_domain_dropped(driver, http_server):
 
 
 def test_bad_host_prefix_cookie_is_dropped(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: __Host-a=b")
+    http_server.headers = [("Set-Cookie", "__Host-a=b")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
@@ -178,7 +195,8 @@ def test_bad_host_prefix_cookie_is_dropped(driver, http_server):
 
 
 def test_bad_secure_prefix_cookie_is_dropped(driver, http_server):
-    driver.get("http://www.localtest.me:8000/Set-Cookie: __Secure-a=b")
+    http_server.headers = [("Set-Cookie", "__Secure-a=b")]
+    driver.get("http://www.localtest.me:8000/")
 
     cookies = driver.get_cookies()
 
