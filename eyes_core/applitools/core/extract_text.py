@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from copy import copy
-from typing import Dict, List, Optional, Text, Union
+from typing import Any, Dict, List, Optional, Text, TypeVar, Union
 
 import attr
 
@@ -43,18 +43,18 @@ class TextRegionSettings(object):
         if len(patterns) == 1 and argument_guard.is_list_or_tuple(patterns[0]):
             patterns = patterns[0]
         argument_guard.is_list_or_tuple(patterns)
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._patterns.extend(list(patterns))
         return cloned
 
     def ignore_case(self, ignore=True):
         # type: (bool) -> TextRegionSettings
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._ignore_case = ignore
         return cloned
 
     def first_only(self):
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._first_only = True
         return cloned
 
@@ -62,11 +62,11 @@ class TextRegionSettings(object):
         # type: (Text) -> TextRegionSettings
         argument_guard.is_a(language, basestring)
         assert language not in ["eng"], "Unsupported language"
-        cloned = self.clone()
+        cloned = self._clone()
         cloned._language = language
         return cloned
 
-    def clone(self):
+    def _clone(self):
         # type: () -> TextRegionSettings
         cloned = copy(self)
         cloned._patterns = copy(cloned._patterns)
@@ -121,28 +121,32 @@ class ExpectedTextRegion(Rectangle):
 
 class BaseOCRRegion(object):
     def __init__(self, target):
-        # type: (Region) -> None
+        # type: (Union[Region, Any]) -> None
         self.target = target
         self._hint = None  # type: Optional[Text]
         self._language = "eng"  # type: Optional[Text]
         self._min_match = None  # type: Optional[float]
 
     def min_match(self, min_match):
-        cloned = self.clone()
+        # type: (float) -> Self
+        cloned = self._clone()
         cloned._min_match = min_match
         return cloned
 
     def hint(self, hint):
-        cloned = self.clone()
+        # type: (Text) -> Self
+        cloned = self._clone()
         cloned._hint = hint
         return cloned
 
     def language(self, language):
-        cloned = self.clone()
+        # type: (Text) -> Self
+        cloned = self._clone()
         cloned._language = language
         return cloned
 
-    def clone(self):
+    def _clone(self):
+        # type: () -> Self
         return copy(self)
 
 
@@ -169,4 +173,5 @@ class TextSettingsData(object):
     )  # type: Optional[bool]
 
 
-PATTERN_TEXT_REGIONS = Dict[Text, TextRegion]  # typedef
+PATTERN_TEXT_REGIONS = Dict[Text, List[TextRegion]]  # typedef
+Self = TypeVar("Self", bound="BaseOCRRegion")  # typedef

@@ -129,10 +129,12 @@ class IosDeviceInfo(IRenderBrowserInfo):
 
     @property
     def platform(self):
+        # type: () -> Text
         return "ios"
 
     @property
     def browser(self):
+        # type: () -> Text
         return BrowserType.SAFARI.value
 
 
@@ -185,6 +187,7 @@ class RenderBrowserInfo(IRenderBrowserInfo):
 
     @property
     def browser(self):
+        # type: () -> Text
         return self.browser_type.value if self.browser_type else None
 
 
@@ -215,10 +218,12 @@ class DesktopBrowserInfo(IRenderBrowserInfo):
 
     @property
     def browser(self):
+        # type: () -> Text
         return self.browser_type.value
 
     @property
     def platform(self):
+        # type: () -> Text
         if self.browser_type in [
             BrowserType.IE_10,
             BrowserType.IE_11,
