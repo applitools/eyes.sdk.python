@@ -14,9 +14,8 @@ class TestServer(HTTPServer):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(200, "OK")
-            if self.server.headers:
-                for header in self.server.headers:
-                    self.send_header(*header)
+            for header in self.server.headers:
+                self.send_header(*header)
             self.end_headers()
             self.wfile.write(b"Hello")
 
