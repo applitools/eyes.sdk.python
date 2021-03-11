@@ -315,7 +315,7 @@ def test_create_dom_snapshot_loop_calls_run_with_args():
         None,
         script,
         None,
-        5,
+        1000,
         3,
         True,
         False,
