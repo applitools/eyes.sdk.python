@@ -269,6 +269,7 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
 
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
+    eyes.configure.disable_browser_fetching = False
     eyes.server_connector = fake_connector_class()
     eyes.open(
         driver,
