@@ -87,9 +87,9 @@ class EyesConnector(EyesBase):
         # type: (*Text) -> List[RenderStatusResults]
         return self._server_connector.render_status_by_id(*render_ids)
 
-    def download_resource(self, url):
-        # type: (Text) -> Response
-        return self._server_connector.download_resource(url)
+    def download_resource(self, url, cookies):
+        # type: (Text, Dict) -> Response
+        return self._server_connector.download_resource(url, cookies)
 
     @property
     def base_agent_id(self):
