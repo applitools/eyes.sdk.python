@@ -33,13 +33,13 @@ def http_server():
 
 
 def test_secure_cookie_is_secure(driver, http_server):
-    driver.get("http://127.0.0.1:8000/Set-Cookie: a=b; Secure")
+    driver.get("http://localhost:8000/Set-Cookie: a=b; Secure")
 
     cookies = driver.get_cookies()
 
     assert cookies == [
         {
-            "domain": "127.0.0.1",
+            "domain": "localhost",
             "httpOnly": False,
             "name": "a",
             "path": "/",
@@ -49,15 +49,48 @@ def test_secure_cookie_is_secure(driver, http_server):
     ]
 
 
-@pytest.mark.skip("Requirest /etc/hosts file modification")
-def test_domain_cookie_with_domain_attr_returns_dotted_domain(driver, http_server):
-    driver.get("http://www.example.com:8000/Set-Cookie: a=b; Domain=www.example.com")
+def test_domain_cookie_with_domain_attr_returns_dot_domain(driver, http_server):
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=www.localtest.me")
 
     cookies = driver.get_cookies()
 
     assert cookies == [
         {
-            "domain": ".www.example.com",
+            "domain": ".www.localtest.me",
+            "httpOnly": False,
+            "name": "a",
+            "path": "/",
+            "secure": False,
+            "value": "b",
+        }
+    ]
+
+
+def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(driver, http_server):
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=.www.localtest.me")
+
+    cookies = driver.get_cookies()
+
+    assert cookies == [
+        {
+            "domain": ".www.localtest.me",
+            "httpOnly": False,
+            "name": "a",
+            "path": "/",
+            "secure": False,
+            "value": "b",
+        }
+    ]
+
+
+def test_domain_cookie_with_top_domain_attr(driver, http_server):
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=localtest.me")
+
+    cookies = driver.get_cookies()
+
+    assert cookies == [
+        {
+            "domain": ".localtest.me",
             "httpOnly": False,
             "name": "a",
             "path": "/",
@@ -68,13 +101,13 @@ def test_domain_cookie_with_domain_attr_returns_dotted_domain(driver, http_serve
 
 
 def test_domain_http_only(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: a=b; HttpOnly")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; HttpOnly")
 
     cookies = driver.get_cookies()
 
     assert cookies == [
         {
-            "domain": "localhost",
+            "domain": "www.localtest.me",
             "httpOnly": True,
             "name": "a",
             "path": "/",
@@ -85,14 +118,14 @@ def test_domain_http_only(driver, http_server):
 
 
 def test_two_cookies_for_same_domain(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: a=b")
-    driver.get("http://localhost:8000/Set-Cookie: c=d")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: c=d")
 
     cookies = driver.get_cookies()
 
     assert sorted(cookies, key=lambda d: tuple(d[k] for k in sorted(d.keys()))) == [
         {
-            "domain": "localhost",
+            "domain": "www.localtest.me",
             "httpOnly": False,
             "name": "a",
             "path": "/",
@@ -100,7 +133,7 @@ def test_two_cookies_for_same_domain(driver, http_server):
             "value": "b",
         },
         {
-            "domain": "localhost",
+            "domain": "www.localtest.me",
             "httpOnly": False,
             "name": "c",
             "path": "/",
@@ -111,14 +144,14 @@ def test_two_cookies_for_same_domain(driver, http_server):
 
 
 def test_two_cookies_for_different_domains(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: a=b")
-    driver.get("http://127.0.0.1:8000/Set-Cookie: c=d")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b")
+    driver.get("http://vvv.localtest.me:8000/Set-Cookie: c=d")
 
     cookies = driver.get_cookies()
 
     assert cookies == [
         {
-            "domain": "127.0.0.1",
+            "domain": "vvv.localtest.me",
             "httpOnly": False,
             "name": "c",
             "path": "/",
@@ -129,7 +162,7 @@ def test_two_cookies_for_different_domains(driver, http_server):
 
 
 def test_domain_cookie_with_wrong_domain_dropped(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: a=b; Domain=www.example.com")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: a=b; Domain=www.example.com")
 
     cookies = driver.get_cookies()
 
@@ -137,7 +170,7 @@ def test_domain_cookie_with_wrong_domain_dropped(driver, http_server):
 
 
 def test_bad_host_prefix_cookie_is_dropped(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: __Host-a=b")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: __Host-a=b")
 
     cookies = driver.get_cookies()
 
@@ -145,7 +178,7 @@ def test_bad_host_prefix_cookie_is_dropped(driver, http_server):
 
 
 def test_bad_secure_prefix_cookie_is_dropped(driver, http_server):
-    driver.get("http://localhost:8000/Set-Cookie: __Secure-a=b")
+    driver.get("http://www.localtest.me:8000/Set-Cookie: __Secure-a=b")
 
     cookies = driver.get_cookies()
 
