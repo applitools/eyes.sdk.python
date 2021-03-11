@@ -44,7 +44,7 @@ class Configuration(ConfigurationBase):
     visual_grid_options = attr.ib(
         default=None
     )  # type: Optional[Tuple[VisualGridOption]]
-    disable_browser_fetching = attr.ib(default=False)  # type: bool
+    disable_browser_fetching = attr.ib(default=True)  # type: bool
     enable_cross_origin_rendering = attr.ib(default=True)  # type: bool
     dont_use_cookies = attr.ib(default=False)  # type: bool
 

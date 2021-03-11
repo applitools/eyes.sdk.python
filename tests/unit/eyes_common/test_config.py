@@ -107,7 +107,7 @@ def test_set_value_to_conf(conf):
 def test_default_values_selenium_configuration():
     conf = SeleniumConfiguration()
 
-    assert conf.disable_browser_fetching is False
+    assert conf.disable_browser_fetching is True
     assert conf.enable_cross_origin_rendering is True
     assert conf.dont_use_cookies is False
 
