@@ -321,6 +321,19 @@ def test_is_cookie_for_url_with_secure_cookie_non_secure_url():
     )
 
 
+def test_is_cookie_for_url_with_secure_cookie_secure_url():
+    assert is_cookie_for_url(
+        {
+            "domain": "a.com",
+            "path": "/",
+            "secure": True,
+            "name": "subdir",
+            "value": "1",
+        },
+        "https://a.com/subdir",
+    )
+
+
 def test_is_cookie_for_url_with_path_cookie_incorrect_url():
     assert not is_cookie_for_url(
         {
