@@ -217,6 +217,34 @@ def test_cookies_passed_to_server_connector():
     ]
 
 
+def test_is_cookie_for_url_non_expired_with_dotted_correct_domain():
+    assert is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "expiry": 4102448461,
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/",
+    )
+
+
+def test_not_is_cookie_for_url_expired_with_dotted_correct_domain():
+    assert not is_cookie_for_url(
+        {
+            "domain": ".a.com",
+            "expiry": 1,
+            "path": "/",
+            "secure": False,
+            "name": "subdir",
+            "value": "1",
+        },
+        "http://a.com/",
+    )
+
+
 def test_is_cookie_for_url_with_dotted_correct_domain():
     assert is_cookie_for_url(
         {

@@ -1,5 +1,6 @@
 import typing
 from collections import deque
+from datetime import datetime
 from itertools import chain
 
 import attr
@@ -228,6 +229,10 @@ def is_cookie_for_url(cookie, url):
     url = urlparse(url)
     if cookie["secure"] and url.scheme != "https":
         return False
+    if "expiry" in cookie:
+        expiry = datetime.utcfromtimestamp(cookie["expiry"])
+        if expiry < datetime.now():
+            return False
     subdomains_allowed = cookie["domain"][0] == "."
     domain = cookie["domain"][1:] if subdomains_allowed else cookie["domain"]
     domain_match = url.hostname == domain
