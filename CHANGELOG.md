@@ -1,6 +1,8 @@
 ## [vNext]
 ### Updated
 - Update missing types [Trello 2494](https://trello.com/c/pqcjOUkl) [Trello 2471](https://trello.com/c/aTDUpWIE)
+### Fixed
+- UFG not loading resources with proxy [Trello 2433](https://trello.com/c/6OYDSI1Q)
 
 ## [4.17.1] - 2021-02-25
 ### Fixed

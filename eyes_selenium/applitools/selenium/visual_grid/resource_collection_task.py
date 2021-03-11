@@ -14,6 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.utils import apply_base_url
+from applitools.common.utils.compat import urlparse
 from applitools.selenium.parsers import collect_urls_from_
 
 from .vg_task import VGTask
@@ -131,21 +132,14 @@ class ResourceCollectionTask(VGTask):
         resource_urls = data.get("resourceUrls", [])
         all_blobs = data.get("blobs", [])
         frames = data.get("frames", [])
+        cookies = data.get("cookies", [])
         logger.debug(
-            """
-        parse_frame_dom_resources() call
-
-        base_url: {base_url}
-        count blobs: {blobs_num}
-        count resource urls: {resource_urls_num}
-        count frames: {frames_num}
-
-        """.format(
-                base_url=base_url,
-                blobs_num=len(all_blobs),
-                resource_urls_num=len(resource_urls),
-                frames_num=len(frames),
-            )
+            "parse_frame_dom_resources() call",
+            base_url=base_url,
+            blobs_count=len(all_blobs),
+            resource_urls_count=len(resource_urls),
+            frames_count=len(frames),
+            cookies_count=len(cookies),
         )
 
         def find_child_resource_urls(content_type, content, resource_url):
@@ -180,6 +174,7 @@ class ResourceCollectionTask(VGTask):
 
         resources_and_their_children = fetch_resources_recursively(
             urls_to_fetch,
+            cookies,
             self.server_connector,
             self.resource_cache,
             find_child_resource_urls,
@@ -193,6 +188,7 @@ class ResourceCollectionTask(VGTask):
 
 def fetch_resources_recursively(
     urls,  # type: Iterable[Text]
+    cookies,  # type: Dict
     eyes_connector,  # type: ServerConnector
     resource_cache,  # type: ResourceCache
     find_child_resource_urls,  # type: Callable[[Text, bytes, Text],List[Text]]
@@ -200,7 +196,8 @@ def fetch_resources_recursively(
     # type: (...) -> Iterable[Tuple[Text, VGResource]]
     def get_resource(link):
         logger.debug("get_resource({0}) call".format(link))
-        response = eyes_connector.download_resource(link)
+        matching_cookies = [c for c in cookies if is_cookie_for_url(c, link)]
+        response = eyes_connector.download_resource(link, matching_cookies)
         return VGResource.from_response(link, response, find_child_resource_urls)
 
     def schedule_fetch(urls):
@@ -224,3 +221,21 @@ def fetch_resources_recursively(
         else:
             schedule_fetch(resource.child_resource_urls)
             yield url, resource
+
+
+def is_cookie_for_url(cookie, url):
+    # type: (Dict, Text) -> bool
+    url = urlparse(url)
+    if cookie["secure"] and url.scheme != "https":
+        return False
+    subdomains_allowed = cookie["domain"][0] == "."
+    domain = cookie["domain"][1:] if subdomains_allowed else cookie["domain"]
+    domain_match = url.hostname == domain
+    subdomain_match = url.hostname.endswith("." + domain)
+    if not (domain_match or subdomains_allowed and subdomain_match):
+        return False
+    path = cookie["path"]
+    path = path[:-1] if path[-1] == "/" else path
+    if url.path != path and not url.path.startswith(path + "/"):
+        return False
+    return True
