@@ -1,4 +1,4 @@
-## [vNext]
+## [4.18.1] - 2021-03-16
 ### Fixed
 - CSS is not loaded properly using the UFG [2503](https://trello.com/c/sudU9wjY)
 
