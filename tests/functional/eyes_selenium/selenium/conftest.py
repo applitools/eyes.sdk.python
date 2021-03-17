@@ -1,8 +1,6 @@
 import json
-from collections import OrderedDict
-from os import path
+from os import environ, path
 
-import attr
 import pytest
 
 from applitools.common import BatchInfo
@@ -13,6 +11,13 @@ samples_dir = path.join(path.dirname(__file__), "resources")
 @pytest.fixture
 def batch_info():
     return BatchInfo("Python SDK Selenium")
+
+
+@pytest.fixture
+def sauce_driver_url():
+    return "https://{}:{}@ondemand.saucelabs.com:443/wd/hub".format(
+        environ["SAUCE_USERNAME"], environ["SAUCE_ACCESS_KEY"]
+    )
 
 
 @pytest.fixture
