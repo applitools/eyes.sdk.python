@@ -244,35 +244,33 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
 def set_viewport_size(driver, required_size):  # noqa
     # type: (AnyWebDriver, ViewPort) -> None
     actual_viewport_size = get_viewport_size(driver)
-    if actual_viewport_size == required_size:
+    if actual_viewport_size != required_size:
+        actual_viewport_size = set_browser_size_by_viewport_size(
+            driver, actual_viewport_size, required_size
+        )
+        if actual_viewport_size != required_size:
+            # Additional attempt. This Solves the "maximized browser" bug
+            # (border size for maximized browser sometimes different than
+            # non-maximized, so the original browser size calculation is
+            # wrong).
+            # Attempt to fix by minimizing window and retry resizing it with
+            # when borders are calculated for non-maximized window
+            logger.info("Trying workaround for minimization...")
+            try:
+                driver.minimize_window()
+            except WebDriverException:
+                # some web drivers don't support minimize_window but that's ok,
+                # next resizing attempt should succeed because previous attempt
+                # un-maximized window
+                logger.exception("minimize_window failed")
+            actual_viewport_size = set_browser_size_by_viewport_size(
+                driver, actual_viewport_size, required_size
+            )
+            if actual_viewport_size != required_size:
+                logger.error("Minimization workaround failed")
+                raise EyesError("Failed to set the viewport size.")
+    else:
         logger.info("Required viewport size is already set")
-        return
-    actual_viewport_size = set_browser_size_by_viewport_size(
-        driver, actual_viewport_size, required_size
-    )
-    if actual_viewport_size == required_size:
-        return
-
-    # Additional attempt. This Solves the "maximized browser" bug
-    # (border size for maximized browser sometimes different than
-    # non-maximized, so the original browser size calculation is
-    # wrong).
-    # Attempt to fix by minimizing window and retry resizing it with
-    # when borders are calculated for non-maximized window
-    logger.info("Trying workaround for minimization...")
-    try:
-        driver.minimize_window()
-    except WebDriverException:
-        # some web drivers don't support minimize_window but that's ok, next
-        # resizing attempt should succeed because previous attempt un-maximized window
-        logger.exception("minimize_window failed")
-    actual_viewport_size = set_browser_size_by_viewport_size(
-        driver, actual_viewport_size, required_size
-    )
-    if actual_viewport_size == required_size:
-        return
-    logger.error("Minimization workaround failed")
-    raise EyesError("Failed to set the viewport size.")
 
 
 def hide_scrollbars(driver, root_element):
