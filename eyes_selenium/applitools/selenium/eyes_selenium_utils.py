@@ -102,8 +102,6 @@ _JS_DATA_APPLITOOLS_ORIGINAL_OVERFLOW = (
 _JS_TRANSFORM_KEYS = ("transform", "-webkit-transform")
 _OVERFLOW_HIDDEN = "hidden"
 _MAX_DIFF = 3
-_SLEEP_MS = 1000
-_RETRIES = 3
 
 
 def is_mobile_platform(driver):
@@ -210,30 +208,18 @@ def set_window_size(driver, size):
 
 def set_browser_size(driver, required_size):
     # type: (AnyWebDriver, ViewPort) -> bool
-
-    retries_left = _RETRIES
-
-    # set browser size for mobile devices isn't working
     if is_mobile_platform(driver):
         return True
-
-    while True:
-        logger.debug("Trying to set browser size to: " + str(required_size))
+    current_size = None
+    for _ in range(3):  # Have no idea why we repeat this
         set_window_size(driver, required_size)
-        datetime_utils.sleep(_SLEEP_MS)
-        current_size = get_window_size(driver)
-        logger.debug("Current browser size: " + str(current_size))
-
-        if retries_left or current_size != required_size:
-            break
-        retries_left -= 1
-
-    if current_size == required_size:
-        logger.debug(
-            "Browser size has been successfully set to {}".format(current_size)
-        )
-        return True
-    logger.debug("Browser size wasn't set: {}".format(current_size))
+        for _ in range(10):
+            datetime_utils.sleep(100)
+            current_size = get_window_size(driver)
+            if current_size == required_size:
+                logger.debug("set_browser_size succeeded", current_size=current_size)
+                return True
+    logger.debug("set_browser_size failed", current_size=current_size)
     return False
 
 
