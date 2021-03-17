@@ -200,10 +200,9 @@ def get_window_size(driver):
 
 def set_window_size(driver, size):
     # type: (AnyWebDriver, ViewPort) -> None
-    try:
-        driver.set_window_size(size["width"], size["height"])
-    except WebDriverException:  # Safari 11 driver fails set_window_size calls
-        driver.set_window_rect(0, 0, size["width"], size["height"])
+
+    # We move the window to (0,0) to have the best chance to set size as requested
+    driver.set_window_rect(0, 0, size["width"], size["height"])
 
 
 def set_browser_size(driver, required_size):
@@ -213,7 +212,7 @@ def set_browser_size(driver, required_size):
     current_size = None
     for _ in range(3):  # Have no idea why we repeat this
         set_window_size(driver, required_size)
-        for _ in range(10):
+        for _ in range(10):  # Poll up to 1 second until window is resized
             datetime_utils.sleep(100)
             current_size = get_window_size(driver)
             if current_size == required_size:
@@ -225,13 +224,6 @@ def set_browser_size(driver, required_size):
 
 def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
     # type: (AnyWebDriver, ViewPort, ViewPort) -> ViewPort
-    try:
-        # We move the window to (0,0) to have the best chance to be able to
-        # set the viewport size as requested.
-        driver.set_window_position(0, 0)
-    except WebDriverException:
-        logger.warning("Failed to move the browser window to (0,0)")
-
     browser_size = get_window_size(driver)
     logger.debug("Current browser size: {}".format(browser_size))
     required_browser_size = dict(
