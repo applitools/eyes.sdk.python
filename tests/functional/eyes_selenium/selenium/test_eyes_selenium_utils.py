@@ -1,5 +1,6 @@
 import pytest
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 
 from applitools.common import RectangleSize
 from applitools.selenium.eyes_selenium_utils import get_viewport_size, set_viewport_size
@@ -81,3 +82,10 @@ def test_set_viewport_size_safari11_osx1013(sauce_safari11_osx1013):
     set_viewport_size(sauce_safari11_osx1013, RectangleSize(800, 600))
 
     assert get_viewport_size(sauce_safari11_osx1013) == RectangleSize(800, 600)
+
+
+def test_driver_set_window_size_safari11_osx1013_fails(sauce_safari11_osx1013):
+    # This test is needed to prove there are still browsers that don't support
+    # set_window_size calls
+    with pytest.raises(WebDriverException):
+        sauce_safari11_osx1013.set_window_size(800, 600)

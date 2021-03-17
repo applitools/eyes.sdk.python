@@ -202,7 +202,10 @@ def get_window_size(driver):
 
 def set_window_size(driver, size):
     # type: (AnyWebDriver, ViewPort) -> None
-    driver.set_window_size(size["width"], size["height"])
+    try:
+        driver.set_window_size(size["width"], size["height"])
+    except WebDriverException:  # Safari 11 driver fails set_window_size calls
+        driver.set_window_rect(0, 0, size["width"], size["height"])
 
 
 def set_browser_size(driver, required_size):
