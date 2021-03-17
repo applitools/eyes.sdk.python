@@ -272,7 +272,6 @@ def set_viewport_size(driver, required_size):  # noqa
                 driver, actual_viewport_size, required_size
             )
             if actual_viewport_size != required_size:
-                logger.error("Minimization workaround failed")
                 raise EyesError("Failed to set the viewport size.")
     else:
         logger.info("Required viewport size is already set")
