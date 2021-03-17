@@ -236,6 +236,13 @@ def set_browser_size(driver, required_size):
 
 def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
     # type: (AnyWebDriver, ViewPort, ViewPort) -> bool
+    try:
+        # We move the window to (0,0) to have the best chance to be able to
+        # set the viewport size as requested.
+        driver.set_window_position(0, 0)
+    except WebDriverException:
+        logger.warning("Failed to move the browser window to (0,0)")
+
     browser_size = get_window_size(driver)
     logger.debug("Current browser size: {}".format(browser_size))
     required_browser_size = dict(
@@ -264,12 +271,6 @@ def set_viewport_size(driver, required_size):  # noqa
         )
     )
 
-    try:
-        # We move the window to (0,0) to have the best chance to be able to
-        # set the viewport size as requested.
-        driver.set_window_position(0, 0)
-    except WebDriverException:
-        logger.warning("Failed to move the browser window to (0,0)")
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
@@ -285,7 +286,6 @@ def set_viewport_size(driver, required_size):  # noqa
     try:
         # some webdriver's don't support minimize_window
         driver.minimize_window()
-        driver.set_window_position(0, 0)
     except WebDriverException as e:
         logger.exception(e)
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
