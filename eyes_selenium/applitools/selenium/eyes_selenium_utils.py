@@ -200,7 +200,6 @@ def get_window_size(driver):
 
 def set_window_size(driver, size):
     # type: (AnyWebDriver, ViewPort) -> None
-
     # We move the window to (0,0) to have the best chance to set size as requested
     driver.set_window_rect(0, 0, size["width"], size["height"])
 
@@ -228,8 +227,6 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
     borders_size = browser_size - actual_viewport_size
     required_browser_size = required_size + borders_size
     set_browser_size(driver, required_browser_size)
-    # Browser size and Viewport size are different things.
-    # We need to compare the by Viewport sizes to be sure that it fit.
     actual_viewport_size = get_viewport_size(driver)
     logger.info(
         "set_browser_size_by_viewport_size results",
