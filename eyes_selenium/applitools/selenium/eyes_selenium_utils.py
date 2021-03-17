@@ -274,17 +274,15 @@ def set_viewport_size(driver, required_size):  # noqa
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
-    actual_viewport_size, zoomed = zoom_workaround(
-        actual_viewport_size, driver, required_size
-    )
-
+    logger.info("Trying workaround for maximization...")
+    actual_viewport_size, zoomed = zoom_workaround(driver, required_size)
     if zoomed:
         return None
 
     # Attempt to fix by minimizing window
     logger.info("Trying workaround for minimization...")
     try:
-        # some webdriver's don't support minimize_window
+        # some webdrivers don't support minimize_window
         driver.minimize_window()
     except WebDriverException as e:
         logger.exception(e)
@@ -294,12 +292,11 @@ def set_viewport_size(driver, required_size):  # noqa
     raise EyesError("Failed to set the viewport size.")
 
 
-def zoom_workaround(actual_viewport_size, driver, required_size):
+def zoom_workaround(driver, required_size):
     # Additional attempt. This Solves the "maximized browser" bug
     # (border size for maximized browser sometimes different than
     # non-maximized, so the original browser size calculation is
     # wrong).
-    logger.info("Trying workaround for maximization...")
     actual_viewport_size = get_viewport_size(driver)
     width_diff = abs(actual_viewport_size["width"] - required_size["width"])
     width_step = -1 if width_diff > 0 else 1  # -1 for smaller size, 1 for larger
