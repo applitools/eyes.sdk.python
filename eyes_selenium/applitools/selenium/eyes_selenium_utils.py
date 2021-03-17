@@ -273,6 +273,28 @@ def set_viewport_size(driver, required_size):  # noqa
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
         return None
 
+    actual_viewport_size, zoomed = zoom_workaround(
+        actual_viewport_size, driver, required_size
+    )
+
+    if zoomed:
+        return None
+
+    # Attempt to fix by minimizing window
+    logger.info("Trying workaround for minimization...")
+    try:
+        # some webdriver's don't support minimize_window
+        driver.minimize_window()
+        driver.set_window_position(0, 0)
+    except WebDriverException as e:
+        logger.exception(e)
+    if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
+        return None
+    logger.error("Minimization workaround failed.")
+    raise EyesError("Failed to set the viewport size.")
+
+
+def zoom_workaround(actual_viewport_size, driver, required_size):
     # Additional attempt. This Solves the "maximized browser" bug
     # (border size for maximized browser sometimes different than
     # non-maximized, so the original browser size calculation is
@@ -283,10 +305,9 @@ def set_viewport_size(driver, required_size):  # noqa
     width_step = -1 if width_diff > 0 else 1  # -1 for smaller size, 1 for larger
     height_diff = abs(actual_viewport_size["height"] - required_size["height"])
     height_step = -1 if height_diff > 0 else 1
-
     browser_size = get_window_size(driver)
     curr_width_change = curr_height_change = 0
-
+    zoomed = False
     if width_diff <= _MAX_DIFF and height_diff <= _MAX_DIFF:
         logger.info("Trying workaround for zoom...")
         last_required_browser_size = None
@@ -322,23 +343,11 @@ def set_viewport_size(driver, required_size):  # noqa
             actual_viewport_size = get_viewport_size(driver)
             logger.info("Current viewport size: {}".format(actual_viewport_size))
 
-            if actual_viewport_size == required_size:
-                return None
+            zoomed = actual_viewport_size == required_size
+
         else:
             logger.info("Zoom workaround failed.")
-
-    # Attempt to fix by minimizing window
-    logger.info("Trying workaround for minimization...")
-    try:
-        # some webdriver's don't support minimize_window
-        driver.minimize_window()
-        driver.set_window_position(0, 0)
-    except WebDriverException as e:
-        logger.exception(e)
-    if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
-        return None
-    logger.error("Minimization workaround failed.")
-    raise EyesError("Failed to set the viewport size.")
+    return actual_viewport_size, zoomed
 
 
 def hide_scrollbars(driver, root_element):
