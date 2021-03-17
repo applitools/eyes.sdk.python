@@ -332,6 +332,7 @@ def set_viewport_size(driver, required_size):  # noqa
     try:
         # some webdriver's don't support minimize_window
         driver.minimize_window()
+        driver.set_window_position(0, 0)
     except WebDriverException as e:
         logger.exception(e)
     if set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
