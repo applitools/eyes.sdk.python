@@ -40,6 +40,23 @@ def sauce_chrome_w10(sauce_driver_url):
         driver.quit()
 
 
+@pytest.fixture
+def sauce_safari11_osx1013(sauce_driver_url):
+    capabilities = {
+        "browserName": "safari",
+        "browserVersion": "11.1",
+        "platformName": "macOS 10.13",
+        "sauce:options": {
+            "screenResolution": "1024x768",
+        },
+    }
+    driver = webdriver.Remote(sauce_driver_url, capabilities)
+    try:
+        yield driver
+    finally:
+        driver.quit()
+
+
 def test_set_viewport_size_win_chrome(sauce_chrome_w10):
     set_viewport_size(sauce_chrome_w10, RectangleSize(800, 600))
 
@@ -58,3 +75,9 @@ def test_set_viewport_size_win_ie10_iedriver_314(sauce_ie10_w7_d314):
     set_viewport_size(sauce_ie10_w7_d314, RectangleSize(800, 600))
 
     assert get_viewport_size(sauce_ie10_w7_d314) == RectangleSize(800, 600)
+
+
+def test_set_viewport_size_safari11_osx1013(sauce_safari11_osx1013):
+    set_viewport_size(sauce_safari11_osx1013, RectangleSize(800, 600))
+
+    assert get_viewport_size(sauce_safari11_osx1013) == RectangleSize(800, 600)
