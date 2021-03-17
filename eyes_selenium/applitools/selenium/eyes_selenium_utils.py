@@ -240,7 +240,7 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
         "set_browser_size_by_viewport_size results",
         prev_browser_size=browser_size,
         browser_size=required_browser_size,
-        reuired_viewport_size=required_size,
+        required_viewport_size=required_size,
         actual_viewport_size=actual_viewport_size,
     )
     return actual_viewport_size
