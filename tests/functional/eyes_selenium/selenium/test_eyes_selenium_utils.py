@@ -58,6 +58,20 @@ def sauce_safari11_osx1013(sauce_driver_url):
         driver.quit()
 
 
+@pytest.fixture
+def sauce_safari12_osx1013_legacy(sauce_driver_url):
+    capabilities = {
+        "browserName": "safari",
+        "platform": "macOS 10.13",
+        "version": "12.1",
+    }
+    driver = webdriver.Remote(sauce_driver_url, capabilities)
+    try:
+        yield driver
+    finally:
+        driver.quit()
+
+
 def test_set_viewport_size_win_chrome(sauce_chrome_w10):
     set_viewport_size(sauce_chrome_w10, RectangleSize(800, 600))
 
@@ -84,8 +98,32 @@ def test_set_viewport_size_safari11_osx1013(sauce_safari11_osx1013):
     assert get_viewport_size(sauce_safari11_osx1013) == RectangleSize(800, 600)
 
 
+def test_set_viewport_size_safari12_osx1013_legacy(sauce_safari12_osx1013_legacy):
+    set_viewport_size(sauce_safari12_osx1013_legacy, RectangleSize(800, 600))
+
+    assert get_viewport_size(sauce_safari12_osx1013_legacy) == RectangleSize(800, 600)
+
+
 def test_driver_set_window_size_safari11_osx1013_fails(sauce_safari11_osx1013):
     # This test is needed to prove there are still browsers that don't support
-    # set_window_size calls
+    # set_window_size & set_window_position calls
+    sauce_safari11_osx1013.set_window_rect(0, 0, 400, 300)
+    assert sauce_safari11_osx1013.get_window_size() == {"width": 400, "height": 300}
     with pytest.raises(WebDriverException):
         sauce_safari11_osx1013.set_window_size(800, 600)
+    with pytest.raises(WebDriverException):
+        sauce_safari11_osx1013.set_window_position(0, 0)
+
+
+def test_driver_safari12_osx1013_set_window_rect_fails(sauce_safari12_osx1013_legacy):
+    # This test is needed to prove there are still browsers that don't support
+    # set_window_rect calls
+    sauce_safari12_osx1013_legacy.set_window_position(0, 0)
+    sauce_safari12_osx1013_legacy.set_window_size(400, 300)
+
+    assert sauce_safari12_osx1013_legacy.get_window_size() == {
+        "width": 400,
+        "height": 300,
+    }
+    with pytest.raises(WebDriverException):
+        sauce_safari12_osx1013_legacy.set_window_rect(0, 0, 800, 600)
