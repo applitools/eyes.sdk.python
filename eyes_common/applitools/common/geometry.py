@@ -78,6 +78,14 @@ class RectangleSize(DictAccessMixin):
         # type: (Union[RectangleSize, Dict]) -> bool
         return self.width == other["width"] and self.height == other["height"]
 
+    def __add__(self, other):
+        # type: (Union[RectangleSize, Dict]) -> RectangleSize
+        return RectangleSize(self.width + other["width"], self.height + other["height"])
+
+    def __sub__(self, other):
+        # type: (Union[RectangleSize, Dict]) -> RectangleSize
+        return RectangleSize(self.width - other["width"], self.height - other["height"])
+
     def scale(self, scale_ratio):
         # type: (float) -> RectangleSize
         """Get a scaled version of the current size.
