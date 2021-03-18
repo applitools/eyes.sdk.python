@@ -573,8 +573,11 @@ def test_retry_limiter_serializes_open_session_calls(monkeypatch):
     future1.result(), future2.result(), future3.result()
     request_ids = "".join(c[1]["data"] for c in long_request_calls)
     assert len(request_ids) == 14
-    assert "111" in request_ids
-    assert "333" in request_ids
+    # All the requests in the begining are the same
+    # and all requests in the end are the same
+    # In the beginning there might be one intermixed request
+    assert request_ids[0] * 3 in request_ids
+    assert request_ids[-1] * 3 in request_ids
 
 
 def test_communicator_long_request_immediate_response_200():
