@@ -1,4 +1,4 @@
-## [vNext]
+## [4.18.2] - 2021-03-19
 ### Fixed
 - Use brotli library instead of brotlipy which fails to install on OSX [Trello 2503](https://trello.com/c/sudU9wjY)
 
