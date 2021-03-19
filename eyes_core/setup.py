@@ -26,7 +26,6 @@ def get_version(package_name):
 install_requires = [
     "eyes-common=={}".format(get_version("core")),
     "attrs>=19.2.0,<20",
-    "brotlipy>=0.7",
     "urllib3>=1.25.10",
     "requests>=2.22.0",
     "structlog<=20.1.0",
