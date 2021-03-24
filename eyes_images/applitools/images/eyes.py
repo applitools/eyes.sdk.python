@@ -9,14 +9,15 @@ from applitools.core import (
     NullCutProvider,
     RegionProvider,
 )
+from applitools.core.extract_text import PATTERN_TEXT_REGIONS
 from applitools.images.fluent import ImagesCheckSettings, Target
 
 from .__version__ import __version__
 from .capture import EyesImagesScreenshot
-from .extract_text import ImagesExtractTextProvider
+from .extract_text import ImagesExtractTextProvider, OCRRegion, TextRegionSettings
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, Optional, Text, Union
+    from typing import Dict, List, Optional, Text, Union
 
     from PIL import Image
 
@@ -75,11 +76,28 @@ class Eyes(EyesBase):
         # type: () -> None
         return None
 
+    def __verify_that_session_has_been_opened(self, image):
+        if not self._is_opened:
+            self.abort()
+            raise EyesError("you must call eyes.open() before")
+        if not self.configure.viewport_size:
+            # in case open was called without viewport size and no check was called
+            self._set_viewport_size({"width": image.width, "height": image.height})
+            self._ensure_running_session()
+
+    def extract_text(self, *regions):
+        # type: (*OCRRegion) -> List[Text]
+        self.__verify_that_session_has_been_opened(regions[0].image)
+        return super(Eyes, self).extract_text(*regions)
+
+    def extract_text_regions(self, config):
+        # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
+        self.__verify_that_session_has_been_opened(config._image)
+        return super(Eyes, self).extract_text_regions(config)
+
     def open(self, app_name, test_name, dimension=None):
         # type: (Text, Text, Optional[ViewPort]) -> None
         self._init_additional_providers()
-        if dimension is None:
-            dimension = dict(width=0, height=0)
         self.open_base(app_name, test_name, dimension)
 
     @typing.overload
@@ -139,11 +157,9 @@ class Eyes(EyesBase):
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
 
-        if not self._is_opened:
-            self.abort()
-            raise EyesError("you must call open() before checking")
-
         image = check_settings.values.image  # type: Image.Image
+        self.__verify_that_session_has_been_opened(image)
+
         if check_settings.values.target_region:
             region_provider = RegionProvider(check_settings.values.target_region)
         else:
@@ -155,11 +171,6 @@ class Eyes(EyesBase):
             self.debug_screenshots_provider.save(image, "cut")
 
         self._screenshot = EyesImagesScreenshot(image)
-        if not self.configure.viewport_size:
-            self._set_viewport_size(
-                RectangleSize(width=image.width, height=image.height)
-            )
-
         check_settings = check_settings.timeout(0)
         match_result = self._check_window_base(
             region_provider, self._raw_title, ignore_mismatch, check_settings, None

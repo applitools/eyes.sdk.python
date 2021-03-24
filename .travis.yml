@@ -106,7 +106,7 @@ jobs:
         - os: windows
           language: sh
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.6.8
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
@@ -118,7 +118,7 @@ jobs:
         - os: windows
           language: sh
           before_install:
-              - choco install python2
+              - choco install python2 --version=2.7.18
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:

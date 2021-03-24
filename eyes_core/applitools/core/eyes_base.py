@@ -588,6 +588,7 @@ class EyesBase(
 
                 self._before_open()
                 try:
+                    # postpone session opening if no viewport_size set
                     if self.configure.viewport_size:
                         self._ensure_running_session()
                 except Exception as e:

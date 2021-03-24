@@ -57,7 +57,7 @@ def eyes_runner(eyes_runner_class):
 
 @pytest.fixture
 def eyes_config_base():
-    return Configuration()
+    return Configuration().set_save_new_tests(False)
 
 
 @pytest.fixture

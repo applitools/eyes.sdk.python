@@ -22,6 +22,11 @@ class OCRRegion(BaseOCRRegion):
         # type: (Union[Image.Image, Text]) -> None
         super(OCRRegion, self).__init__(image)
 
+    @property
+    def image(self):
+        # type: () -> Image.Image
+        return image_utils.image_from_path(self.target)
+
 
 class TextRegionSettings(TextRegionSettingsBase):
     def __init__(self, *patterns):
@@ -46,7 +51,7 @@ class ImagesExtractTextProvider(ExtractTextProvider):
         # type: (*OCRRegion) -> List[Text]
         results = []
         for ocr_region in regions:
-            image = image_utils.image_from_path(ocr_region.target)
+            image = ocr_region.image
             screenshot_url = self._server_connector.try_upload_image(
                 image_utils.get_bytes(image)
             )
