@@ -17,7 +17,7 @@ from .capture import EyesImagesScreenshot
 from .extract_text import ImagesExtractTextProvider, OCRRegion, TextRegionSettings
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, Optional, Text, Union, List
+    from typing import Dict, List, Optional, Text, Union
 
     from PIL import Image
 
