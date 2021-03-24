@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- [eyes-images] viewport not automatically set [Trello 2491](https://trello.com/c/G5GF7xa9)
+
 ## [4.18.2] - 2021-03-19
 ### Fixed
 - Use brotli library instead of brotlipy which fails to install on OSX [Trello 2503](https://trello.com/c/sudU9wjY)
