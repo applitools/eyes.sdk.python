@@ -106,12 +106,12 @@ jobs:
         - os: windows
           language: sh
           before_install:
-              - choco install python --version=3.6.8
+              - choco install python --version=3.7.9
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python37:/c/Python37/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
