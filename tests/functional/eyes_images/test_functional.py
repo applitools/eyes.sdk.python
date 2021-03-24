@@ -162,3 +162,26 @@ def test_check_image_fluent_accessibility(eyes):
             },
         ],
     )
+
+
+def test_check_image_with_viewport_size_set(eyes):
+    eyes.open(
+        "images",
+        "TestCheckImageWithViewportSizeSet",
+        dimension=dict(width=100, height=400),
+    )
+    eyes.check_image(path.join(here, "resources/minions-800x500.jpg"))
+    result = eyes.close()
+    assert result.host_display_size.width == 100
+    assert result.host_display_size.height == 400
+
+
+def test_check_image_without_viewport_size_set(eyes):
+    eyes.open(
+        "images",
+        "TestCheckImageWithoutViewportSizeSet",
+    )
+    eyes.check_image(path.join(here, "resources/minions-800x500.jpg"))
+    result = eyes.close()
+    assert result.host_display_size.width == 800
+    assert result.host_display_size.height == 500
