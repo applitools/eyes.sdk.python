@@ -374,7 +374,8 @@ class SeleniumEyes(EyesBase):
                 "check_frame_or_element: {}".format(self._check_frame_or_element)
             )
             if self._check_frame_or_element:
-                fc = self._ensure_frame_visible()
+                restore_frame_scroll_stack = self._ensure_frame_visible()
+                fc = self.driver.frame_chain.clone()
                 # FIXME - Scaling should be handled in a single place instead
                 scale_factory = self.update_scaling_params()
                 screenshot_image = self._image_provider.get_image()
@@ -387,6 +388,7 @@ class SeleniumEyes(EyesBase):
                 logger.debug("replacing region_to_check")
                 self._region_to_check = screenshot.frame_window
                 self._full_region_to_check = Region.EMPTY()
+                self.restore_framechain_scroll(restore_frame_scroll_stack)
 
             target_region = check_settings.values.target_region
             if target_region is None:
@@ -547,6 +549,7 @@ class SeleniumEyes(EyesBase):
         fc = self.driver.frame_chain.clone()
         self.driver.execute_script("window.scrollTo(0,0);")
         origin_driver = eyes_selenium_utils.get_underlying_driver(self.driver)
+        restore_scroll_stack = []
 
         while len(fc) > 0:
             logger.debug("fc count: {}".format(fc.size))
@@ -569,11 +572,25 @@ class SeleniumEyes(EyesBase):
             position_provider = self._element_position_provider_from(
                 scroll_root_element
             )
+            restore_scroll_stack.append(
+                (
+                    position_provider,
+                    position_provider.get_state(),
+                    child_frame.reference,
+                )
+            )
             position_provider.set_position(child_frame.location)
             reg = Region.from_(Point.ZERO(), child_frame.inner_size)
             self._effective_viewport = self._effective_viewport.intersect(reg)
         self.driver.switch_to.frames(current_fc)
-        return current_fc
+        return restore_scroll_stack
+
+    def restore_framechain_scroll(self, restore_stack):
+        with self.driver.saved_frame_chain():
+            self.driver.switch_to.default_content()
+            for position_provider, state, child_frame_ref in reversed(restore_stack):
+                position_provider.restore_state(state)
+                self.driver.switch_to.frame(child_frame_ref)
 
     def _element_position_provider_from(self, scroll_root_element):
         # type: (EyesWebElement) -> PositionProvider
@@ -1002,6 +1019,7 @@ class SeleniumEyes(EyesBase):
     @contextlib.contextmanager
     def _ensure_element_visible(self, element):
         position_provider = fc = None
+        restore_frame_scroll_stack = []
         if element and not self.driver.is_mobile_app:
             original_fc = self.driver.frame_chain.clone()
             element_bounds = element.bounds
@@ -1016,7 +1034,7 @@ class SeleniumEyes(EyesBase):
             )
 
             if not viewport_bounds.contains(element_bounds):
-                self._ensure_frame_visible()
+                restore_frame_scroll_stack = self._ensure_frame_visible()
                 element_location = Point.from_(element.location)
                 if len(original_fc) > 0 and element is not original_fc.peek.reference:
                     fc = original_fc
@@ -1042,6 +1060,8 @@ class SeleniumEyes(EyesBase):
                 position_provider.set_position(element_location)
 
         yield position_provider
-        if element and position_provider and fc and not self.driver.is_mobile_app:
-            self.driver.switch_to.frames(fc)
-            position_provider.restore_state(state)
+        if not self.driver.is_mobile_app:
+            if element and position_provider and fc:
+                self.driver.switch_to.frames(fc)
+                position_provider.restore_state(state)
+            self.restore_framechain_scroll(restore_frame_scroll_stack)
