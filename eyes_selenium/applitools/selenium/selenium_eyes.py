@@ -584,7 +584,7 @@ class SeleniumEyes(EyesBase):
         self.driver.switch_to.frames(current_fc)
         return restore_scroll_stack
 
-    def restore_framechain_scroll(self, restore_stack):
+    def _restore_framechain_scroll(self, restore_stack):
         with self.driver.saved_frame_chain():
             self.driver.switch_to.default_content()
             for position_provider, state, child_frame_ref in reversed(restore_stack):
@@ -1063,4 +1063,4 @@ class SeleniumEyes(EyesBase):
             if element and position_provider and fc:
                 self.driver.switch_to.frames(fc)
                 position_provider.restore_state(state)
-            self.restore_framechain_scroll(restore_frame_scroll_stack)
+            self._restore_framechain_scroll(restore_frame_scroll_stack)
