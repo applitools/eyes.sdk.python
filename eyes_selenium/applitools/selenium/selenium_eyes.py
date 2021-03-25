@@ -374,7 +374,7 @@ class SeleniumEyes(EyesBase):
                 "check_frame_or_element: {}".format(self._check_frame_or_element)
             )
             if self._check_frame_or_element:
-                restore_frame_scroll_stack = self._ensure_frame_visible()
+                self._ensure_frame_visible()
                 fc = self.driver.frame_chain.clone()
                 # FIXME - Scaling should be handled in a single place instead
                 scale_factory = self.update_scaling_params()
@@ -388,7 +388,6 @@ class SeleniumEyes(EyesBase):
                 logger.debug("replacing region_to_check")
                 self._region_to_check = screenshot.frame_window
                 self._full_region_to_check = Region.EMPTY()
-                self.restore_framechain_scroll(restore_frame_scroll_stack)
 
             target_region = check_settings.values.target_region
             if target_region is None:
