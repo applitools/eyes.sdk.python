@@ -243,7 +243,7 @@ class SeleniumEyes(EyesBase):
         )
 
     def check(self, check_settings):
-        # type: (Text, SeleniumCheckSettings) -> MatchResult
+        # type: (SeleniumCheckSettings) -> MatchResult
         source = eyes_selenium_utils.get_check_source(self.driver)
         name = check_settings.values.name
 
