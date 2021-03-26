@@ -90,7 +90,10 @@ def test_get_check_source_source_web(driver_mock):
 def test_set_viewport_size_minimize_window_called(driver_mock):
     driver_mock.minimize_window = mock.Mock()
     set_browser_size_by_viewport_size = mock.Mock()
-    set_browser_size_by_viewport_size.side_effect = [False, True]
+    set_browser_size_by_viewport_size.side_effect = [
+        {"width": 600, "height": 850},
+        {"width": 600, "height": 650},
+    ]
 
     with mock.patch(
         "applitools.selenium.eyes_selenium_utils.get_viewport_size",
