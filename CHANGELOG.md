@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - [eyes-images] viewport not automatically set [Trello 2491](https://trello.com/c/G5GF7xa9)
+- Check multiple times fails for some types of check [Trello 2476](https://trello.com/c/ipfT8z9h)
 
 ## [4.18.2] - 2021-03-19
 ### Fixed
