@@ -25,6 +25,24 @@ def sauce_ie10_w7_d314(sauce_driver_url):
 
 
 @pytest.fixture
+def sauce_ie11_w10_d3141(sauce_driver_url):
+    capabilities = {
+        "browserName": "internet explorer",
+        "browserVersion": "11.285",
+        "platformName": "Windows 10",
+        "sauce:options": {
+            "screenResolution": "1024x768",
+            "iedriverVersion": "3.141.0",
+        },
+    }
+    driver = webdriver.Remote(sauce_driver_url, capabilities)
+    try:
+        yield driver
+    finally:
+        driver.quit()
+
+
+@pytest.fixture
 def sauce_chrome_w10(sauce_driver_url):
     capabilities = {
         "browserName": "chrome",
@@ -78,6 +96,12 @@ def test_set_viewport_size_win_chrome(sauce_chrome_w10):
     assert get_viewport_size(sauce_chrome_w10) == RectangleSize(800, 600)
 
 
+def test_set_minimal_viewport_size_win_chrome(sauce_chrome_w10):
+    set_viewport_size(sauce_chrome_w10, RectangleSize(500, 300))
+
+    assert get_viewport_size(sauce_chrome_w10) == RectangleSize(500, 300)
+
+
 def test_set_viewport_size_maximized_win_chrome(sauce_chrome_w10):
     sauce_chrome_w10.maximize_window()
 
@@ -90,6 +114,40 @@ def test_set_viewport_size_win_ie10_iedriver_314(sauce_ie10_w7_d314):
     set_viewport_size(sauce_ie10_w7_d314, RectangleSize(800, 600))
 
     assert get_viewport_size(sauce_ie10_w7_d314) == RectangleSize(800, 600)
+
+
+def test_set_viewport_size_win_ie11_iedriver_3141(sauce_ie11_w10_d3141):
+    set_viewport_size(sauce_ie11_w10_d3141, RectangleSize(800, 600))
+
+    assert get_viewport_size(sauce_ie11_w10_d3141) == RectangleSize(800, 600)
+
+
+def test_set_viewport_size_win_ie11_iedriver_3141_minimized(sauce_ie11_w10_d3141):
+    sauce_ie11_w10_d3141.minimize_window()
+    set_viewport_size(sauce_ie11_w10_d3141, RectangleSize(800, 600))
+
+    assert get_viewport_size(sauce_ie11_w10_d3141) == RectangleSize(800, 600)
+
+
+def test_set_minimal_viewport_size_win_ie11_iedriver_3141(sauce_ie11_w10_d3141):
+    set_viewport_size(sauce_ie11_w10_d3141, RectangleSize(234, 100))
+
+    assert get_viewport_size(sauce_ie11_w10_d3141) == RectangleSize(234, 100)
+
+
+def test_set_minimal_viewport_size_win_ie11_iedriver_3141_minimized(
+    sauce_ie11_w10_d3141,
+):
+    sauce_ie11_w10_d3141.minimize_window()
+    set_viewport_size(sauce_ie11_w10_d3141, RectangleSize(234, 100))
+
+    assert get_viewport_size(sauce_ie11_w10_d3141) == RectangleSize(234, 100)
+
+
+def test_set_viewport_size_win_ie11_iedriver_3141(sauce_ie11_w10_d3141):
+    set_viewport_size(sauce_ie11_w10_d3141, RectangleSize(800, 600))
+
+    assert get_viewport_size(sauce_ie11_w10_d3141) == RectangleSize(800, 600)
 
 
 def test_set_viewport_size_safari11_osx1013(sauce_safari11_osx1013):

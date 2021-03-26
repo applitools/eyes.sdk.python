@@ -216,30 +216,48 @@ def set_browser_size(driver, required_size):
     # type: (AnyWebDriver, ViewPort) -> bool
     if is_mobile_platform(driver):
         return True
+    previous_size = get_window_size(driver)
     current_size = None
-    for _ in range(3):  # Have no idea why we repeat this
-        set_window_size(driver, required_size)
-        for _ in range(10):  # Poll up to 1 second until window is resized
-            datetime_utils.sleep(100)
-            current_size = get_window_size(driver)
+    set_window_size(driver, required_size)
+    for _ in range(10):  # Poll up to 1 second until window is resized
+        datetime_utils.sleep(100)
+        current_size = get_window_size(driver)
+        if current_size != previous_size:
             if current_size == required_size:
                 logger.debug("set_browser_size succeeded", current_size=current_size)
                 return True
-    logger.debug("set_browser_size failed", current_size=current_size)
+            else:
+                # Window size probably have exceeded minimal size or screen resolution
+                # and was adjusted to fit these constraints
+                break
+    logger.info(
+        "set_browser_size failed",
+        required_size=required_size,
+        previous_size=previous_size,
+        current_size=current_size,
+    )
     return False
 
 
 def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
     # type: (AnyWebDriver, ViewPort, ViewPort) -> ViewPort
-    browser_size = get_window_size(driver)
-    borders_size = browser_size - actual_viewport_size
-    required_browser_size = required_size + borders_size
-    set_browser_size(driver, required_browser_size)
+    borders_size = get_window_size(driver) - actual_viewport_size
+    if borders_size.width <= 0 or borders_size.height <= 0:
+        logger.info("window seems to be minimized, trying to restore it by resizing")
+        set_browser_size(driver, required_size)
+        actual_viewport_size = get_viewport_size(driver)
+        borders_size = get_window_size(driver) - actual_viewport_size
+    set_browser_size(driver, required_size + borders_size)
     actual_viewport_size = get_viewport_size(driver)
+    if actual_viewport_size != required_size:
+        logger.info("window must have been maximized and had different borders size")
+        # Now window should not be maximized so retry once more
+        actual_viewport_size = get_viewport_size(driver)
+        borders_size = get_window_size(driver) - actual_viewport_size
+        set_browser_size(driver, required_size + borders_size)
+        actual_viewport_size = get_viewport_size(driver)
     logger.info(
         "set_browser_size_by_viewport_size results",
-        prev_browser_size=browser_size,
-        browser_size=required_browser_size,
         required_viewport_size=required_size,
         actual_viewport_size=actual_viewport_size,
     )
@@ -254,23 +272,16 @@ def set_viewport_size(driver, required_size):  # noqa
             driver, actual_viewport_size, required_size
         )
         if actual_viewport_size != required_size:
-            # Additional attempt. This Solves the "maximized browser" bug
-            # (border size for maximized browser sometimes different than
-            # non-maximized, so the original browser size calculation is
-            # wrong).
-            # Attempt to fix it by minimizing window and retrying resizing it,
-            # this time borders are calculated for non-maximized window.
-            logger.info("Trying workaround for minimization...")
+            # Additional attempt. This Solves the "non-resizable maximized browser" case
+            # Attempt to fix it by minimizing window and retrying again
+            logger.info("Trying workaround with minimization...")
             try:
                 driver.minimize_window()
+                actual_viewport_size = set_browser_size_by_viewport_size(
+                    driver, actual_viewport_size, required_size
+                )
             except WebDriverException:
-                # Some web drivers don't support minimize_window but that's ok,
-                # next resizing attempt have chance to succeed anyway
-                # because previous one should have un-maximized window
                 logger.warning("minimize_window failed")
-            actual_viewport_size = set_browser_size_by_viewport_size(
-                driver, actual_viewport_size, required_size
-            )
             if actual_viewport_size != required_size:
                 raise EyesError("Failed to set the viewport size.")
     else:
