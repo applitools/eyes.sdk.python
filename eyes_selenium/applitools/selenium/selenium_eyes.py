@@ -1,4 +1,5 @@
 import contextlib
+import itertools
 import typing
 
 from selenium.common.exceptions import WebDriverException
@@ -28,6 +29,7 @@ from applitools.core import (
     PositionProvider,
     RegionProvider,
     TextTrigger,
+    RegionByRectangle,
 )
 from applitools.core.feature import Feature
 
@@ -304,7 +306,32 @@ class SeleniumEyes(EyesBase):
         self._screenshot_factory = None
         return results
 
+    def _collect_regions(self, check_settings):
+        def convert_to_region_by_rectangle(regions):
+            return list(
+                itertools.chain.from_iterable(
+                    [
+                        r.to_region_by_rectangle(self, self._last_screenshot)
+                        for r in regions
+                    ]
+                )
+            )
+
+        check_settings.values.layout_regions = convert_to_region_by_rectangle(
+            check_settings.values.layout_regions
+        )
+        check_settings.values.ignore_regions = convert_to_region_by_rectangle(
+            check_settings.values.ignore_regions
+        )
+        check_settings.values.content_regions = convert_to_region_by_rectangle(
+            check_settings.values.content_regions
+        )
+        check_settings.values.strict_regions = convert_to_region_by_rectangle(
+            check_settings.values.strict_regions
+        )
+
     def _check_result_flow(self, name, check_settings, source):
+        self._collect_regions(check_settings)
         target_region = check_settings.values.target_region
         result = None
         if target_region and self._switched_to_frame_count == 0:
@@ -410,8 +437,9 @@ class SeleniumEyes(EyesBase):
         target_frame = fc.pop()
         self._target_element = target_frame.reference
 
-        self.driver.switch_to.frames_do_scroll(fc)
-        result = self._check_region(name, check_settings, source)
+        with self.driver.switch_to.frames_and_back(fc):
+            result = self._check_region(name, check_settings, source)
+
         self._target_element = None
         return result
 

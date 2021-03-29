@@ -7,7 +7,7 @@ from applitools.common import CoordinatesType, FloatingMatchSettings
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.utils import ABC
-from applitools.core import GetFloatingRegion, GetRegion
+from applitools.core import GetFloatingRegion, GetRegion, RegionByRectangle
 from applitools.core.fluent.region import GetAccessibilityRegion
 from applitools.selenium.capture import EyesWebDriverScreenshot
 
@@ -63,6 +63,10 @@ class GetSeleniumRegion(GetRegion, ABC):
     def _fetch_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
         pass
+
+    def to_region_by_rectangle(self, eyes, screenshot):
+        # type: (SeleniumEyes, EyesWebDriverScreenshot) -> List[RegionByRectangle]
+        return [RegionByRectangle(r) for r in self.get_regions(eyes, screenshot)]
 
 
 @attr.s
