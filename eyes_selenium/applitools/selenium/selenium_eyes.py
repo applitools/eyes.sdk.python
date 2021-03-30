@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.geometry import Point
-from applitools.common.selenium import StitchMode, Configuration
+from applitools.common.selenium import Configuration, StitchMode
 from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -339,7 +339,7 @@ class SeleniumEyes(EyesBase):
                     logger.debug("Target.Frame(frame).Fully(false)")
                     logger.debug(
                         "WARNING: This shouldn't have been called, as it is covered "
-                        "by `_сheck_element(...)` "
+                        "by `check_element(...)` "
                     )
                     result = self._check_frame(check_settings, source)
             else:
@@ -354,7 +354,6 @@ class SeleniumEyes(EyesBase):
 
     def _check_full_window(self, check_settings, source):
         logger.debug("Target.window().fully()")
-        self._original_location = Point.ZERO()
         return self._check_window_base(
             NULL_REGION_PROVIDER,
             False,
@@ -364,12 +363,6 @@ class SeleniumEyes(EyesBase):
 
     def _check_window(self, check_settings, source):
         logger.debug("Target.window()")
-        location = Point.ZERO()
-        if not self.driver.is_mobile_app:
-            location = ScrollPositionProvider(
-                self.driver, self.scroll_root_element
-            ).get_current_position()
-        self._original_location = location
         return self._check_window_base(
             NULL_REGION_PROVIDER,
             False,
