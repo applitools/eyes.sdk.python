@@ -35,6 +35,7 @@ def remove_page_marker(driver):
 
 def find_pattern(image, pattern):
     # type: (Image, Pattern) -> Optional[Point]
+    image = image.convert("RGB")
     for pixel in range(image.width * image.height):
         if _is_pattern(image, pixel, pattern):
             return Point(
@@ -75,7 +76,7 @@ def _is_pattern(image, index, pattern):
 def _pixel_color_at(image, pixel_index, threshold):
     # type: (Image, int, int) -> int
     xy = pixel_index % image.width, pixel_index // image.width
-    components = image.getpixel(xy)[:3]
+    components = image.getpixel(xy)
     # White
     if all(c >= 255 - threshold for c in components):
         return 1
