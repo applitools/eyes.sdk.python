@@ -54,6 +54,13 @@ if sys.version_info[:2] < (3, 5):
 if sys.version_info[:1] < (3,):
     install_requires.append("futures==3.2.0")
 
+# brotli doesn't have binary distribution on py27/win64
+# so let's use brotlipy there to avoid requirement to have msvc to build
+if sys.version_info[:1] < (3,) and sys.platform.startswith("win"):
+    install_requires.append("brotlipy==0.7.0")
+else:
+    install_requires.append("brotli>=1.0.9")
+
 setup(
     name="eyes_selenium",
     version=get_version("selenium"),

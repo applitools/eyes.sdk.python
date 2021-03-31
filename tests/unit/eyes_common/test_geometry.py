@@ -42,3 +42,21 @@ def test_point_creation(x, y, result):
 def test_rectangle_size_creation(width, height, result):
     expect = RectangleSize(width, height)
     assert expect == result
+
+
+def test_rectangle_size_equality():
+    a = RectangleSize(800, 600)
+    b = RectangleSize(800, 600)
+    c = RectangleSize(200, 200)
+
+    assert a == b
+    assert not a == c
+
+
+def test_rectangle_size_inequality():
+    a = RectangleSize(800, 600)
+    b = RectangleSize(800, 600)
+    c = RectangleSize(200, 200)
+
+    assert a != c
+    assert not a != b

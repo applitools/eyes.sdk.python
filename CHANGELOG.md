@@ -2,6 +2,29 @@
 ### Updated
 - Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
 
+## [4.18.3] - 2021-03-26
+### Fixed
+- [eyes-images] viewport not automatically set [Trello 2491](https://trello.com/c/G5GF7xa9)
+- Check multiple times fails for some types of check [Trello 2476](https://trello.com/c/ipfT8z9h)
+- Failed to set viewport size error [Trello 2483](https://trello.com/c/eP9yFbsP)
+
+## [4.18.2] - 2021-03-19
+### Fixed
+- Use brotli library instead of brotlipy which fails to install on OSX [Trello 2503](https://trello.com/c/sudU9wjY)
+
+## [4.18.1] - 2021-03-16
+### Fixed
+- CSS is not loaded properly using the UFG [Trello 2503](https://trello.com/c/sudU9wjY)
+
+## [4.18.0] - 2021-03-11
+### Added
+- Browser cookies are used when UFG resources are downloaded [Trello 2433](https://trello.com/c/6OYDSI1Q)
+### Updated
+- Update missing types [Trello 2494](https://trello.com/c/pqcjOUkl) [Trello 2471](https://trello.com/c/aTDUpWIE)
+- disable_browser_fetching configuration option is now True by default [Trello 2433](https://trello.com/c/6OYDSI1Q)
+### Fixed
+- UFG not loading resources with proxy [Trello 2433](https://trello.com/c/6OYDSI1Q)
+
 ## [4.17.1] - 2021-02-25
 ### Fixed
 - Some checks in multi-checks tests might be skipped [Trello 2463](https://trello.com/c/YAMPDWIM)
@@ -10,7 +33,6 @@
 - Add extract_text_region for OCR support [Trello 2440](https://trello.com/c/FLGKnqIS)
 ### Updated
 - Better logging to aid dom-capture script errors debugging [Trello 2457](https://trello.com/c/6CcbvxWU)
-- Now sending screenshot location in match window data and setting correct scrolled element for dom capture [Trello 2379](https://trello.com/c/Wn9Fp4XN)
 
 ## [4.16.0] - 2021-02-05
 ### Added

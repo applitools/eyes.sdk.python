@@ -219,7 +219,7 @@ def test_disable_browser_fetching_combinations():
 
     effective_option = VisualGridEyes._effective_disable_browser_fetching
     cfg = Configuration()
-    assert effective_option(cfg, Target.window()) is False
+    assert effective_option(cfg, Target.window()) is True
     assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
     assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
     assert (
