@@ -156,6 +156,8 @@ class Eyes(EyesBase):
         # type: (Text, bool, ImagesCheckSettings) -> bool
         # Set the title to be linked to the screenshot.
         self._raw_title = name if name else ""
+        if name:
+            check_settings = check_settings.with_name(name)
 
         image = check_settings.values.image  # type: Image.Image
         self.__verify_that_session_has_been_opened(image)
@@ -173,7 +175,7 @@ class Eyes(EyesBase):
         self._screenshot = EyesImagesScreenshot(image)
         check_settings = check_settings.timeout(0)
         match_result = self._check_window_base(
-            region_provider, self._raw_title, ignore_mismatch, check_settings, None
+            region_provider, ignore_mismatch, check_settings, None
         )
         self._screenshot = None
         self._raw_title = None

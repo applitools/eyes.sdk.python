@@ -36,10 +36,10 @@ def test_perform_match_with_no_regions(
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
             app_output_with_screenshot,
-            "Name",
             False,
             image_match_settings,
             eyes_base_mock,
+            check_settings=CheckSettings(),
         )
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
         ims = match_window_data.options.image_match_settings
@@ -78,7 +78,6 @@ def test_perform_match_collect_regions_from_screenshot(
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
             app_output_with_screenshot,
-            "Name",
             False,
             image_match_settings,
             eyes_base_mock,
@@ -111,7 +110,6 @@ def test_perform_match_with_render_id(
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
             app_output_with_screenshot,
-            "Name",
             False,
             image_match_settings,
             eyes_base_mock,
@@ -131,7 +129,6 @@ def test_perform_match_with_source(
     with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
         mwt.perform_match(
             app_output_with_screenshot,
-            "Name",
             False,
             image_match_settings,
             eyes_base_mock,

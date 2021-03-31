@@ -13,13 +13,14 @@ repos:
       hooks:
           - id: flake8
             language_version: python3
-            exclude: tests/*
+            exclude: tests/.*
 
     - repo: https://github.com/pre-commit/mirrors-isort
       rev: v5.5.2
       hooks:
           - id: isort
             language_version: python3
+            args: ["--profile", "black"]
             entry: isort
             additional_dependencies: [toml]
 
@@ -28,14 +29,14 @@ repos:
       hooks:
           - id: trailing-whitespace
             args: [--markdown-linebreak-ext=md]
-            exclude: tests/*
+            exclude: tests/.*
           - id: end-of-file-fixer
-            exclude: tests/*
+            exclude: tests/.*
           - id: debug-statements
           - id: check-case-conflict
           - id: check-byte-order-marker
-            exclude: tests/*
+            exclude: tests/.*
           - id: mixed-line-ending
-            exclude: tests/*
+            exclude: tests/.*
             args:
                 - --fix=lf

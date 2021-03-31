@@ -14,7 +14,7 @@ from applitools.common import (
     logger,
 )
 from applitools.common.geometry import Point
-from applitools.common.selenium import StitchMode
+from applitools.common.selenium import Configuration, StitchMode
 from applitools.common.utils import argument_guard, datetime_utils, image_utils
 from applitools.core import (
     NULL_REGION_PROVIDER,
@@ -49,7 +49,6 @@ from .region_compensation import (
     RegionPositionCompensation,
     get_region_position_compensation,
 )
-from .useragent import BrowserNames
 from .webdriver import EyesWebDriver
 from .webelement import EyesWebElement, adapt_element
 
@@ -89,7 +88,7 @@ class SeleniumEyes(EyesBase):
     _element_position_provider = None  # type: Optional[ElementPositionProvider]
     _check_frame_or_element = None  # type: bool
     _original_fc = None  # type: Optional[FrameChain]
-    _scroll_root_element = None  # type: Optional[EyesWebElement]
+    _user_defined_SRE = None  # type: Optional[EyesWebElement]
     _effective_viewport = None  # type: Optional[Region]
     _target_element = None  # type: Optional[EyesWebElement]
     _screenshot_factory = None  # type: Optional[EyesWebDriverScreenshotFactory]
@@ -125,7 +124,12 @@ class SeleniumEyes(EyesBase):
         self._do_not_get_title = False
         self._device_pixel_ratio = self._UNKNOWN_DEVICE_PIXEL_RATIO
         self._stitch_content = False  # type: bool
-        self._runner = runner if runner else ClassicRunner()
+        self._runner = runner or ClassicRunner()
+
+    @property
+    def configure(self):
+        # type:() -> Configuration
+        return super(SeleniumEyes, self).configure
 
     @property
     def original_fc(self):
@@ -222,7 +226,7 @@ class SeleniumEyes(EyesBase):
         return False
 
     def _create_position_provider(self, scroll_root_element):
-
+        # type: (AnyWebElement) -> PositionProvider
         return create_position_provider(
             self.driver,
             self.configure.stitch_mode,
@@ -230,8 +234,8 @@ class SeleniumEyes(EyesBase):
             self._target_element,
         )
 
-    def _match_window(self, region_provider, tag, check_settings, source):
-        # type:(RegionProvider,Text,SeleniumCheckSettings,Optional[Text])->MatchResult
+    def _match_window(self, region_provider, check_settings, source):
+        # type:(RegionProvider,SeleniumCheckSettings,Optional[Text])->MatchResult
         if check_settings.values.ocr_region:
             check_settings.values.ocr_region.process_app_output(
                 check_settings, region_provider.get_region()
@@ -239,7 +243,7 @@ class SeleniumEyes(EyesBase):
             return MatchResult(as_expected=True)
 
         return super(SeleniumEyes, self)._match_window(
-            region_provider, tag, check_settings, source
+            region_provider, check_settings, source
         )
 
     def check(self, check_settings):
@@ -251,12 +255,10 @@ class SeleniumEyes(EyesBase):
 
         # Set up required settings
         self._stitch_content = check_settings.values.stitch_content
-        self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+        self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
             self.driver, check_settings
         )
-        self._position_provider = self._create_position_provider(
-            self._scroll_root_element
-        )
+        self._position_provider = self._create_position_provider(self._user_defined_SRE)
 
         self._original_fc = self.driver.frame_chain.clone()
 
@@ -270,18 +272,18 @@ class SeleniumEyes(EyesBase):
 
             logger.info("Current URL: {}".format(self._driver.current_url))
             with self._switch_to_frame(check_settings):
-                result = self._check_result_flow(name, check_settings, source)
+                result = self._check_result_flow(check_settings, source)
 
             # restore scrollbar of main window
-            self._scroll_root_element = eyes_selenium_utils.scroll_root_element_from(
+            self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
                 self.driver, check_settings
             )
             self._try_restore_scrollbars()
         else:
-            result = self._check_result_flow(name, check_settings, source)
+            result = self._check_result_flow(check_settings, source)
 
         self._stitch_content = False
-        self._scroll_root_element = None
+        self._user_defined_SRE = None
         if self._position_memento:
             ScrollPositionProvider(self.driver, self.scroll_root_element).restore_state(
                 self._position_memento
@@ -304,7 +306,7 @@ class SeleniumEyes(EyesBase):
         self._screenshot_factory = None
         return results
 
-    def _check_result_flow(self, name, check_settings, source):
+    def _check_result_flow(self, check_settings, source):
         target_region = check_settings.values.target_region
         result = None
         if target_region and self._switched_to_frame_count == 0:
@@ -312,7 +314,7 @@ class SeleniumEyes(EyesBase):
             target_region = target_region.clone()
             target_region.coordinates_type = CoordinatesType.CONTEXT_RELATIVE
             result = self._check_window_base(
-                RegionProvider(target_region), name, False, check_settings, source
+                RegionProvider(target_region), False, check_settings, source
             )
         elif check_settings:
             target_element = self._element_from(check_settings)
@@ -325,39 +327,48 @@ class SeleniumEyes(EyesBase):
                 logger.debug("have target element")
                 self._target_element = target_element
                 if self._stitch_content:
-                    result = self._check_element(name, check_settings, source)
+                    result = self._check_full_element(check_settings, source)
                 else:
-                    result = self._check_region(name, check_settings, source)
+                    result = self._check_element(check_settings, source)
                 self._target_element = None
             elif total_frames > 0:
                 logger.debug("have frame chain")
                 if self._stitch_content:
-                    result = self._check_full_frame_or_element(
-                        name, check_settings, source
-                    )
+                    result = self._check_full_frame(check_settings, source)
                 else:
-                    result = self._check_frame_fluent(name, check_settings, source)
-            else:
-                logger.debug("default case")
-                if not self.driver.is_mobile_app:
-                    # required to prevent cut line on the last stitched part of the
-                    # page on some browsers (like firefox).
-                    self.driver.switch_to.default_content()
-                    self._current_frame_position_provider = (
-                        self._create_position_provider(
-                            self.driver.find_element_by_tag_name("html")
-                        )
+                    logger.debug("Target.Frame(frame).Fully(false)")
+                    logger.debug(
+                        "WARNING: This shouldn't have been called, as it is covered "
+                        "by `check_element(...)` "
                     )
-                result = self._check_window_base(
-                    NULL_REGION_PROVIDER,
-                    name,
-                    False,
-                    check_settings,
-                    source,
-                )
+                    result = self._check_frame(check_settings, source)
+            else:
+                if self._stitch_content:
+                    self._check_full_window(check_settings, source)
+                else:
+                    self._check_window(check_settings, source)
+
         if result is None:
             result = MatchResult()
         return result
+
+    def _check_full_window(self, check_settings, source):
+        logger.debug("Target.window().fully()")
+        return self._check_window_base(
+            NULL_REGION_PROVIDER,
+            False,
+            check_settings,
+            source,
+        )
+
+    def _check_window(self, check_settings, source):
+        logger.debug("Target.window()")
+        return self._check_window_base(
+            NULL_REGION_PROVIDER,
+            False,
+            check_settings,
+            source,
+        )
 
     @property
     def current_frame_position_provider(self):
@@ -366,7 +377,7 @@ class SeleniumEyes(EyesBase):
         else:
             return self.position_provider
 
-    def _check_full_frame_or_element(self, name, check_settings, source):
+    def _check_full_frame(self, check_settings, source):
         self._check_frame_or_element = True
 
         def full_frame_or_element_region(check_settings):
@@ -396,7 +407,6 @@ class SeleniumEyes(EyesBase):
 
         result = self._check_window_base(
             RegionProvider(lambda: full_frame_or_element_region(check_settings)),
-            name,
             False,
             check_settings,
             source,
@@ -405,21 +415,21 @@ class SeleniumEyes(EyesBase):
         self._region_to_check = None
         return result
 
-    def _check_frame_fluent(self, name, check_settings, source):
+    def _check_frame(self, check_settings, source):
         fc = self.driver.frame_chain.clone()
         target_frame = fc.pop()
         self._target_element = target_frame.reference
 
         self.driver.switch_to.frames_do_scroll(fc)
-        result = self._check_region(name, check_settings, source)
+        result = self._check_element(check_settings, source)
         self._target_element = None
         return result
 
-    def _check_element(self, name, check_settings, source):
+    def _check_full_element(self, check_settings, source):
         element = self._target_element  # type: EyesWebElement
 
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-            self.driver, self._scroll_root_element
+            self.driver, self._user_defined_SRE
         )
         pos_provider = self._create_position_provider(scroll_root_element)
 
@@ -482,7 +492,6 @@ class SeleniumEyes(EyesBase):
 
                     result = self._check_window_base(
                         NULL_REGION_PROVIDER,
-                        name,
                         False,
                         check_settings,
                         source,
@@ -499,7 +508,7 @@ class SeleniumEyes(EyesBase):
                     self._full_region_to_check = None
         return result
 
-    def _check_region(self, name, check_settings, source):
+    def _check_element(self, check_settings, source):
         self._is_check_region = True
 
         def get_region():
@@ -531,7 +540,6 @@ class SeleniumEyes(EyesBase):
 
         result = self._check_window_base(
             RegionProvider(get_region),
-            name,
             False,
             check_settings,
             source,
@@ -540,7 +548,7 @@ class SeleniumEyes(EyesBase):
         return result
 
     def _ensure_frame_visible(self):
-        logger.debug("scroll_root_element_: {}".format(self._scroll_root_element))
+        logger.debug("scroll_root_element_: {}".format(self._user_defined_SRE))
         current_fc = self.driver.frame_chain.clone()
         if not current_fc:
             # if no frames no point to go below
@@ -560,7 +568,7 @@ class SeleniumEyes(EyesBase):
             if fc.size == self._original_fc.size:
                 logger.debug("PositionProvider: {}".format(self.position_provider))
                 self._position_memento = self.position_provider.get_state()
-                scroll_root_element = self._scroll_root_element
+                scroll_root_element = self._user_defined_SRE
             else:
                 if parent_frame:
                     scroll_root_element = parent_frame.scroll_root_element
@@ -631,9 +639,9 @@ class SeleniumEyes(EyesBase):
 
     @property
     def scroll_root_element(self):
-        if self._scroll_root_element is None:
-            self._scroll_root_element = self.driver.find_element_by_tag_name("html")
-        return self._scroll_root_element
+        if self._user_defined_SRE is None:
+            self._user_defined_SRE = self.driver.find_element_by_tag_name("html")
+        return self._user_defined_SRE
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (Text, AnyWebElement) -> None
@@ -850,7 +858,7 @@ class SeleniumEyes(EyesBase):
 
     def _create_full_page_capture_algorithm(self, scale_provider):
         scroll_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(
-            self.driver, self._scroll_root_element
+            self.driver, self._user_defined_SRE
         )
         origin_provider = ScrollPositionProvider(self.driver, scroll_root_element)
         return FullPageCaptureAlgorithm(
@@ -1040,7 +1048,7 @@ class SeleniumEyes(EyesBase):
                     self.driver.switch_to.frames(original_fc)
                     scroll_root_element = (
                         eyes_selenium_utils.curr_frame_scroll_root_element(
-                            self.driver, self._scroll_root_element
+                            self.driver, self._user_defined_SRE
                         )
                     )
                 # This might happen when scroll root element is calculated in the
