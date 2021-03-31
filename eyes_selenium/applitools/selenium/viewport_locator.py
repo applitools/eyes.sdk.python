@@ -1,22 +1,88 @@
+from __future__ import division
+
 import typing
+from math import floor
+
+import attr
+
+from applitools.common import Point
 
 if typing.TYPE_CHECKING:
+    from typing import List, Optional
+
+    from PIL.Image import Image
+
     from applitools.common.utils.custom_types import AnyWebDriver
 
 
+@attr.s
+class Pattern(object):
+    offset = attr.ib()  # type: int
+    size = attr.ib()  # type: int
+    mask = attr.ib()  # type: List[int]
+
+
 def add_page_marker(driver, pixel_ratio):
-    # type: (AnyWebDriver, float) -> dict
+    # type: (AnyWebDriver, float) -> Pattern
     driver.execute_script(_ADD_PAGE_MARKER_JS)
-    return {
-        "offset": 1 * pixel_ratio,
-        "size": 3 * pixel_ratio,
-        "mask": [0, 1, 0],
-    }
+    return Pattern(int(1 * pixel_ratio), int(3 * pixel_ratio), [0, 1, 0])
 
 
 def remove_page_marker(driver):
     # type: (AnyWebDriver) -> None
     driver.execute_script(_CLEANUP_PAGE_MARKER_JS)
+
+
+def find_pattern(image, pattern):
+    # type: (Image, Pattern) -> Optional[Point]
+    for pixel in range(image.width * image.height):
+        if _is_pattern(image, pixel, pattern):
+            return Point(
+                pixel % image.width - pattern.offset,
+                floor(pixel // image.width) - pattern.offset,
+            )
+
+
+def _is_pattern(image, index, pattern):
+    # type: (Image, int, Pattern) -> bool
+    round_number = pattern.size - pattern.size // 2
+    for chunk_index, chunk_color in enumerate(pattern.mask):
+        pixel_offset = index + image.width * pattern.size * chunk_index
+        for round in range(round_number):
+            side_length = pattern.size - round * 2
+            steps_number = side_length * 4 - 4
+            threshold = min((round_number - round) * 10 + 10, 100)
+            for step in range(steps_number):
+                pixel_index = pixel_offset + round + round * image.width
+                if step < side_length:
+                    pixel_index += step
+                elif step < side_length * 2 - 1:
+                    pixel_index += (
+                        side_length - 1 + ((step % side_length + 1)) * image.width
+                    )
+                elif step < side_length * 3 - 2:
+                    pixel_index += (side_length - 1) * image.width + (
+                        side_length - (step % side_length) - 1
+                    )
+                else:
+                    pixel_index += (step % side_length) * image.width
+                pixel_color = _pixel_color_at(image, pixel_index, threshold)
+                if pixel_color != chunk_color:
+                    return False
+    return True
+
+
+def _pixel_color_at(image, pixel_index, threshold):
+    # type: (Image, int, int) -> int
+    xy = pixel_index % image.width, pixel_index // image.width
+    components = image.getpixel(xy)[:3]
+    # White
+    if all(c >= 255 - threshold for c in components):
+        return 1
+    elif all(c <= threshold for c in components):
+        return 0
+    else:
+        return -1
 
 
 _SET_ELEMENT_STYLE_PROPERTIES_JS = """

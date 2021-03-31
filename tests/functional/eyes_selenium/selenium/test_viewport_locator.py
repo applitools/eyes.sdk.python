@@ -1,5 +1,15 @@
+from os import path
+
+from PIL import Image
+
+from applitools.common import Point
 from applitools.selenium import Target
-from applitools.selenium.viewport_locator import add_page_marker, remove_page_marker
+from applitools.selenium.viewport_locator import (
+    Pattern,
+    add_page_marker,
+    find_pattern,
+    remove_page_marker,
+)
 
 
 def test_add_remove_marker(driver, eyes):
@@ -15,4 +25,18 @@ def test_add_remove_marker(driver, eyes):
     remove_page_marker(driver)
     eyes.check("Marker removed", Target.window())
     eyes.close()
-    assert marker == {"offset": 2, "size": 6, "mask": [0, 1, 0]}
+    assert marker == Pattern(2, 6, [0, 1, 0])
+
+
+def test_find_pattern():
+    marker = Pattern(2, 6, [0, 1, 0])
+    image = Image.open(
+        path.join(
+            path.dirname(path.realpath(__file__)),
+            "resources/browser_window_with_marker.png",
+        )
+    )
+
+    location = find_pattern(image, marker)
+
+    assert location == Point(112, 322)
