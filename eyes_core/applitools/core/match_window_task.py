@@ -496,7 +496,6 @@ class MatchWindowTask(object):
         self,
         user_inputs,  # type: UserInputs
         region,  # type: Region
-        tag,  # type: Text
         check_settings,  # type: CheckSettings
         retry_timeout_sec,  # type: int
         source,  # type: Optional[Text]
@@ -510,7 +509,6 @@ class MatchWindowTask(object):
         screenshot = self._taking_screenshot_loop(
             user_inputs,
             region,
-            tag,
             check_settings,
             retry_timeout_sec,
             retry,
@@ -522,7 +520,7 @@ class MatchWindowTask(object):
         if not self._match_result.as_expected:
             logger.info("Window mismatch. Retrying...")
             return self._try_take_screenshot(
-                user_inputs, region, tag, check_settings, source
+                user_inputs, region, check_settings, source
             )
         return screenshot
 
@@ -530,7 +528,6 @@ class MatchWindowTask(object):
         self,
         user_inputs,  # type: UserInputs
         region,  # type: Region
-        tag,  # type: Text
         check_settings,  # type: CheckSettings
         retry_timeout_ms,  # type: int
         retry_ms,  # type: int
@@ -546,7 +543,7 @@ class MatchWindowTask(object):
         datetime_utils.sleep(self._MATCH_INTERVAL_MS)
 
         new_screenshot = self._try_take_screenshot(
-            user_inputs, region, tag, check_settings, source
+            user_inputs, region, check_settings, source
         )
         if self._match_result.as_expected:
             return new_screenshot
@@ -555,7 +552,6 @@ class MatchWindowTask(object):
         return self._taking_screenshot_loop(
             user_inputs,
             region,
-            tag,
             check_settings,
             retry_timeout_ms,
             retry_ms,
