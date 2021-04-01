@@ -54,7 +54,7 @@ def _is_pattern(image, x, y, pattern):
     for chunk_index, chunk_color in enumerate(pattern.mask):
         threshold = 40
         # Check if all pixels of the chunk have matching color
-        # Check id done from borders to center, reducing threshold closer to center
+        # Check is done from borders to center, reducing threshold closer to center
         for round in range(chunk_midsize):
             round_x = x + round
             round_y = y + round + chunk_index * pattern.size
