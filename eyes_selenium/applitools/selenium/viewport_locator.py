@@ -6,6 +6,7 @@ from math import ceil
 import attr
 
 from applitools.common import Point
+from applitools.common.utils.image_utils import image_from_bytes
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Tuple
@@ -15,6 +16,16 @@ if typing.TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
 
 
+def device_viewport_location(driver):
+    # type: (AnyWebDriver) -> Point
+    pattern = add_page_marker(driver)
+    try:
+        image = image_from_bytes(driver.get_screenshot_as_png())
+    finally:
+        remove_page_marker(driver)
+    return find_pattern(image, pattern)
+
+
 @attr.s
 class Pattern(object):
     offset = attr.ib()  # type: int
@@ -22,10 +33,10 @@ class Pattern(object):
     mask = attr.ib()  # type: List[int]
 
 
-def add_page_marker(driver, pixel_ratio):
+def add_page_marker(driver):
     # type: (AnyWebDriver, float) -> Pattern
-    driver.execute_script(_ADD_PAGE_MARKER_JS)
-    return Pattern(int(1 * pixel_ratio), int(3 * pixel_ratio), [0, 1, 0])
+    pattern_dict = driver.execute_script(_ADD_PAGE_MARKER_JS)
+    return Pattern(**pattern_dict)
 
 
 def remove_page_marker(driver):
@@ -144,6 +155,11 @@ function __addPageMarker() {
 
   document.documentElement.setAttribute('data-applitools-original-transforms', JSON.stringify(html))
   document.body.setAttribute('data-applitools-original-transforms', JSON.stringify(body))
+  return {
+    offset: 1 * window.devicePixelRatio,
+    size: 3 * window.devicePixelRatio,
+    mask: [0, 1, 0],
+  }
 }
 """,
 )
