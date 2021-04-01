@@ -70,11 +70,11 @@ def _is_pattern(image, x, y, pattern):
 
 def _pixel_color_at(image, xy, threshold):
     # type: (Image, Tuple[int, int], int) -> int
-    components = image.getpixel(xy)
-    # White
-    if all(c >= 255 - threshold for c in components):
+    r, g, b = image.getpixel(xy)
+    white = 255 - threshold
+    if r >= white and g >= white and b >= white:
         return 1
-    elif all(c <= threshold for c in components):
+    elif r <= threshold and g <= threshold and b <= threshold:
         return 0
     else:
         return -1
