@@ -44,14 +44,18 @@ def find_pattern(image, pattern):
 
 def _is_pattern(image, x, y, pattern):
     # type: (Image, int, int, Pattern) -> bool
-    chunk_center = ceil(pattern.size / 2)
+    chunk_midsize = ceil(pattern.size / 2)
+    # Try to check if centers of all chunks have matching color
+    # makes significant performance improvement on dark images
     for chunk_index, chunk_color in enumerate(pattern.mask):
-        center = x + chunk_center, y + chunk_center + chunk_index * pattern.size
-        if _pixel_color_at(image, center, 10) != chunk_color:
+        chunk_center = x + chunk_midsize, y + chunk_midsize + chunk_index * pattern.size
+        if _pixel_color_at(image, chunk_center, 10) != chunk_color:
             return False
     for chunk_index, chunk_color in enumerate(pattern.mask):
         threshold = 40
-        for round in range(chunk_center):
+        # Check if all pixels of the chunk have matching color
+        # Check id done from borders to center, reducing threshold closer to center
+        for round in range(chunk_midsize):
             round_x = x + round
             round_y = y + round + chunk_index * pattern.size
             side_length = pattern.size - round * 2
@@ -64,7 +68,6 @@ def _is_pattern(image, x, y, pattern):
                 for pixel in top, bottom, left, right:
                     if _pixel_color_at(image, pixel, threshold) != chunk_color:
                         return False
-
     return True
 
 
