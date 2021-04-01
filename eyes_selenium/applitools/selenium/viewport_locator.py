@@ -46,12 +46,13 @@ def _is_pattern(image, x, y, pattern):
     # type: (Image, int, int, Pattern) -> bool
     rounds = ceil(pattern.size / 2)
     for chunk_index, chunk_color in enumerate(pattern.mask):
+        threshold = 40
         for round in range(rounds):
             round_x = x + round
             round_y = y + round + chunk_index * pattern.size
             side_length = pattern.size - round * 2
-            threshold = 40 - 40 * round // rounds
-            for i in range(side_length - 1, -1, -1):
+            threshold = max(10, threshold - 10)
+            for i in range(side_length):
                 top = round_x + i, round_y
                 bottom = round_x + i, round_y + side_length - 1
                 left = round_x, round_y + i
