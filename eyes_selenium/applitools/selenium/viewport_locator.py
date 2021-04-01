@@ -1,14 +1,14 @@
 from __future__ import division
 
 import typing
-from math import floor
+from math import ceil
 
 import attr
 
 from applitools.common import Point
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import List, Optional, Tuple
 
     from PIL.Image import Image
 
@@ -36,46 +36,35 @@ def remove_page_marker(driver):
 def find_pattern(image, pattern):
     # type: (Image, Pattern) -> Optional[Point]
     image = image.convert("RGB")
-    for pixel in range(image.width * image.height):
-        if _is_pattern(image, pixel, pattern):
-            return Point(
-                pixel % image.width - pattern.offset,
-                floor(pixel // image.width) - pattern.offset,
-            )
+    for y in range(image.height // 2):  # Look for pattern in top left quadrant only
+        for x in range(image.width // 2):
+            if _is_pattern(image, x, y, pattern):
+                return Point(x - pattern.offset, y - pattern.offset)
 
 
-def _is_pattern(image, index, pattern):
-    # type: (Image, int, Pattern) -> bool
-    round_number = pattern.size - pattern.size // 2
+def _is_pattern(image, x, y, pattern):
+    # type: (Image, int, int, Pattern) -> bool
+    rounds = ceil(pattern.size / 2)
     for chunk_index, chunk_color in enumerate(pattern.mask):
-        pixel_offset = index + image.width * pattern.size * chunk_index
-        for round in range(round_number):
+        for round in range(rounds):
+            round_x = x + round
+            round_y = y + round + chunk_index * pattern.size
             side_length = pattern.size - round * 2
-            steps_number = side_length * 4 - 4
-            threshold = min((round_number - round) * 10 + 10, 100)
-            for step in range(steps_number):
-                pixel_index = pixel_offset + round + round * image.width
-                if step < side_length:
-                    pixel_index += step
-                elif step < side_length * 2 - 1:
-                    pixel_index += (
-                        side_length - 1 + ((step % side_length + 1)) * image.width
-                    )
-                elif step < side_length * 3 - 2:
-                    pixel_index += (side_length - 1) * image.width + (
-                        side_length - (step % side_length) - 1
-                    )
-                else:
-                    pixel_index += (step % side_length) * image.width
-                pixel_color = _pixel_color_at(image, pixel_index, threshold)
-                if pixel_color != chunk_color:
-                    return False
+            threshold = 40 - 40 * round // rounds
+            for i in range(side_length - 1, -1, -1):
+                top = round_x + i, round_y
+                bottom = round_x + i, round_y + side_length - 1
+                left = round_x, round_y + i
+                right = round_x + side_length - 1, round_y + i
+                for pixel in top, bottom, left, right:
+                    if _pixel_color_at(image, pixel, threshold) != chunk_color:
+                        return False
+
     return True
 
 
-def _pixel_color_at(image, pixel_index, threshold):
-    # type: (Image, int, int) -> int
-    xy = pixel_index % image.width, pixel_index // image.width
+def _pixel_color_at(image, xy, threshold):
+    # type: (Image, Tuple[int, int], int) -> int
     components = image.getpixel(xy)
     # White
     if all(c >= 255 - threshold for c in components):
