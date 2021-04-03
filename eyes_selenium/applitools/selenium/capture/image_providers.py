@@ -1,13 +1,13 @@
-import collections
 import typing
 
 import attr
 
-from applitools.common import RectangleSize, Region, logger
+from applitools.common import Region, logger
 from applitools.common.utils import image_utils
 from applitools.core.capture import ImageProvider
 from applitools.selenium.positioning import ScrollPositionProvider
-from applitools.selenium.useragent import BrowserNames, OSNames, UserAgent
+from applitools.selenium.useragent import BrowserNames, UserAgent
+from applitools.selenium.viewport_locator import device_viewport_location
 
 if typing.TYPE_CHECKING:
     from PIL.Image import Image
@@ -48,8 +48,6 @@ class DeviceData(object):
 
 @attr.s
 class MobileSafariScreenshotImageProvider(ImageProvider):
-    _devices_regions = None
-
     _eyes = attr.ib()  # type: SeleniumEyes
     _useragent = attr.ib()  # type: UserAgent
 
@@ -59,76 +57,27 @@ class MobileSafariScreenshotImageProvider(ImageProvider):
         if self._eyes.is_cut_provider_explicitly_set:
             return image
 
-        # original_viewport_size = self._eyes._get_viewport_size()
-        # FIXME: huck to get correct viewport size on mobile
-        original_viewport_size = RectangleSize.from_(
-            self._eyes.scroll_root_element.size_and_borders.size
-        )
-        logger.info("logical viewport size: {}".format(original_viewport_size))
-
-        if self._devices_regions is None:
-            self.init_device_regions_table()
-
         logger.info(
-            "physical device pixel size: {} x {}".format(image.width, image.height)
+            "physical device pixel size", width=image.width, height=image.height
         )
 
-        device_data = DeviceData(
-            image.width,
-            image.height,
-            original_viewport_size.width,
-            original_viewport_size.height,
+        viewport_location = device_viewport_location(self._eyes.driver)
+        original_viewport_size = self._eyes._get_viewport_size()
+        viewport_size = original_viewport_size.scale(self._eyes.device_pixel_ratio)
+        crop_region = Region(
+            viewport_location.x,
+            viewport_location.y,
+            viewport_size.width,
+            viewport_size.height,
         )
-        if device_data in self._devices_regions:
-            logger.debug("device model found in hash table")
-            crop_by_version = self._devices_regions.get(device_data)
-            if crop_by_version.major_version <= self._useragent.browser_major_version:
-                image = image_utils.crop_image(image, crop_by_version.region)
-            else:
-                logger.debug(
-                    "device version not found in list. returning original image."
-                )
-        else:
-            logger.debug("device not found in list. returning original image.")
+        logger.info("calculated viewport region", viewport_region=crop_region)
+        image = image_utils.crop_image(image, crop_region)
+
         return image
-
-    def init_device_regions_table(self):
-        r_v = collections.namedtuple("RegionAndVersion", "major_version region")
-        self._devices_regions = {
-            DeviceData(828, 1792, 414, 719): r_v(12, Region(0, 189, 828, 1436)),
-            DeviceData(1792, 828, 808, 364): r_v(12, Region(88, 101, 1616, 685)),
-            DeviceData(1242, 2688, 414, 719): r_v(12, Region(0, 283, 1242, 2155)),
-            DeviceData(2688, 1242, 808, 364): r_v(12, Region(132, 151, 2424, 1028)),
-            DeviceData(1125, 2436, 375, 635): r_v(11, Region(0, 283, 1125, 1903)),
-            DeviceData(2436, 1125, 724, 325): r_v(11, Region(132, 151, 2436, 930)),
-            DeviceData(1242, 2208, 414, 622): r_v(11, Region(0, 211, 1242, 1863)),
-            DeviceData(2208, 1242, 736, 364): r_v(11, Region(0, 151, 2208, 1090)),
-            DeviceData(1242, 2208, 414, 628): r_v(10, Region(0, 193, 1242, 1882)),
-            DeviceData(2208, 1242, 736, 337): r_v(10, Region(0, 231, 2208, 1010)),
-            DeviceData(750, 1334, 375, 553): r_v(11, Region(0, 141, 750, 1104)),
-            DeviceData(1334, 750, 667, 325): r_v(11, Region(0, 101, 1334, 648)),
-            DeviceData(750, 1334, 375, 559): r_v(10, Region(0, 129, 750, 1116)),
-            DeviceData(1334, 750, 667, 331): r_v(10, Region(0, 89, 1334, 660)),
-            DeviceData(640, 1136, 320, 460): r_v(10, Region(0, 129, 640, 918)),
-            DeviceData(1136, 640, 568, 232): r_v(10, Region(0, 89, 1136, 462)),
-            DeviceData(1536, 2048, 768, 954): r_v(11, Region(0, 141, 1536, 1907)),
-            DeviceData(2048, 1536, 1024, 698): r_v(11, Region(0, 141, 2048, 1395)),
-            DeviceData(1536, 2048, 768, 922): r_v(11, Region(0, 206, 1536, 1842)),
-            DeviceData(2048, 1536, 1024, 666): r_v(11, Region(0, 206, 2048, 1330)),
-            DeviceData(1536, 2048, 768, 960): r_v(10, Region(0, 129, 1536, 1919)),
-            DeviceData(2048, 1536, 1024, 704): r_v(10, Region(0, 129, 2048, 1407)),
-            DeviceData(1536, 2048, 768, 928): r_v(10, Region(0, 194, 1536, 1854)),
-            DeviceData(2048, 1536, 1024, 672): r_v(10, Region(0, 194, 2048, 1342)),
-            DeviceData(2048, 2732, 1024, 1296): r_v(11, Region(0, 141, 2048, 2591)),
-            DeviceData(2732, 2048, 1366, 954): r_v(11, Region(0, 141, 2732, 1907)),
-            DeviceData(1668, 2224, 834, 1042): r_v(11, Region(0, 141, 1668, 2083)),
-            DeviceData(2224, 1668, 1112, 764): r_v(11, Region(0, 141, 2224, 1527)),
-        }
 
 
 @attr.s
 class SafariScreenshotImageProvider(ImageProvider):
-
     _eyes = attr.ib()  # type: SeleniumEyes
     _useragent = attr.ib()  # type: UserAgent
 
