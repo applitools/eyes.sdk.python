@@ -55,7 +55,7 @@ def find_pattern(image, pattern):
 
 def _is_pattern(image, x, y, pattern):
     # type: (Image, int, int, Pattern) -> bool
-    chunk_midsize = ceil(pattern.size / 2)
+    chunk_midsize = int(ceil(pattern.size / 2))
     # Try to check if centers of all chunks have matching color
     # makes significant performance improvement on dark images
     for chunk_index, chunk_color in enumerate(pattern.mask):
