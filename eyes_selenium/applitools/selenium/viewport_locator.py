@@ -72,10 +72,10 @@ def _is_pattern(image, x, y, pattern):
             side_length = pattern.size - round * 2
             threshold = max(10, threshold - 10)
             for i in range(side_length - 1):
-                top = round_x + i, round_y
-                left = round_x, round_y + i + 1
-                bottom = round_x + i + 1, round_y + side_length - 1
-                right = round_x + side_length - 1, round_y + i
+                top = (round_x + i, round_y)
+                left = (round_x, round_y + i + 1)
+                bottom = (round_x + i + 1, round_y + side_length - 1)
+                right = (round_x + side_length - 1, round_y + i)
                 for pixel in top, right, left, bottom:
                     if _pixel_color_at(image, pixel, threshold) != chunk_color:
                         return False
