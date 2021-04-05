@@ -1,6 +1,7 @@
 ## [vNext]
 ### Updated
 - Send more data with Match Request [Trello 2454](https://trello.com/c/ekSr34zt)
+- Automatic viewport position detection on iOS devices [Trello 2532](https://trello.com/c/inyVHzut)
 
 ## [4.18.3] - 2021-03-26
 ### Fixed
