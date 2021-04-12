@@ -62,7 +62,9 @@ def test_device_viewport_location(mobile_safari_driver):
 def test_device_viewport_location_algorithm(mobile_safari_driver, eyes):
     mobile_safari_driver.get("https://www.amazon.com/")
 
-    eyes.open(mobile_safari_driver, "SafariViewportLocator", "AlgorithmTest")
+    eyes.open(
+        mobile_safari_driver, "SafariViewportLocator", "SafariViewportLocatorAlgorithm"
+    )
     eyes.check_window()
     eyes.close()
 
@@ -74,6 +76,10 @@ def test_device_viewport_location_algorithm_fallback(mobile_safari_driver, eyes)
         "https://applitools.github.io/demo/TestPages/SimpleTestPage/"
     )
 
-    eyes.open(mobile_safari_driver, "SafariViewportLocator", "AlgorithmTestFallback")
+    eyes.open(
+        mobile_safari_driver,
+        "SafariViewportLocator",
+        "SafariViewportLocatorAlgorithmFallback",
+    )
     eyes.check_window()
     eyes.close()
