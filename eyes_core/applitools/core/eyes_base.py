@@ -39,7 +39,7 @@ from applitools.core.debug import (
 )
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
-from . import __version__
+from .__version__ import __version__
 from .extract_text import (
     PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
