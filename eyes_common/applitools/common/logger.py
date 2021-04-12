@@ -4,17 +4,22 @@ Logs handling.
 from __future__ import absolute_import
 
 import cgitb
+import inspect
 import logging
 import logging.config
+import platform
 import re
 import sys
 import threading
 import typing as tp
+from enum import Enum
+from typing import Any, Dict, Optional, Text
 
 import attr
 import structlog
 import structlog.dev
 
+from applitools.common.utils import json_utils
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 __all__ = ("StdoutLogger", "FileLogger")
@@ -25,6 +30,42 @@ _frames_regex = re.compile(
     r"\s*The above is a description of an error in a Python program.",
     re.DOTALL,
 )
+
+
+class Stage(Enum):
+    GENERAL = "GENERAL"
+    OPEN = "OPEN"
+    CHECK = "CHECK"
+    CLOSE = "CLOSE"
+    RENDER = "RENDER"
+    RESOURCE_COLLECTION = "RESOURCE_COLLECTION"
+    LOCATE = "LOCATE"
+    OCR = "OCR"
+
+
+def create_message_from_log(
+    test_ids,
+    stage,
+    data,
+    type=None,
+    methods_back=3,
+):
+    # type: (Text, Stage, Dict[Text, Any], Optional[Text], int) -> Text
+    d = {
+        "testIds": test_ids,
+        "stage": stage,
+        "methodsBack": [inspect.stack()[i][3] for i in range(2, methods_back + 1)],
+        "pythonVersion": "{} {} {}".format(
+            platform.platform(),
+            platform.python_implementation(),
+            platform.python_version(),
+        ),
+    }
+    if type:
+        d["type"] = type
+
+    d.update(data)
+    return json_utils.to_json(d)
 
 
 class StdoutLogger(object):

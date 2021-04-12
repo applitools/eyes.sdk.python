@@ -11,6 +11,7 @@ from applitools.common.geometry import AccessibilityRegion, Region
 from applitools.common.ultrafastgrid import VisualGridOption
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
+from applitools.common.utils.json_utils import JsonInclude
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from applitools.selenium.validators import is_list_or_tuple, is_webelement
 from applitools.selenium.webelement import EyesWebElement
@@ -53,18 +54,38 @@ class FrameLocator(object):
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
-    scroll_root_element = attr.ib(init=False, default=None)  # type: EyesWebElement
-    scroll_root_selector = attr.ib(init=False, default=None)  # type: CssSelector
-    target_selector = attr.ib(init=False, default=None)  # type: BySelector
-    target_element = attr.ib(init=False, default=None)  # type: EyesWebElement
-    frame_chain = attr.ib(init=False, factory=list)  # type: List[FrameLocator]
+    scroll_root_element = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: EyesWebElement
+    scroll_root_selector = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: CssSelector
+    target_selector = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: BySelector
+    target_element = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: EyesWebElement
+    frame_chain = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+    )  # type: List[FrameLocator]
 
     # for Rendering Grid
-    selector = attr.ib(default=None)  # type: VisualGridSelector
-    script_hooks = attr.ib(factory=dict)  # type: dict
-    visual_grid_options = attr.ib(default=())  # type: Tuple[VisualGridOption]
-    disable_browser_fetching = attr.ib(default=None)  # type: Optional[bool]
-    ocr_region = attr.ib(init=False, default=None)  # type: Optional[OCRRegion]
+    selector = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: VisualGridSelector
+    script_hooks = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, factory=dict
+    )  # type: dict
+    visual_grid_options = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=()
+    )  # type: Tuple[VisualGridOption]
+    disable_browser_fetching = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[bool]
+    ocr_region = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[OCRRegion]
 
     @property
     def size_mode(self):

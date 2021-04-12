@@ -15,6 +15,7 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
 
 from .misc import BrowserType, StitchMode
@@ -29,24 +30,43 @@ DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 
 @attr.s
 class Configuration(ConfigurationBase):
-    force_full_page_screenshot = attr.ib(default=None)  # type: bool
+    force_full_page_screenshot = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: bool
     wait_before_screenshots = attr.ib(
-        default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS
+        metadata={JsonInclude.NON_NONE: True},
+        default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS,
     )  # type: int  # ms
-    stitch_mode = attr.ib(default=StitchMode.Scroll)  # type: StitchMode
-    hide_scrollbars = attr.ib(default=False)  # type: bool
-    hide_caret = attr.ib(default=False)  # type: bool
+    stitch_mode = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=StitchMode.Scroll
+    )  # type: StitchMode
+    hide_scrollbars = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=False
+    )  # type: bool
+    hide_caret = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=False
+    )  # type: bool
     # Indicates that a mobile simulator is being used
-    is_simulator = attr.ib(default=None)  # type: Optional[bool]
+    is_simulator = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[bool]
 
     # Rendering Configuration
-    _browsers_info = attr.ib(init=False, factory=list)  # type: List[IRenderBrowserInfo]
+    _browsers_info = attr.ib(
+        metadata={JsonInclude.NON_NONE: "browsersInfo"}, init=False, factory=list
+    )  # type: List[IRenderBrowserInfo]
     visual_grid_options = attr.ib(
-        default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Tuple[VisualGridOption]]
-    disable_browser_fetching = attr.ib(default=True)  # type: bool
-    enable_cross_origin_rendering = attr.ib(default=True)  # type: bool
-    dont_use_cookies = attr.ib(default=False)  # type: bool
+    disable_browser_fetching = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=True
+    )  # type: bool
+    enable_cross_origin_rendering = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=True
+    )  # type: bool
+    dont_use_cookies = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=False
+    )  # type: bool
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration

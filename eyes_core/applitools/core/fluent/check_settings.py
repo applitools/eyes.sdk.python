@@ -5,9 +5,9 @@ import attr
 from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
-from applitools.common.utils import argument_guard
+from applitools.common.utils import argument_guard, json_utils
 from applitools.common.utils.compat import raise_from
-from applitools.core.extract_text import BaseOCRRegion
+from applitools.common.utils.json_utils import JsonInclude
 
 from .region import (
     AccessibilityRegionByRectangle,
@@ -30,28 +30,56 @@ class CheckSettingsValues(object):
     Access to values stored in :py:class:`CheckSettings`
     """
 
-    target_region = attr.ib(init=False, default=None)  # type: Optional[Region]
-    timeout = attr.ib(init=False, default=-1)  # type: Num  # milliseconds
+    target_region = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[Region]
+    timeout = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=-1
+    )  # type: Num  # milliseconds
 
-    ignore_caret = attr.ib(init=False, default=None)  # type: Optional[bool]
-    stitch_content = attr.ib(init=False, default=None)  # type: Optional[bool]
-    match_level = attr.ib(init=False, default=None)  # type: Optional[MatchLevel]
-    name = attr.ib(init=False, default=None)  # type: Optional[Text]
+    ignore_caret = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
+    stitch_content = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
+    match_level = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[MatchLevel]
+    name = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[Text]
 
-    send_dom = attr.ib(init=False, default=None)  # type: Optional[bool]
-    use_dom = attr.ib(init=False, default=None)  # type: Optional[bool]
-    enable_patterns = attr.ib(init=False, default=None)  # type: Optional[bool]
-    ignore_displacements = attr.ib(init=False, default=None)  # type: Optional[bool]
+    send_dom = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
+    use_dom = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
+    enable_patterns = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
+    ignore_displacements = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[bool]
 
-    ignore_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
-    layout_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
-    strict_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
-    content_regions = attr.ib(init=False, factory=list)  # type: List[GetRegion]
+    ignore_regions = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+    )  # type: List[GetRegion]
+    layout_regions = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+    )  # type: List[GetRegion]
+    strict_regions = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+    )  # type: List[GetRegion]
+    content_regions = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+    )  # type: List[GetRegion]
     floating_regions = attr.ib(
-        init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[GetFloatingRegion]
     accessibility_regions = attr.ib(
-        init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[GetAccessibilityRegion]
 
 

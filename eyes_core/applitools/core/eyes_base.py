@@ -367,7 +367,7 @@ class EyesBase(
 
     @property
     def agent_setup(self):
-        # TODO: Implement agent_setup
+        # Saved for backward compatibility
         return None
 
     def add_property(self, name, value):
@@ -801,7 +801,6 @@ class EyesBase(
                 region, check_settings.values.name, retry_timeout_ms
             )
         )
-
         result = self._match_window_task.match_window(
             self._user_inputs,
             region,
