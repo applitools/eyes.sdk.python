@@ -44,22 +44,25 @@ class Stage(Enum):
 
 
 def create_message_from_log(
-    test_ids,
-    stage,
-    data,
-    type=None,
-    methods_back=3,
+    agent_id,  # type: Text
+    test_id,  # type: Text
+    stage,  # type: Stage
+    data,  # type: Dict[Text, Any]
+    type=None,  # type: Optional[Text]
+    methods_back=3,  # type: int
 ):
-    # type: (Text, Stage, Dict[Text, Any], Optional[Text], int) -> Text
+    # type: (...) -> Text
     d = {
-        "testIds": test_ids,
+        "agentId": agent_id,
+        "testId": test_id,
         "stage": stage,
-        "methodsBack": [inspect.stack()[i][3] for i in range(2, methods_back + 1)],
-        "pythonVersion": "{} {} {}".format(
-            platform.platform(),
+        "threadId": threading.current_thread().name,
+        "stackTrace": [inspect.stack()[i][3] for i in range(2, methods_back + 1)],
+        "pythonVersion": "{} {}".format(
             platform.python_implementation(),
             platform.python_version(),
         ),
+        "platformName": platform.platform(),
     }
     if type:
         d["type"] = type

@@ -75,85 +75,91 @@ class BatchInfo(object):
 @attr.s
 class Configuration(object):
     batch = attr.ib(
-        metadata={JsonInclude.THIS: True}, factory=BatchInfo
+        metadata={JsonInclude.NON_NONE: True}, factory=BatchInfo
     )  # type: BatchInfo
     branch_name = attr.ib(
-        metadata={JsonInclude.THIS: True},
+        metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_BRANCH", None),
     )  # type: Optional[Text]
     parent_branch_name = attr.ib(
-        metadata={JsonInclude.THIS: True},
+        metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_PARENT_BRANCH", None),
     )  # type: Optional[Text]
     baseline_branch_name = attr.ib(
-        metadata={JsonInclude.THIS: True},
+        metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_BASELINE_BRANCH", None),
     )  # type: Optional[Text]
     agent_id = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     baseline_env_name = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     environment_name = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
-    save_diffs = attr.ib(metadata={JsonInclude.THIS: True}, default=None)  # type: bool
+    save_diffs = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: bool
     app_name = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     test_name = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     viewport_size = attr.ib(
-        metadata={JsonInclude.THIS: True},
+        metadata={JsonInclude.NON_NONE: True},
         default=None,
         converter=attr.converters.optional(RectangleSize.from_),
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=SessionType.SEQUENTIAL
+        metadata={JsonInclude.NON_NONE: True}, default=SessionType.SEQUENTIAL
     )  # type: SessionType
     host_app = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     host_os = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Text]
     properties = attr.ib(
-        metadata={JsonInclude.THIS: True}, factory=list
+        metadata={JsonInclude.NON_NONE: True}, factory=list
     )  # type: List[Dict[Text, Text]]
     match_timeout = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=DEFAULT_MATCH_TIMEOUT_MS
+        metadata={JsonInclude.NON_NONE: True}, default=DEFAULT_MATCH_TIMEOUT_MS
     )  # type: int # ms
     is_disabled = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=False
+        metadata={JsonInclude.NON_NONE: True}, default=False
     )  # type: bool
     save_new_tests = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=True
+        metadata={JsonInclude.NON_NONE: True}, default=True
     )  # type: bool
     save_failed_tests = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=False
+        metadata={JsonInclude.NON_NONE: True}, default=False
     )  # type: bool
     failure_reports = attr.ib(
-        metadata={JsonInclude.THIS: True}, default=FailureReports.ON_CLOSE
+        metadata={JsonInclude.NON_NONE: True}, default=FailureReports.ON_CLOSE
     )  # type: FailureReports
-    send_dom = attr.ib(metadata={JsonInclude.THIS: True}, default=True)  # type: bool
+    send_dom = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=True
+    )  # type: bool
     default_match_settings = attr.ib(
-        metadata={JsonInclude.THIS: True}, factory=ImageMatchSettings
+        metadata={JsonInclude.NON_NONE: True}, factory=ImageMatchSettings
     )  # type: ImageMatchSettings
-    stitch_overlap = attr.ib(metadata={JsonInclude.THIS: True}, default=5)  # type: int
+    stitch_overlap = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=5
+    )  # type: int
     api_key = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(
-        metadata={JsonInclude.THIS: True},
+        metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix(
             "APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL
         ),
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
     features = attr.ib(
-        metadata={JsonInclude.THIS: True}, factory=set
+        metadata={JsonInclude.NON_NONE: True}, factory=set
     )  # type: Set[Feature]
 
     @property

@@ -354,7 +354,8 @@ class MatchWindowTask(object):
                 )
         user_inputs = user_inputs or []
         agent_setup = logger.create_message_from_log(
-            test_ids="None",
+            agent_id=self._eyes.base_agent_id,
+            test_id="None",  # TODO: add value when test_id would be added
             stage=logger.Stage.CHECK,
             data={
                 "configuration": self._eyes.configure,
