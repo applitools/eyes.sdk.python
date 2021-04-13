@@ -242,7 +242,7 @@ def set_browser_size(driver, required_size):
 def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_size):
     # type: (AnyWebDriver, ViewPort, ViewPort) -> ViewPort
     borders_size = get_window_size(driver) - actual_viewport_size
-    if borders_size.width <= 0 or borders_size.height <= 0:
+    if borders_size.width < 0 or borders_size.height < 0:
         logger.info("window seems to be minimized, trying to restore it by resizing")
         set_browser_size(driver, required_size)
         actual_viewport_size = get_viewport_size(driver)
