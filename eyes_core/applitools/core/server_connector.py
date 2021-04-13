@@ -684,7 +684,7 @@ class ServerConnector(object):
                 cookies=cookies,
                 proxies=self._proxies,
                 timeout=timeout_sec,
-                verify=False
+                verify=False,
             )
         return response
 
