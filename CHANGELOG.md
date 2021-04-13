@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Send more data with Match Request [Trello 2454](https://trello.com/c/ekSr34zt)
+
 ## [4.18.3] - 2021-03-26
 ### Fixed
 - [eyes-images] viewport not automatically set [Trello 2491](https://trello.com/c/G5GF7xa9)

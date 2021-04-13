@@ -353,7 +353,15 @@ class MatchWindowTask(object):
                     check_settings, image_match_settings
                 )
         user_inputs = user_inputs or []
-        agent_setup = self._eyes.agent_setup
+        agent_setup = logger.create_message_from_log(
+            agent_id=self._eyes.base_agent_id,
+            test_id="None",  # TODO: add value when test_id would be added
+            stage=logger.Stage.CHECK,
+            data={
+                "configuration": self._eyes.configure,
+                "checkSettings": check_settings.values,
+            },
+        )
         return self._perform_match(
             user_inputs,
             app_output,
@@ -480,6 +488,7 @@ class MatchWindowTask(object):
         )
 
         replace_last_if_not_first_run = self._last_screenshot_hash is not None
+        # self._match_result = self._eyes.perform_match(
         self._match_result = self.perform_match(
             app_output,
             replace_last_if_not_first_run,

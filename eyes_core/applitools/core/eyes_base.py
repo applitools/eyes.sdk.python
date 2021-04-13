@@ -39,7 +39,7 @@ from applitools.core.debug import (
 )
 from applitools.core.eyes_mixins import EyesConfigurationMixin
 
-from . import __version__
+from .__version__ import __version__
 from .extract_text import (
     PATTERN_TEXT_REGIONS,
     BaseOCRRegion,
@@ -367,7 +367,7 @@ class EyesBase(
 
     @property
     def agent_setup(self):
-        # TODO: Implement agent_setup
+        # Saved for backward compatibility
         return None
 
     def add_property(self, name, value):
@@ -801,7 +801,6 @@ class EyesBase(
                 region, check_settings.values.name, retry_timeout_ms
             )
         )
-
         result = self._match_window_task.match_window(
             self._user_inputs,
             region,
