@@ -52,7 +52,9 @@ def test_add_remove_marker(driver, eyes):
 
 
 def test_device_viewport_location(mobile_safari_driver):
-    mobile_safari_driver.get("https://www.amazon.com/")
+    mobile_safari_driver.get(
+        "http://applitools.github.io/demo/TestPages/MobileDemo/adaptive.html"
+    )
 
     location = device_viewport_location(mobile_safari_driver)
 
@@ -60,7 +62,9 @@ def test_device_viewport_location(mobile_safari_driver):
 
 
 def test_device_viewport_location_algorithm(mobile_safari_driver, eyes):
-    mobile_safari_driver.get("https://www.amazon.com/")
+    mobile_safari_driver.get(
+        "http://applitools.github.io/demo/TestPages/MobileDemo/adaptive.html"
+    )
 
     eyes.open(
         mobile_safari_driver, "SafariViewportLocator", "SafariViewportLocatorAlgorithm"
