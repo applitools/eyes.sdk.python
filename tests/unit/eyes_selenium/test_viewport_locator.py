@@ -9,6 +9,7 @@ from tests.utils import get_resource_path
 @pytest.mark.parametrize(
     "image_name, marker_location, pixel_ratio",
     [
+        ("iPhone_XR_landscape.png", Point(88, 100), 2),
         ("iPad_Air_portrait.png", Point(0, 140), 2),
         ("iPhone_5S_landscape.png", Point(0, 100), 2),
         ("iPhone_X_perfecto_portrait.png", Point(0, 297), 3),
