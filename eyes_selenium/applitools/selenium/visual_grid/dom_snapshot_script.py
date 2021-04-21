@@ -39,15 +39,15 @@ class DomSnapshotTimeout(DomSnapshotFailure):
 
 
 def create_dom_snapshot(
-    driver,
-    logger,
-    dont_fetch_resources,
-    skip_resources,
-    timeout_ms,
-    cross_origin_rendering,
-    use_cookies,
+    driver,  # type: EyesWebDriver
+    logger,  # type: BoundLogger
+    dont_fetch_resources,  # type: bool
+    skip_resources,  # type: Optional[List[Text]]
+    timeout_ms,  # type: int
+    cross_origin_rendering,  # type: bool
+    use_cookies,  # type: bool
 ):
-    # type: (EyesWebDriver, BoundLogger, bool, List[Text], int, bool, bool) -> Dict
+    # type: (...) -> Dict
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
