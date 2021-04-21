@@ -175,14 +175,16 @@ def test_add_browsers():
 
 def test_config_cloning():
     conf = SeleniumConfiguration()
-    conf.set_viewport_size({"width": 200, "height": 400})
+    conf.batch.add_property("some", "some val")
     conf.add_property("hello", "world")
+    conf.set_viewport_size({"width": 200, "height": 400})
     conf.default_match_settings.content_regions.append(Region.EMPTY())
     conf.add_browser(200, 400, BrowserType.EDGE_CHROMIUM)
     conf.set_visual_grid_options(VisualGridOption("option1", "val"))
 
     cloned_conf = conf.clone()
 
+    assert id(conf.batch.properties[0]) != id(cloned_conf.batch.properties[0])
     assert id(conf.properties[0]) != id(cloned_conf.properties[0])
     assert id(conf.default_match_settings.content_regions) != id(
         cloned_conf.default_match_settings.content_regions

@@ -43,6 +43,9 @@ class BatchInfo(object):
     )  # type: Optional[Text]
     id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
     notify_on_completion = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: bool
+    properties = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}
+    )  # type: List[Dict[Text,Text]]
 
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
@@ -57,6 +60,7 @@ class BatchInfo(object):
         self.notify_on_completion = str2bool(
             get_env_with_prefix("APPLITOOLS_BATCH_NOTIFY")
         )  # type: bool
+        self.properties = []  # type: List[Dict[Text,Text]]
 
         if name:
             self.name = name
@@ -69,6 +73,24 @@ class BatchInfo(object):
         # type: (Text) -> BatchInfo
         argument_guard.not_none(id)
         self.id = str(id)
+        return self
+
+    def add_property(self, name, value):
+        # type: (Text, Text) -> BatchInfo
+        """
+        Associates a key/value pair with the Batch. This can be used later for filtering.
+        :param name: (string) The property name.
+        :param value: (string) The property value
+        """
+        self.properties.append({"name": name, "value": value})
+        return self
+
+    def clear_properties(self):
+        # type: () -> BatchInfo
+        """
+        Clears the list of Batch properties.
+        """
+        del self.properties[:]
         return self
 
 
@@ -394,10 +416,11 @@ class Configuration(object):
         return self.send_dom
 
     def clone(self):
-        # type: () -> Configuration
+        # type: () -> Self
         # TODO: Remove this huck when get rid of Python2
         # deepcopy on python 2 raise an exception so construct manually
         conf = copy(self)
+        conf.batch = deepcopy(conf.batch)
         conf.viewport_size = copy(conf.viewport_size)
         conf.properties = deepcopy(conf.properties)
         conf.default_match_settings = deepcopy(conf.default_match_settings)
@@ -405,7 +428,7 @@ class Configuration(object):
         return conf
 
     def add_property(self, name, value):
-        # type: (Text, Text) -> None
+        # type: (Text, Text) -> Self
         """
         Associates a key/value pair with the test. This can be used later for filtering.
         :param name: (string) The property name.
@@ -415,6 +438,7 @@ class Configuration(object):
         return self
 
     def clear_properties(self):
+        # type: () -> Self
         """
         Clears the list of custom properties.
         """

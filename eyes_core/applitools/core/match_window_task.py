@@ -488,7 +488,6 @@ class MatchWindowTask(object):
         )
 
         replace_last_if_not_first_run = self._last_screenshot_hash is not None
-        # self._match_result = self._eyes.perform_match(
         self._match_result = self.perform_match(
             app_output,
             replace_last_if_not_first_run,
