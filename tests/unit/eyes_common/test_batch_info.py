@@ -70,8 +70,10 @@ def test_set_batch_id_in_different_ways():
 
 
 def test_serialization_of_batch_info():
-    bi = BatchInfo(name="Name", batch_sequence_name="BatchName").with_batch_id(
-        "custom-id"
+    bi = (
+        BatchInfo(name="Name", batch_sequence_name="BatchName")
+        .with_batch_id("custom-id")
+        .add_property("some", "some val")
     )
     res = json.loads(json_utils.to_json(bi))
     print(res)
@@ -79,3 +81,4 @@ def test_serialization_of_batch_info():
     assert res["batchSequenceName"] == "BatchName"
     assert res["notifyOnCompletion"] == False
     assert res["id"] == "custom-id"
+    assert res["properties"] == [{"name": "some", "value": "some val"}]
