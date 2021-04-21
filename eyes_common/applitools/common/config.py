@@ -420,9 +420,9 @@ class Configuration(object):
         # TODO: Remove this huck when get rid of Python2
         # deepcopy on python 2 raise an exception so construct manually
         conf = copy(self)
+        conf.batch = deepcopy(conf.batch)
         conf.viewport_size = copy(conf.viewport_size)
         conf.properties = deepcopy(conf.properties)
-        conf.batch.properties = deepcopy(conf.batch.properties)
         conf.default_match_settings = deepcopy(conf.default_match_settings)
         conf.features = deepcopy(conf.features)
         return conf
