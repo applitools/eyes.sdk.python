@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Support in Batch Custom Properties. [Trello 2445](https://trello.com/c/IKTydXLv)
+
 ## [4.18.4] - 2021-04-13
 ### Updated
 - Send more data with Match Request [Trello 2454](https://trello.com/c/ekSr34zt)
