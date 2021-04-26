@@ -370,6 +370,9 @@ class FakeServerConnector(ServerConnector):
     def send_logs(self, *events):
         self.input_calls["send_logs"].append(events)
 
+    def __deepcopy__(self, memo):
+        return self
+
 
 @pytest.fixture(scope="function")
 def spy():

@@ -1,7 +1,9 @@
 import itertools
+import random
 import typing
 import uuid
 from copy import deepcopy
+from string import ascii_lowercase, ascii_uppercase, digits
 
 import attr
 
@@ -380,7 +382,7 @@ class VisualGridEyes(object):
 
     def _create_vgeyes_connector(self, b_info, job_info):
         # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
-        agent_run_id = "{}_{}".format(self.configure.test_name, uuid.uuid4())
+        agent_run_id = "{}_{}".format(self.configure.test_name, random_alphanum(10))
         return EyesConnector(
             b_info,
             self.configure.clone(),
@@ -502,3 +504,9 @@ class VisualGridEyes(object):
             return check_settings.values.disable_browser_fetching
         else:
             return config.disable_browser_fetching
+
+
+def random_alphanum(n):
+    return "".join(
+        random.choice(ascii_uppercase + ascii_lowercase + digits) for _ in range(n)
+    )
