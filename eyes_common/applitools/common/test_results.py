@@ -193,6 +193,8 @@ class TestResults(object):
         default=None, eq=False, order=False, metadata={JsonInclude.THIS: False}
     )  # type: ServerConnector
 
+    __test__ = False  # avoid warnins in test frameworks
+
     @property
     def is_passed(self):
         # type: () -> bool

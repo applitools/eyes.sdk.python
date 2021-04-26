@@ -8,11 +8,6 @@ import pytest
 __all__ = ("image",)
 
 
-from applitools.common import TestResults
-
-TestResults.__test__ = False
-
-
 @pytest.fixture
 def image():
     from PIL import Image
