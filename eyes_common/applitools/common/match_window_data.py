@@ -47,6 +47,7 @@ class Options(object):
     )  # type: ImageMatchSettings
     source = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
     render_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
+    variant_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Optional[Text]
 
 
 @attr.s

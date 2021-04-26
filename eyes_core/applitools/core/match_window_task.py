@@ -365,7 +365,7 @@ class MatchWindowTask(object):
         return self._perform_match(
             user_inputs,
             app_output,
-            check_settings.values.name,
+            check_settings,
             replace_last,
             image_match_settings,
             agent_setup,
@@ -377,7 +377,7 @@ class MatchWindowTask(object):
         self,
         user_inputs,  # type: UserInputs
         app_output_width_screenshot,  # type: AppOutputWithScreenshot
-        name,  # type: Text
+        check_settings,  # type: CheckSettings
         replace_last,  # type: bool
         image_match_settings,  # type: ImageMatchSettings
         agent_setup,  # type: Text
@@ -385,7 +385,8 @@ class MatchWindowTask(object):
         source,  # type: Text
     ):
         # type: (...) -> MatchResult
-
+        name = check_settings.values.name
+        variant_id = check_settings.values.variation_group_id
         screenshot = app_output_width_screenshot.screenshot
         app_output = app_output_width_screenshot.app_output
         if screenshot:
@@ -405,6 +406,7 @@ class MatchWindowTask(object):
                 image_match_settings=image_match_settings,
                 source=source,
                 render_id=render_id,
+                variant_id=variant_id,
             ),
             app_output=app_output,
             tag=name,
