@@ -7,8 +7,10 @@ import pytest
 
 __all__ = ("image",)
 
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.remote.webdriver import WebDriver
+
+from applitools.common import TestResults
+
+TestResults.__test__ = False
 
 
 @pytest.fixture
@@ -51,6 +53,9 @@ def fake_httpserver():
 
 @pytest.fixture
 def driver_mock():
+    from selenium.common.exceptions import WebDriverException
+    from selenium.webdriver.remote.webdriver import WebDriver
+
     from applitools.selenium import EyesWebDriver
 
     driver = mock.Mock(EyesWebDriver)
