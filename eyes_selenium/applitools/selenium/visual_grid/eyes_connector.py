@@ -48,6 +48,7 @@ class EyesConnector(EyesBase):
         browser_info,  # type: RenderBrowserInfo
         config,  # type: Configuration
         server_connector,  # type: ServerConnector
+        agent_run_id,  # type: Text
         job_info=None,  # type: Optional[JobInfo]
     ):
         # type: (...) -> None
@@ -61,6 +62,7 @@ class EyesConnector(EyesBase):
         self._region_selectors = None
         self._regions = None
         self._job_info = job_info  # type: Optional[JobInfo]
+        self._agent_run_id = agent_run_id
 
     def open(self, config):
         # type: (Configuration) -> None

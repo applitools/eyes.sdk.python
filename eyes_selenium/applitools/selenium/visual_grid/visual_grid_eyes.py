@@ -380,8 +380,13 @@ class VisualGridEyes(object):
 
     def _create_vgeyes_connector(self, b_info, job_info):
         # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
+        agent_run_id = "{}_{}".format(self.configure.test_name, uuid.uuid4())
         return EyesConnector(
-            b_info, self.configure.clone(), deepcopy(self.server_connector), job_info
+            b_info,
+            self.configure.clone(),
+            deepcopy(self.server_connector),
+            agent_run_id,
+            job_info,
         )
 
     def _try_set_target_selector(self, check_settings):
