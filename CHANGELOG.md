@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Viewport location algorithm fails on iPhone XR landscape screenshots [Trello 2559](https://trello.com/c/gsElVi8W)
+
 ## [4.19.0] - 2021-04-21
 ### Added
 - Support of Custom Properties in BatchInfo [Trello 2445](https://trello.com/c/IKTydXLv)
