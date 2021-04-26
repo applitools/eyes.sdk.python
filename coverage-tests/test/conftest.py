@@ -8,6 +8,7 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
+from applitools.common import TestResults
 from applitools.selenium import (
     BatchInfo,
     BrowserType,
@@ -19,6 +20,8 @@ from applitools.selenium import (
     Target,
     VisualGridRunner,
 )
+
+TestResults.__test__ = False
 
 
 @pytest.fixture(scope="session")
