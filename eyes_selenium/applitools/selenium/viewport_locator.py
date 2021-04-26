@@ -60,7 +60,7 @@ def _is_pattern(image, x, y, pattern):
     # makes significant performance improvement on dark images
     for chunk_index, chunk_color in enumerate(pattern.mask):
         chunk_center = x + chunk_midsize, y + chunk_midsize + chunk_index * pattern.size
-        if _pixel_color_at(image, chunk_center, 10) != chunk_color:
+        if _pixel_color_at(image, chunk_center, 15) != chunk_color:
             return False
     for chunk_index, chunk_color in enumerate(pattern.mask):
         threshold = 40
@@ -70,7 +70,7 @@ def _is_pattern(image, x, y, pattern):
             round_x = x + round
             round_y = y + round + chunk_index * pattern.size
             side_length = pattern.size - round * 2
-            threshold = max(10, threshold - 10)
+            threshold = max(15, threshold - 10)
             for i in range(side_length - 1):
                 top = (round_x + i, round_y)
                 left = (round_x, round_y + i + 1)
