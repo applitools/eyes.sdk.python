@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Supporting agent_run_id and variant_id. [Trello 2527](https://trello.com/c/6SyxJXVZ)
+
 ## [4.19.0] - 2021-04-21
 ### Added
 - Support of Custom Properties in BatchInfo [Trello 2445](https://trello.com/c/IKTydXLv)
