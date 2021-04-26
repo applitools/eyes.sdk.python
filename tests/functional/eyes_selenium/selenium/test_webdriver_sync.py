@@ -11,11 +11,14 @@ def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, driver):
 
     driver.switch_to.frame(0)
     driver.switch_to.frame(0)
+    driver.switch_to.frame(0)
     eyes_driver.ensure_sync_with_underlying_driver()
 
     assert (
-        eyes_driver.frame_chain.peek.scroll_root_element.get_attribute("class")
-        == "no-js"
+        eyes_driver.frame_chain.peek.scroll_root_element.find_element_by_tag_name(
+            "body"
+        ).get_attribute("class")
+        == "friendly"
     )
 
 
