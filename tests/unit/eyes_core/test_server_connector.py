@@ -197,6 +197,7 @@ SESSION_START_INFO_OBJ = SessionStartInfo(
     render=False,
     properties=[],
     agent_session_id="1",
+    agent_run_id="Some-Agent-Run-ID",
 )
 RUNNING_SESSION_DATA_RESPONSE_ID = "some id"
 RUNNING_SESSION_DATA_RESPONSE_URL = "http://some-session-url.com"

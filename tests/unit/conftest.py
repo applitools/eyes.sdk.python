@@ -153,4 +153,5 @@ def session_start_info():
         render=False,
         properties=[],
         agent_session_id="1",
+        agent_run_id="Some-Agent-Run-ID",
     )
