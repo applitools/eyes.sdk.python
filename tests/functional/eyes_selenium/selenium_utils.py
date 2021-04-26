@@ -1,22 +1,15 @@
+import logging
 import time
 
-from selenium.common.exceptions import WebDriverException
+logger = logging.getLogger(__name__)
 
 
 def open_webdriver(driver_callable):
-    browser = None
-
     for i in range(5):
         try:
-            browser = driver_callable()
-            break
-        except Exception as e:
-            print(
-                "Failed to start browser. Retrying {}\n "
-                "Raised an exception {}".format(i, e)
-            )
+            return driver_callable()
+        except Exception:
+            logger.exception("Failed to start browser, attempt #%s", i)
             time.sleep(1.0)
-
-    if browser is None:
-        raise WebDriverException("Webdriver wasn't created!")
-    return browser
+    else:
+        return driver_callable()
