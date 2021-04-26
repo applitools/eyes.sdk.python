@@ -129,6 +129,7 @@ def test_multithreading_serialization(i):
             replace_last=False,
             source="applitoolscasppe.cm",
             user_inputs=[],
+            variant_id="Some-id",
         ),
     )
     with ThreadPoolExecutor() as executor:
