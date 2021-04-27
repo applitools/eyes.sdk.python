@@ -201,6 +201,7 @@ class EyesBase(
     _cut_provider = None
     _should_get_title = False  # type: bool
     _config_cls = Configuration
+    _agent_run_id = None  # type: Text
     # TODO: make it run with no effect to other pices of code
     # def set_explicit_viewport_size(self, size):
     #     """
@@ -649,6 +650,7 @@ class EyesBase(
             render=self._render,
             properties=self.configure.properties,
             agent_session_id=str(uuid.uuid4()),
+            agent_run_id=self._agent_run_id,
         )
 
     def _start_session(self):

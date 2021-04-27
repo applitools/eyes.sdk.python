@@ -335,7 +335,7 @@ def test_create_cross_frames_dom_snapshots_calls_poll_result_with_chunk_byte_len
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.SUCCESS, value={}
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
+    snapshotter = RecursiveSnapshotter(None, script, None, 10000, 3, True, False)
 
     snapshotter._create_dom_snapshot_loop()
 
@@ -346,7 +346,7 @@ def test_create_cross_frames_dom_snapshots_calls_poll_result_with_chunk_byte_len
 def test_create_cross_frames_dom_snapshots_raises_if_run_returns_error():
     script = mock.MagicMock()
     script.run.return_value = ProcessPageResult(ProcessPageStatus.ERROR, error="OOPS")
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
+    snapshotter = RecursiveSnapshotter(None, script, None, 10000, 3, True, False)
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
         snapshotter.create_cross_frames_dom_snapshots()
@@ -358,7 +358,7 @@ def test_create_dom_snapshot_loop_raises_if_poll_result_returns_error():
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.ERROR, error="OOPS"
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
+    snapshotter = RecursiveSnapshotter(None, script, None, 10000, 3, True, False)
 
     with pytest.raises(DomSnapshotScriptError, match="OOPS"):
         snapshotter.create_cross_frames_dom_snapshots()
@@ -370,7 +370,7 @@ def test_create_dom_snapshot_loop_success():
     script.poll_result.return_value = ProcessPageResult(
         ProcessPageStatus.SUCCESS, value={"a": "b"}
     )
-    snapshotter = RecursiveSnapshotter(None, script, None, 5, 3, True, False)
+    snapshotter = RecursiveSnapshotter(None, script, None, 10000, 3, True, False)
 
     res = snapshotter._create_dom_snapshot_loop()
 

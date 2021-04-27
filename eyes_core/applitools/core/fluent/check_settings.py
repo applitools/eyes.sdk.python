@@ -81,6 +81,9 @@ class CheckSettingsValues(object):
     accessibility_regions = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[GetAccessibilityRegion]
+    variation_group_id = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+    )  # type: Optional[Text]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
@@ -95,6 +98,11 @@ class CheckSettings(object):
     values = attr.ib(
         init=False, factory=CheckSettingsValues
     )  # type: CheckSettingsValues
+
+    def variation_group_id(self, variation_group_id):
+        # type: (Text) -> Self
+        self.values.variation_group_id = variation_group_id
+        return self
 
     def layout(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self

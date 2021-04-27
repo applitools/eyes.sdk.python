@@ -30,6 +30,8 @@ class TestFailedError(Exception):
     Indicates that a test did not pass (i.e., test either failed or is a new test).
     """
 
+    __test__ = False  # avoid warnings in test frameworks
+
     def __init__(
         self, test_results=None, scenario_id_or_name=None, app_id_or_name=None
     ):

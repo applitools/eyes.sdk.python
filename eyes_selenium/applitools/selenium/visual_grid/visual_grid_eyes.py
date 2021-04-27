@@ -16,6 +16,7 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.general_utils import random_alphanum
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
@@ -36,7 +37,6 @@ if typing.TYPE_CHECKING:
 
     from .running_test import RunningTestCheck
 
-
 GET_ELEMENT_XPATH_JS = """
 var el = arguments[0];
 var xpath = '';
@@ -55,7 +55,6 @@ xpath = '/' + el.tagName + '[' + index + ']' + xpath;
 el = parent;
 } while (el !== null);
 return '/' + xpath;"""
-
 
 DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
 
@@ -380,8 +379,13 @@ class VisualGridEyes(object):
 
     def _create_vgeyes_connector(self, b_info, job_info):
         # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
+        agent_run_id = "{}_{}".format(self.configure.test_name, random_alphanum(10))
         return EyesConnector(
-            b_info, self.configure.clone(), deepcopy(self.server_connector), job_info
+            b_info,
+            self.configure.clone(),
+            deepcopy(self.server_connector),
+            agent_run_id,
+            job_info,
         )
 
     def _try_set_target_selector(self, check_settings):

@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- Supporting agent_run_id and variant_id. [Trello 2527](https://trello.com/c/6SyxJXVZ)
 ### Fixed
 - Viewport location algorithm fails on iPhone XR landscape screenshots [Trello 2559](https://trello.com/c/gsElVi8W)
 

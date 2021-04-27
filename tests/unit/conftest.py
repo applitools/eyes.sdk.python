@@ -25,22 +25,6 @@ from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
 @pytest.fixture
-def driver_mock():
-    from applitools.selenium import EyesWebDriver
-
-    driver = mock.Mock(EyesWebDriver)
-    driver._driver = mock.Mock(WebDriver)
-
-    desired_capabilities = {"platformName": ""}
-    driver.desired_capabilities = desired_capabilities
-    driver._driver.desired_capabilities = desired_capabilities
-
-    # need to configure below
-    driver._driver.execute_script = mock.Mock(side_effect=WebDriverException())
-    return driver
-
-
-@pytest.fixture
 def custom_eyes_server():
     return None
 
@@ -153,4 +137,5 @@ def session_start_info():
         render=False,
         properties=[],
         agent_session_id="1",
+        agent_run_id="Some-Agent-Run-ID",
     )

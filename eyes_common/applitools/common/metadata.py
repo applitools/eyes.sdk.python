@@ -107,6 +107,7 @@ class SessionStartInfo(object):
     render = attr.ib(metadata={JsonInclude.THIS: True})  # type: bool
     properties = attr.ib(metadata={JsonInclude.THIS: True})  # type: list
     agent_session_id = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
+    agent_run_id = attr.ib(metadata={JsonInclude.NON_NONE: True})  # type: Text
     concurrency_version = attr.ib(
         default=2, metadata={JsonInclude.THIS: True}
     )  # type: int

@@ -3,7 +3,9 @@ from __future__ import absolute_import
 import hashlib
 import inspect
 import os
+import random
 import typing
+from string import ascii_lowercase, ascii_uppercase, digits
 
 import attr
 
@@ -18,6 +20,12 @@ if typing.TYPE_CHECKING:
     from typing import Any, Callable, List, Optional, Text
 
     T = typing.TypeVar("T")
+
+
+def random_alphanum(n):
+    return "".join(
+        random.choice(ascii_uppercase + ascii_lowercase + digits) for _ in range(n)
+    )
 
 
 def use_default_if_none_factory(default_obj, obj):
