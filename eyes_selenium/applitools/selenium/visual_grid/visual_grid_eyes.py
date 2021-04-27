@@ -1,9 +1,7 @@
 import itertools
-import random
 import typing
 import uuid
 from copy import deepcopy
-from string import ascii_lowercase, ascii_uppercase, digits
 
 import attr
 
@@ -18,6 +16,7 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.general_utils import random_alphanum
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
@@ -38,7 +37,6 @@ if typing.TYPE_CHECKING:
 
     from .running_test import RunningTestCheck
 
-
 GET_ELEMENT_XPATH_JS = """
 var el = arguments[0];
 var xpath = '';
@@ -57,7 +55,6 @@ xpath = '/' + el.tagName + '[' + index + ']' + xpath;
 el = parent;
 } while (el !== null);
 return '/' + xpath;"""
-
 
 DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
 
@@ -504,9 +501,3 @@ class VisualGridEyes(object):
             return check_settings.values.disable_browser_fetching
         else:
             return config.disable_browser_fetching
-
-
-def random_alphanum(n):
-    return "".join(
-        random.choice(ascii_uppercase + ascii_lowercase + digits) for _ in range(n)
-    )
