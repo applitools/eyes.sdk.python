@@ -1,4 +1,4 @@
-## [vNext]
+## [4.20.0] - 2021-04-27
 ### Added
 - Supporting agent_run_id and variant_id. [Trello 2527](https://trello.com/c/6SyxJXVZ)
 ### Fixed
