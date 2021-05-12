@@ -258,6 +258,7 @@ class SeleniumEyes(EyesBase):
         self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
             self.driver, check_settings
         )
+
         self._position_provider = self._create_position_provider(self._user_defined_SRE)
 
         self._original_fc = self.driver.frame_chain.clone()
@@ -613,7 +614,6 @@ class SeleniumEyes(EyesBase):
     def _switch_to_frame(self, check_settings):
         # type: (SeleniumCheckSettings) -> Generator
         self._switched_to_frame_count = 0
-        # TODO: refactor frames storing
         frames = {}
         frame_chain = check_settings.values.frame_chain
         for frame_locator in frame_chain:
@@ -626,6 +626,11 @@ class SeleniumEyes(EyesBase):
             self._try_hide_scrollbars(cur_frame)
             frames[self._switched_to_frame_count] = cur_frame
             self._switched_to_frame_count += 1
+
+        # if already switched into frame
+        # assign user defined scroll root element into latest frame
+        if not frame_chain and self.driver.frame_chain and self._user_defined_SRE:
+            self.driver.frame_chain.peek.scroll_root_element = self._user_defined_SRE
 
         yield
 
