@@ -833,7 +833,9 @@ class SeleniumEyes(EyesBase):
             # and mislead users.
             return None
         try:
-            dom_json = dom_capture.get_full_window_dom(self._driver)
+            dom_json = dom_capture.get_full_window_dom(
+                self._driver, False, self.configure.proxy
+            )
             return dom_json
         except Exception:
             logger.warning("dom-capture script failed, skipping it", exc_info=True)

@@ -1,13 +1,13 @@
 import json
 import os
 import time
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 import pytest
-from mock import MagicMock
+from mock import ANY, MagicMock, call, patch
 from selenium.webdriver.common.by import By
 
-from applitools.common import Point
+from applitools.common import Point, ProxySettings
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.capture import dom_capture
 
@@ -168,6 +168,21 @@ class TestDomCaptureUnit(object):
         assert "p.corsat21" in css
         assert "p.corsat22" in css
         assert "p.corsat23" in css
+
+    @pytest.mark.test_page_url(
+        "https://applitools.github.io/demo/TestPages/CorsCssTestPage/"
+    )
+    def test_send_dom_downloads_css_with_proxy(self):
+        with patch.object(dom_capture.requests, "get") as get_mock:
+            get_mock.return_value = namedtuple("Resp", ["text"])("")
+            dom_capture.get_full_window_dom(self.driver, True, ProxySettings("abc", 42))
+            assert get_mock.call_args_list == [
+                call(
+                    ANY,
+                    timeout=ANY,
+                    proxies={"http": "http://abc:42", "https": "http://abc:42"},
+                )
+            ]
 
 
 @pytest.mark.usefixtures("eyes_for_class")
