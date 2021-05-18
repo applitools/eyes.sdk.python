@@ -70,6 +70,7 @@ def eyes_config_base():
         .set_hide_scrollbars(True)
         .set_save_new_tests(False)
         .set_hide_caret(True)
+        .set_parent_branch_name("master")
     )
 
 
