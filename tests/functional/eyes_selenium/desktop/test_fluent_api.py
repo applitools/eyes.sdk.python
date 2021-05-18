@@ -98,6 +98,7 @@ def test_check_element_with_ignore_region_by_element__fluent(eyes_opened):
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
+@pytest.mark.eyes_config(branch_name="master_python")
 def test_check_two_scrolled_regions__fluent(eyes_opened):
     top_element = eyes_opened.driver.find_element_by_xpath(
         "/html/body/div[4]/main/div[1]/div[2]"
@@ -262,6 +263,7 @@ def test_accessibility_regions(eyes_opened, check_test_result):
     )
 
 
+@pytest.mark.eyes_config(branch_name="master_python")
 def test_check_window_with_match_region_paddings__fluent(
     eyes_opened, check_test_result
 ):

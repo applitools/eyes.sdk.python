@@ -70,6 +70,7 @@ def eyes_config_base():
         .set_hide_scrollbars(True)
         .set_save_new_tests(False)
         .set_hide_caret(True)
+        .set_parent_branch_name("master")
     )
 
 
@@ -82,8 +83,13 @@ def eyes_opened(request, eyes, driver, check_test_result):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-    # use camel case in method name for fit java sdk tests name
-    test_name = underscore_to_camelcase(request.function.__name__)
+    # use camel case in method name for fit java sdk tests name if no test_name
+    test_name = request.node.get_closest_marker("test_name")
+    test_name = (
+        test_name.args[-1]
+        if test_name
+        else underscore_to_camelcase(request.function.__name__)
+    )
 
     eyes.add_property("Selenium Session ID", str(driver.session_id))
     eyes.add_property(

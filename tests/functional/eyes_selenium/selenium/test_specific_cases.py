@@ -2,7 +2,6 @@ import time
 
 import pytest
 
-from applitools.core import ServerConnector
 from applitools.core.feature import Feature
 from applitools.selenium import (
     EyesWebDriver,
@@ -77,6 +76,7 @@ def test_abort_eyes(eyes, driver):
 
 @pytest.mark.platform("Linux")
 @pytest.mark.test_page_url("https://applitools.com/helloworld")
+@pytest.mark.eyes_config(branch_name="master_python")
 def test_coordinates_resolving(eyes, driver):
     driver = eyes.open(
         driver,
