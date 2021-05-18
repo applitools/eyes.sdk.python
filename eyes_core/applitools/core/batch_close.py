@@ -5,7 +5,7 @@ import requests
 
 from applitools.common import ProxySettings
 from applitools.common.config import DEFAULT_SERVER_URL
-from applitools.common.utils import quote_plus, urljoin
+from applitools.common.utils import argument_guard, quote_plus, urljoin
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 
@@ -29,6 +29,7 @@ class _EnabledBatchClose(object):
 
     def set_proxy(self, proxy):
         # type: (ProxySettings) -> _EnabledBatchClose
+        argument_guard.is_a(proxy, ProxySettings)
         self.proxy = proxy
         return self
 
@@ -77,6 +78,7 @@ class BatchClose(object):
 
     def set_proxy(self, proxy):
         # type: (ProxySettings) -> BatchClose
+        argument_guard.is_a(proxy, ProxySettings)
         self.proxy = proxy
         return self
 

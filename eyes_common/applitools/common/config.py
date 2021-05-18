@@ -490,5 +490,6 @@ class Configuration(object):
 
     def set_proxy(self, proxy):
         # type: (Optional[ProxySettings]) -> Self
+        argument_guard.is_a(proxy, ProxySettings)
         self.proxy = proxy
         return self
