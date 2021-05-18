@@ -82,8 +82,13 @@ def eyes_opened(request, eyes, driver, check_test_result):
     test_suite_name = (
         test_suite_name.args[-1] if test_suite_name else "Python Selenium SDK"
     )
-    # use camel case in method name for fit java sdk tests name
-    test_name = underscore_to_camelcase(request.function.__name__)
+    # use camel case in method name for fit java sdk tests name if no test_name
+    test_name = request.node.get_closest_marker("test_name")
+    test_name = (
+        test_name.args[-1]
+        if test_name
+        else underscore_to_camelcase(request.function.__name__)
+    )
 
     eyes.add_property("Selenium Session ID", str(driver.session_id))
     eyes.add_property(
@@ -96,7 +101,7 @@ def eyes_opened(request, eyes, driver, check_test_result):
 
     eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
     yield eyes
-    test_result = eyes.close(False)
+    test_result = eyes.close()
     check_test_result.send(test_result)
 
 
