@@ -26,7 +26,7 @@ from applitools.common import (
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from applitools.core import ServerConnector
-from tests.utils import get_session_results, send_result_report
+from tests.utils import get_session_results
 
 try:
     from contextlib import ExitStack
@@ -35,11 +35,11 @@ except ImportError:
 
 logger.set_logger(StdoutLogger(is_verbose=True))
 
-here = path.abspath(path.dirname(__file__))
 
-TRAVIS_COMMIT = os.getenv("TRAVIS_COMMIT")
-BUILD_TAG = os.getenv("BUILD_TAG")
-RUNNING_ON_TRAVIS_REGRESSION_SUITE = TRAVIS_COMMIT and BUILD_TAG is None
+pytest_plugins = (
+    "tests.functional.pytest_reporting",
+    "tests.functional.pytest_skipmanager",
+)
 
 
 @pytest.fixture(scope="session")
@@ -119,140 +119,6 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
-
-
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    result = outcome.get_result()
-    if result.when == "setup":
-        # skip tests on setup stage and if skipped
-        return
-
-    passed = result.outcome == "passed"
-    group = "selenium"
-    test_name = item.name
-    parameters = None
-    if result.when == "call":
-        # For tests where eyes.close() inside test body
-        if not (
-            item.fspath.dirname.endswith("eyes_images")
-            or item.fspath.dirname.endswith("selenium")
-            or item.fspath.purebasename == "test_mobile"
-        ):
-            return
-
-        # if eyes_images tests
-        if item.fspath.dirname.endswith("eyes_images"):
-            group = "images"
-        # if eyes_selenium/mobile/test_mobile.py
-        if item.fspath.purebasename == "test_mobile":
-            test_name = item.originalname
-            (
-                device_name,
-                platform_version,
-                device_orientation,
-                page,
-            ) = item.callspec.id.split("-")
-            parameters = dict(
-                device_name=device_name,
-                platform_version=platform_version,
-                device_orientation=device_orientation,
-                page=page,
-            )
-        send_result_report(
-            test_name=test_name, passed=passed, parameters=parameters, group=group
-        )
-    elif result.when == "teardown":
-        # For tests where eyes.close() inside fixture
-        if not (
-            item.fspath.dirname.endswith("visual_grid")
-            or item.fspath.dirname.endswith("desktop")
-        ):
-            return
-
-        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-            test_name = item.originalname
-            parameters = dict(mode="VisualGrid")
-        send_result_report(
-            test_name=test_name, passed=passed, parameters=parameters, group=group
-        )
-
-
-if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
-
-    def pytest_collection_modifyitems(items):
-        skip = pytest.mark.skip(
-            reason="Skipping this test because it's fail or in skip list"
-        )
-        skip_tests_list = get_skip_tests_list()
-        for item in items:
-            if item.fspath.basename in skip_tests_list:
-                if item.originalname in skip_tests_list[item.fspath.basename]:
-                    if skip_tests_list[item.fspath.basename][item.originalname] is None:
-                        item.add_marker(skip)
-                        continue
-
-                    if os.getenv("TEST_PLATFORM") == "Linux":
-                        set_skip_for_linux_platform(item, skip_tests_list, skip)
-                    if os.getenv("TEST_PLATFORM") in ["iOS", "Android"]:
-                        set_skip_for_mobile_platform(item, skip_tests_list, skip)
-
-    def get_skip_tests_list():
-        result = defaultdict(dict)
-        for test_file, test_dict in itertools.chain(
-            get_failed_tests_from_file(), get_skip_duplicates_tests_from_file()
-        ):
-            for test_name, val in iteritems(test_dict):
-                result[test_file][test_name] = val
-        return result
-
-    def get_failed_tests_from_file():
-        with open(path.join(here, "failedTestsSuite.yaml")) as f:
-            failed_tests = yaml.load(f, Loader=yaml.Loader)
-            return iteritems(failed_tests)
-
-    def get_skip_duplicates_tests_from_file():
-        with open(path.join(here, "generatedTestsSuite.yaml")) as f:
-            generated_tests = yaml.load(f, Loader=yaml.Loader)
-            return iteritems(generated_tests)
-
-    def set_skip_for_linux_platform(item, failed_tests, skip):
-        if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
-            if "VG" in failed_tests[item.fspath.basename][item.originalname][0]:
-                item.add_marker(skip)
-        else:
-            if ("stitch_mode" in item.callspec.params) and (
-                item.callspec.params["stitch_mode"].value
-                in failed_tests[item.fspath.basename][item.originalname][0]
-            ):
-                item.add_marker(skip)
-            if ("eyes_runner" in item.callspec.params) and (
-                string_contains_list_element(
-                    str(type(item.callspec.params["eyes_runner"])),
-                    failed_tests[item.fspath.basename][item.originalname][0],
-                )
-            ):
-                item.add_marker(skip)
-
-    def set_skip_for_mobile_platform(item, failed_tests, skip):
-        for excluded_item in failed_tests[item.fspath.basename][item.originalname]:
-            if (
-                item.callspec.params["mobile_eyes"]["deviceName"] in excluded_item
-                and item.callspec.params["mobile_eyes"]["deviceOrientation"]
-                in excluded_item
-                and item.callspec.params["mobile_eyes"]["platformVersion"]
-                in excluded_item
-                and str(item.callspec.params["mobile_eyes"]["fully"]) in excluded_item
-                and item.callspec.params["page"] in excluded_item
-            ):
-                item.add_marker(skip)
-
-    def string_contains_list_element(string_check, list_check):
-        for element in list_check:
-            if element in string_check:
-                return True
-        return False
 
 
 @pytest.fixture
