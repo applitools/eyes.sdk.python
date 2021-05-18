@@ -239,7 +239,9 @@ def test_ignore_displacements(eyes_opened, ignore_displacements, check_test_resu
 def test_accessibility_regions(eyes_opened, check_test_result):
     eyes_opened.check(
         "TestAccessibilityRegions",
-        Target.window().accessibility(".ignore", AccessibilityRegionType.LargeText),
+        Target.window()
+        .accessibility(".ignore", AccessibilityRegionType.LargeText)
+        .fully(),
     )
     check_test_result.send(
         [

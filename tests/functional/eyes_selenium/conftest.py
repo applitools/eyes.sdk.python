@@ -102,7 +102,7 @@ def eyes_opened(request, eyes, driver, check_test_result):
 
     eyes.open(driver, test_suite_name, test_name, viewport_size=viewport_size)
     yield eyes
-    test_result = eyes.close()
+    test_result = eyes.close(False)
     check_test_result.send(test_result)
 
 
