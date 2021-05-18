@@ -258,7 +258,6 @@ class SeleniumEyes(EyesBase):
         self._user_defined_SRE = eyes_selenium_utils.scroll_root_element_from(
             self.driver, check_settings
         )
-
         self._position_provider = self._create_position_provider(self._user_defined_SRE)
 
         self._original_fc = self.driver.frame_chain.clone()
@@ -628,7 +627,7 @@ class SeleniumEyes(EyesBase):
             self._switched_to_frame_count += 1
 
         # if already switched into frame
-        # assign user defined scroll root element into latest frame
+        # assign user defined scroll root element into latest frame #Trello2136
         if not frame_chain and self.driver.frame_chain and self._user_defined_SRE:
             self.driver.frame_chain.peek.scroll_root_element = self._user_defined_SRE
 

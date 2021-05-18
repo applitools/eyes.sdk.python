@@ -342,7 +342,7 @@ class EyesWebElement(object):
             height=math.ceil(float(height)),
         )
 
-    def __str__(self):
+    def __repr__(self):
         tag_name = "None"
         if self.is_attached_to_page:
             tag_name = self._element.tag_name
