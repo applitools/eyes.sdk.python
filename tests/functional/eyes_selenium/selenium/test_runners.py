@@ -11,6 +11,8 @@ from applitools.selenium import (
     logger,
 )
 
+pytestmark = [pytest.mark.eyes_config(branch_name="master_python")]
+
 
 def test_classic_runner_works_normally(driver):
     classic_runner = ClassicRunner()
@@ -50,7 +52,7 @@ def test_eyes_none_runner(driver):
         driver, "Eyes Selenium SDK - Null Runner", "TestSeleniumEyesWithNullRunner"
     )
     eyes.check_window()
-    eyes.close()
+    eyes.close(False)
 
 
 @pytest.mark.parametrize(

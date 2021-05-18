@@ -9,6 +9,8 @@ from applitools.common.utils import urlencode, urlsplit, urlunsplit
 from applitools.selenium import Configuration, Target
 from tests.utils import get_session_results
 
+pytestmark = [pytest.mark.eyes_config(branch_name="master_python")]
+
 
 @pytest.fixture
 def dom_intercepting_eyes(eyes):
