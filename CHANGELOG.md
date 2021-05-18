@@ -1,4 +1,4 @@
-## [vNext]
+## [4.20.1] - 2021-05-18
 ### Fixed
 - Capture regions inside manually switched frames [Trello 2136](https://trello.com/c/bOYeHaoz)
 
