@@ -834,7 +834,7 @@ class SeleniumEyes(EyesBase):
             return None
         try:
             dom_json = dom_capture.get_full_window_dom(
-                self._driver, False, self.configure.proxy
+                self._driver, self.server_connector, False
             )
             return dom_json
         except Exception:
