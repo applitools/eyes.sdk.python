@@ -2,8 +2,9 @@ import os
 from distutils.util import strtobool
 
 import pytest
-from mock import patch
+from mock import ANY, call, patch
 
+from applitools.common import ProxySettings
 from applitools.core import BatchClose
 
 
@@ -33,3 +34,18 @@ def test_pass_multiple_batches_ids():
         assert "test-batch%2F%2F%40second" in mocked_request.call_args[0][0]
         BatchClose().set_batch_ids(["test-batch-id", "test-batch-second"]).close()
         assert "test-batch-second" in mocked_request.call_args[0][0]
+
+
+def test_batch_close_uses_proxy():
+    with patch("requests.delete") as mocked_request:
+        BatchClose().set_batch_ids("test-id").set_proxy(
+            ProxySettings("localhost", 80)
+        ).close()
+        assert mocked_request.call_args_list == [
+            call(
+                ANY,
+                params={"apiKey": ANY},
+                verify=False,
+                proxies={"http": "http://localhost:80", "https": "http://localhost:80"},
+            )
+        ]

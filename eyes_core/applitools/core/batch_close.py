@@ -3,8 +3,9 @@ from typing import List, Optional, Text, Union
 import attr
 import requests
 
+from applitools.common import ProxySettings
 from applitools.common.config import DEFAULT_SERVER_URL
-from applitools.common.utils import quote_plus, urljoin
+from applitools.common.utils import argument_guard, quote_plus, urljoin
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 
@@ -14,6 +15,7 @@ class _EnabledBatchClose(object):
     _ids = attr.ib()  # type: List[Text]
     server_url = attr.ib()  # type: Text
     api_key = attr.ib()  # type: Text
+    proxy = attr.ib(default=None)  # type: Optional[ProxySettings]
 
     def set_url(self, url):
         # type: (Text) -> _EnabledBatchClose
@@ -23,6 +25,12 @@ class _EnabledBatchClose(object):
     def set_api_key(self, api_key):
         # type: (Text) -> _EnabledBatchClose
         self.api_key = api_key
+        return self
+
+    def set_proxy(self, proxy):
+        # type: (ProxySettings) -> _EnabledBatchClose
+        argument_guard.is_a(proxy, ProxySettings)
+        self.proxy = proxy
         return self
 
     def close(self):
@@ -40,7 +48,13 @@ class _EnabledBatchClose(object):
                     quote_plus(batch_id)
                 ),
             )
-            res = requests.delete(url, params={"apiKey": self.api_key}, verify=False)
+            if self.proxy:
+                proxies = {"http": self.proxy.url, "https": self.proxy.url}
+            else:
+                proxies = None
+            res = requests.delete(
+                url, params={"apiKey": self.api_key}, verify=False, proxies=proxies
+            )
             print("delete batch is done with {} status".format(res.status_code))
 
 
@@ -50,6 +64,7 @@ class BatchClose(object):
         factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
     server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
+    proxy = attr.ib(default=None)  # type: Optional[ProxySettings]
 
     def set_url(self, url):
         # type: (Text) -> BatchClose
@@ -61,8 +76,14 @@ class BatchClose(object):
         self.api_key = api_key
         return self
 
+    def set_proxy(self, proxy):
+        # type: (ProxySettings) -> BatchClose
+        argument_guard.is_a(proxy, ProxySettings)
+        self.proxy = proxy
+        return self
+
     def set_batch_ids(self, *ids):
         # type: (Union[Text, List[Text]]) -> _EnabledBatchClose
         if isinstance(ids[0], list):
             ids = ids[0]
-        return _EnabledBatchClose(ids, self.server_url, self.api_key)
+        return _EnabledBatchClose(ids, self.server_url, self.api_key, self.proxy)

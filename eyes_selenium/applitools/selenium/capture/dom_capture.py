@@ -6,14 +6,13 @@ import threading
 import typing as tp
 from collections import OrderedDict
 from concurrent.futures.thread import ThreadPoolExecutor
-from itertools import chain
+from itertools import chain, repeat
 from typing import Dict, Generator, List, Optional, Text, Union
 
 import attr
-import requests
 import tinycss2
 
-from applitools.common import EyesError, logger
+from applitools.common import EyesError, ProxySettings, logger
 from applitools.common.utils import (
     datetime_utils,
     is_absolute_url,
@@ -26,6 +25,7 @@ from applitools.common.utils.efficient_string_replace import (
     efficient_string_replace,
 )
 from applitools.common.utils.json_utils import JsonInclude
+from applitools.core import ServerConnector
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.positioning import ScrollPositionProvider
 from applitools.selenium.resource import get_resource
@@ -55,9 +55,11 @@ class Separators(object):
 
 
 class CssDownloader(object):
-    def __init__(self):
+    def __init__(self, server_connector):
+        # type:(Optional[ProxySettings]) -> None
         self.css_start_token = None
         self.css_end_token = None
+        self._server_connector = server_connector
         self._executor = ThreadPoolExecutor(4)
         self._results = []
 
@@ -70,8 +72,9 @@ class CssDownloader(object):
         self.css_start_token = css_start_token
         self.css_end_token = css_end_token
         nodes = [CssNode.create(base_url, url) for url in urls]
+        conns = repeat(self._server_connector)
         futures = self._executor.map(
-            _download_jsonify_node, urls, nodes, timeout=CSS_DOWNLOAD_TIMEOUT
+            _download_jsonify_node, urls, nodes, conns, timeout=CSS_DOWNLOAD_TIMEOUT
         )
         self._results.append(futures)
 
@@ -156,9 +159,9 @@ def get_frame_dom(driver, css_downoader):
     )
 
 
-def get_dom(driver):
-    # type: (EyesWebDriver) -> Text
-    with CssDownloader() as css_downloader, driver.saved_frame_chain():
+def get_dom(driver, server_connector):
+    # type: (EyesWebDriver, ServerConnector) -> Text
+    with CssDownloader(server_connector) as css_downloader, driver.saved_frame_chain():
         dom = get_frame_dom(driver, css_downloader)
         return efficient_string_replace(
             css_downloader.css_start_token,
@@ -169,15 +172,15 @@ def get_dom(driver):
 
 
 @datetime_utils.timeit
-def get_full_window_dom(driver, return_as_dict=False):
-    # type: (EyesWebDriver, bool) -> Union[str, dict]
+def get_full_window_dom(driver, server_connector, return_as_dict=False):
+    # type: (EyesWebDriver, ServerConnector, bool) -> Union[str, dict]
     current_root_element = eyes_selenium_utils.curr_frame_scroll_root_element(driver)
 
     with eyes_selenium_utils.get_and_restore_state(
         ScrollPositionProvider(driver, current_root_element)
     ):
         logger.debug("Traverse DOM Tree")
-        script_result = get_dom(driver)
+        script_result = get_dom(driver, server_connector)
 
     return json.loads(script_result) if return_as_dict else script_result
 
@@ -221,20 +224,20 @@ def get_dom_script_result(driver, dom_extraction_timeout, timer_name, script_for
     return script_result
 
 
-def _download_jsonify_node(url, node):
-    # type: (Text, CssNode) -> (Text, Text)
-    return url, clean_for_json(_process_raw_css_node(node, minimize_css=False))
+def _download_jsonify_node(url, node, server_connector):
+    # type: (Text, CssNode, ServerConnector) -> (Text, Text)
+    return url, clean_for_json(_process_raw_css_node(node, server_connector, False))
 
 
-def _process_raw_css_node(node, minimize_css=True):
-    # type: (CssNode, bool) -> Text
+def _process_raw_css_node(node, server_connector, minimize_css=True):
+    # type: (CssNode, ServerConnector, bool) -> Text
 
     @datetime_utils.retry()
     def get_css(url):
         if url.startswith("blob:") or url.startswith("data:"):
             logger.warning("Passing blob URL: {}".format(url))
             return ""
-        return requests.get(url, timeout=CSS_DOWNLOAD_TIMEOUT).text.strip()
+        return server_connector.download_resource(url, {}).text.strip()
 
     def iterate_css_sub_nodes(node, text=None):
         if text is None:

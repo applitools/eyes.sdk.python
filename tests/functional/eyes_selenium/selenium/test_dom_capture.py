@@ -1,13 +1,14 @@
 import json
 import os
 import time
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 import pytest
-from mock import MagicMock
+from mock import ANY, MagicMock, call, patch
 from selenium.webdriver.common.by import By
 
-from applitools.common import Point
+from applitools.common import Configuration, Point, ProxySettings
+from applitools.core import ServerConnector
 from applitools.selenium import Eyes, EyesWebDriver, eyes_selenium_utils
 from applitools.selenium.capture import dom_capture
 
@@ -35,6 +36,13 @@ def driver_for_class(request, driver):
     driver.quit()
 
 
+@pytest.fixture
+def server_connector():
+    connector = ServerConnector()
+    connector.update_config(Configuration(), "agent-id")
+    return connector
+
+
 @pytest.mark.usefixtures("driver_for_class")
 @pytest.mark.browser("chrome")
 @pytest.mark.viewport_size({"width": 800, "height": 600})
@@ -52,7 +60,7 @@ class TestDomCaptureUnit(object):
     @pytest.mark.skip
     def test_send_dom_simple_HTML(self):
         actual_dom_json = dom_capture.get_full_window_dom(
-            self.driver, return_as_dict=True
+            self.driver, ServerConnector(), return_as_dict=True
         )
         expected_dom_json = self._get_expected_json("test_send_dom_simple_HTML")
 
@@ -75,31 +83,38 @@ class TestDomCaptureUnit(object):
         )
 
     @pytest.mark.test_page_url(
-        "https://booking.kayak.com/flights/TLV-MIA/2018-11-15/2019-04-31?sort=bestflight_a"
+        "https://booking.kayak.com/"
+        "flights/TLV-MIA/2018-11-15/2019-04-31?sort=bestflight_a"
     )
-    def test_dom_capture_speed(self):
+    def test_dom_capture_speed(self, server_connector):
         # now = dt.datetime.now()
         # cur_date = now.strftime("%Y-%m-%d")  # 2018-10-14
         # month_ahead = (now + dt.timedelta(days=30)).strftime("%Y-%m-%d")  # 2018-11-14
         start = time.time()
-        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector
+        )  # noqa: F841
         end = time.time()
         print("TOOK {} ms".format((end - start) * 1000))
 
     @pytest.mark.test_page_url(
         "http://applitools.github.io/demo/TestPages/DomTest/dom_capture.html"
     )
-    def test_send_dom1(self):
+    def test_send_dom1(self, server_connector):
         expected_json = self._get_expected_json("test_send_dom1")
-        dom_json = dom_capture.get_full_window_dom(self.driver, return_as_dict=True)
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector, return_as_dict=True
+        )
         assert dom_json["css"] == expected_json["css"]
 
     @pytest.mark.test_page_url(
         "http://applitools.github.io/demo/TestPages/DomTest/dom_capture_2.html"
     )
-    def test_send_dom2(self):
+    def test_send_dom2(self, server_connector):
         expected_json = self._get_expected_json("test_send_dom2")
-        dom_json = dom_capture.get_full_window_dom(self.driver, return_as_dict=True)
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector, return_as_dict=True
+        )
         assert dom_json["css"] == expected_json["css"]
 
     @pytest.mark.test_page_url(
@@ -107,36 +122,46 @@ class TestDomCaptureUnit(object):
         "-1FCAEoggJCAlhYSDNYBGhqiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid"
         "=ce4701a88873eed9fbb22893b9c6eae4;city=-2600941;from_idr=1&;ilp=1;d_dcp=1"
     )
-    def test_send_dom_booking1(self):
-        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+    def test_send_dom_booking1(self, server_connector):
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector
+        )  # noqa: F841
 
     @pytest.mark.test_page_url(
-        "https://booking.kayak.com/flights/TLV-MIA/2018-09-25/2018-10-31?sort=bestflight_a"
+        "https://booking.kayak.com/"
+        "flights/TLV-MIA/2018-09-25/2018-10-31?sort=bestflight_a"
     )
-    def test_send_dom_booking2(self):
-        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+    def test_send_dom_booking2(self, server_connector):
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector
+        )  # noqa: F841
 
     @pytest.mark.test_page_url(
-        "https://www.bestbuy.com/site/apple-macbook-pro-13-display-intel-core-i5-8-gb-memory-256gb-flash-storage"
+        "https://www.bestbuy.com/site/"
+        "apple-macbook-pro-13-display-intel-core-i5-8-gb-memory-256gb-flash-storage"
         "-silver/6936477.p?skuId=6936477"
     )
-    def test_send_dom_bestbuy1(self):
+    def test_send_dom_bestbuy1(self, server_connector):
         try:
             self.driver.find_elements_by_css_selector(".us-link")[0].element.click()
         except IndexError:
             # click isn't required
             pass
         start = time.time()
-        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector
+        )  # noqa: F841
         end = time.time()
         print("TOOK {} ms".format((end - start) * 1000))
 
     @pytest.mark.test_page_url(
         "https://nikita-andreev.github.io/applitools/dom_capture.html?aaa"
     )
-    def test_send_dom_nsa(self):
+    def test_send_dom_nsa(self, server_connector):
         expected_json = self._get_expected_json("test_send_dom_nsa")
-        dom_json = dom_capture.get_full_window_dom(self.driver, return_as_dict=True)
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector, return_as_dict=True
+        )
         assert dom_json["css"] == expected_json["css"]
 
         def inner_css(o):
@@ -147,9 +172,11 @@ class TestDomCaptureUnit(object):
     @pytest.mark.test_page_url(
         "https://nikita-andreev.github.io/applitools/dom_capture.html?aaa"
     )
-    def test_position_scrolled_to_origin_after_traversing(self):
+    def test_position_scrolled_to_origin_after_traversing(self, server_connector):
         # Page must contain scrolling
-        dom_json = dom_capture.get_full_window_dom(self.driver)  # noqa: F841
+        dom_json = dom_capture.get_full_window_dom(
+            self.driver, server_connector
+        )  # noqa: F841
         current_scroll = eyes_selenium_utils.get_current_position(
             self.driver, self.driver.find_element_by_tag_name("html")
         )
@@ -158,8 +185,8 @@ class TestDomCaptureUnit(object):
     @pytest.mark.test_page_url(
         "https://applitools.github.io/demo/TestPages/CorsCssTestPage/"
     )
-    def test_send_dom_cors_css(self):
-        dom = dom_capture.get_full_window_dom(self.driver, True)
+    def test_send_dom_cors_css(self, server_connector):
+        dom = dom_capture.get_full_window_dom(self.driver, server_connector, True)
         css = dom["css"]
 
         assert "p.corsat11" in css
@@ -168,6 +195,27 @@ class TestDomCaptureUnit(object):
         assert "p.corsat21" in css
         assert "p.corsat22" in css
         assert "p.corsat23" in css
+
+    @pytest.mark.test_page_url(
+        "https://applitools.github.io/demo/TestPages/CorsCssTestPage/"
+    )
+    def test_send_dom_downloads_css_with_proxy(self, fake_connector_class):
+        with patch.object(dom_capture.requests, "get") as get_mock:
+            connector = fake_connector_class()
+            connector.update_config(
+                Configuration().set_proxy(ProxySettings("abc", 42)), "a"
+            )
+            dom_capture.get_full_window_dom(self.driver, connector)
+            assert get_mock.call_args_list == [
+                call(
+                    ANY,
+                    headers=ANY,
+                    cookies={},
+                    proxies={"http": "http://abc:42", "https": "http://abc:42"},
+                    timeout=300.0,
+                    verify=False,
+                )
+            ]
 
 
 @pytest.mark.usefixtures("eyes_for_class")
@@ -195,7 +243,8 @@ class TestDynamicPages(object):
         self.eyes.check_window("AliExpress Test")
 
     @pytest.mark.test_page_url(
-        "https://www.bestbuy.com/site/apple-macbook-pro-13-display-intel-core-i5-8-gb-memory-256gb-flash-storage"
+        "https://www.bestbuy.com/site/"
+        "apple-macbook-pro-13-display-intel-core-i5-8-gb-memory-256gb-flash-storage"
         "-silver/6936477.p?skuId=6936477"
     )
     @pytest.mark.eyes_config(send_dom=True, force_full_page_screenshot=True)
@@ -210,15 +259,20 @@ class TestDynamicPages(object):
 @pytest.mark.skip("Only for local testing because changes always")
 class TestCustomersPages(object):
     @pytest.mark.test_page_url(
-        "https://www.amazon.com/stream/cd7be774-51ef-4dfe-8e97-1fdec7357113/ref=strm_theme_kitchen?asCursor"
-        "=WyIxLjgiLCJ0czEiLCIxNTM1NTQyMjAwMDAwIiwiIiwiUzAwMTc6MDpudWxsIiwiUzAwMTc6MjoxIiwiUzAwMTc6MDotMSIsIiIsIiIsIjAiLCJzdWI0IiwiMTUzNTU5NDQwMDAwMCIsImhmMS1zYXZlcyIsIjE1MzU2MDE2MDAwMDAiLCJ2MSIsIjE1MzU2MDUyMDQyMzgiLCIiLCIwIiwidjEiLCIxNTM1NTg1NDAwMDAwIl0%3D&asCacheIndex=0&asYOffset=-321&asMod=1"
+        "https://www.amazon.com/stream/cd7be774-51ef-4dfe-8e97-1fdec7357113/"
+        "ref=strm_theme_kitchen?asCursor"
+        "=WyIxLjgiLCJ0czEiLCIxNTM1NTQyMjAwMDAwIiwiIiwiUzAwMTc6MDpudWxsIiwiUzAwMTc6MjoxI"
+        "iwiUzAwMTc6MDotMSIsIiIsIiIsIjAiLCJzdWI0IiwiMTUzNTU5NDQwMDAwMCIsImhmMS1zYXZlcyI"
+        "sIjE1MzU2MDE2MDAwMDAiLCJ2MSIsIjE1MzU2MDUyMDQyMzgiLCIiLCIwIiwidjEiLCIxNTM1NTg1N"
+        "DAwMDAwIl0%3D&asCacheIndex=0&asYOffset=-321&asMod=1"
     )
     @pytest.mark.eyes_config(send_dom=True)
     def test_amazon_special_page(self):
         self.eyes.check_window("Amazon")
 
     @pytest.mark.test_page_url(
-        "https://www.staples.com/Staples-Manila-File-Folders-Letter-3-Tab-Assorted-Position-100-Box/product_116657"
+        "https://www.staples.com/Staples-Manila-File-Folders-Letter-3-"
+        "Tab-Assorted-Position-100-Box/product_116657"
     )
     @pytest.mark.eyes_config(send_dom=True)
     def test_staples_special_page(self):
