@@ -21,6 +21,8 @@ from applitools.selenium import (
     VisualGridRunner,
 )
 
+os.environ.setdefault("APPLITOOLS_BATCH_NAME", "Python Coverage Tests")
+
 
 @pytest.fixture(scope="session")
 def batch_info():
