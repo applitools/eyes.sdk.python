@@ -8,8 +8,6 @@ install:
 before_script:
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
-    # Record 5-frames long stack traces for object allocations to trace leak sources
-    - export PYTHONTRACEMALLOC=5
     # Run GUI apps in headless mode
     - export DISPLAY=:99.0
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
