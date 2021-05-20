@@ -288,6 +288,6 @@ def eyes_setup(runner, batch_info, stitch_mode, emulation):
         eyes.add_property("Page", page)
     yield eyes
     # If the test was aborted before eyes.close was called, ends the test as aborted.
-    eyes.abort_if_not_closed()
+    eyes.abort()
     if runner is not None:
         runner.get_all_test_results(False)
