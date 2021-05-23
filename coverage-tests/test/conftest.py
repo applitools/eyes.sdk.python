@@ -135,6 +135,22 @@ def driver_setup(options, browser_type, desired_caps):
                     options=options,
                 )
                 break
+            if browser_type == "Firefox48":
+                if legacy:
+                    capabilities = {}
+                    capabilities["browserName"] = "firefox"
+                    capabilities["platform"] = "Windows 10"
+                    capabilities["version"] = "48.0"
+                else:
+                    capabilities = {
+                        "browserName": "firefox",
+                        "browserVersion": "48.0",
+                        "platformName": "Windows 10",
+                    }
+                driver = webdriver.Remote(
+                    command_executor=sauce_url, desired_capabilities=capabilities
+                )
+                break
             if browser_type == "IE11":
                 capabilities = {
                     "browserName": "internet explorer",
