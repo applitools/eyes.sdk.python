@@ -5,6 +5,7 @@ from copy import copy
 import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
@@ -135,6 +136,22 @@ def driver_setup(options, browser_type, desired_caps):
                     options=options,
                 )
                 break
+            if browser_type == "Firefox48":
+                if legacy:
+                    capabilities = {}
+                    capabilities["browserName"] = "firefox"
+                    capabilities["platform"] = "Windows 10"
+                    capabilities["version"] = "48.0"
+                else:
+                    capabilities = {
+                        "browserName": "firefox",
+                        "browserVersion": "48.0",
+                        "platformName": "Windows 10",
+                    }
+                driver = webdriver.Remote(
+                    command_executor=sauce_url, desired_capabilities=capabilities
+                )
+                break
             if browser_type == "IE11":
                 capabilities = {
                     "browserName": "internet explorer",
@@ -217,7 +234,10 @@ def driver_setup(options, browser_type, desired_caps):
             time.sleep(1.0)
     yield driver
     # Close the browser.
-    driver.quit()
+    try:
+      if driver is not None: driver.quit()
+    except WebDriverException:
+      print("Driver was already closed")
 
 
 @pytest.fixture(name="runner", scope="function")
