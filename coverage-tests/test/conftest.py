@@ -5,6 +5,7 @@ from copy import copy
 import pytest
 from appium import webdriver as appium_webdriver
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
