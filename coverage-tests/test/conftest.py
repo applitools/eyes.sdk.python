@@ -233,7 +233,7 @@ def driver_setup(options, browser_type, desired_caps):
             time.sleep(1.0)
     yield driver
     # Close the browser.
-    driver.quit()
+    if driver is not None: driver.quit()
 
 
 @pytest.fixture(name="runner", scope="function")
