@@ -34,7 +34,7 @@ from applitools.selenium.visual_grid import visual_grid_eyes
             Target.region([By.CSS_SELECTOR, "div.pre-scrollable"])
             .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
             .fully(),
-            Region(10, 30, 533, 33),
+            Region(9, 30, 533, 33),
         ),
     ],
 )
