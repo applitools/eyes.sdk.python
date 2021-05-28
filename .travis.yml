@@ -56,14 +56,15 @@ jobs:
                   exit 1;
                 fi
 
-
         - stage: unit-tests
           python: 2.7
           env:
               - TOX_ENV=unit
+
         - python: 3.6
           env:
               - TOX_ENV=unit
+
         - os: windows
           language: sh
           python: 3.6
@@ -77,6 +78,7 @@ jobs:
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
+
         - os: windows
           language: sh
           before_install:
@@ -89,20 +91,22 @@ jobs:
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
+
         - os: osx
           language: sh
           python: 3.6
           env:
               - TOX_ENV=unit
 
-
         - stage: integration-tests
           python: 2.7
           env:
               - TOX_ENV=integration
+
         - python: 3.6
           env:
               - TOX_ENV=integration
+
         - os: windows
           language: sh
           before_install:
@@ -115,6 +119,7 @@ jobs:
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
+
         - os: windows
           language: sh
           before_install:
@@ -127,117 +132,15 @@ jobs:
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
+
         - os: osx
           language: sh
           python: 3.6
           env:
               - TOX_ENV=integration
 
-
         - stage: functional-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.6
-          addons:
-              chrome: stable
-              firefox: latest
-          env:
-              - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-        - python: 2.7
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_RUN_ON_VG=true
-              - TEST_BROWSERS=chrome
-#        - python: 3.6
-#          if: NOT tag =~ ^RELEASE_CANDIDATE
-#          env:
-#              - TOX_ENV=selenium
-#              - TEST_PLATFORM="macOS 10.14"
-#              - TEST_BROWSERS=safari
-#              - TEST_REMOTE=1
-#        - python: 3.6
-#          if: NOT tag =~ ^RELEASE_CANDIDATE
-#          env:
-#              - TOX_ENV=selenium
-#              - TEST_PLATFORM="Windows 10"
-#              - TEST_BROWSERS="internet\ explorer"
-#              - TEST_REMOTE=1
-#              - PYTEST_ADDOPTS="--ignore=tests/functional/eyes_selenium/selenium/test_dom_capture.py"
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=images
-              - TEST_PLATFORM="Linux"
-#        - os: windows
-#          language: sh
-#          python: "3.7"
-#          before_install:
-#               - choco install python3 googlechrome
-#               - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
-#               - python -m pip install --upgrade pip wheel
-#          env:
-#              - TOX_ENV=selenium
-#        - os: osx
-#          language: sh
-#          python: "3.7"
-#          before_install:
-#              - python3 --version
-#              - python3 -m pip install --upgrade pip wheel
-#          install:
-#              - sudo safaridriver --enable
-#              - pip3 install -U tox
-#          addons:
-#              chrome: stable
-#              firefox: latest
-#          env:
-#              - TOX_ENV=selenium
-#              - TEST_PLATFORM="macOS 10.14"
-#              - TEST_BROWSERS=chrome,firefox
-#          script:
-#              - echo $APPLITOOLS_BATCH_ID
-#              - python3 -m tox -e $TOX_ENV
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="Android"
-              - TEST_REMOTE=1
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=selenium-visualgrid
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-        - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           node_js: 14
           addons:
@@ -258,6 +161,73 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.6
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - python: 2.7
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_RUN_ON_VG=true
+              - TEST_BROWSERS=chrome
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="iOS"
+              - TEST_REMOTE=1
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="Android"
+              - TEST_REMOTE=1
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium-visualgrid
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=images
+              - TEST_PLATFORM="Linux"
+
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6
           script:
@@ -265,6 +235,7 @@ jobs:
             - inv install-requirements
             - inv install-packages
             - bash ./tutorials/tutorials.sh
+
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
           python: 3.6
