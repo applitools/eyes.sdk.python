@@ -57,15 +57,7 @@ jobs:
                 fi
 
         - stage: unit-tests
-          python: 2.7
-          env:
-              - TOX_ENV=unit
-
-        - python: 3.6
-          env:
-              - TOX_ENV=unit
-
-        - os: windows
+          os: windows
           language: sh
           python: 3.6
           before_install:
@@ -98,16 +90,16 @@ jobs:
           env:
               - TOX_ENV=unit
 
-        - stage: integration-tests
-          python: 2.7
+        - python: 2.7
           env:
-              - TOX_ENV=integration
+              - TOX_ENV=unit
 
         - python: 3.6
           env:
-              - TOX_ENV=integration
+              - TOX_ENV=unit
 
-        - os: windows
+        - stage: integration-tests
+          os: windows
           language: sh
           before_install:
               - choco install python --version=3.6.8
@@ -139,6 +131,14 @@ jobs:
           env:
               - TOX_ENV=integration
 
+        - python: 2.7
+          env:
+              - TOX_ENV=integration
+
+        - python: 3.6
+          env:
+              - TOX_ENV=integration
+
         - stage: functional-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
@@ -161,6 +161,15 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - python: 2.7
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           addons:
@@ -173,19 +182,17 @@ jobs:
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
           env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="iOS"
+              - TEST_REMOTE=1
 
-        - python: 2.7
+        - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
-              - TOX_ENV=selenium
+              - TOX_ENV=desktop
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
 
@@ -198,13 +205,6 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_RUN_ON_VG=true
               - TEST_BROWSERS=chrome
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
