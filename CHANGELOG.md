@@ -1,7 +1,6 @@
-## [vNext]
+## [4.21.0] - 2021-05-28
 ### Added
 - Allow Python Proxy via ProxySettings object [Trello 1583](https://trello.com/c/qQAooLih)
-
 ### Fixed
 - Eyes stuck when stitching scrollable region on a scrolled down page [Trello 2568](https://trello.com/c/swDfXtGL)
 
