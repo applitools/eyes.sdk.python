@@ -12,8 +12,6 @@ from applitools.common import EyesError, Point, RectangleSize, logger
 from applitools.common.utils import datetime_utils
 from applitools.common.utils.compat import urlparse
 
-from .webelement import EyesWebElement
-
 if tp.TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Union
 
@@ -24,11 +22,12 @@ if tp.TYPE_CHECKING:
         ViewPort,
     )
     from applitools.core import PositionProvider
-    from applitools.selenium.fluent import FrameLocator, SeleniumCheckSettings
-    from applitools.selenium.frames import FrameChain
-    from applitools.selenium.positioning import SeleniumPositionProvider
-    from applitools.selenium.webdriver import EyesWebDriver
 
+    from .fluent import FrameLocator, SeleniumCheckSettings
+    from .frames import FrameChain
+    from .positioning import SeleniumPositionProvider
+    from .webdriver import EyesWebDriver
+    from .webelement import EyesWebElement
 
 __all__ = (
     "get_current_frame_content_entire_size",
@@ -454,6 +453,8 @@ def scroll_root_element_from(driver, container=None):
                 else:
                     scroll_root_element = root_html()
             elif type(scroll_root_element) is WebElement:
+                from .webelement import EyesWebElement
+
                 scroll_root_element = EyesWebElement(scroll_root_element, driver)
     return scroll_root_element
 
