@@ -34,7 +34,7 @@ from applitools.selenium.visual_grid import visual_grid_eyes
             Target.region([By.CSS_SELECTOR, "div.pre-scrollable"])
             .layout([By.CSS_SELECTOR, "h3.section-type-TITLE"])
             .fully(),
-            Region(10, 30, 533, 33),
+            Region(9, 30, 533, 33),
         ),
     ],
 )
@@ -108,3 +108,28 @@ def test_agent_run_id(fake_connector_class, driver_mock, monkeypatch, spy):
         eyes.server_connector.calls["start_session"].agent_run_id
         == "B_" + random_alphanum_spy.return_list[0]
     )
+
+
+def test_scrollable_modal_on_scrolled_down_page(driver):
+    driver.get("https://applitools.github.io/demo/TestPages/ModalsPage")
+    eyes = Eyes()
+    driver = eyes.open(
+        driver,
+        "TestModal",
+        "ScrollableModalOnScrolledDownPage",
+        RectangleSize(width=1024, height=768),
+    )
+    # Scroll page to the bottom-most paragraph
+    driver.execute_script(
+        "arguments[0].scrollIntoView()",
+        driver.find_element_by_css_selector("body > main > p:nth-child(17)"),
+    )
+    # Show popup without clicking a button on top to avoid scrolling up
+    driver.execute_script("openModal('scrollable_content_modal')")
+
+    content = driver.find_element_by_css_selector(
+        ".modal-content.modal-content--scrollable"
+    )
+    eyes.check(Target.region(content).scroll_root_element(content).fully())
+
+    eyes.close()

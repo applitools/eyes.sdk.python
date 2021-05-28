@@ -22,11 +22,11 @@ if tp.TYPE_CHECKING:
         ViewPort,
     )
     from applitools.core import PositionProvider
-    from applitools.selenium.fluent import FrameLocator, SeleniumCheckSettings
-    from applitools.selenium.frames import FrameChain
-    from applitools.selenium.positioning import SeleniumPositionProvider
-    from applitools.selenium.webdriver import EyesWebDriver
 
+    from .fluent import FrameLocator, SeleniumCheckSettings
+    from .frames import FrameChain
+    from .positioning import SeleniumPositionProvider
+    from .webdriver import EyesWebDriver
     from .webelement import EyesWebElement
 
 __all__ = (
@@ -452,6 +452,10 @@ def scroll_root_element_from(driver, container=None):
                     scroll_root_element = driver.find_element(by, value)
                 else:
                     scroll_root_element = root_html()
+            elif type(scroll_root_element) is WebElement:
+                from .webelement import EyesWebElement
+
+                scroll_root_element = EyesWebElement(scroll_root_element, driver)
     return scroll_root_element
 
 

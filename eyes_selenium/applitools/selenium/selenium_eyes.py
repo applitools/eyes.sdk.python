@@ -439,7 +439,7 @@ class SeleniumEyes(EyesBase):
         result = None
         with eyes_selenium_utils.get_and_restore_state(pos_provider):
             with self._ensure_element_visible(element):
-                pl = element.location
+                pl = Point.from_(element.bounding_client_rect)
                 try:
                     self._check_frame_or_element = True
                     display_style = element.get_computed_style("display")

@@ -235,9 +235,10 @@ def driver_setup(options, browser_type, desired_caps):
     yield driver
     # Close the browser.
     try:
-      if driver is not None: driver.quit()
+        if driver is not None:
+            driver.quit()
     except WebDriverException:
-      print("Driver was already closed")
+        print("Driver was already closed")
 
 
 @pytest.fixture(name="runner", scope="function")

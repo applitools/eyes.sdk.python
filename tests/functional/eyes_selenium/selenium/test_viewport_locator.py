@@ -73,6 +73,7 @@ def test_device_viewport_location_algorithm(mobile_safari_driver, eyes):
     eyes.close()
 
 
+@pytest.mark.skip("The fallback algorithm is not stable anyway")
 def test_device_viewport_location_algorithm_fallback(mobile_safari_driver, eyes):
     # This page does not have viewport meta tags and scaled so viewport
     # detection algorithm fails
