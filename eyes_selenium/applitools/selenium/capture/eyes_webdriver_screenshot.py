@@ -80,15 +80,21 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def from_screenshot(
-        cls, driver, image, screenshot_region, frame_location_in_parent_screenshot
+        cls,
+        driver,  # type: EyesWebDriver
+        image,  # type: Image.Image
+        screenshot_region,  # type: Region
+        frame_scroll_position,  # type: Point
+        frame_location_in_screenshot,  # type: Point
     ):
-        # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
+        # type: (...) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            frame_location_in_parent_screenshot - screenshot_region.location,
-            frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
+            frame_location_in_screenshot,
+            frame_scroll_position,
+            Region.from_(Point.ZERO(), screenshot_region.size),
         )
 
     def __attrs_post_init__(self):
@@ -101,11 +107,12 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
             frame_size = self.get_frame_size(position_provider)
-            self._current_frame_scroll_position = (
-                eyes_selenium_utils.get_updated_scroll_position(  # noqa
-                    position_provider
+            if self._current_frame_scroll_position is None:
+                self._current_frame_scroll_position = (
+                    eyes_selenium_utils.get_updated_scroll_position(  # noqa
+                        position_provider
+                    )
                 )
-            )
             self.updated_frame_location_in_screenshot(
                 self._frame_location_in_screenshot
             )
@@ -198,7 +205,8 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
-            self._frame_location_in_screenshot - as_is_sub_screenshot_region.location,
+            self._current_frame_scroll_position,
+            self._frame_location_in_screenshot - as_is_sub_screenshot_region,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
