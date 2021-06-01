@@ -150,6 +150,7 @@ jobs:
               - TOX_ENV=selenium-generated
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+              - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - git submodule update --init --remote --recursive
               - nvm install node
