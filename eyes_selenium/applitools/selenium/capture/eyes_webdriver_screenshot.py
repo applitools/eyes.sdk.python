@@ -80,13 +80,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def from_screenshot(
-        cls,
-        driver,  # type: EyesWebDriver
-        image,  # type: Image.Image
-        screenshot_region,  # type: Region
-        frame_location_in_screenshot,  # type: Point
+        cls, driver, image, screenshot_region, frame_location_in_screenshot
     ):
-        # type: (...) -> EyesWebDriverScreenshot
+        # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
@@ -105,12 +101,11 @@ class EyesWebDriverScreenshot(EyesScreenshot):
         if not self._driver.is_mobile_app:
             self._frame_chain = self._driver.frame_chain.clone()
             frame_size = self.get_frame_size(position_provider)
-            if self._current_frame_scroll_position is None:
-                self._current_frame_scroll_position = (
-                    eyes_selenium_utils.get_updated_scroll_position(  # noqa
-                        position_provider
-                    )
+            self._current_frame_scroll_position = (
+                eyes_selenium_utils.get_updated_scroll_position(  # noqa
+                    position_provider
                 )
+            )
             self.updated_frame_location_in_screenshot(
                 self._frame_location_in_screenshot
             )
@@ -199,7 +194,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
                 % (region, self.frame_window)
             )
         sub_image = image_utils.get_image_part(self.image, as_is_sub_screenshot_region)
-        subscreenshot = EyesWebDriverScreenshot.from_screenshot(
+        return EyesWebDriverScreenshot.from_screenshot(
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
@@ -207,7 +202,6 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             - as_is_sub_screenshot_region
             - self._current_frame_scroll_position,
         )
-        return subscreenshot
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE
     SCREENSHOT_AS_IS = CoordinatesType.SCREENSHOT_AS_IS
