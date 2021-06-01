@@ -199,7 +199,7 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
             self._frame_location_in_screenshot
-            - as_is_sub_screenshot_region
+            - as_is_sub_screenshot_region.location
             - self._current_frame_scroll_position,
         )
 
