@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, List, Optional, Text, Tuple, overload
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
@@ -86,6 +86,9 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     ocr_region = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Optional[OCRRegion]
+    layout_breakpoints = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[Union[bool, List[int]]]
 
     @property
     def size_mode(self):
@@ -456,6 +459,27 @@ class SeleniumCheckSettings(CheckSettings):
     def disable_browser_fetching(self, disable=True):
         # type: (bool) -> SeleniumCheckSettings
         self.values.disable_browser_fetching = disable
+        return self
+
+    @overload
+    def layout_breakpoints(self, enabled):
+        # type: (bool) -> SeleniumCheckSettings
+        pass
+
+    @overload
+    def layout_breakpoints(self, *breakpoints):
+        # type: (*int) -> SeleniumCheckSettings
+        pass
+
+    def layout_breakpoints(self, enabled_or_first, *rest):
+        if isinstance(enabled_or_first, bool):
+            self.values.layout_breakpoints = enabled_or_first
+        elif isinstance(enabled_or_first, int):
+            self.values.layout_breakpoints = [enabled_or_first] + list(rest)
+        else:
+            raise TypeError(
+                "{} is not an instance of bool or int".format(enabled_or_first)
+            )
         return self
 
     @property
