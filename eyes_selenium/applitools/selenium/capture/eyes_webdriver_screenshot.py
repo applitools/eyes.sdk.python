@@ -80,14 +80,14 @@ class EyesWebDriverScreenshot(EyesScreenshot):
 
     @classmethod
     def from_screenshot(
-        cls, driver, image, screenshot_region, frame_location_in_parent_screenshot
+        cls, driver, image, screenshot_region, frame_location_in_screenshot
     ):
         # type: (EyesWebDriver, Image.Image, Region, Point) -> EyesWebDriverScreenshot
         return cls(
             driver,
             image,
             ScreenshotType.ENTIRE_FRAME,
-            frame_location_in_parent_screenshot - screenshot_region.location,
+            frame_location_in_screenshot,
             frame_window=Region.from_(Point.ZERO(), screenshot_region.size),
         )
 
@@ -198,7 +198,9 @@ class EyesWebDriverScreenshot(EyesScreenshot):
             self._driver,
             sub_image,
             Region(region.left, region.top, sub_image.width, sub_image.height),
-            self._frame_location_in_screenshot,
+            self._frame_location_in_screenshot
+            - as_is_sub_screenshot_region.location
+            - self._current_frame_scroll_position,
         )
 
     CONTEXT_RELATIVE = CoordinatesType.CONTEXT_RELATIVE

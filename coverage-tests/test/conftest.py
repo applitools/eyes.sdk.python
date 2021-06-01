@@ -78,7 +78,7 @@ def android_desired_capabilities(request, dev, app):
     desired_caps["automationName"] = "UiAutomator2"
     desired_caps["name"] = "AndroidNativeApp checkWindow"
     desired_caps["deviceOrientation"] = "portrait"
-    desired_caps["appiumVersion"] = "1.13.0"
+    desired_caps["appiumVersion"] = "1.19.2"
     return desired_caps
 
 
@@ -89,14 +89,14 @@ def ios_desired_capabilities(request, dev, app):
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
     desired_caps["deviceName"] = "iPhone XS Simulator"
-    desired_caps["platformVersion"] = "12.2"
+    desired_caps["platformVersion"] = "13.4"
     desired_caps["platformName"] = "iOS"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
     desired_caps["automationName"] = "XCUITest"
     desired_caps["name"] = "iOSNativeApp checkWindow"
     desired_caps["deviceOrientation"] = "portrait"
-    desired_caps["appiumVersion"] = "1.13.0"
+    desired_caps["appiumVersion"] = "1.19.2"
     return desired_caps
 
 
@@ -288,6 +288,6 @@ def eyes_setup(runner, batch_info, stitch_mode, emulation):
         eyes.add_property("Page", page)
     yield eyes
     # If the test was aborted before eyes.close was called, ends the test as aborted.
-    eyes.abort_if_not_closed()
+    eyes.abort()
     if runner is not None:
         runner.get_all_test_results(False)

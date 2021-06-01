@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Layout is skewed off coded selector [Trello 2583](https://trello.com/c/wxtUJtI5)
+
 ## [4.21.0] - 2021-05-28
 ### Added
 - Allow Python Proxy via ProxySettings object [Trello 1583](https://trello.com/c/qQAooLih)

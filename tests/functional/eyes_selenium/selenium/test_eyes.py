@@ -133,3 +133,17 @@ def test_scrollable_modal_on_scrolled_down_page(driver):
     eyes.check(Target.region(content).scroll_root_element(content).fully())
 
     eyes.close()
+
+
+def test_layout_region_calculation_within_frame(driver, fake_connector_class):
+    eyes = Eyes()
+    eyes.server_connector = fake_connector_class()
+    driver = eyes.open(driver, "a", "b", RectangleSize(width=1024, height=768))
+    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
+
+    eyes.check(Target.frame("frame1").region("body").layout("#inner-frame-div"))
+
+    _, match_data = eyes.server_connector.calls["match_window"]
+    assert match_data.options.image_match_settings.layout_regions == [
+        Region(0, 0, 304, 184)
+    ]
