@@ -1,6 +1,7 @@
 import itertools
 import typing
 import uuid
+from bisect import bisect_right
 from copy import deepcopy
 
 import attr
@@ -520,3 +521,28 @@ class VisualGridEyes(object):
                 raise EyesError(
                     "Enabling layout breakpoints requires target browser specified"
                 )
+
+
+def _group_tests_by_width(running_tests, layout_breakpoints):
+    # type: (List[RunningTest], Optional[List[int]]) -> Dict[int, List[RunningTest]]
+    if isinstance(layout_breakpoints, list):
+        layout_breakpoints = sorted(set(layout_breakpoints))
+        layout_breakpoints = [layout_breakpoints[0] - 1] + layout_breakpoints
+
+        def matching_breakpoint(test):
+            i = bisect_right(layout_breakpoints, test.browser_info.width)
+            return layout_breakpoints[max(i - 1, 0)]
+
+    elif layout_breakpoints is True:
+
+        def matching_breakpoint(test):
+            return test.browser_info.width
+
+    else:
+
+        def matching_breakpoint(test):
+            return None
+
+    running_tests.sort(key=lambda test: test.browser_info.width)
+    grouped = itertools.groupby(running_tests, matching_breakpoint)
+    return {width: list(tests) for width, tests in grouped}
