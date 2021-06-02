@@ -232,27 +232,9 @@ class VisualGridEyes(object):
         ]
 
         try:
-            script_result = self.get_script_result(dont_fetch_resources)
-            self.logger.debug(
-                "Got script result",
-                cdt_len=len(script_result["cdt"]),
-                blob_urls=[b["url"] for b in script_result["blobs"]],
-                resource_urls=script_result["resourceUrls"],
+            self._capture_dom_and_schedule_resource_collection_and_checks(
+                check_settings, dont_fetch_resources, region_xpaths, running_tests
             )
-            source = eyes_selenium_utils.get_check_source(self.driver)
-            checks = [
-                test.check(
-                    check_settings=check_settings,
-                    region_selectors=region_xpaths,
-                    source=source,
-                )
-                for test in running_tests
-            ]
-
-            resource_collection_task = self._resource_collection_task(
-                check_settings, region_xpaths, running_tests, script_result, checks
-            )
-            self.vg_manager.add_resource_collection_task(resource_collection_task)
         except Exception:
             self.logger.exception("Check failure")
             for test in running_tests:
@@ -261,6 +243,30 @@ class VisualGridEyes(object):
                     test.abort()
                     test.becomes_tested()
         self.logger.info("added check tasks", check_settings=check_settings)
+
+    def _capture_dom_and_schedule_resource_collection_and_checks(
+        self, check_settings, dont_fetch_resources, region_xpaths, running_tests
+    ):
+        script_result = self.get_script_result(dont_fetch_resources)
+        self.logger.debug(
+            "Got script result",
+            cdt_len=len(script_result["cdt"]),
+            blob_urls=[b["url"] for b in script_result["blobs"]],
+            resource_urls=script_result["resourceUrls"],
+        )
+        source = eyes_selenium_utils.get_check_source(self.driver)
+        checks = [
+            test.check(
+                check_settings=check_settings,
+                region_selectors=region_xpaths,
+                source=source,
+            )
+            for test in running_tests
+        ]
+        resource_collection_task = self._resource_collection_task(
+            check_settings, region_xpaths, running_tests, script_result, checks
+        )
+        self.vg_manager.add_resource_collection_task(resource_collection_task)
 
     def _resource_collection_task(
         self,
