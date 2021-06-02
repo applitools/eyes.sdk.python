@@ -506,21 +506,9 @@ class VisualGridEyes(object):
     @staticmethod
     def _effective_layout_breakpoints(config, check_settings):
         if check_settings.values.layout_breakpoints is None:
-            layout_breakpoints = config.layout_breakpoints
+            return config.layout_breakpoints
         else:
-            layout_breakpoints = check_settings.values.layout_breakpoints
-        if layout_breakpoints in (None, False):
-            return None
-        elif isinstance(layout_breakpoints, list):
-            return layout_breakpoints
-        else:
-            layout_breakpoints = [browser.width for browser in config.browsers_info]
-            if layout_breakpoints:
-                return layout_breakpoints
-            else:
-                raise EyesError(
-                    "Enabling layout breakpoints requires target browser specified"
-                )
+            return check_settings.values.layout_breakpoints
 
 
 def _group_tests_by_width(running_tests, layout_breakpoints):
