@@ -6,7 +6,7 @@ from copy import deepcopy
 
 import attr
 
-from applitools.common import EyesError, TestResults, deprecated
+from applitools.common import EyesError, RectangleSize, TestResults, deprecated
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     JobInfo,
@@ -224,32 +224,38 @@ class VisualGridEyes(object):
 
         region_xpaths = self.get_region_xpaths(check_settings)
         self.logger.info("check region xpaths", region_xpaths=region_xpaths)
+        breakpoints = self._effective_layout_breakpoints(self.configure, check_settings)
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
         running_tests = [
             test for test in self.test_list if self._test_uuid == test.test_uuid
         ]
-
-        try:
-            self._capture_dom_and_schedule_resource_collection_and_checks(
-                check_settings, dont_fetch_resources, region_xpaths, running_tests
-            )
-        except Exception:
-            self.logger.exception("Check failure")
-            for test in running_tests:
-                if test.state != TESTED:
-                    # already aborted or closed
-                    test.abort()
-                    test.becomes_tested()
-        self.logger.info("added check tasks", check_settings=check_settings)
+        for width, tests in _group_tests_by_width(running_tests, breakpoints).items():
+            try:
+                self._capture_dom_and_schedule_resource_collection_and_checks(
+                    width, check_settings, dont_fetch_resources, region_xpaths, tests
+                )
+            except Exception:
+                self.logger.exception("Check failure")
+                for test in tests:
+                    if test.state != TESTED:
+                        # already aborted or closed
+                        test.abort()
+                        test.becomes_tested()
+            self.logger.info("added check tasks", check_settings=check_settings)
 
     def _capture_dom_and_schedule_resource_collection_and_checks(
-        self, check_settings, dont_fetch_resources, region_xpaths, running_tests
+        self, width, check_settings, dont_fetch_resources, region_xpaths, running_tests
     ):
+        if width:
+            eyes_selenium_utils.set_viewport_size(
+                self.driver, RectangleSize(width, self.configure.viewport_size.height)
+            )
         script_result = self.get_script_result(dont_fetch_resources)
         self.logger.debug(
             "Got script result",
+            width=width,
             cdt_len=len(script_result["cdt"]),
             blob_urls=[b["url"] for b in script_result["blobs"]],
             resource_urls=script_result["resourceUrls"],
