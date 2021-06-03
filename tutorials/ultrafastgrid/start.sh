@@ -3,4 +3,4 @@
 bash ./chrome_setup.sh > /dev/null 2>&1
 bash ./bootstrap.sh > /dev/null 2>&1
 cd home/project/$1
-python ultrafastgrid_demo.py
+python ultrafastgrid_tutorial.py

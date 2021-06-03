@@ -5,7 +5,7 @@ ENV REPOSITORY_NAME=$repo
 RUN cd home/project \
     && git clone https://github.com/applitools/${REPOSITORY_NAME}.git \
     && cd ${REPOSITORY_NAME} \
-    && sed -i 's/"APPLITOOLS_API_KEY"/os.getenv("APPLITOOLS_API_KEY")/g' ultrafastgrid_demo.py
+    && sed -i 's/"APPLITOOLS_API_KEY"/os.getenv("APPLITOOLS_API_KEY")/g' ultrafastgrid_tutorial.py
 
 COPY ./ultrafastgrid/start.sh /
 COPY package/ /
