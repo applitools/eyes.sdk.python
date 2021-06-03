@@ -18,6 +18,7 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.datetime_utils import sleep
 from applitools.common.utils.general_utils import random_alphanum
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
@@ -59,6 +60,7 @@ el = parent;
 return '/' + xpath;"""
 
 DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
+VIEWPORT_RESIZE_DELAY = 300
 
 
 @attr.s
@@ -254,6 +256,7 @@ class VisualGridEyes(object):
             eyes_selenium_utils.set_viewport_size(
                 self.driver, RectangleSize(width, self.configure.viewport_size.height)
             )
+            sleep(VIEWPORT_RESIZE_DELAY, "Waiting after viewport resize")
         script_result = self.get_script_result(dont_fetch_resources)
         self.logger.debug(
             "Got script result",
