@@ -9,12 +9,12 @@ import attr
 from applitools.common import EyesError, RectangleSize, TestResults, deprecated
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
-    DevicesSizesDb,
     JobInfo,
     RenderBrowserInfo,
     RenderInfo,
     RenderRequest,
     VisualGridSelector,
+    device_sizes_db,
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
@@ -164,7 +164,7 @@ class VisualGridEyes(object):
         self.vg_manager.rendering_service.maybe_set_server_connector(
             self.server_connector
         )
-        DevicesSizesDb.maybe_set_server_connector(self.server_connector)
+        device_sizes_db.maybe_set_server_connector(self.server_connector)
 
         for browser_info, job_info in self._job_info_for_browser_info(
             self.configure.browsers_info
