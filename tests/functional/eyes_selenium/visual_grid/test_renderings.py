@@ -2,6 +2,7 @@ from collections import defaultdict
 
 import pytest
 
+from applitools.common import ChromeEmulationInfo
 from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
@@ -333,6 +334,28 @@ def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
         .add_browser(800, 600, BrowserType.CHROME)
         .add_browser(1024, 768, BrowserType.CHROME)
         .add_browser(1200, 800, BrowserType.CHROME)
+        .set_layout_breakpoints(True)
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()
+
+
+def test_inferred_layout_breakpoints_with_devices(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Layout Breakpoints inferred devices",
+            batch=batch_info,
+        )
+        .add_browser(ChromeEmulationInfo("iPad", "portrait"))
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.LANDSCAPE)
+        )
+        .add_browser(800, 600, BrowserType.CHROME)
+        .add_browser(1024, 768, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
     eyes.open(driver, viewport_size=RectangleSize(800, 600))
