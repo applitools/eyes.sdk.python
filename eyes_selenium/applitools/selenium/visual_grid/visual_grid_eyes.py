@@ -164,7 +164,7 @@ class VisualGridEyes(object):
         self.vg_manager.rendering_service.maybe_set_server_connector(
             self.server_connector
         )
-        DevicesSizesDb.maybe_fetch_device_sizes(self.server_connector)
+        DevicesSizesDb.maybe_set_server_connector(self.server_connector)
 
         for browser_info, job_info in self._job_info_for_browser_info(
             self.configure.browsers_info
