@@ -4,5 +4,6 @@ module.exports = {
     overrides: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/master/python/overrides.js',
     template: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/master/python/template.hbs',
     ext: '.py',
-    outPath: './test/coverage/generic'
+    outPath: './test/coverage/generic',
+    emitOnly: ['/check region by coordinates with css stitching/']
 }

@@ -110,6 +110,8 @@ def driver_setup(options, browser_type, desired_caps):
             password=os.getenv("SAUCE_ACCESS_KEY", None),
         )
     )
+    eg_url = "https://exec-wus.applitools.com/int-rel-tok-ruby-sdk-coverage"
+    docker_url = "http://localhost:4444/wd/hub"
     for _ in range(5):
         try:
             if browser_type == "Appium":
@@ -123,10 +125,17 @@ def driver_setup(options, browser_type, desired_caps):
                 )
                 break
             if browser_type == "Chrome":
-                options.add_argument("--headless")
-                driver = webdriver.Chrome(
-                    executable_path=ChromeDriverManager().install(),
-                    options=options,
+                chrome_options = webdriver.ChromeOptions()
+                chrome_options.add_argument('--headless')
+                caps = {
+                    "browserName": "chrome",
+                    "goog:chromeOptions": {
+                        "args": ['headless']
+                    }
+                }
+                driver = webdriver.Remote(
+                    command_executor=docker_url,
+                    desired_capabilities=caps
                 )
                 break
             if browser_type == "Firefox":
