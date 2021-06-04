@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- JS Layout breakpoints suport [Trello 2258](https://trello.com/c/3Ty3HRCG)
 ### Fixed
 - Layout is skewed off coded selector [Trello 2583](https://trello.com/c/wxtUJtI5)
 
