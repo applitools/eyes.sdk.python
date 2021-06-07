@@ -264,13 +264,8 @@ def set_browser_size_by_viewport_size(driver, actual_viewport_size, required_siz
     return actual_viewport_size
 
 
-def set_viewport_size(driver, required_size):
+def set_viewport_size(driver, required_size):  # noqa
     # type: (AnyWebDriver, ViewPort) -> None
-    with driver.switch_to.frames_and_back([]):
-        _set_viewport_size(driver, required_size)
-
-
-def _set_viewport_size(driver, required_size):  # noqa
     actual_viewport_size = get_viewport_size(driver)
     if actual_viewport_size != required_size:
         actual_viewport_size = set_browser_size_by_viewport_size(

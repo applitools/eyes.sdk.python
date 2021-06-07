@@ -256,7 +256,8 @@ class VisualGridEyes(object):
         if width:
             try:
                 requested = RectangleSize(width, self.configure.viewport_size.height)
-                eyes_selenium_utils.set_viewport_size(self.driver, requested)
+                with self.driver.switch_to.frames_and_back([]):
+                    eyes_selenium_utils.set_viewport_size(self.driver, requested)
                 sleep(VIEWPORT_RESIZE_DELAY, "Waiting after viewport resize")
             except EyesError:
                 actual = eyes_selenium_utils.get_viewport_size(self.driver)
@@ -516,11 +517,12 @@ class VisualGridEyes(object):
             return
 
         self.configure.viewport_size = viewport_size
-        try:
-            eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
-        except Exception as e:
-            self.logger.exception("set_viewport_size failure")
-            raise_from(EyesError("Failed to set viewport size"), e)
+        with self.driver.switch_to.frames_and_back([]):
+            try:
+                eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
+            except Exception as e:
+                self.logger.exception("set_viewport_size failure")
+                raise_from(EyesError("Failed to set viewport size"), e)
 
     @staticmethod
     def _effective_disable_browser_fetching(config, check_settings):
