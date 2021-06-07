@@ -1,4 +1,4 @@
-## [vNext]
+## [4.22.0] - 2021-06-07
 ### Added
 - JS Layout breakpoints suport [Trello 2258](https://trello.com/c/3Ty3HRCG)
 ### Fixed
