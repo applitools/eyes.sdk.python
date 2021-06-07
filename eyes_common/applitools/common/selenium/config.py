@@ -67,6 +67,9 @@ class Configuration(ConfigurationBase):
     dont_use_cookies = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=False
     )  # type: bool
+    layout_breakpoints = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[Union[bool, List[int]]]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
@@ -115,6 +118,27 @@ class Configuration(ConfigurationBase):
     def set_dont_use_cookies(self, dont_use_cookies):
         # type: (bool) -> Configuration
         self.dont_use_cookies = dont_use_cookies
+        return self
+
+    @overload
+    def set_layout_breakpoints(self, enabled):
+        # type: (bool) -> Configuration
+        pass
+
+    @overload
+    def set_layout_breakpoints(self, *breakpoints):
+        # type: (*int) -> Configuration
+        pass
+
+    def set_layout_breakpoints(self, enabled_or_first, *rest):
+        if isinstance(enabled_or_first, bool):
+            self.layout_breakpoints = enabled_or_first
+        elif isinstance(enabled_or_first, int):
+            self.layout_breakpoints = [enabled_or_first] + list(rest)
+        else:
+            raise TypeError(
+                "{} is not an instance of bool or int".format(enabled_or_first)
+            )
         return self
 
     @overload  # noqa

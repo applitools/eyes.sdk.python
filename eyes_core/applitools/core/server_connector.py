@@ -12,7 +12,7 @@ import requests
 from requests import Response
 from requests.packages import urllib3  # noqa
 
-from applitools.common import Region, RunningSession, logger
+from applitools.common import DeviceName, IosDeviceName, Region, RunningSession, logger
 from applitools.common.client_event import LogSessionsClientEvents
 from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
@@ -319,6 +319,10 @@ class ServerConnector(object):
     RENDER_STATUS = "/render-status"
     RENDER = "/render"
     RENDERER_INFO = "/job-info"
+    DEVICES_SIZES = {
+        IosDeviceName: "/ios-devices-sizes",
+        DeviceName: "/emulated-devices-sizes",
+    }
 
     _is_session_started = False
     _retry_limiter = _SessionRetryLimiter()
@@ -740,6 +744,11 @@ class ServerConnector(object):
             )
             for d in resp.json()
         ]
+
+    @retry()
+    def get_devices_sizes(self, device_type):
+        response = self._ufg_request("get", self.DEVICES_SIZES[device_type])
+        return response.raise_for_status() or response.json()
 
     @retry()
     def check_resource_status(self, resources):

@@ -1,11 +1,12 @@
 import itertools
 import typing
 import uuid
+from bisect import bisect_right
 from copy import deepcopy
 
 import attr
 
-from applitools.common import EyesError, TestResults, deprecated
+from applitools.common import EyesError, RectangleSize, TestResults, deprecated
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     JobInfo,
@@ -13,9 +14,11 @@ from applitools.common.ultrafastgrid import (
     RenderInfo,
     RenderRequest,
     VisualGridSelector,
+    device_sizes_db,
 )
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.datetime_utils import sleep
 from applitools.common.utils.general_utils import random_alphanum
 from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
@@ -57,6 +60,7 @@ el = parent;
 return '/' + xpath;"""
 
 DOM_EXTRACTION_TIMEOUT = 10 * 60 * 1000
+VIEWPORT_RESIZE_DELAY = 300
 
 
 @attr.s
@@ -160,6 +164,7 @@ class VisualGridEyes(object):
         self.vg_manager.rendering_service.maybe_set_server_connector(
             self.server_connector
         )
+        device_sizes_db.maybe_set_server_connector(self.server_connector)
 
         for browser_info, job_info in self._job_info_for_browser_info(
             self.configure.browsers_info
@@ -223,43 +228,66 @@ class VisualGridEyes(object):
 
         region_xpaths = self.get_region_xpaths(check_settings)
         self.logger.info("check region xpaths", region_xpaths=region_xpaths)
+        breakpoints = self._effective_layout_breakpoints(self.configure, check_settings)
         dont_fetch_resources = self._effective_disable_browser_fetching(
             self.configure, check_settings
         )
         running_tests = [
             test for test in self.test_list if self._test_uuid == test.test_uuid
         ]
-
-        try:
-            script_result = self.get_script_result(dont_fetch_resources)
-            self.logger.debug(
-                "Got script result",
-                cdt_len=len(script_result["cdt"]),
-                blob_urls=[b["url"] for b in script_result["blobs"]],
-                resource_urls=script_result["resourceUrls"],
-            )
-            source = eyes_selenium_utils.get_check_source(self.driver)
-            checks = [
-                test.check(
-                    check_settings=check_settings,
-                    region_selectors=region_xpaths,
-                    source=source,
+        for width, tests in _group_tests_by_width(running_tests, breakpoints).items():
+            try:
+                self._capture_dom_and_schedule_resource_collection_and_checks(
+                    width, check_settings, dont_fetch_resources, region_xpaths, tests
                 )
-                for test in running_tests
-            ]
+            except Exception:
+                self.logger.exception("Check failure")
+                for test in tests:
+                    if test.state != TESTED:
+                        # already aborted or closed
+                        test.abort()
+                        test.becomes_tested()
+            self.logger.info("added check tasks", check_settings=check_settings)
+        self._set_viewport_size()
 
-            resource_collection_task = self._resource_collection_task(
-                check_settings, region_xpaths, running_tests, script_result, checks
+    def _capture_dom_and_schedule_resource_collection_and_checks(
+        self, width, check_settings, dont_fetch_resources, region_xpaths, running_tests
+    ):
+        if width:
+            try:
+                requested = RectangleSize(width, self.configure.viewport_size.height)
+                with self.driver.switch_to.frames_and_back([]):
+                    eyes_selenium_utils.set_viewport_size(self.driver, requested)
+                sleep(VIEWPORT_RESIZE_DELAY, "Waiting after viewport resize")
+            except EyesError:
+                actual = eyes_selenium_utils.get_viewport_size(self.driver)
+                self.logger.warning(
+                    "Failed to resize browser window. "
+                    "Running browser in headless mode might prevent this error.",
+                    requested=requested,
+                    actual=actual,
+                )
+        script_result = self.get_script_result(dont_fetch_resources)
+        self.logger.debug(
+            "Got script result",
+            width=width,
+            cdt_len=len(script_result["cdt"]),
+            blob_urls=[b["url"] for b in script_result["blobs"]],
+            resource_urls=script_result["resourceUrls"],
+        )
+        source = eyes_selenium_utils.get_check_source(self.driver)
+        checks = [
+            test.check(
+                check_settings=check_settings,
+                region_selectors=region_xpaths,
+                source=source,
             )
-            self.vg_manager.add_resource_collection_task(resource_collection_task)
-        except Exception:
-            self.logger.exception("Check failure")
-            for test in running_tests:
-                if test.state != TESTED:
-                    # already aborted or closed
-                    test.abort()
-                    test.becomes_tested()
-        self.logger.info("added check tasks", check_settings=check_settings)
+            for test in running_tests
+        ]
+        resource_collection_task = self._resource_collection_task(
+            check_settings, region_xpaths, running_tests, script_result, checks
+        )
+        self.vg_manager.add_resource_collection_task(resource_collection_task)
 
     def _resource_collection_task(
         self,
@@ -489,11 +517,12 @@ class VisualGridEyes(object):
             return
 
         self.configure.viewport_size = viewport_size
-        try:
-            eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
-        except Exception as e:
-            self.logger.exception("set_viewport_size failure")
-            raise_from(EyesError("Failed to set viewport size"), e)
+        with self.driver.switch_to.frames_and_back([]):
+            try:
+                eyes_selenium_utils.set_viewport_size(self.driver, viewport_size)
+            except Exception as e:
+                self.logger.exception("set_viewport_size failure")
+                raise_from(EyesError("Failed to set viewport size"), e)
 
     @staticmethod
     def _effective_disable_browser_fetching(config, check_settings):
@@ -501,3 +530,35 @@ class VisualGridEyes(object):
             return check_settings.values.disable_browser_fetching
         else:
             return config.disable_browser_fetching
+
+    @staticmethod
+    def _effective_layout_breakpoints(config, check_settings):
+        if check_settings.values.layout_breakpoints is None:
+            return config.layout_breakpoints
+        else:
+            return check_settings.values.layout_breakpoints
+
+
+def _group_tests_by_width(running_tests, layout_breakpoints):
+    # type: (List[RunningTest], Optional[List[int]]) -> Dict[int, List[RunningTest]]
+    if isinstance(layout_breakpoints, list):
+        layout_breakpoints = sorted(set(layout_breakpoints))
+        layout_breakpoints = [layout_breakpoints[0] - 1] + layout_breakpoints
+
+        def matching_breakpoint(test):
+            i = bisect_right(layout_breakpoints, test.browser_info.width)
+            return layout_breakpoints[max(i - 1, 0)]
+
+    elif layout_breakpoints is True:
+
+        def matching_breakpoint(test):
+            return test.browser_info.width
+
+    else:
+
+        def matching_breakpoint(test):
+            return None
+
+    running_tests.sort(key=lambda test: test.browser_info.width)
+    grouped = itertools.groupby(running_tests, matching_breakpoint)
+    return {width: list(tests) for width, tests in grouped}

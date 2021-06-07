@@ -1,11 +1,11 @@
-import mock
 import pytest
 from appium.webdriver import WebElement as AppiumWebElement
 from mock import MagicMock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
-from applitools.common import FloatingBounds
+from applitools.common import EyesError, FloatingBounds
+from applitools.common.selenium import BrowserType
 from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 
@@ -36,6 +36,7 @@ def test_default_check_settings():
     check_settings = SeleniumCheckSettings()
 
     assert check_settings.values.disable_browser_fetching is None
+    assert check_settings.values.layout_breakpoints is None
 
 
 def test_check_region_and_frame_with_unsupported_input():
@@ -243,6 +244,33 @@ def test_disable_browser_fetching_combinations():
     assert (
         effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
     )
+
+
+def test_layout_breakpoints_combinations():
+    from applitools.selenium import Configuration, Target
+    from applitools.selenium.visual_grid import VisualGridEyes
+
+    effective_option = VisualGridEyes._effective_layout_breakpoints
+    cfg = Configuration()
+
+    assert effective_option(cfg, Target.window()) is None
+    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
+    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
+    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
+
+    cfg.set_layout_breakpoints(3, 4)
+
+    assert effective_option(cfg, Target.window()) == [3, 4]
+    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
+    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
+    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
+
+    cfg.set_layout_breakpoints(True)
+
+    assert effective_option(cfg, Target.window()) is True
+    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
+    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
+    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
