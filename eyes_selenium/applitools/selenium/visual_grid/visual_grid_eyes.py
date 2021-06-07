@@ -248,6 +248,7 @@ class VisualGridEyes(object):
                         test.abort()
                         test.becomes_tested()
             self.logger.info("added check tasks", check_settings=check_settings)
+        self._set_viewport_size()
 
     def _capture_dom_and_schedule_resource_collection_and_checks(
         self, width, check_settings, dont_fetch_resources, region_xpaths, running_tests
