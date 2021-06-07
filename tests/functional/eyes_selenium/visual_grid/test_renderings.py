@@ -361,3 +361,87 @@ def test_inferred_layout_breakpoints_with_devices(driver, batch_info, vg_runner)
     eyes.open(driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
+
+
+def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Layout Breakpoints explicit chrome",
+            batch=batch_info,
+        )
+        .add_browser(500, 400, BrowserType.CHROME)
+        .add_browser(800, 400, BrowserType.CHROME)
+        .add_browser(800, 600, BrowserType.CHROME)
+        .add_browser(1024, 768, BrowserType.CHROME)
+        .add_browser(1200, 800, BrowserType.CHROME)
+        .set_layout_breakpoints(500, 1000)
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()
+
+
+def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Layout Breakpoints inferred chrome",
+            batch=batch_info,
+        )
+        .add_browser(500, 400, BrowserType.CHROME)
+        .add_browser(800, 400, BrowserType.CHROME)
+        .add_browser(800, 600, BrowserType.CHROME)
+        .add_browser(1024, 768, BrowserType.CHROME)
+        .add_browser(1200, 800, BrowserType.CHROME)
+        .set_layout_breakpoints(True)
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()
+
+
+def test_inferred_layout_breakpoints_with_big_devices(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Layout Breakpoints inferred big screen devices",
+            batch=batch_info,
+        )
+        .add_browser(ChromeEmulationInfo("iPad", "portrait"))
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPad_Pro_3, ScreenOrientation.PORTRAIT)
+        )
+        .add_browser(1024, 768, BrowserType.CHROME)
+        .set_layout_breakpoints(True)
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()
+
+
+def test_inferred_layout_breakpoints_with_small_devices(driver, batch_info, vg_runner):
+    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+    eyes = Eyes(vg_runner)
+    eyes.set_configuration(
+        Configuration(
+            app_name="Eyes SDK",
+            test_name="UFG Layout Breakpoints inferred small screen device",
+            batch=batch_info,
+        )
+        .add_browser(
+            IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.LANDSCAPE)
+        )
+        .add_browser(IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.PORTRAIT))
+        .add_browser(1024, 768, BrowserType.CHROME)
+        .set_layout_breakpoints(True)
+    )
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.check_window()
+    eyes.close()

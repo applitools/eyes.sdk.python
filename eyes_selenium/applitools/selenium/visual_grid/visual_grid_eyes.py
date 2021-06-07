@@ -253,10 +253,18 @@ class VisualGridEyes(object):
         self, width, check_settings, dont_fetch_resources, region_xpaths, running_tests
     ):
         if width:
-            eyes_selenium_utils.set_viewport_size(
-                self.driver, RectangleSize(width, self.configure.viewport_size.height)
-            )
-            sleep(VIEWPORT_RESIZE_DELAY, "Waiting after viewport resize")
+            try:
+                requested = RectangleSize(width, self.configure.viewport_size.height)
+                eyes_selenium_utils.set_viewport_size(self.driver, requested)
+                sleep(VIEWPORT_RESIZE_DELAY, "Waiting after viewport resize")
+            except EyesError:
+                actual = eyes_selenium_utils.get_viewport_size(self.driver)
+                self.logger.warning(
+                    "Failed to resize browser window. "
+                    "Running browser in headless mode might prevent this error.",
+                    requested=requested,
+                    actual=actual,
+                )
         script_result = self.get_script_result(dont_fetch_resources)
         self.logger.debug(
             "Got script result",
