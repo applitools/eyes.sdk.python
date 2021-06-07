@@ -53,7 +53,7 @@ def driver_mock():
 
     from applitools.selenium import EyesWebDriver
 
-    driver = mock.Mock(EyesWebDriver)
+    driver = mock.MagicMock(EyesWebDriver)
     driver._driver = mock.Mock(WebDriver)
 
     desired_capabilities = {"platformName": ""}
