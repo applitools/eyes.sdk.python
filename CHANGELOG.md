@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - UFG Tests stay in running state when render fails [Trello 2612](https://trello.com/c/qBAEmMTQ)
+- Attrs version incompatibility [Trello 2610](https://trello.com/c/BUHKASAz)
 
 ## [4.22.0] - 2021-06-07
 ### Added
