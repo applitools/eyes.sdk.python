@@ -5,6 +5,7 @@ from enum import Enum
 import attr
 
 from applitools.common import logger
+from applitools.common.errors import EyesError
 from applitools.common.geometry import RectangleSize, Region
 from applitools.common.utils import general_utils, json_utils
 from applitools.common.utils.json_utils import JsonInclude
@@ -138,6 +139,7 @@ class RenderInfo(object):
 @attr.s
 class RGridDom(object):
     CONTENT_TYPE = "x-applitools-html/cdt"  # type: Text
+    MAX_CDT_SIZE = 30 * 1024 * 1024
 
     dom_nodes = attr.ib(repr=False)  # type: List[dict]
     resources = attr.ib()  # type: Dict[Text, VGResource]
@@ -155,10 +157,13 @@ class RGridDom(object):
     @property
     def resource(self):
         # type: () -> VGResource
+        content = self.content.encode("utf-8")
+        if len(content) > self.MAX_CDT_SIZE:
+            raise EyesError("Page snapshot is too big for rendering")
         return VGResource(
             self.url,
             self.CONTENT_TYPE,
-            self.content.encode("utf-8"),
+            content,
             "RGridDom {}".format(self.msg),
         )
 
@@ -171,7 +176,7 @@ class RGridDom(object):
 
 @attr.s(slots=True)
 class VGResource(object):
-    MAX_RESOURCE_SIZE = 15 * 1024 * 1024  # type: int
+    MAX_RESOURCE_SIZE = 30 * 1024 * 1024  # type: int
 
     url = attr.ib()  # type: Text
     content_type = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
