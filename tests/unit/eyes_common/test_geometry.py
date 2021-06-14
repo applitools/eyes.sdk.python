@@ -60,3 +60,29 @@ def test_rectangle_size_inequality():
 
     assert a != c
     assert not a != b
+
+
+def test_access_by_keys_to_inherited_obj():
+    r = Region(0, 1, 2, 3)
+    assert r.left == r["left"]
+    assert r.top == r["top"]
+    assert r.width == r["width"]
+    assert r.height == r["height"]
+    assert r.coordinates_type == r["coordinates_type"]
+
+
+def test_access_by_int_to_inherited_obj():
+    r = Region(0, 1, 2, 3)
+    assert r.left == r[0]
+    assert r.top == r[1]
+    assert r.width == r[2]
+    assert r.height == r[3]
+    assert r.coordinates_type == r[4]
+
+
+def test_not_accessible_attr():
+    r = Region(0, 1, 2, 3)
+    with pytest.raises(KeyError):
+        r["someattr"]
+    with pytest.raises(IndexError):
+        r[6]
