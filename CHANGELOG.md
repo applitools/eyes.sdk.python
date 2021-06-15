@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - UFG Tests stay in running state when render fails [Trello 2612](https://trello.com/c/qBAEmMTQ)
+- UFG: abort tests if captured CDT size is bigger than 30mb [Trello 2629](https://trello.com/c/BpDnwlCi)
 - Attrs version incompatibility [Trello 2610](https://trello.com/c/BUHKASAz)
 
 ## [4.22.0] - 2021-06-07
