@@ -264,7 +264,7 @@ class RunningTest(object):
             self.logger.debug("open_task_succeeded")
             self.watch_open[open_task] = True
             if self.all_tasks_completed(self.watch_open):
-                if self.state == TESTED:
+                if self.state in (TESTED, COMPLETED):
                     self.logger.debug("open_task_succeeded: test session was aborted")
                     return
                 self.becomes_opened()

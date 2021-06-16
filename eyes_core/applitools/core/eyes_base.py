@@ -4,6 +4,7 @@ import abc
 import platform
 import typing
 import uuid
+from threading import Lock
 
 from applitools.common import (
     AppOutput,
@@ -226,6 +227,7 @@ class EyesBase(
         self._server_connector = ServerConnector()  # type: ServerConnector
         self._user_inputs = []  # type: UserInputs
         self._debug_screenshots_provider = NullDebugScreenshotsProvider()
+        self._ensure_running_session_lock = Lock()
 
     @property
     def match_level(self):
@@ -677,6 +679,13 @@ class EyesBase(
         del self._user_inputs[:]
 
     def _ensure_running_session(self):
+        # We do have parallel calls here from start session task
+        # and resource collection service if resource collection is aborted.
+        # That might produce two sessions opened and only one closed.
+        with self._ensure_running_session_lock:
+            self._ensure_running_session_locked()
+
+    def _ensure_running_session_locked(self):
         if self._running_session:
             logger.debug("Session already running.")
             return
