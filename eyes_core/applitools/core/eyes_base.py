@@ -679,6 +679,9 @@ class EyesBase(
         del self._user_inputs[:]
 
     def _ensure_running_session(self):
+        # We do have parallel calls here from start session task
+        # and resource collection service if resource collection is aborted.
+        # That might produce two sessions opened and only one closed.
         with self._ensure_running_session_lock:
             self._ensure_running_session_locked()
 
