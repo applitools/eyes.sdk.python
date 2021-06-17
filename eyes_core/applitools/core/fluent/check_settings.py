@@ -6,7 +6,7 @@ from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.utils import argument_guard, json_utils
-from applitools.common.utils.compat import raise_from
+from applitools.common.utils.compat import basestring, raise_from
 from applitools.common.utils.json_utils import JsonInclude
 
 from .region import (
@@ -31,58 +31,112 @@ class CheckSettingsValues(object):
     """
 
     target_region = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(Region)),
     )  # type: Optional[Region]
     timeout = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=-1
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=-1,
+        validator=attr.validators.instance_of(int),
     )  # type: Num  # milliseconds
-
     ignore_caret = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     stitch_content = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     match_level = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(MatchLevel)),
     )  # type: Optional[MatchLevel]
     name = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[Text]
 
     send_dom = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     use_dom = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     enable_patterns = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     ignore_displacements = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
 
     ignore_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(GetRegion)),
     )  # type: List[GetRegion]
     layout_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(GetRegion)),
     )  # type: List[GetRegion]
     strict_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(GetRegion)),
     )  # type: List[GetRegion]
     content_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(GetRegion)),
     )  # type: List[GetRegion]
     floating_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(
+            attr.validators.instance_of(GetFloatingRegion)
+        ),
     )  # type: List[GetFloatingRegion]
     accessibility_regions = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(
+            attr.validators.instance_of(GetAccessibilityRegion)
+        ),
     )  # type: List[GetAccessibilityRegion]
     variation_group_id = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
 
 

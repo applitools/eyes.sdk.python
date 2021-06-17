@@ -8,11 +8,12 @@ from selenium.webdriver.common.by import By
 from applitools.common import logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Region
-from applitools.common.ultrafastgrid import VisualGridOption
+from applitools.common.ultrafastgrid import VisualGridOption, VisualGridSelector
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
+from applitools.selenium.extract_text.ocr_region import OCRRegion
 from applitools.selenium.validators import is_list_or_tuple, is_webelement
 from applitools.selenium.webelement import EyesWebElement
 
@@ -26,7 +27,6 @@ from .region import (
 )
 
 if TYPE_CHECKING:
-    from applitools.common.ultrafastgrid import VisualGridSelector
     from applitools.common.utils.custom_types import (
         FLOATING_VALUES,
         AnyWebElement,
@@ -36,7 +36,6 @@ if TYPE_CHECKING:
         FrameIndex,
         FrameNameOrId,
     )
-    from applitools.selenium.extract_text import OCRRegion
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
@@ -55,39 +54,73 @@ class FrameLocator(object):
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(EyesWebElement)),
     )  # type: EyesWebElement
     scroll_root_selector = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: CssSelector
     target_selector = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(list)),
     )  # type: BySelector
     target_element = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(EyesWebElement)),
     )  # type: EyesWebElement
     frame_chain = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        factory=list,
+        validator=attr.validators.deep_iterable(
+            attr.validators.instance_of(FrameLocator)
+        ),
     )  # type: List[FrameLocator]
 
     # for Rendering Grid
     selector = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
-    )  # type: VisualGridSelector
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(
+            attr.validators.instance_of(VisualGridSelector)
+        ),
+    )  # type: Optional[VisualGridSelector]
     script_hooks = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=dict
+        metadata={JsonInclude.NON_NONE: True},
+        factory=dict,
+        validator=attr.validators.instance_of(dict),
     )  # type: dict
     visual_grid_options = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=()
+        metadata={JsonInclude.NON_NONE: True},
+        default=(),
+        validator=attr.validators.deep_iterable(
+            attr.validators.instance_of(VisualGridOption)
+        ),
     )  # type: Tuple[VisualGridOption]
     disable_browser_fetching = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
     ocr_region = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        init=False,
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(OCRRegion)),
     )  # type: Optional[OCRRegion]
     layout_breakpoints = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.in_([bool, list])),
     )  # type: Optional[Union[bool, List[int]]]
 
     @property

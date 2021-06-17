@@ -12,7 +12,10 @@ if TYPE_CHECKING:
 
 @attr.s
 class ImagesCheckSettingsValues(CheckSettingsValues):
-    image = attr.ib(default=None)  # type: Optional[Image.Image]
+    image = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(Image.Image)),
+    )  # type: Optional[Image.Image]
 
 
 @attr.s

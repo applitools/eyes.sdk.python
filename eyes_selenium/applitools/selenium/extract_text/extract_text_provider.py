@@ -1,33 +1,25 @@
-from typing import TYPE_CHECKING, Callable, List, Optional, Text, Union
+from typing import TYPE_CHECKING, List
 
-from applitools.common import AppOutput, Point, Region
+from applitools.common import AppOutput, Point
 from applitools.common.utils import argument_guard, image_utils
-from applitools.core import AppOutputWithScreenshot, ServerConnector
-from applitools.core.debug import DebugScreenshotsProvider
+from applitools.core import ExtractTextProvider, TextRegionSettings
 from applitools.core.extract_text import (
     PATTERN_TEXT_REGIONS,
-    BaseOCRRegion,
     ExpectedTextRegion,
-    ExtractTextProvider,
-    TextRegionSettings,
     TextSettingsData,
 )
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.selenium_eyes import SeleniumEyes
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import (
-        AnyWebDriver,
-        AnyWebElement,
-        CssSelector,
-    )
     from applitools.selenium import EyesWebDriver, EyesWebElement
+
+    from .ocr_region import OCRRegion
 
 
 def _element_from_check_settings(driver, check_settings):
     # type: (EyesWebDriver, SeleniumCheckSettings) -> EyesWebElement
-    from .webelement import EyesWebElement
+    from applitools.selenium.webelement import EyesWebElement
 
     if check_settings.values.target_element:
         element = check_settings.values.target_element
@@ -37,22 +29,6 @@ def _element_from_check_settings(driver, check_settings):
     else:
         raise ValueError
     return EyesWebElement(element, driver)
-
-
-class OCRRegion(BaseOCRRegion):
-    def __init__(self, target):
-        # type:(Union[Region,CssSelector,AnyWebElement])->None
-        super(OCRRegion, self).__init__(target)
-        self.process_app_output = None  # type: Optional[Callable]
-        self.app_output_with_screenshot = (
-            None
-        )  # type: Optional[AppOutputWithScreenshot]
-
-    def add_process_app_output(self, callback):
-        # type: (Callable) -> None
-        if not callable(callback):
-            raise ValueError
-        self.process_app_output = callback
 
 
 class SeleniumExtractTextProvider(ExtractTextProvider):
