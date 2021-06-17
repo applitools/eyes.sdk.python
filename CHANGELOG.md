@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Added validation of input data for Configuration and CheckSettings
+
 ## [4.22.1] - 2021-06-16
 ### Fixed
 - UFG Tests stay in running state when render fails [Trello 2612](https://trello.com/c/qBAEmMTQ)
