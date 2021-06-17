@@ -10,7 +10,7 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
 from applitools.common.utils import UTC, argument_guard
-from applitools.common.utils.compat import urlparse, urlunsplit
+from applitools.common.utils.compat import basestring, urlparse, urlunsplit
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
@@ -130,93 +130,147 @@ class ProxySettings(object):
 @attr.s
 class Configuration(object):
     batch = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=BatchInfo
+        metadata={JsonInclude.NON_NONE: True},
+        factory=BatchInfo,
+        type=BatchInfo,
+        validator=attr.validators.instance_of(BatchInfo),
     )  # type: BatchInfo
     branch_name = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_BRANCH", None),
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     parent_branch_name = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_PARENT_BRANCH", None),
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     baseline_branch_name = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix("APPLITOOLS_BASELINE_BRANCH", None),
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     agent_id = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     baseline_env_name = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     environment_name = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     save_diffs = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
-    )  # type: bool
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
+    )  # type: Optional[bool]
     app_name = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     test_name = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     viewport_size = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         default=None,
         converter=attr.converters.optional(RectangleSize.from_),
+        validator=attr.validators.optional(attr.validators.instance_of(RectangleSize)),
+        type=RectangleSize,
     )  # type: Optional[RectangleSize]
     session_type = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=SessionType.SEQUENTIAL
     )  # type: SessionType
     host_app = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     host_os = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     properties = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=list
+        metadata={JsonInclude.NON_NONE: True},
+        factory=list,
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(dict)),
     )  # type: List[Dict[Text, Text]]
     match_timeout = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=DEFAULT_MATCH_TIMEOUT_MS
+        metadata={JsonInclude.NON_NONE: True},
+        default=DEFAULT_MATCH_TIMEOUT_MS,
+        validator=attr.validators.instance_of(int),
     )  # type: int # ms
     is_disabled = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True},
+        default=False,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     save_new_tests = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=True
+        metadata={JsonInclude.NON_NONE: True},
+        default=True,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     save_failed_tests = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True},
+        default=False,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     failure_reports = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=FailureReports.ON_CLOSE
+        metadata={JsonInclude.NON_NONE: True},
+        default=FailureReports.ON_CLOSE,
+        type=FailureReports,
+        validator=attr.validators.instance_of(FailureReports),
     )  # type: FailureReports
     send_dom = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=True
+        metadata={JsonInclude.NON_NONE: True},
+        default=True,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     default_match_settings = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=ImageMatchSettings
+        metadata={JsonInclude.NON_NONE: True},
+        factory=ImageMatchSettings,
+        type=ImageMatchSettings,
+        validator=attr.validators.instance_of(ImageMatchSettings),
     )  # type: ImageMatchSettings
     stitch_overlap = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=5
+        metadata={JsonInclude.NON_NONE: True},
+        default=5,
+        validator=attr.validators.instance_of(int),
     )  # type: int
     api_key = attr.ib(
-        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None),
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
     server_url = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         factory=lambda: get_env_with_prefix(
             "APPLITOOLS_SERVER_URL", DEFAULT_SERVER_URL
         ),
+        validator=attr.validators.instance_of(basestring),
     )  # type: Text
-    _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
+    _timeout = attr.ib(
+        default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS,
+        validator=attr.validators.instance_of(int),
+    )  # type: int # ms
     features = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=set
+        metadata={JsonInclude.NON_NONE: True},
+        factory=set,
     )  # type: Set[Feature]
-    proxy = attr.ib(default=None)  # type: ProxySettings
+    proxy = attr.ib(
+        default=None,
+        type=ProxySettings,
+        validator=attr.validators.optional(attr.validators.instance_of(ProxySettings)),
+    )  # type: ProxySettings
 
     @property
     def enable_patterns(self):

@@ -31,24 +31,36 @@ DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 @attr.s
 class Configuration(ConfigurationBase):
     force_full_page_screenshot = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: bool
     wait_before_screenshots = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS,
+        validator=attr.validators.instance_of(int),
     )  # type: int  # ms
     stitch_mode = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=StitchMode.Scroll
+        metadata={JsonInclude.NON_NONE: True},
+        default=StitchMode.Scroll,
+        validator=attr.validators.instance_of(StitchMode),
+        type=StitchMode,
     )  # type: StitchMode
     hide_scrollbars = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True},
+        default=False,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     hide_caret = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True},
+        default=False,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     # Indicates that a mobile simulator is being used
     is_simulator = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(bool)),
     )  # type: Optional[bool]
 
     # Rendering Configuration
@@ -56,19 +68,32 @@ class Configuration(ConfigurationBase):
         metadata={JsonInclude.NON_NONE: "browsersInfo"}, init=False, factory=list
     )  # type: List[IRenderBrowserInfo]
     visual_grid_options = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(
+            attr.validators.deep_iterable(VisualGridOption)
+        ),
+        type=VisualGridOption,
     )  # type: Optional[Tuple[VisualGridOption]]
     disable_browser_fetching = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=True
+        metadata={JsonInclude.NON_NONE: True},
+        default=True,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     enable_cross_origin_rendering = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=True
+        metadata={JsonInclude.NON_NONE: True},
+        default=True,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     dont_use_cookies = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True},
+        default=False,
+        validator=attr.validators.instance_of(bool),
     )  # type: bool
     layout_breakpoints = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True},
+        default=None,
+        validator=attr.validators.optional(attr.validators.in_([bool, list])),
     )  # type: Optional[Union[bool, List[int]]]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
