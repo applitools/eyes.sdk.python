@@ -26,7 +26,7 @@ from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 @pytest.fixture
 def custom_eyes_server():
-    return None
+    return "https://some.com/api"
 
 
 @pytest.fixture
