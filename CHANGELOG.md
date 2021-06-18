@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Mobile Safari CSS stitching error [Trello 2614](https://trello.com/c/mmJnce9U)
+
 ## [4.22.1] - 2021-06-16
 ### Fixed
 - UFG Tests stay in running state when render fails [Trello 2612](https://trello.com/c/qBAEmMTQ)
