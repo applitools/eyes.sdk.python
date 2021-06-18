@@ -19,6 +19,8 @@ if tp.TYPE_CHECKING:
 
     from appium.webdriver.webdriver import MobileWebElement
 
+    from applitools.common.utils.custom_types import AnyWebElement
+
     from .positioning import SeleniumPositionProvider
     from .webdriver import EyesWebDriver
 
@@ -85,7 +87,7 @@ class EyesWebElement(object):
     """
 
     def __init__(self, element, driver):
-        # type: (WebElement, EyesWebDriver) -> None
+        # type: (AnyWebElement, EyesWebDriver) -> None
         """
         Ctor.
 

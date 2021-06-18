@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Text
 
 from applitools.common import AppOutput, Point
 from applitools.common.utils import argument_guard, image_utils
-from applitools.core import ExtractTextProvider, TextRegionSettings
+from applitools.core import ExtractTextProvider, ServerConnector, TextRegionSettings
 from applitools.core.extract_text import (
     PATTERN_TEXT_REGIONS,
     ExpectedTextRegion,
@@ -12,7 +12,10 @@ from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import AnyWebDriver
+    from applitools.core.debug import DebugScreenshotsProvider
     from applitools.selenium import EyesWebDriver, EyesWebElement
+    from applitools.selenium.selenium_eyes import SeleniumEyes
 
     from .ocr_region import OCRRegion
 

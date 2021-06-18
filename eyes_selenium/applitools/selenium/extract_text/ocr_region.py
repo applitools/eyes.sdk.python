@@ -1,4 +1,10 @@
-from applitools.core import BaseOCRRegion
+from typing import TYPE_CHECKING, Callable, Optional, Union
+
+from applitools.core import AppOutputWithScreenshot, BaseOCRRegion
+
+if TYPE_CHECKING:
+    from applitools.common import Region
+    from applitools.common.utils.custom_types import AnyWebElement, CssSelector
 
 
 class OCRRegion(BaseOCRRegion):
