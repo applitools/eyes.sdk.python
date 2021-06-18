@@ -77,7 +77,8 @@ class SeleniumPositionProvider(PositionProvider):
     def _add_data_attribute_to_element(self):
         # type: () -> None
         if not self._data_attribute_added:
-            if hasattr(self, "_element"):
+            # CSSMobileSafariPositionProvider might have self._element set to None
+            if hasattr(self, "_element") and self._element:
                 element = self._element
             elif self._scroll_root_element:
                 element = self._scroll_root_element
