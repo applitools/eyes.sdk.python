@@ -64,19 +64,13 @@ class FloatingMatchSettings(Rectangle):
     height = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: int
     max_up_offset = attr.ib(init=False, metadata={JsonInclude.THIS: True})  # type: int
     max_down_offset = attr.ib(
-        init=False,
-        metadata={JsonInclude.THIS: True},
-        validator=attr.validators.instance_of(int),
+        init=False, metadata={JsonInclude.THIS: True}
     )  # type: int
     max_left_offset = attr.ib(
-        init=False,
-        metadata={JsonInclude.THIS: True},
-        validator=attr.validators.instance_of(int),
+        init=False, metadata={JsonInclude.THIS: True}
     )  # type: int
     max_right_offset = attr.ib(
-        init=False,
-        metadata={JsonInclude.THIS: True},
-        validator=attr.validators.instance_of(int),
+        init=False, metadata={JsonInclude.THIS: True}
     )  # type: int
 
     def __str__(self):
@@ -223,15 +217,7 @@ class FloatingBounds(object):
     """A floating bounds defined by max_left_offset, max_up_offset, max_right_offset
     and max_down_offset"""
 
-    max_left_offset = attr.ib(
-        default=0, validator=attr.validators.instance_of(int)
-    )  # type: int
-    max_up_offset = attr.ib(
-        default=0, validator=attr.validators.instance_of(int)
-    )  # type: int
-    max_right_offset = attr.ib(
-        default=0, validator=attr.validators.instance_of(int)
-    )  # type: int
-    max_down_offset = attr.ib(
-        default=0, validator=attr.validators.instance_of(int)
-    )  # type: int
+    max_left_offset = attr.ib(default=0)  # type: int
+    max_up_offset = attr.ib(default=0)  # type: int
+    max_right_offset = attr.ib(default=0)  # type: int
+    max_down_offset = attr.ib(default=0)  # type: int
