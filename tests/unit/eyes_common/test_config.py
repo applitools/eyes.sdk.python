@@ -257,3 +257,27 @@ def test_proxy_settings_url_scheme_explicit():
     ps = ProxySettings("localhost", 8080, scheme="http")
 
     assert ps.url == "http://localhost:8080"
+
+
+def test_validation_of_configuration():
+    with pytest.raises(TypeError):
+        conf = Configuration(batch=None)
+    with pytest.raises(TypeError):
+        conf = Configuration(server_url=None)
+    with pytest.raises(TypeError):
+        conf = Configuration(proxy="")
+    conf = Configuration(api_key=None, viewport_size=None)
+
+
+def test_validation_of_selenium_configuration():
+    with pytest.raises(TypeError):
+        conf = SeleniumConfiguration(stitch_mode=None)
+    with pytest.raises(TypeError):
+        conf = SeleniumConfiguration(hide_scrollbars=None)
+    with pytest.raises(TypeError):
+        conf = SeleniumConfiguration(visual_grid_options=[None])
+    conf = SeleniumConfiguration(disable_browser_fetching=True, layout_breakpoints=True)
+    conf = SeleniumConfiguration(
+        disable_browser_fetching=True, layout_breakpoints=[34, 342]
+    )
+    conf = SeleniumConfiguration(stitch_mode=StitchMode.Scroll)
