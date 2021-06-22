@@ -64,16 +64,19 @@ class BatchInfo(object):
         self.properties = []  # type: List[Dict[Text,Text]]
 
         if name:
+            argument_guard.is_a(name, basestring)
             self.name = name
         if started_at:
+            argument_guard.is_a(started_at, datetime)
             self.started_at = started_at
         if batch_sequence_name:
+            argument_guard.is_a(batch_sequence_name, basestring)
             self.sequence_name = batch_sequence_name
 
     def with_batch_id(self, id):
         # type: (Text) -> BatchInfo
-        argument_guard.not_none(id)
-        self.id = str(id)
+        argument_guard.is_a(id, basestring)
+        self.id = id
         return self
 
     def add_property(self, name, value):
@@ -83,6 +86,8 @@ class BatchInfo(object):
         :param name: (string) The property name.
         :param value: (string) The property value
         """
+        argument_guard.is_a(name, basestring)
+        argument_guard.is_a(value, basestring)
         self.properties.append({"name": name, "value": value})
         return self
 
@@ -105,6 +110,7 @@ class ProxySettings(object):
         scheme=None,  # type: Text
     ):
         # type: (...) -> None
+        argument_guard.is_a(host_or_url, basestring)
         if host_or_url.startswith("http://") or host_or_url.startswith("https://"):
             parsed = urlparse(host_or_url)
             self.host = parsed.hostname

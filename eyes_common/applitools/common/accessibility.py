@@ -19,10 +19,14 @@ class AccessibilityLevel(Enum):
 @attr.s(init=False)
 class AccessibilitySettings(object):
     level = attr.ib(
-        type=AccessibilityLevel, metadata={JsonInclude.THIS: True}
+        type=AccessibilityLevel,
+        metadata={JsonInclude.THIS: True},
+        validator=attr.validators.instance_of(AccessibilityLevel),
     )  # type: AccessibilityLevel
     guidelines_version = attr.ib(
-        type=AccessibilityGuidelinesVersion, metadata={JsonInclude.NAME: "version"}
+        type=AccessibilityGuidelinesVersion,
+        metadata={JsonInclude.NAME: "version"},
+        validator=attr.validators.instance_of(AccessibilityGuidelinesVersion),
     )  # type: AccessibilityGuidelinesVersion
 
     def __init__(
