@@ -6,16 +6,24 @@ import requests
 from applitools.common import ProxySettings
 from applitools.common.config import DEFAULT_SERVER_URL
 from applitools.common.utils import argument_guard, quote_plus, urljoin
+from applitools.common.utils.compat import basestring
 from applitools.common.utils.converters import str2bool
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 
 @attr.s
 class _EnabledBatchClose(object):
-    _ids = attr.ib()  # type: List[Text]
-    server_url = attr.ib()  # type: Text
-    api_key = attr.ib()  # type: Text
-    proxy = attr.ib(default=None)  # type: Optional[ProxySettings]
+    _ids = attr.ib(
+        validator=attr.validators.deep_iterable(attr.validators.instance_of(basestring))
+    )  # type: List[Text]
+    server_url = attr.ib(
+        validator=attr.validators.instance_of(basestring)
+    )  # type: Text
+    api_key = attr.ib(validator=attr.validators.instance_of(basestring))  # type: Text
+    proxy = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(ProxySettings)),
+    )  # type: Optional[ProxySettings]
 
     def set_url(self, url):
         # type: (Text) -> _EnabledBatchClose
@@ -61,10 +69,16 @@ class _EnabledBatchClose(object):
 @attr.s
 class BatchClose(object):
     api_key = attr.ib(
-        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
+        factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None),
+        validator=attr.validators.optional(attr.validators.instance_of(basestring)),
     )  # type: Optional[Text]
-    server_url = attr.ib(default=DEFAULT_SERVER_URL)  # type: Text
-    proxy = attr.ib(default=None)  # type: Optional[ProxySettings]
+    server_url = attr.ib(
+        default=DEFAULT_SERVER_URL, validator=attr.validators.instance_of(basestring)
+    )  # type: Text
+    proxy = attr.ib(
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(ProxySettings)),
+    )  # type: Optional[ProxySettings]
 
     def set_url(self, url):
         # type: (Text) -> BatchClose
