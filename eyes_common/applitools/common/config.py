@@ -276,7 +276,7 @@ class Configuration(object):
         default=None,
         type=ProxySettings,
         validator=attr.validators.optional(attr.validators.instance_of(ProxySettings)),
-    )  # type: ProxySettings
+    )  # type: Optional[ProxySettings]
 
     @property
     def enable_patterns(self):
@@ -286,6 +286,7 @@ class Configuration(object):
     @enable_patterns.setter
     def enable_patterns(self, enable_patterns):
         # type: (bool) -> None
+        argument_guard.is_a(enable_patterns, bool)
         self.default_match_settings.enable_patterns = enable_patterns
 
     @property
@@ -296,6 +297,7 @@ class Configuration(object):
     @use_dom.setter
     def use_dom(self, use_dom):
         # type: (bool) -> None
+        argument_guard.is_a(use_dom, bool)
         self.default_match_settings.use_dom = use_dom
 
     @property

@@ -34,7 +34,7 @@ class Configuration(ConfigurationBase):
         metadata={JsonInclude.NON_NONE: True},
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of(bool)),
-    )  # type: bool
+    )  # type: Optional[bool]
     wait_before_screenshots = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS,
@@ -71,7 +71,7 @@ class Configuration(ConfigurationBase):
         metadata={JsonInclude.NON_NONE: True},
         default=None,
         validator=attr.validators.optional(
-            attr.validators.deep_iterable(VisualGridOption)
+            attr.validators.deep_iterable(attr.validators.instance_of(VisualGridOption))
         ),
         type=VisualGridOption,
     )  # type: Optional[Tuple[VisualGridOption]]
@@ -93,7 +93,14 @@ class Configuration(ConfigurationBase):
     layout_breakpoints = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
         default=None,
-        validator=attr.validators.optional(attr.validators.in_([bool, list])),
+        validator=attr.validators.optional(
+            attr.validators.instance_of(
+                (
+                    bool,
+                    list,
+                )
+            )
+        ),
     )  # type: Optional[Union[bool, List[int]]]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
