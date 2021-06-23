@@ -1,0 +1,37 @@
+applitools_conf:
+  server_url: "https://eyesapi.applitools.com"
+  app_name: "Test App"
+  api_key: "Some API Key"
+  batch:
+    #id: "some specific unified value"
+    name: "Some batch name"
+    #batch_sequence_name: "Sequence name"
+  proxy:
+    url: "http://some.url"
+#  eyes_selenium:
+#    force_full_page_screenshot: false
+#    wait_before_screenshots: 123
+#    stitch_mode: CSS
+#    hide_scrollbars: true
+#    hide_caret: true
+#  eyes_appium:
+#    is_simulator: false
+  eyes_selenium_ufg:
+    visual_grid_options:
+      - key: "Some key"
+        value: "Other"
+      - key: "Other key"
+        value: "val"
+    disable_browser_fetching: false
+    enable_cross_origin_rendering: false
+    dont_use_cookies: false
+    layout_breakpoints: true
+    browsers:
+      - browser_type: chrome
+        width: 1900
+        height: 1800
+    ios_devices:
+      - device_name: iPhone 12 Pro
+        screen_orientation: portrait
+        ios_version: latest-1
+
