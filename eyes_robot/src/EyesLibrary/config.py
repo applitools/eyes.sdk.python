@@ -18,8 +18,12 @@ from applitools.core import Feature
 from applitools.selenium import BatchInfo, Configuration
 
 
-def _enum_to_list_of_values(enum):
-    return [e.value for e in enum]
+class ToEnumTrafaret(t.Trafaret):
+    def __init__(self, convert_to_enum):
+        self.converter = convert_to_enum
+
+    def check_and_return(self, value, context=None):
+        return self.converter(value)
 
 
 class BatchInfoTrafaret(t.Trafaret):
@@ -32,7 +36,7 @@ class BatchInfoTrafaret(t.Trafaret):
         },
     )
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context=None)
         batch = BatchInfo()
         for key, val in sanitized.items():
@@ -43,7 +47,7 @@ class BatchInfoTrafaret(t.Trafaret):
 class ViewPortTrafaret(t.Trafaret):
     scheme = t.Dict(width=t.Int, height=t.Int)
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return RectangleSize.from_(sanitized)
 
@@ -51,7 +55,7 @@ class ViewPortTrafaret(t.Trafaret):
 class VisualGridOptionsTrafaret(t.Trafaret):
     scheme = t.List(t.Dict({"key": t.String, "value": t.String}))
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return [VisualGridOption(**dct) for dct in sanitized]
 
@@ -60,14 +64,14 @@ class DesktopBrowserInfoTrafaret(t.Trafaret):
     scheme = t.List(
         t.Dict(
             {
-                "browser_type": t.Enum(*_enum_to_list_of_values(BrowserType)),
+                "browser_type": ToEnumTrafaret(BrowserType),
                 "width": t.Int,
                 "height": t.Int,
             }
         )
     )
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return [DesktopBrowserInfo(**dct) for dct in sanitized]
 
@@ -76,18 +80,16 @@ class IosDeviceInfoTrafaret(t.Trafaret):
     scheme = t.List(
         t.Dict(
             {
-                "device_name": t.Enum(*_enum_to_list_of_values(IosDeviceName)),
-                t.Key("screen_orientation", optional=True): t.Enum(
-                    *_enum_to_list_of_values(ScreenOrientation)
+                "device_name": ToEnumTrafaret(IosDeviceName),
+                t.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                    ScreenOrientation
                 ),
-                t.Key("ios_version", optional=True): t.Enum(
-                    *_enum_to_list_of_values(IosVersion)
-                ),
+                t.Key("ios_version", optional=True): ToEnumTrafaret(IosVersion),
             }
         )
     )
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return [IosDeviceInfo(**dct) for dct in sanitized]
 
@@ -96,15 +98,15 @@ class ChromeEmulationInfoTrafaret(t.Trafaret):
     scheme = t.List(
         t.Dict(
             {
-                "device_name": t.Enum(*_enum_to_list_of_values(DeviceName)),
-                t.Key("screen_orientation", optional=True): t.Enum(
-                    *_enum_to_list_of_values(ScreenOrientation)
+                "device_name": ToEnumTrafaret(DeviceName),
+                t.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                    ScreenOrientation
                 ),
             }
         )
     )
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return [ChromeEmulationInfo(**dct) for dct in sanitized]
 
@@ -120,7 +122,7 @@ class ProxyTrafaret(t.Trafaret):
         },
     )
 
-    def check(self, value, context=None):
+    def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return ProxySettings(host_or_url=sanitized.pop("host_or_url"), **sanitized)
 
@@ -146,14 +148,12 @@ def sanitize_raw_config(raw_config):
             t.Key("match_timeout", optional=True): t.Int,
             t.Key("save_new_tests", optional=True): t.Bool,
             t.Key("save_failed_tests", optional=True): t.Bool,
-            t.Key("features", optional=True): t.Enum(*_enum_to_list_of_values(Feature)),
+            t.Key("features", optional=True): ToEnumTrafaret(Feature),
             t.Key("eyes_selenium", optional=True): t.Dict(
                 {
                     t.Key("force_full_page_screenshot", optional=True): t.Bool,
                     t.Key("wait_before_screenshots", optional=True): t.Int,
-                    t.Key("stitch_mode", optional=True): t.Enum(
-                        *_enum_to_list_of_values(StitchMode)
-                    ),
+                    t.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
                     t.Key("hide_scrollbars", optional=True): t.Bool,
                     t.Key("hide_caret", optional=True): t.Bool,
                 },
