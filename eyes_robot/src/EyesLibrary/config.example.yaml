@@ -34,4 +34,3 @@ applitools_conf:
       - device_name: iPhone 12 Pro
         screen_orientation: portrait
         ios_version: latest-1
-

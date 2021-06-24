@@ -126,6 +126,5 @@ class LibraryComponent(ContextAware):
                 "No applitools_conf variable present or incorrect. "
                 "Check logs to see actuall error."
             )
-        sanitized_raw_config = sanitize_raw_config(raw_conf)
-        self._fetch_selected_sdk(sanitized_raw_config)
-        return build_configuration(sanitized_raw_config, self._selected_sdk.value)
+        self._fetch_selected_sdk(raw_conf)
+        return build_configuration(raw_conf, self._selected_sdk.value)

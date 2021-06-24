@@ -36,16 +36,17 @@ class EyesCache(ConnectionCache):
         return self._aliases
 
     def close(self):
-        if self.current:
-            eyes = self.current
-            error = self._quit(eyes, None)
-            for alias in self._aliases:
-                if self._aliases[alias] == self.current_index:
-                    del self._aliases[alias]
-            self.current = self._no_current
-            self._closed.add(eyes)
-            if error:
-                raise error
+        if not self.current:
+            return
+        eyes = self.current
+        error = self._quit(eyes, None)
+        for alias in self._aliases:
+            if self._aliases[alias] == self.current_index:
+                del self._aliases[alias]
+        self.current = self._no_current
+        self._closed.add(eyes)
+        if error:
+            raise error
 
     def close_all(self):
         error = None

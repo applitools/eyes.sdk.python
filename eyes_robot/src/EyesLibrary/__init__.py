@@ -1,5 +1,5 @@
 import typing
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
@@ -12,7 +12,6 @@ from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRu
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
-    ConfigurationKeywords,
     SessionKeywords,
     TargetKeywords,
 )
@@ -51,7 +50,6 @@ class EyesLibrary(DynamicCore):
         keywords = [
             SessionKeywords(self),
             CheckKeywords(self),
-            ConfigurationKeywords(self),
             TargetKeywords(self),
         ]
 
