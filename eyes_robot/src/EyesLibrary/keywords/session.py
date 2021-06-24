@@ -13,7 +13,8 @@ from ..base import LibraryComponent, keyword
 class SessionKeywords(LibraryComponent):
     @keyword("Eyes Open")
     def open(self, app_name=None, test_name=None, viewport_size=None):
-        config = self.parse_configuration()
+        # Should be called before actuall open
+        config = self.parse_configuration_and_initialize_runner()
 
         if app_name:
             config.app_name = app_name

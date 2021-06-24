@@ -1,20 +1,16 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
-from robot.api import logger
 from robot.api.deco import keyword  # noqa
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common import BatchInfo, ProxySettings
 from applitools.common import logger as applitools_logger
-from applitools.common.utils import json_utils
-from applitools.selenium import Configuration
+from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
-from .config import build_configuration, sanitize_raw_config
+from .config import build_configuration
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
-    from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
     from . import EyesLibrary
 
@@ -50,6 +46,11 @@ class SelectedSDK(Enum):
 
 class LibraryComponent(ContextAware):
     _selected_sdk = None
+    _eyes_runners = {
+        SelectedSDK.eyes_appium: ClassicRunner,
+        SelectedSDK.eyes_selenium: ClassicRunner,
+        SelectedSDK.eyes_selenium_ufg: VisualGridRunner,
+    }
 
     def info(self, msg: str, html: bool = False):
         self.log.info(msg, html)
@@ -68,7 +69,12 @@ class LibraryComponent(ContextAware):
 
     @property
     def eyes_runner(self):
-        # type: () -> Optional[VisualGridRunner, ClassicRunner]
+        # type: () -> VisualGridRunner | ClassicRunner
+        if self.ctx.eyes_runner is None:
+            raise RuntimeError(
+                "Eyes runner is None. Need to parse configuration "
+                "and initialize runner first"
+            )
         return self.ctx.eyes_runner
 
     @property
@@ -118,7 +124,12 @@ class LibraryComponent(ContextAware):
                 "`eyes_selenium_ufg` together. Please select only one specific SDK."
             )
 
-    def parse_configuration(self):
+    def _create_eyes_runner_if_needed(self):
+        if self.ctx.eyes_runner is None:
+            # TODO: add configs here
+            self.ctx.eyes_runner = self._eyes_runners[self.selected_sdk]()
+
+    def parse_configuration_and_initialize_runner(self):
         # type: () -> Configuration
         raw_conf = BuiltIn().get_variable_value("&{applitools_conf}")
         if raw_conf is None:
@@ -127,4 +138,5 @@ class LibraryComponent(ContextAware):
                 "Check logs to see actuall error."
             )
         self._fetch_selected_sdk(raw_conf)
+        self._create_eyes_runner_if_needed()
         return build_configuration(raw_conf, self._selected_sdk.value)
