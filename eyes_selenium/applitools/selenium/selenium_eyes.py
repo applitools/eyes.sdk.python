@@ -514,12 +514,12 @@ class SeleniumEyes(EyesBase):
         def get_region():
             rect = check_settings.values.target_region
             if rect is None:
-                if self.driver.is_mobile_platform:
-                    bounds = self._target_element.rect
-                else:
-                    # Make sure bounds are calculated with the same scrolling
-                    # positions as when screenshot is being made
-                    with self._ensure_element_visible(self._target_element):
+                # Make sure bounds are calculated with the same scrolling
+                # positions as when screenshot is being made
+                with self._ensure_element_visible(self._target_element):
+                    if self.driver.is_mobile_platform:
+                        bounds = self._target_element.rect
+                    else:
                         bounds = self._target_element.bounding_client_rect
                 region = Region(
                     bounds["x"],
