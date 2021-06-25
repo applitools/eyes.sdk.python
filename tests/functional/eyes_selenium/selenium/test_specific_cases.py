@@ -251,7 +251,7 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
         test_name="Test capture element on pre scrolled down page",
         viewport_size={"width": 800, "height": 600},
     )
-    eyes.check("Not scrolled", Target.region("body > table > tr:nth-child(10)"))
     driver.execute_script("window.scrollTo(0, 300)")
-    eyes.check("Pre scrolled", Target.region("body > table > tr:nth-child(10)"))
+    eyes.check("Row 10", Target.region("body > table > tr:nth-child(10)"))
+    eyes.check("Row 20", Target.region("body > table > tr:nth-child(20)"))
     eyes.close()
