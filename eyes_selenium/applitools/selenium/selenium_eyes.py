@@ -1074,7 +1074,8 @@ class SeleniumEyes(EyesBase):
 
         yield position_provider
         if not self.driver.is_mobile_app:
-            if element and position_provider and fc:
-                self.driver.switch_to.frames(fc)
+            if element and position_provider:
+                if fc:
+                    self.driver.switch_to.frames(fc)
                 position_provider.restore_state(state)
             self._restore_framechain_scroll(restore_frame_scroll_stack)
