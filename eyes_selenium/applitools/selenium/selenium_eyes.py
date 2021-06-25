@@ -517,7 +517,10 @@ class SeleniumEyes(EyesBase):
                 # Make sure bounds are calculated with the same scrolling
                 # positions as when screenshot is being made
                 with self._ensure_element_visible(self._target_element):
-                    bounds = self._target_element.bounding_client_rect
+                    if self.driver.is_mobile_app:
+                        bounds = self._target_element.rect
+                    else:
+                        bounds = self._target_element.bounding_client_rect
                 region = Region(
                     bounds["x"],
                     bounds["y"],
