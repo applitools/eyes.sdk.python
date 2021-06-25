@@ -391,13 +391,6 @@ class MobileSafariElementAdapter(EyesWebElement):
         return loc + curr_pos
 
     @property
-    def bounding_client_rect(self):
-        # type: () -> Dict[str, int]
-        rect = super(MobileSafariElementAdapter, self).bounding_client_rect
-        x, y = self.location
-        return dict(x=x, y=y, width=rect["width"], height=rect["height"])
-
-    @property
     def bounds(self):
         # type: () -> Region
         bounds = super(MobileSafariElementAdapter, self).bounds
