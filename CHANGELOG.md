@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Failure to capture regions on scrolled down page [Trello 2392](https://trello.com/c/PC2vRlqV)
+
 ## [4.22.2] - 2021-06-23
 ### Fixed
 - Mobile Safari CSS stitching error [Trello 2614](https://trello.com/c/mmJnce9U)

@@ -514,16 +514,19 @@ class SeleniumEyes(EyesBase):
         def get_region():
             rect = check_settings.values.target_region
             if rect is None:
-                if self.driver.is_mobile_platform:
-                    bounds = self._target_element.rect
-                else:
-                    bounds = self._target_element.bounding_client_rect
+                # Make sure bounds are calculated with the same scrolling
+                # positions as when screenshot is being made
+                with self._ensure_element_visible(self._target_element):
+                    if self.driver.is_mobile_app:
+                        bounds = self._target_element.rect
+                    else:
+                        bounds = self._target_element.bounding_client_rect
                 region = Region(
                     bounds["x"],
                     bounds["y"],
                     bounds["width"],
                     bounds["height"],
-                    coordinates_type=CoordinatesType.CONTEXT_RELATIVE,
+                    coordinates_type=CoordinatesType.CONTEXT_AS_IS,
                 )
             else:
                 s = self._target_element.size_and_borders.size
@@ -1074,7 +1077,8 @@ class SeleniumEyes(EyesBase):
 
         yield position_provider
         if not self.driver.is_mobile_app:
-            if element and position_provider and fc:
-                self.driver.switch_to.frames(fc)
+            if element and position_provider:
+                if fc:
+                    self.driver.switch_to.frames(fc)
                 position_provider.restore_state(state)
             self._restore_framechain_scroll(restore_frame_scroll_stack)
