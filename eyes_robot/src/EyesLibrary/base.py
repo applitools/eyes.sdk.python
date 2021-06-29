@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from robot.api.deco import keyword  # noqa
@@ -7,7 +6,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from applitools.common import logger as applitools_logger
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
-from .config import build_configuration
+from .config import SelectedSDK, build_configuration
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
@@ -38,18 +37,12 @@ class ContextAware:
         return self.ctx._drivers
 
 
-class SelectedSDK(Enum):
-    eyes_selenium = "eyes_selenium"
-    eyes_selenium_ufg = "eyes_selenium_ufg"
-    eyes_appium = "eyes_appium"
-
-
 class LibraryComponent(ContextAware):
     _selected_sdk = None
     _eyes_runners = {
-        SelectedSDK.eyes_appium: ClassicRunner,
-        SelectedSDK.eyes_selenium: ClassicRunner,
-        SelectedSDK.eyes_selenium_ufg: VisualGridRunner,
+        SelectedSDK.appium: ClassicRunner,
+        SelectedSDK.selenium: ClassicRunner,
+        SelectedSDK.selenium_ufg: VisualGridRunner,
     }
 
     def info(self, msg: str, html: bool = False):
@@ -113,21 +106,23 @@ class LibraryComponent(ContextAware):
         is_eyes_selenium_ufg = "eyes_selenium_ufg" in sanitized_raw_config
 
         if is_eyes_selenium and not is_eyes_appium and not is_eyes_selenium_ufg:
-            self._selected_sdk = SelectedSDK.eyes_selenium
+            self._selected_sdk = SelectedSDK.selenium
         elif is_eyes_selenium_ufg and not all([is_eyes_appium, is_eyes_selenium]):
-            self._selected_sdk = SelectedSDK.eyes_selenium_ufg
+            self._selected_sdk = SelectedSDK.selenium_ufg
         elif is_eyes_appium and not all([is_eyes_selenium_ufg, is_eyes_selenium]):
-            self._selected_sdk = SelectedSDK.eyes_appium
+            self._selected_sdk = SelectedSDK.appium
         else:
             raise RuntimeError(
                 "Not possible to use `eyes_selenium`, `eyes_appium` and "
                 "`eyes_selenium_ufg` together. Please select only one specific SDK."
             )
 
-    def _create_eyes_runner_if_needed(self):
+    def _create_eyes_runner_if_needed(self, selected_sdk=None):
+        # type: (Optional[SelectedSDK]) -> None
         if self.ctx.eyes_runner is None:
             # TODO: add configs here
-            self.ctx.eyes_runner = self._eyes_runners[self.selected_sdk]()
+            selected_sdk = selected_sdk or self.selected_sdk
+            self.ctx.eyes_runner = self._eyes_runners[selected_sdk]()
 
     def parse_configuration_and_initialize_runner(self):
         # type: () -> Configuration

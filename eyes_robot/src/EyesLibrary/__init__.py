@@ -10,6 +10,7 @@ from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRu
 
 from .eyes_cache import EyesCache
 from .keywords import CheckKeywords, SessionKeywords, TargetKeywords
+from .keywords.session import RunnerKeywords
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
@@ -38,6 +39,7 @@ class EyesLibrary(DynamicCore):
         )
 
         keywords = [
+            RunnerKeywords(self),
             SessionKeywords(self),
             CheckKeywords(self),
             TargetKeywords(self),

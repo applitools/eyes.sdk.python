@@ -6,8 +6,15 @@ applitools_conf:
     #id: "some specific unified value"
     name: "Some batch name"
     #batch_sequence_name: "Sequence name"
+    properties:
+      - name: BatchPropery
+        value: some value
   proxy:
     url: "http://some.url"
+  properties:
+    - name: Runner
+      value: UFG
+  #      value: Classic
 #  eyes_selenium:
 #    force_full_page_screenshot: false
 #    wait_before_screenshots: 123

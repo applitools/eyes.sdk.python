@@ -1,3 +1,5 @@
+from enum import Enum
+
 import trafaret as t
 
 from applitools.common import (
@@ -18,6 +20,12 @@ from applitools.core import Feature
 from applitools.selenium import BatchInfo, Configuration
 
 
+class SelectedSDK(Enum):
+    selenium = "selenium"
+    selenium_ufg = "selenium_ufg"
+    appium = "appium"
+
+
 class ToEnumTrafaret(t.Trafaret):
     def __init__(self, convert_to_enum):
         self.converter = convert_to_enum
@@ -33,6 +41,9 @@ class BatchInfoTrafaret(t.Trafaret):
             t.Key("name", optional=True): t.String,
             t.Key("batch_sequence_name", optional=True): t.String,
             t.Key("started_at", optional=True): t.DateTime,
+            t.Key("properties", optional=True): t.List(
+                t.Dict(name=t.String, value=t.String)
+            ),
         },
     )
 
@@ -149,6 +160,9 @@ def sanitize_raw_config(raw_config):
             t.Key("save_new_tests", optional=True): t.Bool,
             t.Key("save_failed_tests", optional=True): t.Bool,
             t.Key("features", optional=True): ToEnumTrafaret(Feature),
+            t.Key("properties", optional=True): t.List(
+                t.Dict(name=t.String, value=t.String)
+            ),
             t.Key("eyes_selenium", optional=True): t.Dict(
                 {
                     t.Key("force_full_page_screenshot", optional=True): t.Bool,

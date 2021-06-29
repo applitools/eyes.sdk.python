@@ -1,19 +1,25 @@
-from typing import Literal, Union
-
-from appium.webdriver.webdriver import WebDriver as AppiumWebDriver
 from robot.libraries.BuiltIn import BuiltIn
-from selenium.webdriver.remote.webdriver import WebDriver as SeleniumWebDriver
 
-from applitools.common.selenium import Configuration
-from applitools.selenium import ClassicRunner, Eyes
+from applitools.selenium import Eyes
 
 from ..base import LibraryComponent, keyword
+
+
+class RunnerKeywords(LibraryComponent):
+    @keyword("Eyes Create Runner")
+    def create_runner(self, type):
+        self._create_eyes_runner_if_needed()
+
+    @keyword("Eyes Get All Test Results")
+    def get_all_tests_results(self):
+        self.eyes_runner.get_all_test_results()
 
 
 class SessionKeywords(LibraryComponent):
     @keyword("Eyes Open")
     def open(self, app_name=None, test_name=None, viewport_size=None):
-        # Should be called before actuall open
+        # Should be called before actual open
+
         config = self.parse_configuration_and_initialize_runner()
 
         if app_name:
