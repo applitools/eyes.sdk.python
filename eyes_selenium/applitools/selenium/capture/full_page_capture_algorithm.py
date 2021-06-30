@@ -188,7 +188,7 @@ class FullPageCaptureAlgorithm(object):
             origin_position = stitch_provider.set_position(part_region_location)
 
             target_position = part_region.paste_physical_location.offset(
-                part_region_location - origin_position
+                origin_position - part_region_location
             )
 
             # Actually taking the screenshot.
