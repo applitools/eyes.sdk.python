@@ -868,13 +868,20 @@ def get_sub_regions(
 
 
 def tile_to_subregion(tile, l2p_scale_ratio, crop, physical_rect_in_screenshot):
-    crop_left = 0 if tile.left < 0 else crop
-    crop_top = 0 if tile.top < 0 else crop
+    # type: (Rectangle, float, int, Region) -> SubregionForStitching
+    # Tiles always have room for cropping in them to the left and top, even on borders
+    paste_location = Point(tile.left + crop, tile.top + crop)
+    # This will be non-zero on top or left borders
+    missing_crop = Point(-min(0, tile.left), -min(0, tile.top))
+    # Avoid scrolling to negative offsets
+    scroll_to = tile.location + missing_crop
+    # Avoid further cropping as we didn't scroll back for that crop
+    crop_left = crop - missing_crop.x
+    crop_top = crop - missing_crop.y
+    # Crop (if there anything to) on the left and top borders of a tile
     logical_crop = Region(
         crop_left, crop_top, tile.width - crop_left, tile.height - crop_top
     )
-    scroll_to = Point(max(tile.left, 0), max(tile.top, 0))
-    paste_location = Point(tile.left + crop, tile.top + crop)
     physical_crop = Region(
         physical_rect_in_screenshot.left,
         physical_rect_in_screenshot.top,
