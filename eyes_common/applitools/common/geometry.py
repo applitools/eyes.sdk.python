@@ -809,45 +809,59 @@ class SubregionForStitching(object):
 
 def rectangle_tiles(rect, tile_size):
     # type: (Rectangle, RectangleSize) -> List[Rectangle]
-    right_reminder = rect.width % tile_size.width or tile_size.width
-    bottom_reminder = rect.height % tile_size.height or tile_size.height
-    subrectangles = []
+    """Breaks the rect rectangle into tile_size sized tiles
+    Smaller pieces are placed near top and left borders when rect doesn't split even.
+    This saves from tricky calculations of scrolling and cropping offsets for them.
+    """
+    small_tile_width = rect.width % tile_size.width or tile_size.width
+    small_tile_height = rect.height % tile_size.height or tile_size.height
+    tiles = []
+    # Cycles produce bottom-right corner of the current tile within zero-located rect
     top = 0
-    for bottom in range(bottom_reminder, rect.height + 1, tile_size.height):
-        height = bottom - top
+    for bottom in range(small_tile_height, rect.height + 1, tile_size.height):
         left = 0
-        for right in range(right_reminder, rect.width + 1, tile_size.width):
+        height = bottom - top
+        for right in range(small_tile_width, rect.width + 1, tile_size.width):
             width = right - left
-            subrectangles.append(
-                Rectangle(rect.left + left, rect.top + top, width, height)
-            )
+            tile = Rectangle(left, top, width, height)
+            tiles.append(tile.offset(rect.location))
             left += width
         top += height
-    return subrectangles
+    return tiles
 
 
 def rectangle_overlapping_tiles(rect, tile_size, overlap):
     # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
+    """Breaks the rect rectangle into tile_size sized tiles where most tiles have
+    redundant space on their right and bottom edge of the overlap size,
+    it is covered by the next tile to it's right and below.
+    Tiles on the right and bottom edge do not have that space to be overlapped."""
     overlap_reduced_rect = Rectangle(
         rect.left, rect.top, rect.width - overlap, rect.height - overlap
     )
     overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
     tiles = rectangle_tiles(overlap_reduced_rect, overlap_reduced_tile)
-    overlapping_tiles = [
+    return [
         Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
     ]
-    return overlapping_tiles
 
 
 def rectangle_overlapping_overcropped_tiles(rect, tile_size, overlap, overcrop):
     # type: (Rectangle, RectangleSize, int, int) -> List[Rectangle]
+    """Breaks the rect rectangle into tile_size sized tiles where most tiles have
+    redundant space on their right and bottom edge of the overlap size,
+    it is covered by the next tile to it's right and below.
+    Also each tile has redundant overcrop sized area on their left and top borders
+    that is supposed to be cropped further.
+    Tiles on the right and bottom edge do not have space to be overlapped.
+    All tiles have cropping area, even it it's negative ont the left and top borders."""
+
     overcrop_increased_rect = Rectangle(
         rect.left - overcrop, rect.top - overcrop, rect.width, rect.height
     )
-    tiles = rectangle_overlapping_tiles(
+    return rectangle_overlapping_tiles(
         overcrop_increased_rect, tile_size, overlap + overcrop
     )
-    return tiles
 
 
 def get_sub_regions(
