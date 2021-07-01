@@ -105,14 +105,37 @@ def test_sub_regions():
         ),
         SubregionForStitching(
             scroll_to=Point(x=0, y=90),
-            paste_physical_location=Point(x=0, y=90),
+            paste_physical_location=Point(x=0, y=95),
             physical_crop_area=Region(left=0, top=0, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
         SubregionForStitching(
             scroll_to=Point(x=0, y=100),
-            paste_physical_location=Point(x=0, y=166),
-            physical_crop_area=Region(left=0, top=120, width=200, height=80),
-            logical_crop_area=Region(left=0, top=5, width=100, height=35),
+            paste_physical_location=Point(x=0, y=170),
+            physical_crop_area=Region(left=0, top=130, width=200, height=70),
+            logical_crop_area=Region(left=0, top=5, width=100, height=30),
+        ),
+    ]
+
+
+def test_sub_regions_even_division_minus_double_overlap():
+    r = Region(0, 0, 100, 200 - 10)
+
+    subregions = r.get_sub_regions(
+        RectangleSize(100, 100), 5, 2, Region(0, 0, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=0),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=0, width=100, height=100),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=90),
+            paste_physical_location=Point(x=0, y=95),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
     ]

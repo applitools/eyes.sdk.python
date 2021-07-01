@@ -627,8 +627,10 @@ class Region(Rectangle):
         double_logical_overlap = logical_overlap * 2
         physical_overlap = round(double_logical_overlap * l2p_scale_ratio)
 
-        need_v_scroll = self.height > physical_rect_in_screenshot.height
-        need_h_scroll = self.width > physical_rect_in_screenshot.width
+        need_v_scroll = (
+            self.height * l2p_scale_ratio > physical_rect_in_screenshot.height
+        )
+        need_h_scroll = self.width * l2p_scale_ratio > physical_rect_in_screenshot.width
 
         scroll_y = current_top = 0
         current_logical_height = max_sub_region_size.height
@@ -637,8 +639,6 @@ class Region(Rectangle):
 
         is_top_edge = True
         is_bottom_edge = False
-
-        scale_ratio_offset = round(l2p_scale_ratio - 1)
 
         while not is_bottom_edge:
             current_scroll_top = scroll_y + max_sub_region_size.height
@@ -651,7 +651,6 @@ class Region(Rectangle):
                         - current_logical_height
                         - double_logical_overlap
                         - logical_overlap
-                        + scale_ratio_offset
                     )
                 else:
                     current_logical_height = self.height - current_top
@@ -676,7 +675,6 @@ class Region(Rectangle):
                             - current_logical_width
                             - double_logical_overlap
                             - logical_overlap
-                            + scale_ratio_offset
                         )
                     else:
                         current_logical_width = self.width - current_left
@@ -692,7 +690,9 @@ class Region(Rectangle):
                 if is_right_edge:
                     physical_width = round(current_logical_width * l2p_scale_ratio)
                     physical_crop_area.left = (
-                        physical_rect_in_screenshot.right - physical_width
+                        physical_rect_in_screenshot.left
+                        + physical_rect_in_screenshot.width
+                        - physical_width
                     )
                     physical_crop_area.width = physical_width
 
@@ -701,24 +701,52 @@ class Region(Rectangle):
                     logical_crop_area.width -= logical_overlap
 
                 if is_right_edge and not is_left_edge:
-                    physical_crop_area.left -= physical_overlap * 2
-                    physical_crop_area.width += physical_overlap * 2
-                    logical_crop_area.width += double_logical_overlap * 2
+                    # If scrolled to the right edge, make sure the left part is still
+                    # inside physical viewport.
+
+                    new_x = physical_crop_area.left - physical_overlap * 2
+                    if new_x >= physical_rect_in_screenshot.left:
+                        physical_crop_area.left -= physical_overlap * 2
+                        physical_crop_area.width += physical_overlap * 2
+                        logical_crop_area.width += double_logical_overlap * 2
+                    else:
+                        # Oops, overshoot. We need to correct the width and left pos
+                        p_delta = physical_rect_in_screenshot.left - new_x
+                        l_delta = round(p_delta / l2p_scale_ratio)
+                        physical_crop_area.left = physical_rect_in_screenshot.left
+                        physical_crop_area.width += physical_overlap * 2 - p_delta
+                        logical_crop_area.width += double_logical_overlap * 2 - l_delta
+                        paste_point.x += l_delta
 
                 # handle vertical
                 if is_bottom_edge:
                     physical_height = round(current_logical_height * l2p_scale_ratio)
                     physical_crop_area.top = (
-                        physical_rect_in_screenshot.bottom - physical_height
+                        physical_rect_in_screenshot.top
+                        + physical_rect_in_screenshot.height
+                        - physical_height
                     )
                     physical_crop_area.height = physical_height
                 if not is_top_edge:
                     logical_crop_area.top += logical_overlap
                     logical_crop_area.height -= logical_overlap
                 if is_bottom_edge and not is_top_edge:
-                    physical_crop_area.top -= physical_overlap * 2
-                    physical_crop_area.height += physical_overlap * 2
-                    logical_crop_area.height += double_logical_overlap * 2
+                    # If scrolled to the bottom edge, make sure the top part is still
+                    # inside physical viewport.
+                    new_y = physical_crop_area.top - physical_overlap * 2
+                    if new_y >= physical_rect_in_screenshot.top:
+                        # everything is okay
+                        physical_crop_area.top -= physical_overlap * 2
+                        physical_crop_area.height += physical_overlap * 2
+                        logical_crop_area.height += double_logical_overlap * 2
+                    else:
+                        # Oops, overshoot. We need to correct the height and top pos
+                        p_delta = physical_rect_in_screenshot.top - new_y
+                        l_delta = round(p_delta / l2p_scale_ratio)
+                        physical_crop_area.top = physical_rect_in_screenshot.y
+                        physical_crop_area.height += physical_overlap * 2 - p_delta
+                        logical_crop_area.height += double_logical_overlap * 2 - l_delta
+                        paste_point.y += l_delta
 
                 subregion = SubregionForStitching(
                     Point(scroll_x, scroll_y),
@@ -733,14 +761,14 @@ class Region(Rectangle):
                 scroll_x += delta_x
 
                 if need_h_scroll and is_left_edge:
-                    current_left += logical_overlap + scale_ratio_offset
+                    current_left += logical_overlap
                 is_left_edge = False
 
             current_top += delta_y
             scroll_y += delta_y
 
             if need_v_scroll and is_top_edge:
-                current_top += logical_overlap + scale_ratio_offset
+                current_top += logical_overlap
             is_top_edge = False
 
         return sub_regions
