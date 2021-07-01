@@ -1,7 +1,18 @@
+from itertools import chain
+
 import pytest
 
 from applitools.common import CoordinatesType, Point, RectangleSize, Region
-from applitools.common.geometry import SubregionForStitching
+from applitools.common.geometry import (
+    Rectangle,
+    SubregionForStitching,
+    get_sub_regions,
+    rectangle_tiles,
+)
+
+
+def flatten(*lists):
+    return list(chain(*lists))
 
 
 @pytest.mark.parametrize(
@@ -89,7 +100,7 @@ def test_not_accessible_attr():
         r[6]
 
 
-def test_sub_regions():
+def test_sub_regions_old():
     r = Region(0, 0, 100, 200)
 
     subregions = r.get_sub_regions(
@@ -118,6 +129,93 @@ def test_sub_regions():
     ]
 
 
+def test_sub_regions():
+    r = Region(0, 0, 100, 200)
+
+    subregions = get_sub_regions(
+        r, RectangleSize(100, 100), 5, 2, Region(0, 0, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=0),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=0, top=0, width=200, height=40),
+            logical_crop_area=Region(left=0, top=0, width=100, height=20),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=5),
+            paste_physical_location=Point(x=0, y=10),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=95),
+            paste_physical_location=Point(x=0, y=100),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+    ]
+
+
+def test_sub_regions_offsetted_location_old():
+    r = Region(0, 0, 100, 200)
+
+    subregions = r.get_sub_regions(
+        RectangleSize(100, 100), 5, 2, Region(31, 32, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=0),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=31, top=32, width=200, height=200),
+            logical_crop_area=Region(left=0, top=0, width=100, height=100),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=90),
+            paste_physical_location=Point(x=0, y=95),
+            physical_crop_area=Region(left=31, top=32, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=100),
+            paste_physical_location=Point(x=0, y=170),
+            physical_crop_area=Region(left=31, top=162, width=200, height=70),
+            logical_crop_area=Region(left=0, top=5, width=100, height=30),
+        ),
+    ]
+
+
+def test_sub_regions_offsetted_location():
+    r = Region(0, 0, 100, 200)
+
+    subregions = get_sub_regions(
+        r, RectangleSize(100, 100), 5, 2, Region(31, 32, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=0),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=31, top=32, width=200, height=40),
+            logical_crop_area=Region(left=0, top=0, width=100, height=20),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=5),
+            paste_physical_location=Point(x=0, y=10),
+            physical_crop_area=Region(left=31, top=32, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=0, y=95),
+            paste_physical_location=Point(x=0, y=100),
+            physical_crop_area=Region(left=31, top=32, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+    ]
+
+
 def test_sub_regions_even_division_minus_double_overlap():
     r = Region(0, 0, 100, 200 - 10)
 
@@ -139,3 +237,113 @@ def test_sub_regions_even_division_minus_double_overlap():
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
     ]
+
+
+def test_break_rectangle_10x10():
+    subrects = rectangle_tiles(Rectangle(0, 0, 10, 10), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 10, 10)]
+
+
+def test_break_rectangle_5x5():
+    subrects = rectangle_tiles(Rectangle(0, 0, 5, 5), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 5, 5)]
+
+
+def test_break_rectangle_10x20():
+    subrects = rectangle_tiles(Rectangle(0, 0, 10, 20), RectangleSize(10, 10))
+
+    assert subrects == [
+        Rectangle(0, 0, 10, 10),
+        Rectangle(0, 10, 10, 10),
+    ]
+
+
+def test_break_rectangle_20x10():
+    subrects = rectangle_tiles(Rectangle(0, 0, 20, 10), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 10, 10), Rectangle(10, 0, 10, 10)]
+
+
+def test_break_rectangle_20x20():
+    subrects = rectangle_tiles(Rectangle(0, 0, 20, 20), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(0, 0, 10, 10), Rectangle(10, 0, 10, 10)],
+        [Rectangle(0, 10, 10, 10), Rectangle(10, 10, 10, 10)],
+    )
+
+
+def test_break_rectangle_10x11():
+    subrects = rectangle_tiles(Rectangle(0, 0, 10, 11), RectangleSize(10, 10))
+
+    assert subrects == [
+        Rectangle(0, 0, 10, 1),
+        Rectangle(0, 1, 10, 10),
+    ]
+
+
+def test_break_rectangle_11x10():
+    subrects = rectangle_tiles(Rectangle(0, 0, 11, 10), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 1, 10), Rectangle(1, 0, 10, 10)]
+
+
+def test_break_rectangle_10x21():
+    subrects = rectangle_tiles(Rectangle(0, 0, 10, 21), RectangleSize(10, 10))
+
+    assert subrects == [
+        Rectangle(0, 0, 10, 1),
+        Rectangle(0, 1, 10, 10),
+        Rectangle(0, 11, 10, 10),
+    ]
+
+
+def test_break_rectangle_21x10():
+    subrects = rectangle_tiles(Rectangle(0, 0, 21, 10), RectangleSize(10, 10))
+
+    assert subrects == list(
+        [Rectangle(0, 0, 1, 10), Rectangle(1, 0, 10, 10), Rectangle(11, 0, 10, 10)]
+    )
+
+
+def test_break_rectangle_11x11():
+    subrects = rectangle_tiles(Rectangle(0, 0, 11, 11), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(0, 0, 1, 1), Rectangle(1, 0, 10, 1)],
+        [Rectangle(0, 1, 1, 10), Rectangle(1, 1, 10, 10)],
+    )
+
+
+def test_break_rectangle_21x21():
+    subrects = rectangle_tiles(Rectangle(0, 0, 21, 21), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(0, 0, 1, 1), Rectangle(1, 0, 10, 1), Rectangle(11, 0, 10, 1)],
+        [Rectangle(0, 1, 1, 10), Rectangle(1, 1, 10, 10), Rectangle(11, 1, 10, 10)],
+        [Rectangle(0, 11, 1, 10), Rectangle(1, 11, 10, 10), Rectangle(11, 11, 10, 10)],
+    )
+
+
+def test_break_offsetted_rectangle_10x10():
+    subrects = rectangle_tiles(Rectangle(5, 5, 10, 10), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(5, 5, 10, 10)]
+
+
+def test_break_offsetted_rectangle_5x5():
+    subrects = rectangle_tiles(Rectangle(5, 5, 5, 5), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(5, 5, 5, 5)]
+
+
+def test_break_offsetted_rectangle_21x21():
+    subrects = rectangle_tiles(Rectangle(5, 5, 21, 21), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(5, 5, 1, 1), Rectangle(6, 5, 10, 1), Rectangle(16, 5, 10, 1)],
+        [Rectangle(5, 6, 1, 10), Rectangle(6, 6, 10, 10), Rectangle(16, 6, 10, 10)],
+        [Rectangle(5, 16, 1, 10), Rectangle(6, 16, 10, 10), Rectangle(16, 16, 10, 10)],
+    )

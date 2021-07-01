@@ -805,3 +805,81 @@ class SubregionForStitching(object):
     paste_physical_location = attr.ib()  # type: Point
     physical_crop_area = attr.ib()  # type: Region
     logical_crop_area = attr.ib()  # type: Region
+
+
+def rectangle_tiles(rect, tile_size):
+    # type: (Rectangle, RectangleSize) -> List[Rectangle]
+    right_reminder = rect.width % tile_size.width or tile_size.width
+    bottom_reminder = rect.height % tile_size.height or tile_size.height
+    subrectangles = []
+    top = 0
+    for bottom in range(bottom_reminder, rect.height + 1, tile_size.height):
+        height = bottom - top
+        left = 0
+        for right in range(right_reminder, rect.width + 1, tile_size.width):
+            width = right - left
+            subrectangles.append(
+                Rectangle(rect.left + left, rect.top + top, width, height)
+            )
+            left += width
+        top += height
+    return subrectangles
+
+
+def rectangle_overlapping_tiles(rect, tile_size, overlap):
+    # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
+    overlap_reduced_rect = Rectangle(
+        rect.left, rect.top, rect.width - overlap, rect.height - overlap
+    )
+    overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
+    tiles = rectangle_tiles(overlap_reduced_rect, overlap_reduced_tile)
+    overlapping_tiles = [
+        Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
+    ]
+    return overlapping_tiles
+
+
+def rectangle_overlapping_overcropped_tiles(rect, tile_size, overlap, overcrop):
+    # type: (Rectangle, RectangleSize, int, int) -> List[Rectangle]
+    overcrop_increased_rect = Rectangle(
+        rect.left - overcrop, rect.top - overcrop, rect.width, rect.height
+    )
+    tiles = rectangle_overlapping_tiles(
+        overcrop_increased_rect, tile_size, overlap + overcrop
+    )
+    return tiles
+
+
+def get_sub_regions(
+    region,  # type: Region
+    max_sub_region_size,  # type: RectangleSize
+    overlap,  # type: int
+    l2p_scale_ratio,  # type: float
+    physical_rect_in_screenshot,  # type: Region
+):
+    # type: (...) -> List[SubregionForStitching]
+    tiles = rectangle_overlapping_overcropped_tiles(
+        region, max_sub_region_size, overlap, overlap
+    )
+    return [
+        tile_to_subregion(tile, l2p_scale_ratio, overlap, physical_rect_in_screenshot)
+        for tile in tiles
+    ]
+
+
+def tile_to_subregion(tile, l2p_scale_ratio, crop, physical_rect_in_screenshot):
+    crop_left = 0 if tile.left < 0 else crop
+    crop_top = 0 if tile.top < 0 else crop
+    logical_crop = Region(
+        crop_left, crop_top, tile.width - crop_left, tile.height - crop_top
+    )
+    scroll_to = Point(max(tile.left, 0), max(tile.top, 0))
+    paste_location = Point(tile.left + crop, tile.top + crop)
+    physical_crop = Region(
+        physical_rect_in_screenshot.left,
+        physical_rect_in_screenshot.top,
+        round_converter(tile.width * l2p_scale_ratio),
+        round_converter(tile.height * l2p_scale_ratio),
+        physical_rect_in_screenshot.coordinates_type,
+    )
+    return SubregionForStitching(scroll_to, paste_location, physical_crop, logical_crop)
