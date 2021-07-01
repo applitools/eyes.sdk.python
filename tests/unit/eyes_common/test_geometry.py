@@ -3,12 +3,7 @@ from itertools import chain
 import pytest
 
 from applitools.common import CoordinatesType, Point, RectangleSize, Region
-from applitools.common.geometry import (
-    Rectangle,
-    SubregionForStitching,
-    get_sub_regions,
-    rectangle_tiles,
-)
+from applitools.common.geometry import Rectangle, SubregionForStitching, rectangle_tiles
 
 
 def flatten(*lists):
@@ -100,40 +95,11 @@ def test_not_accessible_attr():
         r[6]
 
 
-def test_sub_regions_old():
+def test_sub_regions():
     r = Region(0, 0, 100, 200)
 
     subregions = r.get_sub_regions(
         RectangleSize(100, 100), 5, 2, Region(0, 0, 200, 200)
-    )
-
-    assert subregions == [
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=0),
-            paste_physical_location=Point(x=0, y=0),
-            physical_crop_area=Region(left=0, top=0, width=200, height=200),
-            logical_crop_area=Region(left=0, top=0, width=100, height=100),
-        ),
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=90),
-            paste_physical_location=Point(x=0, y=95),
-            physical_crop_area=Region(left=0, top=0, width=200, height=200),
-            logical_crop_area=Region(left=0, top=5, width=100, height=95),
-        ),
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=100),
-            paste_physical_location=Point(x=0, y=170),
-            physical_crop_area=Region(left=0, top=130, width=200, height=70),
-            logical_crop_area=Region(left=0, top=5, width=100, height=30),
-        ),
-    ]
-
-
-def test_sub_regions():
-    r = Region(0, 0, 100, 200)
-
-    subregions = get_sub_regions(
-        r, RectangleSize(100, 100), 5, 2, Region(0, 0, 200, 200)
     )
 
     assert subregions == [
@@ -158,40 +124,11 @@ def test_sub_regions():
     ]
 
 
-def test_sub_regions_offsetted_location_old():
+def test_sub_regions_offsetted_location():
     r = Region(0, 0, 100, 200)
 
     subregions = r.get_sub_regions(
         RectangleSize(100, 100), 5, 2, Region(31, 32, 200, 200)
-    )
-
-    assert subregions == [
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=0),
-            paste_physical_location=Point(x=0, y=0),
-            physical_crop_area=Region(left=31, top=32, width=200, height=200),
-            logical_crop_area=Region(left=0, top=0, width=100, height=100),
-        ),
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=90),
-            paste_physical_location=Point(x=0, y=95),
-            physical_crop_area=Region(left=31, top=32, width=200, height=200),
-            logical_crop_area=Region(left=0, top=5, width=100, height=95),
-        ),
-        SubregionForStitching(
-            scroll_to=Point(x=0, y=100),
-            paste_physical_location=Point(x=0, y=170),
-            physical_crop_area=Region(left=31, top=162, width=200, height=70),
-            logical_crop_area=Region(left=0, top=5, width=100, height=30),
-        ),
-    ]
-
-
-def test_sub_regions_offsetted_location():
-    r = Region(0, 0, 100, 200)
-
-    subregions = get_sub_regions(
-        r, RectangleSize(100, 100), 5, 2, Region(31, 32, 200, 200)
     )
 
     assert subregions == [
@@ -231,8 +168,8 @@ def test_sub_regions_even_division_minus_double_overlap():
             logical_crop_area=Region(left=0, top=0, width=100, height=100),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=90),
-            paste_physical_location=Point(x=0, y=95),
+            scroll_to=Point(x=0, y=85),
+            paste_physical_location=Point(x=0, y=90),
             physical_crop_area=Region(left=0, top=0, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),

@@ -622,156 +622,15 @@ class Region(Rectangle):
         physical_rect_in_screenshot,  # type: Region
     ):
         # type: (...) -> List[SubregionForStitching]
-        sub_regions = []
-
-        double_logical_overlap = logical_overlap * 2
-        physical_overlap = round(double_logical_overlap * l2p_scale_ratio)
-
-        need_v_scroll = (
-            self.height * l2p_scale_ratio > physical_rect_in_screenshot.height
+        tiles = rectangle_overlapping_overcropped_tiles(
+            self, max_sub_region_size, logical_overlap, logical_overlap
         )
-        need_h_scroll = self.width * l2p_scale_ratio > physical_rect_in_screenshot.width
-
-        scroll_y = current_top = 0
-        current_logical_height = max_sub_region_size.height
-
-        delta_y = current_logical_height - double_logical_overlap
-
-        is_top_edge = True
-        is_bottom_edge = False
-
-        while not is_bottom_edge:
-            current_scroll_top = scroll_y + max_sub_region_size.height
-            if current_scroll_top >= self.height:
-                if not is_top_edge:
-                    scroll_y = self.height - current_logical_height
-                    current_logical_height = self.height - current_top
-                    current_top = (
-                        self.height
-                        - current_logical_height
-                        - double_logical_overlap
-                        - logical_overlap
-                    )
-                else:
-                    current_logical_height = self.height - current_top
-                is_bottom_edge = True
-
-            scroll_x = current_left = 0
-            current_logical_width = max_sub_region_size.width
-
-            delta_x = current_logical_width - double_logical_overlap
-
-            is_left_edge = True
-            is_right_edge = False
-
-            while not is_right_edge:
-                current_scroll_right = scroll_x + max_sub_region_size.width
-                if current_scroll_right >= self.width:
-                    if not is_left_edge:
-                        scroll_x = self.width - current_logical_width
-                        current_logical_width = self.width - current_left
-                        current_left = (
-                            self.width
-                            - current_logical_width
-                            - double_logical_overlap
-                            - logical_overlap
-                        )
-                    else:
-                        current_logical_width = self.width - current_left
-                    is_right_edge = True
-
-                physical_crop_area = Region.from_(physical_rect_in_screenshot)
-                logical_crop_area = Region(
-                    0, 0, current_logical_width, current_logical_height
-                )
-                paste_point = Point(current_left, current_top)
-
-                # handle horizontal
-                if is_right_edge:
-                    physical_width = round(current_logical_width * l2p_scale_ratio)
-                    physical_crop_area.left = (
-                        physical_rect_in_screenshot.left
-                        + physical_rect_in_screenshot.width
-                        - physical_width
-                    )
-                    physical_crop_area.width = physical_width
-
-                if not is_left_edge:
-                    logical_crop_area.left += logical_overlap
-                    logical_crop_area.width -= logical_overlap
-
-                if is_right_edge and not is_left_edge:
-                    # If scrolled to the right edge, make sure the left part is still
-                    # inside physical viewport.
-
-                    new_x = physical_crop_area.left - physical_overlap * 2
-                    if new_x >= physical_rect_in_screenshot.left:
-                        physical_crop_area.left -= physical_overlap * 2
-                        physical_crop_area.width += physical_overlap * 2
-                        logical_crop_area.width += double_logical_overlap * 2
-                    else:
-                        # Oops, overshoot. We need to correct the width and left pos
-                        p_delta = physical_rect_in_screenshot.left - new_x
-                        l_delta = round(p_delta / l2p_scale_ratio)
-                        physical_crop_area.left = physical_rect_in_screenshot.left
-                        physical_crop_area.width += physical_overlap * 2 - p_delta
-                        logical_crop_area.width += double_logical_overlap * 2 - l_delta
-                        paste_point.x += l_delta
-
-                # handle vertical
-                if is_bottom_edge:
-                    physical_height = round(current_logical_height * l2p_scale_ratio)
-                    physical_crop_area.top = (
-                        physical_rect_in_screenshot.top
-                        + physical_rect_in_screenshot.height
-                        - physical_height
-                    )
-                    physical_crop_area.height = physical_height
-                if not is_top_edge:
-                    logical_crop_area.top += logical_overlap
-                    logical_crop_area.height -= logical_overlap
-                if is_bottom_edge and not is_top_edge:
-                    # If scrolled to the bottom edge, make sure the top part is still
-                    # inside physical viewport.
-                    new_y = physical_crop_area.top - physical_overlap * 2
-                    if new_y >= physical_rect_in_screenshot.top:
-                        # everything is okay
-                        physical_crop_area.top -= physical_overlap * 2
-                        physical_crop_area.height += physical_overlap * 2
-                        logical_crop_area.height += double_logical_overlap * 2
-                    else:
-                        # Oops, overshoot. We need to correct the height and top pos
-                        p_delta = physical_rect_in_screenshot.top - new_y
-                        l_delta = round(p_delta / l2p_scale_ratio)
-                        physical_crop_area.top = physical_rect_in_screenshot.y
-                        physical_crop_area.height += physical_overlap * 2 - p_delta
-                        logical_crop_area.height += double_logical_overlap * 2 - l_delta
-                        paste_point.y += l_delta
-
-                subregion = SubregionForStitching(
-                    Point(scroll_x, scroll_y),
-                    Point.from_(paste_point),
-                    Region.from_(physical_crop_area),
-                    Region.from_(logical_crop_area),
-                )
-                logger.debug("adding subregion - {}".format(subregion))
-                sub_regions.append(subregion)
-
-                current_left += delta_x
-                scroll_x += delta_x
-
-                if need_h_scroll and is_left_edge:
-                    current_left += logical_overlap
-                is_left_edge = False
-
-            current_top += delta_y
-            scroll_y += delta_y
-
-            if need_v_scroll and is_top_edge:
-                current_top += logical_overlap
-            is_top_edge = False
-
-        return sub_regions
+        return [
+            tile_to_subregion(
+                tile, l2p_scale_ratio, logical_overlap, physical_rect_in_screenshot
+            )
+            for tile in tiles
+        ]
 
     def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Region
@@ -862,23 +721,6 @@ def rectangle_overlapping_overcropped_tiles(rect, tile_size, overlap, overcrop):
     return rectangle_overlapping_tiles(
         overcrop_increased_rect, tile_size, overlap + overcrop
     )
-
-
-def get_sub_regions(
-    region,  # type: Region
-    max_sub_region_size,  # type: RectangleSize
-    overlap,  # type: int
-    l2p_scale_ratio,  # type: float
-    physical_rect_in_screenshot,  # type: Region
-):
-    # type: (...) -> List[SubregionForStitching]
-    tiles = rectangle_overlapping_overcropped_tiles(
-        region, max_sub_region_size, overlap, overlap
-    )
-    return [
-        tile_to_subregion(tile, l2p_scale_ratio, overlap, physical_rect_in_screenshot)
-        for tile in tiles
-    ]
 
 
 def tile_to_subregion(tile, l2p_scale_ratio, crop, physical_rect_in_screenshot):
