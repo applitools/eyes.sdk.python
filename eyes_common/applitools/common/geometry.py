@@ -667,7 +667,7 @@ class SubregionForStitching(object):
     scroll_to = attr.ib()  # type: Point
     paste_physical_location = attr.ib()  # type: Point
     physical_crop_area = attr.ib()  # type: Region
-    logical_crop_area = attr.ib()  # type: Rectangle
+    logical_crop_area = attr.ib()  # type: Region
 
     @classmethod
     def from_tile(
@@ -702,7 +702,7 @@ class SubregionForStitching(object):
             0 if tile.left == region.left else crop_size,
             0 if tile.top == region.top else crop_size,
         )
-        logical_crop_area = Rectangle(
+        logical_crop_area = Region(
             crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
         )
         paste_physical_location = tile.location + crop - region.location
