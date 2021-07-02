@@ -627,7 +627,11 @@ class Region(Rectangle):
         )
         return [
             tile_to_subregion(
-                tile, l2p_scale_ratio, logical_overlap, physical_rect_in_screenshot
+                tile,
+                self.location,
+                l2p_scale_ratio,
+                logical_overlap,
+                physical_rect_in_screenshot,
             )
             for tile in tiles
         ]
@@ -705,11 +709,16 @@ def rectangle_overlapping_tiles(rect, tile_size, overlap):
     ]
 
 
-def tile_to_subregion(tile, l2p_scale_ratio, crop, physical_rect_in_screenshot):
-    # type: (Rectangle, float, int, Region) -> SubregionForStitching
-    crop_p = Point(0 if tile.left == 0 else crop, 0 if tile.top == 0 else crop)
+def tile_to_subregion(
+    tile, region_location, l2p_scale_ratio, crop, physical_rect_in_screenshot
+):
+    # type: (Rectangle, Point, float, int, Region) -> SubregionForStitching
+    crop_p = Point(
+        0 if tile.left == region_location.x else crop,
+        0 if tile.top == region_location.y else crop,
+    )
     scroll_to = tile.location
-    paste_location = tile.location + crop_p
+    paste_location = tile.location + crop_p - region_location
 
     logical_crop = Region(
         crop_p.x, crop_p.y, tile.width - crop_p.x, tile.height - crop_p.y

@@ -158,6 +158,64 @@ def test_sub_regions_offsetted_location():
     ]
 
 
+def test_sub_regions_offsetted_region():
+    r = Region(1, 2, 100, 200)
+
+    subregions = r.get_sub_regions(
+        RectangleSize(100, 100), 5, 2, Region(0, 0, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=2),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=0, top=0, width=200, height=40),
+            logical_crop_area=Region(left=0, top=0, width=100, height=20),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=12),
+            paste_physical_location=Point(x=0, y=15),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=102),
+            paste_physical_location=Point(x=0, y=105),
+            physical_crop_area=Region(left=0, top=0, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+    ]
+
+
+def test_sub_regions_offsetted_region_and_location():
+    r = Region(1, 2, 100, 200)
+
+    subregions = r.get_sub_regions(
+        RectangleSize(100, 100), 5, 2, Region(3, 4, 200, 200)
+    )
+
+    assert subregions == [
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=2),
+            paste_physical_location=Point(x=0, y=0),
+            physical_crop_area=Region(left=3, top=4, width=200, height=40),
+            logical_crop_area=Region(left=0, top=0, width=100, height=20),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=12),
+            paste_physical_location=Point(x=0, y=15),
+            physical_crop_area=Region(left=3, top=4, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+        SubregionForStitching(
+            scroll_to=Point(x=1, y=102),
+            paste_physical_location=Point(x=0, y=105),
+            physical_crop_area=Region(left=3, top=4, width=200, height=200),
+            logical_crop_area=Region(left=0, top=5, width=100, height=95),
+        ),
+    ]
+
+
 def test_sub_regions_even_division_minus_double_overlap():
     r = Region(0, 0, 100, 200 - 10)
 
