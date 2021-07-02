@@ -313,7 +313,7 @@ class FullPageCaptureAlgorithm(object):
         zero_based_full_area = full_area.offset(-full_area.location)
         # Getting the list of sub-regions composing the whole region (we'll take
         # screenshot for each one).
-        image_parts = zero_based_full_area.get_sub_regions_msb(
+        image_parts = zero_based_full_area.get_sub_regions(
             part_image_size,
             self.stitch_overlap,
             pixel_ratio,
