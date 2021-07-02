@@ -3,7 +3,12 @@ from itertools import chain
 import pytest
 
 from applitools.common import CoordinatesType, Point, RectangleSize, Region
-from applitools.common.geometry import Rectangle, SubregionForStitching, rectangle_tiles
+from applitools.common.geometry import (
+    Rectangle,
+    SubregionForStitching,
+    rectangle_overlapping_tiles,
+    rectangle_tiles,
+)
 
 
 def flatten(*lists):
@@ -110,14 +115,14 @@ def test_sub_regions():
             logical_crop_area=Region(left=0, top=0, width=100, height=20),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=5),
-            paste_physical_location=Point(x=0, y=10),
+            scroll_to=Point(x=0, y=10),
+            paste_physical_location=Point(x=0, y=15),
             physical_crop_area=Region(left=0, top=0, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=95),
-            paste_physical_location=Point(x=0, y=100),
+            scroll_to=Point(x=0, y=100),
+            paste_physical_location=Point(x=0, y=105),
             physical_crop_area=Region(left=0, top=0, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
@@ -139,14 +144,14 @@ def test_sub_regions_offsetted_location():
             logical_crop_area=Region(left=0, top=0, width=100, height=20),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=5),
-            paste_physical_location=Point(x=0, y=10),
+            scroll_to=Point(x=0, y=10),
+            paste_physical_location=Point(x=0, y=15),
             physical_crop_area=Region(left=31, top=32, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=95),
-            paste_physical_location=Point(x=0, y=100),
+            scroll_to=Point(x=0, y=100),
+            paste_physical_location=Point(x=0, y=105),
             physical_crop_area=Region(left=31, top=32, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
@@ -168,8 +173,8 @@ def test_sub_regions_even_division_minus_double_overlap():
             logical_crop_area=Region(left=0, top=0, width=100, height=100),
         ),
         SubregionForStitching(
-            scroll_to=Point(x=0, y=85),
-            paste_physical_location=Point(x=0, y=90),
+            scroll_to=Point(x=0, y=90),
+            paste_physical_location=Point(x=0, y=95),
             physical_crop_area=Region(left=0, top=0, width=200, height=200),
             logical_crop_area=Region(left=0, top=5, width=100, height=95),
         ),
@@ -284,3 +289,46 @@ def test_break_offsetted_rectangle_21x21():
         [Rectangle(5, 6, 1, 10), Rectangle(6, 6, 10, 10), Rectangle(16, 6, 10, 10)],
         [Rectangle(5, 16, 1, 10), Rectangle(6, 16, 10, 10), Rectangle(16, 16, 10, 10)],
     )
+
+
+def test_rectangle_overlapping_overcropped_tiles_5x5():
+    tiles = rectangle_overlapping_tiles(Rectangle(0, 0, 5, 5), RectangleSize(10, 10), 2)
+
+    assert tiles == [Rectangle(0, 0, 5, 5)]
+
+
+def test_rectangle_overlapping_overcropped_tiles_10x10():
+    tiles = rectangle_overlapping_tiles(
+        Rectangle(0, 0, 10, 10), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [Rectangle(0, 0, 10, 10)]
+
+
+def test_rectangle_overlapping_overcropped_tiles_20x10():
+    tiles = rectangle_overlapping_tiles(
+        Rectangle(0, 0, 20, 10), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == list(
+        [Rectangle(0, 0, 4, 10), Rectangle(2, 0, 10, 10), Rectangle(10, 0, 10, 10)]
+    )
+
+
+def test_rectangle_overlapping_overcropped_tiles_18x10():
+    tiles = rectangle_overlapping_tiles(
+        Rectangle(0, 0, 18, 10), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [Rectangle(0, 0, 10, 10), Rectangle(8, 0, 10, 10)]
+
+
+def test_rectangle_overlapping_overcropped_tiles_10x18():
+    tiles = rectangle_overlapping_tiles(
+        Rectangle(0, 0, 10, 18), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [
+        Rectangle(0, 0, 10, 10),
+        Rectangle(0, 8, 10, 10),
+    ]

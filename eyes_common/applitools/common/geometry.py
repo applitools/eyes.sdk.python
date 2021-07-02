@@ -622,8 +622,8 @@ class Region(Rectangle):
         physical_rect_in_screenshot,  # type: Region
     ):
         # type: (...) -> List[SubregionForStitching]
-        tiles = rectangle_overlapping_overcropped_tiles(
-            self, max_sub_region_size, logical_overlap, logical_overlap
+        tiles = rectangle_overlapping_tiles(
+            self, max_sub_region_size, 2 * logical_overlap
         )
         return [
             tile_to_subregion(
@@ -705,38 +705,14 @@ def rectangle_overlapping_tiles(rect, tile_size, overlap):
     ]
 
 
-def rectangle_overlapping_overcropped_tiles(rect, tile_size, overlap, overcrop):
-    # type: (Rectangle, RectangleSize, int, int) -> List[Rectangle]
-    """Breaks the rect rectangle into tile_size sized tiles where most tiles have
-    redundant space on their right and bottom edge of the overlap size,
-    it is covered by the next tile to it's right and below.
-    Also each tile has redundant overcrop sized area on their left and top borders
-    that is supposed to be cropped further.
-    Tiles on the right and bottom edge do not have space to be overlapped.
-    All tiles have cropping area, even it it's negative ont the left and top borders."""
-
-    overcrop_increased_rect = Rectangle(
-        rect.left - overcrop, rect.top - overcrop, rect.width, rect.height
-    )
-    return rectangle_overlapping_tiles(
-        overcrop_increased_rect, tile_size, overlap + overcrop
-    )
-
-
 def tile_to_subregion(tile, l2p_scale_ratio, crop, physical_rect_in_screenshot):
     # type: (Rectangle, float, int, Region) -> SubregionForStitching
-    # Tiles always have room for cropping in them to the left and top, even on borders
-    paste_location = Point(tile.left + crop, tile.top + crop)
-    # This will be non-zero on top or left borders
-    missing_crop = Point(-min(0, tile.left), -min(0, tile.top))
-    # Avoid scrolling to negative offsets
-    scroll_to = tile.location + missing_crop
-    # Avoid further cropping as we didn't scroll back for that crop
-    crop_left = crop - missing_crop.x
-    crop_top = crop - missing_crop.y
-    # Crop (if there anything to) on the left and top borders of a tile
+    crop_p = Point(0 if tile.left == 0 else crop, 0 if tile.top == 0 else crop)
+    scroll_to = tile.location
+    paste_location = tile.location + crop_p
+
     logical_crop = Region(
-        crop_left, crop_top, tile.width - crop_left, tile.height - crop_top
+        crop_p.x, crop_p.y, tile.width - crop_p.x, tile.height - crop_p.y
     )
     physical_crop = Region(
         physical_rect_in_screenshot.left,
