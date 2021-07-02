@@ -680,34 +680,34 @@ class SubregionForStitching(object):
         rect_in_screenshot,  # type : Region
     ):
         # type: (...) -> SubregionForStitching
-        # It's not possible to scroll too far leaving window less than
-        # scroll_size visible
+        # It's not possible to scroll too far leaving less than scroll_size area
+        # visible, scroll as far possible then
         scroll_to = Point(
             min(tile.left, region.right - scroll_size.width),
             min(tile.top, region.bottom - scroll_size.height),
         )
-        # If we can't scroll to the tile exactly, redundant pixels should be cropped
+        # If we couldn't scroll to the tile exactly, redundant pixels should be cropped
         scroll_crop = RectangleSize(
             max(0, tile.left - scroll_to.x), max(0, tile.top - scroll_to.y)
+        )
+        physical_crop_area = Region(
+            round(rect_in_screenshot.left + scroll_crop.width * l2p_scale_ratio),
+            round(rect_in_screenshot.top + scroll_crop.height * l2p_scale_ratio),
+            round(tile.width * l2p_scale_ratio),
+            round(tile.height * l2p_scale_ratio),
+            rect_in_screenshot.coordinates_type,
         )
         # Don't do additional "logical" cropping on top and left borders
         crop = Point(
             0 if tile.left == region.left else crop_size,
             0 if tile.top == region.top else crop_size,
         )
+        logical_crop_area = Region(
+            crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
+        )
+        paste_physical_location = tile.location + crop - region.location
         return cls(
-            scroll_to=scroll_to,
-            paste_physical_location=tile.location + crop - region.location,
-            physical_crop_area=Region(
-                round(rect_in_screenshot.left + scroll_crop.width * l2p_scale_ratio),
-                round(rect_in_screenshot.top + scroll_crop.height * l2p_scale_ratio),
-                round(tile.width * l2p_scale_ratio),
-                round(tile.height * l2p_scale_ratio),
-                rect_in_screenshot.coordinates_type,
-            ),
-            logical_crop_area=Region(
-                crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
-            ),
+            scroll_to, paste_physical_location, physical_crop_area, logical_crop_area
         )
 
 
