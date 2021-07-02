@@ -715,11 +715,10 @@ def tiles_from_rectangle(rect, tile_size):
     # type: (Rectangle, RectangleSize) -> List[Rectangle]
     """Breaks the rect rectangle into tile_size sized tiles
     Smaller pieces are placed near bottom and right borders if rect doesn't split even.
-
-    Having them close to top and left borders could have saved from tricky calculations
-    of scrolling and cropping offsets for them later, but that breaks existing tests
-    that leave scrollbar visible when stitching.
     """
+    # Having smaller tiles close to top and left borders could have saved from
+    # calculations of scrolling and cropping offsets for them later, but that breaks
+    # existing tests that leave scrollbar visible when stitching
     tiles = []
     for top in range(rect.top, rect.bottom, tile_size.height):
         height = min(tile_size.height, rect.bottom - top)
@@ -735,7 +734,6 @@ def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
     redundant space on their right and bottom edge of the `overlap` size,
     it is covered by the next tile to it's right and below.
     Tiles on the right and bottom edge do not have that space to be covered."""
-
     overlap_reduced_rect = Rectangle(
         rect.left, rect.top, rect.width - overlap, rect.height - overlap
     )
