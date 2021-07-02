@@ -258,19 +258,3 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
     eyes.check("Row 10", Target.region("body > table > tr:nth-child(10)"))
     eyes.check("Row 20", Target.region("body > table > tr:nth-child(20)"))
     eyes.close()
-
-
-def test_check_region_fully_page_with_sticky_header_scroll_stitching(driver):
-    eyes = Eyes()  # For whatever reason fixture eyes do not scroll
-    try:
-        driver.get("file://" + get_resource_path("unit/fixedheader.html"))
-        eyes.open(
-            driver,
-            "Applitools Eyes SDK",
-            "Test capture region fully on a page with sticky header",
-            {"width": 1024, "height": 600},
-        )
-        eyes.check(Target.region([By.CSS_SELECTOR, "body"]).fully())
-        eyes.close()
-    finally:
-        eyes.abort()
