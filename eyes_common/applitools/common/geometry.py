@@ -365,28 +365,6 @@ class Rectangle(DictAccessMixin):
             height=self.size["height"],
         )
 
-    def get_sub_regions(  # noqa
-        self,
-        max_size,  # type: RectangleSize
-        overlap_and_crop,  # type: int
-        l2p_scale_ratio,  # type: float
-        physical_rect_in_screenshot,  # type: Region
-    ):
-        # type: (...) -> List[SubregionForStitching]
-        location = self.location
-        overlap = crop = overlap_and_crop
-        tiles = overlapping_tiles_from_rectangle(self, max_size, overlap + crop)
-        return [
-            SubregionForStitching.from_(
-                tile,
-                location,
-                l2p_scale_ratio,
-                crop,
-                physical_rect_in_screenshot,
-            )
-            for tile in tiles
-        ]
-
     def get_sub_regions_msb(
         self,
         max_size,  # type: RectangleSize
@@ -692,29 +670,6 @@ class SubregionForStitching(object):
     logical_crop_area = attr.ib()  # type: Rectangle
 
     @classmethod
-    def from_(cls, tile, region_location, l2p_scale_ratio, crop, rect_in_screenshot):
-        # type: (Rectangle, Point, float, int, Region) -> SubregionForStitching
-        # Do not crop subregions on top and left edges of region
-        crop = Point(
-            0 if tile.left == region_location.x else crop,
-            0 if tile.top == region_location.y else crop,
-        )
-        return cls(
-            scroll_to=tile.location,
-            paste_physical_location=tile.location - region_location + crop,
-            physical_crop_area=Region(
-                rect_in_screenshot.left,
-                rect_in_screenshot.top,
-                round_converter(tile.width * l2p_scale_ratio),
-                round_converter(tile.height * l2p_scale_ratio),
-                rect_in_screenshot.coordinates_type,
-            ),
-            logical_crop_area=Region(
-                crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
-            ),
-        )
-
-    @classmethod
     def from_tile_msb(
         cls, tile, scroll_size, region, l2p_scale_ratio, crop_size, rect_in_screenshot
     ):
@@ -750,29 +705,6 @@ class SubregionForStitching(object):
         )
 
 
-def tiles_from_rectangle(rect, tile_size):
-    # type: (Rectangle, RectangleSize) -> List[Rectangle]
-    """Breaks the rect rectangle into tile_size sized tiles
-    Smaller pieces are placed near top and left borders when rect doesn't split even.
-    This saves from tricky calculations of scrolling and cropping offsets for them.
-    """
-    small_tile_width = rect.width % tile_size.width or tile_size.width
-    small_tile_height = rect.height % tile_size.height or tile_size.height
-    tiles = []
-    # Cycles produce bottom-right corner of the current tile within zero-located rect
-    top = 0
-    for bottom in range(small_tile_height, rect.height + 1, tile_size.height):
-        left = 0
-        height = bottom - top
-        for right in range(small_tile_width, rect.width + 1, tile_size.width):
-            width = right - left
-            tile = Rectangle(left, top, width, height)
-            tiles.append(tile.offset(rect.location))
-            left += width
-        top += height
-    return tiles  # noqa
-
-
 def tiles_from_rectangle_msb(rect, tile_size):
     # type: (Rectangle, RectangleSize) -> List[Rectangle]
     """Breaks the rect rectangle into tile_size sized tiles
@@ -789,22 +721,6 @@ def tiles_from_rectangle_msb(rect, tile_size):
             width = min(tile_size.width, rect.right - left)
             tiles.append(Rectangle(left, top, width, height))
     return tiles  # noqa
-
-
-def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
-    # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
-    """Breaks the rect rectangle into tile_size sized tiles where most tiles have
-    redundant space on their right and bottom edge of the overlap size,
-    it is covered by the next tile to it's right and below.
-    Tiles on the right and bottom edge do not have that space to be covered."""
-    overlap_reduced_rect = Rectangle(
-        rect.left, rect.top, rect.width - overlap, rect.height - overlap
-    )
-    overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
-    tiles = tiles_from_rectangle(overlap_reduced_rect, overlap_reduced_tile)
-    return [
-        Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
-    ]
 
 
 def overlapping_tiles_from_rectangle_msb(rect, tile_size, overlap):
