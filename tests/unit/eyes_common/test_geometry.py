@@ -6,8 +6,8 @@ from applitools.common import CoordinatesType, Point, RectangleSize, Region
 from applitools.common.geometry import (
     Rectangle,
     SubregionForStitching,
-    rectangle_overlapping_tiles,
-    rectangle_tiles,
+    overlapping_tiles_from_rectangle,
+    tiles_from_rectangle,
 )
 
 
@@ -240,19 +240,19 @@ def test_sub_regions_even_division_minus_double_overlap():
 
 
 def test_break_rectangle_10x10():
-    subrects = rectangle_tiles(Rectangle(0, 0, 10, 10), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 10, 10), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(0, 0, 10, 10)]
 
 
 def test_break_rectangle_5x5():
-    subrects = rectangle_tiles(Rectangle(0, 0, 5, 5), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 5, 5), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(0, 0, 5, 5)]
 
 
 def test_break_rectangle_10x20():
-    subrects = rectangle_tiles(Rectangle(0, 0, 10, 20), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 10, 20), RectangleSize(10, 10))
 
     assert subrects == [
         Rectangle(0, 0, 10, 10),
@@ -261,13 +261,13 @@ def test_break_rectangle_10x20():
 
 
 def test_break_rectangle_20x10():
-    subrects = rectangle_tiles(Rectangle(0, 0, 20, 10), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 20, 10), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(0, 0, 10, 10), Rectangle(10, 0, 10, 10)]
 
 
 def test_break_rectangle_20x20():
-    subrects = rectangle_tiles(Rectangle(0, 0, 20, 20), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 20, 20), RectangleSize(10, 10))
 
     assert subrects == flatten(
         [Rectangle(0, 0, 10, 10), Rectangle(10, 0, 10, 10)],
@@ -276,7 +276,7 @@ def test_break_rectangle_20x20():
 
 
 def test_break_rectangle_10x11():
-    subrects = rectangle_tiles(Rectangle(0, 0, 10, 11), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 10, 11), RectangleSize(10, 10))
 
     assert subrects == [
         Rectangle(0, 0, 10, 1),
@@ -285,13 +285,13 @@ def test_break_rectangle_10x11():
 
 
 def test_break_rectangle_11x10():
-    subrects = rectangle_tiles(Rectangle(0, 0, 11, 10), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 11, 10), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(0, 0, 1, 10), Rectangle(1, 0, 10, 10)]
 
 
 def test_break_rectangle_10x21():
-    subrects = rectangle_tiles(Rectangle(0, 0, 10, 21), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 10, 21), RectangleSize(10, 10))
 
     assert subrects == [
         Rectangle(0, 0, 10, 1),
@@ -301,7 +301,7 @@ def test_break_rectangle_10x21():
 
 
 def test_break_rectangle_21x10():
-    subrects = rectangle_tiles(Rectangle(0, 0, 21, 10), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 21, 10), RectangleSize(10, 10))
 
     assert subrects == list(
         [Rectangle(0, 0, 1, 10), Rectangle(1, 0, 10, 10), Rectangle(11, 0, 10, 10)]
@@ -309,7 +309,7 @@ def test_break_rectangle_21x10():
 
 
 def test_break_rectangle_11x11():
-    subrects = rectangle_tiles(Rectangle(0, 0, 11, 11), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 11, 11), RectangleSize(10, 10))
 
     assert subrects == flatten(
         [Rectangle(0, 0, 1, 1), Rectangle(1, 0, 10, 1)],
@@ -318,7 +318,7 @@ def test_break_rectangle_11x11():
 
 
 def test_break_rectangle_21x21():
-    subrects = rectangle_tiles(Rectangle(0, 0, 21, 21), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(0, 0, 21, 21), RectangleSize(10, 10))
 
     assert subrects == flatten(
         [Rectangle(0, 0, 1, 1), Rectangle(1, 0, 10, 1), Rectangle(11, 0, 10, 1)],
@@ -328,19 +328,19 @@ def test_break_rectangle_21x21():
 
 
 def test_break_offsetted_rectangle_10x10():
-    subrects = rectangle_tiles(Rectangle(5, 5, 10, 10), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(5, 5, 10, 10), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(5, 5, 10, 10)]
 
 
 def test_break_offsetted_rectangle_5x5():
-    subrects = rectangle_tiles(Rectangle(5, 5, 5, 5), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(5, 5, 5, 5), RectangleSize(10, 10))
 
     assert subrects == [Rectangle(5, 5, 5, 5)]
 
 
 def test_break_offsetted_rectangle_21x21():
-    subrects = rectangle_tiles(Rectangle(5, 5, 21, 21), RectangleSize(10, 10))
+    subrects = tiles_from_rectangle(Rectangle(5, 5, 21, 21), RectangleSize(10, 10))
 
     assert subrects == flatten(
         [Rectangle(5, 5, 1, 1), Rectangle(6, 5, 10, 1), Rectangle(16, 5, 10, 1)],
@@ -350,13 +350,15 @@ def test_break_offsetted_rectangle_21x21():
 
 
 def test_rectangle_overlapping_overcropped_tiles_5x5():
-    tiles = rectangle_overlapping_tiles(Rectangle(0, 0, 5, 5), RectangleSize(10, 10), 2)
+    tiles = overlapping_tiles_from_rectangle(
+        Rectangle(0, 0, 5, 5), RectangleSize(10, 10), 2
+    )
 
     assert tiles == [Rectangle(0, 0, 5, 5)]
 
 
 def test_rectangle_overlapping_overcropped_tiles_10x10():
-    tiles = rectangle_overlapping_tiles(
+    tiles = overlapping_tiles_from_rectangle(
         Rectangle(0, 0, 10, 10), RectangleSize(10, 10), 2
     )
 
@@ -364,7 +366,7 @@ def test_rectangle_overlapping_overcropped_tiles_10x10():
 
 
 def test_rectangle_overlapping_overcropped_tiles_20x10():
-    tiles = rectangle_overlapping_tiles(
+    tiles = overlapping_tiles_from_rectangle(
         Rectangle(0, 0, 20, 10), RectangleSize(10, 10), 2
     )
 
@@ -374,7 +376,7 @@ def test_rectangle_overlapping_overcropped_tiles_20x10():
 
 
 def test_rectangle_overlapping_overcropped_tiles_18x10():
-    tiles = rectangle_overlapping_tiles(
+    tiles = overlapping_tiles_from_rectangle(
         Rectangle(0, 0, 18, 10), RectangleSize(10, 10), 2
     )
 
@@ -382,7 +384,7 @@ def test_rectangle_overlapping_overcropped_tiles_18x10():
 
 
 def test_rectangle_overlapping_overcropped_tiles_10x18():
-    tiles = rectangle_overlapping_tiles(
+    tiles = overlapping_tiles_from_rectangle(
         Rectangle(0, 0, 10, 18), RectangleSize(10, 10), 2
     )
 

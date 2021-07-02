@@ -184,17 +184,17 @@ class Point(DictAccessMixin):
         """
         return Point(self.x, self.y)
 
-    @overload  # noqa
+    @overload
     def offset(self, location):
         # type: (Point) -> Point
         pass
 
-    @overload  # noqa
+    @overload
     def offset(self, dx, dy):
         # type: (int, int) -> Point
         pass
 
-    def offset(self, location_or_dx, dy=None):  # noqa
+    def offset(self, location_or_dx, dy=None):
         # type: (Union[Point, int], Optional[int]) -> Point
         """Get a location translated by the specified amount.
 
@@ -337,15 +337,15 @@ class Rectangle(DictAccessMixin):
 
     @overload  # noqa
     def offset(self, location):
-        # type: (Point) -> Region
+        # type: (Point) -> Rectangle
         pass
 
     @overload  # noqa
     def offset(self, dx, dy):
-        # type: (int, int) -> Region
+        # type: (int, int) -> Rectangle
         pass
 
-    def offset(self, location_or_dx, dy=None):  # noqa
+    def offset(self, location_or_dx, dy=None):
         # type: (Union[Point, int], Optional[int]) -> Rectangle
         """Get an offset region.
 
@@ -375,7 +375,7 @@ class Rectangle(DictAccessMixin):
         # type: (...) -> List[SubregionForStitching]
         location = self.location
         overlap = crop = overlap_and_crop
-        tiles = rectangle_overlapping_tiles(self, max_size, overlap + crop)
+        tiles = overlapping_tiles_from_rectangle(self, max_size, overlap + crop)
         return [
             SubregionForStitching.from_(
                 tile,
@@ -693,7 +693,7 @@ class SubregionForStitching(object):
         )
 
 
-def rectangle_tiles(rect, tile_size):
+def tiles_from_rectangle(rect, tile_size):
     # type: (Rectangle, RectangleSize) -> List[Rectangle]
     """Breaks the rect rectangle into tile_size sized tiles
     Smaller pieces are placed near top and left borders when rect doesn't split even.
@@ -713,10 +713,10 @@ def rectangle_tiles(rect, tile_size):
             tiles.append(tile.offset(rect.location))
             left += width
         top += height
-    return tiles
+    return tiles  # noqa
 
 
-def rectangle_overlapping_tiles(rect, tile_size, overlap):
+def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
     # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
     """Breaks the rect rectangle into tile_size sized tiles where most tiles have
     redundant space on their right and bottom edge of the overlap size,
@@ -726,7 +726,7 @@ def rectangle_overlapping_tiles(rect, tile_size, overlap):
         rect.left, rect.top, rect.width - overlap, rect.height - overlap
     )
     overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
-    tiles = rectangle_tiles(overlap_reduced_rect, overlap_reduced_tile)
+    tiles = tiles_from_rectangle(overlap_reduced_rect, overlap_reduced_tile)
     return [
         Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
     ]
