@@ -7,7 +7,9 @@ from applitools.common.geometry import (
     Rectangle,
     SubregionForStitching,
     overlapping_tiles_from_rectangle,
+    overlapping_tiles_from_rectangle_msb,
     tiles_from_rectangle,
+    tiles_from_rectangle_msb,
 )
 
 
@@ -392,3 +394,95 @@ def test_rectangle_overlapping_overcropped_tiles_10x18():
         Rectangle(0, 0, 10, 10),
         Rectangle(0, 8, 10, 10),
     ]
+
+
+def test_tiles_from_rectangle_msb_5x5():
+    subrects = tiles_from_rectangle_msb(Rectangle(0, 0, 5, 5), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 5, 5)]
+
+
+def test_tiles_from_rectangle_msb_10x10():
+    subrects = tiles_from_rectangle_msb(Rectangle(0, 0, 10, 10), RectangleSize(10, 10))
+
+    assert subrects == [Rectangle(0, 0, 10, 10)]
+
+
+def test_tiles_from_rectangle_msb_10x20():
+    subrects = tiles_from_rectangle_msb(Rectangle(0, 0, 10, 20), RectangleSize(10, 10))
+
+    assert subrects == [
+        Rectangle(0, 0, 10, 10),
+        Rectangle(0, 10, 10, 10),
+    ]
+
+
+def test_tiles_from_rectangle_msb_10x11():
+    subrects = tiles_from_rectangle_msb(Rectangle(0, 0, 10, 11), RectangleSize(10, 10))
+
+    assert subrects == [
+        Rectangle(0, 0, 10, 10),
+        Rectangle(0, 10, 10, 1),
+    ]
+
+
+def test_tiles_from_rectangle_msb_11x11():
+    subrects = tiles_from_rectangle_msb(Rectangle(0, 0, 11, 11), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(0, 0, 10, 10), Rectangle(10, 0, 1, 10)],
+        [Rectangle(0, 10, 10, 1), Rectangle(10, 10, 1, 1)],
+    )
+
+
+def test_tiles_from_ofsetted_rectangle_msb_21x21():
+    subrects = tiles_from_rectangle_msb(Rectangle(5, 5, 21, 21), RectangleSize(10, 10))
+
+    assert subrects == flatten(
+        [Rectangle(5, 5, 10, 10), Rectangle(15, 5, 10, 10), Rectangle(25, 5, 1, 10)],
+        [Rectangle(5, 15, 10, 10), Rectangle(15, 15, 10, 10), Rectangle(25, 15, 1, 10)],
+        [Rectangle(5, 25, 10, 1), Rectangle(15, 25, 10, 1), Rectangle(25, 25, 1, 1)],
+    )
+
+
+def test_overlapping_tiles_from_rectangle_msb_5x5():
+    tiles = overlapping_tiles_from_rectangle_msb(
+        Rectangle(0, 0, 5, 5), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [Rectangle(0, 0, 5, 5)]
+
+
+def test_overlapping_tiles_from_rectangle_msb_10x10():
+    tiles = overlapping_tiles_from_rectangle_msb(
+        Rectangle(0, 0, 10, 10), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [Rectangle(0, 0, 10, 10)]
+
+
+def test_overlapping_tiles_from_rectangle_msb_11x10():
+    tiles = overlapping_tiles_from_rectangle_msb(
+        Rectangle(0, 0, 11, 10), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == [Rectangle(0, 0, 10, 10), Rectangle(8, 0, 3, 10)]
+
+
+def test_overlapping_tiles_from_rectangle_msb_11x11():
+    tiles = overlapping_tiles_from_rectangle_msb(
+        Rectangle(0, 0, 11, 11), RectangleSize(10, 10), 2
+    )
+
+    assert tiles == flatten(
+        [Rectangle(0, 0, 10, 10), Rectangle(8, 0, 3, 10)],
+        [Rectangle(0, 8, 10, 3), Rectangle(8, 8, 3, 3)],
+    )
+
+
+def test_overlapping_tiles_from_rectangle_msb_17x10():
+    tiles = overlapping_tiles_from_rectangle(
+        Rectangle(0, 0, 17, 10), RectangleSize(10, 10), 3
+    )
+
+    assert tiles == [Rectangle(0, 0, 10, 10), Rectangle(7, 0, 10, 10)]

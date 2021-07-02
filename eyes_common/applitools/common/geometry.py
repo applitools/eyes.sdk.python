@@ -716,6 +716,17 @@ def tiles_from_rectangle(rect, tile_size):
     return tiles  # noqa
 
 
+def tiles_from_rectangle_msb(rect, tile_size):
+    # type: (Rectangle, RectangleSize) -> List[Rectangle]
+    tiles = []
+    for top in range(rect.top, rect.bottom, tile_size.height):
+        height = min(tile_size.height, rect.bottom - top)
+        for left in range(rect.left, rect.right, tile_size.width):
+            width = min(tile_size.width, rect.right - left)
+            tiles.append(Rectangle(left, top, width, height))
+    return tiles  # noqa
+
+
 def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
     # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
     """Breaks the rect rectangle into tile_size sized tiles where most tiles have
@@ -727,6 +738,18 @@ def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
     )
     overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
     tiles = tiles_from_rectangle(overlap_reduced_rect, overlap_reduced_tile)
+    return [
+        Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
+    ]
+
+
+def overlapping_tiles_from_rectangle_msb(rect, tile_size, overlap):
+    # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
+    overlap_reduced_rect = Rectangle(
+        rect.left, rect.top, rect.width - overlap, rect.height - overlap
+    )
+    overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
+    tiles = tiles_from_rectangle_msb(overlap_reduced_rect, overlap_reduced_tile)
     return [
         Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
     ]
