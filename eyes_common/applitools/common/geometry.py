@@ -387,6 +387,28 @@ class Rectangle(DictAccessMixin):
             for tile in tiles
         ]
 
+    def get_sub_regions_msb(
+        self,
+        max_size,  # type: RectangleSize
+        overlap_and_crop,  # type: int
+        l2p_scale_ratio,  # type: float
+        physical_rect_in_screenshot,  # type: Region
+    ):
+        # type: (...) -> List[SubregionForStitching]
+        overlap = crop = overlap_and_crop
+        tiles = overlapping_tiles_from_rectangle_msb(self, max_size, overlap + crop)
+        return [
+            SubregionForStitching.from_tile_msb(
+                tile,
+                max_size,
+                self,
+                l2p_scale_ratio,
+                crop,
+                physical_rect_in_screenshot,
+            )
+            for tile in tiles
+        ]
+
 
 @attr.s(slots=True, init=False)
 class AccessibilityRegion(Rectangle):
@@ -685,6 +707,41 @@ class SubregionForStitching(object):
                 rect_in_screenshot.top,
                 round_converter(tile.width * l2p_scale_ratio),
                 round_converter(tile.height * l2p_scale_ratio),
+                rect_in_screenshot.coordinates_type,
+            ),
+            logical_crop_area=Region(
+                crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
+            ),
+        )
+
+    @classmethod
+    def from_tile_msb(
+        cls, tile, scroll_size, region, l2p_scale_ratio, crop_size, rect_in_screenshot
+    ):
+        # type: (Rectangle, RectangleSize, Rectangle, float, int, Region) -> SubregionForStitching
+        # It's not possible to scroll too far leaving window less than
+        # scroll_size visible
+        scroll_to = Point(
+            min(tile.left, region.right - scroll_size.width),
+            min(tile.top, region.bottom - scroll_size.height),
+        )
+        # If we can't scroll to the tile exactly, redundant pixels should be cropped
+        scroll_crop = RectangleSize(
+            max(0, tile.left - scroll_to.x), max(0, tile.top - scroll_to.y)
+        )
+        # Don't do additional "logical" cropping on top and left borders
+        crop = Point(
+            0 if tile.left == region.left else crop_size,
+            0 if tile.top == region.top else crop_size,
+        )
+        return cls(
+            scroll_to=scroll_to,
+            paste_physical_location=tile.location + crop - region.location,
+            physical_crop_area=Region(
+                round(rect_in_screenshot.left + scroll_crop.width * l2p_scale_ratio),
+                round(rect_in_screenshot.top + scroll_crop.height * l2p_scale_ratio),
+                round(tile.width * l2p_scale_ratio),
+                round(tile.height * l2p_scale_ratio),
                 rect_in_screenshot.coordinates_type,
             ),
             logical_crop_area=Region(
