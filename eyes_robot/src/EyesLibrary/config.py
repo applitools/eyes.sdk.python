@@ -1,6 +1,6 @@
 from enum import Enum
 
-import trafaret as t
+import trafaret as trf
 
 from applitools.common import (
     ChromeEmulationInfo,
@@ -26,7 +26,7 @@ class SelectedSDK(Enum):
     appium = "appium"
 
 
-class ToEnumTrafaret(t.Trafaret):
+class ToEnumTrafaret(trf.Trafaret):
     def __init__(self, convert_to_enum):
         self.converter = convert_to_enum
 
@@ -34,15 +34,15 @@ class ToEnumTrafaret(t.Trafaret):
         return self.converter(value)
 
 
-class BatchInfoTrafaret(t.Trafaret):
-    scheme = t.Dict(
+class BatchInfoTrafaret(trf.Trafaret):
+    scheme = trf.Dict(
         {
-            t.Key("id", optional=True): t.String,
-            t.Key("name", optional=True): t.String,
-            t.Key("batch_sequence_name", optional=True): t.String,
-            t.Key("started_at", optional=True): t.DateTime,
-            t.Key("properties", optional=True): t.List(
-                t.Dict(name=t.String, value=t.String)
+            trf.Key("id", optional=True): trf.String,
+            trf.Key("name", optional=True): trf.String,
+            trf.Key("batch_sequence_name", optional=True): trf.String,
+            trf.Key("started_at", optional=True): trf.DateTime,
+            trf.Key("properties", optional=True): trf.List(
+                trf.Dict(name=trf.String, value=trf.String)
             ),
         },
     )
@@ -55,29 +55,29 @@ class BatchInfoTrafaret(t.Trafaret):
         return batch
 
 
-class ViewPortTrafaret(t.Trafaret):
-    scheme = t.Dict(width=t.Int, height=t.Int)
+class ViewPortTrafaret(trf.Trafaret):
+    scheme = trf.Dict(width=trf.Int, height=trf.Int)
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return RectangleSize.from_(sanitized)
 
 
-class VisualGridOptionsTrafaret(t.Trafaret):
-    scheme = t.List(t.Dict({"key": t.String, "value": t.String}))
+class VisualGridOptionsTrafaret(trf.Trafaret):
+    scheme = trf.List(trf.Dict({"key": trf.String, "value": trf.String}))
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
         return [VisualGridOption(**dct) for dct in sanitized]
 
 
-class DesktopBrowserInfoTrafaret(t.Trafaret):
-    scheme = t.List(
-        t.Dict(
+class DesktopBrowserInfoTrafaret(trf.Trafaret):
+    scheme = trf.List(
+        trf.Dict(
             {
                 "browser_type": ToEnumTrafaret(BrowserType),
-                "width": t.Int,
-                "height": t.Int,
+                "width": trf.Int,
+                "height": trf.Int,
             }
         )
     )
@@ -87,15 +87,15 @@ class DesktopBrowserInfoTrafaret(t.Trafaret):
         return [DesktopBrowserInfo(**dct) for dct in sanitized]
 
 
-class IosDeviceInfoTrafaret(t.Trafaret):
-    scheme = t.List(
-        t.Dict(
+class IosDeviceInfoTrafaret(trf.Trafaret):
+    scheme = trf.List(
+        trf.Dict(
             {
                 "device_name": ToEnumTrafaret(IosDeviceName),
-                t.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                trf.Key("screen_orientation", optional=True): ToEnumTrafaret(
                     ScreenOrientation
                 ),
-                t.Key("ios_version", optional=True): ToEnumTrafaret(IosVersion),
+                trf.Key("ios_version", optional=True): ToEnumTrafaret(IosVersion),
             }
         )
     )
@@ -105,12 +105,12 @@ class IosDeviceInfoTrafaret(t.Trafaret):
         return [IosDeviceInfo(**dct) for dct in sanitized]
 
 
-class ChromeEmulationInfoTrafaret(t.Trafaret):
-    scheme = t.List(
-        t.Dict(
+class ChromeEmulationInfoTrafaret(trf.Trafaret):
+    scheme = trf.List(
+        trf.Dict(
             {
                 "device_name": ToEnumTrafaret(DeviceName),
-                t.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                trf.Key("screen_orientation", optional=True): ToEnumTrafaret(
                     ScreenOrientation
                 ),
             }
@@ -122,14 +122,14 @@ class ChromeEmulationInfoTrafaret(t.Trafaret):
         return [ChromeEmulationInfo(**dct) for dct in sanitized]
 
 
-class ProxyTrafaret(t.Trafaret):
-    scheme = t.Dict({t.Key("url") >> "host_or_url": t.URL}) | t.Dict(
+class ProxyTrafaret(trf.Trafaret):
+    scheme = trf.Dict({trf.Key("url") >> "host_or_url": trf.URL}) | trf.Dict(
         {
-            t.Key("host") >> "host_or_url": t.String,
-            "port": t.Int,
-            "username": t.String,
-            "password": t.String,
-            "scheme": t.String,
+            trf.Key("host") >> "host_or_url": trf.String,
+            "port": trf.Int,
+            "username": trf.String,
+            "password": trf.String,
+            "scheme": trf.String,
         },
     )
 
@@ -138,77 +138,91 @@ class ProxyTrafaret(t.Trafaret):
         return ProxySettings(host_or_url=sanitized.pop("host_or_url"), **sanitized)
 
 
-def sanitize_raw_config(raw_config):
-    # type: (dict) -> dict
-    config_scheme = t.Dict(
+class ConfigurationTrafaret(trf.Trafaret):  # typedef
+    shared_scheme = trf.Dict(
         {
-            t.Key("server_url", optional=True): t.URL,
-            t.Key("batch", optional=True): BatchInfoTrafaret,
-            t.Key("proxy", optional=True): ProxyTrafaret,
-            t.Key("app_name", optional=True): t.String,
-            t.Key("api_key", optional=True): t.String,
-            t.Key("branch_name", optional=True): t.String,
-            t.Key("parent_branch_name", optional=True): t.String,
-            t.Key("baseline_branch_name", optional=True): t.String,
-            t.Key("agent_id", optional=True): t.String,
-            t.Key("baseline_env_name", optional=True): t.String,
-            t.Key("environment_name", optional=True): t.String,
-            t.Key("save_diffs", optional=True): t.Bool,
-            t.Key("app_name", optional=True): t.String,
-            t.Key("viewport_size", optional=True): ViewPortTrafaret,
-            t.Key("match_timeout", optional=True): t.Int,
-            t.Key("save_new_tests", optional=True): t.Bool,
-            t.Key("save_failed_tests", optional=True): t.Bool,
-            t.Key("features", optional=True): ToEnumTrafaret(Feature),
-            t.Key("properties", optional=True): t.List(
-                t.Dict(name=t.String, value=t.String)
+            trf.Key("runner", optional=True): ToEnumTrafaret(SelectedSDK),
+            trf.Key("log_level", optional=True): trf.Enum("VERBOSE", "INFO"),
+            trf.Key("server_url", optional=True): trf.URL,
+            trf.Key("batch", optional=True): BatchInfoTrafaret,
+            trf.Key("proxy", optional=True): ProxyTrafaret,
+            trf.Key("app_name", optional=True): trf.String,
+            trf.Key("api_key", optional=True): trf.String,
+            trf.Key("branch_name", optional=True): trf.String,
+            trf.Key("parent_branch_name", optional=True): trf.String,
+            trf.Key("baseline_branch_name", optional=True): trf.String,
+            trf.Key("agent_id", optional=True): trf.String,
+            trf.Key("baseline_env_name", optional=True): trf.String,
+            trf.Key("environment_name", optional=True): trf.String,
+            trf.Key("save_diffs", optional=True): trf.Bool,
+            trf.Key("app_name", optional=True): trf.String,
+            trf.Key("viewport_size", optional=True): ViewPortTrafaret,
+            trf.Key("match_timeout", optional=True): trf.Int,
+            trf.Key("save_new_tests", optional=True): trf.Bool,
+            trf.Key("save_failed_tests", optional=True): trf.Bool,
+            trf.Key("features", optional=True): ToEnumTrafaret(Feature),
+            trf.Key("properties", optional=True): trf.List(
+                trf.Dict(name=trf.String, value=trf.String)
             ),
-            t.Key("eyes_selenium", optional=True): t.Dict(
+        }
+    )
+    scheme = shared_scheme + trf.Dict(
+        {
+            trf.Key("selenium", optional=True): shared_scheme
+            + trf.Dict(
                 {
-                    t.Key("force_full_page_screenshot", optional=True): t.Bool,
-                    t.Key("wait_before_screenshots", optional=True): t.Int,
-                    t.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
-                    t.Key("hide_scrollbars", optional=True): t.Bool,
-                    t.Key("hide_caret", optional=True): t.Bool,
+                    trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
+                    trf.Key("wait_before_screenshots", optional=True): trf.Int,
+                    trf.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
+                    trf.Key("hide_scrollbars", optional=True): trf.Bool,
+                    trf.Key("hide_caret", optional=True): trf.Bool,
                 },
                 allow_extra="*",
             ),
-            t.Key("eyes_appium", optional=True): t.Dict(
+            trf.Key("appium", optional=True): shared_scheme
+            + trf.Dict(
                 {
-                    t.Key("is_simulator", optional=True): t.Bool,
+                    trf.Key("is_simulator", optional=True): trf.Bool,
                 },
                 allow_extra="*",
             ),
-            t.Key("eyes_selenium_ufg", optional=True): t.Dict(
+            trf.Key("selenium_ufg", optional=True): shared_scheme
+            + trf.Dict(
                 {
-                    t.Key(
+                    trf.Key(
                         "visual_grid_options", optional=True
                     ): VisualGridOptionsTrafaret,
-                    t.Key("disable_browser_fetching", optional=True): t.Bool,
-                    t.Key("enable_cross_origin_rendering", optional=True): t.Bool,
-                    t.Key("dont_use_cookies", optional=True): t.Bool,
-                    t.Key("layout_breakpoints", optional=True): t.Bool | t.List(t.Int),
-                    t.Key(
-                        "chrome_emulatoin_devices", optional=True
-                    ): ChromeEmulationInfoTrafaret,
-                    t.Key("ios_devices", optional=True): IosDeviceInfoTrafaret,
-                    t.Key("browsers", optional=True): DesktopBrowserInfoTrafaret,
+                    trf.Key("disable_browser_fetching", optional=True): trf.Bool,
+                    trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
+                    trf.Key("dont_use_cookies", optional=True): trf.Bool,
+                    trf.Key("layout_breakpoints", optional=True): trf.Bool
+                    | trf.List(trf.Int),
+                    trf.Key("browsers", optional=True): trf.Dict(
+                        {
+                            trf.Key(
+                                "desktop", optional=True
+                            ): DesktopBrowserInfoTrafaret,
+                            trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
+                            trf.Key("chrome_emulation"): ChromeEmulationInfoTrafaret,
+                        }
+                    ),
                 },
                 allow_extra="*",
             ),
         },
         allow_extra="*",
     )
-    return config_scheme.check(raw_config)
 
+    def __init__(self, selected_sdk):
+        self._selected_sdk = selected_sdk
 
-def build_configuration(raw_config, selected_sdk):
-    # type: (dict, str) -> Configuration
-    sanitized_raw_config = sanitize_raw_config(raw_config)
-    selected_sdk_conf = sanitized_raw_config.pop(selected_sdk, {})
-    combined_raw_config = sanitized_raw_config.copy()
-    combined_raw_config.update(selected_sdk_conf)
-    conf = Configuration()
-    for key, val in combined_raw_config.items():
-        setattr(conf, key, val)
-    return conf
+    def check_and_return(self, value, context=None):
+
+        sanitized = self.scheme.check(value, context)
+        selected_sdk_conf = sanitized.pop(self._selected_sdk, {})
+        combined_raw_config = sanitized.copy()
+        combined_raw_config.update(selected_sdk_conf)
+        conf = Configuration()
+        for key, val in combined_raw_config.items():
+            setattr(conf, key, val)
+        return conf

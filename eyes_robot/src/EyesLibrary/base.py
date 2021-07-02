@@ -6,7 +6,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from applitools.common import logger as applitools_logger
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
-from .config import SelectedSDK, build_configuration
+from .config import ConfigurationTrafaret, SelectedSDK
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
@@ -101,15 +101,15 @@ class LibraryComponent(ContextAware):
 
     def _fetch_selected_sdk(self, sanitized_raw_config):
         # type: (dict) -> None
-        is_eyes_selenium = "eyes_selenium" in sanitized_raw_config
-        is_eyes_appium = "eyes_appium" in sanitized_raw_config
-        is_eyes_selenium_ufg = "eyes_selenium_ufg" in sanitized_raw_config
+        is_selenium = SelectedSDK.selenium.value in sanitized_raw_config
+        is_appium = SelectedSDK.appium.value in sanitized_raw_config
+        is_selenium_ufg = SelectedSDK.selenium_ufg.value in sanitized_raw_config
 
-        if is_eyes_selenium and not is_eyes_appium and not is_eyes_selenium_ufg:
+        if is_selenium and not is_appium and not is_selenium_ufg:
             self._selected_sdk = SelectedSDK.selenium
-        elif is_eyes_selenium_ufg and not all([is_eyes_appium, is_eyes_selenium]):
+        elif is_selenium_ufg and not all([is_appium, is_selenium]):
             self._selected_sdk = SelectedSDK.selenium_ufg
-        elif is_eyes_appium and not all([is_eyes_selenium_ufg, is_eyes_selenium]):
+        elif is_appium and not all([is_selenium_ufg, is_selenium]):
             self._selected_sdk = SelectedSDK.appium
         else:
             raise RuntimeError(
@@ -126,12 +126,12 @@ class LibraryComponent(ContextAware):
 
     def parse_configuration_and_initialize_runner(self):
         # type: () -> Configuration
-        raw_conf = BuiltIn().get_variable_value("&{applitools_conf}")
-        if raw_conf is None:
+        raw_config = BuiltIn().get_variable_value("&{applitools_conf}")
+        if raw_config is None:
             raise RuntimeError(
                 "No applitools_conf variable present or incorrect. "
                 "Check logs to see actuall error."
             )
-        self._fetch_selected_sdk(raw_conf)
+        self._fetch_selected_sdk(raw_config)
         self._create_eyes_runner_if_needed()
-        return build_configuration(raw_conf, self._selected_sdk.value)
+        return ConfigurationTrafaret(self._selected_sdk.value).check(raw_config)
