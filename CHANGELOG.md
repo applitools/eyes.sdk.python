@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - Failure to capture regions on scrolled down page [Trello 2392](https://trello.com/c/PC2vRlqV)
+- Revert 4.22.1 fixes as it caused tests to be aborted if abort was called after close_async [Trello 2654](https://trello.com/c/YewzI8IN)
 
 ## [4.22.2] - 2021-06-23
 ### Fixed
