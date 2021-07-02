@@ -365,6 +365,28 @@ class Rectangle(DictAccessMixin):
             height=self.size["height"],
         )
 
+    def get_sub_regions(  # noqa
+        self,
+        max_size,  # type: RectangleSize
+        overlap_and_crop,  # type: int
+        l2p_scale_ratio,  # type: float
+        physical_rect_in_screenshot,  # type: Region
+    ):
+        # type: (...) -> List[SubregionForStitching]
+        location = self.location
+        overlap = crop = overlap_and_crop
+        tiles = rectangle_overlapping_tiles(self, max_size, overlap + crop)
+        return [
+            SubregionForStitching.from_(
+                tile,
+                location,
+                l2p_scale_ratio,
+                crop,
+                physical_rect_in_screenshot,
+            )
+            for tile in tiles
+        ]
+
 
 @attr.s(slots=True, init=False)
 class AccessibilityRegion(Rectangle):
@@ -613,28 +635,6 @@ class Region(Rectangle):
         width = intersection_right - intersection_left
         height = intersection_bottom - intersection_top
         return Region(left, top, width, height, self.coordinates_type)
-
-    def get_sub_regions(  # noqa
-        self,
-        max_size,  # type: RectangleSize
-        overlap_and_crop,  # type: int
-        l2p_scale_ratio,  # type: float
-        physical_rect_in_screenshot,  # type: Region
-    ):
-        # type: (...) -> List[SubregionForStitching]
-        location = self.location
-        overlap = crop = overlap_and_crop
-        tiles = rectangle_overlapping_tiles(self, max_size, overlap + crop)
-        return [
-            SubregionForStitching.from_(
-                tile,
-                location,
-                l2p_scale_ratio,
-                crop,
-                physical_rect_in_screenshot,
-            )
-            for tile in tiles
-        ]
 
     def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Region
