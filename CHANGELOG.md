@@ -3,6 +3,7 @@
 - [eyes-images] Support of searching region in OCRRegion [Trello 2663](https://trello.com/c/uGPDJpmI)
 ### Fixed
 - Re-apply abort-on-error fixes avoiding aborting tests after close call [Trello 2612](https://trello.com/c/qBAEmMTQ) [Trello 2629](https://trello.com/c/BpDnwlCi)
+- ClassicRunner stitching issue [Trello 2615](https://trello.com/c/PDgW2wuN)
 
 ## [4.22.3] - 2021-07-02
 ### Fixed
