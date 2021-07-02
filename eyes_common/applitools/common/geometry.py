@@ -702,7 +702,7 @@ class SubregionForStitching(object):
             0 if tile.left == region.left else crop_size,
             0 if tile.top == region.top else crop_size,
         )
-        logical_crop_area = Region(
+        logical_crop_area = Rectangle(
             crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
         )
         paste_physical_location = tile.location + crop - region.location
