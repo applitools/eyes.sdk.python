@@ -671,9 +671,15 @@ class SubregionForStitching(object):
 
     @classmethod
     def from_tile(
-        cls, tile, scroll_size, region, l2p_scale_ratio, crop_size, rect_in_screenshot
+        cls,
+        tile,  # type: Rectangle
+        scroll_size,  # type: RectangleSize
+        region,  # type: Rectangle
+        l2p_scale_ratio,  # type: float
+        crop_size,  # type: int
+        rect_in_screenshot,  # type : Region
     ):
-        # type: (Rectangle, RectangleSize, Rectangle, float, int, Region) -> SubregionForStitching
+        # type: (...) -> SubregionForStitching
         # It's not possible to scroll too far leaving window less than
         # scroll_size visible
         scroll_to = Point(
