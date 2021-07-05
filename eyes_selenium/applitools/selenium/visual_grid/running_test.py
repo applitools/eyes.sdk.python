@@ -121,7 +121,8 @@ class RunningTestCheck(object):
                 "render_task_error", task_uuid=render_task.uuid, exc_info=e
             )
             self.running_test.pending_exceptions.append(e)
-            self.running_test.becomes_completed()
+            self.running_test.abort()
+            self.running_test.becomes_tested()
 
         render_task = VGTask(
             "RunningTest.render {} - {}".format(short_description, tag),
@@ -339,8 +340,12 @@ class RunningTest(object):
 
     def abort(self):
         # skip call of abort() in tests where close() already called
-        if self.close_queue or self.state == COMPLETED:
+        if self.state == COMPLETED:
             return None
+
+        while self.close_queue:
+            close_task = self.close_queue.pop()
+            self.watch_close.pop(close_task)
 
         def ensure_and_abort():
             if not self.eyes.is_open:
