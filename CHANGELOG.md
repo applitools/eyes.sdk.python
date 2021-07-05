@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Re-apply abort-on-error fixes avoiding aborting tests after close call [Trello 2612](https://trello.com/c/qBAEmMTQ) [Trello 2629](https://trello.com/c/BpDnwlCi)
+
 ## [4.22.3] - 2021-07-02
 ### Fixed
 - Failure to capture regions on scrolled down page [Trello 2392](https://trello.com/c/PC2vRlqV)
