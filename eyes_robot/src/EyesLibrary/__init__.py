@@ -55,7 +55,7 @@ class EyesLibrary(DynamicCore):
 
     def run_keyword(self, name, *args, **kwargs):
         try:
-            return DynamicCore.run_keyword(self, name, args, kwargs)
+            return DynamicCore.run_keyword(self, name, *args, **kwargs)
         except Exception as e:
             trb_text = traceback.format_exc()
             self.failure_occurred(e, trb_text)
