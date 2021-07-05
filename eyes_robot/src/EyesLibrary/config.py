@@ -141,8 +141,6 @@ class ProxyTrafaret(trf.Trafaret):
 class ConfigurationTrafaret(trf.Trafaret):  # typedef
     shared_scheme = trf.Dict(
         {
-            trf.Key("runner", optional=True): ToEnumTrafaret(SelectedSDK),
-            trf.Key("log_level", optional=True): trf.Enum("VERBOSE", "INFO"),
             trf.Key("server_url", optional=True): trf.URL,
             trf.Key("batch", optional=True): BatchInfoTrafaret,
             trf.Key("proxy", optional=True): ProxyTrafaret,
@@ -164,65 +162,49 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("properties", optional=True): trf.List(
                 trf.Dict(name=trf.String, value=trf.String)
             ),
-        }
+        },
+        ignore_extra="*",
     )
-    scheme = shared_scheme + trf.Dict(
+    selenium_scheme = trf.Dict(
         {
-            trf.Key("selenium", optional=True): shared_scheme
-            + trf.Dict(
+            trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
+            trf.Key("wait_before_screenshots", optional=True): trf.Int,
+            trf.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
+            trf.Key("hide_scrollbars", optional=True): trf.Bool,
+            trf.Key("hide_caret", optional=True): trf.Bool,
+        },
+        ignore_extra="*",
+    )
+    selenium_ufg_scheme = trf.Dict(
+        {
+            trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
+            trf.Key("disable_browser_fetching", optional=True): trf.Bool,
+            trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
+            trf.Key("dont_use_cookies", optional=True): trf.Bool,
+            trf.Key("layout_breakpoints", optional=True): trf.Bool | trf.List(trf.Int),
+            trf.Key("browsers", optional=True): trf.Dict(
                 {
-                    trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
-                    trf.Key("wait_before_screenshots", optional=True): trf.Int,
-                    trf.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
-                    trf.Key("hide_scrollbars", optional=True): trf.Bool,
-                    trf.Key("hide_caret", optional=True): trf.Bool,
-                },
-                allow_extra="*",
-            ),
-            trf.Key("appium", optional=True): shared_scheme
-            + trf.Dict(
-                {
-                    trf.Key("is_simulator", optional=True): trf.Bool,
-                },
-                allow_extra="*",
-            ),
-            trf.Key("selenium_ufg", optional=True): shared_scheme
-            + trf.Dict(
-                {
+                    trf.Key("desktop", optional=True): DesktopBrowserInfoTrafaret,
+                    trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
                     trf.Key(
-                        "visual_grid_options", optional=True
-                    ): VisualGridOptionsTrafaret,
-                    trf.Key("disable_browser_fetching", optional=True): trf.Bool,
-                    trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
-                    trf.Key("dont_use_cookies", optional=True): trf.Bool,
-                    trf.Key("layout_breakpoints", optional=True): trf.Bool
-                    | trf.List(trf.Int),
-                    trf.Key("browsers", optional=True): trf.Dict(
-                        {
-                            trf.Key(
-                                "desktop", optional=True
-                            ): DesktopBrowserInfoTrafaret,
-                            trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
-                            trf.Key("chrome_emulation"): ChromeEmulationInfoTrafaret,
-                        }
-                    ),
-                },
-                allow_extra="*",
+                        "chrome_emulation", optional=True
+                    ): ChromeEmulationInfoTrafaret,
+                }
             ),
         },
-        allow_extra="*",
+        ignore_extra="*",
     )
-
-    def __init__(self, selected_sdk):
-        self._selected_sdk = selected_sdk
+    appium_scheme = trf.Dict(
+        {
+            trf.Key("is_simulator", optional=True): trf.Bool,
+        },
+        ignore_extra="*",
+    )
+    scheme = shared_scheme + selenium_scheme + selenium_ufg_scheme + appium_scheme
 
     def check_and_return(self, value, context=None):
-
         sanitized = self.scheme.check(value, context)
-        selected_sdk_conf = sanitized.pop(self._selected_sdk, {})
-        combined_raw_config = sanitized.copy()
-        combined_raw_config.update(selected_sdk_conf)
         conf = Configuration()
-        for key, val in combined_raw_config.items():
+        for key, val in sanitized.items():
             setattr(conf, key, val)
         return conf

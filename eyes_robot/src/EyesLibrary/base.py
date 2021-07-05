@@ -1,12 +1,15 @@
+from copy import deepcopy
 from typing import TYPE_CHECKING, Optional
 
+import trafaret as trf
+from robot.api import logger
 from robot.api.deco import keyword  # noqa
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import logger as applitools_logger
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
-from .config import ConfigurationTrafaret, SelectedSDK
+from .config import ConfigurationTrafaret, SelectedSDK, ToEnumTrafaret
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
@@ -26,7 +29,8 @@ class ContextAware:
         """
         self.ctx = ctx
         # TODO: combine with `robot.logger`
-        self.log = applitools_logger.bind(class_=self.__class__.__name__)
+        # self.log = applitools_logger.bind(class_=self.__class__.__name__)
+        self.log = logger
 
     @property
     def driver(self):
@@ -39,6 +43,7 @@ class ContextAware:
 
 class LibraryComponent(ContextAware):
     _selected_sdk = None
+    _log_level = None
     _eyes_runners = {
         SelectedSDK.appium: ClassicRunner,
         SelectedSDK.selenium: ClassicRunner,
@@ -49,10 +54,10 @@ class LibraryComponent(ContextAware):
         self.log.info(msg, html)
 
     def debug(self, msg, html=False):
-        self.log.logger.debug(msg, html)
+        self.log.debug(msg, html)
 
     def warn(self, msg: str, html: bool = False):
-        self.log.logger.warn(msg, html)
+        self.log.warn(msg, html)
 
     def log_source(self, loglevel: str = "INFO"):
         self.ctx.log_source(loglevel)
@@ -99,24 +104,6 @@ class LibraryComponent(ContextAware):
             raise RuntimeError("No SDK have been selected yet.")
         return self._selected_sdk
 
-    def _fetch_selected_sdk(self, sanitized_raw_config):
-        # type: (dict) -> None
-        is_selenium = SelectedSDK.selenium.value in sanitized_raw_config
-        is_appium = SelectedSDK.appium.value in sanitized_raw_config
-        is_selenium_ufg = SelectedSDK.selenium_ufg.value in sanitized_raw_config
-
-        if is_selenium and not is_appium and not is_selenium_ufg:
-            self._selected_sdk = SelectedSDK.selenium
-        elif is_selenium_ufg and not all([is_appium, is_selenium]):
-            self._selected_sdk = SelectedSDK.selenium_ufg
-        elif is_appium and not all([is_selenium_ufg, is_selenium]):
-            self._selected_sdk = SelectedSDK.appium
-        else:
-            raise RuntimeError(
-                "Not possible to use `eyes_selenium`, `eyes_appium` and "
-                "`eyes_selenium_ufg` together. Please select only one specific SDK."
-            )
-
     def _create_eyes_runner_if_needed(self, selected_sdk=None):
         # type: (Optional[SelectedSDK]) -> None
         if self.ctx.eyes_runner is None:
@@ -127,11 +114,21 @@ class LibraryComponent(ContextAware):
     def parse_configuration_and_initialize_runner(self):
         # type: () -> Configuration
         raw_config = BuiltIn().get_variable_value("&{applitools_conf}")
+        raw_config_extra = BuiltIn().get_variable_value("&{applitools_extra_conf}", {})
         if raw_config is None:
             raise RuntimeError(
                 "No applitools_conf variable present or incorrect. "
                 "Check logs to see actuall error."
             )
-        self._fetch_selected_sdk(raw_config)
+        combined_raw_config = deepcopy(raw_config)
+        combined_raw_config.update(raw_config_extra)
+
+        self._selected_sdk = trf.Dict(
+            runner=ToEnumTrafaret(SelectedSDK), ignore_extra="*"
+        ).check(combined_raw_config)["runner"]
+        self._log_level = trf.Dict(
+            log_level=trf.Enum("VERBOSE", "INFO"), ignore_extra="*"
+        ).check(combined_raw_config)["log_level"]
+
         self._create_eyes_runner_if_needed()
-        return ConfigurationTrafaret(self._selected_sdk.value).check(raw_config)
+        return ConfigurationTrafaret().check(combined_raw_config)
