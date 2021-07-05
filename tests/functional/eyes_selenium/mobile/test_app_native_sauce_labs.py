@@ -143,4 +143,4 @@ def test_iOS_native_region_sauce_labs_tracking_id_sent(mobile_eyes):
         eyes.check("Contact list", Target.window())
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
 
-    assert match_window_data.options.source == "HelloWorldiOS_1_0.zip"
+    assert match_window_data.options.source == "eyes-ios-hello-world.zip"
