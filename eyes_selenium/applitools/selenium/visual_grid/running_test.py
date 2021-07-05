@@ -338,6 +338,10 @@ class RunningTest(object):
             self.watch_close[close_task] = False
             self.task_queue.append(END_OF_CHECKS)
 
+    def abort_if_not_closed(self):
+        if not self.close_queue:
+            self.abort()
+
     def abort(self):
         # skip call of abort() in tests where close() already called
         if self.state == COMPLETED:
