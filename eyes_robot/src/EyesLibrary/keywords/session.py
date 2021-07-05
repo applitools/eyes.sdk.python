@@ -1,6 +1,13 @@
+from typing import TYPE_CHECKING, Optional, Text
+
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.selenium import Eyes
+
+if TYPE_CHECKING:
+    from applitools.selenium import EyesWebDriver
+    from applitools.common import TestResults, TestResultsSummary
+    from applitools.common.utils.custom_types import ViewPort
 
 from ..base import LibraryComponent, keyword
 
@@ -12,14 +19,17 @@ class RunnerKeywords(LibraryComponent):
 
     @keyword("Eyes Get All Test Results")
     def get_all_tests_results(self):
-        self.eyes_runner.get_all_test_results()
+        # type: () -> TestResultsSummary
+        results = self.eyes_runner.get_all_test_results()
+        self.info("Running tests result: {}".format(results))
+        return results
 
 
 class SessionKeywords(LibraryComponent):
     @keyword("Eyes Open")
     def open(self, app_name=None, test_name=None, viewport_size=None):
+        # type: (Optional[Text],Optional[Text],Optional[ViewPort])->EyesWebDriver
         # Should be called before actual open
-
         config = self.parse_configuration_and_initialize_runner()
 
         if app_name:
@@ -41,12 +51,14 @@ class SessionKeywords(LibraryComponent):
                 eyes.configure.test_name = test_name
             else:
                 eyes.configure.test_name = BuiltIn().get_variable_value("${TEST NAME}")
-        eyes.open(self.fetch_driver())
+        return eyes.open(self.fetch_driver())
 
     @keyword("Eyes Close")
     def close(self):
-        self.current_eyes.close_async()
+        # type: () -> Optional[TestResults]
+        return self.current_eyes.close_async()
 
     @keyword("Eyes Abort")
     def abort(self):
-        self.current_eyes.abort_async()
+        # type: () -> Optional[TestResults]
+        return self.current_eyes.abort_async()
