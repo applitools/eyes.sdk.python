@@ -1,3 +1,4 @@
+import traceback
 import typing
 from typing import TYPE_CHECKING, Optional
 
@@ -6,6 +7,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robotlibcore import DynamicCore
 from SeleniumLibrary import RunOnFailureKeywords
 
+from applitools.common.utils.compat import raise_from
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
 from .eyes_cache import EyesCache
@@ -18,6 +20,10 @@ if TYPE_CHECKING:
 __version__ = "0.1.0"
 
 EyesT = typing.TypeVar("EyesT", bound=Eyes)
+
+
+class EyesLibError(Exception):
+    pass
 
 
 class EyesLibrary(DynamicCore):
@@ -47,19 +53,15 @@ class EyesLibrary(DynamicCore):
 
         DynamicCore.__init__(self, keywords)
 
-    def run_keyword(self, name: str, args: tuple, kwargs: dict):
+    def run_keyword(self, name, *args, **kwargs):
         try:
             return DynamicCore.run_keyword(self, name, args, kwargs)
-        except Exception:
-            self.failure_occurred()
+        except Exception as e:
+            trb_text = traceback.format_exc()
+            self.failure_occurred(e, trb_text)
 
-    def failure_occurred(self):
-        """Method that is executed when a SeleniumLibrary keyword fails.
-
-        By default, executes the registered run-on-failure keyword.
-        Libraries extending SeleniumLibrary can overwrite this hook
-        method if they want to provide custom functionality instead.
-        """
+    def failure_occurred(self, origin_exc, trb_text):
+        """Method that is executed when a keyword fails."""
         if self._running_on_failure_keyword or not self.run_on_failure_keyword:
             return
         try:
@@ -76,6 +78,10 @@ class EyesLibrary(DynamicCore):
             )
         finally:
             self._running_on_failure_keyword = False
+            raise_from(
+                EyesLibError("Failed to run EyesLibrary\n{}".format(trb_text)),
+                origin_exc,
+            )
 
     def register_eyes(self, eyes, alias):
         """Add's a `Eyes` to the library EyesCache."""
