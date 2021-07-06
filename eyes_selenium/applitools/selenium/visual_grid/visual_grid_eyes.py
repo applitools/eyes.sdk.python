@@ -369,7 +369,7 @@ class VisualGridEyes(object):
         If a test is running, aborts it. Otherwise, does nothing.
         """
         for test in self.test_list:
-            test.abort()
+            test.abort_if_not_closed()
 
     def abort(self):
         """

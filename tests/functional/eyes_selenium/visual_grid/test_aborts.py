@@ -81,3 +81,17 @@ def test_abort_after_close_async_must_not_abort(driver, vg_runner, batch_info):
     eyes.close_async()
     eyes.abort()
     all_results = vg_runner.get_all_test_results()
+
+
+def test_abort_async_after_close_async_must_not_abort(driver, vg_runner, batch_info):
+    eyes = Eyes(vg_runner)
+    eyes.configure.test_name = "Test abort async after close async VG"
+    eyes.configure.app_name = "Test Abort_VG"
+    eyes.configure.batch = batch_info
+    eyes.configure.add_browser(800, 600, BrowserType.CHROME)
+    driver.get("data:text/html,<p>Test</p>")
+    eyes.open(driver)
+    eyes.check(Target.window())
+    eyes.close_async()
+    eyes.abort_async()
+    all_results = vg_runner.get_all_test_results()
