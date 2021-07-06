@@ -131,4 +131,4 @@ class LibraryComponent(ContextAware):
         ).check(combined_raw_config)["log_level"]
 
         self._create_eyes_runner_if_needed()
-        return ConfigurationTrafaret().check(combined_raw_config)
+        return ConfigurationTrafaret(self._selected_sdk).check(combined_raw_config)

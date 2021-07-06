@@ -200,11 +200,24 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         },
         ignore_extra="*",
     )
-    scheme = shared_scheme + selenium_scheme + selenium_ufg_scheme + appium_scheme
+    scheme = shared_scheme + trf.Dict(
+        {
+            trf.Key("selenium", optional=True): shared_scheme + selenium_scheme,
+            trf.Key("appium", optional=True): shared_scheme + appium_scheme,
+            trf.Key("selenium_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
+        },
+        allow_extra="*",
+    )
+
+    def __init__(self, selected_sdk):
+        self._selected_sdk = selected_sdk
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
+        selected_sdk_conf = sanitized.pop(self._selected_sdk, {})
+        combined_raw_config = sanitized.copy()
+        combined_raw_config.update(selected_sdk_conf)
         conf = Configuration()
-        for key, val in sanitized.items():
+        for key, val in combined_raw_config.items():
             setattr(conf, key, val)
         return conf
