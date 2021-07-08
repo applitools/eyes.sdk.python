@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, List, Text, Union
+from typing import TYPE_CHECKING, List, Optional, Text, Union
 
 from PIL import Image
 
-from applitools.common import AppOutput
+from applitools.common import AppOutput, Region
 from applitools.common.utils import image_utils
 from applitools.core import TextRegionSettings as TextRegionSettingsBase
 from applitools.core.extract_text import (
@@ -18,14 +18,28 @@ if TYPE_CHECKING:
 
 
 class OCRRegion(BaseOCRRegion):
-    def __init__(self, image):
-        # type: (Union[Image.Image, Text]) -> None
+    def __init__(self, image, region_in_image=None):
+        # type: (Union[Image.Image, Text], Optional[Region]) -> None
         super(OCRRegion, self).__init__(image)
+        self._image = image_utils.image_from_path(image)
+        if region_in_image is None:
+            region_in_image = Region.from_(self._image)
+        self._region = region_in_image
 
     @property
     def image(self):
         # type: () -> Image.Image
-        return image_utils.image_from_path(self.target)
+        return self._image
+
+    @property
+    def expected_text_region(self):
+        return ExpectedTextRegion(
+            self._region.left,
+            self._region.top,
+            self._region.width,
+            self._region.height,
+            self._hint,
+        )
 
 
 class TextRegionSettings(TextRegionSettingsBase):
@@ -61,15 +75,7 @@ class ImagesExtractTextProvider(ExtractTextProvider):
                 ),
                 language=ocr_region._language,
                 min_match=ocr_region._min_match,
-                regions=[
-                    ExpectedTextRegion(
-                        0,
-                        0,
-                        width=image.width,
-                        height=image.height,
-                        expected=ocr_region._hint,
-                    )
-                ],
+                regions=[ocr_region.expected_text_region],
             )
             result = self._server_connector.get_text_in_running_session_image(data)
             results.extend(result)
