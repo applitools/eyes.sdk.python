@@ -1,4 +1,4 @@
-## [vNext]
+## [4.22.4] - 2021-07-08
 ### Fixed
 - Re-apply abort-on-error fixes avoiding aborting tests after close call [Trello 2612](https://trello.com/c/qBAEmMTQ) [Trello 2629](https://trello.com/c/BpDnwlCi)
 
