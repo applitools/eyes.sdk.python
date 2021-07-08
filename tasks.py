@@ -102,15 +102,17 @@ def _packages_resolver(
     core=False,
     selenium=False,
     images=False,
+    robot=False,
     full_path=False,
     path_as_str=False,
 ):
     packages = []
-    common_pkg, core_pkg, selenium_pkg, images_pkg = (
+    common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg = (
         "eyes_common",
         "eyes_core",
         "eyes_selenium",
         "eyes_images",
+        "eyes_robot",
     )
     if common:
         packages.append(common_pkg)
@@ -120,7 +122,8 @@ def _packages_resolver(
         packages.append(selenium_pkg)
     if images:
         packages.append(images_pkg)
-
+    if robot:
+        packages.append(robot_pkg)
     if not packages:
         packages = [common_pkg, core_pkg, selenium_pkg, images_pkg]
 
@@ -132,21 +135,27 @@ def _packages_resolver(
         yield pack
 
 
-def _fetch_js_libs_if_required(c, common, core, selenium, images):
+def _fetch_js_libs_if_required(c, common, core, selenium, images, robot):
     # get js libs only if selenium lib is installing
-    if selenium or not any([common, core, selenium, images]):
+    if selenium or not any([common, core, selenium, images, robot]):
         retrieve_js(c)
 
 
 @task
 def install_packages(
-    c, common=False, core=False, selenium=False, images=False, editable=False
+    c,
+    common=False,
+    core=False,
+    selenium=False,
+    images=False,
+    robot=False,
+    editable=False,
 ):
     packages = _packages_resolver(
-        common, core, selenium, images, full_path=True, path_as_str=True
+        common, core, selenium, images, robot, full_path=True, path_as_str=True
     )
 
-    _fetch_js_libs_if_required(c, common, core, selenium, images)
+    _fetch_js_libs_if_required(c, common, core, selenium, images, robot)
 
     editable = "-e" if editable else ""
     if sys.platform == "darwin":

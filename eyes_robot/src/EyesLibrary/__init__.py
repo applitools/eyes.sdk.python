@@ -17,7 +17,6 @@ from .keywords.session import RunnerKeywords
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
 
-__version__ = "0.1.0"
 
 EyesT = typing.TypeVar("EyesT", bound=Eyes)
 
@@ -27,6 +26,8 @@ class EyesLibError(Exception):
 
 
 class EyesLibrary(DynamicCore):
+    """"""
+
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
     ROBOT_LIBRARY_VERSION = __version__
     eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
