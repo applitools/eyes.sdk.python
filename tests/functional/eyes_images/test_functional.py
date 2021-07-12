@@ -116,13 +116,24 @@ def test_check_image_fluent_cut_provider(eyes):
 def test_extract_text(eyes):
     # type: (Eyes) -> None
     eyes.open("images", "TestExtractText")
+    result = eyes.extract_text(OCRRegion(path.join(here, "resources/extractText.png")))
+    assert result == ["This is the navigation bar"]
+
+    result = eyes.extract_text(
+        OCRRegion(path.join(here, "resources/extractText.png"), Region(55, 11, 214, 18))
+    )
+    assert result == ["s the navigation bar"]
+    eyes.close()
+
+
+def test_extract_text_regions(eyes):
+    # type: (Eyes) -> None
+    eyes.open("images", "TestExtractTextRegions")
     result = eyes.extract_text_regions(
         TextRegionSettings(".+").image(path.join(here, "resources/extractText.png"))
     )
     assert result[".+"] == [TextRegion(10, 11, 214, 18, "This is the navigation bar")]
 
-    result = eyes.extract_text(OCRRegion(path.join(here, "resources/extractText.png")))
-    assert result == ["This is the navigation bar"]
     eyes.close()
 
 
