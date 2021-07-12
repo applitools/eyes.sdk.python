@@ -1,4 +1,4 @@
-## [vNext]
+## [4.23.0] - 2021-07-12
 ### Added
 - [eyes-images] Support of searching region in OCRRegion [Trello 2663](https://trello.com/c/uGPDJpmI)
 ### Fixed
