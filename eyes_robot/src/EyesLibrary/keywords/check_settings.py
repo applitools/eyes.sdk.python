@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Optional, Text
 
+from appium.webdriver import WebElement as AppiumWebElement
 from EyesLibrary.base import LibraryComponent
 from robot.api.deco import keyword
+from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
 from applitools.common import (
     AccessibilityRegionType,
@@ -28,20 +30,20 @@ class IgnoreCheckSettingsKeyword:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object that ignores the region specified in the arguments.
-            | =Arguments=     | =Description=                                                                                    |
-            | Left (int)    | *Mandatory* - The left coordinate of the region to ignore e.g. 100                               |
-            | Top (int)     | *Mandatory* - The top coordinate of the region to ignore e.g. 150                                |
-            | Width (int)   | *Mandatory* - The width of the region to ignore e.g. 500                                         |
-            | Height (int)  | *Mandatory* - The height of the region to ignore e.g. 120                                        |
+            | =Arguments=   | =Description=                                                       |
+            | Left          | *Mandatory* - The left coordinate of the region to ignore e.g. 100  |
+            | Top           | *Mandatory* - The top coordinate of the region to ignore e.g. 150   |
+            | Width         | *Mandatory* - The width of the region to ignore e.g. 500            |
+            | Height        | *Mandatory* - The height of the region to ignore e.g. 120           |
 
         *Example:*
-            | ${target}=        | Ignore Region By Coordinates          | 10 | 20 | 100 | 100
-            | Eyes Check        | Google Homepage                       | target=${target}
+            | ${target}=        | Ignore Region By Coordinates          | 10  20  100  100  |
+            | Eyes Check        | Google Homepage                       | target=${target}  |
         *Example:*
-            | ${target}=           | Ignore Region By Coordinates       | 40  59  67  44
-            | Eyes Check           | ${target}
-            | Eyes Check Window    | Google Homepage
-            | ...   Ignore Region By Coordinates                        | 40  59  67  44|
+            | ${target}=           | Ignore Region By Coordinates       | 40  59  67  44    |
+            | Eyes Check           | ${target}                          |                   |
+            | Eyes Check Window    | Google Homepage                    |                   |
+            | ...   Ignore Region By Coordinates                        | 40  59  67  44    |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -56,17 +58,17 @@ class IgnoreCheckSettingsKeyword:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object that ignores the region of the element specified in the arguments.
-            | =Arguments=          | =Description=                                                                                    |
-            | Locator (WebElement | Locator) | *Mandatory* - The WebElement to ignore                                                           |
+            | =Arguments=    | =Description=                           |
+            | Locator        | *Mandatory* - The WebElement to ignore  |
 
         *Example:*
-            | ${element}=          | Get Webelement      | //*[@id="hplogo"] |
-            | ${target}=           | Ignore Region       | ${element}        |
-            | ${target}=           | Ignore Region       | //*[@id="hplogo"] |   ${target}
-            | Eyes Check           | ${target}
-            | Eyes Check Window    | Google Homepage     |
-            | ...   Ignore Region  | //*[@id="hplogo"]   |
-            | ...   Ignore Region  | ${element}          |
+            | ${element}=          | Get Webelement      | //*[@id="hplogo"] |              |
+            | ${target}=           | Ignore Region       | ${element}        |              |
+            | ${target}=           | Ignore Region       | //*[@id="hplogo"] |   ${target}  |
+            | Eyes Check           | ${target}           |                   |              |
+            | Eyes Check Window    | Google Homepage     |                   |              |
+            | ...   Ignore Region  | //*[@id="hplogo"]   |                   |              |
+            | ...   Ignore Region  | ${element}          |                   |              |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -74,7 +76,7 @@ class IgnoreCheckSettingsKeyword:
 
 
 class LayoutCheckSettingsKeyword:
-    @keyword("Layout Region", types=(int, int, int, int))
+    @keyword("Layout Region By Coordinates", types=(int, int, int, int))
     def layout_region_by_coordinates(
         self,
         left,  # type: int
@@ -86,20 +88,20 @@ class LayoutCheckSettingsKeyword:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with layout region specified in the arguments.
-            | =Arguments=     | =Description=                                                                                    |
-            | Left (int)    | *Mandatory* - The left coordinate of the region to layout e.g. 100                               |
-            | Top (int)     | *Mandatory* - The top coordinate of the region to layout e.g. 150                                |
-            | Width (int)   | *Mandatory* - The width of the region to layout e.g. 500                                         |
-            | Height (int)  | *Mandatory* - The height of the region to layout e.g. 120                                        |
+            | =Arguments=  | =Description=                                                  |
+            | Left    | *Mandatory* - The left coordinate of the region to layout e.g. 100  |
+            | Top     | *Mandatory* - The top coordinate of the region to layout e.g. 150   |
+            | Width   | *Mandatory* - The width of the region to layout e.g. 500            |
+            | Height  | *Mandatory* - The height of the region to layout e.g. 120           |
 
         *Example:*
-            | ${target}=        | Layout Region By Coordinates          | 10 | 20 | 100 | 100
-            | Eyes Check        | Google Homepage                       | target=${target}
+            | ${target}=        | Layout Region By Coordinates          | 10  20  100  100 |
+            | Eyes Check        | Google Homepage                       |  ${target}       |
         *Example:*
-            | ${target}=           | Layout Region By Coordinates       | 40  59  67  44
-            | Eyes Check           | ${target}
-            | Eyes Check Window    | Google Homepage
-            | ...   Ignore Region By Coordinates                        | 40  59  67  44|
+            | ${target}=           | Layout Region By Coordinates       | 40  59  67  44  |
+            | Eyes Check           | ${target}                          |                 |
+            | Eyes Check Window    | Google Homepage                    |                 |
+            | ...   Ignore Region By Coordinates                        | 40  59  67  44  |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -114,17 +116,17 @@ class LayoutCheckSettingsKeyword:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with layout region specified in the arguments.
-            | =Arguments=          | =Description=                                                                                    |
-            | Locator (WebElement | Locator) | *Mandatory* - The WebElement to layout                                                           |
+            | =Arguments=   | =Description=                            |
+            | Locator       | *Mandatory* - The WebElement to layout   |
 
         *Example:*
-            | ${element}=          | Get Webelement      | //*[@id="hplogo"] |
-            | ${target}=           | Layout Region       | ${element}        |
-            | ${target}=           | Layout Region       | //*[@id="hplogo"] |   ${target}
-            | Eyes Check           | ${target}
-            | Eyes Check Window    | Google Homepage     |
-            | ...   Layout Region  | //*[@id="hplogo"]   |
-            | ...   Layout Region  | ${element}          |
+            | ${element}=          | Get Webelement      | //*[@id="hplogo"] |              |
+            | ${target}=           | Layout Region       | ${element}        |              |
+            | ${target}=           | Layout Region       | //*[@id="hplogo"] |   ${target}  |
+            | Eyes Check           | ${target}           |                   |              |
+            | Eyes Check Window    | Google Homepage     |                   |              |
+            | ...   Layout Region  | //*[@id="hplogo"]   |                   |              |
+            | ...   Layout Region  | ${element}          |                   |              |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -202,16 +204,16 @@ class FloatingCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Max Offset (int) | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching.
-            | Left (int)       | *Mandatory* - The left coordinate of the floating e.g. 100                               |
-            | Top (int)        | *Mandatory* - The top coordinate of the floating e.g. 150                                |
-            | Width (int)      | *Mandatory* - The width of the floating region e.g. 500                                         |
-            | Height (int)     | *Mandatory* - The height of the floating region e.g. 120                                        |
+            | =Arguments=  | =Description=                                                                                                 |
+            | Max Offset   | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching. |
+            | Left         | *Mandatory* - The left coordinate of the floating e.g. 100                                                    |
+            | Top          | *Mandatory* - The top coordinate of the floating e.g. 150                                                     |
+            | Width        | *Mandatory* - The width of the floating region e.g. 500                                                       |
+            | Height       | *Mandatory* - The height of the floating region e.g. 120                                                      |
 
         *Example:*
-            | Eyes Check      |
-            ...     Floating Region By Coordinates With Max Offset  | 5  10  20  100  100
+            | Eyes Check                                            |                        |
+            | ...   Floating Region By Coordinates With Max Offset  | 5  10  20  100  100    |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -236,19 +238,19 @@ class FloatingCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Left (int)       | *Mandatory* - The left coordinate of the floating e.g. 100                               |
-            | Top (int)        | *Mandatory* - The top coordinate of the floating e.g. 150                                |
-            | Width (int)      | *Mandatory* - The width of the floating region e.g. 500                                         |
-            | Height (int)     | *Mandatory* - The height of the floating region e.g. 120                                        |
-            | Max Up Offset (int) | *Mandatory* - The maximum amount that the region can shift upwards and still be considered matching.
-            | Max Down Offset (int) | *Mandatory* - The maximum amount that the region can shift downwards and still be considered matching.
-            | Max Left Offset (int) | *Mandatory* - The maximum amount that the region can shift to the left and still be considered matching.
-            | Max Right Offset (int) | *Mandatory* - The maximum amount that the region can shift to the right and still be considered matching.
+            | =Arguments=       | =Description=                                                                                              |
+            | Left              | *Mandatory* - The left coordinate of the floating e.g. 100                                                 |
+            | Top               | *Mandatory* - The top coordinate of the floating e.g. 150                                                  |
+            | Width             | *Mandatory* - The width of the floating region e.g. 500                                                   s |
+            | Height            | *Mandatory* - The height of the floating region e.g. 120                                                   |
+            | Max Up Offset     | *Mandatory* - The maximum amount that the region can shift upwards and still be considered matching.       |
+            | Max Down Offset   | *Mandatory* - The maximum amount that the region can shift downwards and still be considered matching.     |
+            | Max Left Offset   | *Mandatory* - The maximum amount that the region can shift to the left and still be considered matching.   |
+            | Max Right Offset  | *Mandatory* - The maximum amount that the region can shift to the right and still be considered matching.  |
 
         *Example:*
-            | Eyes Check      |
-            ...     Floating Region By Coordinates  | 10  20  100  100  5  5  5  5
+            | Eyes Check                              |                                |
+            | ...     Floating Region By Coordinates  | 10  20  100  100  5  5  5  5   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -257,8 +259,14 @@ class FloatingCheckSettingsKeywords:
             region, max_up_offset, max_down_offset, max_left_offset, max_right_offset
         )
 
-    @keyword("Floating Region With Max Offset", types=(int,))
-    def floating_region(
+    @keyword(
+        "Floating Region With Max Offset",
+        types={
+            "max_offset": int,
+            "locator": (str, AppiumWebElement, SeleniumWebElement),
+        },
+    )
+    def floating_region_with_max_offset(
         self,
         max_offset,  # type: int
         locator,  # type: REGION_VALUES
@@ -267,19 +275,27 @@ class FloatingCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Max Offset (int) | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching.
-            | Locator (WebElement | Locator) | *Mandatory* - The WebElement to set as float region                                                           |
+            | =Arguments=   | =Description=                                                                                                    |
+            | Max Offset    | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching.    |
+            | Locator       | *Mandatory* - The WebElement to set as float region                                                              |
 
         *Example:*
-            | Eyes Check      |
-            ...     Floating Region With Max Offset  | 5  10  20  100  100
+            | Eyes Check                               |                       |
+            | ...     Floating Region With Max Offset  | 5  10  20  100  100   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
         return check_settings.floating(max_offset, locator)
 
-    @keyword("Floating Region", types=(int, int, int, int))
+    @keyword(
+        "Floating Region",
+        types={
+            "max_up_offset": int,
+            "max_down_offset": int,
+            "max_left_offset": int,
+            "max_right_offset": int,
+        },
+    )
     def floating_region(
         self,
         locator,  # type: REGION_VALUES
@@ -292,16 +308,16 @@ class FloatingCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Locator (WebElement | Locator) | *Mandatory* - The WebElement to set as float region.                                                           |                                                         |
-            | Max Up Offset (int) | *Mandatory* - The maximum amount that the region can shift upwards and still be considered matching.
-            | Max Down Offset (int) | *Mandatory* - The maximum amount that the region can shift downwards and still be considered matching.
-            | Max Left Offset (int) | *Mandatory* - The maximum amount that the region can shift to the left and still be considered matching.
-            | Max Right Offset (int) | *Mandatory* - The maximum amount that the region can shift to the right and still be considered matching.
+            | =Arguments=      | =Description=                                                                                                       |
+            | Locator          | *Mandatory* - The WebElement to set as float region.                                                  |
+            | Max Up Offset    | *Mandatory* - The maximum amount that the region can shift upwards and still be considered matching.             |
+            | Max Down Offset  | *Mandatory* - The maximum amount that the region can shift downwards and still be considered matching.         |
+            | Max Left Offset  | *Mandatory* - The maximum amount that the region can shift to the left and still be considered matching.       |
+            | Max Right Offset | *Mandatory* - The maximum amount that the region can shift to the right and still be considered matching.     |
 
         *Example:*
-            | Eyes Check      |
-            ...     Floating Region  | 10  20  100  100  5  5  5  5
+            | Eyes Check               |                                |
+            | ...     Floating Region  | 10  20  100  100  5  5  5  5   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -311,7 +327,7 @@ class FloatingCheckSettingsKeywords:
 
 
 class AccessibilityCheckSettingsKeywords:
-    @keyword("Accessibility Region")
+    @keyword("Accessibility Region", types={"type": str})
     def accessibility_region(
         self,
         locator,  # type: REGION_VALUES
@@ -321,23 +337,22 @@ class AccessibilityCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with accessibility region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Locator (WebElement | Locator) | *Mandatory* - The WebElement to set as float region.                                                           |                                                         |
-            | Type (str) | *Mandatory* - Type of AccessibilityRegion.
-                           Possible values:
-                                `IgnoreContrast`, `RegularText`, `LargeText`,
-                                `BoldText`, `GraphicalObject`
+            | =Arguments=   |   =Description=                                                          |
+            | Locator       | *Mandatory* - The WebElement to set as float region.     |
+            | Type          | *Mandatory* - Type of AccessibilityRegion. (`IgnoreContrast`, `RegularText`, `LargeText`, `BoldText`, `GraphicalObject`)    |
+
+
 
         *Example:*
-            | Eyes Check      |
-            ...     Accessibility Region  |  //selector    GraphicalObject
+            | Eyes Check                    |                                   |
+            | ...     Accessibility Region  |  //selector    GraphicalObject    |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
         return check_settings.accessibility(locator, AccessibilityRegionType(type))
 
-    @keyword("Accessibility Region By Coordinates")
-    def accessibility_region(
+    @keyword("Accessibility Region By Coordinates", types=(int, int, int, int))
+    def accessibility_region_by_coordinates(
         self,
         left,  # type: int
         top,  # type: int
@@ -349,19 +364,16 @@ class AccessibilityCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with accessibility region specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | Left (int)       | *Mandatory* - The left coordinate of the accessibility region e.g. 100                               |
-            | Top (int)        | *Mandatory* - The top coordinate of the accessibility region e.g. 150                                |
-            | Width (int)      | *Mandatory* - The width of the accessibility region e.g. 500                                         |
-            | Height (int)     | *Mandatory* - The height of the accessibility region e.g. 120                                        |
-            | Type (str) | *Mandatory* - Type of AccessibilityRegion.
-                           Possible values:
-                                `IgnoreContrast`, `RegularText`, `LargeText`,
-                                `BoldText`, `GraphicalObject`
+            | =Arguments=      | =Description=                                                            |
+            | Left             | *Mandatory* - The left coordinate of the accessibility region e.g. 100   |
+            | Top              | *Mandatory* - The top coordinate of the accessibility region e.g. 150    |
+            | Width            | *Mandatory* - The width of the accessibility region e.g. 500             |
+            | Height           | *Mandatory* - The height of the accessibility region e.g. 120            |
+            | Type             | *Mandatory* - Type of AccessibilityRegion. (`IgnoreContrast`, `RegularText`, `LargeText`, `BoldText`, `GraphicalObject`)    |
 
         *Example:*
-            | Eyes Check      |
-            ...     Accessibility Region  |  //selector    GraphicalObject
+            | Eyes Check                    |                                  |
+            | ...     Accessibility Region  |  //selector    GraphicalObject   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -381,14 +393,14 @@ class UFGCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with VisualGridOption specified in the arguments.
-            | =Arguments=      | =Description=                                                                                    |
-            | name (str) | *Mandatory* - The VisualGridOption name.                                                           |                                                         |
-            | value (str) | *Mandatory* - The VisualGridOption value.
+            | =Arguments=   | =Description=                              |                                                           |
+            | name          | *Mandatory* - The VisualGridOption name.   |                                                     |                                                         |
+            | value         | *Mandatory* - The VisualGridOption value.  |
 
         *Example:*
-            | Eyes Check      |
-            ...     Visual Grid Option  |  some name    some value
-            ...     Visual Grid Option  |  some name2    some value2
+            | Eyes Check                  |
+            | ...     Visual Grid Option  |  key name     value   |
+            | ...     Visual Grid Option  |  key name2    value   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -403,13 +415,13 @@ class UFGCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with disable_browser_fetching specified in the arguments.
-            | =Arguments=      | =Description=
-            | disable (bool) | *Mandatory* - Disable browser fetching
+            | =Arguments=      | =Description=               |
+            | disable          | Disable browser fetching    |
 
         *Example:*
-            | Eyes Check      |
-            ...     Disable Browser Fetching
-            ...     Disable Browser Fetching    False
+            | Eyes Check                        |           |
+            | ...     Disable Browser Fetching  |           |
+            | ...     Disable Browser Fetching  |  False    |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -424,13 +436,13 @@ class UFGCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with enabled layout_breakpoints specified in the arguments.
-            | =Arguments=      | =Description=
-            | enable (bool) | *Mandatory* - Enable layout breakpoints
+            | =Arguments=   | =Description=               |
+            | enable        | Enable layout breakpoints   |
 
         *Example:*
-            | Eyes Check      |
-            ...     Enable Layout Breakpoints
-            ...     Enable Layout Breakpoints   False
+            | Eyes Check                         |          |
+            | ...     Enable Layout Breakpoints  |          |
+            | ...     Enable Layout Breakpoints  |  False   |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -439,19 +451,19 @@ class UFGCheckSettingsKeywords:
     @keyword("Layout Breakpoints", types=(str,))
     def layout_breakpoints(
         self,
-        breakpoints=True,  # type:str
+        breakpoints,  # type:str
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified layout_breakpoints in the arguments.
-            | =Arguments=      | =Description=
-            | breakpoints (str) | *Mandatory* - Specify layout breakpoint, e.g. 25 56 89
+            | =Arguments=     | =Description=                             |
+            | breakpoints     | Specify layout breakpoint, e.g. 25 56 89  |
 
         *Example:*
-            | Eyes Check      |
-            ...     Layout Breakpoints
-            ...     Layout Breakpoints   False
+            | Eyes Check                  |             |
+            | ...     Layout Breakpoints  |             |
+            | ...     Layout Breakpoints  |   False     |
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
@@ -499,6 +511,7 @@ class CheckSettingsKeywords(
     ContentCheckSettingsKeyword,
     StrictCheckSettingsKeywords,
     FloatingCheckSettingsKeywords,
+    AccessibilityCheckSettingsKeywords,
     UFGCheckSettingsKeywords,
 ):
     @keyword("Scroll Root Element")
