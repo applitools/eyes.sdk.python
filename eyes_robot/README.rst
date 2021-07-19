@@ -19,3 +19,7 @@ Usage
 Please check the applitools website for usage instructions:
 
     # TODO: add tutorials
+
+Tips
+----
+In PyCharm, the default `intellibot` plugin is abandoned and broken. You could use fork https://github.com/lte2000/intellibot
