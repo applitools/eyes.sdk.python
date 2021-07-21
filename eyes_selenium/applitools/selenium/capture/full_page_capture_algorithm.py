@@ -188,7 +188,7 @@ class FullPageCaptureAlgorithm(object):
             origin_position = stitch_provider.set_position(part_region_location)
 
             target_position = part_region.paste_physical_location.offset(
-                part_region_location - origin_position
+                origin_position - part_region_location
             )
 
             # Actually taking the screenshot.
@@ -309,9 +309,11 @@ class FullPageCaptureAlgorithm(object):
         logger.info(
             "Entire page region: %s, image part size: %s" % (full_area, part_image_size)
         )
+        # Current stitching algorithm expects all parts to be in zero-based rectangle
+        zero_based_full_area = full_area.offset(-full_area.location)
         # Getting the list of sub-regions composing the whole region (we'll take
         # screenshot for each one).
-        image_parts = full_area.get_sub_regions(
+        image_parts = zero_based_full_area.get_sub_regions(
             part_image_size,
             self.stitch_overlap,
             pixel_ratio,
