@@ -184,17 +184,17 @@ class Point(DictAccessMixin):
         """
         return Point(self.x, self.y)
 
-    @overload
+    @overload  # noqa
     def offset(self, location):
         # type: (Point) -> Point
         pass
 
-    @overload
+    @overload  # noqa
     def offset(self, dx, dy):
         # type: (int, int) -> Point
         pass
 
-    def offset(self, location_or_dx, dy=None):
+    def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Point
         """Get a location translated by the specified amount.
 
@@ -345,7 +345,7 @@ class Rectangle(DictAccessMixin):
         # type: (int, int) -> Rectangle
         pass
 
-    def offset(self, location_or_dx, dy=None):
+    def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Rectangle
         """Get an offset region.
 
@@ -677,7 +677,7 @@ class SubregionForStitching(object):
         region,  # type: Rectangle
         l2p_scale_ratio,  # type: float
         crop_size,  # type: int
-        rect_in_screenshot,  # type : Region
+        rect_in_screenshot,  # type: Region
     ):
         # type: (...) -> SubregionForStitching
         # It's not possible to scroll too far leaving less than scroll_size area
