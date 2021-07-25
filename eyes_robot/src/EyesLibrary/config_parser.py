@@ -20,7 +20,7 @@ from applitools.core import Feature
 from applitools.selenium import BatchInfo, Configuration
 
 
-class SelectedSDK(Enum):
+class SelectedRunner(Enum):
     selenium = "selenium"
     selenium_ufg = "selenium_ufg"
     appium = "appium"
@@ -177,6 +177,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
     selenium_ufg_scheme = trf.Dict(
         {
+            trf.Key("runner_options", optional=True): trf.Dict(concurency=trf.Int),
             trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
             trf.Key("disable_browser_fetching", optional=True): trf.Bool,
             trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
@@ -209,15 +210,24 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         allow_extra="*",
     )
 
-    def __init__(self, selected_sdk):
-        self._selected_sdk = selected_sdk
+    def __init__(self, selected_sdk, add_to_config):
+        # type: (SelectedRunner, Configuration) -> None
+        self._selected_runner = selected_sdk
+        self._exists_configuration = add_to_config
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
-        selected_sdk_conf = sanitized.pop(self._selected_sdk, {})
+        if self._selected_runner:
+            selected_sdk_conf = sanitized.pop(self._selected_runner, {})
+        else:
+            # Parse full config if no runner specified
+            selected_sdk_conf = sanitized.pop(SelectedRunner.selenium, {})
+            selected_sdk_conf.update(sanitized.pop(SelectedRunner.selenium_ufg, {}))
+            selected_sdk_conf.update(sanitized.pop(SelectedRunner.appium, {}))
+
         combined_raw_config = sanitized.copy()
         combined_raw_config.update(selected_sdk_conf)
-        conf = Configuration()
+        conf = self._exists_configuration or Configuration()
         for key, val in combined_raw_config.items():
             setattr(conf, key, val)
         return conf
