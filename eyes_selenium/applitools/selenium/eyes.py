@@ -406,6 +406,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
         pass
 
     def check(self, check_settings, name=None):
+        # type: (SeleniumCheckSettings, Optional[Text]) -> MatchResult
         if isinstance(name, SeleniumCheckSettings) or isinstance(
             check_settings, basestring
         ):
