@@ -72,7 +72,7 @@ class IgnoreCheckSettingsKeyword:
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.ignore(locator)
+        return check_settings.ignore(*self.get_by_selectors_or_webelements(locator))
 
 
 class LayoutCheckSettingsKeyword:
@@ -130,11 +130,11 @@ class LayoutCheckSettingsKeyword:
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.layout(locator)
+        return check_settings.layout(*self.get_by_selectors_or_webelements(locator))
 
 
 class ContentCheckSettingsKeyword:
-    @keyword("Content Region", types=(int, int, int, int))
+    @keyword("Content Region By Coordinates", types=(int, int, int, int))
     def content_region_by_coordinates(
         self,
         left,  # type: int
@@ -157,7 +157,7 @@ class ContentCheckSettingsKeyword:
         # type: (...)->SeleniumCheckSettings
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.content(locator)
+        return check_settings.content(*self.get_by_selectors_or_webelements(locator))
 
 
 class StrictCheckSettingsKeywords:
@@ -184,7 +184,7 @@ class StrictCheckSettingsKeywords:
         # type: (...)->SeleniumCheckSettings
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.strict(locator)
+        return check_settings.strict(*self.get_by_selectors_or_webelements(locator))
 
 
 class FloatingCheckSettingsKeywords:
@@ -285,7 +285,9 @@ class FloatingCheckSettingsKeywords:
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.floating(max_offset, locator)
+        return check_settings.floating(
+            max_offset, self.get_by_selector_or_webelement(locator)
+        )
 
     @keyword(
         "Floating Region",
@@ -322,7 +324,11 @@ class FloatingCheckSettingsKeywords:
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
         return check_settings.floating(
-            locator, max_up_offset, max_down_offset, max_left_offset, max_right_offset
+            self.get_by_selector_or_webelement(locator),
+            max_up_offset,
+            max_down_offset,
+            max_left_offset,
+            max_right_offset,
         )
 
 
@@ -349,7 +355,9 @@ class AccessibilityCheckSettingsKeywords:
         """
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.accessibility(locator, AccessibilityRegionType(type))
+        return check_settings.accessibility(
+            self.get_by_selector_or_webelement(locator), AccessibilityRegionType(type)
+        )
 
     @keyword("Accessibility Region By Coordinates", types=(int, int, int, int))
     def accessibility_region_by_coordinates(
@@ -523,7 +531,10 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        return check_settings.scroll_root_element(locator)
+
+        return check_settings.scroll_root_element(
+            self.get_by_selector_or_webelement(locator)
+        )
 
     @keyword("Variant Group Id", types=(str,))
     def variation_group_id(
@@ -536,16 +547,16 @@ class CheckSettingsKeywords(
             check_settings = SeleniumCheckSettings()
         return check_settings.variation_group_id(variation_group_id)
 
-    @keyword("Match Level")
+    @keyword("Match Level", types=(str,))
     def match_level(
         self,
-        match_level,  # type: MatchLevel
+        match_level,  # type: Text
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         if check_settings is None:
             check_settings = SeleniumCheckSettings()
-        match_level = MatchLevel(match_level)
+        match_level = MatchLevel(match_level.upper())
         return check_settings.match_level(match_level)
 
     @keyword("Enable Patterns", types=(bool,))
