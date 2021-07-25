@@ -1,17 +1,26 @@
 import traceback
 import typing
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Text
 
+import yaml
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from robotlibcore import DynamicCore
-from SeleniumLibrary import RunOnFailureKeywords
 
 from applitools.common.utils.compat import raise_from
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
+from .__version__ import __version__
+from .config_parser import ConfigurationTrafaret, SelectedRunner
+from .element_finder import ElementFinder
 from .eyes_cache import EyesCache
-from .keywords import CheckKeywords, SessionKeywords, TargetKeywords
+from .keywords import (
+    CheckKeywords,
+    CheckSettingsKeywords,
+    ConfigurationKeywords,
+    SessionKeywords,
+    TargetKeywords,
+)
 from .keywords.session import RunnerKeywords
 
 if TYPE_CHECKING:
@@ -26,30 +35,57 @@ class EyesLibError(Exception):
 
 
 class EyesLibrary(DynamicCore):
-    """"""
+    """
+    EyesLibrary is a visual verification library for [http://robotframework.org/|Robot Framework]. that uses
+    [https://applitools.com/docs/api/eyes-sdk/index-gen/classindex-selenium-python_sdk4.html|Applitools Eyes SDK Python] and
+    [http://robotframework.org/SeleniumLibrary/SeleniumLibrary.html|SeleniumLibrary] /
+    [http://serhatbolsu.github.io/robotframework-appiumlibrary/AppiumLibrary.html|AppiumLibrary].
+
+    """
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
     ROBOT_LIBRARY_VERSION = __version__
     eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
-    config = Configuration(app_name="Test App")  # type: Configuration
     driver = None  # type: Optional[AnyWebDriver]
+    raw_config = None  # type: Optional[dict]
+    _selected_runner = None  # type: Optional[SelectedRunner]
+    _log_level = None  # type: Optional[Text]
 
     def __init__(
         self,
+        runner=None,  # type: Optional[Text]
+        config=None,  # type: Optional[Text]
+        log_level=None,  # type: Optional[Text]
         run_on_failure="Eyes Abort",
     ):
+        # type: (Text, Text, Text, Text) -> None
         self._eyes_registry = EyesCache()
         self._running_keyword = None
         self._running_on_failure_keyword = False
-        self.run_on_failure_keyword = RunOnFailureKeywords.resolve_keyword(
-            run_on_failure
-        )
+        self.run_on_failure_keyword = run_on_failure
+        self._element_finder = ElementFinder(self)
+        self._log_level = log_level
+        self._configuration = Configuration()
+
+        if config:
+            if isinstance(config, dict):
+                self.raw_config = config
+            else:
+                with open(config, "r") as f:
+                    self.raw_config = yaml.safe_load(f.read())
+
+            self._selected_runner = SelectedRunner(runner)
+            self._configuration = self.update_configuration(
+                self._selected_runner, self.raw_config, self._configuration
+            )
 
         keywords = [
             RunnerKeywords(self),
             SessionKeywords(self),
             CheckKeywords(self),
             TargetKeywords(self),
+            CheckSettingsKeywords(self),
+            ConfigurationKeywords(self),
         ]
 
         DynamicCore.__init__(self, keywords)
@@ -94,3 +130,18 @@ class EyesLibrary(DynamicCore):
         if not self._eyes_registry.current:
             raise RuntimeError("No Eyes is open.")
         return self._eyes_registry.current
+
+    @property
+    def selected_runner(self):
+        # type: () -> SelectedRunner
+        if self._selected_runner is None:
+            raise RuntimeError("No runner have been selected yet.")
+        return self._selected_runner
+
+    @property
+    def configure(self):
+        return self._configuration
+
+    def update_configuration(self, selected_runner, raw_config, configuration):
+        # type: (SelectedRunner, dict, Configuration) -> Configuration
+        return ConfigurationTrafaret(selected_runner, configuration).check(raw_config)

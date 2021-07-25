@@ -2,20 +2,14 @@ from typing import TYPE_CHECKING, Optional, Text
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common.selenium import Configuration
-from applitools.selenium import Eyes
-
-from ..config import SelectedRunner
-
-if TYPE_CHECKING:
-    from applitools.selenium import EyesWebDriver
-    from applitools.common import (
-        TestResults,
-        TestResultsSummary,
-        RectangleSize,
-        BatchInfo,
-        MatchLevel,
-    )
+from applitools.common import (
+    BatchInfo,
+    MatchLevel,
+    RectangleSize,
+    TestResults,
+    TestResultsSummary,
+)
+from applitools.selenium import Eyes, EyesWebDriver
 
 from ..base import LibraryComponent, keyword
 
@@ -45,7 +39,7 @@ class SessionKeywords(LibraryComponent):
             "host_app": (str, None),
             "match_level": (str, None),
             "batch": (str, BatchInfo, None),
-            "baseline_name": (str, None),
+            "baseline_env_name": (str, None),
             "hide_scrollbars": (bool, None),
             "stitch_mode": (str, None),
             "force_full_page_screenshot": (bool, None),
@@ -110,10 +104,7 @@ class SessionKeywords(LibraryComponent):
         *Example:*
             | Eyes Open | AppName | TestName | 1024 | 768 | OSOverrideName | AppOverrideName | batchname=Some batch name |
         """
-        # Should be called before actual open
-        config = self.parse_configuration_and_initialize_runner(
-            # runner=SelectedRunner(runner)
-        )  # type: Configuration
+        config = self.ctx.configure
 
         if app_name:
             config.app_name = app_name

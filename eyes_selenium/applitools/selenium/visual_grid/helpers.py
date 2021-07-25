@@ -1,4 +1,3 @@
-from collections import Counter
 from typing import TYPE_CHECKING, Union
 
 from applitools.common import (
