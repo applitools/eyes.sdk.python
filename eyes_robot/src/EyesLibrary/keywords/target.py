@@ -12,6 +12,8 @@ from ..utils import collect_check_settings
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement, FrameReference
 
+    from ..custom_types import Locator
+
 
 class CheckKeywords(LibraryComponent):
     @keyword("Eyes Check")
@@ -22,7 +24,7 @@ class CheckKeywords(LibraryComponent):
     @keyword("Eyes Check Region")
     def check_region(
         self,
-        locator,  # type: Union[Region,Text,List,Tuple,AnyWebElement]
+        locator,  # type: Locator
         tag,  # type:Text
         *fluent_keywords,  # type: tuple[Any]
     ):
@@ -64,7 +66,7 @@ class TargetKeywords(LibraryComponent):
 
     @keyword("Eyes Target Region", tags=("CheckSettings",))
     def target_by_region(self, locator, *keywords):
-        # type: (AnyWebElement,tuple[Any]) -> SeleniumCheckSettings
+        # type: (Locator,tuple[Any]) -> SeleniumCheckSettings
         return collect_check_settings(
             Target.region(self.get_by_selector_or_webelement(locator)),
             self.defined_keywords,
@@ -82,7 +84,7 @@ class TargetKeywords(LibraryComponent):
 
     @keyword("Eyes Target Frame")
     def target_by_frame(self, locator, *keywords):
-        # type: (AnyWebElement,tuple[Any]) -> SeleniumCheckSettings
+        # type: (Locator,tuple[Any]) -> SeleniumCheckSettings
         return collect_check_settings(
             Target.frame(self.get_by_selector_or_webelement(locator)),
             self.defined_keywords,

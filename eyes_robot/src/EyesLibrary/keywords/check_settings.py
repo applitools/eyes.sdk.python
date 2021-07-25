@@ -14,7 +14,7 @@ from applitools.common import (
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import REGION_VALUES
+    from EyesLibrary.custom_types import Locator
 
 
 class IgnoreCheckSettingsKeyword:
@@ -52,7 +52,7 @@ class IgnoreCheckSettingsKeyword:
     @keyword("Ignore Region")
     def ignore_region(
         self,
-        locator,  # type:REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type: Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
@@ -110,7 +110,7 @@ class LayoutCheckSettingsKeyword:
     @keyword("Layout Region")
     def layout_region(
         self,
-        locator,  # type:REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type: Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
@@ -151,7 +151,7 @@ class ContentCheckSettingsKeyword:
     @keyword("Content Region")
     def content_region(
         self,
-        locator,  # type:REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type: Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
@@ -178,7 +178,7 @@ class StrictCheckSettingsKeywords:
     @keyword("Strict Region")
     def strict_region(
         self,
-        locator,  # type:REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type: Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
@@ -269,7 +269,7 @@ class FloatingCheckSettingsKeywords:
     def floating_region_with_max_offset(
         self,
         max_offset,  # type: int
-        locator,  # type: REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
@@ -300,7 +300,7 @@ class FloatingCheckSettingsKeywords:
     )
     def floating_region(
         self,
-        locator,  # type: REGION_VALUES
+        locator,  # type: Locator
         max_up_offset,  # type: int
         max_down_offset,  # type: int
         max_left_offset,  # type: int
@@ -336,7 +336,7 @@ class AccessibilityCheckSettingsKeywords:
     @keyword("Accessibility Region", types={"type": str})
     def accessibility_region(
         self,
-        locator,  # type: REGION_VALUES
+        locator,  # type: Locator
         type,  # type: AccessibilityRegionType
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
@@ -525,7 +525,7 @@ class CheckSettingsKeywords(
     @keyword("Scroll Root Element")
     def scroll_root_element(
         self,
-        locator,  # type: REGION_VALUES
+        locator,  # type: Locator
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings

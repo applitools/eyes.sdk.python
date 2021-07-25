@@ -3,8 +3,9 @@ from __future__ import absolute_import
 from typing import TYPE_CHECKING, Any, Dict, List, Text, Tuple, Union
 
 if TYPE_CHECKING:
+    from appium.webdriver import WebElement as AppiumWebElement
     from selenium.webdriver.remote.webdriver import WebDriver
-    from selenium.webdriver.remote.webelement import WebElement
+    from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
     from applitools.common.geometry import RectangleSize, Region
     from applitools.core.triggers import ActionTrigger
@@ -16,7 +17,9 @@ if TYPE_CHECKING:
     Num = Union[int, float]
 
     AnyWebDriver = Union[EyesWebDriver, WebDriver]  # typedef
-    AnyWebElement = Union[EyesWebElement, WebElement]  # typedef
+    AnyWebElement = Union[
+        EyesWebElement, SeleniumWebElement, AppiumWebElement
+    ]  # typedef
 
     FrameNameOrId = Text  # typedef
     FrameIndex = int  # typedef
