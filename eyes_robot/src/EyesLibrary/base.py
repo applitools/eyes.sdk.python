@@ -1,20 +1,20 @@
-from copy import deepcopy
 from typing import TYPE_CHECKING, Optional
 
-import trafaret as trf
 from robot.api import logger
 from robot.api.deco import keyword  # noqa
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common import logger as applitools_logger
-from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
+from applitools.common.utils import cached_property
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium.validators import is_webelement
 
-from .config import ConfigurationTrafaret, SelectedSDK, ToEnumTrafaret
+from .config_parser import SelectedRunner
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import AnyWebDriver
+    from applitools.common.utils.custom_types import AnyWebDriver, BySelector
 
     from . import EyesLibrary
+    from .custom_types import Locator
 
 __all__ = ("ContextAware", "LibraryComponent", "keyword")
 
@@ -32,6 +32,26 @@ class ContextAware:
         # self.log = applitools_logger.bind(class_=self.__class__.__name__)
         self.log = logger
 
+    def find_element(self, locator):
+        """Returns web element with Selenium and Appium locators"""
+        return self.ctx._element_finder.find(locator)
+
+    def get_by_selector_or_webelement(self, locator):
+        # type: ( Locator) -> BySelector
+        if is_webelement(locator):
+            return locator
+        return self.ctx._element_finder.convert_to_by_selector(locator)
+
+    def get_by_selectors_or_webelements(self, locator):
+        # type: (Locator) -> list[BySelector]
+        """
+        Returns [By.NAME, 'selector'] with Selenium and Appium locators or WebElement
+        """
+        if isinstance(locator, list):
+            return [self.get_by_selector_or_webelement(loc) for loc in locator]
+        else:
+            return [self.get_by_selector_or_webelement(locator)]
+
     @property
     def driver(self):
         return self.ctx.driver
@@ -40,15 +60,32 @@ class ContextAware:
     def drivers(self):
         return self.ctx._drivers
 
+    @cached_property
+    def defined_keywords(self):
+        # type: () -> list[str]
+        return list(self.ctx.keywords.keys())
+
 
 class LibraryComponent(ContextAware):
-    _selected_sdk = None
+    _selected_runner = None
     _log_level = None
     _eyes_runners = {
-        SelectedSDK.appium: ClassicRunner,
-        SelectedSDK.selenium: ClassicRunner,
-        SelectedSDK.selenium_ufg: VisualGridRunner,
+        SelectedRunner.appium: ClassicRunner,
+        SelectedRunner.selenium: ClassicRunner,
+        SelectedRunner.selenium_ufg: VisualGridRunner,
     }
+
+    def __init__(self, *args, **kwargs):
+        super(LibraryComponent, self).__init__(*args, **kwargs)
+        libraries = BuiltIn().get_library_instance(all=True)
+        self._libraries = {
+            SelectedRunner.appium: libraries.get("AppiumLibrary"),
+            SelectedRunner.selenium: libraries.get("SeleniumLibrary"),
+            SelectedRunner.selenium_ufg: libraries.get("SeleniumLibrary"),
+        }
+
+    def convert_to_by_selector(self, locator):
+        return self.ctx._element_finder.convert_to_by_selector(locator)
 
     def info(self, msg: str, html: bool = False):
         self.log.info(msg, html)
@@ -80,6 +117,14 @@ class LibraryComponent(ContextAware):
         # type: () -> Eyes
         return self.ctx.current_eyes
 
+    def _create_eyes_runner_if_needed(self, selected_sdk=None):
+        # type: (Optional[SelectedRunner]) -> None
+        if self.ctx.eyes_runner is None:
+            # TODO: add configs for runner
+            # TODO: where to add those params? Cyppres adds to config file
+            selected_sdk = selected_sdk or self.ctx.selected_runner
+            self.ctx.eyes_runner = self._eyes_runners[selected_sdk]()
+
     def fetch_driver(self):
         # type: () -> AnyWebDriver
         libraries = BuiltIn().get_library_instance(all=True)
@@ -96,39 +141,3 @@ class LibraryComponent(ContextAware):
                 return selenium_library.driver
             elif appium_library:
                 return appium_library._current_application()
-
-    @property
-    def selected_sdk(self):
-        # type: () -> SelectedSDK
-        if self._selected_sdk is None:
-            raise RuntimeError("No SDK have been selected yet.")
-        return self._selected_sdk
-
-    def _create_eyes_runner_if_needed(self, selected_sdk=None):
-        # type: (Optional[SelectedSDK]) -> None
-        if self.ctx.eyes_runner is None:
-            # TODO: add configs here
-            selected_sdk = selected_sdk or self.selected_sdk
-            self.ctx.eyes_runner = self._eyes_runners[selected_sdk]()
-
-    def parse_configuration_and_initialize_runner(self):
-        # type: () -> Configuration
-        raw_config = BuiltIn().get_variable_value("&{applitools_conf}")
-        raw_config_extra = BuiltIn().get_variable_value("&{applitools_extra_conf}", {})
-        if raw_config is None:
-            raise RuntimeError(
-                "No applitools_conf variable present or incorrect. "
-                "Check logs to see actuall error."
-            )
-        combined_raw_config = deepcopy(raw_config)
-        combined_raw_config.update(raw_config_extra)
-
-        self._selected_sdk = trf.Dict(
-            runner=ToEnumTrafaret(SelectedSDK), ignore_extra="*"
-        ).check(combined_raw_config)["runner"]
-        self._log_level = trf.Dict(
-            log_level=trf.Enum("VERBOSE", "INFO"), ignore_extra="*"
-        ).check(combined_raw_config)["log_level"]
-
-        self._create_eyes_runner_if_needed()
-        return ConfigurationTrafaret(self._selected_sdk).check(combined_raw_config)
