@@ -2,14 +2,14 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from robot.libraries import BuiltIn
-
 from EyesLibrary.utils import (
-    extract_keyword_and_arguments,
-    collect_check_settings,
     SEPARATOR,
+    collect_check_settings,
+    extract_keyword_and_arguments,
     splits_args_by_separator,
 )
+from robot.libraries import BuiltIn
+
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 
