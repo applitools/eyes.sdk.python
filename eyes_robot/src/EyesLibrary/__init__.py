@@ -23,6 +23,9 @@ from .keywords import (
 )
 from .keywords.session import RunnerKeywords
 
+# from SeleniumLibrary import RunOnFailureKeywords
+from .library_listener import LibraryListener
+
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver
 
@@ -64,6 +67,7 @@ class EyesLibrary(DynamicCore):
         self._running_on_failure_keyword = False
         self.run_on_failure_keyword = run_on_failure
         self._element_finder = ElementFinder(self)
+        self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
         self._log_level = log_level
         self._configuration = Configuration()
 

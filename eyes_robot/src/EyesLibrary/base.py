@@ -123,11 +123,7 @@ class LibraryComponent(ContextAware):
             # TODO: add configs for runner
             selected_sdk = selected_sdk or self.ctx.selected_runner
             # TODO: probably need to add runner_options to Configuration class
-            runner_options = (
-                self.ctx.configure.runner_options
-                if getattr(self.ctx.configure, "runner_options")
-                else {}
-            )
+            runner_options = getattr(self.ctx.configure, "runner_options", {})
             self.ctx.eyes_runner = self._eyes_runners[selected_sdk](**runner_options)
 
     def fetch_driver(self):
