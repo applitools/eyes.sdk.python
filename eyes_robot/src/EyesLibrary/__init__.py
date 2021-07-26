@@ -1,3 +1,4 @@
+import os
 import traceback
 import typing
 from typing import TYPE_CHECKING, Optional, Text
@@ -75,6 +76,11 @@ class EyesLibrary(DynamicCore):
             if isinstance(config, dict):
                 self.raw_config = config
             else:
+                if not os.path.isabs(config):
+                    suite_path = os.path.dirname(
+                        BuiltIn().get_variable_value("${SUITE_SOURCE}")
+                    )
+                    config = os.path.join(suite_path, config)
                 with open(config, "r") as f:
                     self.raw_config = yaml.safe_load(f.read())
 
