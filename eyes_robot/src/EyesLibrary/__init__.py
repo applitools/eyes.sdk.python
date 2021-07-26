@@ -81,6 +81,8 @@ class EyesLibrary(DynamicCore):
                         BuiltIn().get_variable_value("${SUITE_SOURCE}")
                     )
                     config = os.path.join(suite_path, config)
+                if not os.path.exists(config):
+                    raise ValueError("No configuration in path: {}".format(config))
                 with open(config, "r") as f:
                     self.raw_config = yaml.safe_load(f.read())
 
@@ -138,7 +140,7 @@ class EyesLibrary(DynamicCore):
     def current_eyes(self):
         # type: () -> Eyes
         if not self._eyes_registry.current:
-            raise RuntimeError("No Eyes is open.")
+            raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current
 
     @property
