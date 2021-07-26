@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Text
+from typing import TYPE_CHECKING, Optional, Text, Union
 
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -60,7 +60,7 @@ class SessionKeywords(LibraryComponent):
         host_app=None,  # type: Optional[Text]
         match_level=None,  # type: Optional[Text]
         baseline_env_name=None,  # type: Optional[Text]
-        batch=None,  # type: Optional[Text]
+        batch=None,  # type: Optional[Union[BatchInfo,Text]]
         branch_name=None,  # type: Optional[Text]
         parent_branch_name=None,  # type: Optional[Text]
         force_full_page_screenshot=None,  # type: Optional[bool]
@@ -85,7 +85,7 @@ class SessionKeywords(LibraryComponent):
             | Host App                     | The browser name for the test, can be used to override the browser name to allow cross browser verification                                 |
             | Match Level                  | The match level for the comparison of this test's checkpoints - can be STRICT, LAYOUT, CONTENT or EXACT                                     |
             | Baseline Env Name            | Name of the branch where the baseline reference will be taken from and where new and accepted steps will be saved to                        |
-            | Batch (str or BatchInfo)     | The desired batch. See `Group tests into batches`                                                                                           |
+            | Batch                        | The desired batch. See `Group tests into batches`                                                                                           |
             | Branch Name                  | The branch to use to check test                                                                                                             |
             | Parent Branch Name           | Parent Branch to base the new Branch on                                                                                                     |
             | Force Full Page Screenshot   | Will force the browser to take a screenshot of whole page                                                                                   |
@@ -189,3 +189,7 @@ class SessionKeywords(LibraryComponent):
             | Eyes Abort |
         """
         return self.current_eyes.abort_async()
+
+    @keyword("Is Eyes Open")
+    def is_open(self):
+        return self.current_eyes.is_open
