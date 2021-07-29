@@ -1,8 +1,11 @@
+import re
 from collections import defaultdict
-from typing import Any, Generator, Text
+from typing import Any, Generator, Text, Tuple
 
 from robot.libraries.BuiltIn import BuiltIn
 
+from applitools.common import Region
+from applitools.common.utils.converters import round_converter
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 SEPARATOR = object()
@@ -60,3 +63,40 @@ def collect_check_settings(
             separated_args += (check_settings,)
             executor(keyword, *separated_args)
     return check_settings
+
+
+int_float_pattern = r"\d+(?:\.\d+)?"
+
+
+def parse_viewport_size(text):
+    num_ptrs = (int_float_pattern,) * 2
+    match = re.match(r"\[(%s) (%s)\]" % num_ptrs, text)
+    if match is None:
+        raise ValueError(
+            "Incorrect value of viewport: {}.\n\t Format should be: [800 700]".format(
+                text
+            )
+        )
+    groups = match.groups()
+    return {
+        "width": round_converter(float(groups[0])),
+        "height": round_converter(float(groups[1])),
+    }
+
+
+def parse_region(text):
+    num_ptrs = (int_float_pattern,) * 4
+    match = re.match(r"\[(%s) (%s) (%s) (%s)\]" % num_ptrs, text)
+    if match is None:
+        raise ValueError(
+            "Incorrect value of region: {}.\n\t Format should be: [10 10 10 10]".format(
+                text
+            )
+        )
+    groups = match.groups()
+    return Region(
+        left=float(groups[0]),
+        top=float(groups[1]),
+        width=float(groups[2]),
+        height=float(groups[3]),
+    )
