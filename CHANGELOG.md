@@ -1,3 +1,7 @@
+## [4.23.1] - 2021-07-21
+### Fixed
+- ClassicRunner stitching issue [Trello 2615](https://trello.com/c/PDgW2wuN)
+
 ## [4.23.0] - 2021-07-12
 ### Added
 - [eyes-images] Support of searching region in OCRRegion [Trello 2663](https://trello.com/c/uGPDJpmI)

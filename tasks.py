@@ -83,6 +83,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "tox==3.14.3",
         "pytest-rerunfailures",
         "pytest-dictsdiff",
+        "dictdiffer==0.8.1",
         "contextlib2",
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]

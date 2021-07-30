@@ -275,11 +275,11 @@ def test_set_viewport_size_10_10_win_firefox(sauce_firefox_w10):
     with pytest.raises(EyesError, match="Failed to set the viewport size"):
         set_viewport_size(sauce_firefox_w10, RectangleSize(10, 10))
 
-    assert get_viewport_size(sauce_firefox_w10) == RectangleSize(454, 43)
+    assert get_viewport_size(sauce_firefox_w10) == RectangleSize(454, 68)
 
 
 def test_set_viewport_size_10_10_mac_firefox(sauce_firefox_macos):
     with pytest.raises(EyesError, match="Failed to set the viewport size"):
         set_viewport_size(sauce_firefox_macos, RectangleSize(10, 10))
 
-    assert get_viewport_size(sauce_firefox_macos) == RectangleSize(450, 38)
+    assert get_viewport_size(sauce_firefox_macos) == RectangleSize(450, 63)

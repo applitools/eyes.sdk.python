@@ -337,12 +337,12 @@ class Rectangle(DictAccessMixin):
 
     @overload  # noqa
     def offset(self, location):
-        # type: (Point) -> Region
+        # type: (Point) -> Rectangle
         pass
 
     @overload  # noqa
     def offset(self, dx, dy):
-        # type: (int, int) -> Region
+        # type: (int, int) -> Rectangle
         pass
 
     def offset(self, location_or_dx, dy=None):  # noqa
@@ -364,6 +364,28 @@ class Rectangle(DictAccessMixin):
             width=self.size["width"],
             height=self.size["height"],
         )
+
+    def get_sub_regions(
+        self,
+        max_size,  # type: RectangleSize
+        overlap_and_crop,  # type: int
+        l2p_scale_ratio,  # type: float
+        physical_rect_in_screenshot,  # type: Region
+    ):
+        # type: (...) -> List[SubregionForStitching]
+        overlap = crop = overlap_and_crop
+        tiles = overlapping_tiles_from_rectangle(self, max_size, overlap + crop)
+        return [
+            SubregionForStitching.from_tile(
+                tile,
+                max_size,
+                self,
+                l2p_scale_ratio,
+                crop,
+                physical_rect_in_screenshot,
+            )
+            for tile in tiles
+        ]
 
 
 @attr.s(slots=True, init=False)
@@ -614,137 +636,6 @@ class Region(Rectangle):
         height = intersection_bottom - intersection_top
         return Region(left, top, width, height, self.coordinates_type)
 
-    def get_sub_regions(  # noqa
-        self,
-        max_sub_region_size,  # type: RectangleSize
-        logical_overlap,  # type: int
-        l2p_scale_ratio,  # type: float
-        physical_rect_in_screenshot,  # type: Region
-    ):
-        # type: (...) -> List[SubregionForStitching]
-        sub_regions = []
-
-        double_logical_overlap = logical_overlap * 2
-        physical_overlap = round(double_logical_overlap * l2p_scale_ratio)
-
-        need_v_scroll = self.height > physical_rect_in_screenshot.height
-        need_h_scroll = self.width > physical_rect_in_screenshot.width
-
-        scroll_y = current_top = 0
-        current_logical_height = max_sub_region_size.height
-
-        delta_y = current_logical_height - double_logical_overlap
-
-        is_top_edge = True
-        is_bottom_edge = False
-
-        scale_ratio_offset = round(l2p_scale_ratio - 1)
-
-        while not is_bottom_edge:
-            current_scroll_top = scroll_y + max_sub_region_size.height
-            if current_scroll_top >= self.height:
-                if not is_top_edge:
-                    scroll_y = self.height - current_logical_height
-                    current_logical_height = self.height - current_top
-                    current_top = (
-                        self.height
-                        - current_logical_height
-                        - double_logical_overlap
-                        - logical_overlap
-                        + scale_ratio_offset
-                    )
-                else:
-                    current_logical_height = self.height - current_top
-                is_bottom_edge = True
-
-            scroll_x = current_left = 0
-            current_logical_width = max_sub_region_size.width
-
-            delta_x = current_logical_width - double_logical_overlap
-
-            is_left_edge = True
-            is_right_edge = False
-
-            while not is_right_edge:
-                current_scroll_right = scroll_x + max_sub_region_size.width
-                if current_scroll_right >= self.width:
-                    if not is_left_edge:
-                        scroll_x = self.width - current_logical_width
-                        current_logical_width = self.width - current_left
-                        current_left = (
-                            self.width
-                            - current_logical_width
-                            - double_logical_overlap
-                            - logical_overlap
-                            + scale_ratio_offset
-                        )
-                    else:
-                        current_logical_width = self.width - current_left
-                    is_right_edge = True
-
-                physical_crop_area = Region.from_(physical_rect_in_screenshot)
-                logical_crop_area = Region(
-                    0, 0, current_logical_width, current_logical_height
-                )
-                paste_point = Point(current_left, current_top)
-
-                # handle horizontal
-                if is_right_edge:
-                    physical_width = round(current_logical_width * l2p_scale_ratio)
-                    physical_crop_area.left = (
-                        physical_rect_in_screenshot.right - physical_width
-                    )
-                    physical_crop_area.width = physical_width
-
-                if not is_left_edge:
-                    logical_crop_area.left += logical_overlap
-                    logical_crop_area.width -= logical_overlap
-
-                if is_right_edge and not is_left_edge:
-                    physical_crop_area.left -= physical_overlap * 2
-                    physical_crop_area.width += physical_overlap * 2
-                    logical_crop_area.width += double_logical_overlap * 2
-
-                # handle vertical
-                if is_bottom_edge:
-                    physical_height = round(current_logical_height * l2p_scale_ratio)
-                    physical_crop_area.top = (
-                        physical_rect_in_screenshot.bottom - physical_height
-                    )
-                    physical_crop_area.height = physical_height
-                if not is_top_edge:
-                    logical_crop_area.top += logical_overlap
-                    logical_crop_area.height -= logical_overlap
-                if is_bottom_edge and not is_top_edge:
-                    physical_crop_area.top -= physical_overlap * 2
-                    physical_crop_area.height += physical_overlap * 2
-                    logical_crop_area.height += double_logical_overlap * 2
-
-                subregion = SubregionForStitching(
-                    Point(scroll_x, scroll_y),
-                    Point.from_(paste_point),
-                    Region.from_(physical_crop_area),
-                    Region.from_(logical_crop_area),
-                )
-                logger.debug("adding subregion - {}".format(subregion))
-                sub_regions.append(subregion)
-
-                current_left += delta_x
-                scroll_x += delta_x
-
-                if need_h_scroll and is_left_edge:
-                    current_left += logical_overlap + scale_ratio_offset
-                is_left_edge = False
-
-            current_top += delta_y
-            scroll_y += delta_y
-
-            if need_v_scroll and is_top_edge:
-                current_top += logical_overlap + scale_ratio_offset
-            is_top_edge = False
-
-        return sub_regions
-
     def offset(self, location_or_dx, dy=None):  # noqa
         # type: (Union[Point, int], Optional[int]) -> Region
         r = super(Region, self).offset(location_or_dx, dy)
@@ -777,3 +668,77 @@ class SubregionForStitching(object):
     paste_physical_location = attr.ib()  # type: Point
     physical_crop_area = attr.ib()  # type: Region
     logical_crop_area = attr.ib()  # type: Region
+
+    @classmethod
+    def from_tile(
+        cls,
+        tile,  # type: Rectangle
+        scroll_size,  # type: RectangleSize
+        region,  # type: Rectangle
+        l2p_scale_ratio,  # type: float
+        crop_size,  # type: int
+        rect_in_screenshot,  # type: Region
+    ):
+        # type: (...) -> SubregionForStitching
+        # It's not possible to scroll too far leaving less than scroll_size area
+        # visible, scroll as far possible then
+        scroll_to = Point(
+            min(tile.left, region.right - scroll_size.width),
+            min(tile.top, region.bottom - scroll_size.height),
+        )
+        # If we couldn't scroll to the tile exactly, redundant pixels should be cropped
+        scroll_crop = RectangleSize(
+            max(0, tile.left - scroll_to.x), max(0, tile.top - scroll_to.y)
+        )
+        physical_crop_area = Region(
+            round(rect_in_screenshot.left + scroll_crop.width * l2p_scale_ratio),
+            round(rect_in_screenshot.top + scroll_crop.height * l2p_scale_ratio),
+            round(tile.width * l2p_scale_ratio),
+            round(tile.height * l2p_scale_ratio),
+            rect_in_screenshot.coordinates_type,
+        )
+        # Don't do additional "logical" cropping on top and left borders
+        crop = Point(
+            0 if tile.left == region.left else crop_size,
+            0 if tile.top == region.top else crop_size,
+        )
+        logical_crop_area = Region(
+            crop.x, crop.y, tile.width - crop.x, tile.height - crop.y
+        )
+        paste_physical_location = tile.location + crop - region.location
+        return cls(
+            scroll_to, paste_physical_location, physical_crop_area, logical_crop_area
+        )
+
+
+def tiles_from_rectangle(rect, tile_size):
+    # type: (Rectangle, RectangleSize) -> List[Rectangle]
+    """Breaks the rect rectangle into tile_size sized tiles
+    Smaller pieces are placed near bottom and right borders if rect doesn't split even.
+    """
+    # Having smaller tiles close to top and left borders could have saved from
+    # calculations of scrolling and cropping offsets for them later, but that breaks
+    # existing tests that leave scrollbar visible when stitching
+    tiles = []
+    for top in range(rect.top, rect.bottom, tile_size.height):
+        height = min(tile_size.height, rect.bottom - top)
+        for left in range(rect.left, rect.right, tile_size.width):
+            width = min(tile_size.width, rect.right - left)
+            tiles.append(Rectangle(left, top, width, height))
+    return tiles  # noqa
+
+
+def overlapping_tiles_from_rectangle(rect, tile_size, overlap):
+    # type: (Rectangle, RectangleSize, int) -> List[Rectangle]
+    """Breaks the rect rectangle into tile_size sized tiles where most tiles have
+    redundant space on their right and bottom edge of the `overlap` size,
+    it is covered by the next tile to it's right and below.
+    Tiles on the right and bottom edge do not have that space to be covered."""
+    overlap_reduced_rect = Rectangle(
+        rect.left, rect.top, rect.width - overlap, rect.height - overlap
+    )
+    overlap_reduced_tile = tile_size - RectangleSize(overlap, overlap)
+    tiles = tiles_from_rectangle(overlap_reduced_rect, overlap_reduced_tile)
+    return [
+        Rectangle(t.left, t.top, t.width + overlap, t.height + overlap) for t in tiles
+    ]
