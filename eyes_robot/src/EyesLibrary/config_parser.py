@@ -149,23 +149,19 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("branch_name", optional=True): trf.String,
             trf.Key("parent_branch_name", optional=True): trf.String,
             trf.Key("baseline_branch_name", optional=True): trf.String,
-            trf.Key("agent_id", optional=True): trf.String,
             trf.Key("baseline_env_name", optional=True): trf.String,
-            trf.Key("environment_name", optional=True): trf.String,
             trf.Key("save_diffs", optional=True): trf.Bool,
             trf.Key("app_name", optional=True): trf.String,
             trf.Key("viewport_size", optional=True): ViewPortTrafaret,
             trf.Key("match_timeout", optional=True): trf.Int,
             trf.Key("save_new_tests", optional=True): trf.Bool,
             trf.Key("save_failed_tests", optional=True): trf.Bool,
-            trf.Key("features", optional=True): ToEnumTrafaret(Feature),
             trf.Key("properties", optional=True): trf.List(
                 trf.Dict(name=trf.String, value=trf.String)
             ),
         },
-        ignore_extra="*",
     )
-    selenium_scheme = trf.Dict(
+    selenium_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
             trf.Key("wait_before_screenshots", optional=True): trf.Int,
@@ -173,11 +169,10 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("hide_scrollbars", optional=True): trf.Bool,
             trf.Key("hide_caret", optional=True): trf.Bool,
         },
-        ignore_extra="*",
     )
-    selenium_ufg_scheme = trf.Dict(
+    selenium_ufg_scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("runner_options", optional=True): trf.Dict(concurency=trf.Int),
+            trf.Key("runner_options", optional=True): trf.Dict(concurrency=trf.Int),
             trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
             trf.Key("disable_browser_fetching", optional=True): trf.Bool,
             trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
@@ -193,13 +188,11 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
                 }
             ),
         },
-        ignore_extra="*",
     )
-    appium_scheme = trf.Dict(
+    appium_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("is_simulator", optional=True): trf.Bool,
         },
-        ignore_extra="*",
     )
     scheme = shared_scheme + trf.Dict(
         {
@@ -207,7 +200,6 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("appium", optional=True): shared_scheme + appium_scheme,
             trf.Key("selenium_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
         },
-        allow_extra="*",
     )
 
     def __init__(self, selected_sdk, add_to_config):
