@@ -1,14 +1,14 @@
 import pytest
 from EyesLibrary.utils import parse_region, parse_viewport_size
 
-from applitools.common import Region
+from applitools.common import Region, RectangleSize
 
 
 @pytest.mark.parametrize(
     "to_parse,result",
     [
-        ("[34 65]", {"width": 34, "height": 65}),
-        ("[34 6.6]", {"width": 34, "height": 7}),
+        ("[34 65]", RectangleSize(width=34, height=65)),
+        ("[34 6.6]", RectangleSize(width=34, height=7)),
     ],
 )
 def test_parse_viewport_size_success(to_parse, result):

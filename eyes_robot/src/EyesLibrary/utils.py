@@ -4,7 +4,7 @@ from typing import Any, Generator, Text, Tuple
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common import Region
+from applitools.common import Region, RectangleSize
 from applitools.common.utils.converters import round_converter
 from applitools.selenium.fluent import SeleniumCheckSettings
 
@@ -61,6 +61,10 @@ def collect_check_settings(
     for keyword, args in extract_keyword_and_arguments(keywords, defined_keywords):
         for separated_args in splits_args_by_separator(args):
             separated_args += (check_settings,)
+            import ipdb
+
+            ipdb.stdout.update_stdout()
+            ipdb.stdout.set_trace()
             executor(keyword, *separated_args)
     return check_settings
 
@@ -68,7 +72,7 @@ def collect_check_settings(
 int_float_pattern = r"\d+(?:\.\d+)?"
 
 
-def parse_viewport_size(text):
+def parse_viewport_size(text) -> RectangleSize:
     num_ptrs = (int_float_pattern,) * 2
     match = re.match(r"\[(%s) (%s)\]" % num_ptrs, text)
     if match is None:
@@ -78,10 +82,7 @@ def parse_viewport_size(text):
             )
         )
     groups = match.groups()
-    return {
-        "width": round_converter(float(groups[0])),
-        "height": round_converter(float(groups[1])),
-    }
+    return RectangleSize(width=float(groups[0]), height=float(groups[1]))
 
 
 def parse_region(text):
