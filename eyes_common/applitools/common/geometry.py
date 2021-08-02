@@ -17,7 +17,7 @@ from .utils.json_utils import JsonInclude
 
 if TYPE_CHECKING:
     from .ultrafastgrid.render_browser_info import IRenderBrowserinfo
-    from .utils.custom_types import CodedRegionPadding
+    from .utils.custom_types import CodedRegionPadding, Num
 
 __all__ = (
     "Point",
@@ -65,9 +65,9 @@ class RectangleSize(DictAccessMixin):
     height = attr.ib(metadata={JsonInclude.THIS: True})  # type:int
 
     def __init__(self, width, height):
-        # type: (int, int) -> None
-        self.width = round_converter(width)
-        self.height = round_converter(height)
+        # type: (Num, Num) -> None
+        self.width = round_converter(width)  # type: int
+        self.height = round_converter(height)  # type: int
 
     def __str__(self):
         return "RectangleSize({width} x {height})".format(
@@ -232,16 +232,16 @@ class Rectangle(DictAccessMixin):
 
     def __init__(
         self,
-        left,  # type: int
-        top,  # type: int
-        width,  # type: int
-        height,  # type: int
+        left,  # type: Num
+        top,  # type: Num
+        width,  # type: Num
+        height,  # type: Num
     ):
         # type: (...) -> None
-        self.left = round_converter(left)
-        self.top = round_converter(top)
-        self.width = round_converter(width)
-        self.height = round_converter(height)
+        self.left = round_converter(left)  # type: int
+        self.top = round_converter(top)  # type: int
+        self.width = round_converter(width)  # type: int
+        self.height = round_converter(height)  # type: int
 
     @classmethod  # noqa
     def EMPTY(cls):
@@ -402,10 +402,10 @@ class AccessibilityRegion(Rectangle):
 
     def __init__(
         self,
-        left,  # type: int
-        top,  # type: int
-        width,  # type: int
-        height,  # type: int
+        left,  # type: Num
+        top,  # type: Num
+        width,  # type: Num
+        height,  # type: Num
         type,  # type: AccessibilityRegionType
     ):
         # type: (...) -> None
@@ -470,10 +470,10 @@ class Region(Rectangle):
 
     def __init__(
         self,
-        left,  # type: int
-        top,  # type: int
-        width,  # type: int
-        height,  # type: int
+        left,  # type: Num
+        top,  # type: Num
+        width,  # type: Num
+        height,  # type: Num
         coordinates_type=CoordinatesType.SCREENSHOT_AS_IS,  # type: CoordinatesType
     ):
         # type: (...) -> None
