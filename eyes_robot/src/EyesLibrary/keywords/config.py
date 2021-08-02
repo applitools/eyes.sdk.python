@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Text, Union
+from typing import Any, Optional, Text, Union
 
 from EyesLibrary.base import LibraryComponent
 from robot.api.deco import keyword
@@ -10,7 +10,7 @@ from applitools.selenium import BatchInfo
 
 class ConfigurationKeywords(LibraryComponent):
     @keyword(
-        "Crate Batch Info",
+        "Create Batch Info",
         types={
             "name": str,
             "started_at": (datetime, str, None),
@@ -51,3 +51,13 @@ class ConfigurationKeywords(LibraryComponent):
         if batch_id:
             batch = batch.with_batch_id(batch_id)
         return batch
+
+    @keyword("Get Eyes Configure Property", types=(str,))
+    def get_eyes_configure_property(self, name):
+        # type: (Text) -> Any
+        return getattr(self.current_eyes.configure, name)
+
+    @keyword("Set Eyes Configure Property", types=(str,))
+    def set_eyes_configure_property(self, name, value):
+        # type: (Text, Any) -> Any
+        return setattr(self.current_eyes.configure, name, value)
