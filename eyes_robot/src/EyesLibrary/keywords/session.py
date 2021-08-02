@@ -12,6 +12,7 @@ from applitools.common import (
 from applitools.selenium import Eyes, EyesWebDriver
 
 from ..base import LibraryComponent, keyword
+from ..utils import parse_viewport_size
 
 
 class RunnerKeywords(LibraryComponent):
@@ -54,8 +55,7 @@ class SessionKeywords(LibraryComponent):
         self,
         app_name=None,  # type: Optional[Text]
         test_name=None,  # type: Optional[Text]
-        width=None,  # type: Optional[int]
-        height=None,  # type: Optional[int]
+        viewport_size=None,  # type: Optional[int]
         host_os=None,  # type: Optional[Text]
         host_app=None,  # type: Optional[Text]
         match_level=None,  # type: Optional[Text]
@@ -79,8 +79,7 @@ class SessionKeywords(LibraryComponent):
             | =Arguments=                  | =Description=                                                                                                                               |
             | App Name                     | *Mandatory* - The name of the application under test                                                                                        |
             | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                                                               |
-            | Width                        | The width of the browser window e.g. 1920                                                                                                   |
-            | Height                       | The height of the browser window e.g. 1080                                                                                                  |
+            | Viewport Size                | The viewport size of the browser window in format [width height] e.g. [1900 1080]                                                                                                  |
             | Host OS                      | The operating system of the test, can be used to override the OS name to allow cross OS verification                                        |
             | Host App                     | The browser name for the test, can be used to override the browser name to allow cross browser verification                                 |
             | Match Level                  | The match level for the comparison of this test's checkpoints - can be STRICT, LAYOUT, CONTENT or EXACT                                     |
@@ -125,8 +124,8 @@ class SessionKeywords(LibraryComponent):
             else:
                 raise TypeError("No proper value for BatchInfo")
 
-        if width and height:
-            config.viewport_size = RectangleSize(width, height)
+        if viewport_size:
+            config.viewport_size = parse_viewport_size(viewport_size)
 
         if host_os:
             config.host_os = host_os
