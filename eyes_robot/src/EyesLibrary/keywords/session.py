@@ -34,8 +34,7 @@ class SessionKeywords(LibraryComponent):
         types={
             "app_name": (str, None),
             "test_name": (str, None),
-            "width": (int, None),
-            "height": (int, None),
+            "viewport_size": (str, None),
             "host_os": (str, None),
             "host_app": (str, None),
             "match_level": (str, None),
