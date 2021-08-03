@@ -50,7 +50,7 @@ class SessionKeywords(LibraryComponent):
             "is_disabled": (bool, None),
         },
     )
-    def open(
+    def open(  # noqa
         self,
         app_name=None,  # type: Optional[Text]
         test_name=None,  # type: Optional[Text]
@@ -190,4 +190,13 @@ class SessionKeywords(LibraryComponent):
 
     @keyword("Is Eyes Open")
     def is_open(self):
-        return self.current_eyes.is_open
+        # type: () -> bool
+        """
+        Returns True if Eyes is opened
+
+        *Example:*
+            | ${is_open}= | Is Eyes Open |
+        """
+        if self.current_eyes:
+            return self.current_eyes.is_open
+        return False
