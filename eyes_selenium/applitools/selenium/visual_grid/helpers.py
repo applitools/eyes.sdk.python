@@ -1,8 +1,9 @@
-from collections import Counter
-from typing import TYPE_CHECKING, Union
+from time import time
+from typing import TYPE_CHECKING, Optional, Union
 
 from applitools.common import (
     DiffsFoundError,
+    EyesError,
     NewTestError,
     TestFailedError,
     TestResultContainer,
@@ -17,14 +18,15 @@ if TYPE_CHECKING:
     from applitools.selenium.visual_grid import RunningTest
 
 
-def wait_till_tests_completed(test_provider):
-    # type: (Union[Callable, List]) -> None
+def wait_till_tests_completed(test_provider, timeout_ms=None):
+    # type: (Union[Callable, List], Optional[int]) -> None
     def get_tests(provider):
         if isinstance(test_provider, list):
             return test_provider
         return test_provider()
 
-    while True:
+    deadline = time() + datetime_utils.to_sec(timeout_ms) if timeout_ms else None
+    while deadline is None or time() < deadline:
         states = list(set(t.state for t in get_tests(test_provider)))
         if not states:
             # probably some exception is happened during execution
@@ -32,6 +34,9 @@ def wait_till_tests_completed(test_provider):
         if len(states) == 1 and states[0] == "completed":
             break
         datetime_utils.sleep(1500, msg="Waiting for state completed!")
+    else:
+        logger.warning("Wait till tests completed timeout exceeded", timeout=timeout_ms)
+        raise EyesError("Tests didn't finish in {} ms".format(timeout_ms))
 
 
 def collect_test_results(tests, should_raise_exception):
