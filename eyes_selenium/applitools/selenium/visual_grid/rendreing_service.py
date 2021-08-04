@@ -71,15 +71,16 @@ class RenderingService(object):
                         task.on_error(e)
                     continue
                 statuses = []
-                for task, r in zip(render_tasks, responses):
-                    if (
-                        r.render_status == RenderStatus.NEED_MORE_RESOURCE
-                        or r.need_more_dom
-                    ):
-                        task.on_error(EyesError("Some resources aren't uploaded"))
-                    else:
+                for task, running_render in zip(render_tasks, responses):
+                    if running_render.render_status == RenderStatus.RENDERING:
                         statuses.append(
-                            _Status(r.render_id, task.on_success, task.on_error)
+                            _Status(
+                                running_render.render_id, task.on_success, task.on_error
+                            )
+                        )
+                    else:
+                        task.on_error(
+                            EyesError("Unexpected render response", running_render)
                         )
                 with self._have_status_tasks:
                     self._status_tasks.extend(statuses)
