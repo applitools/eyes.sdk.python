@@ -182,7 +182,7 @@ class VisualGridRunner(EyesRunner):
         self._thread.join()
         self.rendering_service.shutdown()
 
-    def _get_all_test_results_impl(self, should_raise_exception=True, timeout_ms=None):
+    def _get_all_test_results_impl(self, should_raise_exception, timeout_ms):
         # type: (bool, Optional[int]) -> TestResultsSummary
         wait_till_tests_completed(self._get_all_running_tests, timeout_ms)
 

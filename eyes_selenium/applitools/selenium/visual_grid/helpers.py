@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from applitools.selenium.visual_grid import RunningTest
 
 
-def wait_till_tests_completed(test_provider, timeout_ms=None):
+def wait_till_tests_completed(test_provider, timeout_ms):
     # type: (Union[Callable, List], Optional[int]) -> None
     def get_tests(provider):
         if isinstance(test_provider, list):
