@@ -338,10 +338,14 @@ class RunningTest(object):
             self.watch_close[close_task] = False
             self.task_queue.append(END_OF_CHECKS)
 
+    @property
+    def is_closed(self):
+        return bool(self.close_queue)
+
     def abort_if_not_closed(self):
         # This method is to be called from Eyes.*abort calls.
         # This way abort will be ignored if Eyes were already explicitly closed.
-        if not self.close_queue:
+        if not self.is_closed:
             self.abort()
 
     def abort(self):

@@ -28,6 +28,7 @@ __all__ = ("BatchInfo", "Configuration")
 MINIMUM_MATCH_TIMEOUT_MS = 600
 DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
 DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
+DEFAULT_ALL_TEST_RESULTS_TIMEOUT = 30 * 60  # seconds
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
 
 

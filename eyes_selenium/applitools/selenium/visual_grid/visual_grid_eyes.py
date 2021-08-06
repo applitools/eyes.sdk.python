@@ -7,6 +7,7 @@ from copy import deepcopy
 import attr
 
 from applitools.common import EyesError, RectangleSize, TestResults, deprecated
+from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from applitools.common.ultrafastgrid import (
     DesktopBrowserInfo,
     JobInfo,
@@ -353,7 +354,7 @@ class VisualGridEyes(object):
         self.logger.debug("VisualGridEyes.close()", test_list=self.test_list)
         self.close_async()
 
-        wait_till_tests_completed(self.test_list)
+        wait_till_tests_completed(self.test_list, DEFAULT_ALL_TEST_RESULTS_TIMEOUT)
 
         self._is_opened = False
 
