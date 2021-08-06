@@ -1,5 +1,6 @@
+from collections import Iterable
 from time import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Text, Union
 
 from applitools.common import (
     DiffsFoundError,
@@ -26,6 +27,7 @@ def wait_till_tests_completed(test_provider, timeout_ms):
         return test_provider()
 
     deadline = time() + datetime_utils.to_sec(timeout_ms) if timeout_ms else None
+    iterations = 0
     while deadline is None or time() < deadline:
         states = list(set(t.state for t in get_tests(test_provider)))
         if not states:
@@ -34,9 +36,40 @@ def wait_till_tests_completed(test_provider, timeout_ms):
         if len(states) == 1 and states[0] == "completed":
             break
         datetime_utils.sleep(1500, msg="Waiting for state completed!")
+        iterations += 1
+        if iterations % 200 == 0:
+            logger.debug(
+                "Unfinished tests state report",
+                unfinished_tests=tests_state_report(
+                    t for t in get_tests(test_provider) if t.state != "completed"
+                ),
+            )
     else:
-        logger.warning("Wait till tests completed timeout exceeded", timeout=timeout_ms)
+        logger.warning(
+            "Tests completion timeout exceeded",
+            timeout=timeout_ms,
+            unfinished_tests=tests_state_report(
+                t for t in get_tests(test_provider) if t.state != "completed"
+            ),
+        )
         raise EyesError("Tests didn't finish in {} ms".format(timeout_ms))
+
+
+def tests_state_report(tests):
+    # type: (Iterable[RunningTest]) -> List[Dict[Text, Any]]
+    state_report = []
+    for test in tests:
+        state_report.append(
+            {
+                "app_name": test.configuration.app_name,
+                "test_name": test.configuration.test_name,
+                "browser_info": test.browser_info,
+                "uuid": test.test_uuid,
+                "state": test.state,
+                "active_check": test.task_lock,
+            }
+        )
+    return state_report
 
 
 def collect_test_results(tests, should_raise_exception):
