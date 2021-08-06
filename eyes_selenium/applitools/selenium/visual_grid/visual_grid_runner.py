@@ -182,7 +182,7 @@ class VisualGridRunner(EyesRunner):
         self._thread.join()
         self.rendering_service.shutdown()
 
-    def _get_all_test_results_impl(self, should_raise_exception, timeout_ms):
+    def _get_all_test_results_impl(self, should_raise_exception, timeout):
         # type: (bool, Optional[int]) -> TestResultsSummary
         unclosed_test_names = set()
         for test in self._get_all_running_tests():
@@ -193,7 +193,7 @@ class VisualGridRunner(EyesRunner):
             logger.warning(
                 "Unclosed tests found and aborted", tests_names=unclosed_test_names
             )
-        wait_till_tests_completed(self._get_all_running_tests, timeout_ms)
+        wait_till_tests_completed(self._get_all_running_tests, timeout)
 
         # finish processing of all tasks and shutdown threads
         self._stop()
