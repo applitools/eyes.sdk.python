@@ -191,8 +191,9 @@ class VisualGridRunner(EyesRunner):
                 test.abort()
         if unclosed_test_names:
             logger.warning(
-                "Unclosed tests found and aborted", tests_names=unclosed_test_names
+                "Unclosed tests found and aborted", unclosed_tests=unclosed_test_names
             )
+            print("Warning: Unclosed tests found and aborted:", *unclosed_test_names)
         wait_till_tests_completed(self._get_all_running_tests, timeout)
 
         # finish processing of all tasks and shutdown threads
