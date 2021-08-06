@@ -115,7 +115,7 @@ class RenderingService(object):
                 task.on_error(e)
             return []
         rendering = []
-        logger.debug("Received  render status response", statuses_coun=len(statuses))
+        logger.debug("Received render status response", statuses_count=len(statuses))
         status_by_render_id = {s.render_id: s for s in statuses}
         current_time = time()
         for task in status_tasks:
