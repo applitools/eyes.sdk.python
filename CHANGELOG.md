@@ -1,3 +1,7 @@
+## [4.24.0] - 2021-08-06
+### Added
+- Timeout argument and state logging to get_all_test_results method of runner [Trello 2684](https://trello.com/c/AC2WKrI7)
+
 ## [4.23.1] - 2021-07-21
 ### Fixed
 - ClassicRunner stitching issue [Trello 2615](https://trello.com/c/PDgW2wuN)
