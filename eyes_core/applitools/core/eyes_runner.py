@@ -1,9 +1,12 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from applitools.common import TestResultsSummary, logger
 from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from applitools.common.utils import ABC, iteritems
+
+if TYPE_CHECKING:
+    from typing import Optional
 
 
 class EyesRunner(ABC):
