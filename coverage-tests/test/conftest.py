@@ -68,6 +68,10 @@ def desired_caps():
 def execution_grid():
     return False
 
+@pytest.fixture(scope="function")
+def eg_url():
+    return os.getenv("EXECUTION_GRID_URL", None)
+
 
 @pytest.yield_fixture(scope="function")
 def android_desired_capabilities(request, dev, app):
@@ -106,7 +110,7 @@ def ios_desired_capabilities(request, dev, app):
 
 
 @pytest.fixture(name="driver", scope="function")
-def driver_setup(options, browser_type, desired_caps, execution_grid):
+def driver_setup(options, browser_type, desired_caps, execution_grid, eg_url):
     # options = webdriver.ChromeOptions()
     counter = 0
     sauce_url = (
@@ -115,8 +119,6 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
             password=os.getenv("SAUCE_ACCESS_KEY", None),
         )
     )
-    eg_url = os.getenv("EXECUTION_GRID_URL", None)
-    docker_url = "http://localhost:4444/wd/hub"
     for _ in range(5):
         try:
             if browser_type == "Appium":
