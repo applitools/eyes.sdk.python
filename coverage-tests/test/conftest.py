@@ -68,10 +68,6 @@ def desired_caps():
 def execution_grid():
     return False
 
-@pytest.fixture(scope="function")
-def eg_url():
-    return os.getenv("EXECUTION_GRID_URL", None)
-
 
 @pytest.yield_fixture(scope="function")
 def android_desired_capabilities(request, dev, app):
@@ -110,7 +106,7 @@ def ios_desired_capabilities(request, dev, app):
 
 
 @pytest.fixture(name="driver", scope="function")
-def driver_setup(options, browser_type, desired_caps, execution_grid, eg_url):
+def driver_setup(options, browser_type, desired_caps, execution_grid):
     # options = webdriver.ChromeOptions()
     counter = 0
     sauce_url = (
@@ -134,9 +130,12 @@ def driver_setup(options, browser_type, desired_caps, execution_grid, eg_url):
             if browser_type == "Chrome":
                 options.add_argument('--headless')
                 if execution_grid:
+                    url = os.getenv("EXECUTION_GRID_URL", None)
+                    if url is None:
+                        raise ValueError("EXECUTION_GRID_URL env variable is not set")
                     caps = options.to_capabilities()
                     driver = webdriver.Remote(
-                        command_executor=eg_url,
+                        command_executor=url,
                         desired_capabilities=caps
                     )
                 else:
