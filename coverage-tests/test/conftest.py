@@ -145,7 +145,7 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
             if browser_type == "Firefox":
                 options.add_argument("--headless")
                 caps = options.to_capabilities()
-                driver = webdriver.Remote(
+                driver = webdriver.Firefox(
                     executable_path=GeckoDriverManager().install(),
                     desired_capabilities=caps,
                 )
@@ -227,7 +227,7 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
                 options.add_experimental_option("mobileEmulation", mobile_emulation)
                 options.add_argument("--headless")
                 driver = webdriver.Chrome(
-                    executable_path=GeckoDriverManager().install(),
+                    executable_path=ChromeDriverManager().install(),
                     options=options,
                 )
                 break
