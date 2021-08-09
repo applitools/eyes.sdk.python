@@ -130,9 +130,7 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
             if browser_type == "Chrome":
                 options.add_argument('--headless')
                 if execution_grid:
-                    url = os.getenv("EXECUTION_GRID_URL", None)
-                    if url is None:
-                        raise ValueError("EXECUTION_GRID_URL env variable is not set")
+                    url = os.environ.get('EXECUTION_GRID_URL')
                     caps = options.to_capabilities()
                     driver = webdriver.Remote(
                         command_executor=url,
