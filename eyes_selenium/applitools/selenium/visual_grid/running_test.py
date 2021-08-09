@@ -345,12 +345,6 @@ class RunningTest(object):
     def is_closed(self):
         return self._is_closed or self._is_aborted
 
-    def abort_if_not_closed(self):
-        # This method is to be called from Eyes.*abort calls.
-        # This way abort will be ignored if Eyes were already explicitly closed.
-        if not self.is_closed:
-            self.abort()
-
     def abort(self):
         if self.state == COMPLETED:
             return None
