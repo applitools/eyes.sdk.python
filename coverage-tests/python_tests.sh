@@ -10,10 +10,6 @@ if [ $? -ne 0 ]; then
     echo "npm run python:generate have failed"
 fi
 
-echo -------------------------
-echo "$EXECUTION_GRID_URL"
-echo -------------------------
-
 npm run python:run:eg
 if [ $? -ne 0 ]; then
     RESULT=1
