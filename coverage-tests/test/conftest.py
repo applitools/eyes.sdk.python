@@ -132,15 +132,15 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
             if browser_type == "Chrome":
                 options.add_argument('--headless')
                 if execution_grid:
-                    driver = webdriver.Chrome(
-                        executable_path=ChromeDriverManager().install(),
-                        options=options,
-                    )
-                else:
                     caps = options.to_capabilities()
                     driver = webdriver.Remote(
                         command_executor=eg_url,
                         desired_capabilities=caps
+                    )
+                else:
+                    driver = webdriver.Chrome(
+                        executable_path=ChromeDriverManager().install(),
+                        options=options,
                     )
                 break
             if browser_type == "Firefox":
@@ -227,10 +227,9 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
                 }
                 options.add_experimental_option("mobileEmulation", mobile_emulation)
                 options.add_argument("--headless")
-                caps = options.to_capabilities()
-                driver = webdriver.Remote(
-                    command_executor=docker_url,
-                    desired_capabilities=caps,
+                driver = webdriver.Chrome(
+                    executable_path=GeckoDriverManager().install(),
+                    options=options,
                 )
                 break
             if browser_type not in [
