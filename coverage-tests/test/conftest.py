@@ -65,7 +65,7 @@ def desired_caps():
 
 
 @pytest.fixture(scope="function")
-def local():
+def execution_grid():
     return False
 
 
@@ -106,7 +106,7 @@ def ios_desired_capabilities(request, dev, app):
 
 
 @pytest.fixture(name="driver", scope="function")
-def driver_setup(options, browser_type, desired_caps, local):
+def driver_setup(options, browser_type, desired_caps, execution_grid):
     # options = webdriver.ChromeOptions()
     counter = 0
     sauce_url = (
@@ -115,7 +115,7 @@ def driver_setup(options, browser_type, desired_caps, local):
             password=os.getenv("SAUCE_ACCESS_KEY", None),
         )
     )
-    eg_url = "https://exec-wus.applitools.com/int-rel-tok-sdk-coverage-python"
+    eg_url = os.getenv("EXECUTION_GRID_URL", None)
     docker_url = "http://localhost:4444/wd/hub"
     for _ in range(5):
         try:
@@ -131,29 +131,23 @@ def driver_setup(options, browser_type, desired_caps, local):
                 break
             if browser_type == "Chrome":
                 options.add_argument('--headless')
-                # if local:
-                caps = options.to_capabilities()
-                driver = webdriver.Remote(
-                    command_executor=docker_url,
-                    desired_capabilities=caps
-                )
-                # driver = webdriver.Chrome(
-                #     executable_path=ChromeDriverManager().install(),
-                #     options=options,
-                # )
-                # else:
-                #   caps = options.to_capabilities()
-                #   driver = webdriver.Remote(
-                #       command_executor=eg_url,
-                #       desired_capabilities=caps
-                #   )
+                if execution_grid:
+                    driver = webdriver.Chrome(
+                        executable_path=ChromeDriverManager().install(),
+                        options=options,
+                    )
+                else:
+                    caps = options.to_capabilities()
+                    driver = webdriver.Remote(
+                        command_executor=eg_url,
+                        desired_capabilities=caps
+                    )
                 break
             if browser_type == "Firefox":
                 options.add_argument("--headless")
                 caps = options.to_capabilities()
                 driver = webdriver.Remote(
-                    # executable_path=GeckoDriverManager().install(),
-                    command_executor="http://localhost:4445/wd/hub",
+                    executable_path=GeckoDriverManager().install(),
                     desired_capabilities=caps,
                 )
                 break
