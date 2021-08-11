@@ -1,7 +1,7 @@
 import pytest
 from EyesLibrary.utils import parse_region, parse_viewport_size
 
-from applitools.common import Region, RectangleSize
+from applitools.common import RectangleSize, Region
 
 
 @pytest.mark.parametrize(

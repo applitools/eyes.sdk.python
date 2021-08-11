@@ -1,25 +1,42 @@
-from collections import namedtuple
-from unittest.mock import Mock
-
 import pytest
-from selenium.webdriver.common.by import By
-
 from EyesLibrary import CheckSettingsKeywords
+from mock import Mock
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import (
-    Region,
     AccessibilityRegionType,
-    VisualGridOption,
     MatchLevel,
+    Region,
+    VisualGridOption,
 )
 from applitools.selenium.fluent import SeleniumCheckSettings
-
-from ...utils import get_regions_from_
 
 WEB_ELEMENT = Mock(WebElement)
 
 REGION_LIST = ["ignore", "layout", "content", "strict"]
+
+
+def get_cs_from_method(method_name, *args, **kwargs):
+    """
+    Return initialized CheckSettings instance and invoked `method_name` with `args`
+
+    Example ::
+
+        cs = SeleniumCheckSettings().region(*args)
+    """
+    return getattr(SeleniumCheckSettings(), method_name)(*args, **kwargs)
+
+
+def get_regions_from_(method_name, *args, **kwargs):
+    """
+        Return regions for invoked method from CheckSettings
+
+    :param method_name: layout, ignore, strict or content
+    """
+    cs = get_cs_from_method(method_name, *args, **kwargs)
+    regions = getattr(cs.values, "{}_regions".format(method_name))
+    return regions
 
 
 def get_regions_from_cs_keyword(method_name, by_method_postfix, keyword_value):
