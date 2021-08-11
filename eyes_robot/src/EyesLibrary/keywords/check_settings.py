@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional, Text
 
 from appium.webdriver import WebElement as AppiumWebElement
 from EyesLibrary.base import LibraryComponent
-from EyesLibrary.keywords.keyword_tags import CHECK_SETTING
+from EyesLibrary.keywords.keyword_tags import CHECK_SETTING, UFG_RELATED
 from EyesLibrary.utils import parse_region
 from robot.api.deco import keyword as original_kyeword
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
@@ -239,7 +239,7 @@ class StrictCheckSettingsKeywords:
         "Strict Region By Element",
         types={"element": (SeleniumWebElement, AppiumWebElement)},
     )
-    def strict_region_by_coordinates(
+    def strict_region_by_element(
         self,
         element,  # type: AnyWebElement
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
@@ -258,7 +258,7 @@ class StrictCheckSettingsKeywords:
         return new_or_cur_check_settings(check_settings).strict(element)
 
     @keyword("Strict Region By Selector", types=(str,))
-    def strict_region_by_coordinates(
+    def strict_region_by_selector(
         self,
         selector,  # type: Locator
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
@@ -351,7 +351,7 @@ class FloatingCheckSettingsKeywords:
             | ...   Floating Region With Max Offset By Selector     |       5           |  //*[@id="logo"]   |
         """
         return new_or_cur_check_settings(check_settings).floating(
-            max_offset, *self.from_locators_to_supported_form(selector)
+            max_offset, self.from_locator_to_supported_form(selector)
         )
 
     @keyword(
@@ -464,7 +464,7 @@ class FloatingCheckSettingsKeywords:
             | ...     Floating Region By Selector     |  //*[@id="logo"] |  max_left_offset=5 |   |   |    |
         """
         return new_or_cur_check_settings(check_settings).floating(
-            self.from_locators_to_supported_form(selector)[0],
+            self.from_locator_to_supported_form(selector),
             max_up_offset,
             max_down_offset,
             max_left_offset,
@@ -522,10 +522,7 @@ class AccessibilityCheckSettingsKeywords:
             element, type=AccessibilityRegionType(type)
         )
 
-    @keyword(
-        "Accessibility Region By Coordinates",
-        types=(str, str),
-    )
+    @keyword("Accessibility Region By Coordinates", types=(str, str))
     def accessibility_region_by_coordinates(
         self,
         region,  # type: Text
@@ -549,7 +546,7 @@ class AccessibilityCheckSettingsKeywords:
 
 
 class UFGCheckSettingsKeywords:
-    @keyword("Visual Grid Option", types=(str, str))
+    @keyword("Visual Grid Option", types=(str, str), tags=(UFG_RELATED,))
     def visual_grid_option(
         self,
         name,  # type: Text
@@ -572,7 +569,7 @@ class UFGCheckSettingsKeywords:
             VisualGridOption(name, value)
         )
 
-    @keyword("Disable Browser Fetching", types=(bool,))
+    @keyword("Disable Browser Fetching", types=(bool,), tags=(UFG_RELATED,))
     def disable_browser_fetching(
         self,
         disable=True,  # type:bool
@@ -593,8 +590,8 @@ class UFGCheckSettingsKeywords:
             disable
         )
 
-    @keyword("Enable Layout Breakpoints", types=(bool,))
-    def layout_breakpoints(
+    @keyword("Enable Layout Breakpoints", types=(bool,), tags=(UFG_RELATED,))
+    def enable_layout_breakpoints(
         self,
         enable=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
@@ -612,7 +609,7 @@ class UFGCheckSettingsKeywords:
         """
         return new_or_cur_check_settings(check_settings).layout_breakpoints(enable)
 
-    @keyword("Layout Breakpoints", types=(str,))
+    @keyword("Layout Breakpoints", types=(str,), tags=(UFG_RELATED,))
     def layout_breakpoints(
         self,
         breakpoints,  # type:str
@@ -625,16 +622,15 @@ class UFGCheckSettingsKeywords:
             | breakpoints     | Specify layout breakpoint, e.g. 25 56 89  |
 
         *Example:*
-            | Eyes Check                  |             |
-            | ...     Layout Breakpoints  |             |
-            | ...     Layout Breakpoints  |   False     |
+            | Eyes Check  |  Target Window  |  Layout Breakpoints  |  23 45 67 89 |
+
         """
         breakpoints = [int(b) for b in breakpoints.split(" ")]
         return new_or_cur_check_settings(check_settings).layout_breakpoints(
             *breakpoints
         )
 
-    @keyword("Before Render Screenshot Hook", types=(str,))
+    @keyword("Before Render Screenshot Hook", types=(str,), tags=(UFG_RELATED,))
     def before_render_screenshot_hook(
         self,
         hook,  # type:str
@@ -644,24 +640,6 @@ class UFGCheckSettingsKeywords:
         return new_or_cur_check_settings(check_settings).before_render_screenshot_hook(
             hook
         )
-
-    @keyword("Use Dom", types=(bool,))
-    def use_dom(
-        self,
-        use,  # type:bool
-        check_settings=None,  # type:Optional[SeleniumCheckSettings]
-    ):
-        # type: (...)->SeleniumCheckSettings
-        return new_or_cur_check_settings(check_settings).use_dom(use)
-
-    @keyword("Send Dom", types=(bool,))
-    def send_dom(
-        self,
-        senddom,  # type:bool
-        check_settings=None,  # type:Optional[SeleniumCheckSettings]
-    ):
-        # type: (...)->SeleniumCheckSettings
-        return new_or_cur_check_settings(check_settings).send_dom(senddom)
 
 
 class CheckSettingsKeywords(
@@ -674,7 +652,7 @@ class CheckSettingsKeywords(
     AccessibilityCheckSettingsKeywords,
     UFGCheckSettingsKeywords,
 ):
-    @keyword("Scroll Root Element By Selector")
+    @keyword("Scroll Root Element By Selector", types=(str,))
     def scroll_root_element_by_selector(
         self,
         selector,  # type: Locator
@@ -685,7 +663,10 @@ class CheckSettingsKeywords(
             self.from_locator_to_supported_form(selector)
         )
 
-    @keyword("Scroll Root Element By Element")
+    @keyword(
+        "Scroll Root Element By Element",
+        types={"element": (SeleniumWebElement, AppiumWebElement)},
+    )
     def scroll_root_element_by_element(
         self,
         element,  # type: Locator
@@ -695,7 +676,7 @@ class CheckSettingsKeywords(
         is_webelement_guard(element)
         return new_or_cur_check_settings(check_settings).scroll_root_element(element)
 
-    @keyword("Variant Group Id", types=(str,))
+    @keyword("Variation Group Id", types=(str,))
     def variation_group_id(
         self,
         variation_group_id,  # type: Text
@@ -708,13 +689,13 @@ class CheckSettingsKeywords(
             | variation_group_id  | will be associated with all of the test result steps that result from executing this checkpoint |
 
         *Example:*
-            | Eyes Check   |  Target Window  |  Variant Group Id  |  variation1 |
+            | Eyes Check   |  Target Window  |  Variation Group Id  |  variation1 |
         """
         return new_or_cur_check_settings(check_settings).variation_group_id(
             variation_group_id
         )
 
-    @keyword("Match Level", types=(str,), tags=(CHECK_SETTING,))
+    @keyword("Match Level", types=(str,))
     def match_level(
         self,
         match_level,  # type: Text
@@ -732,7 +713,7 @@ class CheckSettingsKeywords(
         match_level = MatchLevel(match_level.upper())
         return new_or_cur_check_settings(check_settings).match_level(match_level)
 
-    @keyword("Enable Patterns", types=(bool,), tags=(CHECK_SETTING,))
+    @keyword("Enable Patterns", types=(bool,))
     def enable_patterns(
         self,
         enable=True,  # type: bool
@@ -741,7 +722,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         return new_or_cur_check_settings(check_settings).enable_patterns(enable)
 
-    @keyword("Ignore Displacements", types=(bool,), tags=(CHECK_SETTING,))
+    @keyword("Ignore Displacements", types=(bool,))
     def ignore_displacements(
         self,
         should_ignore=True,  # type: bool
@@ -760,7 +741,7 @@ class CheckSettingsKeywords(
             should_ignore
         )
 
-    @keyword("Ignore Caret", types=(bool,), tags=(CHECK_SETTING,))
+    @keyword("Ignore Caret", types=(bool,))
     def ignore_caret(
         self,
         ignore=True,  # type: bool
@@ -777,7 +758,7 @@ class CheckSettingsKeywords(
         """
         return new_or_cur_check_settings(check_settings).ignore_caret(ignore)
 
-    @keyword("Fully", types=(bool,), tags=(CHECK_SETTING,))
+    @keyword("Fully", types=(bool,))
     def fully(
         self,
         fully=True,  # type: bool
@@ -794,7 +775,7 @@ class CheckSettingsKeywords(
         """
         return new_or_cur_check_settings(check_settings).ignore_caret(fully)
 
-    @keyword("With Name", types=(str,), tags=(CHECK_SETTING,))
+    @keyword("With Name", types=(str,))
     def with_name(
         self,
         name,  # type: Text
@@ -812,7 +793,7 @@ class CheckSettingsKeywords(
         """
         return new_or_cur_check_settings(check_settings).with_name(name)
 
-    @keyword("Timeout", types=(int,), tags=(CHECK_SETTING,))
+    @keyword("Timeout", types=(int,))
     def timeout(
         self,
         timeout,  # type: int
@@ -829,3 +810,21 @@ class CheckSettingsKeywords(
             | ...     Timeout    |   3000              |
         """
         return new_or_cur_check_settings(check_settings).timeout(timeout)
+
+    @keyword("Use Dom", types=(bool,))
+    def use_dom(
+        self,
+        use=True,  # type:bool
+        check_settings=None,  # type:Optional[SeleniumCheckSettings]
+    ):
+        # type: (...)->SeleniumCheckSettings
+        return new_or_cur_check_settings(check_settings).use_dom(use)
+
+    @keyword("Send Dom", types=(bool,))
+    def send_dom(
+        self,
+        senddom=True,  # type:bool
+        check_settings=None,  # type:Optional[SeleniumCheckSettings]
+    ):
+        # type: (...)->SeleniumCheckSettings
+        return new_or_cur_check_settings(check_settings).send_dom(senddom)
