@@ -1,6 +1,10 @@
+import os
 from enum import Enum
+from typing import Text
 
 import trafaret as trf
+import yaml
+from EyesLibrary.errors import EyesLibConfigParsingError, EyesLibValueError
 
 from applitools.common import (
     ChromeEmulationInfo,
@@ -16,7 +20,7 @@ from applitools.common import (
     VisualGridOption,
 )
 from applitools.common.selenium import BrowserType
-from applitools.core import Feature
+from applitools.common.utils.compat import raise_from
 from applitools.selenium import BatchInfo, Configuration
 
 
@@ -26,12 +30,27 @@ class SelectedRunner(Enum):
     appium = "appium"
 
 
+class KeyNameMixin(object):
+    def __init__(self, key_name):
+        self.key_name = key_name
+
+
 class ToEnumTrafaret(trf.Trafaret):
     def __init__(self, convert_to_enum):
         self.converter = convert_to_enum
 
     def check_and_return(self, value, context=None):
-        return self.converter(value)
+        try:
+            return getattr(self.converter, value)
+        except AttributeError:
+            raise trf.DataError(
+                "Incorrect value `{val}`. Possible variants: {possible_vals}".format(
+                    val=value,
+                    possible_vals=", ".join(e.name for e in self.converter),
+                ),
+                value=value,
+                trafaret=self,
+            )
 
 
 class BatchInfoTrafaret(trf.Trafaret):
@@ -48,18 +67,21 @@ class BatchInfoTrafaret(trf.Trafaret):
     )
 
     def check_and_return(self, value, context=None):
-        sanitized = self.scheme.check(value, context=None)
+        sanitized = self.scheme.check(value, context=context)
         batch = BatchInfo()
         for key, val in sanitized.items():
             setattr(batch, key, val)
         return batch
 
 
-class ViewPortTrafaret(trf.Trafaret):
+class ViewPortTrafaret(trf.Trafaret, KeyNameMixin):
     scheme = trf.Dict(width=trf.Int, height=trf.Int)
 
     def check_and_return(self, value, context=None):
-        sanitized = self.scheme.check(value, context)
+        try:
+            sanitized = self.scheme.check(value, context)
+        except trf.DataError:
+            raise trf.DataError("Incorrect value in")
         return RectangleSize.from_(sanitized)
 
 
@@ -152,7 +174,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("baseline_env_name", optional=True): trf.String,
             trf.Key("save_diffs", optional=True): trf.Bool,
             trf.Key("app_name", optional=True): trf.String,
-            trf.Key("viewport_size", optional=True): ViewPortTrafaret,
+            trf.Key("viewport_size", optional=True): ViewPortTrafaret("viewport_size"),
             trf.Key("match_timeout", optional=True): trf.Int,
             trf.Key("save_new_tests", optional=True): trf.Bool,
             trf.Key("save_failed_tests", optional=True): trf.Bool,
@@ -223,3 +245,45 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         for key, val in combined_raw_config.items():
             setattr(conf, key, val)
         return conf
+
+
+def try_parse_runner(runner):
+    # type: (Text) -> SelectedRunner
+    try:
+        return SelectedRunner(runner)
+    except ValueError as e:
+        raise_from(
+            EyesLibValueError(
+                "Incorrect value for `runner`: `{val}`. "
+                "\n\tPossible variants:"
+                "\n\t\t{possible_vals}".format(
+                    val=runner,
+                    possible_vals=", ".join(e.name for e in SelectedRunner),
+                )
+            ),
+            e,
+        )
+
+
+def try_parse_configuration(
+    config_path, selected_runner, origin_configuration, suite_source
+):
+    # type: (Text, SelectedRunner, Configuration, Text) -> Configuration
+    if not os.path.isabs(config_path):
+        # if config path is not absolute that count test suite directory as root
+        suite_path = os.path.dirname(suite_source)
+        config_path = os.path.join(suite_path, config_path)
+
+    if not os.path.exists(config_path):
+        raise EyesLibValueError(
+            "Not found configuration file within path: {}".format(config_path)
+        )
+
+    with open(config_path, "r") as f:
+        raw_config = yaml.safe_load(f.read())
+
+    # It's better to raise here library error but for some reason raise_from
+    # suppress original error message
+    return ConfigurationTrafaret(selected_runner, origin_configuration).check(
+        raw_config
+    )
