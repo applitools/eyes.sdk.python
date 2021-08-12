@@ -87,6 +87,7 @@ class RenderingService(object):
                     self._have_status_tasks.notify()
             except Exception:
                 logger.exception("Render request batching thread failure")
+                datetime_utils.sleep(5000, "Render request error delay")
 
     def _run_render_status_requests(self):
         status_tasks = []
@@ -104,28 +105,32 @@ class RenderingService(object):
                     datetime_utils.sleep(1000, "Render status polling delay")
             except Exception:
                 logger.exception("Rendering status batching thread failure")
+                datetime_utils.sleep(5000, "Render status error delay")
 
     def _check_render_status_batch(self, status_tasks):
         ids = [t.render_id for t in status_tasks]
         logger.debug("render_status_by_id call with ids: {}".format(ids))
         try:
             statuses = self._server_connector.render_status_by_id(*ids)
+            logger.debug(
+                "Received render status response", statuses_count=len(statuses)
+            )
+            status_by_render_id = {s.render_id: s for s in statuses if s}
         except Exception as e:
             for task in status_tasks:
                 task.on_error(e)
             return []
         rendering = []
-        logger.debug("Received render status response", statuses_count=len(statuses))
-        status_by_render_id = {s.render_id: s for s in statuses}
         current_time = time()
         for task in status_tasks:
             status = status_by_render_id.get(task.render_id)
             if status is None:
-                logger.warning(
+                logger.error(
                     "Missing render id in RenderStatus response",
                     render_id=task.render_id,
                 )
-            if status is None or status.status == RenderStatus.RENDERING:
+                task.on_error(EyesError("Unknown rendering error"))
+            elif status.status == RenderStatus.RENDERING:
                 if current_time > task.timeout_time:
                     task.on_error(EyesError("Render time out"))
                 else:

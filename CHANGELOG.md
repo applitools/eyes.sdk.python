@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- UFG test is aborted if render server responds with null render status [Trello 2689](https://trello.com/c/C8m6Fv4T)
+
 ## [4.24.1] - 2021-08-09
 ### Fixed
 - False unclosed test warnings are printed for finished tests [Trello 2688](https://trello.com/c/fqzJhHo5)

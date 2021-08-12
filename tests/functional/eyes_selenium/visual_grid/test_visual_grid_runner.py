@@ -70,3 +70,20 @@ def test_non_closed_finished_tests_do_not_issue_warning(driver, vg_runner, capsy
     stdout = capsys.readouterr().out
 
     assert "Warning: Unclosed tests found and aborted" not in stdout
+
+
+def test_null_render_status_aborts_test(driver, vg_runner, spy, capsys):
+    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+    eyes = Eyes(vg_runner)
+    close_session_spy = spy(eyes.server_connector, "stop_session")
+
+    def render_status_none(*args):
+        return [None]
+
+    eyes.server_connector.render_status_by_id = render_status_none
+    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.check_window()
+    eyes.close_async()
+    vg_runner.get_all_test_results(False)
+
+    assert close_session_spy.call_args_list == [spy.call(spy.ANY, True, False)]
