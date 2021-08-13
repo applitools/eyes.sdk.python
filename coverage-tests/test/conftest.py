@@ -128,13 +128,12 @@ def driver_setup(options, browser_type, desired_caps, execution_grid):
                 )
                 break
             if browser_type == "Chrome":
-                options.add_argument('--headless')
+                options.add_argument("--headless")
                 if execution_grid:
-                    url = os.environ.get('EXECUTION_GRID_URL')
+                    url = os.environ.get("EXECUTION_GRID_URL")
                     caps = options.to_capabilities()
                     driver = webdriver.Remote(
-                        command_executor=url,
-                        desired_capabilities=caps
+                        command_executor=url, desired_capabilities=caps
                     )
                 else:
                     driver = webdriver.Chrome(
