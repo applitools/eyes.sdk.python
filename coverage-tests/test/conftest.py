@@ -69,6 +69,16 @@ def execution_grid():
     return False
 
 
+@pytest.fixture(scope="function")
+def sauce_url():
+    return (
+        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+            username=os.getenv("SAUCE_USERNAME", None),
+            password=os.getenv("SAUCE_ACCESS_KEY", None),
+        )
+    )
+
+
 @pytest.yield_fixture(scope="function")
 def android_desired_capabilities(request, dev, app):
     desired_caps = copy(getattr(request, "param", {}))  # browser_config.copy()
@@ -105,146 +115,160 @@ def ios_desired_capabilities(request, dev, app):
     return desired_caps
 
 
-@pytest.fixture(name="driver", scope="function")
-def driver_setup(options, browser_type, desired_caps, execution_grid):
-    # options = webdriver.ChromeOptions()
-    counter = 0
-    sauce_url = (
-        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.getenv("SAUCE_USERNAME", None),
-            password=os.getenv("SAUCE_ACCESS_KEY", None),
-        )
+@pytest.fixture(scope="function")
+def appium(desired_caps, sauce_url):
+    selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
+    return appium_webdriver.Remote(
+        command_executor=selenium_url, desired_capabilities=desired_caps
     )
-    for _ in range(5):
-        try:
-            if browser_type == "Appium":
-                sauce_url = "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-                    username=os.getenv("SAUCE_USERNAME", None),
-                    password=os.getenv("SAUCE_ACCESS_KEY", None),
-                )
-                selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-                driver = appium_webdriver.Remote(
-                    command_executor=selenium_url, desired_capabilities=desired_caps
-                )
-                break
-            if browser_type == "Chrome":
-                options.add_argument("--headless")
-                if execution_grid:
-                    url = os.environ.get("EXECUTION_GRID_URL")
-                    caps = options.to_capabilities()
-                    driver = webdriver.Remote(
-                        command_executor=url, desired_capabilities=caps
-                    )
-                else:
-                    driver = webdriver.Chrome(
-                        executable_path=ChromeDriverManager().install(),
-                        options=options,
-                    )
-                break
-            if browser_type == "Firefox":
-                options.add_argument("--headless")
-                caps = options.to_capabilities()
-                driver = webdriver.Firefox(
-                    executable_path=GeckoDriverManager().install(),
-                    desired_capabilities=caps,
-                )
-                break
-            if browser_type == "Firefox48":
-                if legacy:
-                    capabilities = {}
-                    capabilities["browserName"] = "firefox"
-                    capabilities["platform"] = "Windows 10"
-                    capabilities["version"] = "48.0"
-                else:
-                    capabilities = {
-                        "browserName": "firefox",
-                        "browserVersion": "48.0",
-                        "platformName": "Windows 10",
-                    }
-                driver = webdriver.Remote(
-                    command_executor=sauce_url, desired_capabilities=capabilities
-                )
-                break
-            if browser_type == "IE11":
-                capabilities = {
-                    "browserName": "internet explorer",
-                    "browserVersion": "11.285",
-                    "platformName": "Windows 10",
-                }
-                driver = webdriver.Remote(
-                    command_executor=sauce_url, desired_capabilities=capabilities
-                )
-                break
-            if browser_type == "Edge":
-                capabilities = {
-                    "browserName": "MicrosoftEdge",
-                    "browserVersion": "18.17763",
-                    "platformName": "Windows 10",
-                    "screenResolution": "1920x1080",
-                }
-                driver = webdriver.Remote(
-                    command_executor=sauce_url, desired_capabilities=capabilities
-                )
-                break
-            if browser_type == "Safari11":
-                if legacy:
-                    capabilities = {}
-                    capabilities["browserName"] = "safari"
-                    capabilities["platform"] = "macOS 10.12"
-                    capabilities["version"] = "11.0"
-                else:
-                    capabilities = {
-                        "browserName": "safari",
-                        "browserVersion": "11.0",
-                        "platformName": "macOS 10.12",
-                    }
-                driver = webdriver.Remote(
-                    command_executor=sauce_url, desired_capabilities=capabilities
-                )
-                break
-            if browser_type == "Safari12":
-                if legacy:
-                    capabilities = {}
-                    capabilities["browserName"] = "safari"
-                    capabilities["platform"] = "macOS 10.13"
-                    capabilities["version"] = "12.1"
-                else:
-                    capabilities = {
-                        "browserName": "safari",
-                        "browserVersion": "12.1",
-                        "platformName": "macOS 10.13",
-                    }
-                driver = webdriver.Remote(
-                    command_executor=sauce_url, desired_capabilities=capabilities
-                )
-                break
-            if browser_type == "ChromeEmulator":
-                mobile_emulation = {
-                    "deviceMetrics": {"width": 384, "height": 512, "pixelRatio": 2.0},
-                    "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; Android SDK built for x86_64 Build/OSR1.180418.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36",
-                }
-                options.add_experimental_option("mobileEmulation", mobile_emulation)
-                options.add_argument("--headless")
-                driver = webdriver.Chrome(
-                    executable_path=ChromeDriverManager().install(),
-                    options=options,
-                )
-                break
-            if browser_type not in [
-                "Chrome",
-                "Firefox",
-                "IE11",
-                "Edge",
-                "Safari11",
-                "Safari12",
-                "Appium",
-            ]:
-                raise ValueError
-        except Exception as e:
-            if isinstance(e, ValueError):
-                raise ValueError("Wrong browser type " + browser_type)
-            print("Tried to start browser. It was exception {}".format(e))
-            time.sleep(1.0)
+
+
+@pytest.fixture(scope="function")
+def chrome(options, execution_grid):
+    options.add_argument("--headless")
+    if execution_grid:
+        url = os.environ.get("EXECUTION_GRID_URL")
+        caps = options.to_capabilities()
+        driver = webdriver.Remote(
+            command_executor=url, desired_capabilities=caps
+        )
+    else:
+        driver = webdriver.Chrome(
+            executable_path=ChromeDriverManager().install(),
+            options=options,
+        )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def firefox(options):
+    options.add_argument("--headless")
+    caps = options.to_capabilities()
+    driver = webdriver.Firefox(
+        executable_path=GeckoDriverManager().install(),
+        desired_capabilities=caps,
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def firefox48(sauce_url):
+    if legacy:
+        capabilities = {}
+        capabilities["browserName"] = "firefox"
+        capabilities["platform"] = "Windows 10"
+        capabilities["version"] = "48.0"
+    else:
+        capabilities = {
+            "browserName": "firefox",
+            "browserVersion": "48.0",
+            "platformName": "Windows 10",
+        }
+    driver = webdriver.Remote(
+        command_executor=sauce_url, desired_capabilities=capabilities
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def ie11(sauce_url):
+    capabilities = {
+        "browserName": "internet explorer",
+        "browserVersion": "11.285",
+        "platformName": "Windows 10",
+    }
+    driver = webdriver.Remote(
+        command_executor=sauce_url, desired_capabilities=capabilities
+    )
+    driver
+
+
+@pytest.fixture(scope="function")
+def edge(sauce_url):
+    capabilities = {
+        "browserName": "MicrosoftEdge",
+        "browserVersion": "18.17763",
+        "platformName": "Windows 10",
+        "screenResolution": "1920x1080",
+    }
+    driver = webdriver.Remote(
+        command_executor=sauce_url, desired_capabilities=capabilities
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def safari11(sauce_url):
+    if legacy:
+        capabilities = {}
+        capabilities["browserName"] = "safari"
+        capabilities["platform"] = "macOS 10.12"
+        capabilities["version"] = "11.0"
+    else:
+        capabilities = {
+            "browserName": "safari",
+            "browserVersion": "11.0",
+            "platformName": "macOS 10.12",
+        }
+    driver = webdriver.Remote(
+        command_executor=sauce_url, desired_capabilities=capabilities
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def safari12(sauce_url):
+    if legacy:
+        capabilities = {}
+        capabilities["browserName"] = "safari"
+        capabilities["platform"] = "macOS 10.13"
+        capabilities["version"] = "12.1"
+    else:
+        capabilities = {
+            "browserName": "safari",
+            "browserVersion": "12.1",
+            "platformName": "macOS 10.13",
+        }
+    driver = webdriver.Remote(
+        command_executor=sauce_url, desired_capabilities=capabilities
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def chrome_emulator(options):
+    mobile_emulation = {
+        "deviceMetrics": {"width": 384, "height": 512, "pixelRatio": 2.0},
+        "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; Android SDK built for x86_64 Build/OSR1.180418.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36",
+    }
+    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(
+        executable_path=ChromeDriverManager().install(),
+        options=options,
+    )
+    return driver
+
+
+@pytest.fixture(scope="function")
+def driver_builder(chrome):
+    return chrome
+
+@pytest.fixture(name="driver", scope="function")
+def driver_setup(driver_builder):
+    # supported browser types
+    #     "Appium": appium,
+    #     "Chrome": chrome,
+    #     "Firefox": firefox,
+    #     "Firefox48": firefox48,
+    #     "IE11": ie11,
+    #     "Edge": edge,
+    #     "Safari11": safari11,
+    #     "Safari12": safari12,
+    #     "ChromeEmulator": chrome_emulator,
+    #
+
+    driver = driver_builder
     yield driver
     # Close the browser.
     try:

@@ -8,4 +8,4 @@ module.exports = {
     template: "https://raw.githubusercontent.com/applitools/sdk.coverage.tests/eg_python/python/template.hbs",
     ext: ".py",
     outPath: "./test/coverage/generic",
-}
+};
