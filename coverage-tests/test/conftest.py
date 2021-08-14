@@ -71,11 +71,9 @@ def execution_grid():
 
 @pytest.fixture(scope="function")
 def sauce_url():
-    return (
-        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.getenv("SAUCE_USERNAME", None),
-            password=os.getenv("SAUCE_ACCESS_KEY", None),
-        )
+    return "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+        username=os.getenv("SAUCE_USERNAME", None),
+        password=os.getenv("SAUCE_ACCESS_KEY", None),
     )
 
 
@@ -129,9 +127,7 @@ def chrome(options, execution_grid):
     if execution_grid:
         url = os.environ.get("EXECUTION_GRID_URL")
         caps = options.to_capabilities()
-        driver = webdriver.Remote(
-            command_executor=url, desired_capabilities=caps
-        )
+        driver = webdriver.Remote(command_executor=url, desired_capabilities=caps)
     else:
         driver = webdriver.Chrome(
             executable_path=ChromeDriverManager().install(),
@@ -180,7 +176,7 @@ def ie11(sauce_url):
     driver = webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    driver
+    return driver
 
 
 @pytest.fixture(scope="function")
@@ -253,6 +249,7 @@ def chrome_emulator(options):
 @pytest.fixture(scope="function")
 def driver_builder(chrome):
     return chrome
+
 
 @pytest.fixture(name="driver", scope="function")
 def driver_setup(driver_builder):
