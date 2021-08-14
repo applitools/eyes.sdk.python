@@ -129,10 +129,15 @@ def chrome(options, execution_grid):
         caps = options.to_capabilities()
         driver = webdriver.Remote(command_executor=url, desired_capabilities=caps)
     else:
-        driver = webdriver.Chrome(
-            executable_path=ChromeDriverManager().install(),
-            options=options,
-        )
+        for _ in range(5):
+            try:
+                driver = webdriver.Chrome(
+                    executable_path=ChromeDriverManager().install(),
+                    options=options,
+                )
+            except Exception as e:
+                print("Tried to start browser. It was exception {}".format(e))
+            time.sleep(1.0)
     return driver
 
 
@@ -140,10 +145,15 @@ def chrome(options, execution_grid):
 def firefox(options):
     options.add_argument("--headless")
     caps = options.to_capabilities()
-    driver = webdriver.Firefox(
-        executable_path=GeckoDriverManager().install(),
-        desired_capabilities=caps,
-    )
+    for _ in range(5):
+        try:
+            driver = webdriver.Firefox(
+                executable_path=GeckoDriverManager().install(),
+                desired_capabilities=caps,
+            )
+        except Exception as e:
+            print("Tried to start browser. It was exception {}".format(e))
+        time.sleep(1.0)
     return driver
 
 
