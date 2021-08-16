@@ -26,6 +26,13 @@ def keyword(name=None, tags=(), types=()):
     return original_keyword(name, tags, types)
 
 
+def try_resolve_tag_and_keyword(tag, check_settings_keywords, defined_keywords):
+    if tag in defined_keywords:
+        check_settings_keywords = (tag,) + check_settings_keywords
+        tag = None
+    return check_settings_keywords, tag
+
+
 class CheckKeywords(LibraryComponent):
     @keyword("Eyes Check Window", types=(str,), tags=(CHECK_FLOW,))
     def check_window(self, tag=None, *check_settings_keywords):
@@ -36,9 +43,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Window   |
         """
-        if tag in self.defined_keywords:
-            check_settings_keywords += (tag,)
-            tag = None
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.window(), self.defined_keywords, *check_settings_keywords
         )
@@ -60,6 +67,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Region By Coordinates   |  [40 50 200 448]  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.region(parse_region(region)),
             self.defined_keywords,
@@ -87,6 +97,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Region By Element  |  ${element}  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.region(element),
             self.defined_keywords,
@@ -114,6 +127,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Region By Element  |  css:#selector  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
@@ -141,6 +157,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Element  |  ${element}  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.frame(element), self.defined_keywords, *check_settings_keywords
         )
@@ -162,6 +181,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Index  |  2  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.frame(frame_index), self.defined_keywords, *check_settings_keywords
         )
@@ -183,6 +205,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Name  |  frameName  |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.frame(frame_name), self.defined_keywords, *check_settings_keywords
         )
@@ -204,6 +229,9 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Selector  |  css:#selector   |
         """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
         check_settings = collect_check_settings(
             Target.frame(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
@@ -220,7 +248,7 @@ class CheckKeywords(LibraryComponent):
 
         *Example:*
             |  Eyes Check  |  Target Window   |
-            |  Eyes Check  |  Target Region By Coordinates   | [34 56 78 89]  |
+            |  Eyes Check  |  Target Region By Coordinates   |  [34 56 78 89]  |
         """
         target = BuiltIn().run_keyword(target_keyword, *check_settings_keywords)
         self.current_eyes.check(target)
