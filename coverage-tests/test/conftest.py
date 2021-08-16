@@ -131,11 +131,10 @@ def start_chrome_driver(options):
         except Exception as e:
             print("Tried to start browser. It was exception {}".format(e))
         time.sleep(1.0)
-    else:
-        return webdriver.Chrome(
-            executable_path=ChromeDriverManager().install(),
-            options=options,
-        )
+    return webdriver.Chrome(
+        executable_path=ChromeDriverManager().install(),
+        options=options,
+    )
 
 
 @pytest.fixture(scope="function")
