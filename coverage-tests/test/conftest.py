@@ -144,10 +144,9 @@ def chrome(options, execution_grid):
     if execution_grid:
         url = os.environ.get("EXECUTION_GRID_URL")
         caps = options.to_capabilities()
-        driver = webdriver.Remote(command_executor=url, desired_capabilities=caps)
+        return webdriver.Remote(command_executor=url, desired_capabilities=caps)
     else:
-        driver = start_chrome_driver(options)
-    return driver
+        return start_chrome_driver(options)
 
 
 @pytest.fixture(scope="function")
@@ -182,10 +181,9 @@ def firefox48(sauce_url):
             "browserVersion": "48.0",
             "platformName": "Windows 10",
         }
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    return driver
 
 
 @pytest.fixture(scope="function")
@@ -195,10 +193,9 @@ def ie11(sauce_url):
         "browserVersion": "11.285",
         "platformName": "Windows 10",
     }
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    return driver
 
 
 @pytest.fixture(scope="function")
@@ -209,10 +206,9 @@ def edge(sauce_url):
         "platformName": "Windows 10",
         "screenResolution": "1920x1080",
     }
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    return driver
 
 
 @pytest.fixture(scope="function")
@@ -228,10 +224,9 @@ def safari11(sauce_url):
             "browserVersion": "11.0",
             "platformName": "macOS 10.12",
         }
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    return driver
 
 
 @pytest.fixture(scope="function")
@@ -247,10 +242,9 @@ def safari12(sauce_url):
             "browserVersion": "12.1",
             "platformName": "macOS 10.13",
         }
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
-    return driver
 
 
 @pytest.fixture(scope="function")
