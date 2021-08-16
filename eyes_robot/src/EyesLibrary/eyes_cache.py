@@ -1,3 +1,5 @@
+from __future__ import absolute_import, unicode_literals
+
 from robot.api import logger
 from robot.utils import ConnectionCache, is_string
 

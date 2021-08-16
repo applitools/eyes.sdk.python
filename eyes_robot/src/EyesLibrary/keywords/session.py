@@ -1,14 +1,10 @@
+from __future__ import absolute_import, unicode_literals
+
 from typing import TYPE_CHECKING, Optional, Text, Union
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common import (
-    BatchInfo,
-    MatchLevel,
-    RectangleSize,
-    TestResults,
-    TestResultsSummary,
-)
+from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
 from applitools.selenium import Eyes, EyesWebDriver
 
 from ..base import LibraryComponent, keyword

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, unicode_literals
+
 from typing import TYPE_CHECKING, Any, Optional, Text
 
 from appium.webdriver import WebElement as AppiumWebElement
@@ -7,17 +9,15 @@ from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElemen
 
 from applitools.common import MatchResult
 from applitools.selenium import Target
-from EyesLibrary.base import LibraryComponent
-from EyesLibrary.keywords.keyword_tags import (
-    CHECK_FLOW,
-    CHECK_SETTINGS_SUPPORT,
-    TARGET_SUPPORT,
-)
-from EyesLibrary.utils import collect_check_settings, parse_region
+
+from ..base import LibraryComponent
+from ..utils import collect_check_settings, parse_region
+from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT, TARGET_SUPPORT
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
-    from EyesLibrary.custom_types import Locator
+
+    from ..custom_types import Locator
 
 
 def keyword(name=None, tags=(), types=()):

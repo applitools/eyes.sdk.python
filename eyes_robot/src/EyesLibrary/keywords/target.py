@@ -1,3 +1,5 @@
+from __future__ import absolute_import, unicode_literals
+
 from typing import TYPE_CHECKING, Any, Text
 
 from appium.webdriver import WebElement as AppiumWebElement

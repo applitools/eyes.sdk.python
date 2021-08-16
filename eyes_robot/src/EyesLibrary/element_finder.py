@@ -1,10 +1,13 @@
+from __future__ import absolute_import, unicode_literals
+
 from AppiumLibrary.locators import ElementFinder as AppiumElementFinder
-from EyesLibrary import SelectedRunner
-from EyesLibrary.base import LibraryComponent
 from selenium.webdriver.remote.webelement import By
 from SeleniumLibrary import ElementFinder as SeleniumElementFinder
 
 from applitools.selenium.validators import is_webelement
+
+from .base import LibraryComponent
+from .config_parser import SelectedRunner
 
 
 class AppiumElementFinderAdapter(AppiumElementFinder):
@@ -12,22 +15,18 @@ class AppiumElementFinderAdapter(AppiumElementFinder):
         super(AppiumElementFinderAdapter, self).__init__()
         self.__driver = driver
 
-    def find(self, locator, tag=None):
-        return super(AppiumElementFinderAdapter, self).find(self.__driver, locator, tag)
-
 
 class ElementFinder(LibraryComponent):
     def __init__(self, *args, **kwargs):
         super(ElementFinder, self).__init__(*args, **kwargs)
-        self._element_finders = {
-            SelectedRunner.selenium: lambda: SeleniumElementFinder(
-                self._libraries.get(SelectedRunner.selenium)
-            ),
-            SelectedRunner.selenium_ufg: lambda: SeleniumElementFinder(
-                self._libraries.get(SelectedRunner.selenium)
-            ),
-            SelectedRunner.appium: lambda: AppiumElementFinderAdapter(self.driver),
-        }
+        if self.ctx.selected_runner in [
+            SelectedRunner.selenium,
+            SelectedRunner.selenium_ufg,
+        ]:
+            self._element_finder = SeleniumElementFinder(self.library)
+        elif self.ctx.selected_runner == SelectedRunner.appium:
+            self._element_finder = AppiumElementFinderAdapter(self.driver)
+
         self._selectors = {
             "id": By.ID,
             "xpath": By.XPATH,
@@ -39,15 +38,10 @@ class ElementFinder(LibraryComponent):
             "css": By.CSS_SELECTOR,
         }
 
-    def find(self, locator):
-        if is_webelement(locator):
-            return locator
-        finder = self._element_finders[self.ctx.selected_runner]()
-        return finder.find(locator)
-
     def convert_to_by_selector(self, locator):
         if is_webelement(locator):
             raise TypeError("Cannot convert WebElement to selector")
-        finder = self._element_finders[self.ctx.selected_runner]()
-        prefix, criteria = finder._parse_locator(locator)
+        prefix, criteria = self._element_finder._parse_locator(locator)
+        if not criteria:
+            raise ValueError("Incorrect selector: `{}`".format(locator))
         return [self._selectors[prefix], criteria]

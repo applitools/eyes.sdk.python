@@ -1,19 +1,26 @@
 import os
 import traceback
 import typing
-from typing import TYPE_CHECKING, Optional, Text
+from collections import namedtuple
+from typing import TYPE_CHECKING
 
-import yaml
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from robotlibcore import DynamicCore
 
 from applitools.common.utils.compat import raise_from
+from applitools.common.utils.converters import str2bool
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
 
 from .__version__ import __version__
-from .config_parser import ConfigurationTrafaret, SelectedRunner
+from .config_parser import (
+    ConfigurationTrafaret,
+    SelectedRunner,
+    try_parse_configuration,
+    try_parse_runner,
+)
 from .element_finder import ElementFinder
+from .errors import EyesLibError
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -23,19 +30,17 @@ from .keywords import (
     TargetKeywords,
 )
 from .keywords.session import RunnerKeywords
-
-# from SeleniumLibrary import RunOnFailureKeywords
 from .library_listener import LibraryListener
 
 if TYPE_CHECKING:
+    from typing import TYPE_CHECKING, Literal, Optional, Text
+
     from applitools.common.utils.custom_types import AnyWebDriver
 
 
 EyesT = typing.TypeVar("EyesT", bound=Eyes)
 
-
-class EyesLibError(Exception):
-    pass
+CurrentLibrary = namedtuple("CurrentLibrary", "library type")
 
 
 class EyesLibrary(DynamicCore):
@@ -54,42 +59,53 @@ class EyesLibrary(DynamicCore):
     raw_config = None  # type: Optional[dict]
     _selected_runner = None  # type: Optional[SelectedRunner]
     _log_level = None  # type: Optional[Text]
+    library_name_by_runner = {
+        SelectedRunner.selenium: "SeleniumLibrary",
+        SelectedRunner.selenium_ufg: "SeleniumLibrary",
+        SelectedRunner.appium: "AppiumLibrary",
+    }
 
     def __init__(
         self,
-        runner=None,  # type: Optional[Text]
-        config=None,  # type: Optional[Text]
-        log_level=None,  # type: Optional[Text]
+        runner,  # type: Text
+        config,  # type: Text
+        log_level=None,  # type: Optional[Literal["Verbose"]]
         run_on_failure="Eyes Abort",
     ):
-        # type: (Text, Text, Text, Text) -> None
+        # type: (...) -> None
+        """
+        Initialize the EyesLibrary
+            | =Arguments=      | =Description=  |
+            | runner           | *Mandatory* - Specify one of following runners to use (selenium, selenium_ufg, appium)  |
+            | config           | *Mandatory* - Path to applitools_config.yaml                     |
+            | log_level        | Specific log level (VERBOSE )                                    |
+            | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort`)  |
+
+        """
+
+        self.run_on_failure_keyword = run_on_failure
+
+        self._running_on_failure_keyword = False
         self._eyes_registry = EyesCache()
         self._running_keyword = None
-        self._running_on_failure_keyword = False
-        self.run_on_failure_keyword = run_on_failure
-        self._element_finder = ElementFinder(self)
-        self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
         self._log_level = log_level
-        self._configuration = Configuration()
 
-        if config:
-            if isinstance(config, dict):
-                self.raw_config = config
-            else:
-                if not os.path.isabs(config):
-                    suite_path = os.path.dirname(
-                        BuiltIn().get_variable_value("${SUITE_SOURCE}")
-                    )
-                    config = os.path.join(suite_path, config)
-                if not os.path.exists(config):
-                    raise ValueError("No configuration in path: {}".format(config))
-                with open(config, "r") as f:
-                    self.raw_config = yaml.safe_load(f.read())
+        generation_doc_run = str2bool(os.getenv("APPLITOOLS_MAKE_ROBOT_DOC", "false"))
 
-            self._selected_runner = SelectedRunner(runner)
-            self._configuration = self.update_configuration(
-                self._selected_runner, self.raw_config, self._configuration
+        self._selected_runner = try_parse_runner(runner)
+
+        if generation_doc_run:
+            # hide objects that uses dynamic loading for generation of documentation
+            self.current_library = None  # type: CurrentLibrary
+        else:
+            self._configuration = Configuration()
+            self.current_library = self._try_get_library(self._selected_runner)
+            suite_source = BuiltIn().get_variable_value("${SUITE_SOURCE}")
+            self._configuration = try_parse_configuration(
+                config, self._selected_runner, self._configuration, suite_source
             )
+            self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
+            self._element_finder = ElementFinder(self)
 
         keywords = [
             RunnerKeywords(self),
@@ -101,6 +117,23 @@ class EyesLibrary(DynamicCore):
         ]
 
         DynamicCore.__init__(self, keywords)
+
+    def _try_get_library(self, runner):
+        # type: (SelectedRunner) -> CurrentLibrary
+        """Check if `SeleniumLibrary` or `AppiumLibrary` was loaded"""
+        library_name = self.library_name_by_runner[runner]
+        try:
+            return BuiltIn().get_library_instance(name=library_name)
+        except RuntimeError as e:
+            raise_from(
+                RuntimeError(
+                    "Specified runner: `{runner}` should be used with `{lib}` library. "
+                    "Please, make sure that `{lib}` was properly imported".format(
+                        runner=runner.value, lib=library_name
+                    )
+                ),
+                e,
+            )
 
     def run_keyword(self, name, *args, **kwargs):
         try:
@@ -153,7 +186,3 @@ class EyesLibrary(DynamicCore):
     @property
     def configure(self):
         return self._configuration
-
-    def update_configuration(self, selected_runner, raw_config, configuration):
-        # type: (SelectedRunner, dict, Configuration) -> Configuration
-        return ConfigurationTrafaret(selected_runner, configuration).check(raw_config)

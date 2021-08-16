@@ -1,10 +1,11 @@
+from __future__ import absolute_import, unicode_literals
+
 import os
 from enum import Enum
 from typing import Text
 
 import trafaret as trf
 import yaml
-from EyesLibrary.errors import EyesLibConfigParsingError, EyesLibValueError
 
 from applitools.common import (
     ChromeEmulationInfo,
@@ -22,6 +23,8 @@ from applitools.common import (
 from applitools.common.selenium import BrowserType
 from applitools.common.utils.compat import raise_from
 from applitools.selenium import BatchInfo, Configuration
+
+from .errors import EyesLibConfigParsingError, EyesLibValueError
 
 
 class SelectedRunner(Enum):

@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Optional
+from __future__ import absolute_import, unicode_literals
+
+from typing import TYPE_CHECKING, Optional, Union
 
 from robot.api import logger
 from robot.api.deco import keyword  # noqa
@@ -6,12 +8,15 @@ from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common.utils import cached_property
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
-from applitools.selenium.validators import is_webelement
 
 from .config_parser import SelectedRunner
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import AnyWebDriver, BySelector
+    from applitools.common.utils.custom_types import (
+        AnyWebDriver,
+        AnyWebElement,
+        BySelector,
+    )
 
     from . import EyesLibrary
     from .custom_types import Locator
@@ -32,29 +37,27 @@ class ContextAware:
         # self.log = applitools_logger.bind(class_=self.__class__.__name__)
         self.log = logger
 
-    def find_element(self, locator):
-        """Returns web element with Selenium and Appium locators"""
-        return self.ctx._element_finder.find(locator)
-
-    def get_by_selector_or_webelement(self, locator):
-        # type: ( Locator) -> BySelector
-        if is_webelement(locator):
-            return locator
+    def from_locator_to_supported_form(self, locator):
+        # type: (Locator) -> BySelector
         return self.ctx._element_finder.convert_to_by_selector(locator)
 
-    def get_by_selectors_or_webelements(self, locator):
+    def from_locators_to_supported_form(self, locator):
         # type: (Locator) -> list[BySelector]
         """
         Returns [By.NAME, 'selector'] with Selenium and Appium locators or WebElement
         """
         if isinstance(locator, list):
-            return [self.get_by_selector_or_webelement(loc) for loc in locator]
+            return [self.from_locator_to_supported_form(loc) for loc in locator]
         else:
-            return [self.get_by_selector_or_webelement(locator)]
+            return [self.from_locator_to_supported_form(locator)]
 
     @property
     def driver(self):
         return self.ctx.driver
+
+    @property
+    def library(self):
+        return self.ctx.current_library
 
     @property
     def drivers(self):
@@ -74,15 +77,6 @@ class LibraryComponent(ContextAware):
         SelectedRunner.selenium: ClassicRunner,
         SelectedRunner.selenium_ufg: VisualGridRunner,
     }
-
-    def __init__(self, *args, **kwargs):
-        super(LibraryComponent, self).__init__(*args, **kwargs)
-        libraries = BuiltIn().get_library_instance(all=True)
-        self._libraries = {
-            SelectedRunner.appium: libraries.get("AppiumLibrary"),
-            SelectedRunner.selenium: libraries.get("SeleniumLibrary"),
-            SelectedRunner.selenium_ufg: libraries.get("SeleniumLibrary"),
-        }
 
     def convert_to_by_selector(self, locator):
         return self.ctx._element_finder.convert_to_by_selector(locator)

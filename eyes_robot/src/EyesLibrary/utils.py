@@ -1,11 +1,12 @@
+from __future__ import absolute_import, unicode_literals
+
 import re
 from collections import defaultdict
-from typing import Any, Generator, Text, Tuple
+from typing import Any, Generator, Text
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from applitools.common import Region, RectangleSize
-from applitools.common.utils.converters import round_converter
+from applitools.common import RectangleSize, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 SEPARATOR = object()

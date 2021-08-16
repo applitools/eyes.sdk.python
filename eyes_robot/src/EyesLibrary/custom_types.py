@@ -1,6 +1,9 @@
+from __future__ import absolute_import, unicode_literals
+
 from typing import TYPE_CHECKING, List, Union
 
-from applitools.common.utils.custom_types import AnyWebElement, CssSelector
-
 if TYPE_CHECKING:
-    Locator = Union[CssSelector, AnyWebElement, List[CssSelector]]  # typedef
+    # TODO improve typing here
+    from applitools.common.utils.custom_types import CssSelector
+
+    Locator = Union[CssSelector, List[CssSelector]]  # typedef
