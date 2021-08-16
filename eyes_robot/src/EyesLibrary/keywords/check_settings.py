@@ -1,26 +1,26 @@
 from typing import TYPE_CHECKING, Optional, Text
 
 from appium.webdriver import WebElement as AppiumWebElement
-from EyesLibrary.base import LibraryComponent
-from EyesLibrary.keywords.keyword_tags import CHECK_SETTING, UFG_RELATED
-from EyesLibrary.utils import parse_region
-from robot.api.deco import keyword as original_kyeword
+from robot.api.deco import keyword as original_keyword
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
 from applitools.common import AccessibilityRegionType, MatchLevel, VisualGridOption
 from applitools.common.utils import argument_guard
 from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.validators import is_webelement
+from EyesLibrary.base import LibraryComponent
+from EyesLibrary.keywords.keyword_tags import CHECK_SETTING, UFG_RELATED
+from EyesLibrary.utils import parse_region
 
 if TYPE_CHECKING:
-    from EyesLibrary.custom_types import Locator
-
     from applitools.common.utils.custom_types import AnyWebElement
+    from EyesLibrary.custom_types import Locator
 
 
 def keyword(name=None, tags=(), types=()):
+    """Keyword with predefined CHECK_SETTING tag"""
     tags = tags + (CHECK_SETTING,)
-    return original_kyeword(name, tags, types)
+    return original_keyword(name, tags, types)
 
 
 def new_or_cur_check_settings(check_settings):
@@ -271,7 +271,7 @@ class StrictCheckSettingsKeywords:
 
         *Example:*
             | Eyes Check                         |          |
-            |...  Strict Region By Selector      | css:div  |
+            | ...  Strict Region By Selector     | css:div  |
         """
         return new_or_cur_check_settings(check_settings).strict(
             *self.from_locators_to_supported_form(selector)

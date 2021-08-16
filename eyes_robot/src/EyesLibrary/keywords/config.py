@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Any, Optional, Text, Union
 
-from EyesLibrary.base import LibraryComponent
 from robot.api.deco import keyword
 
 from applitools.common.utils.compat import basestring
 from applitools.selenium import BatchInfo
+from EyesLibrary.base import LibraryComponent
 
 
 class ConfigurationKeywords(LibraryComponent):

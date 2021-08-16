@@ -1,4 +1,5 @@
 import pytest
+
 from EyesLibrary.utils import (
     SEPARATOR,
     extract_keyword_and_arguments,

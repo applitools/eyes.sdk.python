@@ -1,9 +1,8 @@
 import pytest
 import trafaret as t
-from EyesLibrary.config_parser import ToEnumTrafaret, ViewPortTrafaret
 
-from applitools.common import RectangleSize
-from applitools.common.selenium import BrowserType, StitchMode
+from applitools.selenium import BrowserType, RectangleSize, StitchMode
+from EyesLibrary.config_parser import ToEnumTrafaret, ViewPortTrafaret
 
 
 def test_to_enum_trafaret():

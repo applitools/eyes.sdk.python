@@ -1,5 +1,4 @@
 import pytest
-from EyesLibrary import CheckSettingsKeywords
 from mock import Mock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -11,6 +10,7 @@ from applitools.common import (
     VisualGridOption,
 )
 from applitools.selenium.fluent import SeleniumCheckSettings
+from EyesLibrary import CheckSettingsKeywords
 
 WEB_ELEMENT = Mock(WebElement)
 

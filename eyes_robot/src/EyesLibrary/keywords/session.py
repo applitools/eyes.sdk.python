@@ -13,6 +13,7 @@ from applitools.selenium import Eyes, EyesWebDriver
 
 from ..base import LibraryComponent, keyword
 from ..utils import parse_viewport_size
+from .keyword_tags import CHECK_FLOW
 
 
 class RunnerKeywords(LibraryComponent):
@@ -49,6 +50,7 @@ class SessionKeywords(LibraryComponent):
             "send_dom": (bool, None),
             "is_disabled": (bool, None),
         },
+        tags=(CHECK_FLOW,),
     )
     def open(  # noqa
         self,
@@ -160,7 +162,11 @@ class SessionKeywords(LibraryComponent):
         self.register_eyes(eyes)
         return eyes.open(self.fetch_driver())
 
-    @keyword("Eyes Close", types=(bool,))
+    @keyword(
+        "Eyes Close",
+        types=(bool,),
+        tags=(CHECK_FLOW,),
+    )
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[TestResults]
         """
@@ -174,7 +180,10 @@ class SessionKeywords(LibraryComponent):
         # TODO: proper handle situation when we ask to raise an exception
         return self.current_eyes.close_async()
 
-    @keyword("Eyes Abort")
+    @keyword(
+        "Eyes Abort",
+        tags=(CHECK_FLOW,),
+    )
     def abort(self):
         # type: () -> Optional[TestResults]
         """
