@@ -55,67 +55,89 @@ class RenderingService(object):
 
     def _run_render_requests(self):
         while True:
-            with self._have_render_tasks:
-                while not (self._shutdown or self._render_tasks):
-                    self._have_render_tasks.wait()
-                if self._shutdown:
-                    break
-                render_tasks, self._render_tasks = self._render_tasks, []
-            requests = [r.request for r in render_tasks]
-            logger.debug("render call with requests: {}".format(requests))
             try:
-                responses = self._server_connector.render(*requests)
-            except Exception as e:
-                for task in render_tasks:
-                    task.on_error(e)
-                continue
-            statuses = []
-            for task, r in zip(render_tasks, responses):
-                if (
-                    r.render_status == RenderStatus.NEED_MORE_RESOURCE
-                    or r.need_more_dom
-                ):
-                    task.on_error(EyesError("Some resources aren't uploaded"))
-                else:
-                    statuses.append(
-                        _Status(r.render_id, task.on_success, task.on_error)
-                    )
-            with self._have_status_tasks:
-                self._status_tasks.extend(statuses)
-                self._have_status_tasks.notify()
+                with self._have_render_tasks:
+                    while not (self._shutdown or self._render_tasks):
+                        self._have_render_tasks.wait()
+                    if self._shutdown:
+                        break
+                    render_tasks, self._render_tasks = self._render_tasks, []
+                requests = [r.request for r in render_tasks]
+                logger.debug("render call with requests: {}".format(requests))
+                try:
+                    responses = self._server_connector.render(*requests)
+                except Exception as e:
+                    for task in render_tasks:
+                        task.on_error(e)
+                    continue
+                statuses = []
+                for task, running_render in zip(render_tasks, responses):
+                    if running_render.render_status == RenderStatus.RENDERING:
+                        statuses.append(
+                            _Status(
+                                running_render.render_id, task.on_success, task.on_error
+                            )
+                        )
+                    else:
+                        task.on_error(
+                            EyesError("Unexpected render response", running_render)
+                        )
+                with self._have_status_tasks:
+                    self._status_tasks.extend(statuses)
+                    self._have_status_tasks.notify()
+            except Exception:
+                logger.exception("Render request batching thread failure")
+                datetime_utils.sleep(5000, "Render request error delay")
 
     def _run_render_status_requests(self):
         status_tasks = []
         while True:
-            with self._have_status_tasks:
-                while not (self._shutdown or status_tasks or self._status_tasks):
-                    self._have_status_tasks.wait()
-                if self._shutdown:
-                    break
-                new_tasks, self._status_tasks = self._status_tasks, []
-            status_tasks.extend(new_tasks)
-            ids = [t.render_id for t in status_tasks]
-            logger.debug("render_status_by_id call with ids: {}".format(ids))
             try:
+                with self._have_status_tasks:
+                    while not (self._shutdown or status_tasks or self._status_tasks):
+                        self._have_status_tasks.wait()
+                    if self._shutdown:
+                        break
+                    new_tasks, self._status_tasks = self._status_tasks, []
+                status_tasks.extend(new_tasks)
+                status_tasks = self._check_render_status_batch(status_tasks)
+                if status_tasks:
+                    datetime_utils.sleep(1000, "Render status polling delay")
+            except Exception:
+                logger.exception("Rendering status batching thread failure")
+                datetime_utils.sleep(5000, "Render status error delay")
 
-                statuses = self._server_connector.render_status_by_id(*ids)
-            except Exception as e:
-                for task in status_tasks:
-                    task.on_error(e)
-                continue
-            rendering = []
-            current_time = time()
-            for status, task in zip(statuses, status_tasks):
-                if status.status == RenderStatus.RENDERING:
-                    if current_time > task.timeout_time:
-                        task.on_error(EyesError("Render time out"))
-                    else:
-                        rendering.append(task)
+    def _check_render_status_batch(self, status_tasks):
+        ids = [t.render_id for t in status_tasks]
+        logger.debug("render_status_by_id call with ids: {}".format(ids))
+        try:
+            statuses = self._server_connector.render_status_by_id(*ids)
+            logger.debug(
+                "Received render status response", statuses_count=len(statuses)
+            )
+            status_by_render_id = {s.render_id: s for s in statuses if s}
+        except Exception as e:
+            for task in status_tasks:
+                task.on_error(e)
+            return []
+        rendering = []
+        current_time = time()
+        for task in status_tasks:
+            status = status_by_render_id.get(task.render_id)
+            if status is None:
+                logger.error(
+                    "Missing render id in RenderStatus response",
+                    render_id=task.render_id,
+                )
+                task.on_error(EyesError("Unknown rendering error"))
+            elif status.status == RenderStatus.RENDERING:
+                if current_time > task.timeout_time:
+                    task.on_error(EyesError("Render time out"))
                 else:
-                    task.on_success(status)
-            status_tasks = rendering
-            if status_tasks:
-                datetime_utils.sleep(1000, "Render status polling delay")
+                    rendering.append(task)
+            else:
+                task.on_success(status)
+        return rendering
 
 
 @attr.s

@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Union
+from time import time
+from typing import TYPE_CHECKING, Optional, Union
 
 from applitools.common import (
     DiffsFoundError,
+    EyesError,
     NewTestError,
     TestFailedError,
     TestResultContainer,
@@ -16,14 +18,16 @@ if TYPE_CHECKING:
     from applitools.selenium.visual_grid import RunningTest
 
 
-def wait_till_tests_completed(test_provider):
-    # type: (Union[Callable, List]) -> None
+def wait_till_tests_completed(test_provider, timeout):
+    # type: (Union[Callable, List], Optional[int]) -> None
     def get_tests(provider):
         if isinstance(test_provider, list):
             return test_provider
         return test_provider()
 
-    while True:
+    deadline = time() + timeout if timeout else None
+    iterations = 0
+    while deadline is None or time() < deadline:
         states = list(set(t.state for t in get_tests(test_provider)))
         if not states:
             # probably some exception is happened during execution
@@ -31,6 +35,39 @@ def wait_till_tests_completed(test_provider):
         if len(states) == 1 and states[0] == "completed":
             break
         datetime_utils.sleep(1500, msg="Waiting for state completed!")
+        iterations += 1
+        if iterations % 200 == 0:
+            logger.debug(
+                "Unfinished tests state report",
+                unfinished_tests=tests_state_report(
+                    t for t in get_tests(test_provider) if t.state != "completed"
+                ),
+            )
+    else:
+        logger.warning(
+            "Tests completion timeout exceeded",
+            timeout=timeout,
+            unfinished_tests=tests_state_report(
+                t for t in get_tests(test_provider) if t.state != "completed"
+            ),
+        )
+        raise EyesError("Tests didn't finish in {} seconds".format(timeout))
+
+
+def tests_state_report(tests):
+    state_report = []
+    for test in tests:
+        state_report.append(
+            {
+                "app_name": test.configuration.app_name,
+                "test_name": test.configuration.test_name,
+                "browser_info": test.browser_info,
+                "uuid": test.test_uuid,
+                "state": test.state,
+                "active_check": test.task_lock,
+            }
+        )
+    return state_report
 
 
 def collect_test_results(tests, should_raise_exception):

@@ -1,3 +1,15 @@
+## [4.24.2] - 2021-08-12
+### Fixed
+- UFG test is aborted if render server responds with null render status [Trello 2689](https://trello.com/c/C8m6Fv4T)
+
+## [4.24.1] - 2021-08-09
+### Fixed
+- False unclosed test warnings are printed for finished tests [Trello 2688](https://trello.com/c/fqzJhHo5)
+
+## [4.24.0] - 2021-08-06
+### Added
+- Timeout argument and state logging to get_all_test_results method of runner [Trello 2684](https://trello.com/c/AC2WKrI7)
+
 ## [4.23.1] - 2021-07-21
 ### Fixed
 - ClassicRunner stitching issue [Trello 2615](https://trello.com/c/PDgW2wuN)

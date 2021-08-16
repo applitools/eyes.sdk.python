@@ -22,7 +22,7 @@ from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Text, Union
+    from typing import Dict, List, Optional, Text, Union
 
     from applitools.core import ServerConnector
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
@@ -182,9 +182,23 @@ class VisualGridRunner(EyesRunner):
         self._thread.join()
         self.rendering_service.shutdown()
 
-    def _get_all_test_results_impl(self, should_raise_exception=True):
-        # type: (bool) -> TestResultsSummary
-        wait_till_tests_completed(self._get_all_running_tests)
+    def _get_all_test_results_impl(self, should_raise_exception, timeout):
+        # type: (bool, Optional[int]) -> TestResultsSummary
+        unclosed_test_names = set()
+        for test in self._get_all_running_tests():
+            if not test.is_closed:
+                unclosed_test_names.add(test.configuration.test_name)
+                test.abort()
+        if unclosed_test_names:
+            logger.warning(
+                "Unclosed tests found and aborted", unclosed_tests=unclosed_test_names
+            )
+            print(
+                "Warning: Unclosed tests found and aborted: {}".format(
+                    unclosed_test_names
+                )
+            )
+        wait_till_tests_completed(self._get_all_running_tests, timeout)
 
         # finish processing of all tasks and shutdown threads
         self._stop()

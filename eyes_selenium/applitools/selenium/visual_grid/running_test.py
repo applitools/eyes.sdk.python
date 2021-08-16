@@ -194,6 +194,8 @@ class RunningTest(object):
         # type: () -> None
         self.logger = self.logger.bind(running_test=self)
         self._initialize_vars()
+        self._is_closed = False
+        self._is_aborted = False
         self._initialize_state_machine()
         self.open()
 
@@ -301,6 +303,7 @@ class RunningTest(object):
 
     def close(self):
         # type: () -> Optional[Any]
+        self._is_closed = True
         if self.state == NEW:
             self.becomes_completed()
             return None
@@ -338,16 +341,14 @@ class RunningTest(object):
             self.watch_close[close_task] = False
             self.task_queue.append(END_OF_CHECKS)
 
-    def abort_if_not_closed(self):
-        # This method is to be called from Eyes.*abort calls.
-        # This way abort will be ignored if Eyes were already explicitly closed.
-        if not self.close_queue:
-            self.abort()
+    @property
+    def is_closed(self):
+        return self._is_closed or self._is_aborted
 
     def abort(self):
-        # skip call of abort() in tests where close() already called
         if self.state == COMPLETED:
             return None
+        self._is_aborted = True
 
         while self.close_queue:
             close_task = self.close_queue.pop()
