@@ -659,6 +659,14 @@ class CheckSettingsKeywords(
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
+        """
+        Returns a CheckSettings object with selected Scroll Root Element by selector
+            |  =Arguments=  | =Description=                                          |
+            | Selector       | *Mandatory* - The selector of scroll root element     |
+
+        *Example:*
+            |  Scroll Root Element By Element  |  ${element}  |
+        """
         return new_or_cur_check_settings(check_settings).scroll_root_element(
             self.from_locator_to_supported_form(selector)
         )
@@ -673,6 +681,14 @@ class CheckSettingsKeywords(
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
+        """
+        Returns a CheckSettings object with selected Scroll Root Element
+            |  =Arguments=  | =Description=                                          |
+            | Element       | *Mandatory* - The scroll root element                  |
+
+        *Example:*
+            |  Scroll Root Element By Element  |  ${element}  |
+        """
         is_webelement_guard(element)
         return new_or_cur_check_settings(check_settings).scroll_root_element(element)
 
@@ -814,11 +830,19 @@ class CheckSettingsKeywords(
     @keyword("Use Dom", types=(bool,))
     def use_dom(
         self,
-        use=True,  # type:bool
+        usedom=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
-        return new_or_cur_check_settings(check_settings).use_dom(use)
+        """
+        Returns a CheckSettings object specified use dom.
+            | =Arguments=  | =Description=                                                |
+            | Use Dom      | Defines useDom for enabling the match algorithm to use dom   |
+
+        *Example:*
+            | Eyes Check   |    Target Window    |  Use Dom   |
+        """
+        return new_or_cur_check_settings(check_settings).use_dom(usedom)
 
     @keyword("Send Dom", types=(bool,))
     def send_dom(
@@ -827,4 +851,12 @@ class CheckSettingsKeywords(
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
+        """
+        Returns a CheckSettings object specified send dom.
+            | =Arguments=  | =Description=                                       |
+            | Send Dom     | Enable or disable sending DOM for this checkpoint   |
+
+        *Example:*
+            | Eyes Check   |    Target Window    |  Send Dom   |
+        """
         return new_or_cur_check_settings(check_settings).send_dom(senddom)

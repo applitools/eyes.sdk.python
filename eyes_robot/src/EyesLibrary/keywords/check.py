@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Optional, Text
 
 from appium.webdriver import WebElement as AppiumWebElement
+from robot.api.deco import keyword as original_keyword
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
@@ -12,7 +13,6 @@ from EyesLibrary.keywords.keyword_tags import (
     CHECK_SETTINGS_SUPPORT,
     TARGET_SUPPORT,
 )
-from EyesLibrary.keywords.target import keyword as original_keyword
 from EyesLibrary.utils import collect_check_settings, parse_region
 
 if TYPE_CHECKING:
@@ -58,7 +58,7 @@ class CheckKeywords(LibraryComponent):
           |  Region       | *Mandatory* - The region to check in format [left top width height] ,e.g. [100 200 300 300]  |
 
         *Example:*
-            |  Eyes Check Region By Coordinates   |  [40 50 200 448]
+            |  Eyes Check Region By Coordinates   |  [40 50 200 448]  |
         """
         check_settings = collect_check_settings(
             Target.region(parse_region(region)),
@@ -220,7 +220,7 @@ class CheckKeywords(LibraryComponent):
 
         *Example:*
             |  Eyes Check  |  Target Window   |
-            |  Eyes Check  |  Target Region By Coordinates   | [34 56 78 89]
+            |  Eyes Check  |  Target Region By Coordinates   | [34 56 78 89]  |
         """
         target = BuiltIn().run_keyword(target_keyword, *check_settings_keywords)
         self.current_eyes.check(target)
