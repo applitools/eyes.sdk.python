@@ -122,16 +122,20 @@ def appium(desired_caps, sauce_url):
 
 
 def start_chrome_driver(options):
-    for _ in range(5):
+    for _ in range(4):
         try:
-            chrome_driver = webdriver.Chrome(
+            return webdriver.Chrome(
                 executable_path=ChromeDriverManager().install(),
                 options=options,
             )
         except Exception as e:
             print("Tried to start browser. It was exception {}".format(e))
         time.sleep(1.0)
-    return chrome_driver
+    else:
+        return webdriver.Chrome(
+            executable_path=ChromeDriverManager().install(),
+            options=options,
+        )
 
 
 @pytest.fixture(scope="function")
@@ -150,16 +154,19 @@ def chrome(options, execution_grid):
 def firefox(options):
     options.add_argument("--headless")
     caps = options.to_capabilities()
-    for _ in range(5):
+    for _ in range(4):
         try:
-            driver = webdriver.Firefox(
+            return webdriver.Firefox(
                 executable_path=GeckoDriverManager().install(),
                 desired_capabilities=caps,
             )
         except Exception as e:
             print("Tried to start browser. It was exception {}".format(e))
         time.sleep(1.0)
-    return driver
+    return webdriver.Firefox(
+        executable_path=GeckoDriverManager().install(),
+        desired_capabilities=caps,
+    )
 
 
 @pytest.fixture(scope="function")
@@ -254,8 +261,7 @@ def chrome_emulator(options):
     }
     options.add_experimental_option("mobileEmulation", mobile_emulation)
     options.add_argument("--headless")
-    driver = start_chrome_driver(options)
-    return driver
+    return start_chrome_driver(options)
 
 
 @pytest.fixture(scope="function")
