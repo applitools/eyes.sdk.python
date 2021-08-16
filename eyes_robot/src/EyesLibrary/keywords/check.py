@@ -31,12 +31,10 @@ class CheckKeywords(LibraryComponent):
     def check_window(self, tag=None, *check_settings_keywords):
         # type: (Optional[Text], tuple[Any]) -> MatchResult
         """
-        Check Window  Check Settings Keywords.
-            |  =Arguments=  | =Description=                                                       |
-            |  Tag       | he region to check in format [left top width height] ,e.g. [100 200 300 300]  |
+        Check current browser window
 
         *Example:*
-            |  ${target}=    | Target Window     |
+            |  Eyes Check Window   |
         """
         if tag in self.defined_keywords:
             check_settings_keywords += (tag,)
@@ -54,6 +52,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+        Check specified region
+          |  =Arguments=  | =Description=                                                       |
+          |  Region       | *Mandatory* - The region to check in format [left top width height] ,e.g. [100 200 300 300]  |
+
+        *Example:*
+            |  Eyes Check Region By Coordinates   |  [40 50 200 448]
+        """
         check_settings = collect_check_settings(
             Target.region(parse_region(region)),
             self.defined_keywords,
@@ -73,6 +79,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+        Check specified region by element
+            |  =Arguments=  | =Description=                                   |
+            | Element       | *Mandatory* - The element to check              |
+
+        *Example:*
+            |  Eyes Check Region By Element  |  ${element}  |
+        """
         check_settings = collect_check_settings(
             Target.region(element),
             self.defined_keywords,
@@ -92,6 +106,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+        Check specified region by selector
+            | =Arguments=   | =Description=                         |
+            |  Selector     | *Mandatory* - The selector to check.  |
+
+        *Example:*
+            |  Eyes Check Region By Element  |  css:#selector  |
+        """
         check_settings = collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
@@ -111,6 +133,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+         Check specified frame by element
+            | =Arguments=   | =Description=                                        |
+            | Element       | *Mandatory* - The frame to check                     |
+
+        *Example:*
+            |  Eyes Check Frame By Element  |  ${element}  |
+        """
         check_settings = collect_check_settings(
             Target.frame(element), self.defined_keywords, *check_settings_keywords
         )
@@ -124,6 +154,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+         Check specified frame by index
+            | =Arguments=     | =Description=                                                       |
+            |  Frame Index    | *Mandatory* - Index of the frame to check. |
+
+        *Example:*
+            |  Eyes Check Frame By Index  |  2  |
+        """
         check_settings = collect_check_settings(
             Target.frame(frame_index), self.defined_keywords, *check_settings_keywords
         )
@@ -137,6 +175,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+         Check specified frame by name
+            |  =Arguments=   | =Description=                                   |
+            |  Frame Name    | *Mandatory* - Name of the frame to check.      |
+
+        *Example:*
+            |  Eyes Check Frame By Name  |  frameName  |
+        """
         check_settings = collect_check_settings(
             Target.frame(frame_name), self.defined_keywords, *check_settings_keywords
         )
@@ -150,6 +196,14 @@ class CheckKeywords(LibraryComponent):
         *check_settings_keywords,  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
+        """
+         Check specified frame by name
+            |  =Arguments=   | =Description=                                  |
+            |  Selector     | *Mandatory* - Selector of the frame to check.   |
+
+        *Example:*
+            |  Eyes Check Frame By Selector  |  css:#selector   |
+        """
         check_settings = collect_check_settings(
             Target.frame(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
@@ -159,5 +213,14 @@ class CheckKeywords(LibraryComponent):
 
     @keyword("Eyes Check", tags=(TARGET_SUPPORT, CHECK_FLOW))
     def check(self, target_keyword, *check_settings_keywords):
+        """
+         Check with target
+            |  =Arguments=      | =Description=                  |
+            |  Target Keyword  | *Mandatory* - Target Keyword that market with Target Keyword tag  |
+
+        *Example:*
+            |  Eyes Check  |  Target Window   |
+            |  Eyes Check  |  Target Region By Coordinates   | [34 56 78 89]
+        """
         target = BuiltIn().run_keyword(target_keyword, *check_settings_keywords)
         self.current_eyes.check(target)

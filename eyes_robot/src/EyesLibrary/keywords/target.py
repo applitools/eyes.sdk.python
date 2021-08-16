@@ -9,7 +9,7 @@ from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
 from ..utils import collect_check_settings, parse_region
-from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT
+from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 def keyword(name=None, tags=(), types=()):
     """Keyword with predefined CHECK_SETTINGS_SUPPORT tag"""
-    tags = tags + (CHECK_SETTINGS_SUPPORT,)
+    tags = tags + (CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD)
     return original_keyword(name, tags, types)
 
 
@@ -45,7 +45,7 @@ class TargetKeywords(LibraryComponent):
         # type: (AnyWebElement,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
-            |  =Arguments=  | =Description=                                                       |
+            |  =Arguments=  | =Description=                                          |
             | Element       | *Mandatory* - The element to check                     |
 
         *Example:*
@@ -81,8 +81,8 @@ class TargetKeywords(LibraryComponent):
         # type: (Text,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
-            | =Arguments=   | =Description=                                                       |
-            |  Selector     | *Mandatory* - The selector to check. Selenium/Appium formats are supported. |
+            | =Arguments=   | =Description=                          |
+            |  Selector     | *Mandatory* - The selector to check.   |
 
         *Example:*
             |  ${target}=  |  Target Frame By Selector  |  css:#selector  |
@@ -123,8 +123,8 @@ class TargetKeywords(LibraryComponent):
         # type: (Locator,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
-            | =Arguments=   | =Description=                                                       |
-            |  Selector     | *Mandatory* - Selector of the frame to check. Selenium/Appium formats are supported. |
+            | =Arguments=   | =Description=                                  |
+            |  Selector     | *Mandatory* - Selector of the frame to check.  |
 
         *Example:*
             |  ${target}=  |  Target Frame By Selector  |  css:#selector  |
@@ -140,18 +140,18 @@ class TargetKeywords(LibraryComponent):
         types=(int,),
         tags=(CHECK_SETTINGS_SUPPORT,),
     )
-    def target_frame_by_index(self, frame_id, *check_settings_keywords):
+    def target_frame_by_index(self, frame_index, *check_settings_keywords):
         # type: (int,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
-            | =Arguments=   | =Description=                                                       |
-            |  Frame Id     | *Mandatory* - Index of the frame to check. |
+            | =Arguments=     | =Description=                                   |
+            |  Frame Index    | *Mandatory* - Index of the frame to check.      |
 
         *Example:*
             | ${target}=  |  Target Frame By Index  |  2  |
         """
         return collect_check_settings(
-            Target.frame(frame_id),
+            Target.frame(frame_index),
             self.defined_keywords,
             *check_settings_keywords,
         )
@@ -165,8 +165,8 @@ class TargetKeywords(LibraryComponent):
         # type: (Text,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
-            |  =Arguments=   | =Description=                                                       |
-            |  Frame Name     | *Mandatory* - Name of the frame to check. |
+            |  =Arguments=   | =Description=                                  |
+            |  Frame Name    | *Mandatory* - Name of the frame to check.      |
 
         *Example:*
             |  ${target}=  |  Target Frame By Name  |  frameName  |
