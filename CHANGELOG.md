@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Debug logging in UFG resource downloader to aid stuck runner debugging [Trello 2684](https://trello.com/c/AC2WKrI7)
+
 ## [4.24.1] - 2021-08-09
 ### Fixed
 - False unclosed test warnings are printed for finished tests [Trello 2688](https://trello.com/c/fqzJhHo5)
