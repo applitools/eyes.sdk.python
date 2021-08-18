@@ -76,6 +76,7 @@ class _ResourceCollectionService(object):
 
     def shutdown(self):
         self._queue.put(None)
+        self._thread.join()
 
 
 class VisualGridRunner(EyesRunner):
@@ -165,6 +166,7 @@ class VisualGridRunner(EyesRunner):
 
     def _stop(self):
         # type: () -> None
+        self.logger.info("VisualGridRunner is terminating")
         while any(r.state != COMPLETED for r in self._get_all_running_tests()):
             datetime_utils.sleep(500, msg="Waiting for finishing tests in stop")
         self.still_running = False
@@ -181,6 +183,7 @@ class VisualGridRunner(EyesRunner):
         self._executor.shutdown()
         self._thread.join()
         self.rendering_service.shutdown()
+        self.logger.info("VisualGridRunner terminated")
 
     def _get_all_test_results_impl(self, should_raise_exception, timeout):
         # type: (bool, Optional[int]) -> TestResultsSummary
