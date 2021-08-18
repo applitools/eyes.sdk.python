@@ -182,6 +182,7 @@ class ResourceCollectionTask(VGTask):
         )
         frame_request_resources.update(resources_and_their_children)
         self.full_request_resources.update(frame_request_resources)
+        logger.debug("Frame resources downloaded", url=base_url)
         return RGridDom(
             url=base_url, dom_nodes=data["cdt"], resources=frame_request_resources
         )
@@ -199,6 +200,7 @@ def fetch_resources_recursively(
         logger.debug("get_resource({0}) call".format(link))
         matching_cookies = [c for c in cookies if is_cookie_for_url(c, link)]
         response = eyes_connector.download_resource(link, matching_cookies)
+        logger.debug("Received download resource response", status=response.status_code)
         return VGResource.from_response(link, response, find_child_resource_urls)
 
     def schedule_fetch(urls):
