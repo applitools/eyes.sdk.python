@@ -1,4 +1,4 @@
-## [vNext]
+## [4.24.3] - 2021-08-18
 ### Updated
 - Debug logging in UFG resource downloader to aid stuck runner debugging [Trello 2684](https://trello.com/c/AC2WKrI7)
 
