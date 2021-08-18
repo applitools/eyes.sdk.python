@@ -65,11 +65,14 @@ class _ResourceCollectionService(object):
         self._thread.start()
 
     def _resource_collection(self):
-        while True:
-            task = self._queue.get()
-            if task is None:
-                break
-            task()
+        try:
+            while True:
+                task = self._queue.get()
+                if task is None:
+                    break
+                task()
+        except Exception:
+            logger.exception("Resource collection thread crash")
 
     def add_task(self, task):
         self._queue.put(task)
