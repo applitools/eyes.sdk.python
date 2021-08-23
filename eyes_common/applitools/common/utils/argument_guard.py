@@ -81,7 +81,7 @@ def is_a(param, klass, exc_info=None):
     if not isinstance(param, klass):
         if exc_info:
             raise exc_info
-        raise ValueError("{} is not instance of {}".format(param, klass))
+        raise ValueError("`{}` is not instance of `{}`".format(param, klass))
 
 
 def is_in(param, klass, exc_info=None):

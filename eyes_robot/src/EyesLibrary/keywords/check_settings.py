@@ -12,7 +12,7 @@ from applitools.selenium.fluent import SeleniumCheckSettings
 from applitools.selenium.validators import is_webelement
 
 from ..base import LibraryComponent
-from ..utils import parse_region
+from ..utils import is_webelement_guard, parse_region
 from .keyword_tags import CHECK_SETTING, UFG_RELATED
 
 if TYPE_CHECKING:
@@ -32,13 +32,6 @@ def new_or_cur_check_settings(check_settings):
     if check_settings is None:
         return SeleniumCheckSettings()
     return check_settings
-
-
-def is_webelement_guard(element):
-    argument_guard.is_valid_type(
-        is_webelement(element),
-        "element argument should be type Selenium or Appium Web Element",
-    )
 
 
 class IgnoreCheckSettingsKeyword:

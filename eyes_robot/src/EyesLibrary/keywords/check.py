@@ -8,10 +8,12 @@ from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
 from applitools.common import MatchResult
+from applitools.common.utils import argument_guard
+from applitools.common.utils.compat import basestring
 from applitools.selenium import Target
 
 from ..base import LibraryComponent
-from ..utils import collect_check_settings, parse_region
+from ..utils import collect_check_settings, is_webelement_guard, parse_region
 from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT, TARGET_SUPPORT
 
 if TYPE_CHECKING:
@@ -97,6 +99,7 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Region By Element  |  ${element}  |
         """
+        is_webelement_guard(element)
         check_settings_keywords, tag = try_resolve_tag_and_keyword(
             tag, check_settings_keywords, self.defined_keywords
         )
@@ -157,6 +160,7 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Element  |  ${element}  |
         """
+        is_webelement_guard(element)
         check_settings_keywords, tag = try_resolve_tag_and_keyword(
             tag, check_settings_keywords, self.defined_keywords
         )
@@ -181,6 +185,7 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Index  |  2  |
         """
+        argument_guard.is_a(frame_index, int)
         check_settings_keywords, tag = try_resolve_tag_and_keyword(
             tag, check_settings_keywords, self.defined_keywords
         )
@@ -205,6 +210,7 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Name  |  frameName  |
         """
+        argument_guard.is_a(frame_name, basestring)
         check_settings_keywords, tag = try_resolve_tag_and_keyword(
             tag, check_settings_keywords, self.defined_keywords
         )
@@ -229,6 +235,7 @@ class CheckKeywords(LibraryComponent):
         *Example:*
             |  Eyes Check Frame By Selector  |  css:#selector   |
         """
+        argument_guard.is_a(selector, basestring)
         check_settings_keywords, tag = try_resolve_tag_and_keyword(
             tag, check_settings_keywords, self.defined_keywords
         )

@@ -7,7 +7,9 @@ from typing import Any, Generator, Text
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import RectangleSize, Region
+from applitools.common.utils import argument_guard
 from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.selenium.validators import is_webelement
 
 SEPARATOR = object()
 
@@ -54,19 +56,13 @@ def splits_args_by_separator(args):
             yield res
 
 
-def collect_check_settings(
-    check_settings, defined_keywords, *keywords, executor=BuiltIn().run_keyword
-):
-    # type: (SeleniumCheckSettings,list[str],tuple[Any],callable)->SeleniumCheckSettings
+def collect_check_settings(check_settings, defined_keywords, *keywords):
+    # type: (SeleniumCheckSettings,list[str],tuple[Any])->SeleniumCheckSettings
     """ Fill `check_setting` with data from keyword and return `check_settings`"""
     for keyword, args in extract_keyword_and_arguments(keywords, defined_keywords):
         for separated_args in splits_args_by_separator(args):
             separated_args += (check_settings,)
-            import ipdb
-
-            ipdb.stdout.update_stdout()
-            ipdb.stdout.set_trace()
-            executor(keyword, *separated_args)
+            BuiltIn().run_keyword(keyword, *separated_args)
     return check_settings
 
 
@@ -101,4 +97,11 @@ def parse_region(text):
         top=float(groups[1]),
         width=float(groups[2]),
         height=float(groups[3]),
+    )
+
+
+def is_webelement_guard(element):
+    argument_guard.is_valid_type(
+        is_webelement(element),
+        "element argument should be type Selenium or Appium Web Element",
     )
