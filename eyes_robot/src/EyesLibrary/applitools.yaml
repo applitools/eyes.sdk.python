@@ -1,3 +1,4 @@
+### applitools.yaml 1.0
 ### START `SHARED SECTION` ###
 #server_url: "https://eyesapi.applitools.com" #optional
 #api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
@@ -65,13 +66,13 @@ selenium_ufg:
 #  layout_breakpoints: true
   browsers:
     desktop:
-      - browser_type: chrome  # values from BrowserType
+      - browser_type: CHROME  # names from BrowserType
         width: 1900
         height: 1800
     ios:
-      - device_name: iPhone 12 Pro  # values from IosDeviceName
-        screen_orientation: portrait  # portrait | landscape
-        ios_version: latest-1  # latest | latest-1
+      - device_name: iPhone_12_Pro  # names from IosDeviceName
+        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
     chrome_emulation:
-      - device_name: iPhone 4  # values from DeviceName
-        screen_orientation: portrait  # portrait | landscape
+      - device_name: iPhone_4  # names from DeviceName
+        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
