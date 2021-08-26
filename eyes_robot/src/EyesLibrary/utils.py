@@ -1,6 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
+import os
 import re
+import shutil
 from collections import defaultdict
 from typing import Any, Generator, Text
 
@@ -105,3 +107,14 @@ def is_webelement_guard(element):
         is_webelement(element),
         "element argument should be type Selenium or Appium Web Element",
     )
+
+
+def get_config_file_path():
+    here = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(here, "applitools.yaml")
+
+
+def copy_config_to(path_to_dir):
+    if not os.path.exists(path_to_dir):
+        raise ValueError("Directory doesn't exists")
+    return shutil.copy(get_config_file_path(), path_to_dir)

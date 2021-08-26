@@ -1,15 +1,8 @@
-import pytest
-
 from EyesLibrary.utils import (
     SEPARATOR,
     extract_keyword_and_arguments,
     splits_args_by_separator,
 )
-
-
-@pytest.fixture
-def defined_keywords():
-    return ["Ignore Region", "Ignore Region By Coordinates"]
 
 
 def test_extract_keyword_and_arguments(defined_keywords):

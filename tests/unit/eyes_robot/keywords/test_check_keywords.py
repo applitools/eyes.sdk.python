@@ -57,6 +57,7 @@ class TestData(object):
     def check_params(self):
         # type: () -> List
         result = []
+        # order does matter here!
         if self.check_region:
             result.append(self.check_region)
         if self.check_tag:
