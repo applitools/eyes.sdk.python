@@ -269,12 +269,11 @@ def try_parse_runner(runner):
 
 
 def try_parse_configuration(
-    config_path, selected_runner, origin_configuration, suite_source
+    config_path, selected_runner, origin_configuration, suite_path
 ):
     # type: (Text, SelectedRunner, Configuration, Text) -> Configuration
     if not os.path.isabs(config_path):
         # if config path is not absolute that count test suite directory as root
-        suite_path = os.path.dirname(suite_source)
         config_path = os.path.join(suite_path, config_path)
 
     if not os.path.exists(config_path):

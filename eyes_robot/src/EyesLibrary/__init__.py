@@ -43,6 +43,13 @@ EyesT = typing.TypeVar("EyesT", bound=Eyes)
 CurrentLibrary = namedtuple("CurrentLibrary", "library type")
 
 
+def get_suite_path():
+    suite_source = BuiltIn().get_variable_value("${SUITE_SOURCE}")
+    if os.path.isdir(suite_source):
+        return suite_source
+    return os.path.dirname(suite_source)
+
+
 class EyesLibrary(DynamicCore):
     """
     EyesLibrary is a visual verification library for [http://robotframework.org/|Robot Framework]. that uses
@@ -67,8 +74,8 @@ class EyesLibrary(DynamicCore):
 
     def __init__(
         self,
-        runner,  # type: Text
-        config,  # type: Text
+        runner=None,  # type: Text
+        config=None,  # type: Text
         log_level=None,  # type: Optional[Literal["Verbose"]]
         run_on_failure="Eyes Abort",
     ):
@@ -76,12 +83,25 @@ class EyesLibrary(DynamicCore):
         """
         Initialize the EyesLibrary
             | =Arguments=      | =Description=  |
-            | runner           | *Mandatory* - Specify one of following runners to use (selenium, selenium_ufg, appium)  |
-            | config           | *Mandatory* - Path to applitools_config.yaml                     |
+            | runner           | Specify one of following runners to use (selenium, selenium_ufg, appium)  |
+            | config           | Path to applitools_config.yaml                     |
             | log_level        | Specific log level (VERBOSE )                                    |
             | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort`)  |
 
         """
+        # skip loading of dynamic libraries during doc generation
+        generation_doc_run = str2bool(os.getenv("APPLITOOLS_MAKE_ROBOT_DOC", "false"))
+
+        if config is None:
+            # try to find `applitools.yaml` in test directory
+            logger.warn(
+                "No `config` set. Trying to find `applitools.yaml` in current path"
+            )
+            config = "applitools.yaml"
+
+        if runner is None:
+            runner = SelectedRunner.selenium
+            logger.warn("No `runner` set. Using `selenium` runner.")
 
         self.run_on_failure_keyword = run_on_failure
 
@@ -89,8 +109,6 @@ class EyesLibrary(DynamicCore):
         self._eyes_registry = EyesCache()
         self._running_keyword = None
         self._log_level = log_level
-
-        generation_doc_run = str2bool(os.getenv("APPLITOOLS_MAKE_ROBOT_DOC", "false"))
 
         self._selected_runner = try_parse_runner(runner)
 
@@ -100,7 +118,8 @@ class EyesLibrary(DynamicCore):
         else:
             self._configuration = Configuration()
             self.current_library = self._try_get_library(self._selected_runner)
-            suite_source = BuiltIn().get_variable_value("${SUITE_SOURCE}")
+            suite_source = get_suite_path()
+            # parse config only if set path explicitly
             self._configuration = try_parse_configuration(
                 config, self._selected_runner, self._configuration, suite_source
             )
