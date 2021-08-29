@@ -1,13 +1,17 @@
+import logging
 import os
 import traceback
 import typing
 from collections import namedtuple
 from typing import TYPE_CHECKING
 
-from robot.api import logger
+import structlog
+from robot.api import logger as robot_logger
 from robot.libraries.BuiltIn import BuiltIn
+from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
 
+from applitools.common import logger as applitools_logger
 from applitools.common.utils.compat import raise_from
 from applitools.common.utils.converters import str2bool
 from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
@@ -50,6 +54,40 @@ def get_suite_path():
     return os.path.dirname(suite_source)
 
 
+class _RobotLogger(object):
+    """
+    A simple logger class for printing to STDOUT.
+    """
+
+    def __init__(self, level):
+        self.level = level
+
+    def configure(self, std_logger):
+        # type: (logging.Logger) -> None
+        handler = RobotHandler()
+        handler.setLevel(self.level)
+        handler.setFormatter(
+            structlog.stdlib.ProcessorFormatter(
+                structlog.dev.ConsoleRenderer(), applitools_logger._pre_chain
+            )
+        )
+        std_logger.addHandler(handler)
+
+
+def _initialize_applitools_logger(log_level):
+    if log_level is None:
+        # if user no set any log level for library try to use robotframework log level
+        logger = logging.getLogger("RobotFramework")
+        level = logger.getEffectiveLevel()
+        _logger = _RobotLogger(level)
+    elif log_level.upper() == "VERBOSE":
+        log_level = logging.DEBUG
+        _logger = _RobotLogger(log_level)
+    else:
+        raise ValueError("Incorrect `log_level` parameter")
+    applitools_logger.set_logger(_logger)  # type: ignore
+
+
 class EyesLibrary(DynamicCore):
     """
     EyesLibrary is a visual verification library for [http://robotframework.org/|Robot Framework]. that uses
@@ -65,7 +103,6 @@ class EyesLibrary(DynamicCore):
     driver = None  # type: Optional[AnyWebDriver]
     raw_config = None  # type: Optional[dict]
     _selected_runner = None  # type: Optional[SelectedRunner]
-    _log_level = None  # type: Optional[Text]
     library_name_by_runner = {
         SelectedRunner.selenium: "SeleniumLibrary",
         SelectedRunner.selenium_ufg: "SeleniumLibrary",
@@ -94,21 +131,20 @@ class EyesLibrary(DynamicCore):
 
         if config is None:
             # try to find `applitools.yaml` in test directory
-            logger.warn(
+            robot_logger.warn(
                 "No `config` set. Trying to find `applitools.yaml` in current path"
             )
             config = "applitools.yaml"
 
         if runner is None:
             runner = SelectedRunner.selenium
-            logger.warn("No `runner` set. Using `selenium` runner.")
+            robot_logger.warn("No `runner` set. Using `selenium` runner.")
 
         self.run_on_failure_keyword = run_on_failure
 
         self._running_on_failure_keyword = False
         self._eyes_registry = EyesCache()
         self._running_keyword = None
-        self._log_level = log_level
 
         self._selected_runner = try_parse_runner(runner)
 
@@ -116,6 +152,7 @@ class EyesLibrary(DynamicCore):
             # hide objects that uses dynamic loading for generation of documentation
             self.current_library = None  # type: CurrentLibrary
         else:
+            _initialize_applitools_logger(log_level)
             self._configuration = Configuration()
             self.current_library = self._try_get_library(self._selected_runner)
             suite_source = get_suite_path()
@@ -172,7 +209,7 @@ class EyesLibrary(DynamicCore):
             else:
                 BuiltIn().run_keyword(self.run_on_failure_keyword)
         except Exception as err:
-            logger.warn(
+            robot_logger.warn(
                 "Keyword '{}' could not be run on failure: {}".format(
                     self.run_on_failure_keyword, err
                 )

@@ -90,6 +90,9 @@ class LibraryComponent(ContextAware):
     def warn(self, msg: str, html: bool = False):
         self.log.warn(msg, html)
 
+    def log_to_console(self, msg):
+        self.log.console(msg)
+
     def log_source(self, loglevel: str = "INFO"):
         self.ctx.log_source(loglevel)
 

@@ -101,7 +101,6 @@ class SessionKeywords(LibraryComponent):
             | Eyes Open | AppName | TestName | 1024 | 768 | OSOverrideName | AppOverrideName | batchname=Some batch name |
         """
         config = self.ctx.configure
-
         if app_name:
             config.app_name = app_name
         elif config.app_name is None:
