@@ -60,7 +60,10 @@ setup(
     install_requires=install_requires,
     package_dir={"": "src"},
     packages=find_packages("src"),
-    package_data={"": ["README.rst", "LICENSE"], "EyesLibrary": ["py.typed"]},
+    package_data={
+        "": ["README.rst", "LICENSE"],
+        "EyesLibrary": ["py.typed", "applitools.yaml"],
+    },
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master"
