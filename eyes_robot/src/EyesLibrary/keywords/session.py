@@ -100,60 +100,60 @@ class SessionKeywords(LibraryComponent):
         *Example:*
             | Eyes Open | AppName | TestName | 1024 | 768 | OSOverrideName | AppOverrideName | batchname=Some batch name |
         """
-        config = self.ctx.configure
+        config_cloned = self.get_configuration()
         if app_name:
-            config.app_name = app_name
-        elif config.app_name is None:
+            config_cloned.app_name = app_name
+        elif config_cloned.app_name is None:
             raise ValueError("app_name should be provided")
 
         if test_name:
-            config.test_name = test_name
-        elif config.test_name is None:
+            config_cloned.test_name = test_name
+        elif config_cloned.test_name is None:
             # no test_name present use test name from the suite
-            config.test_name = BuiltIn().get_variable_value("${TEST NAME}")
+            config_cloned.test_name = BuiltIn().get_variable_value("${TEST NAME}")
 
         if batch:
             if isinstance(batch, str):
                 batch = BatchInfo(name=batch)
             if isinstance(batch, BatchInfo):
-                config.batch = batch
+                config_cloned.batch = batch
             else:
                 raise TypeError("No proper value for BatchInfo")
 
         if viewport_size:
-            config.viewport_size = parse_viewport_size(viewport_size)
+            config_cloned.viewport_size = parse_viewport_size(viewport_size)
 
         if host_os:
-            config.host_os = host_os
+            config_cloned.host_os = host_os
         if host_app:
-            config.host_app = host_app
+            config_cloned.host_app = host_app
         if match_level:
-            config.match_level = MatchLevel(match_level)
+            config_cloned.match_level = MatchLevel(match_level)
         if baseline_env_name:
-            config.baseline_env_name = baseline_env_name
+            config_cloned.baseline_env_name = baseline_env_name
         if branch_name:
-            config.branch_name = branch_name
+            config_cloned.branch_name = branch_name
         if parent_branch_name:
-            config.parent_branch_name = parent_branch_name
+            config_cloned.parent_branch_name = parent_branch_name
         if force_full_page_screenshot:
-            config.force_full_page_screenshot = force_full_page_screenshot
+            config_cloned.force_full_page_screenshot = force_full_page_screenshot
         if stitch_mode:
-            config.stitch_mode = stitch_mode
+            config_cloned.stitch_mode = stitch_mode
         if match_timeout:
-            config.match_timeout = match_timeout
+            config_cloned.match_timeout = match_timeout
         if hide_scrollbars:
-            config.hide_scrollbars = hide_scrollbars
+            config_cloned.hide_scrollbars = hide_scrollbars
         if save_new_tests:
-            config.save_new_tests = save_new_tests
+            config_cloned.save_new_tests = save_new_tests
         if wait_before_screenshots:
-            config.wait_before_screenshots = wait_before_screenshots
+            config_cloned.wait_before_screenshots = wait_before_screenshots
         if send_dom:
-            config.send_dom = send_dom
+            config_cloned.send_dom = send_dom
         if is_disabled:
-            config.is_disabled = is_disabled
+            config_cloned.is_disabled = is_disabled
 
         eyes = Eyes(self.eyes_runner)
-        eyes.set_configuration(config)
+        eyes.set_configuration(config_cloned)
         self.register_eyes(eyes)
         return eyes.open(self.fetch_driver())
 

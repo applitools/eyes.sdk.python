@@ -2,7 +2,6 @@ import logging
 import os
 import traceback
 import typing
-from collections import namedtuple
 from typing import TYPE_CHECKING
 
 import structlog
@@ -44,8 +43,6 @@ if TYPE_CHECKING:
 
 EyesT = typing.TypeVar("EyesT", bound=Eyes)
 
-CurrentLibrary = namedtuple("CurrentLibrary", "library type")
-
 
 def get_suite_path():
     suite_source = BuiltIn().get_variable_value("${SUITE_SOURCE}")
@@ -56,11 +53,12 @@ def get_suite_path():
 
 class _RobotLogger(object):
     """
-    A simple logger class for printing to STDOUT.
+    A simple logger class to redirect logs to Robot Framework logger.
     """
 
-    def __init__(self, level):
-        self.level = level
+    def __init__(self):
+        logger = logging.getLogger("RobotFramework")
+        self.level = logger.getEffectiveLevel()
 
     def configure(self, std_logger):
         # type: (logging.Logger) -> None
@@ -72,20 +70,6 @@ class _RobotLogger(object):
             )
         )
         std_logger.addHandler(handler)
-
-
-def _initialize_applitools_logger(log_level):
-    if log_level is None:
-        # if user no set any log level for library try to use robotframework log level
-        logger = logging.getLogger("RobotFramework")
-        level = logger.getEffectiveLevel()
-        _logger = _RobotLogger(level)
-    elif log_level.upper() == "VERBOSE":
-        log_level = logging.DEBUG
-        _logger = _RobotLogger(log_level)
-    else:
-        raise ValueError("Incorrect `log_level` parameter")
-    applitools_logger.set_logger(_logger)  # type: ignore
 
 
 class EyesLibrary(DynamicCore):
@@ -113,7 +97,6 @@ class EyesLibrary(DynamicCore):
         self,
         runner=None,  # type: Text
         config=None,  # type: Text
-        log_level=None,  # type: Optional[Literal["Verbose"]]
         run_on_failure="Eyes Abort",
     ):
         # type: (...) -> None
@@ -122,7 +105,6 @@ class EyesLibrary(DynamicCore):
             | =Arguments=      | =Description=  |
             | runner           | Specify one of following runners to use (selenium, selenium_ufg, appium)  |
             | config           | Path to applitools_config.yaml                     |
-            | log_level        | Specific log level (VERBOSE )                                    |
             | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort`)  |
 
         """
@@ -150,9 +132,9 @@ class EyesLibrary(DynamicCore):
 
         if generation_doc_run:
             # hide objects that uses dynamic loading for generation of documentation
-            self.current_library = None  # type: CurrentLibrary
+            self.current_library = None
         else:
-            _initialize_applitools_logger(log_level)
+            applitools_logger.set_logger(_RobotLogger())  # type: ignore
             self._configuration = Configuration()
             self.current_library = self._try_get_library(self._selected_runner)
             suite_source = get_suite_path()
@@ -175,7 +157,7 @@ class EyesLibrary(DynamicCore):
         DynamicCore.__init__(self, keywords)
 
     def _try_get_library(self, runner):
-        # type: (SelectedRunner) -> CurrentLibrary
+        # type: (SelectedRunner) -> typing.ForwardRef
         """Check if `SeleniumLibrary` or `AppiumLibrary` was loaded"""
         library_name = self.library_name_by_runner[runner]
         try:

@@ -99,6 +99,9 @@ class LibraryComponent(ContextAware):
     def register_eyes(self, eyes, alias=None):
         self.ctx.register_eyes(eyes, alias)
 
+    def get_configuration(self):
+        return self.ctx.configure.clone()
+
     @property
     def eyes_runner(self):
         # type: () -> VisualGridRunner | ClassicRunner
