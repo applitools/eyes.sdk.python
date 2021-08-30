@@ -97,7 +97,7 @@ class EyesLibrary(DynamicCore):
         self,
         runner=None,  # type: Text
         config=None,  # type: Text
-        run_on_failure="Eyes Abort",
+        run_on_failure="Eyes Abort Async",
     ):
         # type: (...) -> None
         """
@@ -105,7 +105,7 @@ class EyesLibrary(DynamicCore):
             | =Arguments=      | =Description=  |
             | runner           | Specify one of following runners to use (selenium, selenium_ufg, appium)  |
             | config           | Path to applitools_config.yaml                     |
-            | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort`)  |
+            | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort Async`)  |
 
         """
         # skip loading of dynamic libraries during doc generation

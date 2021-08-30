@@ -158,7 +158,7 @@ class SessionKeywords(LibraryComponent):
         return eyes.open(self.fetch_driver())
 
     @keyword(
-        "Eyes Close",
+        "Eyes Close Async",
         types=(bool,),
         tags=(CHECK_FLOW,),
     )
@@ -170,13 +170,13 @@ class SessionKeywords(LibraryComponent):
             | =Arguments=                  | =Description=                                                                                                           |
             | Raise Exception (bool)       | If you don't want an exception to be thrown if there are new, missing or mismatched steps, pass 'False' in the variable |
         *Example:*
-            | Eyes Close | ${false} |
+            | Eyes Close Async | ${false} |
         """
         # TODO: proper handle situation when we ask to raise an exception
         return self.current_eyes.close_async()
 
     @keyword(
-        "Eyes Abort",
+        "Eyes Abort Async",
         tags=(CHECK_FLOW,),
     )
     def abort(self):
@@ -188,7 +188,7 @@ class SessionKeywords(LibraryComponent):
         have a status of Aborted in the Test Manager.
 
         *Example:*
-            | Eyes Abort |
+            | Eyes Abort Async |
         """
         return self.current_eyes.abort_async()
 
