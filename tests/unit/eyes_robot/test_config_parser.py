@@ -6,13 +6,11 @@ from EyesLibrary.config_parser import ToEnumTrafaret, ViewPortTrafaret
 
 
 def test_to_enum_trafaret():
-    assert BrowserType.CHROME == ToEnumTrafaret(BrowserType, "browser_type").check(
-        "CHROME"
-    )
-    assert StitchMode.CSS == ToEnumTrafaret(StitchMode, "stitch_mode").check("CSS")
+    assert BrowserType.CHROME == ToEnumTrafaret(BrowserType).check("CHROME")
+    assert StitchMode.CSS == ToEnumTrafaret(StitchMode).check("CSS")
 
-    with pytest.raises(t.DataError, match=r"Incorrect value for `browser_type`"):
-        ToEnumTrafaret(BrowserType, "browser_type").check("MissingBrowser")
+    with pytest.raises(t.DataError, match=r"Incorrect value `MissingBrowser`"):
+        ToEnumTrafaret(BrowserType).check("MissingBrowser")
 
 
 def test_viewport_size_trafaret():

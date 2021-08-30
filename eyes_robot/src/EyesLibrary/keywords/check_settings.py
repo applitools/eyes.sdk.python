@@ -786,7 +786,7 @@ class CheckSettingsKeywords(
         *Example:*
             | Eyes Check   |  Target Window  |  Fully |
         """
-        return new_or_cur_check_settings(check_settings).ignore_caret(fully)
+        return new_or_cur_check_settings(check_settings).fully(fully)
 
     @keyword("With Name", types=(str,))
     def with_name(

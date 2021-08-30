@@ -160,7 +160,7 @@ def test_accessibility_region_by_selector(check_settings_keyword, css_selector):
     res = SeleniumCheckSettings().accessibility(
         css_selector, AccessibilityRegionType.RegularText
     )
-    assert res == check_settings_keyword.accessibility_region_by_coordinates(
+    assert res == check_settings_keyword.accessibility_region_by_selector(
         css_selector, AccessibilityRegionType.RegularText
     )
 

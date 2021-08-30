@@ -25,17 +25,13 @@ from applitools.common.utils.compat import raise_from
 from applitools.selenium import BatchInfo, Configuration
 
 from .errors import EyesLibConfigParsingError, EyesLibValueError
+from .utils import parse_viewport_size
 
 
 class SelectedRunner(Enum):
     selenium = "selenium"
     selenium_ufg = "selenium_ufg"
     appium = "appium"
-
-
-class KeyNameMixin(object):
-    def __init__(self, key_name):
-        self.key_name = key_name
 
 
 class ToEnumTrafaret(trf.Trafaret):
@@ -77,14 +73,11 @@ class BatchInfoTrafaret(trf.Trafaret):
         return batch
 
 
-class ViewPortTrafaret(trf.Trafaret, KeyNameMixin):
-    scheme = trf.Dict(width=trf.Int, height=trf.Int)
+class ViewPortTrafaret(trf.Trafaret):
+    scheme = trf.Dict(width=trf.Int, height=trf.Int) | parse_viewport_size
 
     def check_and_return(self, value, context=None):
-        try:
-            sanitized = self.scheme.check(value, context)
-        except trf.DataError:
-            raise trf.DataError("Incorrect value in")
+        sanitized = self.scheme.check(value, context)
         return RectangleSize.from_(sanitized)
 
 
@@ -177,7 +170,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("baseline_env_name", optional=True): trf.String,
             trf.Key("save_diffs", optional=True): trf.Bool,
             trf.Key("app_name", optional=True): trf.String,
-            trf.Key("viewport_size", optional=True): ViewPortTrafaret("viewport_size"),
+            trf.Key("viewport_size", optional=True): ViewPortTrafaret,
             trf.Key("match_timeout", optional=True): trf.Int,
             trf.Key("save_new_tests", optional=True): trf.Bool,
             trf.Key("save_failed_tests", optional=True): trf.Bool,
