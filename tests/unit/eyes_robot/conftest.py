@@ -5,7 +5,12 @@ from selenium.webdriver.remote.webelement import WebElement
 
 @pytest.fixture
 def defined_keywords():
-    return ["Ignore Region", "Ignore Region By Coordinates"]
+    return [
+        "Ignore Region By Element",
+        "Ignore Region By Coordinates",
+        "Fully",
+        "Use Dom",
+    ]
 
 
 @pytest.fixture

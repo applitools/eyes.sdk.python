@@ -21,8 +21,7 @@ def extract_keyword_and_arguments(
     defined_keywords,  # type: list[Any]|tuple[Any]
 ):
     # type: (...) -> Generator[tuple[Text, list[Any]], None, None]
-    # need to reverse for return correct index with bisect
-    res = defaultdict(list)
+    res = dict()
     key_keyword = None
     key_keyword_index = -1
     for i, keyword in enumerate(keywords_from_test):
@@ -33,7 +32,10 @@ def extract_keyword_and_arguments(
         if keyword in defined_keywords:
             key_keyword = keyword
             key_keyword_index = i
+            if key_keyword not in res:
+                res[key_keyword] = []
             continue
+
         if key_keyword is None:
             raise ValueError(
                 "Incorrect keyword argument. Keywords: {}".format(keywords_from_test)
@@ -62,9 +64,14 @@ def collect_check_settings(check_settings, defined_keywords, *keywords):
     # type: (SeleniumCheckSettings,list[str],tuple[Any])->SeleniumCheckSettings
     """ Fill `check_setting` with data from keyword and return `check_settings`"""
     for keyword, args in extract_keyword_and_arguments(keywords, defined_keywords):
-        for separated_args in splits_args_by_separator(args):
-            separated_args += (check_settings,)
-            BuiltIn().run_keyword(keyword, *separated_args)
+        if args:
+            # keyword has arguments
+            for separated_args in splits_args_by_separator(args):
+                separated_args += (check_settings,)
+                BuiltIn().run_keyword(keyword, *separated_args)
+        else:
+            # in case keyword without args like `Fully`
+            BuiltIn().run_keyword(keyword, check_settings)
     return check_settings
 
 

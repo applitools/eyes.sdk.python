@@ -5,36 +5,44 @@ from EyesLibrary.utils import (
 )
 
 
+def test_extract_keywords_keywords_no_args(defined_keywords):
+    keywords_from_test = ["Fully"]
+    result = list(extract_keyword_and_arguments(keywords_from_test, defined_keywords))
+    assert result[0] == ("Fully", [])
+
+    keywords_from_test = ["Fully", "Use Dom"]
+    result = list(extract_keyword_and_arguments(keywords_from_test, defined_keywords))
+    assert result[0] == ("Fully", [])
+    assert result[1] == ("Use Dom", [])
+
+
 def test_extract_keyword_and_arguments(defined_keywords):
     keywords_from_test = [
         "Ignore Region By Element",
         "WebElement",
         "Ignore Region By Coordinates",
-        40,
-        24,
-        24,
-        56,
+        "[40 24 24 56]",
     ]
     result = list(extract_keyword_and_arguments(keywords_from_test, defined_keywords))
-    assert result[0] == ("Ignore Region", ["WebElement"])
-    assert result[1] == ("Ignore Region By Coordinates", [40, 24, 24, 56])
+    assert result[0] == ("Ignore Region By Element", ["WebElement"])
+    assert result[1] == ("Ignore Region By Coordinates", ["[40 24 24 56]"])
 
 
 def test_extract_keyword_and_arguments_with_similar_keyword(defined_keywords):
     keywords_from_test = [
-        "Ignore Region",
+        "Ignore Region By Element",
         "WebElement",
-        "Ignore Region",
+        "Ignore Region By Element",
         "WebElement",
         "Ignore Region By Coordinates",
-        40,
-        24,
-        24,
-        56,
+        "[40 24 24 56]",
     ]
     result = list(extract_keyword_and_arguments(keywords_from_test, defined_keywords))
-    assert result[0] == ("Ignore Region", ["WebElement", SEPARATOR, "WebElement"])
-    assert result[1] == ("Ignore Region By Coordinates", [40, 24, 24, 56])
+    assert result[0] == (
+        "Ignore Region By Element",
+        ["WebElement", SEPARATOR, "WebElement"],
+    )
+    assert result[1] == ("Ignore Region By Coordinates", ["[40 24 24 56]"])
 
 
 def test_splits_args_by_separator(defined_keywords):
