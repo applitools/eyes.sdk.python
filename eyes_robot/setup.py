@@ -26,9 +26,7 @@ def get_version():
 
 install_requires = [
     "trafaret == 2.1.0",
-    "selenium >= 3.141.0",
-    "eyes_common >= 4.21.0",
-    "eyes_core >= 4.21.0",
+    "PyYAML >= 5",
     "eyes_selenium >= 4.21.0",
     "robotframework >= 3.2.2",
     "robotframework-pythonlibcore >= 2.2.1",
