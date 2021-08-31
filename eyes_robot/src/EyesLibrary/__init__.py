@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import structlog
 from robot.api import logger as robot_logger
-from robot.libraries.BuiltIn import BuiltIn
+from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
 
@@ -49,6 +49,15 @@ def get_suite_path():
     if os.path.isdir(suite_source):
         return suite_source
     return os.path.dirname(suite_source)
+
+
+def is_test_run():
+    try:
+        BuiltIn()._get_context()
+        return True
+    except RobotNotRunningError:
+        # run without test suite, probably `libdoc` generation
+        return False
 
 
 class _RobotLogger(object):
@@ -109,8 +118,6 @@ class EyesLibrary(DynamicCore):
 
         """
         # skip loading of dynamic libraries during doc generation
-        generation_doc_run = str2bool(os.getenv("APPLITOOLS_MAKE_ROBOT_DOC", "false"))
-
         if config is None:
             # try to find `applitools.yaml` in test directory
             robot_logger.warn(
@@ -130,10 +137,7 @@ class EyesLibrary(DynamicCore):
 
         self._selected_runner = try_parse_runner(runner)
 
-        if generation_doc_run:
-            # hide objects that uses dynamic loading for generation of documentation
-            self.current_library = None
-        else:
+        if is_test_run():
             applitools_logger.set_logger(_RobotLogger())  # type: ignore
             self._configuration = Configuration()
             self.current_library = self._try_get_library(self._selected_runner)
@@ -144,6 +148,9 @@ class EyesLibrary(DynamicCore):
             )
             self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
             self._element_finder = ElementFinder(self)
+        else:
+            # hide objects that uses dynamic loading for generation of documentation
+            self.current_library = None
 
         keywords = [
             RunnerKeywords(self),
