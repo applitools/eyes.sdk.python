@@ -23,7 +23,7 @@ from .config_parser import (
     try_parse_runner,
 )
 from .element_finder import ElementFinder
-from .errors import EyesLibError
+from .errors import EyesLibraryError
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -199,7 +199,7 @@ class EyesLibrary(DynamicCore):
         finally:
             self._running_on_failure_keyword = False
             raise_from(
-                EyesLibError("Failed to run EyesLibrary\n{}".format(trb_text)),
+                EyesLibraryError("Failed to run EyesLibrary\n{}".format(trb_text)),
                 origin_exc,
             )
 

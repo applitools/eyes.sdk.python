@@ -1,10 +1,10 @@
-class EyesLibError(RuntimeError):
+class EyesLibraryError(RuntimeError):
     pass
 
 
-class EyesLibValueError(ValueError):
+class EyesLibraryValueError(ValueError):
     pass
 
 
-class EyesLibConfigParsingError(EyesLibValueError):
+class EyesLibraryConfigError(EyesLibraryValueError):
     pass

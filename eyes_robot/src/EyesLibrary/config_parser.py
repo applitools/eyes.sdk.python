@@ -24,7 +24,7 @@ from applitools.common.selenium import BrowserType
 from applitools.common.utils.compat import raise_from
 from applitools.selenium import BatchInfo, Configuration
 
-from .errors import EyesLibConfigParsingError, EyesLibValueError
+from .errors import EyesLibraryConfigError, EyesLibraryValueError
 from .utils import parse_viewport_size
 
 
@@ -249,7 +249,7 @@ def try_parse_runner(runner):
         return SelectedRunner(runner)
     except ValueError as e:
         raise_from(
-            EyesLibValueError(
+            EyesLibraryValueError(
                 "Incorrect value for `runner`: `{val}`. "
                 "\n\tPossible variants:"
                 "\n\t\t{possible_vals}".format(
@@ -270,8 +270,10 @@ def try_parse_configuration(
         config_path = os.path.join(suite_path, config_path)
 
     if not os.path.exists(config_path):
-        raise EyesLibValueError(
-            "Not found configuration file within path: {}".format(config_path)
+        raise EyesLibraryConfigError(
+            "The configuration file was not found in the following directory: {}\n"
+            "You could initialize config file with command: \n\t"
+            "`python -m EyesLibrary init-config`".format(config_path)
         )
 
     with open(config_path, "r") as f:
