@@ -63,10 +63,12 @@ def splits_args_by_separator(args):
 def collect_check_settings(check_settings, defined_keywords, *keywords):
     # type: (SeleniumCheckSettings,list[str],tuple[Any])->SeleniumCheckSettings
     """ Fill `check_setting` with data from keyword and return `check_settings`"""
-    for keyword, args in extract_keyword_and_arguments(keywords, defined_keywords):
-        if args:
+    for keyword, keyword_args in extract_keyword_and_arguments(
+        keywords, defined_keywords
+    ):
+        if keyword_args:
             # keyword has arguments
-            for separated_args in splits_args_by_separator(args):
+            for separated_args in splits_args_by_separator(keyword_args):
                 separated_args += (check_settings,)
                 BuiltIn().run_keyword(keyword, *separated_args)
         else:
