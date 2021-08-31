@@ -566,45 +566,35 @@ class UFGCheckSettingsKeywords:
             VisualGridOption(name, value)
         )
 
-    @keyword("Disable Browser Fetching", types=(bool,), tags=(UFG_RELATED,))
+    @keyword("Disable Browser Fetching", tags=(UFG_RELATED,))
     def disable_browser_fetching(
         self,
-        disable=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with disable_browser_fetching specified in the arguments.
-            | =Arguments=      | =Description=               |
-            | disable          | Disable browser fetching    |
 
         *Example:*
             | Eyes Check                        |           |
             | ...     Disable Browser Fetching  |           |
-            | ...     Disable Browser Fetching  |  False    |
         """
-        return new_or_cur_check_settings(check_settings).disable_browser_fetching(
-            disable
-        )
+        return new_or_cur_check_settings(check_settings).disable_browser_fetching(True)
 
-    @keyword("Enable Layout Breakpoints", types=(bool,), tags=(UFG_RELATED,))
+    @keyword("Enable Layout Breakpoints", tags=(UFG_RELATED,))
     def enable_layout_breakpoints(
         self,
-        enable=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with enabled layout_breakpoints specified in the arguments.
-            | =Arguments=   | =Description=               |
-            | enable        | Enable layout breakpoints   |
 
         *Example:*
             | Eyes Check                         |          |
             | ...     Enable Layout Breakpoints  |          |
-            | ...     Enable Layout Breakpoints  |  False   |
         """
-        return new_or_cur_check_settings(check_settings).layout_breakpoints(enable)
+        return new_or_cur_check_settings(check_settings).layout_breakpoints(True)
 
     @keyword("Layout Breakpoints", types=(str,), tags=(UFG_RELATED,))
     def layout_breakpoints(
@@ -726,67 +716,61 @@ class CheckSettingsKeywords(
         match_level = MatchLevel(match_level.upper())
         return new_or_cur_check_settings(check_settings).match_level(match_level)
 
-    @keyword("Enable Patterns", types=(bool,))
+    @keyword("Enable Patterns")
     def enable_patterns(
         self,
-        enable=True,  # type: bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
-        return new_or_cur_check_settings(check_settings).enable_patterns(enable)
+        """
+        Returns a CheckSettings object specified enable patterns.
 
-    @keyword("Ignore Displacements", types=(bool,))
+        *Example:*
+            | Eyes Check   |  Target Window  |  Enable Patterns  |
+        """
+        return new_or_cur_check_settings(check_settings).enable_patterns(True)
+
+    @keyword("Ignore Displacements")
     def ignore_displacements(
         self,
-        should_ignore=True,  # type: bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified ignore displacements.
-            | =Arguments=     | =Description=                                                             |
-            |  should_ignore  | Specifies the state of the ignore displacements flag for this checkpoint  |
 
         *Example:*
             | Eyes Check   |  Target Window  |  Ignore Displacements |
         """
-        return new_or_cur_check_settings(check_settings).ignore_displacements(
-            should_ignore
-        )
+        return new_or_cur_check_settings(check_settings).ignore_displacements(True)
 
-    @keyword("Ignore Caret", types=(bool,))
+    @keyword("Ignore Caret")
     def ignore_caret(
         self,
-        ignore=True,  # type: bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified ignore caret.
-            | =Arguments=  | =Description=                                                                |
-            |  ignore      | Specify that Eyes should eliminate mismatches reported because of artifacts introduced by a blinking cursor |
 
         *Example:*
             | Eyes Check   |  Target Window  |  Ignore Caret |
         """
-        return new_or_cur_check_settings(check_settings).ignore_caret(ignore)
+        return new_or_cur_check_settings(check_settings).ignore_caret(True)
 
-    @keyword("Fully", types=(bool,))
+    @keyword("Fully")
     def fully(
         self,
-        fully=True,  # type: bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified fully.
-            | =Arguments=  | =Description=                                                                     |
-            |  fully       | Request that the entire content on the page is matched and not just the viewport  |
 
         *Example:*
             | Eyes Check   |  Target Window  |  Fully |
         """
-        return new_or_cur_check_settings(check_settings).fully(fully)
+        return new_or_cur_check_settings(check_settings).fully(True)
 
     @keyword("With Name", types=(str,))
     def with_name(
@@ -824,36 +808,30 @@ class CheckSettingsKeywords(
         """
         return new_or_cur_check_settings(check_settings).timeout(timeout)
 
-    @keyword("Use Dom", types=(bool,))
+    @keyword("Use Dom")
     def use_dom(
         self,
-        usedom=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified use dom.
-            | =Arguments=  | =Description=                                                |
-            | Use Dom      | Defines useDom for enabling the match algorithm to use dom   |
 
         *Example:*
             | Eyes Check   |    Target Window    |  Use Dom   |
         """
-        return new_or_cur_check_settings(check_settings).use_dom(usedom)
+        return new_or_cur_check_settings(check_settings).use_dom(True)
 
-    @keyword("Send Dom", types=(bool,))
+    @keyword("Send Dom")
     def send_dom(
         self,
-        senddom=True,  # type:bool
         check_settings=None,  # type:Optional[SeleniumCheckSettings]
     ):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified send dom.
-            | =Arguments=  | =Description=                                       |
-            | Send Dom     | Enable or disable sending DOM for this checkpoint   |
 
         *Example:*
             | Eyes Check   |    Target Window    |  Send Dom   |
         """
-        return new_or_cur_check_settings(check_settings).send_dom(senddom)
+        return new_or_cur_check_settings(check_settings).send_dom(True)
