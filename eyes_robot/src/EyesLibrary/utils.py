@@ -112,10 +112,11 @@ def parse_region(text):
 
 
 def is_webelement_guard(element):
-    argument_guard.is_valid_type(
-        is_webelement(element),
-        "element argument should be type Selenium or Appium Web Element",
-    )
+    # argument_guard.is_valid_type(
+    #     is_webelement(element),
+    #     "element argument should be type Selenium or Appium Web Element",
+    # )
+    pass
 
 
 def get_config_file_path():
