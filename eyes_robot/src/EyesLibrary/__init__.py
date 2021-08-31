@@ -23,7 +23,7 @@ from .config_parser import (
     try_parse_runner,
 )
 from .element_finder import ElementFinder
-from .errors import EyesLibraryError
+from .errors import EyesLibraryConfigError, EyesLibraryError
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -58,6 +58,14 @@ def is_test_run():
     except RobotNotRunningError:
         # run without test suite, probably `libdoc` generation
         return False
+
+
+def validate_config(configuration):
+    if configuration.api_key is None:
+        raise EyesLibraryConfigError(
+            "API key not set! Log in to https://applitools.com to obtain "
+            "your API Key and set it to `applitools.yaml` or `APPLITOOLS_API_KEY`."
+        )
 
 
 class _RobotLogger(object):
@@ -146,6 +154,7 @@ class EyesLibrary(DynamicCore):
             self._configuration = try_parse_configuration(
                 config, self._selected_runner, self._configuration, suite_source
             )
+            validate_config(self._configuration)
             self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
             self._element_finder = ElementFinder(self)
         else:
