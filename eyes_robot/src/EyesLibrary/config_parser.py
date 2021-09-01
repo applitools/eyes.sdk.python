@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+import itertools
 import os
 from enum import Enum
 from typing import Text
@@ -57,7 +58,8 @@ class BatchInfoTrafaret(trf.Trafaret):
         {
             trf.Key("id", optional=True): trf.String,
             trf.Key("name", optional=True): trf.String,
-            trf.Key("batch_sequence_name", optional=True): trf.String,
+            trf.Key("batch_sequence_name", optional=True)
+            >> "sequence_name": trf.String,
             trf.Key("started_at", optional=True): trf.DateTime,
             trf.Key("properties", optional=True): trf.List(
                 trf.Dict(name=trf.String, value=trf.String)
@@ -156,6 +158,23 @@ class ProxyTrafaret(trf.Trafaret):
         return ProxySettings(host_or_url=sanitized.pop("host_or_url"), **sanitized)
 
 
+class BrowsersTrafaret(trf.Trafaret):
+    scheme = trf.Dict(
+        {
+            trf.Key("desktop", optional=True): DesktopBrowserInfoTrafaret,
+            trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
+            trf.Key("chrome_emulation", optional=True): ChromeEmulationInfoTrafaret,
+        }
+    )
+
+    def check_and_return(self, value, context=None):
+        sanitized = self.scheme.check(value, context)
+        desktop = sanitized.pop("desktop", [])
+        ios = sanitized.pop("ios", [])
+        chrome_emulation = sanitized.pop("chrome_emulation", [])
+        return list(itertools.chain(desktop, ios, chrome_emulation))
+
+
 class ConfigurationTrafaret(trf.Trafaret):  # typedef
     shared_scheme = trf.Dict(
         {
@@ -196,15 +215,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
             trf.Key("dont_use_cookies", optional=True): trf.Bool,
             trf.Key("layout_breakpoints", optional=True): trf.Bool | trf.List(trf.Int),
-            trf.Key("browsers", optional=True): trf.Dict(
-                {
-                    trf.Key("desktop", optional=True): DesktopBrowserInfoTrafaret,
-                    trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
-                    trf.Key(
-                        "chrome_emulation", optional=True
-                    ): ChromeEmulationInfoTrafaret,
-                }
-            ),
+            trf.Key("browsers", optional=True) >> "_browsers_info": BrowsersTrafaret,
         },
     )
     appium_scheme = shared_scheme + trf.Dict(
@@ -227,20 +238,19 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
-        if self._selected_runner:
-            selected_sdk_conf = sanitized.pop(self._selected_runner, {})
-        else:
-            # Parse full config if no runner specified
-            selected_sdk_conf = sanitized.pop(SelectedRunner.selenium, {})
-            selected_sdk_conf.update(sanitized.pop(SelectedRunner.selenium_ufg, {}))
-            selected_sdk_conf.update(sanitized.pop(SelectedRunner.appium, {}))
+        selected_sdk_conf = sanitized[self._selected_runner.value]
 
         combined_raw_config = sanitized.copy()
+        # we need only shared data here  TODO: make it nicer
+        combined_raw_config.pop(SelectedRunner.selenium.value)
+        combined_raw_config.pop(SelectedRunner.selenium_ufg.value)
+        combined_raw_config.pop(SelectedRunner.appium.value)
+
+        # add config for selected runner
         combined_raw_config.update(selected_sdk_conf)
-        conf = self._exists_configuration or Configuration()
         for key, val in combined_raw_config.items():
-            setattr(conf, key, val)
-        return conf
+            setattr(self._exists_configuration, key, val)
+        return self._exists_configuration
 
 
 def try_parse_runner(runner):

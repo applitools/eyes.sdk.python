@@ -74,9 +74,9 @@ class SessionKeywords(LibraryComponent):
         Open Eyes session. Some of the following arguments may also be defined on library import.
         See `Before running tests` or `Importing`.
             | =Arguments=                  | =Description=                                                                                                                               |
-            | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                                                               |
-            | Viewport Size                | The viewport size of the browser window in format [width height] e.g. [1900 1080]                                                                                                  |
-            | App Name                     | The name of the application under test                                                                                        |
+            | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                     |
+            | Viewport Size                | The viewport size of the browser window in format [width height] e.g. [1900 1080]                                                           |
+            | App Name                     | The name of the application under test                                                                                                      |
             | Host OS                      | The operating system of the test, can be used to override the OS name to allow cross OS verification                                        |
             | Host App                     | The browser name for the test, can be used to override the browser name to allow cross browser verification                                 |
             | Match Level                  | The match level for the comparison of this test's checkpoints - can be STRICT, LAYOUT, CONTENT or EXACT                                     |
