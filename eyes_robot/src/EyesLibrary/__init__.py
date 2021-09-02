@@ -96,6 +96,49 @@ class EyesLibrary(DynamicCore):
     [http://robotframework.org/SeleniumLibrary/SeleniumLibrary.html|SeleniumLibrary] /
     [http://serhatbolsu.github.io/robotframework-appiumlibrary/AppiumLibrary.html|AppiumLibrary].
 
+    = Table of contents =
+    - `Preconditions`
+    - `Writing tests`
+    - `Importing`
+    - `Shortcuts`
+    - `Keywords`
+
+    = Preconditions =
+    To run tests, you need to have the Applitools API key. If you have an Applitools account,
+    you could fetch it from [https://eyes.applitools.com/app/admin/api-keys|dashboard],
+    or you could create the [https://applitools.com/sign-up/|free account].
+    You may want to read [https://applitools.com/docs|Applitools documentation] to understand better how Eyes works.
+
+    Before running tests, you must initialize `applitools.yaml` configuration script in root of test suite:
+        | python -m EyesLibrary init-config |
+
+    Add your *API KEY* `applitools.yaml` or in *APPLITOOLS_API_KEY* env variable and import EyesLibrary into your Robot test suite:
+        | Library | EyesLibrary | runner=web | config=path/to/applitools.yaml |
+
+    = Writing tests =
+    When writing the tests, the following structure must be adopted:
+
+    1. *Eyes Open*
+
+    A browser or application must be running when opening the session.
+    To open a browser/application, consult the documentation for [http://robotframework.org/SeleniumLibrary/SeleniumLibrary.html|SeleniumLibrary]
+    and/or [http://serhatbolsu.github.io/robotframework-appiumlibrary/AppiumLibrary.html|AppiumLibrary].
+
+    Afterwards, the session may be opened. See `Eyes Open`.
+
+    2. *Visual Checks*
+
+    Between opening and closing the session, you can run your visual checks.
+
+    See `Eyes Check Window`, `Eyes Check Region By Element`, `Eyes Check Region By Selector`, `Eyes Check Region By Coordinates`,
+    `Eyes Check Frame By Element`, `Eyes Check Frame By Name`, `Eyes Check Frame By Index` and `Eyes Check Frame By Selector`.
+
+    You can also verify if there's an open session with `Is Eyes Open`.
+
+    3. *Eyes Close Async*
+
+    See `Eyes Close Async`.
+
     """
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
@@ -105,9 +148,9 @@ class EyesLibrary(DynamicCore):
     raw_config = None  # type: Optional[dict]
     _selected_runner = None  # type: Optional[SelectedRunner]
     library_name_by_runner = {
-        SelectedRunner.selenium: "SeleniumLibrary",
-        SelectedRunner.selenium_ufg: "SeleniumLibrary",
-        SelectedRunner.appium: "AppiumLibrary",
+        SelectedRunner.web: "SeleniumLibrary",
+        SelectedRunner.web_ufg: "SeleniumLibrary",
+        SelectedRunner.mobile_native: "AppiumLibrary",
     }
 
     def __init__(
@@ -120,8 +163,8 @@ class EyesLibrary(DynamicCore):
         """
         Initialize the EyesLibrary
             | =Arguments=      | =Description=  |
-            | runner           | Specify one of following runners to use (selenium, selenium_ufg, appium)  |
-            | config           | Path to applitools_config.yaml                     |
+            | runner           | Specify one of `web`, `web_ufg`, or `mobile_native` runners (by default `web`)  |
+            | config           | Path to applitools.yaml (if no specify, trying to find it in test suite dir)  |
             | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort Async`)  |
 
         """
@@ -134,7 +177,7 @@ class EyesLibrary(DynamicCore):
             config = "applitools.yaml"
 
         if runner is None:
-            runner = SelectedRunner.selenium
+            runner = SelectedRunner.web
             robot_logger.warn("No `runner` set. Using `selenium` runner.")
 
         self.run_on_failure_keyword = run_on_failure

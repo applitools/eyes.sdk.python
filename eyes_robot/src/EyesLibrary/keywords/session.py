@@ -71,8 +71,7 @@ class SessionKeywords(LibraryComponent):
     ):
         # type: (...)->EyesWebDriver
         """
-        Open Eyes session. Some of the following arguments may also be defined on library import.
-        See `Before running tests` or `Importing`.
+        Shared parameters section from `applitools.yaml` could be overwritten during Open call, see `Preconditions`.
             | =Arguments=                  | =Description=                                                                                                                               |
             | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                     |
             | Viewport Size                | The viewport size of the browser window in format [width height] e.g. [1900 1080]                                                           |
@@ -93,12 +92,10 @@ class SessionKeywords(LibraryComponent):
             | Send DOM                     | Sets if DOM information should be sent for this session's checkpoints                                                                       |
             | Stitch Content               | If this test checkpoint's elements/region are scrollable, determines if Eyes will scroll this them to take a full region/element screenshot |
             | Is Disabled                  | Determines whether or not interactions with Eyes will be silently ignored for this test                                                     |
-        *Mandatory Arguments:* They may be defined through this keyword, or in configuration.yaml.
-        In order to run a test, provide at least the API Key, Application Name and Test Name.
 
         When opening the session on a mobile browser or hybrid app, the context must be set to WEBVIEW in order to retrieve the correct viewport size. Geolocation of the device may have to be set after switching context.
         *Example:*
-            | Eyes Open | AppName | TestName | 1024 | 768 | OSOverrideName | AppOverrideName | batchname=Some batch name |
+            | Eyes Open | TestName | [1024 768] | AppNameOverride | OSOverride | HostAppOverride | batchname=Some batch name |
         """
         config_cloned = self.get_configuration()
         if app_name:
