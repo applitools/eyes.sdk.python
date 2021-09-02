@@ -20,6 +20,20 @@ Please check the applitools website for usage instructions:
 
     # TODO: add tutorials
 
-Tips
+Robot Framework autocompletion plugins
 ----
-In PyCharm, the default `intellibot` plugin is abandoned and broken. You could use fork https://github.com/lte2000/intellibot
+
+**IntelliJ (PyCharm and friends)** *Recommended - most full support*
+https://plugins.jetbrains.com/plugin/17424-intellibot-patched
+
+**RobotFramework language server based** (`pip install robotframework-lsp`)
+These plugins have issues with auto-completion of check settings keywords.
+
+
+**IntelliJ (PyCharm and friends)**
+
+https://plugins.jetbrains.com/plugin/16086-robot-framework-language-server
+
+**VSCode**
+
+https://marketplace.visualstudio.com/items?itemName=robocorp.robotframework-lsp
