@@ -15,5 +15,10 @@ class LibraryListener(LibraryComponent):
 
     def end_suite(self, data, result):
         # type: (TestSuite, TestSuite) -> None
-        test_results = self.ctx.eyes_runner.get_all_test_results()
-        self.log_to_console(test_results)
+        # if `Eyes Get All Test Results` was called `eyes_runner` should be set to None
+        if self.ctx.eyes_runner:
+            self.warn(
+                "Run `Eyes Get All Test Results` in `Suite Teardown` explicitly to see all output logs"
+            )
+            test_results = self.ctx.eyes_runner.get_all_test_results()
+            self.log_to_console(test_results)

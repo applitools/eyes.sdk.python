@@ -13,16 +13,16 @@ from .keyword_tags import CHECK_FLOW
 
 
 class RunnerKeywords(LibraryComponent):
-    @keyword("Eyes Create Runner")
-    def create_runner(self, type):
-        self._create_eyes_runner_if_needed()
-
     @keyword("Eyes Get All Test Results")
     def get_all_tests_results(self):
         # type: () -> TestResultsSummary
-        results = self.eyes_runner.get_all_test_results()
-        self.info("Running tests result: {}".format(results))
-        return results
+        try:
+            results = self.eyes_runner.get_all_test_results()
+            self.info("Running tests result: {}".format(results))
+            return results
+        finally:
+            # after fetching of results we don't need runner
+            self.ctx.clean_eyes_runner()
 
 
 class SessionKeywords(LibraryComponent):

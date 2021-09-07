@@ -225,6 +225,9 @@ class EyesLibrary(DynamicCore):
         argument_guard.is_a(runner, EyesRunner)
         self._eyes_runner = runner
 
+    def clean_eyes_runner(self):
+        self._eyes_runner = None
+
     def _try_get_library(self, runner):
         # type: (SelectedRunner) -> typing.ForwardRef
         """Check if `SeleniumLibrary` or `AppiumLibrary` was loaded"""
