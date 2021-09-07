@@ -1,9 +1,9 @@
 class EyesLibraryError(RuntimeError):
-    pass
+    ROBOT_EXIT_ON_FAILURE = True
 
 
 class EyesLibraryValueError(ValueError):
-    pass
+    ROBOT_EXIT_ON_FAILURE = True
 
 
 class EyesLibraryConfigError(EyesLibraryValueError):
