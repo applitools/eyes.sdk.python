@@ -11,8 +11,8 @@ from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
 
 from applitools.common import logger as applitools_logger
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
-from applitools.common.utils.converters import str2bool
 from applitools.core import EyesRunner
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
@@ -145,9 +145,8 @@ class EyesLibrary(DynamicCore):
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
     ROBOT_LIBRARY_VERSION = __version__
-    eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
+    _eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
     driver = None  # type: Optional[AnyWebDriver]
-    raw_config = None  # type: Optional[dict]
     _selected_runner = None  # type: Optional[SelectedRunner]
     library_name_by_runner = {
         SelectedRunner.web: "SeleniumLibrary",
@@ -180,7 +179,7 @@ class EyesLibrary(DynamicCore):
 
         if runner is None:
             runner = SelectedRunner.web
-            robot_logger.warn("No `runner` set. Using `selenium` runner.")
+            robot_logger.warn("No `runner` set. Using `web` runner.")
 
         self.run_on_failure_keyword = run_on_failure
 
@@ -214,6 +213,17 @@ class EyesLibrary(DynamicCore):
         ]
 
         DynamicCore.__init__(self, keywords)
+
+    @property
+    def eyes_runner(self):
+        # type: () -> EyesRunner
+        return self._eyes_runner
+
+    @eyes_runner.setter
+    def eyes_runner(self, runner):
+        # type: (EyesRunner) -> None
+        argument_guard.is_a(runner, EyesRunner)
+        self._eyes_runner = runner
 
     def _try_get_library(self, runner):
         # type: (SelectedRunner) -> typing.ForwardRef

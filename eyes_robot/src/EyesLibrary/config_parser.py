@@ -31,9 +31,9 @@ from .utils import parse_viewport_size
 
 
 class SelectedRunner(Enum):
-    selenium = "selenium"
-    selenium_ufg = "selenium_ufg"
-    appium = "appium"
+    web = "web"
+    web_ufg = "web_ufg"
+    mobile_native = "mobile_native"
 
 
 class ToEnumTrafaret(trf.Trafaret):
@@ -234,9 +234,9 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
     scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("selenium", optional=True): shared_scheme + selenium_scheme,
-            trf.Key("appium", optional=True): shared_scheme + appium_scheme,
-            trf.Key("selenium_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
+            trf.Key("web", optional=True): shared_scheme + selenium_scheme,
+            trf.Key("web_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
+            trf.Key("mobile_native", optional=True): shared_scheme + appium_scheme,
         },
     )
 
@@ -251,9 +251,9 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
 
         combined_raw_config = sanitized.copy()
         # we need only shared data here  TODO: make it nicer
-        combined_raw_config.pop(SelectedRunner.selenium.value)
-        combined_raw_config.pop(SelectedRunner.selenium_ufg.value)
-        combined_raw_config.pop(SelectedRunner.appium.value)
+        combined_raw_config.pop(SelectedRunner.web.value)
+        combined_raw_config.pop(SelectedRunner.web_ufg.value)
+        combined_raw_config.pop(SelectedRunner.mobile_native.value)
 
         # add config for selected runner
         combined_raw_config.update(selected_sdk_conf)

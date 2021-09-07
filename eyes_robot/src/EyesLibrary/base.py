@@ -73,9 +73,9 @@ class LibraryComponent(ContextAware):
     _selected_runner = None
     _log_level = None
     _selected_runner_to_eyes_runner = {
-        SelectedRunner.appium: ClassicRunner,
-        SelectedRunner.selenium: ClassicRunner,
-        SelectedRunner.selenium_ufg: VisualGridRunner,
+        SelectedRunner.web: ClassicRunner,
+        SelectedRunner.mobile_native: ClassicRunner,
+        SelectedRunner.web_ufg: VisualGridRunner,
     }
 
     def convert_to_by_selector(self, locator):

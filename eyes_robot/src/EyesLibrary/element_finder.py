@@ -20,11 +20,11 @@ class ElementFinder(LibraryComponent):
     def __init__(self, *args, **kwargs):
         super(ElementFinder, self).__init__(*args, **kwargs)
         if self.ctx.selected_runner in [
-            SelectedRunner.selenium,
-            SelectedRunner.selenium_ufg,
+            SelectedRunner.web,
+            SelectedRunner.web_ufg,
         ]:
             self._element_finder = SeleniumElementFinder(self.library)
-        elif self.ctx.selected_runner == SelectedRunner.appium:
+        elif self.ctx.selected_runner == SelectedRunner.mobile_native:
             self._element_finder = AppiumElementFinderAdapter(self.driver)
 
         self._selectors = {

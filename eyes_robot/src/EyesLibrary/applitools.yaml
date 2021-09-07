@@ -41,7 +41,7 @@ app_name: YOUR_APP_NAME
 
 ### END `SHARED SECTION` ###
 
-selenium:
+web:
   force_full_page_screenshot: false  #optional
   wait_before_screenshots: 100  #optional
 #  stitch_mode: CSS   # Scroll | CSS
@@ -49,14 +49,14 @@ selenium:
 #  hide_caret: true
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
-appium:
+native_mobile:
   is_simulator: false
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
 
-selenium_ufg:
+web_ufg:
 #  runner_options:
-#    concurrency: 5
+#    test_concurrency: 5
 #  visual_grid_options:
 #    - key: YOUR_VISUAL_GRID_OPTION
 #      value: YOUR_VISUAL_GRID_OPTION_VALUE
