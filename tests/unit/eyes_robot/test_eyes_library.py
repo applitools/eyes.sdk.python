@@ -31,7 +31,7 @@ def test_use_config_from_test_folder_if_no_config_path(tmp_path):
         side_effect=get_library_instance,
     ):
         lib = EyesLibrary()
-    assert lib.selected_runner == SelectedRunner.selenium
+    assert lib.selected_runner == SelectedRunner.web
     assert lib.configure
 
 
@@ -48,5 +48,5 @@ def test_pasrse_config_from_absolute_folder(tmp_path):
         side_effect=get_library_instance,
     ):
         lib = EyesLibrary()
-    assert lib.selected_runner == SelectedRunner.selenium
+    assert lib.selected_runner == SelectedRunner.web
     assert lib.configure

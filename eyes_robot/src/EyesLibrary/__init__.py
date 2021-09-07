@@ -13,9 +13,11 @@ from robotlibcore import DynamicCore
 from applitools.common import logger as applitools_logger
 from applitools.common.utils.compat import raise_from
 from applitools.common.utils.converters import str2bool
-from applitools.selenium import ClassicRunner, Configuration, Eyes, VisualGridRunner
+from applitools.core import EyesRunner
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 from .__version__ import __version__
+from .config import RobotConfiguration
 from .config_parser import (
     ConfigurationTrafaret,
     SelectedRunner,
@@ -190,12 +192,10 @@ class EyesLibrary(DynamicCore):
 
         if is_test_run():
             applitools_logger.set_logger(_RobotLogger())  # type: ignore
-            self._configuration = Configuration()
             self.current_library = self._try_get_library(self._selected_runner)
-            suite_source = get_suite_path()
-            # parse config only if set path explicitly
+            suite_path = get_suite_path()
             self._configuration = try_parse_configuration(
-                config, self._selected_runner, self._configuration, suite_source
+                config, self._selected_runner, RobotConfiguration(), suite_path
             )
             validate_config(self._configuration)
             self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)

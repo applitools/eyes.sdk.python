@@ -1,11 +1,9 @@
 *** Settings ***
-Resource    resources/config_eyes.robot
 Library     SeleniumLibrary
-Library     EyesLibrary     runner=web_ufg
+Library     EyesLibrary
 
 Test Setup    Setup
 Test Teardown    Teardown
-Suite Teardown    Eyes Get All Test Results
 
 *** Variables ***
 &{LOGO}     id=hplogo                 xpath=//*[@id="hplogo"]
@@ -22,48 +20,47 @@ Teardown
 
 *** Test Cases ***
 Check Window
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Window    Ignore Region By Coordinates    [12 22 2 2]
     Eyes Close Async
 
-
 Check Window Fully
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Window       Fully
     Eyes Close Async
 
 
 Eyes Open Close Multiple Times
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Window       Fully
     Eyes Abort Async
 
 
 Check Region By Element
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     ${element}=     Get WebElement          id:overflowing-div
     Eyes Check Region By Element    ${element}
     Eyes Close Async
 
 Check Region By Selector
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Region By Selector    id:overflowing-div
     Eyes Close Async
 
 Check Region By Selector With Ignore
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Region By Selector    id:overflowing-div
     ...     Ignore Region By Coordinates    [12 22 22 22]
     Eyes Close Async
 
 Check Window Two Times
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Window       first
     Eyes Check Window       second
     Eyes Close Async
 
 Check Region By Coordinates In Frame
-    Eyes Open
+    Eyes Open   Eyes Selenium SDK - Classic API
     Eyes Check Region By Coordinates    [30 40 400 1200]        [name="frame1"]
     Eyes Close Async
 

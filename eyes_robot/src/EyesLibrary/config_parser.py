@@ -23,8 +23,9 @@ from applitools.common import (
 )
 from applitools.common.selenium import BrowserType
 from applitools.common.utils.compat import raise_from
-from applitools.selenium import BatchInfo, Configuration
+from applitools.selenium import BatchInfo, RunnerOptions
 
+from .config import RobotConfiguration
 from .errors import EyesLibraryConfigError, EyesLibraryValueError
 from .utils import parse_viewport_size
 
@@ -142,6 +143,14 @@ class ChromeEmulationInfoTrafaret(trf.Trafaret):
         return [ChromeEmulationInfo(**dct) for dct in sanitized]
 
 
+class RunnerOptionsTrafaret(trf.Trafaret):
+    scheme = trf.Dict({trf.Key("test_concurrency"): trf.Int})
+
+    def check_and_return(self, value, context=None):
+        sanitized = self.scheme.check(value, context)
+        return RunnerOptions().test_concurrency(sanitized["test_concurrency"])
+
+
 class ProxyTrafaret(trf.Trafaret):
     scheme = trf.Dict({trf.Key("url") >> "host_or_url": trf.URL}) | trf.Dict(
         {
@@ -209,7 +218,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
     selenium_ufg_scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("runner_options", optional=True): trf.Dict(concurrency=trf.Int),
+            trf.Key("runner_options", optional=True): RunnerOptionsTrafaret,
             trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
             trf.Key("disable_browser_fetching", optional=True): trf.Bool,
             trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,
@@ -232,7 +241,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
 
     def __init__(self, selected_sdk, add_to_config):
-        # type: (SelectedRunner, Configuration) -> None
+        # type: (SelectedRunner, RobotConfiguration) -> None
         self._selected_runner = selected_sdk
         self._exists_configuration = add_to_config
 
@@ -274,7 +283,7 @@ def try_parse_runner(runner):
 def try_parse_configuration(
     config_path, selected_runner, origin_configuration, suite_path
 ):
-    # type: (Text, SelectedRunner, Configuration, Text) -> Configuration
+    # type: (Text, SelectedRunner, RobotConfiguration, Text) -> RobotConfiguration
     if not os.path.isabs(config_path):
         # if config path is not absolute that count test suite directory as root
         config_path = os.path.join(suite_path, config_path)

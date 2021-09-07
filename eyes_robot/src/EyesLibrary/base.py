@@ -72,7 +72,7 @@ class ContextAware:
 class LibraryComponent(ContextAware):
     _selected_runner = None
     _log_level = None
-    _eyes_runners = {
+    _selected_runner_to_eyes_runner = {
         SelectedRunner.appium: ClassicRunner,
         SelectedRunner.selenium: ClassicRunner,
         SelectedRunner.selenium_ufg: VisualGridRunner,
@@ -117,14 +117,18 @@ class LibraryComponent(ContextAware):
         # type: () -> Eyes
         return self.ctx.current_eyes
 
-    def _create_eyes_runner_if_needed(self, selected_sdk=None):
-        # type: (Optional[SelectedRunner]) -> None
+    def _create_eyes_runner_if_needed(self):
+        # type: () -> None
         if self.ctx.eyes_runner is None:
-            # TODO: add configs for runner
-            selected_sdk = selected_sdk or self.ctx.selected_runner
             # TODO: probably need to add runner_options to Configuration class
-            runner_options = getattr(self.ctx.configure, "runner_options", {})
-            self.ctx.eyes_runner = self._eyes_runners[selected_sdk](**runner_options)
+            runner_options = self.ctx.configure.runner_options
+            selected_runner = self._selected_runner_to_eyes_runner[
+                self.ctx.selected_runner
+            ]
+
+            self.ctx.eyes_runner = (
+                selected_runner(runner_options) if runner_options else selected_runner()
+            )
 
     def fetch_driver(self):
         # type: () -> AnyWebDriver

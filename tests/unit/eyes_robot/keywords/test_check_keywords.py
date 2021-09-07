@@ -20,7 +20,7 @@ WEB_ELEMENT = Mock(WebElement)
 @pytest.fixture()
 def check_keyword(defined_keywords):
     mock = MagicMock(EyesLibrary)
-    mock.selected_runner = SelectedRunner.selenium
+    mock.selected_runner = SelectedRunner.web
     mock.current_library = None
     mock.current_eyes = MagicMock()
     mock.keywords = {k: "" for k in defined_keywords}

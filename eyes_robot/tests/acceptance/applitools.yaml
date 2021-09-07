@@ -28,20 +28,20 @@ app_name: YOUR_APP_NAME
 #save_new_tests: true  #optional
 #save_failed_tests: false  #optional
 
-#batch:  #optional
-#  id: YOUR_BATCH_ID  #optional
-#  name: YOUR_BATCH_NAME
-#  batch_sequence_name: YOUR_BATCH_SEQUENCE_NAME  #optional
-#  properties:    #optional
-#    - name: YOUR_BATCH_PROPERTY_NAME
-#      value: YOUR_BATCH_PROPERTY_VALUE
+batch:  #optional
+  id: YOUR_BATCH_ID  #optional
+  name: YOUR_BATCH_NAME
+  batch_sequence_name: YOUR_BATCH_SEQUENCE_NAME  #optional
+  properties:    #optional
+    - name: YOUR_BATCH_PROPERTY_NAME
+      value: YOUR_BATCH_PROPERTY_VALUE
 
 ###### END `AVAILABLE DURING `Eyes Open` CALL SECTION` ######
 
 
 ### END `SHARED SECTION` ###
 
-selenium:
+web:
   force_full_page_screenshot: false  #optional
   wait_before_screenshots: 100  #optional
 #  stitch_mode: CSS   # Scroll | CSS
@@ -49,14 +49,14 @@ selenium:
 #  hide_caret: true
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
-appium:
+mobile_native:
   is_simulator: false
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
 
-selenium_ufg:
-#  runner_options:
-#    concurrency: 5
+web_ufg:
+  runner_options:
+    test_concurrency: 5
 #  visual_grid_options:
 #    - key: YOUR_VISUAL_GRID_OPTION
 #      value: YOUR_VISUAL_GRID_OPTION_VALUE
