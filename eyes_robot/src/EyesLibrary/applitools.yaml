@@ -49,7 +49,7 @@ web:
 #  hide_caret: true
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
-native_mobile:
+mobile_native:
   is_simulator: false
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 

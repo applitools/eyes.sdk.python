@@ -28,13 +28,13 @@ app_name: YOUR_APP_NAME
 #save_new_tests: true  #optional
 #save_failed_tests: false  #optional
 
-batch:  #optional
-  id: YOUR_BATCH_ID  #optional
-  name: YOUR_BATCH_NAME
-  batch_sequence_name: YOUR_BATCH_SEQUENCE_NAME  #optional
-  properties:    #optional
-    - name: YOUR_BATCH_PROPERTY_NAME
-      value: YOUR_BATCH_PROPERTY_VALUE
+#batch:  #optional
+#  id: YOUR_BATCH_ID  #optional
+#  name: YOUR_BATCH_NAME
+#  batch_sequence_name: YOUR_BATCH_SEQUENCE_NAME  #optional
+#  properties:    #optional
+#    - name: YOUR_BATCH_PROPERTY_NAME
+#      value: YOUR_BATCH_PROPERTY_VALUE
 
 ###### END `AVAILABLE DURING `Eyes Open` CALL SECTION` ######
 
@@ -55,8 +55,8 @@ mobile_native:
 
 
 web_ufg:
-  runner_options:
-    test_concurrency: 5
+#  runner_options:
+#    test_concurrency: 5
 #  visual_grid_options:
 #    - key: YOUR_VISUAL_GRID_OPTION
 #      value: YOUR_VISUAL_GRID_OPTION_VALUE
