@@ -26,13 +26,28 @@ def get_version():
 
 install_requires = [
     "trafaret == 2.1.0",
-    "PyYAML >= 5",
+    "PyYAML >= 5,<6",
     "eyes_selenium >= 4.21.0",
-    "robotframework >= 3.2.2",
-    "robotframework-pythonlibcore >= 2.2.1",
-    "robotframework-seleniumlibrary >= 5.1.3",
-    "robotframework-appiumlibrary >= 1.6",
 ]
+if sys.version_info[:2] <= (2, 7):
+    install_requires.extend(
+        [
+            "robotframework >= 3.2.2,<4.0 ",
+            "robotframework-pythonlibcore >= 2.0.2,<3.0",
+            "robotframework-seleniumlibrary >= 3.3.1,<4.5",
+            "robotframework-appiumlibrary >= 1.5,<1.6",
+        ]
+    )
+else:
+    install_requires.extend(
+        [
+            "robotframework >= 4.0 ",
+            "robotframework-pythonlibcore >= 3.0",
+            "robotframework-seleniumlibrary >= 4.5",
+            "robotframework-appiumlibrary >= 1.6",
+        ]
+    )
+
 setup(
     name="eyes-robotframework",
     version=get_version(),
