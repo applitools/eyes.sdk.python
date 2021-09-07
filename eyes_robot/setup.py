@@ -30,7 +30,7 @@ install_requires = [
     "eyes_selenium >= 4.21.0",
     "robotframework >= 3.2.2",
     "robotframework-pythonlibcore >= 2.2.1",
-    "robotframework-seleniumlibrary >= 5.1.3",
+    "robotframework-seleniumlibrary >= 4.5.0",
     "robotframework-appiumlibrary >= 1.6",
 ]
 setup(
