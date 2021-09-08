@@ -4,6 +4,7 @@ services:
 git:
     submodules: false
 install:
+    - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O && sudo unzip chromedriver_linux64.zip -d /usr/local/bin
     - python -m pip install -U tox
 before_script:
     # Disable stderr/stdout buffering in python
@@ -165,12 +166,7 @@ jobs:
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
-            apt:
-              sources:
-                - google-chrome
-              packages:
-                - google-chrome-stable
-                - chromium-chromedriver
+              chrome: stable
           env:
             - TOX_ENV=robotframework
             - TEST_PLATFORM="Linux"
