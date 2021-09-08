@@ -32,7 +32,7 @@ def new_or_cur_check_settings(check_settings):
     return check_settings
 
 
-class IgnoreCheckSettingsKeyword:
+class IgnoreCheckSettingsKeyword(object):
     @keyword("Ignore Region By Coordinates", types=(str,))
     def ignore_region_by_coordinates(
         self,
@@ -92,7 +92,7 @@ class IgnoreCheckSettingsKeyword:
         )
 
 
-class LayoutCheckSettingsKeyword:
+class LayoutCheckSettingsKeyword(object):
     @keyword("Layout Region By Coordinates", types=(str,))
     def layout_region_by_coordinates(
         self,
@@ -152,7 +152,7 @@ class LayoutCheckSettingsKeyword:
         )
 
 
-class ContentCheckSettingsKeyword:
+class ContentCheckSettingsKeyword(object):
     @keyword("Content Region By Coordinates", types=(str,))
     def content_region_by_coordinates(
         self,
@@ -212,7 +212,7 @@ class ContentCheckSettingsKeyword:
         )
 
 
-class StrictCheckSettingsKeywords:
+class StrictCheckSettingsKeywords(object):
     @keyword("Strict Region By Coordinates", types=(str,))
     def strict_region_by_coordinates(
         self,
@@ -273,7 +273,7 @@ class StrictCheckSettingsKeywords:
         )
 
 
-class FloatingCheckSettingsKeywords:
+class FloatingCheckSettingsKeywords(object):
     @keyword(
         "Floating Region With Max Offset By Coordinates",
         types=(int, str),
@@ -467,7 +467,7 @@ class FloatingCheckSettingsKeywords:
         )
 
 
-class AccessibilityCheckSettingsKeywords:
+class AccessibilityCheckSettingsKeywords(object):
     @keyword("Accessibility Region By Selector", types=(str, str))
     def accessibility_region_by_selector(
         self,
@@ -540,7 +540,7 @@ class AccessibilityCheckSettingsKeywords:
         )
 
 
-class UFGCheckSettingsKeywords:
+class UFGCheckSettingsKeywords(object):
     @keyword("Visual Grid Option", types=(str, str), tags=(UFG_RELATED,))
     def visual_grid_option(
         self,
