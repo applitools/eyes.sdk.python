@@ -4,9 +4,11 @@ services:
 git:
     submodules: false
 install:
-    - npm install chromedriver
+    - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
+    - mkdir bin && unzip chromedriver_linux64.zip -d bin
     - python -m pip install -U tox
 before_script:
+    - export PATH=`pwd`/bin:$PATH
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
     # Run GUI apps in headless mode
