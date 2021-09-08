@@ -84,13 +84,15 @@ class LibraryComponent(ContextAware):
     def debug(self, msg, html=False):
         self.log.debug(msg, html)
 
-    def warn(self, msg: str, html: bool = False):
+    def warn(self, msg, html=False):
+        # type: (Text, bool) -> None
         self.log.warn(msg, html)
 
     def log_to_console(self, msg):
         self.log.console(msg)
 
-    def log_source(self, loglevel: str = "INFO"):
+    def log_source(self, loglevel="INFO"):
+        # type: (Text) -> None
         self.ctx.log_source(loglevel)
 
     def register_eyes(self, eyes, alias=None):
