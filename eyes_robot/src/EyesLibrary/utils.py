@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 import re
 import shutil
+from collections import OrderedDict
 from typing import Any, Generator, Text
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -20,7 +21,7 @@ def extract_keyword_and_arguments(
     defined_keywords,  # type: list[Any]|tuple[Any]
 ):
     # type: (...) -> Generator[tuple[Text, list[Any]], None, None]
-    res = dict()
+    res = OrderedDict()
     key_keyword = None
     key_keyword_index = -1
     for i, keyword in enumerate(keywords_from_test):
