@@ -36,7 +36,7 @@ def test_use_config_from_test_folder_if_no_config_path(tmp_path):
 
 
 def test_pasrse_config_from_relative_folder(tmp_path):
-    ...
+    assert False
 
 
 def test_pasrse_config_from_absolute_folder(tmp_path):
