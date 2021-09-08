@@ -416,6 +416,8 @@ class SeleniumCheckSettings(CheckSettings):
             self._set_scroll_root_selector(by, value)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
+        else:
+            raise TypeError("Unsupported type of scroll root element")
         return self
 
     def _floating_provider_from(self, region, bounds):

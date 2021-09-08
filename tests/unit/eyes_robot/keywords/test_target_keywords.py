@@ -3,6 +3,8 @@ from mock import Mock
 
 from EyesLibrary import TargetKeywords
 
+pytestmark = [pytest.mark.skip]
+
 
 @pytest.fixture()
 def target_keyword():

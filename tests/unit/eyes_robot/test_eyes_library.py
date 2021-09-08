@@ -6,6 +6,8 @@ import pytest
 from EyesLibrary import EyesLibrary, SelectedRunner
 from EyesLibrary.utils import copy_config_to
 
+pytestmark = [pytest.mark.skip]
+
 
 def get_variable_value(path):
     copy_config_to(path)

@@ -39,18 +39,22 @@ def get_regions_from_(method_name, *args, **kwargs):
     return regions
 
 
-def get_regions_from_cs_keyword(method_name, by_method_postfix, keyword_value):
-    cs_keyword = CheckSettingsKeywords(Mock())
-    cs = getattr(cs_keyword, "{}_region_by_{}".format(method_name, by_method_postfix))(
-        keyword_value
-    )
-    regions = getattr(cs.values, "{}_regions".format(method_name))
-    return regions
+@pytest.fixture
+def get_regions_from_cs_keyword(eyes_library_with_selenium):
+    def internal_func(method_name, by_method_postfix, keyword_value):
+        cs_keyword = CheckSettingsKeywords(eyes_library_with_selenium)
+        cs = getattr(
+            cs_keyword, "{}_region_by_{}".format(method_name, by_method_postfix)
+        )(keyword_value)
+        regions = getattr(cs.values, "{}_regions".format(method_name))
+        return regions
+
+    return internal_func
 
 
 @pytest.fixture()
-def check_settings_keyword():
-    return CheckSettingsKeywords(Mock())
+def check_settings_keyword(eyes_library_with_selenium):
+    return CheckSettingsKeywords(eyes_library_with_selenium)
 
 
 @pytest.fixture()
@@ -60,7 +64,12 @@ def web_element():
 
 @pytest.fixture()
 def css_selector():
-    return "#some-id"
+    return "css:#some-id"
+
+
+@pytest.fixture()
+def by_selector():
+    return [By.CSS_SELECTOR, "#some-id"]
 
 
 @pytest.mark.parametrize(
@@ -68,7 +77,7 @@ def css_selector():
 )
 @pytest.mark.parametrize("region_method_name", REGION_LIST)
 def test_check_regions_by_coordinates(
-    region_to_parse, result_region, region_method_name
+    region_to_parse, result_region, region_method_name, get_regions_from_cs_keyword
 ):
     assert get_regions_from_(
         region_method_name, result_region
@@ -81,7 +90,9 @@ def test_check_regions_by_coordinates(
 
 @pytest.mark.parametrize("region_to_parse,result_region", [(WEB_ELEMENT, WEB_ELEMENT)])
 @pytest.mark.parametrize("region_method_name", REGION_LIST)
-def test_check_regions_by_element(region_to_parse, result_region, region_method_name):
+def test_check_regions_by_element(
+    region_to_parse, result_region, region_method_name, get_regions_from_cs_keyword
+):
     assert get_regions_from_(
         region_method_name, result_region
     ) == get_regions_from_cs_keyword(
@@ -92,10 +103,12 @@ def test_check_regions_by_element(region_to_parse, result_region, region_method_
 
 
 @pytest.mark.parametrize(
-    "region_to_parse,result_region", [("#some-id", [By.ID, "some-id"])]
+    "region_to_parse,result_region", [("id:some-id", [By.ID, "some-id"])]
 )
 @pytest.mark.parametrize("region_method_name", REGION_LIST)
-def test_check_regions_by_selector(region_to_parse, result_region, region_method_name):
+def test_check_regions_by_selector(
+    region_to_parse, result_region, region_method_name, get_regions_from_cs_keyword
+):
     assert get_regions_from_(
         region_method_name, result_region
     ) == get_regions_from_cs_keyword(
@@ -127,14 +140,14 @@ def test_floating_region_by_element(check_settings_keyword, web_element):
     )
 
 
-def test_floating_region_by_selector(check_settings_keyword, css_selector):
-    res = SeleniumCheckSettings().floating(34, css_selector)
+def test_floating_region_by_selector(check_settings_keyword, css_selector, by_selector):
+    res = SeleniumCheckSettings().floating(34, by_selector)
     assert res == check_settings_keyword.floating_region_with_max_offset_by_selector(
         34, css_selector
     )
-    res = SeleniumCheckSettings().floating(css_selector, 20, 30, 40, 50)
+    res = SeleniumCheckSettings().floating(by_selector, 20, 30, 40, 50)
     assert res == check_settings_keyword.floating_region_by_selector(
-        web_element, css_selector
+        css_selector, 20, 30, 40, 50
     )
 
 
@@ -156,9 +169,11 @@ def test_accessibility_region_by_coordinates(check_settings_keyword):
     )
 
 
-def test_accessibility_region_by_selector(check_settings_keyword, css_selector):
+def test_accessibility_region_by_selector(
+    check_settings_keyword, by_selector, css_selector
+):
     res = SeleniumCheckSettings().accessibility(
-        css_selector, AccessibilityRegionType.RegularText
+        by_selector, AccessibilityRegionType.RegularText
     )
     assert res == check_settings_keyword.accessibility_region_by_selector(
         css_selector, AccessibilityRegionType.RegularText
@@ -171,13 +186,13 @@ def test_visual_grid_option(check_settings_keyword):
 
 
 def test_disable_browser_fetching(check_settings_keyword):
-    res = SeleniumCheckSettings().disable_browser_fetching(True)
-    assert res == check_settings_keyword.disable_browser_fetching(True)
+    res = SeleniumCheckSettings().disable_browser_fetching()
+    assert res == check_settings_keyword.disable_browser_fetching()
 
 
 def test_layout_breakpoints(check_settings_keyword):
     res = SeleniumCheckSettings().layout_breakpoints(True)
-    assert res == check_settings_keyword.enable_layout_breakpoints(True)
+    assert res == check_settings_keyword.enable_layout_breakpoints()
     res = SeleniumCheckSettings().layout_breakpoints(40, 50, 40, 60)
     assert res == check_settings_keyword.layout_breakpoints("40 50 40 60")
 
@@ -197,8 +212,10 @@ def test_scroll_root_element_by_element(check_settings_keyword, web_element):
     assert res == check_settings_keyword.scroll_root_element_by_element(web_element)
 
 
-def test_scroll_root_element_by_selector(check_settings_keyword, css_selector):
-    res = SeleniumCheckSettings().scroll_root_element(css_selector)
+def test_scroll_root_element_by_selector(
+    check_settings_keyword, css_selector, by_selector
+):
+    res = SeleniumCheckSettings().scroll_root_element(by_selector)
     assert res == check_settings_keyword.scroll_root_element_by_selector(css_selector)
 
 

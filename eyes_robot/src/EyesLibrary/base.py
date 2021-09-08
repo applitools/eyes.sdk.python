@@ -35,7 +35,7 @@ class ContextAware(object):
 
     def from_locator_to_supported_form(self, locator):
         # type: (Locator) -> BySelector
-        return self.ctx._element_finder.convert_to_by_selector(locator)
+        return self.ctx._locator_converter.to_by_selector(locator)
 
     def from_locators_to_supported_form(self, locator):
         # type: (Locator) -> list[BySelector]
@@ -74,8 +74,8 @@ class LibraryComponent(ContextAware):
         SelectedRunner.web_ufg: VisualGridRunner,
     }
 
-    def convert_to_by_selector(self, locator):
-        return self.ctx._element_finder.convert_to_by_selector(locator)
+    def to_by_selector(self, locator):
+        return self.ctx._locator_converter.to_by_selector(locator)
 
     def info(self, msg, html=False):
         # type: (Text, bool) -> None

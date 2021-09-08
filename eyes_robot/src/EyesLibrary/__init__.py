@@ -24,7 +24,6 @@ from .config_parser import (
     try_parse_configuration,
     try_parse_runner,
 )
-from .element_finder import ElementFinder
 from .errors import EyesLibraryConfigError, EyesLibraryError
 from .eyes_cache import EyesCache
 from .keywords import (
@@ -36,6 +35,7 @@ from .keywords import (
 )
 from .keywords.session import RunnerKeywords
 from .library_listener import LibraryListener
+from .locator_converter import LocatorConverter
 
 if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Literal, Optional, Text
@@ -186,6 +186,7 @@ class EyesLibrary(DynamicCore):
         self._running_on_failure_keyword = False
         self._eyes_registry = EyesCache()
         self._running_keyword = None
+        self._configuration = None
 
         self._selected_runner = try_parse_runner(runner)
 
@@ -198,7 +199,7 @@ class EyesLibrary(DynamicCore):
             )
             validate_config(self._configuration)
             self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)
-            self._element_finder = ElementFinder(self)
+            self._locator_converter = LocatorConverter(self)
         else:
             # hide objects that uses dynamic loading for generation of documentation
             self.current_library = None
