@@ -34,6 +34,7 @@ def dist(
     core=False,
     selenium=False,
     images=False,
+    robotframework=False,
     prod=False,
     from_env=False,
 ):
@@ -43,10 +44,16 @@ def dist(
 
     packages = list(
         _packages_resolver(
-            common, core, selenium, images, full_path=True, path_as_str=True
+            common,
+            core,
+            selenium,
+            images,
+            robotframework,
+            full_path=True,
+            path_as_str=True,
         )
     )
-    _fetch_js_libs_if_required(c, common, core, images, selenium)
+    _fetch_js_libs_if_required(c, common, core, images, selenium, robotframework)
 
     if from_env:
         twine_command = "twine upload dist/*"
@@ -103,7 +110,7 @@ def _packages_resolver(
     core=False,
     selenium=False,
     images=False,
-    robot=False,
+    robotframework=False,
     full_path=False,
     path_as_str=False,
 ):
@@ -113,7 +120,7 @@ def _packages_resolver(
         "eyes_core",
         "eyes_selenium",
         "eyes_images",
-        "eyes_robot",
+        "eyes_robotframework",
     )
     if common:
         packages.append(common_pkg)
@@ -123,7 +130,7 @@ def _packages_resolver(
         packages.append(selenium_pkg)
     if images:
         packages.append(images_pkg)
-    if robot:
+    if robotframework:
         packages.append(robot_pkg)
     if not packages:
         packages = [common_pkg, core_pkg, selenium_pkg, images_pkg]
@@ -136,9 +143,9 @@ def _packages_resolver(
         yield pack
 
 
-def _fetch_js_libs_if_required(c, common, core, selenium, images, robot):
+def _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework):
     # get js libs only if selenium lib is installing
-    if selenium or not any([common, core, selenium, images, robot]):
+    if selenium or not any([common, core, selenium, images, robotframework]):
         retrieve_js(c)
 
 
@@ -149,14 +156,14 @@ def install_packages(
     core=False,
     selenium=False,
     images=False,
-    robot=False,
+    robotframework=False,
     editable=False,
 ):
     packages = _packages_resolver(
-        common, core, selenium, images, robot, full_path=True, path_as_str=True
+        common, core, selenium, images, robotframework, full_path=True, path_as_str=True
     )
 
-    _fetch_js_libs_if_required(c, common, core, selenium, images, robot)
+    _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework)
 
     editable = "-e" if editable else ""
     if sys.platform == "darwin":

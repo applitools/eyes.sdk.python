@@ -38,7 +38,7 @@ from .library_listener import LibraryListener
 from .locator_converter import LocatorConverter
 
 if TYPE_CHECKING:
-    from typing import TYPE_CHECKING, Literal, Optional, Text
+    from typing import TYPE_CHECKING, Optional, Text
 
     from applitools.common.utils.custom_types import AnyWebDriver
 

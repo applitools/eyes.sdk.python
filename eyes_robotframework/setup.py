@@ -60,7 +60,7 @@ setup(
     python_requires=">=2.7, <4",
     classifiers=[
         "Programming Language :: Python",
-        "Development Status :: 1 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.7",
@@ -71,7 +71,7 @@ setup(
         "Topic :: Software Development :: Testing",
         "Framework :: Robot Framework :: Library",
     ],
-    keywords="applitools eyes eyes_selenium selenium appium",
+    keywords="applitools robotframework eyes eyes_selenium selenium appium",
     install_requires=install_requires,
     package_dir={"": "src"},
     packages=find_packages("src"),
