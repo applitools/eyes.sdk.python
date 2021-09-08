@@ -162,6 +162,12 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+            - TOX_ENV=robotframework
+            - TEST_PLATFORM="Linux"
+
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:

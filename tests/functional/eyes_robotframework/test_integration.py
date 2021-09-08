@@ -18,6 +18,8 @@ def test_single_suite_classic_runner():
         dedent(
             """
         [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
+        Runing test suite with `web` runner and `applitools.yaml` config
+        Using library `SeleniumLibrary` as backend
         ==============================================================================
         Web
         ==============================================================================
@@ -46,3 +48,4 @@ def test_single_suite_classic_runner():
         .splitlines()
     )
     assert output.splitlines()[:-3] == expected
+    assert code == 0
