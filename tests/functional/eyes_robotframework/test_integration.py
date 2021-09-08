@@ -12,11 +12,14 @@ def run_robot(*args):
     return result.returncode, result.stdout.decode()
 
 
+def lines(text):
+    return [line.strip() for line in dedent(text).strip().splitlines()]
+
+
 def test_single_suite_classic_runner():
     code, output = run_robot("--variable", "RUNNER:web", "web.robot")
-    expected = (
-        dedent(
-            """
+    expected = lines(
+        """
         [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
         Runing test suite with `web` runner and `applitools.yaml` config
         Using library `SeleniumLibrary` as backend
@@ -43,9 +46,6 @@ def test_single_suite_classic_runner():
         8 tests, 8 passed, 0 failed
         ==============================================================================
         """
-        )
-        .strip()
-        .splitlines()
     )
-    assert output.splitlines()[:-3] == expected
+    assert lines(output)[:-3] == expected
     assert code == 0

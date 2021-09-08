@@ -164,6 +164,8 @@ jobs:
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+            chrome: stable
           env:
             - TOX_ENV=robotframework
             - TEST_PLATFORM="Linux"
