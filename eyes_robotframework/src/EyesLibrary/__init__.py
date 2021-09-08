@@ -148,10 +148,10 @@ class EyesLibrary(DynamicCore):
     _eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
     driver = None  # type: Optional[AnyWebDriver]
     _selected_runner = None  # type: Optional[SelectedRunner]
-    library_name_by_runner = {
-        SelectedRunner.web: "SeleniumLibrary",
-        SelectedRunner.web_ufg: "SeleniumLibrary",
-        SelectedRunner.mobile_native: "AppiumLibrary",
+    supported_library_names_by_runner = {
+        SelectedRunner.web: ("SeleniumLibrary", "AppiumLibrary"),
+        SelectedRunner.web_ufg: ("SeleniumLibrary",),
+        SelectedRunner.mobile_native: ("AppiumLibrary",),
     }
 
     def __init__(
@@ -180,6 +180,10 @@ class EyesLibrary(DynamicCore):
         if runner is None:
             runner = SelectedRunner.web
             robot_logger.warn("No `runner` set. Using `web` runner.")
+
+        robot_logger.console(
+            "Runing test suite with `{}` runner and `{}` config".format(runner, config)
+        )
 
         self.run_on_failure_keyword = run_on_failure
 
@@ -231,20 +235,27 @@ class EyesLibrary(DynamicCore):
 
     def _try_get_library(self, runner):
         # type: (SelectedRunner) -> typing.ForwardRef
-        """Check if `SeleniumLibrary` or `AppiumLibrary` was loaded"""
-        library_name = self.library_name_by_runner[runner]
-        try:
-            return BuiltIn().get_library_instance(name=library_name)
-        except RuntimeError as e:
-            raise_from(
-                RuntimeError(
-                    "Specified runner: `{runner}` should be used with `{lib}` library. "
-                    "Please, make sure that `{lib}` was properly imported".format(
-                        runner=runner.value, lib=library_name
-                    )
-                ),
-                e,
+        """Check if supported library was loaded"""
+        library_names = self.supported_library_names_by_runner[runner]
+        supported_library = None
+        failed_to_import = []
+        for library_name in library_names:
+            try:
+                supported_library = BuiltIn().get_library_instance(name=library_name)
+                robot_logger.console(
+                    "Using library `{}` as backend".format(library_name)
+                )
+                break
+            except RuntimeError:
+                failed_to_import.append(library_name)
+
+        if supported_library is None:
+            raise EyesLibraryError(
+                "Failed to find libraries {} for runner: {} in your test suite".format(
+                    library_names, runner
+                )
             )
+        return supported_library
 
     def run_keyword(self, name, *args, **kwargs):
         try:

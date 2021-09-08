@@ -2,14 +2,16 @@ from __future__ import absolute_import, unicode_literals
 
 from typing import TYPE_CHECKING, Text
 
+from AppiumLibrary import AppiumLibrary
 from robot.api import logger
 from robot.api.deco import keyword  # noqa
-from robot.libraries.BuiltIn import BuiltIn
+from SeleniumLibrary import SeleniumLibrary
 
 from applitools.common.utils import cached_property
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 from .config_parser import SelectedRunner
+from .errors import EyesLibraryValueError
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver, BySelector
@@ -131,17 +133,11 @@ class LibraryComponent(ContextAware):
 
     def fetch_driver(self):
         # type: () -> AnyWebDriver
-        libraries = BuiltIn().get_library_instance(all=True)
-        selenium_library = libraries.get("SeleniumLibrary")
-        appium_library = libraries.get("AppiumLibrary")
-        if selenium_library is None and appium_library is None:
-            raise RuntimeError("Should be used SeleniumLibrary or AppiumLibrary")
-        elif selenium_library and appium_library:
-            raise RuntimeError(
-                "Not possible to use both SeleniumLibrary and AppiumLibrary"
-            )
+        if isinstance(self.ctx.current_library, SeleniumLibrary):
+            return self.ctx.current_library.driver
+        elif isinstance(self.ctx.current_library, AppiumLibrary):
+            return self.ctx.current_library._current_application()
         else:
-            if selenium_library:
-                return selenium_library.driver
-            elif appium_library:
-                return appium_library._current_application()
+            raise EyesLibraryValueError(
+                "Not supported library. Should be `SeleniumLibrary` or `AppiumLibrary`"
+            )
