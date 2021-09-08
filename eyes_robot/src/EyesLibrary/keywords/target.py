@@ -54,9 +54,7 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Region By Element  |  ${element}  |
         """
         return collect_check_settings(
-            Target.region(element),
-            self.defined_keywords,
-            *check_settings_keywords,
+            Target.region(element), self.defined_keywords, *check_settings_keywords
         )
 
     @keyword(
@@ -75,7 +73,7 @@ class TargetKeywords(LibraryComponent):
         return collect_check_settings(
             Target.region(parse_region(region)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
 
     @keyword("Target Region By Selector", types=(str,), tags=(CHECK_SETTINGS_SUPPORT,))
@@ -92,7 +90,7 @@ class TargetKeywords(LibraryComponent):
         return collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
 
     @keyword(
@@ -111,9 +109,7 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Frame By Element  |  ${element}  |
         """
         return collect_check_settings(
-            Target.frame(element),
-            self.defined_keywords,
-            *check_settings_keywords,
+            Target.frame(element), self.defined_keywords, *check_settings_keywords
         )
 
     @keyword(
@@ -134,7 +130,7 @@ class TargetKeywords(LibraryComponent):
         return collect_check_settings(
             Target.frame(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
 
     @keyword(
@@ -153,9 +149,7 @@ class TargetKeywords(LibraryComponent):
             | ${target}=  |  Target Frame By Index  |  2  |
         """
         return collect_check_settings(
-            Target.frame(frame_index),
-            self.defined_keywords,
-            *check_settings_keywords,
+            Target.frame(frame_index), self.defined_keywords, *check_settings_keywords
         )
 
     @keyword(
@@ -174,7 +168,5 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Frame By Name  |  frameName  |
         """
         return collect_check_settings(
-            Target.frame(frame_name),
-            self.defined_keywords,
-            *check_settings_keywords,
+            Target.frame(frame_name), self.defined_keywords, *check_settings_keywords
         )

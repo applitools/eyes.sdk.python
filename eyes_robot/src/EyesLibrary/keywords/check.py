@@ -75,7 +75,7 @@ class CheckKeywords(LibraryComponent):
         check_settings = collect_check_settings(
             Target.region(parse_region(region)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
@@ -104,9 +104,7 @@ class CheckKeywords(LibraryComponent):
             tag, check_settings_keywords, self.defined_keywords
         )
         check_settings = collect_check_settings(
-            Target.region(element),
-            self.defined_keywords,
-            *check_settings_keywords,
+            Target.region(element), self.defined_keywords, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
@@ -136,7 +134,7 @@ class CheckKeywords(LibraryComponent):
         check_settings = collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
@@ -242,7 +240,7 @@ class CheckKeywords(LibraryComponent):
         check_settings = collect_check_settings(
             Target.frame(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
-            *check_settings_keywords,
+            *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
