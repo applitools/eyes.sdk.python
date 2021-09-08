@@ -58,7 +58,7 @@ class CheckKeywords(LibraryComponent):
         self,
         region,  # type: Locator
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -88,7 +88,7 @@ class CheckKeywords(LibraryComponent):
         self,
         element,  # type: Locator
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -119,7 +119,7 @@ class CheckKeywords(LibraryComponent):
         self,
         selector,  # type: Locator
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -149,7 +149,7 @@ class CheckKeywords(LibraryComponent):
         self,
         element,  # type: AnyWebElement
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -174,7 +174,7 @@ class CheckKeywords(LibraryComponent):
         self,
         frame_index,  # type: int
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -199,7 +199,7 @@ class CheckKeywords(LibraryComponent):
         self,
         frame_name,  # type: Text
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
@@ -224,7 +224,7 @@ class CheckKeywords(LibraryComponent):
         self,
         selector,  # type: Text
         tag=None,  # type: Optional[Text]
-        *check_settings_keywords,  # type: tuple[Any]
+        *check_settings_keywords  # type: tuple[Any]
     ):
         # type: (...) -> MatchResult
         """
