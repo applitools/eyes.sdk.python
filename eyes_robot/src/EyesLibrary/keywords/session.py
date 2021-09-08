@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
-from typing import TYPE_CHECKING, Optional, Text, Union
+from typing import Optional, Text, Union
 
 from robot.libraries.BuiltIn import BuiltIn
 

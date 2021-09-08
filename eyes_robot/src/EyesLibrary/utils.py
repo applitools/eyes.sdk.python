@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 import os
 import re
 import shutil
-from collections import defaultdict
 from typing import Any, Generator, Text
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -112,11 +111,10 @@ def parse_region(text):
 
 
 def is_webelement_guard(element):
-    # argument_guard.is_valid_type(
-    #     is_webelement(element),
-    #     "element argument should be type Selenium or Appium Web Element",
-    # )
-    pass
+    argument_guard.is_valid_type(
+        is_webelement(element),
+        "element argument should be type Selenium or Appium Web Element",
+    )
 
 
 def get_config_file_path():

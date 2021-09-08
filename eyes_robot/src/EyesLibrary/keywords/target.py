@@ -11,7 +11,7 @@ from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
 from ..utils import collect_check_settings, parse_region
-from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
+from .keyword_tags import CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement

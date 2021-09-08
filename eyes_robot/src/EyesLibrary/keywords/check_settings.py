@@ -7,9 +7,7 @@ from robot.api.deco import keyword as original_keyword
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
 from applitools.common import AccessibilityRegionType, MatchLevel, VisualGridOption
-from applitools.common.utils import argument_guard
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.validators import is_webelement
 
 from ..base import LibraryComponent
 from ..utils import is_webelement_guard, parse_region
