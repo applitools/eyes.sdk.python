@@ -80,7 +80,8 @@ def collect_check_settings(check_settings, defined_keywords, *keywords):
 int_float_pattern = r"\d+(?:\.\d+)?"
 
 
-def parse_viewport_size(text) -> RectangleSize:
+def parse_viewport_size(text):
+    # type: (Text) -> RectangleSize
     num_ptrs = (int_float_pattern,) * 2
     match = re.match(r"\[(%s) (%s)\]" % num_ptrs, text)
     if match is None:
