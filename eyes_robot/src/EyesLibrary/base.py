@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Text
 
 from robot.api import logger
 from robot.api.deco import keyword  # noqa
@@ -12,11 +12,7 @@ from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 from .config_parser import SelectedRunner
 
 if TYPE_CHECKING:
-    from applitools.common.utils.custom_types import (
-        AnyWebDriver,
-        AnyWebElement,
-        BySelector,
-    )
+    from applitools.common.utils.custom_types import AnyWebDriver, BySelector
 
     from . import EyesLibrary
     from .custom_types import Locator
@@ -81,7 +77,8 @@ class LibraryComponent(ContextAware):
     def convert_to_by_selector(self, locator):
         return self.ctx._element_finder.convert_to_by_selector(locator)
 
-    def info(self, msg: str, html: bool = False):
+    def info(self, msg, html=False):
+        # type: (Text, bool) -> None
         self.log.info(msg, html)
 
     def debug(self, msg, html=False):
