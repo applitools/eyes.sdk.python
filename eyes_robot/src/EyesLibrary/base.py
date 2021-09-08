@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ("ContextAware", "LibraryComponent", "keyword")
 
 
-class ContextAware:
+class ContextAware(object):
     def __init__(self, ctx):
         # type: (EyesLibrary) -> None
         """Base class exposing attributes from the common context.
