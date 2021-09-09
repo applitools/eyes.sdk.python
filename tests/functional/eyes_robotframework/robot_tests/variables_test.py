@@ -36,9 +36,10 @@ def get_variables(
         backend_library_name = "AppiumLibrary"
         desired_caps.update(
             {
-                "appiumVersion": "1.21",
+                "appiumVersion": "1.20.1",
             }
         )
+
         if runner_type == "mobile_native":
             batch_name += " | App"
             if platform == "android":
