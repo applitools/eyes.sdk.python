@@ -69,10 +69,10 @@ web_ufg:
       - browser_type: CHROME  # names from BrowserType
         width: 1900
         height: 1800
-    ios:
-      - device_name: iPhone_12_Pro  # names from IosDeviceName
-        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
-        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
-    chrome_emulation:
-      - device_name: iPhone_4  # names from DeviceName
-        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#    ios:
+#      - device_name: iPhone_12_Pro  # names from IosDeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
+#    chrome_emulation:
+#      - device_name: iPhone_4  # names from DeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
