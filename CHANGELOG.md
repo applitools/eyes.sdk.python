@@ -1,4 +1,4 @@
-## [vNext]
+## [4.25.0] - 2021-09-09
 ### Added
 - Eyes Robot Framework SDK [GH 377](https://github.com/applitools/eyes.sdk.python/pull/377)
 
