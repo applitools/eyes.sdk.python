@@ -58,9 +58,9 @@ class ConfigurationKeywords(LibraryComponent):
     @keyword("Get Eyes Configure Property", types=(str,))
     def get_eyes_configure_property(self, name):
         # type: (Text) -> Any
-        return getattr(self.current_eyes.configure, name)
+        return getattr(self.ctx.configure, name)
 
-    @keyword("Set Eyes Configure Property", types=(str,))
+    @keyword("Set Eyes Configure Property", types=(str, str))
     def set_eyes_configure_property(self, name, value):
         # type: (Text, Any) -> Any
-        return setattr(self.current_eyes.configure, name, value)
+        setattr(self.ctx.configure, name, value)

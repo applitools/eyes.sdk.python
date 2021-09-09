@@ -12,6 +12,8 @@ Setup
     ELSE IF  '${BACKEND_LIBRARY_NAME}' == 'SeleniumLibrary'
         Open Browser   ${URL}   ${BROWSER_NAME}   remote_url=${REMOTE_URL}   desired_capabilities=${DESIRED CAPS}
     END
+    Set Eyes Configure Property     RUNNER    ${RUNNER}
+    Set Eyes Configure Property     BACKEND_LIBRARY_NAME    ${RUNNER}
     Eyes Open   batch=${BATCH_NAME}
 
 
