@@ -58,7 +58,7 @@ def dist(
     if from_env:
         twine_command = "twine upload dist/*"
     else:
-        twine_command = "twine upload -r {dest} dist/*".format(
+        twine_command = "twine upload --verbose -r {dest} dist/*".format(
             dest="pypi" if prod else "test"
         )
     for pack_path in packages:
