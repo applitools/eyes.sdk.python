@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from typing import TYPE_CHECKING, Text
 
 from AppiumLibrary import AppiumLibrary
-from robot.api import logger
+from robot.api import logger as robot_logger
 from robot.api.deco import keyword  # noqa
 from SeleniumLibrary import SeleniumLibrary
 
@@ -31,9 +31,7 @@ class ContextAware(object):
         :type ctx: SeleniumLibrary.SeleniumLibrary
         """
         self.ctx = ctx
-        # TODO: combine with `robot.logger`
-        # self.log = applitools_logger.bind(class_=self.__class__.__name__)
-        self.log = logger
+        self.log = robot_logger
 
     def from_locator_to_supported_form(self, locator):
         # type: (Locator) -> BySelector

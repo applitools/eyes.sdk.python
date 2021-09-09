@@ -17,9 +17,9 @@ class RunnerKeywords(LibraryComponent):
     def get_all_tests_results(self):
         # type: () -> TestResultsSummary
         try:
-            results = self.eyes_runner.get_all_test_results()
-            self.info("Running tests result: {}".format(results))
-            return results
+            test_results = self.eyes_runner.get_all_test_results()
+            self.log_to_console(test_results)
+            return test_results
         finally:
             # after fetching of results we don't need runner
             self.ctx.clean_eyes_runner()
