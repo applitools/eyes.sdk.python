@@ -1,6 +1,6 @@
 *** Settings ***
 Library     SeleniumLibrary
-Library     EyesLibrary     runner=${RUNNER}
+Library     EyesLibrary     runner=web
 
 Test Setup    Setup
 Test Teardown    Teardown
@@ -10,6 +10,7 @@ Suite Teardown    Eyes Get All Test Results
 &{LOGO}     id=hplogo                 xpath=//*[@id="hplogo"]
 ${BROWSER}        Chrome
 ${URL}      https://applitools.github.io/demo/TestPages/FramesTestPage/
+
 
 *** Keywords ***
 Setup
@@ -25,18 +26,15 @@ Check Window
     Eyes Check Window    Ignore Region By Coordinates    [12 22 2 2]
     Eyes Close Async
 
-
 Check Window Fully
     Eyes Open
     Eyes Check Window       Fully
     Eyes Close Async
 
-
 Eyes Open Close Multiple Times
     Eyes Open
     Eyes Check Window       Fully
     Eyes Abort Async
-
 
 Check Region By Element
     Eyes Open
@@ -46,12 +44,12 @@ Check Region By Element
 
 Check Region By Selector
     Eyes Open
-    Eyes Check Region By Selector    id:overflowing-div
+    Eyes Check Region By Selector    overflowing-div
     Eyes Close Async
 
 Check Region By Selector With Ignore
     Eyes Open
-    Eyes Check Region By Selector    id:overflowing-div
+    Eyes Check Region By Selector    overflowing-div
     ...     Ignore Region By Coordinates    [12 22 22 22]
     Eyes Close Async
 

@@ -42,6 +42,8 @@ app_name: YOUR_APP_NAME
 ### END `SHARED SECTION` ###
 
 web:
+  batch:
+    name: Selenium Web
   force_full_page_screenshot: false  #optional
   wait_before_screenshots: 100  #optional
 #  stitch_mode: CSS   # Scroll | CSS
@@ -50,11 +52,15 @@ web:
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
 mobile_native:
+  batch:
+    name: Mobile Native
   is_simulator: false
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 
 
 web_ufg:
+  batch:
+    name: Selenium Web Ufg
 #  runner_options:
 #    test_concurrency: 5
 #  visual_grid_options:
@@ -69,10 +75,10 @@ web_ufg:
       - browser_type: CHROME  # names from BrowserType
         width: 1900
         height: 1800
-    ios:
-      - device_name: iPhone_12_Pro  # names from IosDeviceName
-        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
-        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
-    chrome_emulation:
-      - device_name: iPhone_4  # names from DeviceName
-        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#    ios:
+#      - device_name: iPhone_12_Pro  # names from IosDeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
+#    chrome_emulation:
+#      - device_name: iPhone_4  # names from DeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE

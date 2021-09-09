@@ -4,7 +4,7 @@ from textwrap import dedent
 
 
 def run_robot(*args):
-    test_dir = path.join(path.dirname(__file__), "resources")
+    test_dir = path.join(path.dirname(__file__), "robot_tests")
     call_args = ("python", "-m", "robot") + args
     result = subprocess.run(
         call_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=test_dir
@@ -17,7 +17,11 @@ def lines(text):
 
 
 def test_single_suite_classic_runner():
-    code, output = run_robot("--variable", "RUNNER:web", "web.robot")
+    code, output = run_robot(
+        "--variable",
+        "RUNNER:web",
+        "web.robot",
+    )
     expected = lines(
         """
         [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
@@ -52,7 +56,11 @@ def test_single_suite_classic_runner():
 
 
 def test_suite_dir_classic_runner():
-    code, output = run_robot("--variable", "RUNNER:web", "test_suite_dir")
+    code, output = run_robot(
+        "--variable",
+        "RUNNER:web",
+        "test_suite_dir",
+    )
     expected = lines(
         """
         ==============================================================================
@@ -84,6 +92,23 @@ def test_suite_dir_classic_runner():
         Test Suite Dir                                                        | PASS |
         3 tests, 3 passed, 0 failed
         ==============================================================================
+        """
+    )
+    assert lines(output)[:-3] == expected
+    assert code == 0
+
+
+def test_suite_dir_classic_runner():
+    code, output = run_robot(
+        "--variable",
+        "RUNNER:web",
+        "--variable",
+        "DRIVER_LIBRARY:SeleniumLibrary",
+        "test_suite_dir",
+    )
+    expected = lines(
+        """
+
         """
     )
     assert lines(output)[:-3] == expected
