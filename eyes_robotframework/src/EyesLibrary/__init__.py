@@ -183,7 +183,7 @@ class EyesLibrary(DynamicCore):
             robot_logger.warn("No `runner` set. Using `web` runner.")
 
         robot_logger.console(
-            "Runing test suite with `{}` runner and `{}` config".format(runner, config)
+            "Running test suite with `{}` runner and `{}` config".format(runner, config)
         )
 
         self.run_on_failure_keyword = run_on_failure

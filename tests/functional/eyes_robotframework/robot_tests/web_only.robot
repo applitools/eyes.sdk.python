@@ -7,34 +7,28 @@ Test Setup       Setup
 Test Teardown    Teardown
 Suite Teardown   Eyes Get All Test Results
 
+*** Variables ***
+${FORM_XPATH}               //html/body/div/div/form
+${FORM_USERNAME_XPATH}      //html/body/div/div/form/div[1]
 
 *** Test Cases ***
 Check Window
     Eyes Check Window    Ignore Region By Coordinates    [12 22 2 2]
 
-
 Check Window Fully
     Eyes Check Window       Fully
 
-
-Eyes Open Close Multiple Times
-    Eyes Check Window       Fully
-
-
 Check Region By Element
-    ${element}=     Get WebElement          overflowing-div
+    ${element}=     Get WebElement          ${FORM_XPATH}
     Eyes Check Region By Element    ${element}
 
 Check Region By Selector
-    Eyes Check Region By Selector    overflowing-div
+    Eyes Check Region By Selector    ${FORM_XPATH}
 
 Check Region By Selector With Ignore
-    Eyes Check Region By Selector    overflowing-div
+    Eyes Check Region By Selector    ${FORM_XPATH}
     ...     Ignore Region By Coordinates    [12 22 22 22]
 
 Check Window Two Times
     Eyes Check Window       first
     Eyes Check Window       second
-
-Check Region By Coordinates In Frame
-    Eyes Check Region By Coordinates    [30 40 400 1200]        [name="frame1"]

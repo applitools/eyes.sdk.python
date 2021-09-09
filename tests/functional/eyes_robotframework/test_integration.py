@@ -2,6 +2,8 @@ import subprocess
 from os import path
 from textwrap import dedent
 
+import pytest
+
 
 def run_robot(*args):
     test_dir = path.join(path.dirname(__file__), "robot_tests")
@@ -16,41 +18,6 @@ def lines(text):
     return [line.strip() for line in dedent(text).strip().splitlines()]
 
 
-def test_single_suite_classic_runner():
-    expected = lines(
-        """
-        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
-        Runing test suite with `web` runner and `applitools.yaml` config
-        Using library `SeleniumLibrary` as backend
-        ==============================================================================
-        Web
-        ==============================================================================
-        Check Window                                                          | PASS |
-        ------------------------------------------------------------------------------
-        Check Window Fully                                                    | PASS |
-        ------------------------------------------------------------------------------
-        Eyes Open Close Multiple Times                                        | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Element                                               | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Selector                                              | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Selector With Ignore                                  | PASS |
-        ------------------------------------------------------------------------------
-        Check Window Two Times                                                | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Coordinates In Frame                                  | PASS |
-        ------------------------------------------------------------------------------
-        """
-    )
-    code, output = run_robot(
-        "--variable",
-        "RUNNER:web",
-        "web.robot",
-    )
-    assert lines(output)[: len(expected)] == expected
-
-
 def test_suite_dir_classic_runner():
     code, output = run_robot(
         "--variable",
@@ -62,7 +29,7 @@ def test_suite_dir_classic_runner():
         ==============================================================================
         Test Suite Dir
         ==============================================================================
-        Runing test suite with `web` runner and `../applitools.yaml` config
+        Running test suite with `web` runner and `../applitools.yaml` config
         Using library `SeleniumLibrary` as backend
         Test Suite Dir.Suite1
         ==============================================================================
@@ -88,25 +55,42 @@ def test_suite_dir_classic_runner():
     assert code == 0
 
 
-def test_suite_ufg_runner():
+@pytest.mark.parametrize(
+    "data",
+    [
+        ("web", "selenium", "android"),
+        ("web", "selenium", "ios"),
+        ("web", "appium", "android"),
+        ("web", "appium", "ios"),
+        ("web", "selenium", "desktop"),
+        ("web_ufg", "selenium", "desktop"),
+    ],
+    ids=lambda d: str(d),
+)
+def test_suite_web(data):
+    runner, backend, platform = data
+    backend_to_backend_name = {
+        "selenium": "SeleniumLibrary",
+        "appium": "AppiumLibrary",
+    }
     code, output = run_robot(
         "--variablefile",
-        "variables_test.py:web_ufg:selenium:desktop",
+        "variables_test.py:{runner}:{backend}:{platform}".format(
+            runner=runner, backend=backend, platform=platform
+        ),
         "web_only.robot",
     )
     expected = lines(
         """
         [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
-        Runing test suite with `web_ufg` runner and `applitools.yaml` config
-        Using library `SeleniumLibrary` as backend
+        Running test suite with `{runner}` runner and `applitools.yaml` config
+        Using library `{backend_name}` as backend
         ==============================================================================
         Web Only
         ==============================================================================
         Check Window                                                          | PASS |
         ------------------------------------------------------------------------------
         Check Window Fully                                                    | PASS |
-        ------------------------------------------------------------------------------
-        Eyes Open Close Multiple Times                                        | PASS |
         ------------------------------------------------------------------------------
         Check Region By Element                                               | PASS |
         ------------------------------------------------------------------------------
@@ -116,9 +100,45 @@ def test_suite_ufg_runner():
         ------------------------------------------------------------------------------
         Check Window Two Times                                                | PASS |
         ------------------------------------------------------------------------------
-        Check Region By Coordinates In Frame                                  | PASS |
-        ------------------------------------------------------------------------------
+        """.format(
+            runner=runner, backend_name=backend_to_backend_name[backend]
+        )
+    )
+    assert lines(output)[: len(expected)] == expected
+    assert code == 0
+
+
+@pytest.mark.parametrize(
+    "platform",
+    ["android", "ios"],
+    ids=lambda d: str(d),
+)
+def test_suite_mobile_native(platform):
+    runner, backend = "mobile_native", "appium"
+    backend_to_backend_name = {
+        "selenium": "SeleniumLibrary",
+        "appium": "AppiumLibrary",
+    }
+    code, output = run_robot(
+        "--variablefile",
+        "variables_test.py:{runner}:{backend}:{platform}".format(
+            runner=runner, backend=backend, platform=platform
+        ),
+        "web_only.robot",
+    )
+    expected = lines(
         """
+        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
+        Running test suite with `{runner}` runner and `applitools.yaml` config
+        Using library `{backend_name}` as backend
+        ==============================================================================
+        Mobile Native
+        ==============================================================================
+        Check Window Native                                                   | PASS |
+        ------------------------------------------------------------------------------
+        """.format(
+            runner=runner, backend_name=backend_to_backend_name[backend]
+        )
     )
     assert lines(output)[: len(expected)] == expected
     assert code == 0

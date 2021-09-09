@@ -19,7 +19,7 @@ app_name: YOUR_APP_NAME
 #viewport_size:
 #  width: 1920
 #  height: 1080
-#branch_name: YOUR_BRANCH_NAME
+branch_name: eyes_robotframework
 #parent_branch_name: YOUR_PARENT_BRANCH_NAME
 #baseline_branch_name: YOUR_BASELINE_BRANCH_NAME
 #baseline_env_name: YOUR_BASELINE_ENV_NAME

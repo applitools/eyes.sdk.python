@@ -1,5 +1,5 @@
 *** Variables ***
-${URL}                          https://applitools.github.io/demo/TestPages/FramesTestPage/
+${URL}                          https://demo.applitools.com/
 ${BROWSER_NAME}                 Chrome
 
 *** Keywords ***
