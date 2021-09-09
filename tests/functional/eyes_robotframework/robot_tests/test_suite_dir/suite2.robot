@@ -3,8 +3,6 @@ Resource    shared_variables.robot
 Library     SeleniumLibrary
 Library     EyesLibrary     runner=${RUNNER}      config=../applitools.yaml
 
-Suite Teardown    Eyes Get All Test Results
-
 *** Test Cases ***
 Check Window Suite 2
     Open Browser                              ${URL}      ${BROWSER}

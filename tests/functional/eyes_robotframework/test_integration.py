@@ -82,13 +82,7 @@ def test_suite_dir_classic_runner():
         ==============================================================================
         Check Window Suite 3                                                  | PASS |
         ------------------------------------------------------------------------------
-        Test Suite Dir.Suite3                                                 | PASS |
-        1 test, 1 passed, 0 failed
-        ==============================================================================
-        Test Suite Dir                                                        | PASS |
-        3 tests, 3 passed, 0 failed
-        ==============================================================================
         """
     )
-    assert lines(output)[:-3] == expected
+    assert lines(output)[: len(expected)] == expected
     assert code == 0
