@@ -82,6 +82,6 @@ setup(
     project_urls={
         "Bug Reports": "https://github.com/applitools/eyes.sdk.python/issues",
         "Source": "https://github.com/applitools/eyes.sdk.python/tree/master"
-        "/eyes_robot",
+        "/eyes_robotframework",
     },
 )
