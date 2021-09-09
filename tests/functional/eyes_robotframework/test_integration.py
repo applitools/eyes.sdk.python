@@ -17,11 +17,6 @@ def lines(text):
 
 
 def test_single_suite_classic_runner():
-    code, output = run_robot(
-        "--variable",
-        "RUNNER:web",
-        "web.robot",
-    )
     expected = lines(
         """
         [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
@@ -46,13 +41,14 @@ def test_single_suite_classic_runner():
         ------------------------------------------------------------------------------
         Check Region By Coordinates In Frame                                  | PASS |
         ------------------------------------------------------------------------------
-        Web                                                                   | PASS |
-        8 tests, 8 passed, 0 failed
-        ==============================================================================
         """
     )
-    assert lines(output)[:-3] == expected
-    assert code == 0
+    code, output = run_robot(
+        "--variable",
+        "RUNNER:web",
+        "web.robot",
+    )
+    assert lines(output)[: len(expected)] == expected
 
 
 def test_suite_dir_classic_runner():
@@ -86,30 +82,43 @@ def test_suite_dir_classic_runner():
         ==============================================================================
         Check Window Suite 3                                                  | PASS |
         ------------------------------------------------------------------------------
-        Test Suite Dir.Suite3                                                 | PASS |
-        1 test, 1 passed, 0 failed
-        ==============================================================================
-        Test Suite Dir                                                        | PASS |
-        3 tests, 3 passed, 0 failed
-        ==============================================================================
         """
     )
-    assert lines(output)[:-3] == expected
+    assert lines(output)[: len(expected)] == expected
     assert code == 0
 
 
-def test_suite_dir_classic_runner():
+def test_suite_ufg_runner():
     code, output = run_robot(
-        "--variable",
-        "RUNNER:web",
-        "--variable",
-        "DRIVER_LIBRARY:SeleniumLibrary",
-        "test_suite_dir",
+        "--variablefile",
+        "variables_test.py:web_ufg:selenium:desktop",
+        "web_only.robot",
     )
     expected = lines(
         """
-
+        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
+        Runing test suite with `web_ufg` runner and `applitools.yaml` config
+        Using library `SeleniumLibrary` as backend
+        ==============================================================================
+        Web Only
+        ==============================================================================
+        Check Window                                                          | PASS |
+        ------------------------------------------------------------------------------
+        Check Window Fully                                                    | PASS |
+        ------------------------------------------------------------------------------
+        Eyes Open Close Multiple Times                                        | PASS |
+        ------------------------------------------------------------------------------
+        Check Region By Element                                               | PASS |
+        ------------------------------------------------------------------------------
+        Check Region By Selector                                              | PASS |
+        ------------------------------------------------------------------------------
+        Check Region By Selector With Ignore                                  | PASS |
+        ------------------------------------------------------------------------------
+        Check Window Two Times                                                | PASS |
+        ------------------------------------------------------------------------------
+        Check Region By Coordinates In Frame                                  | PASS |
+        ------------------------------------------------------------------------------
         """
     )
-    assert lines(output)[:-3] == expected
+    assert lines(output)[: len(expected)] == expected
     assert code == 0
