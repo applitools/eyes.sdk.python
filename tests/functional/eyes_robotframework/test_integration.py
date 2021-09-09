@@ -142,39 +142,3 @@ def test_suite_mobile_native(platform):
     )
     assert lines(output)[: len(expected)] == expected
     assert code == 0
-
-
-def test_suite_classic_appium_ios_runner():
-    code, output = run_robot(
-        "--variablefile",
-        "variables_test.py:web:appium:ios",
-        "web_only.robot",
-    )
-    expected = lines(
-        """
-        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
-        Runing test suite with `web_ufg` runner and `applitools.yaml` config
-        Using library `SeleniumLibrary` as backend
-        ==============================================================================
-        Web Only
-        ==============================================================================
-        Check Window                                                          | PASS |
-        ------------------------------------------------------------------------------
-        Check Window Fully                                                    | PASS |
-        ------------------------------------------------------------------------------
-        Eyes Open Close Multiple Times                                        | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Element                                               | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Selector                                              | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Selector With Ignore                                  | PASS |
-        ------------------------------------------------------------------------------
-        Check Window Two Times                                                | PASS |
-        ------------------------------------------------------------------------------
-        Check Region By Coordinates In Frame                                  | PASS |
-        ------------------------------------------------------------------------------
-        """
-    )
-    assert lines(output)[: len(expected)] == expected
-    assert code == 0
