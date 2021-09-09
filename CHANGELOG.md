@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Eyes Robot Framework SDK [GH 377](https://github.com/applitools/eyes.sdk.python/pull/377)
+
 ## [4.24.2] - 2021-08-12
 ### Fixed
 - UFG test is aborted if render server responds with null render status [Trello 2689](https://trello.com/c/C8m6Fv4T)
