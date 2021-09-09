@@ -49,3 +49,42 @@ def test_single_suite_classic_runner():
     )
     assert lines(output)[:-3] == expected
     assert code == 0
+
+
+def test_suite_dir_classic_runner():
+    code, output = run_robot("--variable", "RUNNER:web", "test_suite_dir")
+    expected = lines(
+        """
+        ==============================================================================
+        Test Suite Dir
+        ==============================================================================
+        Runing test suite with `web` runner and `../applitools.yaml` config
+        Using library `SeleniumLibrary` as backend
+        Test Suite Dir.Suite1
+        ==============================================================================
+        Check Window Suite 1                                                  | PASS |
+        ------------------------------------------------------------------------------
+        Test Suite Dir.Suite1                                                 | PASS |
+        1 test, 1 passed, 0 failed
+        ==============================================================================
+        Test Suite Dir.Suite2
+        ==============================================================================
+        Check Window Suite 2                                                  | PASS |
+        ------------------------------------------------------------------------------
+        Test Suite Dir.Suite2                                                 | PASS |
+        1 test, 1 passed, 0 failed
+        ==============================================================================
+        Test Suite Dir.Suite3
+        ==============================================================================
+        Check Window Suite 3                                                  | PASS |
+        ------------------------------------------------------------------------------
+        Test Suite Dir.Suite3                                                 | PASS |
+        1 test, 1 passed, 0 failed
+        ==============================================================================
+        Test Suite Dir                                                        | PASS |
+        3 tests, 3 passed, 0 failed
+        ==============================================================================
+        """
+    )
+    assert lines(output)[:-3] == expected
+    assert code == 0
