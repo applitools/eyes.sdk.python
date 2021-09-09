@@ -82,7 +82,12 @@ def get_variables(
         batch_name += " | UFG"
 
     if platform in ["android", "ios"]:
-        remote_url = os.getenv("SELENIUM_SERVER_URL")
+        remote_url = (
+            "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
+                username=os.environ["SAUCE_USERNAME"],
+                password=os.environ["SAUCE_ACCESS_KEY"],
+            )
+        )
     else:
         remote_url = False
 
