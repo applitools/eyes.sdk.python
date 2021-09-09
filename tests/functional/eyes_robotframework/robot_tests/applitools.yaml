@@ -43,7 +43,7 @@ branch_name: eyes_robotframework
 
 web:
   batch:
-    name: Selenium Web
+    name: RobotFramework | Web | Selenium
   force_full_page_screenshot: false  #optional
   wait_before_screenshots: 100  #optional
 #  stitch_mode: CSS   # Scroll | CSS
@@ -60,7 +60,7 @@ mobile_native:
 
 web_ufg:
   batch:
-    name: Selenium Web Ufg
+    name: RobotFramework | Web UFG | Selenium
 #  runner_options:
 #    test_concurrency: 5
 #  visual_grid_options:

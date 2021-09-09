@@ -30,6 +30,7 @@ def get_variables(
             "deviceOrientation": "portrait",
         }
     else:
+        batch_name += " | Desktop"
         desired_caps = {}  # What?
 
     if backend_library == "appium":
