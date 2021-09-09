@@ -64,6 +64,9 @@ class LocatorConverter(LibraryComponent):
         if is_webelement(locator):
             raise EyesLibraryValueError("Cannot convert WebElement to selector")
         prefix, criteria = self._element_finder._parse_locator(locator)
+        if prefix is None:
+            # appium returns None instead of `default`
+            prefix = "default"
         if not criteria:
             raise ValueError("Incorrect selector: `{}`".format(locator))
         return self.__locator_to_by_selector(prefix, criteria)
