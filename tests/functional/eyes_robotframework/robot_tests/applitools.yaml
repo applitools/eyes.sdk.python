@@ -53,7 +53,7 @@ web:
 
 mobile_native:
   batch:
-    name: Mobile Native
+    name: RobotFramework | Mobile Native
   is_simulator: false
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 

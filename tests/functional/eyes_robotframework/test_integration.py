@@ -4,6 +4,11 @@ from textwrap import dedent
 
 import pytest
 
+backend_to_backend_name = {
+    "selenium": "SeleniumLibrary",
+    "appium": "AppiumLibrary",
+}
+
 
 def run_robot(*args):
     test_dir = path.join(path.dirname(__file__), "robot_tests")
@@ -52,16 +57,16 @@ def test_suite_dir_classic_runner():
         """
     )
     assert lines(output)[: len(expected)] == expected
-    assert code == 0
+    assert code == 0, output
 
 
 @pytest.mark.parametrize(
     "data",
     [
-        ("web", "selenium", "android"),
+        # ("web", "selenium", "android"),
+        # ("web", "appium", "ios"),
         ("web", "selenium", "ios"),
         ("web", "appium", "android"),
-        ("web", "appium", "ios"),
         ("web", "selenium", "desktop"),
         ("web_ufg", "selenium", "desktop"),
     ],
@@ -69,10 +74,6 @@ def test_suite_dir_classic_runner():
 )
 def test_suite_web(data):
     runner, backend, platform = data
-    backend_to_backend_name = {
-        "selenium": "SeleniumLibrary",
-        "appium": "AppiumLibrary",
-    }
     code, output = run_robot(
         "--variablefile",
         "variables_test.py:{runner}:{backend}:{platform}".format(
@@ -105,7 +106,7 @@ def test_suite_web(data):
         )
     )
     assert lines(output)[: len(expected)] == expected
-    assert code == 0
+    assert code == 0, output
 
 
 @pytest.mark.parametrize(
@@ -115,10 +116,6 @@ def test_suite_web(data):
 )
 def test_suite_mobile_native(platform):
     runner, backend = "mobile_native", "appium"
-    backend_to_backend_name = {
-        "selenium": "SeleniumLibrary",
-        "appium": "AppiumLibrary",
-    }
     code, output = run_robot(
         "--variablefile",
         "variables_test.py:{runner}:{backend}:{platform}".format(
@@ -141,4 +138,4 @@ def test_suite_mobile_native(platform):
         )
     )
     assert lines(output)[: len(expected)] == expected
-    assert code == 0
+    assert code == 0, output

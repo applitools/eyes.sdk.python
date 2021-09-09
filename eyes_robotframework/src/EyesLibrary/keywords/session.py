@@ -51,7 +51,7 @@ class SessionKeywords(LibraryComponent):
     def open(  # noqa
         self,
         test_name=None,  # type: Optional[Text]
-        viewport_size=None,  # type: Optional[int]
+        viewport_size=None,  # type: Optional[Text]
         app_name=None,  # type: Optional[Text]
         host_os=None,  # type: Optional[Text]
         host_app=None,  # type: Optional[Text]
