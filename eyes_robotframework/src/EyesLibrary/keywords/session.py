@@ -111,7 +111,7 @@ class SessionKeywords(LibraryComponent):
 
         if batch:
             if isinstance(batch, str):
-                batch = BatchInfo(name=batch)
+                batch = self.ctx.register_or_get_batch(batch)
             if isinstance(batch, BatchInfo):
                 config_cloned.batch = batch
             else:

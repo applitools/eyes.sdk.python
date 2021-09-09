@@ -2,7 +2,7 @@ import logging
 import os
 import traceback
 import typing
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 import structlog
 from robot.api import logger as robot_logger
@@ -10,6 +10,7 @@ from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
 
+from applitools.common import BatchInfo
 from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
@@ -189,6 +190,7 @@ class EyesLibrary(DynamicCore):
 
         self._running_on_failure_keyword = False
         self._eyes_registry = EyesCache()
+        self._batch_registry = {}  # type: Dict[Text, BatchInfo]
         self._running_keyword = None
         self._configuration = None
 
@@ -290,6 +292,10 @@ class EyesLibrary(DynamicCore):
     def register_eyes(self, eyes, alias):
         """Add's a `Eyes` to the library EyesCache."""
         return self._eyes_registry.register(eyes, alias)
+
+    def register_or_get_batch(self, batch_name):
+        # type: (Text) -> BatchInfo
+        return self._batch_registry.setdefault(batch_name, BatchInfo(batch_name))
 
     @property
     def current_eyes(self):
