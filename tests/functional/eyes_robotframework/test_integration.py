@@ -124,7 +124,7 @@ def test_suite_mobile_native(platform):
         "variables_test.py:{runner}:{backend}:{platform}".format(
             runner=runner, backend=backend, platform=platform
         ),
-        "web_only.robot",
+        "mobile_native.robot",
     )
     expected = lines(
         """
