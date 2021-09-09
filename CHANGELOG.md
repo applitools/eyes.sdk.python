@@ -2,6 +2,10 @@
 ### Added
 - Eyes Robot Framework SDK [GH 377](https://github.com/applitools/eyes.sdk.python/pull/377)
 
+## [4.24.3] - 2021-08-18
+### Updated
+- Debug logging in UFG resource downloader to aid stuck runner debugging [Trello 2684](https://trello.com/c/AC2WKrI7)
+
 ## [4.24.2] - 2021-08-12
 ### Fixed
 - UFG test is aborted if render server responds with null render status [Trello 2689](https://trello.com/c/C8m6Fv4T)

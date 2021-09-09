@@ -653,7 +653,7 @@ class ServerConnector(object):
         return resource.hash
 
     def download_resource(self, url, cookies):
-        # type: (Text, Dict) -> Response
+        # type: (Text, List[Dict[Text, Text]]) -> Response
         headers = {
             "Accept-Encoding": "identity",
             "Accept-Language": "*",
