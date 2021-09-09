@@ -79,6 +79,9 @@ def test_suite_web(data):
         "variables_test.py:{runner}:{backend}:{platform}".format(
             runner=runner, backend=backend, platform=platform
         ),
+        "--output={}-{}-{}.xml".format(runner, backend, platform),
+        "--log=NONE",
+        "--report=NONE",
         "web_only.robot",
     )
     expected = lines(
