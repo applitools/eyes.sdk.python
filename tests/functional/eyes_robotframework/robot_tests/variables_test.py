@@ -79,7 +79,7 @@ def get_variables(
         elif platform == "ios":
             desired_caps.update({"browserName": "Safari"})
     elif runner_type == "web_ufg":
-        batch_name += "| UFG"
+        batch_name += " | UFG"
 
     if platform in ["android", "ios"]:
         remote_url = os.getenv("SELENIUM_SERVER_URL")
