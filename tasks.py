@@ -133,7 +133,7 @@ def _packages_resolver(
     if robotframework:
         packages.append(robot_pkg)
     if not packages:
-        packages = [common_pkg, core_pkg, selenium_pkg, images_pkg]
+        packages = [common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg]
 
     for pack in packages:
         if full_path:
@@ -253,3 +253,10 @@ def run_tests_on_CI(c, tests):
             ["TEST_BROWSERS={} ".format(browser) + pattern for browser in browsers]
         )
     c.run(command, echo=True)
+
+
+@task
+def gen_robot_docs(c):
+    c.run(
+        "python -m robot.libdoc --format html EyesLibrary   docs/eyes_robotframework_docs.html"
+    )

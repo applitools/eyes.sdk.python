@@ -23,6 +23,9 @@ Please check the applitools website for usage instructions:
 -  Python Image SDK example:
    https://applitools.com/tutorials/screenshots-python.html
 
+-  Python Robot Framework SDK example:
+   https://github.com/applitools/robotframework-quickstart
+
 .. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
 .. |Build Status| image:: https://travis-ci.com/applitools/eyes.sdk.python.svg?branch=v4.25.0
@@ -65,3 +68,13 @@ For local testing, for example, images sdk
 
     inv install-packages --core --images
     tox -e images
+
+
+Docs
+----
+
+Generate Robot Framework docs
+
+::
+
+    inv gen-robot-docs
