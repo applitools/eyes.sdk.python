@@ -4,8 +4,11 @@ services:
 git:
     submodules: false
 install:
+    - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
+    - mkdir bin && unzip chromedriver_linux64.zip -d bin
     - python -m pip install -U tox
 before_script:
+    - export PATH=`pwd`/bin:$PATH
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
     # Run GUI apps in headless mode
@@ -161,6 +164,14 @@ jobs:
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
                   echo "REPORTED SUCCESSFULLY";
                 fi
+
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+            - TOX_ENV=robotframework
+            - TEST_PLATFORM="Linux"
 
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE

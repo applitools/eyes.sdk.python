@@ -1,0 +1,84 @@
+### applitools.yaml 1.0
+### START `SHARED SECTION` ###
+#server_url: "https://eyesapi.applitools.com" #optional
+#api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
+
+#proxy:
+#  url: "http://someproxy-url.com"
+#  host: HOST_ADDRESS  #optional
+#  port: HOST_PORT  #optional
+#  username: YOUR_NAME  #optional
+#  password: YOUR_PASS  #optional
+
+#properties:
+#  - name: YOUR_PROPERTY_NAME
+#   value: YOUR_PROPERTY_VALUE
+
+###### START `AVAILABLE DURING `Eyes Open` CALL SECTION` ######
+app_name: YOUR_APP_NAME
+#viewport_size:
+#  width: 1920
+#  height: 1080
+branch_name: eyes_robotframework
+#parent_branch_name: YOUR_PARENT_BRANCH_NAME
+#baseline_branch_name: YOUR_BASELINE_BRANCH_NAME
+#baseline_env_name: YOUR_BASELINE_ENV_NAME
+#save_diffs: false
+#match_timeout: 600
+#save_new_tests: true  #optional
+#save_failed_tests: false  #optional
+
+#batch:  #optional
+#  id: YOUR_BATCH_ID  #optional
+#  name: YOUR_BATCH_NAME
+#  batch_sequence_name: YOUR_BATCH_SEQUENCE_NAME  #optional
+#  properties:    #optional
+#    - name: YOUR_BATCH_PROPERTY_NAME
+#      value: YOUR_BATCH_PROPERTY_VALUE
+
+###### END `AVAILABLE DURING `Eyes Open` CALL SECTION` ######
+
+
+### END `SHARED SECTION` ###
+
+web:
+  batch:
+    name: RobotFramework | Web | Selenium
+  force_full_page_screenshot: false  #optional
+  wait_before_screenshots: 100  #optional
+#  stitch_mode: CSS   # Scroll | CSS
+#  hide_scrollbars: true
+#  hide_caret: true
+# ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
+
+mobile_native:
+  batch:
+    name: RobotFramework | Mobile Native
+  is_simulator: false
+# ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
+
+
+web_ufg:
+  batch:
+    name: RobotFramework | Web UFG | Selenium
+#  runner_options:
+#    test_concurrency: 5
+#  visual_grid_options:
+#    - key: YOUR_VISUAL_GRID_OPTION
+#      value: YOUR_VISUAL_GRID_OPTION_VALUE
+#  disable_browser_fetching: false
+#  enable_cross_origin_rendering: false
+#  dont_use_cookies: false
+#  layout_breakpoints: true
+  browsers:
+    desktop:
+      - browser_type: CHROME  # names from BrowserType
+        width: 1900
+        height: 1800
+#    ios:
+#      - device_name: iPhone_12_Pro  # names from IosDeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
+#    chrome_emulation:
+#      - device_name: iPhone_4  # names from DeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE

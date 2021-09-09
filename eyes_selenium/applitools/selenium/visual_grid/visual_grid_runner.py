@@ -1,8 +1,10 @@
+import atexit
 import concurrent
 import itertools
 import sys
 import threading
 import typing
+import weakref
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
@@ -22,7 +24,7 @@ from .helpers import collect_test_results, wait_till_tests_completed
 from .resource_cache import PutCache, ResourceCache
 
 if typing.TYPE_CHECKING:
-    from typing import Dict, List, Optional, Text, Union
+    from typing import Callable, Dict, List, Optional, Text, Union
 
     from applitools.core import ServerConnector
     from applitools.selenium.visual_grid import RunningTest, VGTask, VisualGridEyes
@@ -82,6 +84,19 @@ class _ResourceCollectionService(object):
         self._thread.join()
 
 
+def _runner_cleaner(weak_runner):
+    # type: (weakref.ReferenceType) -> Callable
+    """Fix issue with exception during destroy of runner in __del__.
+    Use together with `atexit.register(_runner_cleaner(weakref.ref(self)))`"""
+
+    def stop():
+        runner = weak_runner()
+        if runner is not None:
+            runner._stop()
+
+    return stop
+
+
 class VisualGridRunner(EyesRunner):
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
@@ -120,6 +135,8 @@ class VisualGridRunner(EyesRunner):
 
         self._resource_collection_service = _ResourceCollectionService()
         self.rendering_service = RenderingService()
+
+        atexit.register(_runner_cleaner(weakref.ref(self)))
 
     def add_resource_collection_task(self, task):
         self._resource_collection_service.add_task(task)

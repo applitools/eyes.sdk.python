@@ -98,3 +98,7 @@ class VisualGridOption(object):
         # type: (Text, Any) -> None
         self.key = key
         self.value = value
+
+    def __eq__(self, other):
+        # type: (VisualGridOption) -> bool
+        return other and self.key == other.key and self.value == other.value

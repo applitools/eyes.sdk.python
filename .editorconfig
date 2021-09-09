@@ -16,6 +16,12 @@ indent_style = space
 indent_size = 4
 max_line_length = 88
 
+# 2 space indentation
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
 [*.rst]
 max_line_length = off
 trim_trailing_whitespace = false

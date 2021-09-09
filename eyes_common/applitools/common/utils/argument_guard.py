@@ -54,7 +54,7 @@ def greater_than_or_equal_to_zero(param, *args):
 
 # TODO: update after resolving issue
 def greater_than_zero(param, exc_info=None):
-    # type: (int) -> None
+    # type: (int, Exception) -> None
     if 0 >= param:
         if exc_info:
             raise exc_info
@@ -69,11 +69,19 @@ def is_valid_state(is_valid, message):
         raise ValueError(message)
 
 
+def is_valid_type(is_valid, message):
+    """
+    Fails if is_valid is false.
+    """
+    if not is_valid:
+        raise TypeError(message)
+
+
 def is_a(param, klass, exc_info=None):
     if not isinstance(param, klass):
         if exc_info:
             raise exc_info
-        raise ValueError("{} is not instance of {}".format(param, klass))
+        raise ValueError("`{}` is not instance of `{}`".format(param, klass))
 
 
 def is_in(param, klass, exc_info=None):

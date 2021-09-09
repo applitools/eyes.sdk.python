@@ -190,7 +190,11 @@ class TestResults(object):
         metadata={JsonInclude.THIS: True},
     )  # type: SessionAccessibilityStatus
     _server_connector = attr.ib(
-        default=None, eq=False, order=False, metadata={JsonInclude.THIS: False}
+        default=None,
+        eq=False,
+        order=False,
+        metadata={JsonInclude.THIS: False},
+        repr=False,
     )  # type: ServerConnector
 
     __test__ = False  # avoid warnings in test frameworks

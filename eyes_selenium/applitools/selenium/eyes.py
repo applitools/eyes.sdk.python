@@ -406,6 +406,7 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
         pass
 
     def check(self, check_settings, name=None):
+        # type: (SeleniumCheckSettings, Optional[Text]) -> MatchResult
         if isinstance(name, SeleniumCheckSettings) or isinstance(
             check_settings, basestring
         ):
@@ -617,16 +618,18 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
         return result
 
     def close_async(self):
+        # type: () -> Optional[TestResults]
         if self.configure.is_disabled:
             logger.info("close_async(): ignored (disabled)")
             return
         logger.info("close_async()")
         if self._is_visual_grid_eyes:
-            self._visual_grid_eyes.close_async()
+            return self._visual_grid_eyes.close_async()
         else:
-            self._selenium_eyes.close(False)
+            return self._selenium_eyes.close(False)
 
     def abort(self):
+        # type: () -> Optional[TestResults]
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
@@ -634,9 +637,10 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
             logger.info("abort(): ignored (disabled)")
             return
         logger.info("abort()")
-        self._current_eyes.abort()
+        return self._current_eyes.abort()
 
     def abort_async(self):
+        # type: () -> Optional[TestResults]
         if self.configure.is_disabled:
             logger.info("abort_async(): ignored (disabled)")
             return
