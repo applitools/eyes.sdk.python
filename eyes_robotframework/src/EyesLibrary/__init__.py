@@ -101,9 +101,9 @@ class EyesLibrary(DynamicCore):
 
     = Table of contents =
     - `Preconditions`
+    - `Configuration`
     - `Writing tests`
     - `Importing`
-    - `Shortcuts`
     - `Keywords`
 
     = Preconditions =
@@ -111,6 +111,12 @@ class EyesLibrary(DynamicCore):
     you could fetch it from [https://eyes.applitools.com/app/admin/api-keys|dashboard],
     or you could create the [https://applitools.com/sign-up/|free account].
     You may want to read [https://applitools.com/docs|Applitools documentation] to understand better how Eyes works.
+
+    = Configuration =
+    EyesLibrary stores configuration file inside `applitools.yaml` config file.
+     Detailed info you can find in [./configuration.html|configuration docs]
+
+    The general options provide defaults for all run types. The other sections are for specific types of run and define their own configuration values. By default, they inherit the general options, but they can override any configuration if necessary.
 
     Before running tests, you must initialize `applitools.yaml` configuration script in root of test suite:
         | python -m EyesLibrary init-config |

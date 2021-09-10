@@ -258,5 +258,5 @@ def run_tests_on_CI(c, tests):
 @task
 def gen_robot_docs(c):
     c.run(
-        "python -m robot.libdoc --format html EyesLibrary   docs/eyes_robotframework_docs.html"
+        "python -m robot.libdoc --format html EyesLibrary   docs/eyes_robotframework/keywords.html"
     )

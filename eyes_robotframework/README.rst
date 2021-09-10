@@ -1,4 +1,4 @@
-Eyes Robot SDK
+Eyes Robot Framework SDK
 ========================
 
 Applitools Eyes SDK For Robot Framework
@@ -12,13 +12,13 @@ Install the eyes-robot SDK:
 
     pip install eyes-robotframework
 
-Usage
+Docs
 -----
 
-Keyword documentation could be found `here <https://applitools.github.io/eyes.sdk.python/eyes_robotframework_docs.html>`_.
-Please check the applitools website for usage instructions:
+1. `Keyword documentation could be found <https://applitools.github.io/eyes.sdk.python/eyes_robotframework/keywords.html>`_.
+2. `Configuration file overview <https://applitools.github.io/eyes.sdk.python/eyes_robotframework/configuration.html>`_ 
 
-    # TODO: add tutorials
+Robot Framework SDK example repo: https://github.com/applitools/robotframework-quickstart
 
 Robot Framework autocompletion plugins
 --------------------------------------
