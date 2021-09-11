@@ -100,6 +100,15 @@ def test_not_accessible_attr():
         r[6]
 
 
+def test_rectangle_is_empty():
+    assert Rectangle(0, 0, 0, 0).is_empty
+    assert Rectangle(1, 0, 0, 0).is_empty
+    assert Rectangle(0, 1, 0, 0).is_empty
+    assert Rectangle(0, 0, 1, 0).is_empty
+    assert Rectangle(0, 0, 0, 1).is_empty
+    assert not Rectangle(0, 0, 1, 1).is_empty
+
+
 def test_tiles_from_rectangle_5x5():
     subrects = tiles_from_rectangle(Rectangle(0, 0, 5, 5), RectangleSize(10, 10))
 

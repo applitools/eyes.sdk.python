@@ -328,7 +328,7 @@ class Rectangle(DictAccessMixin):
         Returns:
             True if the rectangle is empty. Otherwise False.
         """
-        return self.width == self.height == 0
+        return self.width == 0 or self.height == 0
 
     @property
     def middle_offset(self):
