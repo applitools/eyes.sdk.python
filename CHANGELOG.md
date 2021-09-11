@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- ValueError in range exception when stitching region within frame [Trello 2710](https://trello.com/c/XUMtkAq3)
+
 ## [4.25.0] - 2021-09-09
 ### Added
 - Eyes Robot Framework SDK [GH 377](https://github.com/applitools/eyes.sdk.python/pull/377)
