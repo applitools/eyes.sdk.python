@@ -28,17 +28,17 @@ class MatchLevel(Enum):
     """
 
     # Images do not necessarily match.
-    NONE = "NONE"
+    NONE = "None"
     # Images have the same layout.
-    LAYOUT = "LAYOUT"
+    LAYOUT = "Layout"
     # Images have the same layout.
-    LAYOUT2 = "LAYOUT2"
+    LAYOUT2 = "Layout2"
     # Images have the same content.
-    CONTENT = "CONTENT"
+    CONTENT = "Content"
     # Images are nearly identical.
-    STRICT = "STRICT"
+    STRICT = "Strict"
     # Images are identical.
-    EXACT = "EXACT"
+    EXACT = "Exact"
 
 
 @attr.s
