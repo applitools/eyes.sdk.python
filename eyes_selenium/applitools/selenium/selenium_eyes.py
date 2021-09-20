@@ -719,7 +719,7 @@ class SeleniumEyes(EyesBase):
         #     logger.info("Ignored (viewport size given explicitly)")
         #     return None
 
-        if not self.driver.is_mobile_platform:
+        if not self.driver.is_mobile_app:
             original_frame = self.driver.frame_chain.clone()
             self.driver.switch_to.default_content()
 
