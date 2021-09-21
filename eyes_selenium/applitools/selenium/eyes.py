@@ -58,6 +58,7 @@ class _EyesManager(object):
         self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
+        # TODO: implement timeout
         results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
         self._manager_ref = None
         structured_results = demarshal_test_results(results)
