@@ -9,7 +9,10 @@ from six import string_types
 
 from applitools.common import (
     Configuration,
+    DiffsFoundError,
     EyesError,
+    NewTestError,
+    TestFailedError,
     TestResultContainer,
     TestResultsSummary,
     deprecated,
@@ -46,6 +49,7 @@ class _EyesManager(object):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
         from . import server
 
+        self.logger = logger.bind(runner=id(self))
         self._manager_args = (manager_type, concurrency, is_legacy)
         self._manager_ref = None
         self._remote_sdk = server.connect()
@@ -57,6 +61,11 @@ class _EyesManager(object):
         results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
         self._manager_ref = None
         structured_results = demarshal_test_results(results)
+        for r in structured_results:
+            _log_session_results_and_raise_exception(
+                self.logger, should_raise_exception, r
+            )
+
         return TestResultsSummary(
             [TestResultContainer(result, None, None) for result in structured_results]
         )
@@ -96,7 +105,6 @@ class ClassicRunner(_EyesManager):
 class Eyes(object):
     def __init__(self, runner=None):
         # type: (Union[None, _EyesManager, Text]) -> None
-        self.logger = logger.bind(eyes_id=id(self))
         self.configure = Configuration()
         self._driver = None
         self._eyes_ref = None
@@ -107,6 +115,7 @@ class Eyes(object):
             self._manager = ClassicRunner()
         else:
             self._manager = runner  # type: _EyesManager
+        self.logger = self._manager.logger.bind(eyes_id=id(self))
 
     def open(
         self,
@@ -204,7 +213,10 @@ class Eyes(object):
         remote_sdk = self._manager._remote_sdk  # noqa
         results = remote_sdk.eyes_close_eyes(self._eyes_ref)
         self._eyes_ref = None
-        return demarshal_test_results(results)
+        results = demarshal_test_results(results)
+        for r in results:
+            _log_session_results_and_raise_exception(self.logger, raise_ex, r)
+        return results
 
     def abort(self):
         # type: () -> Optional[List[TestResults]]
@@ -576,3 +588,31 @@ class Eyes(object):
     @deprecated.attribute("use `abort()` instead")
     def abort_if_not_closed(self):
         self.abort()
+
+
+def _log_session_results_and_raise_exception(logger, raise_ex, results):
+    logger.info("close({}): {}".format(raise_ex, results))
+    results_url = results.url
+    scenario_id_or_name = results.name
+    app_id_or_name = results.app_name
+    if results.is_unresolved:
+        if results.is_new:
+            logger.info(
+                "--- New test ended. \n\tPlease approve the new baseline at {}".format(
+                    results_url
+                )
+            )
+            if raise_ex:
+                raise NewTestError(results, scenario_id_or_name, app_id_or_name)
+        else:
+            logger.info(
+                "--- Differences are found. \n\tSee details at {}".format(results_url)
+            )
+            if raise_ex:
+                raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
+    elif results.is_failed:
+        logger.info("--- Failed test ended. \n\tSee details at {}".format(results_url))
+        if raise_ex:
+            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+    else:
+        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
