@@ -114,7 +114,7 @@ class TestResults(object):
     )  # type: Optional[bool]
 
     url = attr.ib(
-        init=False, default=None, metadata={JsonInclude.THIS: True}
+        default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     status = attr.ib(
         converter=TestResultsStatus,

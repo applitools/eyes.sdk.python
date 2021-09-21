@@ -1,11 +1,11 @@
 import typing
 from json import dumps, loads
+from typing import List
 
 from applitools.common import MatchResult, TestResults
 from applitools.common.utils.json_utils import attr_from_json, to_json
 
 if typing.TYPE_CHECKING:
-    from typing import List
 
     from selenium.webdriver.remote.webdriver import WebDriver
 
