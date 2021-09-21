@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Error when checking full element in mobile browsers [Trello 2716](https://trello.com/c/cOwG4zO6)
+
 ## [4.25.0] - 2021-09-09
 ### Added
 - Eyes Robot Framework SDK [GH 377](https://github.com/applitools/eyes.sdk.python/pull/377)
