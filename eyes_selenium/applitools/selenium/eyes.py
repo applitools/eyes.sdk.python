@@ -184,7 +184,18 @@ class Eyes(object):
             raise EyesError("Eyes not open")
         remote_sdk = self._manager._remote_sdk  # noqa
         results = remote_sdk.eyes_close_eyes(self._eyes_ref)
+        self._eyes_ref = None
         return demarshal_test_results(results)
+
+    def abort(self):
+        # type: () -> Optional[List[TestResults]]
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        if self.is_open:
+            remote_sdk = self._manager._remote_sdk  # noqa
+            results = remote_sdk.eyes_abort_eyes(self._eyes_ref)
+            return demarshal_test_results(results)
 
     @staticmethod
     def get_viewport_size(driver):
@@ -537,13 +548,6 @@ class Eyes(object):
 
     def close_async(self):
         # type: () -> Optional[TestResults]
-        raise NotImplementedError
-
-    def abort(self):
-        # type: () -> Optional[TestResults]
-        """
-        If a test is running, aborts it. Otherwise, does nothing.
-        """
         raise NotImplementedError
 
     def abort_async(self):
