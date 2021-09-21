@@ -7,8 +7,16 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
 
-from applitools.common import Configuration, EyesError, deprecated, logger
+from applitools.common import (
+    Configuration,
+    EyesError,
+    TestResultContainer,
+    TestResultsSummary,
+    deprecated,
+    logger,
+)
 
+from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from .command_executor import CommandExecutor, ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
@@ -41,6 +49,17 @@ class _EyesManager(object):
         self._manager_args = (manager_type, concurrency, is_legacy)
         self._manager_ref = None
         self._remote_sdk = server.connect()
+
+    def get_all_test_results(
+        self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
+    ):
+        # type: (bool, Optional[int]) -> TestResultsSummary
+        results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
+        self._manager_ref = None
+        structured_results = demarshal_test_results(results)
+        return TestResultsSummary(
+            [TestResultContainer(result, None, None) for result in structured_results]
+        )
 
     def _get_manager_ref(self):
         if self._manager_ref is None:
