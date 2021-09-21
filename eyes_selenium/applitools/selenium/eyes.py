@@ -8,7 +8,6 @@ from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
 
 from applitools.common import (
-    Configuration,
     DiffsFoundError,
     EyesError,
     NewTestError,
@@ -18,6 +17,7 @@ from applitools.common import (
     deprecated,
     logger,
 )
+from applitools.common.selenium import Configuration
 
 from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from .command_executor import CommandExecutor, ManagerType
@@ -117,6 +117,13 @@ class Eyes(object):
         else:
             self._manager = runner  # type: _EyesManager
         self.logger = self._manager.logger.bind(eyes_id=id(self))
+        self.__setattr__ = self.__setattr_delayed
+
+    def __getattr__(self, item):
+        return getattr(self.configure, item)
+
+    def __setattr_delayed(self, key, value):
+        return setattr(self.configure, key, value)
 
     def open(
         self,
