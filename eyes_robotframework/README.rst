@@ -16,7 +16,7 @@ Docs
 -----
 
 1. `Complete guide to using Eyes with the Robot framework <https://applitools.com/docs/api/robot/robot-eyes-library.html>`_
-2. `Keyword documentation could be found <https://applitools.github.io/eyes.sdk.python/eyes_robotframework/keywords.html>`_.
+2. `Keyword documentation <https://applitools.github.io/eyes.sdk.python/eyes_robotframework/keywords.html>`_.
 3. `Configuration file overview <https://applitools.com/docs/api/robot/robot-configuration-file.html>`_
 
 Robot Framework SDK example repo: https://github.com/applitools/robotframework-quickstart
