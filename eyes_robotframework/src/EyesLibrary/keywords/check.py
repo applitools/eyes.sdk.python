@@ -63,6 +63,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
         Check specified region
+
           |  =Arguments=  | =Description=                                                       |
           |  Region       | *Mandatory* - The region to check in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -93,6 +94,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
         Check specified region by element
+
             |  =Arguments=  | =Description=                                   |
             | Element       | *Mandatory* - The element to check              |
 
@@ -122,6 +124,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
         Check specified region by selector
+
             | =Arguments=   | =Description=                         |
             |  Selector     | *Mandatory* - The selector to check.  |
 
@@ -152,6 +155,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
          Check specified frame by element
+
             | =Arguments=   | =Description=                                        |
             | Element       | *Mandatory* - The frame to check                     |
 
@@ -177,6 +181,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
          Check specified frame by index
+
             | =Arguments=     | =Description=                                                       |
             |  Frame Index    | *Mandatory* - Index of the frame to check. |
 
@@ -202,6 +207,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
          Check specified frame by name
+
             |  =Arguments=   | =Description=                                   |
             |  Frame Name    | *Mandatory* - Name of the frame to check.      |
 
@@ -227,6 +233,7 @@ class CheckKeywords(LibraryComponent):
         # type: (...) -> MatchResult
         """
          Check specified frame by name
+
             |  =Arguments=   | =Description=                                  |
             |  Selector     | *Mandatory* - Selector of the frame to check.   |
 
@@ -248,6 +255,7 @@ class CheckKeywords(LibraryComponent):
     def check(self, target_keyword, *check_settings_keywords):
         """
          Check with target
+
             |  =Arguments=      | =Description=                  |
             |  Target Keyword  | *Mandatory* - Target Keyword that market with Target Keyword tag  |
 

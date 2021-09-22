@@ -94,7 +94,7 @@ class _RobotLogger(object):
 
 class EyesLibrary(DynamicCore):
     """
-    EyesLibrary is a visual verification library for [http://robotframework.org/|Robot Framework]. that uses
+    EyesLibrary is a visual verification library for [http://robotframework.org/|Robot Framework] that uses
     [https://applitools.com/docs/api/eyes-sdk/index-gen/classindex-selenium-python_sdk4.html|Applitools Eyes SDK Python] and
     [http://robotframework.org/SeleniumLibrary/SeleniumLibrary.html|SeleniumLibrary] /
     [http://serhatbolsu.github.io/robotframework-appiumlibrary/AppiumLibrary.html|AppiumLibrary].
@@ -114,7 +114,7 @@ class EyesLibrary(DynamicCore):
 
     = Configuration =
     EyesLibrary stores configuration file inside `applitools.yaml` config file.
-     Detailed info you can find in [./configuration.html|configuration docs]
+     Detailed info you can find in [https://applitools.com/docs/api/robot/robot-configuration-file.html|configuration docs]
 
     The general options provide defaults for all run types. The other sections are for specific types of run and define their own configuration values. By default, they inherit the general options, but they can override any configuration if necessary.
 

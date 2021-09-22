@@ -72,6 +72,7 @@ class SessionKeywords(LibraryComponent):
         # type: (...)->EyesWebDriver
         """
         Shared parameters section from `applitools.yaml` could be overwritten during Open call, see `Preconditions`.
+
             | =Arguments=                  | =Description=                                                                                                                               |
             | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                     |
             | Viewport Size                | The viewport size of the browser window in format [width height] e.g. [1900 1080]                                                           |
@@ -164,6 +165,7 @@ class SessionKeywords(LibraryComponent):
         """
         Closes a session and returns the results of the session.
         If a test is running, aborts it. Otherwise, does nothing.
+
             | =Arguments=                  | =Description=                                                                                                           |
             | Raise Exception (bool)       | If you don't want an exception to be thrown if there are new, missing or mismatched steps, pass 'False' in the variable |
         *Example:*

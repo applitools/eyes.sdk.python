@@ -47,6 +47,7 @@ class TargetKeywords(LibraryComponent):
         # type: (AnyWebElement,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
+
             |  =Arguments=  | =Description=                                          |
             | Element       | *Mandatory* - The element to check                     |
 
@@ -64,6 +65,7 @@ class TargetKeywords(LibraryComponent):
         # type: (Text,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
+
             |  =Arguments=  | =Description=                                                       |
             |  Region       | *Mandatory* - The region to check in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -81,6 +83,7 @@ class TargetKeywords(LibraryComponent):
         # type: (Text,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
+
             | =Arguments=   | =Description=                          |
             |  Selector     | *Mandatory* - The selector to check.   |
 
@@ -102,6 +105,7 @@ class TargetKeywords(LibraryComponent):
         # type: (AnyWebElement,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
+
             | =Arguments=   | =Description=                                        |
             | Element       | *Mandatory* - The frame to check                     |
 
@@ -121,6 +125,7 @@ class TargetKeywords(LibraryComponent):
         # type: (Locator,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
+
             | =Arguments=   | =Description=                                  |
             |  Selector     | *Mandatory* - Selector of the frame to check.  |
 
@@ -142,6 +147,7 @@ class TargetKeywords(LibraryComponent):
         # type: (int,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
+
             | =Arguments=     | =Description=                                   |
             |  Frame Index    | *Mandatory* - Index of the frame to check.      |
 
@@ -161,6 +167,7 @@ class TargetKeywords(LibraryComponent):
         # type: (Text,tuple[Any]) -> SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Frame and any number of Check Settings Keywords.
+
             |  =Arguments=   | =Description=                                  |
             |  Frame Name    | *Mandatory* - Name of the frame to check.      |
 

@@ -42,6 +42,7 @@ class IgnoreCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object that ignores the region specified in the argument.
+
             | =Arguments=   | =Description=                                                       |
             | Region          | *Mandatory* - The region to ignore in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -62,6 +63,7 @@ class IgnoreCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object that ignores the region specified in the argument.
+
             | =Arguments=   | =Description=                                           |
             | Element       | *Mandatory* - The element to ignore                     |
 
@@ -81,6 +83,7 @@ class IgnoreCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object that ignores the region specified in the argument.
+
             | =Arguments=   | =Description=                                               |
             | Selector       | *Mandatory* - The selector for element to ignore. Selenium/Appium formats are supported. |
 
@@ -102,6 +105,7 @@ class LayoutCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with layout region specified in the argument.
+
             | =Arguments=   | =Description=                                                       |
             | Region        | *Mandatory* - The layout region in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -122,6 +126,7 @@ class LayoutCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with layout region specified in the argument.
+
             | =Arguments=   | =Description=                                               |
             | Element       | *Mandatory* - The element with layout region e.g. [100 200 300 300]  |
 
@@ -141,6 +146,7 @@ class LayoutCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with layout region specified in the argument.
+
             | =Arguments=   | =Description=                                               |
             | Selector      | *Mandatory* - The selector for element for layout region. Selenium/Appium formats are supported. |
 
@@ -162,6 +168,7 @@ class ContentCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with content region specified in the argument.
+
             | =Arguments=   | =Description=                                                       |
             | Region        | *Mandatory* - The content region in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -182,6 +189,7 @@ class ContentCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with content region specified in the argument.
+
             | =Arguments=   | =Description=                                       |
             | Element       | *Mandatory* - The element to become content region  |
 
@@ -201,6 +209,7 @@ class ContentCheckSettingsKeyword(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with content region specified in the argument.
+
             | =Arguments=   | =Description=                                               |
             | Selector      | *Mandatory* - The selector for element for content region. Selenium/Appium formats are supported. |
 
@@ -222,6 +231,7 @@ class StrictCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with content region specified in the argument.
+
             | =Arguments=   | =Description=                                                       |
             | Region        | *Mandatory* - The strict region in format [left top width height] ,e.g. [100 200 300 300]  |
 
@@ -242,6 +252,7 @@ class StrictCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with strict region specified in the argument.
+
             | =Arguments=   | =Description=                                         |
             | Element       | *Mandatory* - The element to become strict region     |
 
@@ -261,6 +272,7 @@ class StrictCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with strict region specified in the argument.
+
             | =Arguments=   | =Description=                                               |
             | Selector      | *Mandatory* - The selector for element for strict region. Selenium/Appium formats are supported. |
 
@@ -287,6 +299,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=  | =Description=                                                                                                 |
             | Max Offset   | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching. |
             | Region       | *Mandatory* - The floating region e.g. [100 200 300 300]                                                       |
@@ -312,6 +325,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=  | =Description=                                                                                                 |
             | Max Offset   | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching. |
             | Element       | *Mandatory* - The element to become floating region
@@ -337,6 +351,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=  | =Description=                                                                                                 |
             | Max Offset   | *Mandatory* - The maximum amount that the region can shift in any direction and still be considered matching. |
             | Selector     | *Mandatory* - The selector to become floating region e.g. //*[@id="logo"]                                     |
@@ -365,6 +380,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=       | =Description=                                                                                              |
             | Region            | *Mandatory* - The floating region e.g. [100 200 300 300]                                                        |
             | Max Up Offset     | The maximum amount that the region can shift upwards and still be considered matching.       |
@@ -407,6 +423,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=      | =Description=                                                                                                       |
             | Element          | *Mandatory* - The WebElement to set as float region.                                                  |
             | Max Up Offset    | The maximum amount that the region can shift upwards and still be considered matching.             |
@@ -446,6 +463,7 @@ class FloatingCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with floating region specified in the arguments.
+
             | =Arguments=       | =Description=                                                                                |
             | Selector          | The selector to become floating region e.g. //*[@id="logo"]                                  |
             | Max Up Offset     | The maximum amount that the region can shift upwards and still be considered matching.       |
@@ -478,6 +496,7 @@ class AccessibilityCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with accessibility region specified in the arguments.
+
             | =Arguments=   |   =Description=                                          |
             | Selector      |  *Mandatory* - The selector for element for accessibility region. Selenium/Appium formats are supported. |
             | Type          | *Mandatory* - Type of AccessibilityRegion. (`IgnoreContrast`, `RegularText`, `LargeText`, `BoldText`, `GraphicalObject`)    |
@@ -504,6 +523,7 @@ class AccessibilityCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with accessibility region specified in the arguments.
+
             | =Arguments=      | =Description=                                                            |
             | Element          | *Mandatory* - The accessibility region e.g. [100 200 300 300]                                                             |
             | Type             | *Mandatory* - Type of AccessibilityRegion. (`IgnoreContrast`, `RegularText`, `LargeText`, `BoldText`, `GraphicalObject`)  |
@@ -527,6 +547,7 @@ class AccessibilityCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with accessibility region specified in the arguments.
+
             | =Arguments=      | =Description=                                                            |
             | Region           | *Mandatory* - The accessibility region e.g. [100 200 300 300]                                                        |
             | Type             | *Mandatory* - Type of AccessibilityRegion. (`IgnoreContrast`, `RegularText`, `LargeText`, `BoldText`, `GraphicalObject`)    |
@@ -551,6 +572,7 @@ class UFGCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with VisualGridOption specified in the arguments.
+
             | =Arguments=   | =Description=                              |                                                           |
             | name          | *Mandatory* - The VisualGridOption name.   |                                                     |                                                         |
             | value         | *Mandatory* - The VisualGridOption value.  |
@@ -603,6 +625,7 @@ class UFGCheckSettingsKeywords(object):
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified layout_breakpoints in the arguments.
+
             | =Arguments=     | =Description=                             |
             | breakpoints     | Specify layout breakpoint, e.g. 25 56 89  |
 
@@ -646,6 +669,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Scroll Root Element by selector
+
             |  =Arguments=  | =Description=                                          |
             | Selector       | *Mandatory* - The selector of scroll root element     |
 
@@ -668,6 +692,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object with selected Scroll Root Element
+
             |  =Arguments=  | =Description=                                          |
             | Element       | *Mandatory* - The scroll root element                  |
 
@@ -686,6 +711,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified variant group id.
+
             | =Arguments=  | =Description=                                                      |
             | variation_group_id  | will be associated with all of the test result steps that result from executing this checkpoint |
 
@@ -705,6 +731,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified match level.
+
             | =Arguments=  | =Description=                                                      |
             | match_level  | Specify the match level that should be used for the target area (NONE LAYOUT CONTENT STRICT EXACT) |
 
@@ -779,6 +806,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified tag from argument.
+
             | =Arguments=  | =Description=                                                                |
             | name         | Specifies a tag for this target (instead of a parameter to the Eyes Check )  |
 
@@ -797,6 +825,7 @@ class CheckSettingsKeywords(
         # type: (...)->SeleniumCheckSettings
         """
         Returns a CheckSettings object specified maximum amount of time that Eyes should retry capturing the window content if there are mismatches.
+
             | =Arguments=  | =Description=                                       |
             | timeout      | Specify timeout in milliseconds, e.g. 1000 (1 sec)  |
 
