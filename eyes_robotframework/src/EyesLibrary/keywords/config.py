@@ -31,10 +31,12 @@ class ConfigurationKeywords(LibraryComponent):
         # type: (...) -> BatchInfo
         """
         Returns a BatchInfo object that may be used as batch argument on `Eyes Open`.
+
             | =Arguments=                  | =Description=                                                                              |
             | Name                         | The name of the batch                                                                      |
             | Started At                   | The date and time that will be displayed in the Test Manager as the batch start time *(*)* |
             | Batch ID                     | This argument groups together tests ran in different executions                            |
+
         The *Started At* argument may be passed as:
         - String: YYYY-mm-dd HH:MM:SS
         - Datetime variable: See [https://robotframework.org/robotframework/latest/libraries/DateTime.html|DateTime library]
