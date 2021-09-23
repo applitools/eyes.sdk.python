@@ -3,6 +3,8 @@ from __future__ import absolute_import, unicode_literals
 from robot.api import logger
 from robot.utils import ConnectionCache, is_string
 
+from .eyes import RobotEyesT
+
 
 def is_noney(item):
     return item is None or is_string(item) and item.upper() == "NONE"
@@ -15,6 +17,7 @@ class EyesCache(ConnectionCache):
 
     @property
     def eyes(self):
+        # type: () -> RobotEyesT
         return self._connections
 
     @property

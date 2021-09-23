@@ -15,7 +15,7 @@ from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import raise_from
 from applitools.core import EyesRunner
-from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium import ClassicRunner, VisualGridRunner
 
 from .__version__ import __version__
 from .config import RobotConfiguration
@@ -26,6 +26,7 @@ from .config_parser import (
     try_parse_runner,
 )
 from .errors import EyesLibraryConfigError, EyesLibraryError
+from .eyes import RobotEyesT
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -42,9 +43,6 @@ if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Optional, Text
 
     from applitools.common.utils.custom_types import AnyWebDriver
-
-
-EyesT = typing.TypeVar("EyesT", bound=Eyes)
 
 
 def get_suite_path():
@@ -305,7 +303,7 @@ class EyesLibrary(DynamicCore):
 
     @property
     def current_eyes(self):
-        # type: () -> Eyes
+        # type: () -> RobotEyesT
         if not self._eyes_registry.current:
             raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current
