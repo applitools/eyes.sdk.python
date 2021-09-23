@@ -7,6 +7,8 @@ from time import sleep
 
 from six.moves.urllib import request
 
+from applitools.common import logger
+
 
 class USDKServer(object):
     def __init__(self, executable_path, log_file_name=None):
@@ -21,6 +23,9 @@ class USDKServer(object):
         )
         self.is_closed = False
         self.port = self._read_port()
+        logger.info(
+            "Started Universal SDK server", log_file=self.log_file_name, port=self.port
+        )
 
     def _read_port(self):
         while True:
@@ -33,6 +38,9 @@ class USDKServer(object):
 
     def close(self):
         if not self.is_closed:
+            logger.info(
+                "Quit Universal SDK server", log_file=self.log_file_name, port=self.port
+            )
             self._sdk_process.terminate()
             self._log_file.close()
             self.is_closed = True
@@ -54,6 +62,7 @@ def _download_binary(output_path=None):
             "https://github.com/applitools/eyes.sdk.javascript1/releases/download/"
             "%40applitools%2Feyes-universal%40{version}/{file_name}"
         ).format(version=universal_sdk_version, file_name=file_name)
+        logger.info("Downloading Universal SDK Server binary", output_path=output_path)
         request.urlretrieve(binary_url, output_path)
         os.chmod(output_path, os.stat(output_path).st_mode | stat.S_IXUSR)
     return output_path
