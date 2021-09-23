@@ -1,7 +1,7 @@
 import os
 import stat
 
-from applitools.selenium.sdk_server import USDKServer, _download_binary
+from applitools.selenium.sdk_server import USDKServer, _locked_download_binary
 
 
 def test_usdk_server():
@@ -12,8 +12,8 @@ def test_usdk_server():
     assert port
 
 
-def test_download_binary():
-    server_bin = _download_binary()
+def test_locked_download_binary():
+    server_bin = _locked_download_binary()
 
     assert server_bin
     assert os.stat(server_bin).st_mode & stat.S_IXUSR

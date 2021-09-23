@@ -49,23 +49,37 @@ class USDKServer(object):
         self.close()
 
 
-def _download_binary(output_path=None):
+def _locked_download_binary(output_path=None):
     file_name = {
         "darwin": "cli-macos",
         "linux": "cli-linux",
         "win32": "cli-win.exe",
     }[sys.platform]
     output_path = os.path.abspath(output_path or file_name)
-    if not os.path.exists(output_path):
-        universal_sdk_version = "0.1.4"
-        binary_url = (
-            "https://github.com/applitools/eyes.sdk.javascript1/releases/download/"
-            "%40applitools%2Feyes-universal%40{version}/{file_name}"
-        ).format(version=universal_sdk_version, file_name=file_name)
-        logger.info("Downloading Universal SDK Server binary", output_path=output_path)
-        request.urlretrieve(binary_url, output_path)
-        os.chmod(output_path, os.stat(output_path).st_mode | stat.S_IXUSR)
+    downloading_path = output_path + ".downloading"
+    while not os.path.exists(output_path):
+        if os.path.exists(downloading_path):
+            sleep(1)
+        else:
+            _download_binary(downloading_path, file_name)
+            os.rename(downloading_path, output_path)
     return output_path
 
 
-instance = USDKServer(_download_binary())
+def _download_binary(output_path, file_name):
+    universal_sdk_version = "0.1.4"
+    binary_url = (
+        "https://github.com/applitools/eyes.sdk.javascript1/releases/download/"
+        "%40applitools%2Feyes-universal%40{version}/{file_name}"
+    ).format(version=universal_sdk_version, file_name=file_name)
+    logger.info("Downloading Universal SDK Server binary", output_path=output_path)
+    try:
+        request.urlretrieve(binary_url, output_path)
+        os.chmod(output_path, os.stat(output_path).st_mode | stat.S_IXUSR)
+    except Exception:
+        os.remove(output_path)
+        logger.exception("Failed to download Universal SDK Server binary")
+        raise
+
+
+instance = USDKServer(_locked_download_binary())
