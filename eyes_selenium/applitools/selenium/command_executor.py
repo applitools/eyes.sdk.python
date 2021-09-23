@@ -26,10 +26,10 @@ class CommandExecutor(object):
         # type: (USDKConnection) -> None
         self._connection = connection
 
-    def session_init(self):
+    def make_sdk(self):
         # type: () -> None
         self._connection.notification(
-            "Session.init", {"name": SDK_NAME, "version": "1", "protocol": "webdriver"}
+            "Core.makeSDK", {"name": SDK_NAME, "version": "1", "protocol": "webdriver"}
         )
 
     def core_make_manager(self, manager_type, concurrency=None, is_legacy=None):

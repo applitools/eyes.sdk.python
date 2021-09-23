@@ -7,7 +7,7 @@ from applitools.selenium.webdriver_marshal import marshal_webdriver_ref
 
 def test_usdk_commands_make_manager():
     commands = CommandExecutor(USDKConnection.create())
-    commands.session_init()
+    commands.make_sdk()
 
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
 
@@ -17,7 +17,7 @@ def test_usdk_commands_make_manager():
 def test_usdk_commands_set_get_viewport_size(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.session_init()
+    commands.make_sdk()
 
     commands.core_set_viewport_size(driver, {"width": 800, "height": 600})
     returned_size = commands.core_get_viewport_size(driver)
@@ -28,7 +28,7 @@ def test_usdk_commands_set_get_viewport_size(local_chrome_driver):
 def test_usdk_commands_open_close_eyes(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.session_init()
+    commands.make_sdk()
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(
         mgr,
@@ -57,7 +57,7 @@ def test_usdk_commands_open_close_eyes(local_chrome_driver):
 def test_usdk_commands_open_abort_eyes(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.session_init()
+    commands.make_sdk()
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(
         mgr,
@@ -89,7 +89,7 @@ def test_usdk_commands_open_check_close_eyes(local_chrome_driver):
     config = {"appName": "app name", "testName": "test name"}
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.session_init()
+    commands.make_sdk()
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(mgr, driver, config)
 

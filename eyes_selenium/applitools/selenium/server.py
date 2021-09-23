@@ -5,6 +5,6 @@ from .sdk_server import instance
 
 def connect():
     # type: () -> CommandExecutor
-    commands = CommandExecutor(USDKConnection.create(instance.port))
-    commands.session_init()
+    commands = CommandExecutor(USDKConnection.create())
+    commands.make_sdk()
     return commands
