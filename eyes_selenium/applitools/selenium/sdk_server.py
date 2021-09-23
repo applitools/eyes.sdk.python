@@ -58,11 +58,19 @@ def _locked_download_binary(output_path=None):
     output_path = os.path.abspath(output_path or file_name)
     downloading_path = output_path + ".downloading"
     while not os.path.exists(output_path):
-        if os.path.exists(downloading_path):
+        try:
+            downloading_fd = os.open(downloading_path, os.O_CREAT | os.O_EXCL, 0o777)
+            os.close(downloading_fd)
+        except OSError:  # file exists
             sleep(1)
         else:
-            _download_binary(downloading_path, file_name)
-            os.rename(downloading_path, output_path)
+            try:
+                _download_binary(downloading_path, file_name)
+                os.rename(downloading_path, output_path)
+            except Exception:
+                logger.exception("Failed to download Universal SDK Server binary")
+                os.remove(downloading_path)
+                raise
     return output_path
 
 
@@ -73,13 +81,7 @@ def _download_binary(output_path, file_name):
         "%40applitools%2Feyes-universal%40{version}/{file_name}"
     ).format(version=universal_sdk_version, file_name=file_name)
     logger.info("Downloading Universal SDK Server binary", output_path=output_path)
-    try:
-        request.urlretrieve(binary_url, output_path)
-        os.chmod(output_path, os.stat(output_path).st_mode | stat.S_IXUSR)
-    except Exception:
-        os.remove(output_path)
-        logger.exception("Failed to download Universal SDK Server binary")
-        raise
+    request.urlretrieve(binary_url, output_path)
 
 
 instance = USDKServer(_locked_download_binary())
