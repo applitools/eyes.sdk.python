@@ -29,7 +29,7 @@ from .visual_grid import VisualGridEyes, VisualGridRunner
 from .webdriver import EyesWebDriver
 
 if typing.TYPE_CHECKING:
-    from typing import List, Optional, Text, Tuple, Union
+    from typing import List, Optional, Text, Tuple, Type, Union
 
     from selenium.webdriver.remote.webelement import WebElement
 
@@ -54,6 +54,8 @@ if typing.TYPE_CHECKING:
 @proxy_to("configure", all_fields(Configuration))
 class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
     _is_visual_grid_eyes = False  # type: bool
+    selenium_eyes_class = SeleniumEyes  # type: Type[SeleniumEyes]
+    visual_grid_eyes_class = VisualGridEyes  # type: Type[VisualGridEyes]
     _visual_grid_eyes = None  # type: VisualGridEyes
     _selenium_eyes = None  # type: SeleniumEyes
     _visual_locators_provider = None  # type: SeleniumVisualLocatorsProvider
@@ -69,19 +71,19 @@ class Eyes(EyesConfigurationMixin, DebugScreenshotsAbstract, ExtractTextMixin):
 
         # backward compatibility with settings server_url
         if runner is None:
-            self._selenium_eyes = SeleniumEyes(self, None)
+            self._selenium_eyes = self.selenium_eyes_class(self, None)
         elif isinstance(runner, str):
             self.configure.server_url = runner
-            self._selenium_eyes = SeleniumEyes(self, None)
+            self._selenium_eyes = self.selenium_eyes_class(self, None)
         elif isinstance(runner, VisualGridRunner):
             self._runner = runner
-            self._visual_grid_eyes = VisualGridEyes(self, runner)
+            self._visual_grid_eyes = self.visual_grid_eyes_class(self, runner)
             self._is_visual_grid_eyes = True
             # for visual locators
-            self._selenium_eyes = SeleniumEyes(self, None)
+            self._selenium_eyes = self.selenium_eyes_class(self, None)
         elif isinstance(runner, ClassicRunner):
             self._runner = runner
-            self._selenium_eyes = SeleniumEyes(self, runner)
+            self._selenium_eyes = self.selenium_eyes_class(self, runner)
             self._is_visual_grid_eyes = False
         else:
             raise TypeError(

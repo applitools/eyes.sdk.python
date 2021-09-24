@@ -26,7 +26,7 @@ from .config_parser import (
     try_parse_runner,
 )
 from .errors import EyesLibraryConfigError, EyesLibraryError
-from .eyes import RobotEyesT
+from .eyes import RobotEyes
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -303,7 +303,7 @@ class EyesLibrary(DynamicCore):
 
     @property
     def current_eyes(self):
-        # type: () -> RobotEyesT
+        # type: () -> RobotEyes
         if not self._eyes_registry.current:
             raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current

@@ -12,13 +12,13 @@ from applitools.selenium import ClassicRunner, VisualGridRunner
 
 from .config_parser import SelectedRunner
 from .errors import EyesLibraryValueError
-from .eyes import RobotEyesAppium, RobotEyesSelenium, RobotEyesT, RobotEyesUFG
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver, BySelector
 
     from . import EyesLibrary
     from .custom_types import Locator
+    from .eyes import RobotEyes
 
 __all__ = ("ContextAware", "LibraryComponent", "keyword")
 
@@ -119,7 +119,7 @@ class LibraryComponent(ContextAware):
 
     @property
     def current_eyes(self):
-        # type: () -> RobotEyesT
+        # type: () -> RobotEyes
         return self.ctx.current_eyes
 
     def _create_eyes_runner_if_needed(self):
@@ -145,20 +145,3 @@ class LibraryComponent(ContextAware):
             raise EyesLibraryValueError(
                 "Not supported library. Should be `SeleniumLibrary` or `AppiumLibrary`"
             )
-
-    def fetch_eyes_class(self):
-        # type: () -> RobotEyesT
-        if self.selected_runner == SelectedRunner.web:
-            if isinstance(self.ctx.current_library, SeleniumLibrary):
-                return RobotEyesSelenium
-            elif isinstance(self.ctx.current_library, AppiumLibrary):
-                return RobotEyesAppium
-            else:
-                raise ValueError(
-                    "Unsupported library {}".format(self.ctx.current_library)
-                )
-        elif self.selected_runner == SelectedRunner.web_ufg:
-            return RobotEyesUFG
-        elif self.selected_runner == SelectedRunner.mobile_native:
-            return RobotEyesAppium
-        raise ValueError("Unsupported runner {}".format(self.selected_runner))
