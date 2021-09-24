@@ -151,7 +151,7 @@ class SessionKeywords(LibraryComponent):
         if is_disabled:
             config_cloned.is_disabled = is_disabled
 
-        eyes = RobotEyes.from_selected_runner(
+        eyes = RobotEyes.from_current_library(
             self.ctx.current_library, self.eyes_runner
         )
         eyes.set_configuration(config_cloned)

@@ -3,7 +3,9 @@ from typing import Text, Type, Union
 from AppiumLibrary import AppiumLibrary
 from SeleniumLibrary import SeleniumLibrary
 
+from applitools.selenium import ClassicRunner
 from applitools.selenium import Eyes as EyesSelenium
+from applitools.selenium import VisualGridRunner
 from applitools.selenium.selenium_eyes import SeleniumEyes
 from applitools.selenium.visual_grid.visual_grid_eyes import VisualGridEyes
 
@@ -13,14 +15,26 @@ __all__ = ["RobotEyes"]
 
 
 class RobotEyes(EyesSelenium):
+    def __init__(
+        self,
+        runner,  # type: Union[VisualGridRunner, ClassicRunner]
+        selenium_eyes_class,  # type:Type[SeleniumEyes]
+        visual_grid_eyes_class,  # type:Type[VisualGridEyes]
+    ):
+        if selenium_eyes_class is not None:
+            self.selenium_eyes_class = selenium_eyes_class
+        self.visual_grid_eyes_class = visual_grid_eyes_class
+        super(RobotEyes, self).__init__(runner)
+
     @classmethod
-    def from_selected_runner(cls, current_library, runner):
+    def from_current_library(cls, current_library, runner):
         if isinstance(current_library, SeleniumLibrary):
-            cls.selenium_eyes_class = RobotEyesSelenium
+            selenium_eyes_class = RobotEyesSelenium
         elif isinstance(current_library, AppiumLibrary):
-            cls.selenium_eyes_class = RobotEyesAppium
-        cls.visual_grid_eyes_class = RobotEyesUFG
-        return cls(runner)
+            selenium_eyes_class = RobotEyesAppium
+        else:
+            selenium_eyes_class = None
+        return cls(runner, selenium_eyes_class, RobotEyesUFG)
 
 
 class RobotEyesSelenium(SeleniumEyes):
