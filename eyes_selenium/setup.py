@@ -30,6 +30,7 @@ install_requires = [
     # uses for check if the mobile platform is used in the test
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<23",
+    "cattrs<=1.0.0",
     "transitions>=0.6,<=0.8.3",
     "lxml>=4.4,<5",
     "structlog<=20.1.0",
