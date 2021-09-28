@@ -57,6 +57,6 @@ class RobotEyesUFG(VisualGridEyes):
     @property
     def base_agent_id(self):
         # type: () -> Text
-        return "eyes.python.robotframework.visualgrid/{version}".format(
+        return "eyes.python.robotframework.visual_grid/{version}".format(
             version=__version__
         )
