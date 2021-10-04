@@ -47,7 +47,7 @@ class FrameLocator(object):
     frame_selector = attr.ib(default=None)  # type: BySelector
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
-    scroll_root_selector = attr.ib(default=None)  # type: CssSelector
+    scroll_root_selector = attr.ib(default=None)  # type: BySelector
     scroll_root_element = attr.ib(default=None)  # type: AnyWebElement
 
 
@@ -59,7 +59,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     )  # type: EyesWebElement
     scroll_root_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: CssSelector
+    )  # type: BySelector
     target_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: BySelector

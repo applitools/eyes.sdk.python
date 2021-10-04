@@ -38,9 +38,12 @@ class USDKServer(object):
 
     def close(self):
         if not self.is_closed:
-            logger.info(
-                "Quit Universal SDK server", log_file=self.log_file_name, port=self.port
-            )
+            if logger:
+                logger.info(
+                    "Quit Universal SDK server",
+                    log_file=self.log_file_name,
+                    port=self.port,
+                )
             self._sdk_process.terminate()
             self._log_file.close()
             self.is_closed = True

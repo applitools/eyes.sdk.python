@@ -32,6 +32,8 @@ class MatchLevel(Enum):
     # Images have the same layout.
     LAYOUT = "Layout"
     # Images have the same layout.
+    LAYOUT1 = "Layout1"
+    # Images have the same layout.
     LAYOUT2 = "Layout2"
     # Images have the same content.
     CONTENT = "Content"
