@@ -336,6 +336,17 @@ def browsers_info_convert(browsers_info):
     return result
 
 
+def region_reference_convert(values):
+    # type: (SeleniumCheckSettingsValues) -> RegionReference
+    if values.target_selector:
+        selector = values.target_selector
+    elif values.selector:
+        selector = [values.selector.type, values.selector.selector]
+    else:
+        selector = None
+    return element_reference_convert(selector, values.target_element)
+
+
 @attr.s
 class MatchSettings(object):
     exact = attr.ib(default=None)  # type: Optional[MatchSettingsExact]
@@ -626,7 +637,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             floating_regions=values.floating_regions,  # TODO: verify
             accessibility_regions=values.accessibility_regions,  # TODO: verify
             # ScreenshotSettings
-            region=None,  # TODO: verify
+            region=region_reference_convert(values),  # TODO: verify
             frames=ContextReference.convert(values.frame_chain),
             scroll_root_element=element_reference_convert(
                 values.scroll_root_selector, values.scroll_root_element
@@ -652,51 +663,9 @@ def marshal_configuration(configuration):
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(eyes_config))
 
 
-def marshal_check_settings_region(values):
-    # type: (SeleniumCheckSettingsValues) -> RegionReference
-    if values.target_selector:
-        by, selector = values.target_selector
-        return TransformedSelector(selector=selector, type=by)
-    elif values.target_element:
-        return marshal_webelement_ref(values.target_element)
-    elif values.selector:
-        return TransformedSelector(
-            selector=values.selector.selector, type=values.selector.type
-        )
-
-
 def marshal_check_settings(check_settings):
     # type: (SeleniumCheckSettings) -> dict
-    values = check_settings.values
-    check_settings = CheckSettings()
-    check_settings.region = marshal_check_settings_region(
-        values
-    )  # or target_selector or target_element or selector
-    check_settings.timeout = values.timeout
-    check_settings.ignore_caret = values.ignore_caret
-    check_settings.stitch_content = values.stitch_content
-    check_settings.match_level = values.match_level
-    check_settings.name = values.name
-    check_settings.send_dom = values.send_dom
-    check_settings.use_dom = values.use_dom
-    check_settings.enable_patterns = values.enable_patterns
-    check_settings.ignore_displacements = values.ignore_displacements
-
-    check_settings.layout_regions = values.layout_regions
-    check_settings.strict_regions = values.strict_regions
-    check_settings.content_regions = values.content_regions
-    check_settings.floating_regions = values.floating_regions
-    check_settings.accessibility_regions = values.accessibility_regions
-    check_settings.variation_group_id = values.variation_group_id
-
-    check_settings.scroll_root_element = (
-        values.scroll_root_element
-    )  # or scroll_root_element_selector
-    check_settings.frames = None  # values.frame_chain
-    check_settings.hooks = values.script_hooks
-    check_settings.visual_grid_options = values.visual_grid_options
-    check_settings.disable_browser_fetching = values.disable_browser_fetching
-    check_settings.layout_breakpoints = values.layout_breakpoints
+    check_settings = CheckSettings.convert(check_settings.values)
     # check_settings.ocr_region
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
 
