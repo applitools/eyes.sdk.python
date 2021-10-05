@@ -2,6 +2,8 @@ from copy import deepcopy
 from enum import Enum
 from typing import Any, List, Optional, Text
 
+from selenium.common.exceptions import StaleElementReferenceException
+
 from .connection import USDKConnection
 
 SDK_NAME = "eyes.sdk.python"
@@ -13,7 +15,10 @@ class Failure(Exception):
         # type: (dict) -> None
         error = payload.get("error")
         if error:
-            raise cls(error["message"], error["stack"])
+            if error["message"].startswith("stale element reference"):
+                raise StaleElementReferenceException(error["message"])
+            else:
+                raise cls(error["message"], error["stack"])
 
 
 class ManagerType(Enum):
