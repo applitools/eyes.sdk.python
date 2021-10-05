@@ -38,7 +38,7 @@ class USDKServer(object):
 
     def close(self):
         if not self.is_closed:
-            if logger:
+            if sys.meta_path:  # Avoid exception on shutdown
                 logger.info(
                     "Quit Universal SDK server",
                     log_file=self.log_file_name,
