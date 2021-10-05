@@ -13,7 +13,7 @@ from applitools.common import (
     AccessibilityRegionType,
 )
 from applitools.common import ChromeEmulationInfo as ApiChromeEmulationInfo
-from applitools.common import DesktopBrowserInfo, DeviceName
+from applitools.common import DesktopBrowserInfo, DeviceName, FloatingBounds
 from applitools.common import IosDeviceInfo
 from applitools.common import IosDeviceInfo as ApiIosDeviceInfo
 from applitools.common import (
@@ -30,8 +30,16 @@ from applitools.common import (
 )
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
 
-from ..core import GetRegion, RegionByRectangle
-from .fluent import RegionByElement, RegionBySelector
+from ..common.geometry import Rectangle
+from ..core import FloatingRegionByRectangle, GetRegion, RegionByRectangle
+from ..core.fluent import AccessibilityRegionByRectangle
+from .fluent import (
+    FloatingRegionByElement,
+    FloatingRegionBySelector,
+    RegionByElement,
+    RegionBySelector,
+)
+from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
@@ -148,10 +156,9 @@ class Size(object):
 @attr.s
 class Region(Location, Size):
     @classmethod
-    def convert(cls, region):
-        # type: (RegionByRectangle) -> Region
-        r = region._region  # noqa
-        return cls(r.left, r.top, r.width, r.height)
+    def convert(cls, rect):
+        # type: (Union[Region, Rectangle]) -> Region
+        return cls(rect.left, rect.top, rect.width, rect.height)
 
 
 @attr.s
@@ -172,6 +179,11 @@ class AccessibilityRegion(object):
     region = attr.ib()  # type: Region
     type = attr.ib(default=None)  # type: Optional[AccessibilityRegionType]
 
+    @classmethod
+    def convert(cls, region, type_):
+        # type: (Region, Optional[AccessibilityRegionType]) -> AccessibilityRegion
+        return cls(region, type_)
+
 
 @attr.s
 class FloatingRegion(object):
@@ -180,6 +192,17 @@ class FloatingRegion(object):
     max_down_offset = attr.ib()  # type: Optional[int]
     max_left_offset = attr.ib()  # type: Optional[int]
     max_right_offset = attr.ib()  # type: Optional[int]
+
+    @classmethod
+    def convert(cls, region, bounds):
+        # type: (Region, FloatingBounds) -> FloatingRegion
+        return cls(
+            region,
+            bounds.max_up_offset,
+            bounds.max_down_offset,
+            bounds.max_left_offset,
+            bounds.max_right_offset,
+        )
 
 
 @attr.s
@@ -363,7 +386,7 @@ def region_references_convert(regions):
         if element or selectr:
             results.append(element_reference_convert(selectr, element))
         elif isinstance(r, RegionByRectangle):
-            results.append(Region.convert(r))
+            results.append(Region.convert(r._region))  # noqa
         else:
             raise RuntimeError("Unexpected region type", type(r))
     return results
@@ -371,12 +394,52 @@ def region_references_convert(regions):
 
 def floating_region_references_convert(regions):
     # type: (List[GetRegion]) -> List[FloatingRegion]
-    return []
+    results = []
+    for r in regions:
+        element, bounds = (
+            (r._element, r._bounds)  # noqa
+            if isinstance(r, FloatingRegionByElement)
+            else (None, None)
+        )
+        selector, bounds = (
+            ([r._by, r._value], r._bounds)  # noqa
+            if isinstance(r, FloatingRegionBySelector)
+            else (None, None)
+        )
+        if element or selector:
+            region = element_reference_convert(selector, element)
+        elif isinstance(r, FloatingRegionByRectangle):
+            region, bounds = Region.convert(r._rect), r._bounds  # noqa
+        else:
+            raise RuntimeError("Unexpected region type", type(r))
+        results.append(FloatingRegion.convert(region, bounds))
+
+    return results
 
 
 def accessibility_region_references_convert(regions):
     # type: (List[GetRegion]) -> List[AccessibilityRegion]
-    return []
+    results = []
+    for r in regions:
+        element, type_ = (
+            (r._element, r._type)  # noqa
+            if isinstance(r, AccessibilityRegionByElement)
+            else (None, None)
+        )
+        selector, type_ = (
+            ([r._by, r._value], r._type)  # noqa
+            if isinstance(r, AccessibilityRegionBySelector)
+            else (None, None)
+        )
+        if element or selector:
+            region = element_reference_convert(selector, element)
+        elif isinstance(r, AccessibilityRegionByRectangle):
+            region, type_ = Region.convert(r._rect), r._type  # noqa
+        else:
+            raise RuntimeError("Unexpected region type", type(r))
+        results.append(AccessibilityRegion.convert(region, type_))
+
+    return results
 
 
 @attr.s
