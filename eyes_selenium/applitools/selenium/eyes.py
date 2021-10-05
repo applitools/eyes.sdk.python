@@ -224,7 +224,7 @@ class Eyes(object):
         results = demarshal_test_results(results)
         for r in results:
             _log_session_results_and_raise_exception(self.logger, raise_ex, r)
-        return results
+        return results[0]
 
     def abort(self):
         # type: () -> Optional[List[TestResults]]

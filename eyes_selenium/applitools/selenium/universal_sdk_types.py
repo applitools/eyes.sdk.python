@@ -30,6 +30,9 @@ from applitools.common import (
 )
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
 
+from ..core import GetRegion, RegionByRectangle
+from .fluent import RegionByElement, RegionBySelector
+
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
 
@@ -144,7 +147,11 @@ class Size(object):
 
 @attr.s
 class Region(Location, Size):
-    pass
+    @classmethod
+    def convert(cls, region):
+        # type: (RegionByRectangle) -> Region
+        r = region._region  # noqa
+        return cls(r.left, r.top, r.width, r.height)
 
 
 @attr.s
@@ -336,7 +343,7 @@ def browsers_info_convert(browsers_info):
     return result
 
 
-def region_reference_convert(values):
+def target_reference_convert(values):
     # type: (SeleniumCheckSettingsValues) -> RegionReference
     if values.target_selector:
         selector = values.target_selector
@@ -345,6 +352,31 @@ def region_reference_convert(values):
     else:
         selector = None
     return element_reference_convert(selector, values.target_element)
+
+
+def region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[RegionReference]
+    results = []
+    for r in regions:
+        element = r._element if isinstance(r, RegionByElement) else None  # noqa
+        selectr = [r._by, r._value] if isinstance(r, RegionBySelector) else None  # noqa
+        if element or selectr:
+            results.append(element_reference_convert(selectr, element))
+        elif isinstance(r, RegionByRectangle):
+            results.append(Region.convert(r))
+        else:
+            raise RuntimeError("Unexpected region type", type(r))
+    return results
+
+
+def floating_region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[FloatingRegion]
+    return []
+
+
+def accessibility_region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[AccessibilityRegion]
+    return []
 
 
 @attr.s
@@ -387,8 +419,12 @@ class MatchSettings(object):
                 layout_regions=image_match_settings.layout_regions,
                 strict_regions=image_match_settings.strict_regions,
                 content_regions=image_match_settings.content_regions,
-                floating_regions=image_match_settings.floating_match_settings,  # todo: verify
-                accessibility_regions=image_match_settings.accessibility,  # todo: verify
+                floating_regions=floating_region_references_convert(
+                    image_match_settings.floating_match_settings
+                ),
+                accessibility_regions=accessibility_region_references_convert(
+                    image_match_settings.accessibility
+                ),
             )
         else:
             return None
@@ -630,14 +666,18 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             ignore_caret=values.ignore_caret,
             ignore_displacements=values.ignore_displacements,
             accessibility_settings=None,  # TODO: verify
-            ignore_regions=values.ignore_regions,  # TODO: verify
-            layout_regions=values.layout_regions,  # TODO: verify
-            strict_regions=values.strict_regions,  # TODO: verify
-            content_regions=values.content_regions,  # TODO: verify
-            floating_regions=values.floating_regions,  # TODO: verify
-            accessibility_regions=values.accessibility_regions,  # TODO: verify
+            ignore_regions=region_references_convert(values.ignore_regions),
+            layout_regions=region_references_convert(values.layout_regions),
+            strict_regions=region_references_convert(values.strict_regions),
+            content_regions=region_references_convert(values.content_regions),
+            floating_regions=floating_region_references_convert(
+                values.floating_regions
+            ),
+            accessibility_regions=accessibility_region_references_convert(
+                values.accessibility_regions
+            ),
             # ScreenshotSettings
-            region=region_reference_convert(values),  # TODO: verify
+            region=target_reference_convert(values),
             frames=ContextReference.convert(values.frame_chain),
             scroll_root_element=element_reference_convert(
                 values.scroll_root_selector, values.scroll_root_element
