@@ -495,7 +495,7 @@ class Eyes(object):
         # type: (bool) -> None
         self.configure.send_dom = value
 
-    def check_window(self, tag=None, match_timeout=-1, fully=False):
+    def check_window(self, tag=None, match_timeout=-1, fully=True):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected
