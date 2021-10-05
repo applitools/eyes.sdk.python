@@ -59,14 +59,16 @@ class _EyesManager(object):
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         # TODO: implement timeout
-        results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
-        self._manager_ref = None
-        structured_results = demarshal_test_results(results)
-        for r in structured_results:
-            _log_session_results_and_raise_exception(
-                self.logger, should_raise_exception, r
-            )
-
+        if self._manager_ref:
+            results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
+            self._manager_ref = None
+            structured_results = demarshal_test_results(results)
+            for r in structured_results:
+                _log_session_results_and_raise_exception(
+                    self.logger, should_raise_exception, r
+                )
+        else:
+            structured_results = []
         return TestResultsSummary(
             [TestResultContainer(result, None, None) for result in structured_results]
         )
@@ -139,14 +141,17 @@ class Eyes(object):
             self.configure.test_name = test_name
         if viewport_size is not None:
             self.configure.viewport_size = viewport_size
-        remote_sdk = self._manager._remote_sdk  # noqa
-        manager_ref = self._manager._get_manager_ref()  # noqa
-        self._driver = driver
-        self._eyes_ref = remote_sdk.manager_open_eyes(
-            manager_ref,
-            marshal_webdriver_ref(driver),
-            marshal_configuration(self.configure),
-        )
+        if self.configure.is_disabled:
+            self.logger.info("open(): ignored (disabled)")
+        else:
+            remote_sdk = self._manager._remote_sdk  # noqa
+            manager_ref = self._manager._get_manager_ref()  # noqa
+            self._driver = driver
+            self._eyes_ref = remote_sdk.manager_open_eyes(
+                manager_ref,
+                marshal_webdriver_ref(driver),
+                marshal_configuration(self.configure),
+            )
         return driver
 
     @typing.overload
@@ -171,7 +176,7 @@ class Eyes(object):
         pass
 
     def check(self, check_settings, name=None):
-        # type: (SeleniumCheckSettings, Optional[Text]) -> MatchResult
+        # type: (SeleniumCheckSettings, Optional[Text]) -> Optional[MatchResult]
         if isinstance(name, SeleniumCheckSettings) or isinstance(
             check_settings, string_types
         ):
@@ -183,7 +188,7 @@ class Eyes(object):
 
         if self.configure.is_disabled:
             self.logger.info("check(): ignored (disabled)")
-            return []
+            return None
         if not self.is_open:
             self.abort()
             raise EyesError("you must call open() before checking")
@@ -216,6 +221,9 @@ class Eyes(object):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
+        if self.configure.is_disabled:
+            self.logger.info("close(): ignored (disabled)")
+            return None
         if not self.is_open:
             raise EyesError("Eyes not open")
         remote_sdk = self._manager._remote_sdk  # noqa
@@ -231,7 +239,10 @@ class Eyes(object):
         """
         If a test is running, aborts it. Otherwise, does nothing.
         """
-        if self.is_open:
+        if self.configure.is_disabled:
+            self.logger.info("abort(): ignored (disabled)")
+            return None
+        elif self.is_open:
             remote_sdk = self._manager._remote_sdk  # noqa
             results = remote_sdk.eyes_abort_eyes(self._eyes_ref)
             return demarshal_test_results(results)
