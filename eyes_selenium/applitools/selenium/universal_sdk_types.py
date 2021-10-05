@@ -396,24 +396,17 @@ def floating_region_references_convert(regions):
     # type: (List[GetRegion]) -> List[FloatingRegion]
     results = []
     for r in regions:
-        element, bounds = (
-            (r._element, r._bounds)  # noqa
-            if isinstance(r, FloatingRegionByElement)
-            else (None, None)
-        )
-        selector, bounds = (
-            ([r._by, r._value], r._bounds)  # noqa
-            if isinstance(r, FloatingRegionBySelector)
-            else (None, None)
-        )
-        if element or selector:
-            region = element_reference_convert(selector, element)
+        if isinstance(r, FloatingRegionByElement):
+            region = element_reference_convert(element=r._element)  # noqa
+            bounds = r._bounds  # noqa
+        if isinstance(r, FloatingRegionBySelector):
+            region = element_reference_convert(selector=[r._by, r._value])  # noqa
+            bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
         else:
             raise RuntimeError("Unexpected region type", type(r))
         results.append(FloatingRegion.convert(region, bounds))
-
     return results
 
 
@@ -421,24 +414,17 @@ def accessibility_region_references_convert(regions):
     # type: (List[GetRegion]) -> List[AccessibilityRegion]
     results = []
     for r in regions:
-        element, type_ = (
-            (r._element, r._type)  # noqa
-            if isinstance(r, AccessibilityRegionByElement)
-            else (None, None)
-        )
-        selector, type_ = (
-            ([r._by, r._value], r._type)  # noqa
-            if isinstance(r, AccessibilityRegionBySelector)
-            else (None, None)
-        )
-        if element or selector:
-            region = element_reference_convert(selector, element)
-        elif isinstance(r, AccessibilityRegionByRectangle):
+        if isinstance(r, AccessibilityRegionByElement):
+            region = element_reference_convert(element=r._element)  # noqa
+            type_ = r._type  # noqa
+        if isinstance(r, AccessibilityRegionBySelector):
+            region = element_reference_convert(selector=[r._by, r._value])  # noqa
+            type_ = r._type  # noqa
+        elif isinstance(r, FloatingRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
         else:
             raise RuntimeError("Unexpected region type", type(r))
         results.append(AccessibilityRegion.convert(region, type_))
-
     return results
 
 
