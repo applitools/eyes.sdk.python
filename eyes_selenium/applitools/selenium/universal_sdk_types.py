@@ -367,14 +367,19 @@ def browsers_info_convert(browsers_info):
 
 
 def target_reference_convert(values):
-    # type: (SeleniumCheckSettingsValues) -> RegionReference
+    # type: (SeleniumCheckSettingsValues) -> Optional[RegionReference]
     if values.target_selector:
-        selector = values.target_selector
+        return element_reference_convert(selector=values.target_selector)
     elif values.selector:
-        selector = [values.selector.type, values.selector.selector]
+        return element_reference_convert(
+            selector=[values.selector.type, values.selector.selector]
+        )
+    elif values.target_element:
+        return element_reference_convert(element=values.target_element)
+    elif values.target_region:
+        return Region.convert(values.target_region)
     else:
-        selector = None
-    return element_reference_convert(selector, values.target_element)
+        return None
 
 
 def region_references_convert(regions):
