@@ -11,6 +11,7 @@ from applitools.common import (
     DiffsFoundError,
     EyesError,
     NewTestError,
+    RectangleSize,
     TestFailedError,
     TestResultContainer,
     TestResultsSummary,
@@ -20,7 +21,7 @@ from applitools.common import (
 from applitools.common.selenium import Configuration
 
 from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
-from .command_executor import CommandExecutor, ManagerType
+from .command_executor import ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
 from .universal_sdk_types import (
@@ -28,6 +29,7 @@ from .universal_sdk_types import (
     demarshal_test_results,
     marshal_check_settings,
     marshal_configuration,
+    marshal_viewport_size,
     marshal_webdriver_ref,
 )
 
@@ -252,13 +254,22 @@ class Eyes(object):
 
     @staticmethod
     def get_viewport_size(driver):
-        # type: (WebDriver) -> ViewPort
-        raise NotImplementedError
+        # type: (WebDriver) -> RectangleSize
+        from .server import connect
+
+        command_executor = connect()
+        result = command_executor.core_get_viewport_size(marshal_webdriver_ref(driver))
+        return RectangleSize.from_(result)
 
     @staticmethod
-    def set_viewport_size(driver, size):
+    def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        raise NotImplementedError
+        from .server import connect
+
+        command_executor = connect()
+        command_executor.core_set_viewport_size(
+            marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
+        )
 
     def get_configuration(self):
         # type:() -> Configuration

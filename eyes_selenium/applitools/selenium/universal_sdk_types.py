@@ -764,6 +764,12 @@ def marshal_check_settings(check_settings):
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
 
 
+def marshal_viewport_size(viewport_size):
+    # type: (ViewPort) -> dict
+    size = Size.convert_viewport(viewport_size)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(size))
+
+
 def demarshal_match_result(results_dict):
     # type: (dict) -> MatchResult
     return attr_from_json(dumps(results_dict), MatchResult)
