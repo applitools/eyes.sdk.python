@@ -25,6 +25,7 @@ from .command_executor import ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
 from .universal_sdk_types import (
+    demarshal_locate_result,
     demarshal_match_result,
     demarshal_test_results,
     marshal_check_settings,
@@ -213,7 +214,7 @@ class Eyes(object):
             marshal_locate_settings(visual_locator_settings),
             marshal_configuration(self.configure),
         )
-        return results
+        return demarshal_locate_result(results)
 
     def extract_text(self, *regions):
         # type: (*OCRRegion) -> List[Text]

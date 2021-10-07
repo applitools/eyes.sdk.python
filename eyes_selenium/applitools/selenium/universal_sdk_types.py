@@ -17,11 +17,9 @@ from applitools.common import ChromeEmulationInfo as ApiChromeEmulationInfo
 from applitools.common import DesktopBrowserInfo, DeviceName, FloatingBounds
 from applitools.common import IosDeviceInfo
 from applitools.common import IosDeviceInfo as ApiIosDeviceInfo
+from applitools.common import IosDeviceName, IosVersion, MatchLevel, MatchResult
+from applitools.common import Region as APIRegion
 from applitools.common import (
-    IosDeviceName,
-    IosVersion,
-    MatchLevel,
-    MatchResult,
     RenderBrowserInfo,
     ScreenOrientation,
     SessionType,
@@ -861,6 +859,14 @@ def marshal_viewport_size(viewport_size):
 def demarshal_match_result(results_dict):
     # type: (dict) -> MatchResult
     return attr_from_json(dumps(results_dict), MatchResult)
+
+
+def demarshal_locate_result(results):
+    # type: (dict) -> Dict[Text, List[APIRegion]]
+    return {
+        locator_id: [APIRegion.from_(region) for region in regions]
+        for locator_id, regions in results.items()
+    }
 
 
 def demarshal_test_results(results_dict_list):

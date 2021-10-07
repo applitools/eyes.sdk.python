@@ -551,13 +551,10 @@ class Region(Rectangle):
                 return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
         elif isinstance(obj, dict) and obj2 is None:
             return cls(
-                obj[
-                    "left",
-                    obj["right"],
-                    obj["height"],
-                    obj["width"],
-                    CoordinatesType(obj["type"]),
-                ]
+                obj["left"],
+                obj["top"],
+                obj["width"],
+                obj["height"],
             )
         raise ValueError("Wrong parameters passed")
 
