@@ -117,7 +117,7 @@ class TestResults(object):
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
     status = attr.ib(
-        converter=TestResultsStatus,
+        converter=lambda v: TestResultsStatus(v) if v else None,
         type=TestResultsStatus,
         default=None,
         repr=False,
@@ -164,6 +164,9 @@ class TestResults(object):
         default=None, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: bool
     is_aborted = attr.ib(
+        default=None, repr=False, metadata={JsonInclude.THIS: True}
+    )  # type: bool
+    is_empty = attr.ib(
         default=None, repr=False, metadata={JsonInclude.THIS: True}
     )  # type: bool
     app_urls = attr.ib(
