@@ -1,6 +1,7 @@
 from itertools import count
 from json import dumps, loads
 from typing import Text
+from uuid import uuid4
 
 from websocket import WebSocket
 
@@ -9,7 +10,6 @@ class USDKConnection(object):
     def __init__(self, websocket):
         # type: (WebSocket) -> None
         self._websocket = websocket
-        self._keys = count(1)
 
     @classmethod
     def create(cls, port=2107):
@@ -24,8 +24,12 @@ class USDKConnection(object):
 
     def command(self, name, payload):
         # type: (Text, dict) -> dict
-        key = str(next(self._keys))
+        key = str(uuid4())
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
         response = loads(self._websocket.recv())
         assert response["name"] == name and response["key"] == key
         return response
+
+    def close(self):
+        self._websocket.close()
+        self._websocket = None
