@@ -29,6 +29,7 @@ from .universal_sdk_types import (
     demarshal_test_results,
     marshal_check_settings,
     marshal_configuration,
+    marshal_locate_settings,
     marshal_viewport_size,
     marshal_webdriver_ref,
 )
@@ -205,7 +206,12 @@ class Eyes(object):
 
     def locate(self, visual_locator_settings):
         # type: (VisualLocatorSettings) -> LOCATORS_TYPE
-        raise NotImplementedError
+        results = self._commands.eyes_locate(
+            self._eyes_ref,
+            marshal_locate_settings(visual_locator_settings),
+            marshal_configuration(self.configure),
+        )
+        return results
 
     def extract_text(self, *regions):
         # type: (*OCRRegion) -> List[Text]

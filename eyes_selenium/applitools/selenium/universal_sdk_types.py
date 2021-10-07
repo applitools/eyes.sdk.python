@@ -31,8 +31,14 @@ from applitools.common import (
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
 
 from ..common.geometry import Rectangle
-from ..core import FloatingRegionByRectangle, GetRegion, RegionByRectangle
+from ..core import (
+    FloatingRegionByRectangle,
+    GetRegion,
+    RegionByRectangle,
+    VisualLocatorSettings,
+)
 from ..core.fluent import AccessibilityRegionByRectangle
+from ..core.locators import VisualLocatorSettingsValues
 from .fluent import (
     FloatingRegionByElement,
     FloatingRegionBySelector,
@@ -740,6 +746,20 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
         )
 
 
+@attr.s
+class LocateSettings(object):
+    locator_names = attr.ib(factory=list)  # type: List[Text]
+    first_only = attr.ib(default=None)  # type: Optional[bool]
+
+    @classmethod
+    def convert(cls, visual_locators_settings_values):
+        # type: (VisualLocatorSettingsValues) -> LocateSettings
+        return cls(
+            visual_locators_settings_values.names,
+            visual_locators_settings_values.first_only,
+        )
+
+
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
     transformed = TransformedDriver.convert(driver)
@@ -762,6 +782,12 @@ def marshal_check_settings(check_settings):
     check_settings = CheckSettings.convert(check_settings.values)
     # check_settings.ocr_region
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
+
+
+def marshal_locate_settings(locate_settings):
+    # type: (VisualLocatorSettings) -> dict
+    locate_settings = LocateSettings.convert(locate_settings.values)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(locate_settings))
 
 
 def marshal_viewport_size(viewport_size):
