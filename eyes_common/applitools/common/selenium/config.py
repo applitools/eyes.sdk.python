@@ -31,7 +31,7 @@ DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
 @attr.s
 class Configuration(ConfigurationBase):
     force_full_page_screenshot = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
+        metadata={JsonInclude.NON_NONE: True}, default=True
     )  # type: bool
     wait_before_screenshots = attr.ib(
         metadata={JsonInclude.NON_NONE: True},

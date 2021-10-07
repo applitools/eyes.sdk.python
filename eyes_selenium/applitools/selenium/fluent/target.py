@@ -27,7 +27,7 @@ class Target(CheckTarget):
     @staticmethod
     def window():
         # type: () -> SeleniumCheckSettings
-        return SeleniumCheckSettings().fully()
+        return SeleniumCheckSettings()
 
     @staticmethod  # noqa
     @overload
