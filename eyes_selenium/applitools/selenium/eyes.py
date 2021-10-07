@@ -50,18 +50,19 @@ class _EyesManager(object):
         from . import server
 
         self.logger = logger.bind(runner=id(self))
-        self._manager_args = (manager_type, concurrency, is_legacy)
-        self._manager_ref = None
-        self._remote_sdk = server.connect()
+        self._commands = server.connect()
+        self._ref = self._commands.core_make_manager(
+            manager_type, concurrency, is_legacy
+        )
 
     def get_all_test_results(
         self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         # TODO: implement timeout
-        if self._manager_ref:
-            results = self._remote_sdk.manager_close_all_eyes(self._manager_ref)
-            self._manager_ref = None
+        if self._ref:
+            results = self._commands.manager_close_all_eyes(self._ref)
+            self._ref = None
             structured_results = demarshal_test_results(results)
             for r in structured_results:
                 _log_session_results_and_raise_exception(
@@ -69,14 +70,11 @@ class _EyesManager(object):
                 )
         else:
             structured_results = []
+        self._commands.close()
+        self._commands = None
         return TestResultsSummary(
             [TestResultContainer(result, None, None) for result in structured_results]
         )
-
-    def _get_manager_ref(self):
-        if self._manager_ref is None:
-            self._manager_ref = self._remote_sdk.core_make_manager(*self._manager_args)
-        return self._manager_ref
 
 
 class RunnerOptions(object):
@@ -119,6 +117,7 @@ class Eyes(object):
         else:
             self._manager = runner  # type: _EyesManager
         self.logger = self._manager.logger.bind(eyes_id=id(self))
+        self._commands = None
         self.__setattr__ = self.__setattr_delayed
 
     def __getattr__(self, item):
@@ -144,11 +143,13 @@ class Eyes(object):
         if self.configure.is_disabled:
             self.logger.info("open(): ignored (disabled)")
         else:
-            remote_sdk = self._manager._remote_sdk  # noqa
-            manager_ref = self._manager._get_manager_ref()  # noqa
+            from . import server
+
+            # self._commands = server.connect()
+            self._commands = self._manager._commands  # noqa
             self._driver = driver
-            self._eyes_ref = remote_sdk.manager_open_eyes(
-                manager_ref,
+            self._eyes_ref = self._commands.manager_open_eyes(
+                self._manager._ref,  # noqa
                 marshal_webdriver_ref(driver),
                 marshal_configuration(self.configure),
             )
@@ -193,8 +194,7 @@ class Eyes(object):
             self.abort()
             raise EyesError("you must call open() before checking")
 
-        remote_sdk = self._manager._remote_sdk  # noqa
-        results = remote_sdk.eyes_check(
+        results = self._commands.eyes_check(
             self._eyes_ref,
             marshal_check_settings(check_settings),
             marshal_configuration(self.configure),
@@ -226,9 +226,10 @@ class Eyes(object):
             return None
         if not self.is_open:
             raise EyesError("Eyes not open")
-        remote_sdk = self._manager._remote_sdk  # noqa
-        results = remote_sdk.eyes_close_eyes(self._eyes_ref)
+        results = self._commands.eyes_close_eyes(self._eyes_ref)
         self._eyes_ref = None
+        # self._commands.close()
+        self._commands = None
         results = demarshal_test_results(results)
         for r in results:
             _log_session_results_and_raise_exception(self.logger, raise_ex, r)
@@ -243,8 +244,10 @@ class Eyes(object):
             self.logger.info("abort(): ignored (disabled)")
             return None
         elif self.is_open:
-            remote_sdk = self._manager._remote_sdk  # noqa
-            results = remote_sdk.eyes_abort_eyes(self._eyes_ref)
+            results = self._commands.eyes_abort_eyes(self._eyes_ref)
+            self._eyes_ref = None
+            # self._commands.close()
+            self._commands = None
             return demarshal_test_results(results)
 
     @staticmethod
@@ -495,7 +498,7 @@ class Eyes(object):
         # type: (bool) -> None
         self.configure.send_dom = value
 
-    def check_window(self, tag=None, match_timeout=-1, fully=True):
+    def check_window(self, tag=None, match_timeout=-1, fully=None):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult
         """
         Takes a snapshot of the application under test and matches it with the expected
