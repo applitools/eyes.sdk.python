@@ -30,6 +30,8 @@ from .universal_sdk_types import (
     marshal_check_settings,
     marshal_configuration,
     marshal_locate_settings,
+    marshal_ocr_extract_settings,
+    marshal_ocr_search_settings,
     marshal_viewport_size,
     marshal_webdriver_ref,
 )
@@ -215,11 +217,19 @@ class Eyes(object):
 
     def extract_text(self, *regions):
         # type: (*OCRRegion) -> List[Text]
-        raise NotImplementedError
+        return self._commands.eyes_extract_text(
+            self._eyes_ref,
+            marshal_ocr_extract_settings(regions),
+            marshal_configuration(self.configure),
+        )
 
     def extract_text_regions(self, config):
         # type: (TextRegionSettings) -> PATTERN_TEXT_REGIONS
-        raise NotImplementedError
+        return self._commands.eyes_extract_text_regions(
+            self._eyes_ref,
+            marshal_ocr_search_settings(config),
+            marshal_configuration(self.configure),
+        )
 
     def close(self, raise_ex=True):
         # type: (bool) -> Optional[List[TestResults]]

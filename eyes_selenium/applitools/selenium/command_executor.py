@@ -81,6 +81,20 @@ class CommandExecutor(object):
             payload["config"] = config
         return self._checked_command("Eyes.locate", payload)
 
+    def eyes_extract_text(self, eyes, regions, config=None):
+        # type: (dict, dict, Optional[dict]) -> dict
+        payload = {"eyes": eyes, "regions": regions}
+        if config:
+            payload["config"] = config
+        return self._checked_command("Eyes.extractText", payload)
+
+    def eyes_extract_text_regions(self, eyes, settings, config=None):
+        # type: (dict, dict, Optional[dict]) -> dict
+        payload = {"eyes": eyes, "settings": settings}
+        if config:
+            payload["config"] = config
+        return self._checked_command("Eyes.extractTextRegions", payload)
+
     def eyes_close_eyes(self, eyes):
         # type: (dict) -> List[dict]
         return self._checked_command("Eyes.close", {"eyes": eyes})

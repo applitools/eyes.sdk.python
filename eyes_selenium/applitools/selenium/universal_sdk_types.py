@@ -1,10 +1,11 @@
 from enum import Enum
 from json import dumps, loads
-from typing import TYPE_CHECKING, Iterable, Text, Union
+from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
 import cattr.generation
+from selenium.webdriver.remote.webelement import WebElement
 from six import text_type
 
 from applitools.common import (
@@ -35,6 +36,7 @@ from ..core import (
     FloatingRegionByRectangle,
     GetRegion,
     RegionByRectangle,
+    TextRegionSettings,
     VisualLocatorSettings,
 )
 from ..core.fluent import AccessibilityRegionByRectangle
@@ -51,13 +53,12 @@ if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
 
     from selenium.webdriver.remote.webdriver import WebDriver
-    from selenium.webdriver.remote.webelement import WebElement
 
     from applitools.common import BatchInfo, ImageMatchSettings, ProxySettings
     from applitools.common.selenium import Configuration
 
     from ..common.utils.custom_types import ViewPort
-    from . import EyesWebElement
+    from . import EyesWebElement, OCRRegion
     from .fluent import FrameLocator, SeleniumCheckSettings
     from .fluent.selenium_check_settings import SeleniumCheckSettingsValues
 
@@ -386,6 +387,16 @@ def target_reference_convert(values):
         return Region.convert(values.target_region)
     else:
         return None
+
+
+def ocr_target_convert(target):
+    # type:(Union[list, WebElement, Region]) -> RegionReference
+    if isinstance(target, list):
+        return element_reference_convert(selector=target)
+    elif isinstance(target, WebElement):
+        return element_reference_convert(element=target)
+    else:
+        return Region.convert(target)
 
 
 def region_references_convert(regions):
@@ -760,6 +771,45 @@ class LocateSettings(object):
         )
 
 
+@attr.s
+class OCRSearchSettings(object):
+    patterns = attr.ib(factory=list)  # type: List[Text]
+    ignore_case = attr.ib(default=None)  # type: Optional[bool]
+    first_only = attr.ib(default=None)  # type: Optional[bool]
+    language = attr.ib(default=None)  # type: Optional[Text]
+
+    @classmethod
+    def convert(cls, search_settigns):
+        # type: (TextRegionSettings) -> OCRSearchSettings
+        return cls(
+            search_settigns._patterns,
+            search_settigns._ignore_case,
+            search_settigns._first_only,
+            search_settigns._language,
+        )
+
+
+@attr.s
+class OCRExtractSettings(object):
+    target = attr.ib()  # type: RegionReference
+    hint = attr.ib(default=None)  # type: Optional[Text]
+    min_match = attr.ib(default=None)  # type: Optional[float]
+    language = attr.ib(default=None)  # type: Optional[Text]
+
+    @classmethod
+    def convert(cls, ocr_regions):
+        # type: (Tuple[OCRRegion]) -> List[OCRExtractSettings]
+        return [
+            cls(
+                ocr_target_convert(region.target),
+                region._hint,
+                region._min_match,
+                region._language,
+            )
+            for region in ocr_regions
+        ]
+
+
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
     transformed = TransformedDriver.convert(driver)
@@ -788,6 +838,18 @@ def marshal_locate_settings(locate_settings):
     # type: (VisualLocatorSettings) -> dict
     locate_settings = LocateSettings.convert(locate_settings.values)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(locate_settings))
+
+
+def marshal_ocr_search_settings(search_settings):
+    # type: (TextRegionSettings) -> dict
+    search_settings = OCRSearchSettings.convert(search_settings)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(search_settings))
+
+
+def marshal_ocr_extract_settings(extract_settings):
+    # type: (Tuple[OCRRegion]) -> dict
+    extract_settings = OCRExtractSettings.convert(extract_settings)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(extract_settings))
 
 
 def marshal_viewport_size(viewport_size):
