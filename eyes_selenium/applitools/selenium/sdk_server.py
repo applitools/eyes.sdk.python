@@ -54,9 +54,9 @@ class USDKServer(object):
 
 def _locked_download_binary(output_path=None):
     file_name = {
-        "darwin": "cli-macos",
-        "linux": "cli-linux",
-        "win32": "cli-win.exe",
+        "darwin": "eyes-universal-macos",
+        "linux": "eyes-universal-linux",
+        "win32": "eyes-universal-win.exe",
     }[sys.platform]
     output_path = os.path.abspath(output_path or file_name)
     downloading_path = output_path + ".downloading"
@@ -78,7 +78,7 @@ def _locked_download_binary(output_path=None):
 
 
 def _download_binary(output_path, file_name):
-    universal_sdk_version = "0.1.4"
+    universal_sdk_version = "0.1.5"
     binary_url = (
         "https://github.com/applitools/eyes.sdk.javascript1/releases/download/"
         "%40applitools%2Feyes-universal%40{version}/{file_name}"
