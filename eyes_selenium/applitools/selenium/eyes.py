@@ -112,13 +112,13 @@ class Eyes(object):
         self._driver = None
         self._eyes_ref = None
         if runner is None:
-            self._manager = ClassicRunner()
+            self._runner = ClassicRunner()
         elif isinstance(runner, string_types):
             self.configure.server_url = runner
-            self._manager = ClassicRunner()
+            self._runner = ClassicRunner()
         else:
-            self._manager = runner  # type: _EyesManager
-        self.logger = self._manager.logger.bind(eyes_id=id(self))
+            self._runner = runner  # type: _EyesManager
+        self.logger = self._runner.logger.bind(eyes_id=id(self))
         self._commands = None
         self.__setattr__ = self.__setattr_delayed
 
@@ -148,10 +148,10 @@ class Eyes(object):
             from . import server
 
             # self._commands = server.connect()
-            self._commands = self._manager._commands  # noqa
+            self._commands = self._runner._commands  # noqa
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
-                self._manager._ref,  # noqa
+                self._runner._ref,  # noqa
                 marshal_webdriver_ref(driver),
                 marshal_configuration(self.configure),
             )
