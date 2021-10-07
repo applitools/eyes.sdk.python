@@ -82,6 +82,9 @@ class CommandExecutor(object):
         # type: (dict) -> List[dict]
         return self._checked_command("Eyes.abort", {"eyes": eyes})
 
+    def close(self):
+        self._connection.close()
+
     def _checked_command(self, name, payload):
         # type: (Text, dict) -> Optional[Any]
         response = self._connection.command(name, payload)
