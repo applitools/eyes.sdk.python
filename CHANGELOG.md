@@ -1,7 +1,8 @@
 ## [vNext]
 ### Fixed
 - Error when checking full element in mobile browsers [Trello 2716](https://trello.com/c/cOwG4zO6)
-- No agent_id in Eyes Robot Framework [Trello 2729](https://trello.com/c/xZUPhEfx)
+- [eyes-robotframework] No agent_id [Trello 2729](https://trello.com/c/xZUPhEfx)
+- [eyes-robotframework] Not possible to assign batch info in `Eyes Open` [Trello 2730](https://trello.com/c/n6T8qzWK)
 
 ## [4.25.0] - 2021-09-09
 ### Added
