@@ -62,9 +62,9 @@ jobs:
         - stage: unit-tests
           os: windows
           language: sh
-          python: 3.6
+          python: 3.7
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.7.7
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
@@ -89,7 +89,7 @@ jobs:
 
         - os: osx
           language: sh
-          python: 3.6
+          python: 3.7
           env:
               - TOX_ENV=unit
 
@@ -97,7 +97,7 @@ jobs:
           env:
               - TOX_ENV=unit
 
-        - python: 3.6
+        - python: 3.7
           env:
               - TOX_ENV=unit
 
@@ -105,7 +105,7 @@ jobs:
           os: windows
           language: sh
           before_install:
-              - choco install python --version=3.6.8
+              - choco install python --version=3.7.7
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
@@ -130,7 +130,7 @@ jobs:
 
         - os: osx
           language: sh
-          python: 3.6
+          python: 3.7
           env:
               - TOX_ENV=integration
 
@@ -138,13 +138,13 @@ jobs:
           env:
               - TOX_ENV=integration
 
-        - python: 3.6
+        - python: 3.7
           env:
               - TOX_ENV=integration
 
         - stage: functional-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.6
+          python: 3.7
           node_js: 14
           addons:
               chrome: stable
@@ -165,7 +165,7 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
@@ -183,7 +183,7 @@ jobs:
               - TEST_BROWSERS=chrome
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.6
+          python: 3.7
           addons:
               chrome: stable
               firefox: latest
@@ -192,14 +192,14 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
@@ -208,7 +208,7 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
@@ -218,14 +218,14 @@ jobs:
               - TEST_RUN_ON_VG=true
               - TEST_BROWSERS=chrome
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=mobile
               - TEST_PLATFORM="Android"
               - TEST_REMOTE=1
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
@@ -234,14 +234,14 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
 
-        - python: 3.6
+        - python: 3.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
               - TOX_ENV=images
               - TEST_PLATFORM="Linux"
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
-          python: 3.6
+          python: 3.7
           script:
             - pip install invoke
             - inv install-requirements
@@ -250,7 +250,7 @@ jobs:
 
         - stage: deploy
           if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
-          python: 3.6
+          python: 3.7
           script:
               # Deploy to PyPi and send notification about the tests execution status
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
