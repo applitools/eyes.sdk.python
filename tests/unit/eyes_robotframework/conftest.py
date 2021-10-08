@@ -32,16 +32,26 @@ def eyes_library(defined_keywords):
 
 
 @pytest.fixture
-def eyes_library_with_selenium(eyes_library):
+def appium_library():
+    return Mock(AppiumLibrary)
+
+
+@pytest.fixture
+def selenium_library():
+    return Mock(SeleniumLibrary)
+
+
+@pytest.fixture
+def eyes_library_with_selenium(eyes_library, selenium_library):
     eyes_library.selected_runner = SelectedRunner.web
-    eyes_library.current_library = Mock(SeleniumLibrary)
+    eyes_library.current_library = selenium_library
     eyes_library._locator_converter = LocatorConverter(eyes_library)
     return eyes_library
 
 
 @pytest.fixture
-def eyes_library_with_appium(eyes_library):
+def eyes_library_with_appium(eyes_library, appium_library):
     eyes_library.selected_runner = SelectedRunner.mobile_native
-    eyes_library.current_library = Mock(AppiumLibrary)
+    eyes_library.current_library = appium_library
     eyes_library._locator_converter = LocatorConverter(eyes_library)
     return eyes_library

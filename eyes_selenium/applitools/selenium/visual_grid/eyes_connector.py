@@ -1,7 +1,6 @@
 import typing
 
 from applitools.common import (
-    AppEnvironment,
     AppOutput,
     EyesError,
     RectangleSize,
@@ -25,10 +24,9 @@ from applitools.core import (
 )
 from applitools.core.capture import AppOutputWithScreenshot
 from applitools.selenium import Configuration
-from applitools.selenium.__version__ import __version__
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Text, Union
+    from typing import Any, Dict, List, Optional, Text
 
     from requests import Response
 
@@ -49,6 +47,7 @@ class EyesConnector(EyesBase):
         config,  # type: Configuration
         server_connector,  # type: ServerConnector
         agent_run_id,  # type: Text
+        base_agent_id,  # type: Text
         job_info=None,  # type: Optional[JobInfo]
     ):
         # type: (...) -> None
@@ -63,6 +62,7 @@ class EyesConnector(EyesBase):
         self._regions = None
         self._job_info = job_info  # type: Optional[JobInfo]
         self._agent_run_id = agent_run_id
+        self._base_agent_id = base_agent_id
 
     def open(self, config):
         # type: (Configuration) -> None
@@ -96,7 +96,7 @@ class EyesConnector(EyesBase):
     @property
     def base_agent_id(self):
         # type: () -> Text
-        return "eyes.selenium.visualgrid.python/{}".format(__version__)
+        return self._base_agent_id
 
     def _try_capture_dom(self):
         return None

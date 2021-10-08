@@ -5,9 +5,10 @@ from typing import Optional, Text, Union
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
-from applitools.selenium import Eyes, EyesWebDriver
+from applitools.selenium import EyesWebDriver
 
 from ..base import LibraryComponent, keyword
+from ..eyes import RobotEyes
 from ..utils import parse_viewport_size
 from .keyword_tags import CHECK_FLOW
 
@@ -150,7 +151,9 @@ class SessionKeywords(LibraryComponent):
         if is_disabled:
             config_cloned.is_disabled = is_disabled
 
-        eyes = Eyes(self.eyes_runner)
+        eyes = RobotEyes.from_current_library(
+            self.ctx.current_library, self.eyes_runner
+        )
         eyes.set_configuration(config_cloned)
         self.register_eyes(eyes)
         return eyes.open(self.fetch_driver())
