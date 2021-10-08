@@ -82,6 +82,11 @@ class _EyesManager(object):
             [TestResultContainer(result, None, None) for result in structured_results]
         )
 
+    @classmethod
+    def _update_runner_specific_defaults(cls, configuration):
+        # type: (Configuration) -> None
+        pass
+
 
 class RunnerOptions(object):
     concurrency = 5
@@ -102,6 +107,12 @@ class VisualGridRunner(_EyesManager):
             concurrency = options_or_concurrency.concurrency
             is_legacy = False
         super(VisualGridRunner, self).__init__(ManagerType.VG, concurrency, is_legacy)
+
+    @classmethod
+    def _update_runner_specific_defaults(cls, configuration):
+        # type: (Configuration) -> None
+        if configuration.force_full_page_screenshot is None:
+            configuration.force_full_page_screenshot = True
 
 
 class ClassicRunner(_EyesManager):
@@ -146,6 +157,7 @@ class Eyes(object):
             self.configure.test_name = test_name
         if viewport_size is not None:
             self.configure.viewport_size = viewport_size
+        self._runner._update_runner_specific_defaults(self.configure)  # noqa
         if self.configure.is_disabled:
             self.logger.info("open(): ignored (disabled)")
         else:
