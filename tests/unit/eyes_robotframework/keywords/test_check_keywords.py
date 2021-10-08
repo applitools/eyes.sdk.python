@@ -4,30 +4,16 @@ from typing import List
 import attr
 import mock
 import pytest
-from mock import MagicMock, Mock
+from mock import Mock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Region
 from applitools.core import RegionByRectangle
-from applitools.selenium.fluent import FrameLocator, RegionByElement, RegionBySelector
-from EyesLibrary import CheckKeywords, EyesLibrary, LocatorConverter, SelectedRunner
+from applitools.selenium.fluent import FrameLocator, RegionBySelector
 from EyesLibrary.keywords.check_settings import CheckSettingsKeywords
 
 WEB_ELEMENT = Mock(WebElement)
-
-
-@pytest.fixture()
-def check_keyword(defined_keywords, eyes_library_with_selenium):
-    results = []
-
-    def collect_result(*args):
-        results.append(args)
-
-    eyes_library_with_selenium.current_eyes.check = collect_result
-    check = CheckKeywords(eyes_library_with_selenium)
-    check.results = results
-    return check
 
 
 def run_keyword(name, *args):
