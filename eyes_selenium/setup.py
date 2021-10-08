@@ -26,7 +26,7 @@ def get_version(package_name):
 install_requires = [
     "eyes-common=={}".format(get_version("selenium")),
     "eyes-core=={}".format(get_version("selenium")),
-    "selenium>=2.53.0,<4",
+    "selenium==4.0.0rc2",
     # uses for check if the mobile platform is used in the test
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<23",
