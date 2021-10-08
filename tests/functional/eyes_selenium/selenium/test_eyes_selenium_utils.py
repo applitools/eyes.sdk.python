@@ -268,7 +268,7 @@ def test_set_viewport_size_10_10_mac_chrome(sauce_chrome_macos):
     with pytest.raises(EyesError, match="Failed to set the viewport size"):
         set_viewport_size(sauce_chrome_macos, RectangleSize(10, 10))
 
-    assert get_viewport_size(sauce_chrome_macos) == RectangleSize(500, 252)
+    assert get_viewport_size(sauce_chrome_macos) == RectangleSize(500, 251)
 
 
 def test_set_viewport_size_10_10_win_firefox(sauce_firefox_w10):

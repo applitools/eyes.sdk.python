@@ -12,6 +12,7 @@ from applitools.selenium import (
     StitchMode,
     Target,
 )
+from applitools.selenium.selenium_eyes import SeleniumEyes
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
@@ -276,15 +277,25 @@ def test_check_window_with_match_region_paddings__fluent(
         .layout("#centered", padding=dict(top=10, right=50))
         .strict("overflowing-div", padding=dict(bottom=100)),
     )
+    # regions are different for latest UFG chrome vs classic chrome
+    if isinstance(eyes_opened._current_eyes, SeleniumEyes):
+        expected_regions = [
+            Region(10 + 10, 286, 800, 500),
+            Region(122 + 10, 933, 456, 306),
+            Region(8 + 10, 1277, 690, 206),
+        ]
+    else:
+        expected_regions = [
+            Region(10 + 10, 285, 800, 501),
+            Region(122 + 10, 932, 456, 307),
+            Region(8 + 10, 1276, 690, 207),
+        ]
+
     check_test_result.send(
         [
             {
                 "actual_name": "ignore",
-                "expected": [
-                    Region(10 + 10, 286, 800, 500),
-                    Region(122 + 10, 933, 456, 306),
-                    Region(8 + 10, 1277, 690, 206),
-                ],
+                "expected": expected_regions,
             }
         ]
     )

@@ -51,6 +51,7 @@ test_fluent_api.py:
     test_check_window_with_ignore_by_selector__centered__fluent:
     test_check_window_with_ignore_by_selector__stretched__fluent:
     test_simple_region:
+    test_accessibility_regions:
 
 test_page_with_headber.py:
     test_check_page_with_header__window:
