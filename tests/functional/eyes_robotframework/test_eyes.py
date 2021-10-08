@@ -1,15 +1,11 @@
 import pytest
 from AppiumLibrary import AppiumLibrary
-from SeleniumLibrary import SeleniumLibrary
 from mock import Mock
+from SeleniumLibrary import SeleniumLibrary
 
-from EyesLibrary import RobotEyes
 from applitools.common.utils.datetime_utils import sleep
-from applitools.selenium import (
-    eyes_selenium_utils,
-    VisualGridRunner,
-    ClassicRunner,
-)
+from applitools.selenium import ClassicRunner, VisualGridRunner, eyes_selenium_utils
+from EyesLibrary import RobotEyes
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,5 @@
-from EyesLibrary.eyes import RobotEyes
 from applitools.selenium import ClassicRunner, VisualGridRunner
+from EyesLibrary.eyes import RobotEyes
 
 
 def test_robot_eyes_agent_id_setup(appium_library, selenium_library):
