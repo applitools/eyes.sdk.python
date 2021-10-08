@@ -66,6 +66,7 @@ jobs:
           before_install:
               - choco install python --version=3.7.7
               - choco install -y --force nodejs-lts
+              - python -m ensurepip
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
@@ -107,6 +108,7 @@ jobs:
           before_install:
               - choco install python --version=3.7.7
               - choco install -y --force nodejs-lts
+              - python -m ensurepip
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
