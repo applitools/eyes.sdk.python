@@ -1,7 +1,7 @@
 import pytest
 
-from applitools.common import RectangleSize, Region
-from EyesLibrary.utils import parse_region, parse_viewport_size
+from applitools.common import MatchLevel, RectangleSize, Region
+from EyesLibrary.utils import get_enum_by_name, parse_region, parse_viewport_size
 
 
 @pytest.mark.parametrize(
@@ -36,3 +36,16 @@ def test_parse_region_success(to_parse, result):
 def test_parse_region_failed(to_parse):
     with pytest.raises(ValueError):
         assert parse_region(to_parse)
+
+
+def test_get_enum_by_name():
+    assert get_enum_by_name("LAYOUT", MatchLevel) == MatchLevel.LAYOUT
+    assert get_enum_by_name("LayouT", MatchLevel) == MatchLevel.LAYOUT
+    assert get_enum_by_name("layout", MatchLevel) == MatchLevel.LAYOUT
+
+
+def test_get_enum_by_name_failed():
+    with pytest.raises(
+        ValueError, match="`<enum 'MatchLevel'>` not contains `Not present`"
+    ):
+        get_enum_by_name("Not present", MatchLevel)

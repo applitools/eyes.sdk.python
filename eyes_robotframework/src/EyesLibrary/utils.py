@@ -136,4 +136,4 @@ def get_enum_by_name(name, enm):
     try:
         return getattr(enm, name.upper())
     except AttributeError:
-        raise ValueError("{} not contains {}".format(enm, name))
+        raise ValueError("`{}` not contains `{}`".format(enm, name))
