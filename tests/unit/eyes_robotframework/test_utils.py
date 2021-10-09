@@ -46,6 +46,6 @@ def test_get_enum_by_name():
 
 def test_get_enum_by_name_failed():
     with pytest.raises(
-        ValueError, match="`<enum 'MatchLevel'>` not contains `Not present`"
+        ValueError, match="`<enum 'MatchLevel'>` does not contain `Not present`"
     ):
         get_enum_by_name("Not present", MatchLevel)
