@@ -28,9 +28,9 @@ class ConfigurationKeywords(LibraryComponent):
         batch_sequence_name=None,  # type: Optional[Text]
         batch_id=None,  # type: Optional[Text]
     ):
-        # type: (...) -> BatchInfo
+        # type: (...) -> Text
         """
-        Returns a BatchInfo object that may be used as batch argument on `Eyes Open`.
+        Returns a BatchInfo ID string that may be used as batch argument on `Eyes Open`.
 
             | =Arguments=                  | =Description=                                                                              |
             | Name                         | The name of the batch                                                                      |
@@ -42,7 +42,7 @@ class ConfigurationKeywords(LibraryComponent):
         - Datetime variable: See [https://robotframework.org/robotframework/latest/libraries/DateTime.html|DateTime library]
 
         *Example:*
-            | ${batch}= | Create Eyes Batch |
+            | ${batch_id}= | Create Eyes Batch |
         """
 
         if started_at:
@@ -55,7 +55,8 @@ class ConfigurationKeywords(LibraryComponent):
         )
         if batch_id:
             batch = batch.with_batch_id(batch_id)
-        return batch
+        self.ctx.register_or_get_batch(batch)
+        return batch.id
 
     @keyword("Get Eyes Configure Property", types=(str,))
     def get_eyes_configure_property(self, name):
