@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Text, Tuple, Union, over
 import attr
 from PIL.Image import Image
 
-from . import logger
 from .accessibility import AccessibilityRegionType
 from .mixins import DictAccessMixin
 from .utils import argument_guard
