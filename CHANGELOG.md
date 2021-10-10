@@ -1,4 +1,4 @@
-## [vNext]
+## [4.25.1] - 2021-10-10
 ### Fixed
 - Error when checking full element in mobile browsers [Trello 2716](https://trello.com/c/cOwG4zO6)
 - [eyes-robotframework] No agent_id [Trello 2729](https://trello.com/c/xZUPhEfx)
