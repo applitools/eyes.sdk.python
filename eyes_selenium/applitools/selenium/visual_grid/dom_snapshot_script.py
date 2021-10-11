@@ -51,7 +51,7 @@ def create_dom_snapshot(
     is_ie = driver.user_agent.is_internet_explorer
     script_type = DomSnapshotScriptForIE if is_ie else DomSnapshotScriptGeneric
     script = script_type(driver)
-    is_ios = "ios" in driver.desired_capabilities.get("platformName", "").lower()
+    is_ios = "ios" in driver.capabilities.get("platformName", "").lower()
     chunk_byte_length = MAX_CHUNK_BYTES_IOS if is_ios else MAX_CHUNK_BYTES_GENERIC
     snapshotter = RecursiveSnapshotter(
         driver,
