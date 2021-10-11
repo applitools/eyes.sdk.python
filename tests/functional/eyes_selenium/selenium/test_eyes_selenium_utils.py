@@ -221,7 +221,7 @@ def test_set_viewport_size_safari11_osx1013(sauce_safari11_osx1013):
     assert get_viewport_size(sauce_safari11_osx1013) == RectangleSize(800, 600)
 
 
-@pytest.mark.skipif(selenium.__version__ >= "4.", "Selenium 4 drops legacy")
+@pytest.mark.skipif(selenium.__version__ >= "4.", reason="Selenium 4 drops legacy")
 def test_set_viewport_size_safari12_osx1013_legacy(sauce_safari12_osx1013_legacy):
     set_viewport_size(sauce_safari12_osx1013_legacy, RectangleSize(800, 600))
 
@@ -239,7 +239,7 @@ def test_driver_set_window_size_safari11_osx1013_fails(sauce_safari11_osx1013):
         sauce_safari11_osx1013.set_window_position(0, 0)
 
 
-@pytest.mark.skipif(selenium.__version__ >= "4.", "Selenium 4 drops legacy")
+@pytest.mark.skipif(selenium.__version__ >= "4.", reason="Selenium 4 drops legacy")
 def test_driver_safari12_osx1013_set_window_rect_fails(sauce_safari12_osx1013_legacy):
     # This test is needed to prove there are still browsers that don't support
     # set_window_rect calls
