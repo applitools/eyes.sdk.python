@@ -273,7 +273,7 @@ def test_create_dom_snapshot_generic(mocked_snapshotter):
 def test_create_dom_snapshot_ios(mocked_snapshotter):
     driver = mock.MagicMock()
     driver.user_agent.is_internet_explorer = False
-    driver.desired_capabilities = {"platformName": "ios"}
+    driver.capabilities = {"platformName": "ios"}
     create_dom_snapshot(driver, None, True, [], 1, True, True)
 
     calls = mocked_snapshotter.call_args_list
