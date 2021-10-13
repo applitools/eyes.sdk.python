@@ -657,7 +657,11 @@ def _log_session_results_and_raise_exception(logger, raise_ex, results):
     results_url = results.url
     scenario_id_or_name = results.name
     app_id_or_name = results.app_name
-    if results.is_unresolved:
+    if results.steps == 0:
+        logger.info("--- Test has no checks. \n\tSee details at {}".format(results_url))
+        if raise_ex:
+            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+    elif results.is_unresolved:
         if results.is_new:
             logger.info(
                 "--- New test ended. \n\tPlease approve the new baseline at {}".format(
