@@ -103,6 +103,10 @@ class CommandExecutor(object):
         # type: (dict) -> List[dict]
         return self._checked_command("Eyes.abort", {"eyes": eyes})
 
+    def set_timeout(self, timeout):
+        # type: (Optional[float]) -> None
+        self._connection.set_timeout(timeout)
+
     def close(self):
         self._connection.close()
 

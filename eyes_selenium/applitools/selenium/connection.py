@@ -1,6 +1,6 @@
 from itertools import count
 from json import dumps, loads
-from typing import Text
+from typing import Optional, Text
 from uuid import uuid4
 
 from websocket import WebSocket
@@ -29,6 +29,10 @@ class USDKConnection(object):
         response = loads(self._websocket.recv())
         assert response["name"] == name and response["key"] == key
         return response
+
+    def set_timeout(self, timeout):
+        # type: (Optional[float]) -> None
+        self._websocket.settimeout(timeout)
 
     def close(self):
         self._websocket.close()

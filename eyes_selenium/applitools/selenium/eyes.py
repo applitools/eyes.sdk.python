@@ -6,6 +6,7 @@ from typing import List, Optional, Text, Tuple, Union
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
+from websocket import WebSocketTimeoutException
 
 from applitools.common import (
     DiffsFoundError,
@@ -65,9 +66,13 @@ class _EyesManager(object):
         self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
-        # TODO: implement timeout
+        self._commands.set_timeout(timeout)
         if self._ref:
-            results = self._commands.manager_close_all_eyes(self._ref)
+            try:
+                results = self._commands.manager_close_all_eyes(self._ref)
+            except WebSocketTimeoutException:
+                logger.warning("Tests completion timeout exceeded", timeout=timeout)
+                raise EyesError("Tests didn't finish in {} seconds".format(timeout))
             self._ref = None
             structured_results = demarshal_test_results(results)
             for r in structured_results:
