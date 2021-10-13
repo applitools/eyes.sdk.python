@@ -62,9 +62,7 @@ class _EyesManager(object):
             manager_type, concurrency, is_legacy
         )
 
-    def get_all_test_results(
-        self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
-    ):
+    def get_all_test_results(self, should_raise_exception=True, timeout=5 * 60):
         # type: (bool, Optional[int]) -> TestResultsSummary
         self._commands.set_timeout(timeout)
         if self._ref:
