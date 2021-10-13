@@ -16,6 +16,7 @@ class USDKConnection(object):
         # type: (int) -> USDKConnection
         websocket = WebSocket()
         websocket.connect("ws://localhost:{}/eyes".format(port))
+        websocket.settimeout(3 * 60)
         return cls(websocket)
 
     def notification(self, name, payload):
