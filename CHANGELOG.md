@@ -1,4 +1,4 @@
-## [vNext]
+## [4.25.2] - 2021-10-15
 ### Fixed
 - Appium EyesWebDriver crashes on user_agent access [Trello 2734](https://trello.com/c/OMkTvYDh)
 
