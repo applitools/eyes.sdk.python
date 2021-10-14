@@ -2,6 +2,7 @@ import pytest
 from mock import MagicMock
 
 from applitools.selenium import EyesWebDriver
+from applitools.selenium.useragent import OSNames
 
 
 @pytest.mark.parametrize("version, major, minor", [("9", 9, -1), ("9.1", 9, 1)])
@@ -32,5 +33,6 @@ def test_driver_app_useragent_lowercase_os():
     }
     webderiver = EyesWebDriver(driver_mock, eyes_mock)
 
+    assert webderiver.user_agent.os == OSNames.IOS
     assert webderiver.user_agent.os_major_version == 13
     assert webderiver.user_agent.os_minor_version == 4

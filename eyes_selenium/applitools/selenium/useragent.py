@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Text
+from typing import Optional, Text
 
 import attr
 from ua_parser import user_agent_parser
@@ -60,10 +60,19 @@ class OSNames(Enum):
     Android = "Android"
     Linux = "Linux"
 
+    @classmethod
+    def from_case_insensitive(cls, text):
+        # type: (Optional[Text]) -> OSNames
+        if text:
+            for os in cls:
+                if os.value.lower() == text.lower():
+                    return os
+        return cls.Unknown
+
 
 @attr.s
 class UserAgent(object):
-    os = attr.ib(default=OSNames.Unknown, converter=OSNames)
+    os = attr.ib(default=OSNames.Unknown, converter=OSNames.from_case_insensitive)
     os_major_version = attr.ib(default=-1, converter=to_float)
     os_minor_version = attr.ib(default=-1, converter=to_float)
     browser = attr.ib(default=BrowserNames.Unknown, converter=BrowserNames)
