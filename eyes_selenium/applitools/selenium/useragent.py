@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Text
+from typing import Optional, Text, Union
 
 import attr
 from ua_parser import user_agent_parser
@@ -61,11 +61,13 @@ class OSNames(Enum):
     Linux = "Linux"
 
     @classmethod
-    def from_case_insensitive(cls, text):
-        # type: (Optional[Text]) -> OSNames
-        if text:
+    def from_case_insensitive(cls, os_name):
+        # type: (Union[Optional[Text], OSNames]) -> OSNames
+        if isinstance(os_name, cls):
+            return os_name
+        if os_name:
             for os in cls:
-                if os.value.lower() == text.lower():
+                if os.value.lower() == os_name.lower():
                     return os
         return cls.Unknown
 
