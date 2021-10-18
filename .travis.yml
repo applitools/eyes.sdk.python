@@ -89,8 +89,11 @@ jobs:
                 - $LOCALAPPDATA/pip/Cache
 
         - os: osx
-          language: python
+          language: shell
           python: 3.7
+          before_install:
+            - python --version
+            - python3 --version
           env:
               - TOX_ENV=unit
 
@@ -131,7 +134,7 @@ jobs:
                   - $LOCALAPPDATA/pip/Cache
 
         - os: osx
-          language: python
+          language: shell
           python: 3.7
           env:
               - TOX_ENV=integration
