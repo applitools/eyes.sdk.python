@@ -26,7 +26,7 @@ def get_version(package_name):
 install_requires = [
     "eyes-common=={}".format(get_version("selenium")),
     "eyes-core=={}".format(get_version("selenium")),
-    "selenium==4.0.0rc2",
+    "selenium==4.0.0",
     # uses for check if the mobile platform is used in the test
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<23",
@@ -42,7 +42,7 @@ if sys.version_info[:2] <= (2, 7):
     install_requires.append("tinycss2==0.6.1")
 else:
     install_requires.append("Pillow >= 5.0.0")
-    install_requires.append("Appium-Python-Client==2.0.0rc2")
+    install_requires.append("Appium-Python-Client==2.0.0rc4")
     install_requires.append("tinycss2>=0.6.1,<1.1.0")
 
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
