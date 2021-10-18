@@ -91,9 +91,6 @@ jobs:
         - os: osx
           language: shell
           python: 3.7
-          before_install:
-            - python --version
-            - python3 --version
           env:
               - TOX_ENV=unit
 
