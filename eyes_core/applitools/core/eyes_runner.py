@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from applitools.common import TestResultsSummary, logger
 from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from applitools.common.utils import ABC, iteritems
+from applitools.core import state
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -27,3 +28,7 @@ class EyesRunner(ABC):
         summary = self._get_all_test_results_impl(should_raise_exception, timeout)
         self.logger.debug(str(summary))
         return summary
+
+    def set_dont_close_batches(self, dont_close_batches):
+        # type: (bool) -> None
+        state.set("dont_close_batches", dont_close_batches)
