@@ -262,10 +262,23 @@ jobs:
 
 
     - name: "Mobile iOS tests"
-      python: 3.7
+      python: 3.6
       if: NOT tag =~ ^RELEASE_CANDIDATE
       env:
         - TEST_PLATFORM="iOS"
+        - TEST_REMOTE=1
+      install:
+        - python -m pip install -U pip setuptools
+        - python -m pip install tox
+      script:
+        - tox -e mobile
+
+
+    - name: "Mobile Android tests"
+      python: 3.6
+      if: NOT tag =~ ^RELEASE_CANDIDATE
+      env:
+        - TEST_PLATFORM="Android"
         - TEST_REMOTE=1
       install:
         - python -m pip install -U pip setuptools
@@ -303,19 +316,6 @@ jobs:
         - python -m pip install tox
       script:
         - tox -e desktop
-
-
-    - name: "Mobile Android tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      env:
-        - TEST_PLATFORM="Android"
-        - TEST_REMOTE=1
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e mobile
 
 
     - name: "UFG tests"
