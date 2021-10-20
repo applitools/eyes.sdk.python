@@ -191,46 +191,7 @@ jobs:
 
 
     - stage: functional-tests
-      name: "Generated tests"
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      python: 3.7
-      node_js: 14
-      addons:
-        chrome: stable
-        firefox: latest
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-        - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
-      install:
-        - git submodule update --init --remote --recursive
-        - nvm install node
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e selenium-generated
-        - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
-            echo "REPORTING...";
-            bash ./ci_scripts/all_tests_report.sh "$SDK";
-            echo "REPORTED SUCCESSFULLY";
-          fi
-
-
-    - name: "Robotframework tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM="Linux"
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e robotframework
-
-
-    - name: "Selenium tests @ Python 2.7/linux"
+      name: "Selenium tests @ Python 2.7/linux"
       python: 2.7
       if: NOT tag =~ ^RELEASE_CANDIDATE
       addons:
@@ -285,6 +246,45 @@ jobs:
         - python -m pip install tox
       script:
         - tox -e mobile
+
+
+    - name: "Generated tests"
+      if: NOT tag =~ ^RELEASE_CANDIDATE
+      python: 3.7
+      node_js: 14
+      addons:
+        chrome: stable
+        firefox: latest
+      env:
+        - TEST_PLATFORM=Linux
+        - TEST_BROWSERS=chrome
+        - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
+      install:
+        - git submodule update --init --remote --recursive
+        - nvm install node
+        - python -m pip install -U pip setuptools
+        - python -m pip install tox
+      script:
+        - tox -e selenium-generated
+        - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+            echo "REPORTING...";
+            bash ./ci_scripts/all_tests_report.sh "$SDK";
+            echo "REPORTED SUCCESSFULLY";
+          fi
+
+
+    - name: "Robotframework tests"
+      python: 3.7
+      if: NOT tag =~ ^RELEASE_CANDIDATE
+      addons:
+        chrome: stable
+      env:
+        - TEST_PLATFORM="Linux"
+      install:
+        - python -m pip install -U pip setuptools
+        - python -m pip install tox
+      script:
+        - tox -e robotframework
 
 
     - name: "Desktop tests"
