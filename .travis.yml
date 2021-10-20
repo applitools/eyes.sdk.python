@@ -1,4 +1,9 @@
 language: python
+env:
+  # Disable stderr/stdout buffering in python
+  - PYTHONUNBUFFERED=1
+    # Run GUI apps in headless mode
+  - DISPLAY=:99.0
 services:
     - xvfb
 git:
@@ -6,13 +11,10 @@ git:
 install:
     - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
-    - $PYTHON -m pip install -U tox
+    - python -m pip install -U tox
 before_script:
     - export PATH=`pwd`/bin:$PATH
-    # Disable stderr/stdout buffering in python
-    - export PYTHONUNBUFFERED=1
-    # Run GUI apps in headless mode
-    - export DISPLAY=:99.0
+    - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
     - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
         export TEST_REPORT_SANDBOX=False;
@@ -24,16 +26,13 @@ before_script:
             echo "THE CHANGELOG IS NOT CORRECT";
             exit 1;
         fi
-
       fi
-    - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
-    - export PYTHON=python
 script:
     - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
     - echo "v$SDK_VERSION $CHANGELOG"
     - echo $TEST_REPORT_SANDBOX
     - echo $APPLITOOLS_BATCH_ID
-    - $PYTHON -m tox -e $TOX_ENV
+    - python -m tox -e $TOX_ENV
 stages:
     - lint
     - unit-tests
@@ -92,9 +91,11 @@ jobs:
         - os: osx
           language: shell
           python: 3.7
+          before_install:
+              - python3 -m pip install tox
+              - which python3
           env:
               - TOX_ENV=unit
-              - PYTHON=python3
 
         - python: 2.7
           env:
@@ -135,9 +136,11 @@ jobs:
         - os: osx
           language: shell
           python: 3.7
+          before_install:
+            - python3 -m pip install tox
+            - which python3
           env:
               - TOX_ENV=integration
-              - PYTHON=python3
 
         - python: 2.7
           env:
@@ -163,7 +166,7 @@ jobs:
               - git submodule update --init --remote --recursive
               - nvm install node
           script:
-              - $PYTHON -m tox -e selenium-generated
+              - python -m tox -e selenium-generated
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
