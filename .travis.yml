@@ -1,18 +1,17 @@
 language: python
-env:
-  # Disable stderr/stdout buffering in python
-  - PYTHONUNBUFFERED=1
-  # Run GUI apps in headless mode
-  - DISPLAY=:99.0
 services:
   - xvfb
 git:
   submodules: false
 before_install:
+  # Disable stderr/stdout buffering in python
+  - export PYTHONUNBUFFERED=1
+  # Run GUI apps in headless mode
+  - export DISPLAY=:99.0
+  - export PATH=`pwd`/bin:$PATH
   - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
   - mkdir bin && unzip chromedriver_linux64.zip -d bin
 before_script:
-  - export PATH=`pwd`/bin:$PATH
   - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
   # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
   - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
