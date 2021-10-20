@@ -259,19 +259,3 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
     eyes.check("Row 10", Target.region("body > table > tr:nth-child(10)"))
     eyes.check("Row 20", Target.region("body > table > tr:nth-child(20)"))
     eyes.close()
-
-
-def test_abc():
-    driver = webdriver.Chrome()
-    driver.get("http://www.applitools.com")
-    eyes = Eyes()
-    eyes.configure.hide_scrollbars = False
-    eyes.open(
-        driver=driver,
-        app_name="Applitools Eyes SDK",
-        test_name="Applitools website test",
-        viewport_size={"width": 900, "height": 600},
-    )
-    eyes.check("initial", Target.window())
-    eyes.check("logo", Target.region(driver.find_element_by_css_selector(".logo")))
-    eyes.close()
