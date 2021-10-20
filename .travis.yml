@@ -6,7 +6,7 @@ git:
 install:
     - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
-    - python -m pip install -U tox-travis
+    - $PYTHON -m pip install -U tox
 before_script:
     - export PATH=`pwd`/bin:$PATH
     # Disable stderr/stdout buffering in python
@@ -27,12 +27,13 @@ before_script:
 
       fi
     - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
+    - export PYTHON=python
 script:
     - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
     - echo "v$SDK_VERSION $CHANGELOG"
     - echo $TEST_REPORT_SANDBOX
     - echo $APPLITOOLS_BATCH_ID
-    - tox -e $TOX_ENV
+    - $PYTHON -m tox -e $TOX_ENV
 stages:
     - lint
     - unit-tests
@@ -65,12 +66,12 @@ jobs:
           python: 3.7
           before_install:
               - choco install python --version=3.7.7
-              - choco install pip
+              - python -m ensurepip --upgrade
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python37:/c/Python37/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
@@ -90,9 +91,10 @@ jobs:
 
         - os: osx
           language: shell
-          python: "3.7"
+          python: 3.7
           env:
               - TOX_ENV=unit
+              - PYTHON=python3
 
         - python: 2.7
           env:
@@ -132,9 +134,10 @@ jobs:
 
         - os: osx
           language: shell
-          python: "3.7"
+          python: 3.7
           env:
               - TOX_ENV=integration
+              - PYTHON=python3
 
         - python: 2.7
           env:
@@ -160,7 +163,7 @@ jobs:
               - git submodule update --init --remote --recursive
               - nvm install node
           script:
-              - tox -e selenium-generated
+              - $PYTHON -m tox -e selenium-generated
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
