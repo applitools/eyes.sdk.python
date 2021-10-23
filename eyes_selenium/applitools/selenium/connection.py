@@ -1,4 +1,5 @@
 import sys
+import weakref
 from concurrent.futures import Future
 from itertools import count
 from json import dumps, loads
@@ -49,7 +50,9 @@ class USDKSharedConnection(object):
         self._websocket = websocket
         self._keys = count(1)
         self._response_futures = {}
-        self._receiver_thread = Thread(target=self._receiver_loop)
+        self._receiver_thread = Thread(
+            target=self._receiver_loop, name="USDK Receiver", args=(weakref.ref(self),)
+        )
         self._receiver_thread.start()
 
     @classmethod
@@ -82,8 +85,12 @@ class USDKSharedConnection(object):
         self._receiver_thread.join()
         self._receiver_thread = None
 
-    def _receiver_loop(self):
+    @staticmethod
+    def _receiver_loop(weak_self):
         while True:
+            self = weak_self()
+            if not self:
+                break
             try:
                 resp = self._websocket.recv()
                 if not resp:
@@ -97,3 +104,4 @@ class USDKSharedConnection(object):
                 for future in self._response_futures.values():
                     future.set_exception_info(sys.exc_info()[1:])
                 break
+            del self
