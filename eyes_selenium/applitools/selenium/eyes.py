@@ -86,8 +86,8 @@ class _EyesManager(object):
         )
 
     @classmethod
-    def _update_runner_specific_defaults(cls, configuration):
-        # type: (Configuration) -> None
+    def _update_runner_specific_defaults(cls, check_settings):
+        # type: (SeleniumCheckSettings) -> None
         pass
 
 
@@ -112,10 +112,10 @@ class VisualGridRunner(_EyesManager):
         super(VisualGridRunner, self).__init__(ManagerType.VG, concurrency, is_legacy)
 
     @classmethod
-    def _update_runner_specific_defaults(cls, configuration):
-        # type: (Configuration) -> None
-        if configuration.force_full_page_screenshot is None:
-            configuration.force_full_page_screenshot = True
+    def _update_runner_specific_defaults(cls, check_settings):
+        # type: (SeleniumCheckSettings) -> None
+        if check_settings.values.stitch_content is None:
+            check_settings.stitch_content(True)
 
 
 class ClassicRunner(_EyesManager):
@@ -160,7 +160,6 @@ class Eyes(object):
             self.configure.test_name = test_name
         if viewport_size is not None:
             self.configure.viewport_size = viewport_size
-        self._runner._update_runner_specific_defaults(self.configure)  # noqa
         if self.configure.is_disabled:
             self.logger.info("open(): ignored (disabled)")
         else:
@@ -207,6 +206,7 @@ class Eyes(object):
             check_settings = Target.window()
         if name:
             check_settings = check_settings.with_name(name)
+        self._runner._update_runner_specific_defaults(check_settings)  # noqa
 
         if self.configure.is_disabled:
             self.logger.info("check(): ignored (disabled)")
@@ -248,7 +248,7 @@ class Eyes(object):
         )
 
     def close(self, raise_ex=True):
-        # type: (bool) -> Optional[List[TestResults]]
+        # type: (bool) -> Optional[TestResults]
         """
         Ends the test.
 
@@ -267,7 +267,7 @@ class Eyes(object):
         results = demarshal_test_results(results)
         for r in results:
             _log_session_results_and_raise_exception(self.logger, raise_ex, r)
-        return results[0]
+        return results[0]  # Original interface returns just one result
 
     def abort(self):
         # type: () -> Optional[List[TestResults]]

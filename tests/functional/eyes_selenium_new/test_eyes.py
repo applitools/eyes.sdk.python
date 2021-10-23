@@ -59,11 +59,11 @@ def test_get_all_test_results(local_chrome_driver):
     eyes1 = Eyes(runner)
     eyes1.open(local_chrome_driver, "USDK Test", "Test get all test results 1")
     eyes1.check_window()
-    results = eyes1.close()
+    results = [eyes1.close()]
     eyes2 = Eyes(runner)
     eyes2.open(local_chrome_driver, "USDK Test", "Test get all test results 2")
     eyes2.check_window()
-    results += eyes2.close()
+    results.append(eyes2.close())
 
     all_results = runner.get_all_test_results()
 
@@ -80,11 +80,11 @@ def test_get_all_vg_test_results(local_chrome_driver):
     eyes1 = Eyes(runner)
     eyes1.open(local_chrome_driver, "USDK Test", "Test get all vg test results 1")
     eyes1.check_window()
-    results = eyes1.close()
+    results = [eyes1.close()]
     eyes2 = Eyes(runner)
     eyes2.open(local_chrome_driver, "USDK Test", "Test get all vg test results 2")
     eyes2.check_window()
-    results += eyes2.close()
+    results.append(eyes2.close())
 
     all_results = runner.get_all_test_results()
 
