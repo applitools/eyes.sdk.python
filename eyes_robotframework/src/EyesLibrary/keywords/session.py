@@ -5,6 +5,7 @@ from typing import Optional, Text
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
+from applitools.core import BatchClose
 from applitools.selenium import EyesWebDriver
 
 from ..base import LibraryComponent, keyword
@@ -199,3 +200,16 @@ class SessionKeywords(LibraryComponent):
         if self.current_eyes:
             return self.current_eyes.is_open
         return False
+
+
+class BatchCloseKeywords(LibraryComponent):
+    @keyword("Eyes Batch Close")
+    def batch_close(self):
+        config = self.get_configuration()
+        return (
+            BatchClose(
+                api_key=config.api_key, server_url=config.server_url, proxy=config.proxy
+            )
+            .set_batch_ids(config.batch.id)
+            .close()
+        )

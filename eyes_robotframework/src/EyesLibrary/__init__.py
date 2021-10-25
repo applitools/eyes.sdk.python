@@ -29,13 +29,14 @@ from .errors import EyesLibraryConfigError, EyesLibraryError
 from .eyes import RobotEyes
 from .eyes_cache import EyesCache
 from .keywords import (
+    BatchCloseKeywords,
     CheckKeywords,
     CheckSettingsKeywords,
     ConfigurationKeywords,
+    RunnerKeywords,
     SessionKeywords,
     TargetKeywords,
 )
-from .keywords.session import RunnerKeywords
 from .library_listener import LibraryListener
 from .locator_converter import LocatorConverter
 
@@ -221,6 +222,7 @@ class EyesLibrary(DynamicCore):
             TargetKeywords(self),
             CheckSettingsKeywords(self),
             ConfigurationKeywords(self),
+            BatchCloseKeywords(self),
         ]
 
         DynamicCore.__init__(self, keywords)
