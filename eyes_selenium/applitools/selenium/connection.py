@@ -94,22 +94,18 @@ class USDKSharedConnection(object):
     @staticmethod
     def _receiver_loop(weak_socket, response_futures):
         while True:
-            socket = weak_socket()
-            if socket:
-                try:
-                    resp = socket.recv()
-                    if not resp:
-                        for future in response_futures.values():
-                            future.set_exception(RuntimeError("USDK Connection closed"))
-                        break
-                    response = loads(resp)
-                    future = response_futures.pop(response["key"])
-                    future.set_result(response)
-                except Exception as exc:
-                    for future in response_futures.values():
-                        future.set_exception(exc)
-                    break
-                finally:
-                    del socket
-            else:
+            try:
+                socket = weak_socket()
+                if not socket:
+                    raise EOFError
+                response = socket.recv()
+                del socket
+                if not response:
+                    raise EOFError
+                response = loads(response)
+                future = response_futures.pop(response["key"])
+                future.set_result(response)
+            except Exception as exc:
+                for future in response_futures.values():
+                    future.set_exception(exc)
                 break
