@@ -51,7 +51,9 @@ class USDKSharedConnection(object):
         self._keys = count(1)
         self._response_futures = {}
         self._receiver_thread = Thread(
-            target=self._receiver_loop, name="USDK Receiver", args=(weakref.ref(self),)
+            target=self._receiver_loop,
+            name="USDK Receiver",
+            args=(weakref.ref(self._websocket), self._response_futures),
         )
         self._receiver_thread.start()
 
@@ -85,23 +87,29 @@ class USDKSharedConnection(object):
         self._receiver_thread.join()
         self._receiver_thread = None
 
+    def __del__(self):
+        if self._websocket:
+            self.close()
+
     @staticmethod
-    def _receiver_loop(weak_self):
+    def _receiver_loop(weak_socket, response_futures):
         while True:
-            self = weak_self()
-            if not self:
-                break
-            try:
-                resp = self._websocket.recv()
-                if not resp:
-                    for future in self._response_futures.values():
-                        future.set_exception(RuntimeError("USDK Connection closed"))
+            socket = weak_socket()
+            if socket:
+                try:
+                    resp = socket.recv()
+                    if not resp:
+                        for future in response_futures.values():
+                            future.set_exception(RuntimeError("USDK Connection closed"))
+                        break
+                    response = loads(resp)
+                    future = response_futures.pop(response["key"])
+                    future.set_result(response)
+                except Exception as exc:
+                    for future in response_futures.values():
+                        future.set_exception(exc)
                     break
-                response = loads(resp)
-                future = self._response_futures.pop(response["key"])
-                future.set_result(response)
-            except Exception:
-                for future in self._response_futures.values():
-                    future.set_exception_info(sys.exc_info()[1:])
+                finally:
+                    del socket
+            else:
                 break
-            del self

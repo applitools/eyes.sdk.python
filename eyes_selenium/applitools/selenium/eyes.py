@@ -65,25 +65,30 @@ class _EyesManager(object):
     def get_all_test_results(self, should_raise_exception=True, timeout=5 * 60):
         # type: (bool, Optional[int]) -> TestResultsSummary
         self._commands.set_timeout(timeout)
-        if self._ref:
-            try:
-                results = self._commands.manager_close_all_eyes(self._ref)
-            except WebSocketTimeoutException:
-                logger.warning("Tests completion timeout exceeded", timeout=timeout)
-                raise EyesError("Tests didn't finish in {} seconds".format(timeout))
+        try:
+            if self._ref:
+                try:
+                    results = self._commands.manager_close_all_eyes(self._ref)
+                except WebSocketTimeoutException:
+                    logger.warning("Tests completion timeout exceeded", timeout=timeout)
+                    raise EyesError("Tests didn't finish in {} seconds".format(timeout))
+                structured_results = demarshal_test_results(results)
+                for r in structured_results:
+                    _log_session_results_and_raise_exception(
+                        self.logger, should_raise_exception, r
+                    )
+            else:
+                structured_results = []
+            return TestResultsSummary(
+                [
+                    TestResultContainer(result, None, None)
+                    for result in structured_results
+                ]
+            )
+        finally:
             self._ref = None
-            structured_results = demarshal_test_results(results)
-            for r in structured_results:
-                _log_session_results_and_raise_exception(
-                    self.logger, should_raise_exception, r
-                )
-        else:
-            structured_results = []
-        self._commands.close()
-        self._commands = None
-        return TestResultsSummary(
-            [TestResultContainer(result, None, None) for result in structured_results]
-        )
+            self._commands.close()
+            self._commands = None
 
     @classmethod
     def _update_runner_specific_defaults(cls, check_settings):
