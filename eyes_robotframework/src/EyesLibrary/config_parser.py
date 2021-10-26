@@ -23,9 +23,9 @@ from applitools.common import (
 )
 from applitools.common.selenium import BrowserType
 from applitools.common.utils.compat import raise_from
-from applitools.selenium import BatchInfo, RunnerOptions
+from applitools.selenium import BatchInfo
 
-from .config import RobotConfiguration
+from .config import RobotConfiguration, RobotRunnerOptions
 from .errors import EyesLibraryConfigError, EyesLibraryValueError
 from .utils import get_enum_by_name, parse_viewport_size
 
@@ -150,11 +150,23 @@ class ChromeEmulationInfoTrafaret(trf.Trafaret):
 
 
 class RunnerOptionsTrafaret(trf.Trafaret):
-    scheme = trf.Dict({trf.Key("test_concurrency"): trf.Int})
+    scheme = trf.Dict(
+        {
+            trf.Key("dont_close_batches", optional=True): trf.Bool,
+        }
+    )
 
     def check_and_return(self, value, context=None):
         sanitized = self.scheme.check(value, context)
-        return RunnerOptions().test_concurrency(sanitized["test_concurrency"])
+        return RobotRunnerOptions(**sanitized)
+
+
+class UFGRunnerOptionsTrafaret(RunnerOptionsTrafaret):
+    scheme = RunnerOptionsTrafaret.scheme + trf.Dict(
+        {
+            trf.Key("test_concurrency", optional=True): trf.Int,
+        }
+    )
 
 
 class ProxyTrafaret(trf.Trafaret):
@@ -211,6 +223,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("properties", optional=True): trf.List(
                 trf.Dict(name=trf.String, value=trf.String)
             ),
+            trf.Key("runner_options", optional=True): RunnerOptionsTrafaret,
         },
     )
     selenium_scheme = shared_scheme + trf.Dict(
@@ -224,7 +237,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
     selenium_ufg_scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("runner_options", optional=True): RunnerOptionsTrafaret,
+            trf.Key("runner_options", optional=True): UFGRunnerOptionsTrafaret,
             trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
             trf.Key("disable_browser_fetching", optional=True): trf.Bool,
             trf.Key("enable_cross_origin_rendering", optional=True): trf.Bool,

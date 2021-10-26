@@ -1,4 +1,4 @@
-### applitools.yaml 1.0
+### applitools.yaml 1.1
 ### START `SHARED SECTION` ###
 #server_url: "https://eyesapi.applitools.com" #optional
 #api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
@@ -36,6 +36,10 @@ app_name: YOUR_APP_NAME
 #    - name: YOUR_BATCH_PROPERTY_NAME
 #      value: YOUR_BATCH_PROPERTY_VALUE
 
+#runner_options:
+#   dont_close_batches: False
+
+
 ###### END `AVAILABLE DURING `Eyes Open` CALL SECTION` ######
 
 
@@ -56,7 +60,8 @@ mobile_native:
 
 web_ufg:
 #  runner_options:
-#    test_concurrency: 5
+#     test_concurrency: 5
+#     dont_close_batches: False
 #  visual_grid_options:
 #    - key: YOUR_VISUAL_GRID_OPTION
 #      value: YOUR_VISUAL_GRID_OPTION_VALUE

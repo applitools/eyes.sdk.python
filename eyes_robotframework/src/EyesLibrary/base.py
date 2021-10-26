@@ -8,7 +8,7 @@ from robot.api.deco import keyword  # noqa
 from SeleniumLibrary import SeleniumLibrary
 
 from applitools.common.utils import cached_property
-from applitools.selenium import ClassicRunner, VisualGridRunner
+from applitools.selenium import ClassicRunner, RunnerOptions, VisualGridRunner
 
 from .config_parser import SelectedRunner
 from .errors import EyesLibraryValueError
@@ -126,14 +126,26 @@ class LibraryComponent(ContextAware):
         # type: () -> None
         if self.ctx.eyes_runner is None:
             # TODO: probably need to add runner_options to Configuration class
-            runner_options = self.ctx.configure.runner_options
+            robot_runner_options = self.ctx.configure.runner_options
             selected_runner = self._selected_runner_to_eyes_runner[
                 self.ctx.selected_runner
             ]
+            if robot_runner_options is None:
+                self.ctx.eyes_runner = selected_runner()
+                return
 
-            self.ctx.eyes_runner = (
-                selected_runner(runner_options) if runner_options else selected_runner()
-            )
+            if robot_runner_options.test_concurrency is not None:
+                runner_options = RunnerOptions().test_concurrency(
+                    robot_runner_options.test_concurrency
+                )
+                self.ctx.eyes_runner = selected_runner(runner_options)
+            else:
+                self.ctx.eyes_runner = selected_runner()
+
+            if robot_runner_options.dont_close_batches is not None:
+                self.ctx.eyes_runner.set_dont_close_batches(
+                    robot_runner_options.dont_close_batches
+                )
 
     def fetch_driver(self):
         # type: () -> AnyWebDriver
