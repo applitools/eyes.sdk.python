@@ -75,7 +75,7 @@ class USDKSharedConnection(object):
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
-        return future.result()
+        return future.result(3 * 60)
 
     def set_timeout(self, timeout):
         # type: (Optional[float]) -> None
