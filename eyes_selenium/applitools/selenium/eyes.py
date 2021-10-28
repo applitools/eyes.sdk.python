@@ -62,15 +62,20 @@ class _EyesManager(object):
             manager_type, concurrency, is_legacy
         )
 
-    def get_all_test_results(self, should_raise_exception=True, timeout=5 * 60):
+    def get_all_test_results(self, should_raise_exception=True, timeout=10 * 60):
         # type: (bool, Optional[int]) -> TestResultsSummary
+        if not self._commands:
+            self.logger.error("Test results are already retrieved")
+            return TestResultsSummary([])
         self._commands.set_timeout(timeout)
         try:
             if self._ref:
                 try:
                     results = self._commands.manager_close_all_eyes(self._ref)
                 except WebSocketTimeoutException:
-                    logger.warning("Tests completion timeout exceeded", timeout=timeout)
+                    self.logger.warning(
+                        "Tests completion timeout exceeded", timeout=timeout
+                    )
                     raise EyesError("Tests didn't finish in {} seconds".format(timeout))
                 structured_results = demarshal_test_results(results)
                 for r in structured_results:
