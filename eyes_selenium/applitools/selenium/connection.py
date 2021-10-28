@@ -62,7 +62,7 @@ class USDKSharedConnection(object):
         # type: (int) -> USDKConnection
         websocket = WebSocket(enable_multithread=True)
         websocket.connect("ws://localhost:{}/eyes".format(port))
-        websocket.settimeout(4 * 60)
+        websocket.settimeout(3 * 60)
         return cls(websocket)
 
     def notification(self, name, payload):
@@ -75,7 +75,7 @@ class USDKSharedConnection(object):
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
-        return future.result(4 * 60)
+        return future.result(3 * 60)
 
     def set_timeout(self, timeout):
         # type: (Optional[float]) -> None
