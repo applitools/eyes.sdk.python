@@ -19,7 +19,7 @@
     "python:generate:eg": "coverage-tests generate ./configuration/eg_configuration.js --pascalizeTests --strict",
     "python:run": "pip3 install -r python_requirements.txt && APPLITOOLS_BATCH_ID=$(uuidgen) python3 -m pytest -s -v ./test/coverage/generic --rootdir=./test --junitxml=./coverage-test-report.xml",
     "python:run:parallel": "pip3 install -r python_requirements.txt && APPLITOOLS_BATCH_ID=$(uuidgen) python3 -m pytest -v -n 15 ./test/coverage/generic --rootdir=./test --junitxml=./coverage-test-report.xml",
-    "python:run:eg": "pip3 install -r python_requirements.txt && APPLITOOLS_BATCH_ID=$(uuidgen) python3 -m pytest -v -n 45 ./test/coverage/generic --rootdir=./test --junitxml=./coverage-test-report.xml",
+    "python:run:eg": "pip3 install -r python_requirements.txt && APPLITOOLS_BATCH_ID=$(uuidgen) python3 -m pytest -v -n 5 ./test/coverage/generic --rootdir=./test --junitxml=./coverage-test-report.xml",
     "python:move:report": "mv ./python/coverage-test-report.xml ./coverage-test-report.xml",
     "python:report:sandbox": "coverage-tests report ./configuration --sandbox --reportId $TRAVIS_COMMIT",
     "python:report:prod": "coverage-tests report ./configuration --reportId $TRAVIS_COMMIT",
