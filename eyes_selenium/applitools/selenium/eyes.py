@@ -52,6 +52,8 @@ if typing.TYPE_CHECKING:
 
 
 class _EyesManager(object):
+    check_window_fully_arg_default = None
+
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
         from . import server
@@ -95,11 +97,6 @@ class _EyesManager(object):
             self._commands.close()
             self._commands = None
 
-    @classmethod
-    def _update_runner_specific_defaults(cls, check_settings):
-        # type: (SeleniumCheckSettings) -> None
-        pass
-
 
 class RunnerOptions(object):
     concurrency = 5
@@ -111,6 +108,8 @@ class RunnerOptions(object):
 
 
 class VisualGridRunner(_EyesManager):
+    check_window_fully_arg_default = True
+
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
         if isinstance(options_or_concurrency, int):
@@ -120,12 +119,6 @@ class VisualGridRunner(_EyesManager):
             concurrency = options_or_concurrency.concurrency
             is_legacy = False
         super(VisualGridRunner, self).__init__(ManagerType.VG, concurrency, is_legacy)
-
-    @classmethod
-    def _update_runner_specific_defaults(cls, check_settings):
-        # type: (SeleniumCheckSettings) -> None
-        if check_settings.values.stitch_content is None:
-            check_settings.stitch_content(True)
 
 
 class ClassicRunner(_EyesManager):
@@ -216,7 +209,6 @@ class Eyes(object):
             check_settings = Target.window()
         if name:
             check_settings = check_settings.with_name(name)
-        self._runner._update_runner_specific_defaults(check_settings)  # noqa
 
         if self.configure.is_disabled:
             self.logger.info("check(): ignored (disabled)")
@@ -561,6 +553,8 @@ class Eyes(object):
         :param match_timeout:  The amount of time to retry matching (milliseconds)
         :param fully: Defines that the screenshot will contain the entire window.
         """
+        if fully is None:
+            fully = self._runner.check_window_fully_arg_default
         return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
 
     def check_frame(self, frame_reference, tag=None, match_timeout=-1):
