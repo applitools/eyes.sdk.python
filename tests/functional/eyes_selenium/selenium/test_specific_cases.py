@@ -292,7 +292,7 @@ def test_charts_with_scroll_root_fluent(eyes, driver):
     driver.get(
         "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
     )
-    eyes_driver = eyes.open(
+    eyes.open(
         driver=driver,
         app_name="Applitools Eyes SDK",
         test_name="TestChartsWithScrollRoot",
