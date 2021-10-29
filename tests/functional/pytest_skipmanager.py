@@ -37,9 +37,7 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
 
     def get_skip_tests_list():
         result = defaultdict(dict)
-        for test_file, test_dict in itertools.chain(
-            get_failed_tests_from_file(), get_skip_duplicates_tests_from_file()
-        ):
+        for test_file, test_dict in itertools.chain(get_failed_tests_from_file()):
             for test_name, val in iteritems(test_dict):
                 result[test_file][test_name] = val
         return result
@@ -48,11 +46,6 @@ if RUNNING_ON_TRAVIS_REGRESSION_SUITE:
         with open(path.join(here, "failedTestsSuite.yaml")) as f:
             failed_tests = yaml.load(f, Loader=yaml.Loader)
             return iteritems(failed_tests)
-
-    def get_skip_duplicates_tests_from_file():
-        with open(path.join(here, "generatedTestsSuite.yaml")) as f:
-            generated_tests = yaml.load(f, Loader=yaml.Loader)
-            return iteritems(generated_tests)
 
     def set_skip_for_linux_platform(item, failed_tests, skip):
         if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
