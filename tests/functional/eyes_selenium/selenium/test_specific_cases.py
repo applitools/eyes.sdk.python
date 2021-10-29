@@ -263,13 +263,13 @@ def test_charts_with_scroll_root(eyes, driver):
     driver.get(
         "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
     )
+    eyes.configure.branch_name = "master_python"
     eyes_driver = eyes.open(
         driver=driver,
         app_name="Applitools Eyes SDK",
         test_name="TestChartsWithScrollRoot",
         viewport_size={"width": 1200, "height": 700},
     )
-    eyes.configure.branch_name = "master_python"
 
     frame1 = eyes_driver.find_element_by_id("mainFrame")
     eyes_driver.switch_to.frame(frame1)
@@ -292,13 +292,13 @@ def test_charts_with_scroll_root_fluent(eyes, driver):
     driver.get(
         "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
     )
+    eyes.configure.branch_name = "master_python"
     eyes.open(
         driver=driver,
         app_name="Applitools Eyes SDK",
         test_name="TestChartsWithScrollRoot",
         viewport_size={"width": 1200, "height": 700},
     )
-    eyes.configure.branch_name = "master_python"
     eyes.check(
         Target.frame("mainFrame")
         .frame("angularContainerIframe")
@@ -317,13 +317,13 @@ def test_charts_with_scroll_root_fluent(eyes, driver):
 
 def test_check_window_with_match_region_paddings__fluent(eyes, driver):
     driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-    eyes_driver = eyes.open(
+    eyes.configure.branch_name = "master_python"
+    eyes.open(
         driver=driver,
         app_name="Applitools Eyes SDK",
         test_name="TestCheckWindowWithMatchRegionPaddings_Fluent",
         viewport_size={"width": 1200, "height": 700},
     )
-    eyes.configure.branch_name = "master_python"
 
     eyes.check(
         "Fluent - Window with ignore region by selector stretched",
