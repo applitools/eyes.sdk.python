@@ -155,7 +155,6 @@ jobs:
               - TEST_BROWSERS=chrome
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
-              - git submodule update --init --remote --recursive
               - nvm install node
           script:
               - tox -e selenium-generated
@@ -198,25 +197,6 @@ jobs:
               - TOX_ENV=mobile
               - TEST_PLATFORM="iOS"
               - TEST_REMOTE=1
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_RUN_ON_VG=true
-              - TEST_BROWSERS=chrome
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE

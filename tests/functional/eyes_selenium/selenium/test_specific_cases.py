@@ -1,18 +1,17 @@
 import time
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from applitools.core.feature import Feature
 from applitools.selenium import (
-    Eyes,
     EyesWebDriver,
     EyesWebElement,
     Region,
     StitchMode,
     Target,
 )
-from tests.utils import get_resource_path
+from applitools.selenium.selenium_eyes import SeleniumEyes
+from tests.functional.conftest import check_image_match_settings
 
 
 @pytest.mark.skip("Old test. test_hello_world implemented instead of this one")
@@ -258,3 +257,104 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
     eyes.check("Row 10", Target.region("body > table > tr:nth-child(10)"))
     eyes.check("Row 20", Target.region("body > table > tr:nth-child(20)"))
     eyes.close()
+
+
+def test_charts_with_scroll_root(eyes, driver):
+    driver.get(
+        "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
+    )
+    eyes_driver = eyes.open(
+        driver=driver,
+        app_name="Applitools Eyes SDK",
+        test_name="TestChartsWithScrollRoot",
+        viewport_size={"width": 1200, "height": 700},
+    )
+    eyes.configure.branch_name = "master_python"
+
+    frame1 = eyes_driver.find_element_by_id("mainFrame")
+    eyes_driver.switch_to.frame(frame1)
+
+    frame2 = eyes_driver.find_element_by_id("angularContainerIframe")
+    eyes_driver.switch_to.frame(frame2)
+
+    checked_element = driver.find_element_by_tag_name("mv-temperature-sensor-graph")
+    checked_element2 = driver.find_element_by_tag_name("mv-humidity-sensor-graph")
+    scroll_root = driver.find_element_by_tag_name("mat-sidenav-content")
+
+    eyes.check(Target.window().region(checked_element).scroll_root_element(scroll_root))
+    eyes.check(
+        Target.window().region(checked_element2).scroll_root_element(scroll_root)
+    )
+    eyes.close()
+
+
+def test_charts_with_scroll_root_fluent(eyes, driver):
+    driver.get(
+        "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
+    )
+    eyes_driver = eyes.open(
+        driver=driver,
+        app_name="Applitools Eyes SDK",
+        test_name="TestChartsWithScrollRoot",
+        viewport_size={"width": 1200, "height": 700},
+    )
+    eyes.configure.branch_name = "master_python"
+    eyes.check(
+        Target.frame("mainFrame")
+        .frame("angularContainerIframe")
+        .region("mv-temperature-sensor-graph")
+        .scroll_root_element("mat-sidenav-content")
+    )
+
+    eyes.check(
+        Target.frame("mainFrame")
+        .frame("angularContainerIframe")
+        .region("mv-humidity-sensor-graph")
+        .scroll_root_element("mat-sidenav-content")
+    )
+    eyes.close()
+
+
+def test_check_window_with_match_region_paddings__fluent(eyes, driver):
+    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+    eyes_driver = eyes.open(
+        driver=driver,
+        app_name="Applitools Eyes SDK",
+        test_name="TestCheckWindowWithMatchRegionPaddings_Fluent",
+        viewport_size={"width": 1200, "height": 700},
+    )
+    eyes.configure.branch_name = "master_python"
+
+    eyes.check(
+        "Fluent - Window with ignore region by selector stretched",
+        Target.window()
+        .fully()
+        .ignore(".ignore", padding=dict(left=10))
+        .content("#stretched", padding=dict(top=10))
+        .layout("#centered", padding=dict(top=10, right=50))
+        .strict("overflowing-div", padding=dict(bottom=100)),
+    )
+    # regions are different for latest UFG chrome vs classic chrome
+    if isinstance(eyes._current_eyes, SeleniumEyes):
+        expected_regions = [
+            Region(10 + 10, 286, 800, 500),
+            Region(122 + 10, 933, 456, 306),
+            Region(8 + 10, 1277, 690, 206),
+        ]
+    else:
+        expected_regions = [
+            Region(10 + 10, 285, 800, 501),
+            Region(122 + 10, 932, 456, 307),
+            Region(8 + 10, 1276, 690, 207),
+        ]
+    test_result = eyes.close(False)
+    check_image_match_settings(
+        eyes,
+        test_result,
+        [
+            {
+                "actual_name": "ignore",
+                "expected": expected_regions,
+            }
+        ],
+    )
