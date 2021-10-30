@@ -267,23 +267,23 @@ class Platform(namedtuple("Platform", "name version browsers extra")):
 
 COMMON_BROWSERS = [("chrome", "latest"), ("firefox", "latest")]
 SUPPORTED_PLATFORMS = [
-    Platform(
-        name="Windows",
-        version="10",
-        browsers=COMMON_BROWSERS
-        + [
-            ("internet explorer", "latest"),
-            # ("MicrosoftEdge", "latest")
-        ],
-        extra=None,
-    ),
+    # Platform(
+    #     name="Windows",
+    #     version="10",
+    #     browsers=COMMON_BROWSERS
+    #     + [
+    #         ("internet explorer", "latest"),
+    #         # ("MicrosoftEdge", "latest")
+    #     ],
+    #     extra=None,
+    # ),
     Platform(name="Linux", version="", browsers=COMMON_BROWSERS, extra=None),
-    Platform(
-        name="macOS",
-        version="10.14",
-        browsers=COMMON_BROWSERS + [("safari", "latest")],
-        extra=None,
-    ),
+    # Platform(
+    #     name="macOS",
+    #     version="10.14",
+    #     browsers=COMMON_BROWSERS + [("safari", "latest")],
+    #     extra=None,
+    # ),
     Platform(name="iOS", version="", browsers=[], extra={"appiumVersion": "1.17.1"}),
     Platform(
         name="Android", version="", browsers=[], extra={"appiumVersion": "1.17.1"}

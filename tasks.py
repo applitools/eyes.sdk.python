@@ -79,27 +79,28 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "browser_cookie3",
     ]
     testing_requires = [
-        "pytest==3.9.3",
-        "pytest-cov==2.6.1",
-        "pytest-xdist==1.26.1",
+        "pytest",
+        "pytest-xdist",
         "PyYAML",
-        "virtualenv==20.4.0",
-        "pytest-venv==0.2.1",
+        "virtualenv",
+        "pytest-venv",
         "mock",
         "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
-        "tox==3.14.3",
+        "tox",
         "pytest-rerunfailures",
         "pytest-dictsdiff",
         "dictdiffer==0.8.1",
         "contextlib2",
     ]
-    lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
+    lint_requires = ["flake8", "flake8-import-order", "mypy"]
     if testing:
         requires = testing_requires
     elif dev:
         requires = dev_requires
     elif lint:
         requires = lint_requires
+        if sys.version_info[:1] >= (3,):
+            requires.append("flake8-bugbear")
     else:
         requires = dev_requires + testing_requires + lint_requires
     c.run("pip install {}".format(" ".join(requires)), echo=True)
