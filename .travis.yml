@@ -151,8 +151,6 @@ jobs:
               firefox: latest
           env:
               - TOX_ENV=selenium-generated
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - nvm install node
@@ -170,16 +168,15 @@ jobs:
               chrome: stable
           env:
             - TOX_ENV=robotframework
-            - TEST_PLATFORM="Linux"
+            - APPLITOOLS_BATCH_NAME="Python RobotFramework Tests"
 
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
-              - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+            - TOX_ENV=selenium
+            - APPLITOOLS_BATCH_NAME="Python Desktop Tests|2.7"
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
@@ -187,38 +184,28 @@ jobs:
               chrome: stable
               firefox: latest
           env:
-              - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+            - TOX_ENV=selenium
+            - APPLITOOLS_BATCH_NAME="Python Desktop Tests|3.6"
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="Android"
-              - TEST_REMOTE=1
+            - TOX_ENV=mobile
+            - APPLITOOLS_BATCH_NAME="Python Mobile Tests"
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           env:
-              - TOX_ENV=selenium-visualgrid
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
+            - TOX_ENV=selenium-visualgrid
+            - APPLITOOLS_BATCH_NAME="Python UFG Tests"
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           env:
-              - TOX_ENV=images
-              - TEST_PLATFORM="Linux"
+            - TOX_ENV=images
+            - APPLITOOLS_BATCH_NAME="Python Images Tests"
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6

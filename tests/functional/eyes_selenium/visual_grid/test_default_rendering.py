@@ -1,8 +1,8 @@
 from applitools.selenium import BrowserType, Eyes, Target
 
 
-def test_default_rendering_of_multiple_targets(driver, vg_runner):
-    driver.get("https://applitools.com/helloworld")
+def test_default_rendering_of_multiple_targets(chrome_driver, vg_runner):
+    chrome_driver.get("https://applitools.com/helloworld")
     eyes = Eyes(vg_runner)
     eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
     eyes.configuration.add_browser(800, 600, BrowserType.FIREFOX)
@@ -12,7 +12,7 @@ def test_default_rendering_of_multiple_targets(driver, vg_runner):
     eyes.configuration.test_name = "TestDefaultRenderingOfMultipleTargets"
 
     try:
-        eyes.open(driver)
+        eyes.open(chrome_driver)
         eyes.check("", Target.window())
         eyes.close()
     finally:

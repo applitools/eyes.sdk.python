@@ -3,7 +3,7 @@ from applitools.common.selenium import BrowserType
 from applitools.selenium import Eyes, Target, VisualGridRunner
 
 
-def test_ufg_options(driver, fake_connector_class):
+def test_ufg_options(chrome_driver, fake_connector_class):
     runner = VisualGridRunner(1)
     eyes = Eyes(runner)
     eyes.server_connector = fake_connector_class()
@@ -16,8 +16,8 @@ def test_ufg_options(driver, fake_connector_class):
         )
     )
 
-    driver.get("https://google.com")
-    eyes.open(driver, "Mock app", "Mock Test")
+    chrome_driver.get("https://google.com")
+    eyes.open(chrome_driver, "Mock app", "Mock Test")
     eyes.check(
         "",
         Target.window().visual_grid_options(

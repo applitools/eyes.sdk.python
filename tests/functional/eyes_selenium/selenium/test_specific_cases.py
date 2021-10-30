@@ -51,9 +51,9 @@ def test_directly_set_viewport_size(eyes, driver):
 @pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(hide_scrollbars=True)
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-def test_check_window_with_send_dom(eyes, driver):
-    eyes.open(
-        driver,
+def test_check_window_with_send_dom(eyes, chrome_driver):
+    driver = eyes.open(
+        chrome_driver,
         "Eyes Selenium SDK - Fluent API",
         "TestCheckWindowWithSendDom",
         {"width": 800, "height": 600},
@@ -69,8 +69,8 @@ def test_check_window_with_send_dom(eyes, driver):
 
 
 @pytest.mark.test_page_url("data:text/html,<p>Test</p>")
-def test_abort_eyes(eyes, driver):
-    eyes.open(driver, "Test Abort", "Test Abort", {"width": 1200, "height": 800})
+def test_abort_eyes(eyes, chrome_driver):
+    eyes.open(chrome_driver, "Test Abort", "Test Abort", {"width": 1200, "height": 800})
     eyes.check("SEL", Target.window())
     time.sleep(15)
     eyes.abort()
@@ -79,9 +79,9 @@ def test_abort_eyes(eyes, driver):
 @pytest.mark.platform("Linux")
 @pytest.mark.test_page_url("https://applitools.com/helloworld")
 @pytest.mark.eyes_config(branch_name="master_python")
-def test_coordinates_resolving(eyes, driver):
+def test_coordinates_resolving(eyes, chrome_driver):
     driver = eyes.open(
-        driver,
+        chrome_driver,
         "Python Selenium",
         "TestCoordinatesResolving",
         {"width": 800, "height": 600},
@@ -112,12 +112,12 @@ def test_coordinates_resolving(eyes, driver):
 @pytest.mark.platform("Windows")
 @pytest.mark.browser("internet explorer")
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage")
-def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
+def test_ie_viewport_screenshot_with_scrolling(eyes, chrome_driver):
     test_name = "TestIEViewportScreenshot"
     if eyes.force_full_page_screenshot:
         test_name += "_FPS"
     test_name += "_%s" % eyes.stitch_mode.value
-    eyes.open(driver, "Python SDK", test_name)
+    driver = eyes.open(chrome_driver, "Python SDK", test_name)
 
     eyes.check_window()
 
@@ -131,16 +131,16 @@ def test_ie_viewport_screenshot_with_scrolling(eyes, driver):
 
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 @pytest.mark.eyes_config(parent_branch_name="master", branch_name="master_python")
-def test_switch_back_to_frame_after_check(eyes, driver):
+def test_switch_back_to_frame_after_check(eyes, chrome_driver):
     eyes_driver = eyes.open(
-        driver,
+        chrome_driver,
         "Python Selenium",
         "TestSwitchBackToFrameAfterCheck",
         {"width": 800, "height": 600},
     )
 
     # switch driver context to frame
-    frame = driver.find_element_by_css_selector("body > iframe")
+    frame = eyes_driver.find_element_by_css_selector("body > iframe")
     eyes_driver.switch_to.frame(frame)
 
     # locate element inside the frame - succeed
@@ -156,12 +156,12 @@ def test_switch_back_to_frame_after_check(eyes, driver):
 
 @pytest.mark.platform("Linux")
 @pytest.mark.browser("chrome")
-def test_execute_script_with_eyes_webelement(driver, eyes):
-    elem = driver.find_element_by_tag_name("html")
-    e_elem = EyesWebElement(elem, driver)
-    driver.execute_script("arguments[0].scrollIntoView();", elem)
+def test_execute_script_with_eyes_webelement(chrome_driver, eyes):
+    elem = chrome_driver.find_element_by_tag_name("html")
+    e_elem = EyesWebElement(elem, chrome_driver)
+    chrome_driver.execute_script("arguments[0].scrollIntoView();", elem)
 
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
     eyes_driver.execute_script("arguments[0].scrollIntoView();", elem)
     eyes_driver.execute_script("arguments[0].scrollIntoView();", e_elem)
 
@@ -183,12 +183,12 @@ def test_execute_script_with_eyes_webelement(driver, eyes):
         ),
     ],
 )
-def test_replace_matched_step(params, driver, eyes, fake_connector_class):
+def test_replace_matched_step(params, chrome_driver, eyes, fake_connector_class):
     test_url, replace_last_expected = params
-    driver.get(test_url)
+    chrome_driver.get(test_url)
     eyes.server_connector = fake_connector_class()
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "testReplaceMatchedStep",
         {"width": 700, "height": 460},
@@ -201,10 +201,10 @@ def test_replace_matched_step(params, driver, eyes, fake_connector_class):
         assert match_data.options.replace_last == expected
 
 
-def test_screenshot_too_big(driver, eyes, fake_connector_class):
+def test_screenshot_too_big(chrome_driver, eyes, fake_connector_class):
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "Test Screenshot Too Big",
         {"width": 800, "height": 800},
@@ -227,11 +227,11 @@ def test_screenshot_too_big(driver, eyes, fake_connector_class):
     assert r_info.max_image_height == image.height
 
 
-def test_feature_target_window_captures_selected_frame(eyes, driver):
+def test_feature_target_window_captures_selected_frame(eyes, chrome_driver):
     driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.configure.set_features(Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME)
     eyes_driver = eyes.open(
-        driver=driver,
+        driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="Target window captures selected frame feature",
         viewport_size={"width": 800, "height": 600},
@@ -243,12 +243,12 @@ def test_feature_target_window_captures_selected_frame(eyes, driver):
     eyes.close()
 
 
-def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
-    driver.get(
+def test_capture_element_on_pre_scrolled_down_page(eyes, chrome_driver):
+    chrome_driver.get(
         "http://applitools.github.io/demo/TestPages/FramesTestPage/longframe.html"
     )
-    eyes.open(
-        driver=driver,
+    driver = eyes.open(
+        driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="Test capture element on pre scrolled down page",
         viewport_size={"width": 800, "height": 600},
@@ -259,23 +259,23 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, driver):
     eyes.close()
 
 
-def test_charts_with_scroll_root(eyes, driver):
-    driver.get(
+def test_charts_with_scroll_root(eyes, chrome_driver):
+    chrome_driver.get(
         "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
     )
     eyes.configure.branch_name = "master_python"
-    eyes_driver = eyes.open(
-        driver=driver,
+    driver = eyes.open(
+        driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="TestChartsWithScrollRoot",
         viewport_size={"width": 1200, "height": 700},
     )
 
-    frame1 = eyes_driver.find_element_by_id("mainFrame")
-    eyes_driver.switch_to.frame(frame1)
+    frame1 = driver.find_element_by_id("mainFrame")
+    driver.switch_to.frame(frame1)
 
-    frame2 = eyes_driver.find_element_by_id("angularContainerIframe")
-    eyes_driver.switch_to.frame(frame2)
+    frame2 = driver.find_element_by_id("angularContainerIframe")
+    driver.switch_to.frame(frame2)
 
     checked_element = driver.find_element_by_tag_name("mv-temperature-sensor-graph")
     checked_element2 = driver.find_element_by_tag_name("mv-humidity-sensor-graph")
@@ -288,13 +288,13 @@ def test_charts_with_scroll_root(eyes, driver):
     eyes.close()
 
 
-def test_charts_with_scroll_root_fluent(eyes, driver):
-    driver.get(
+def test_charts_with_scroll_root_fluent(eyes, chrome_driver):
+    chrome_driver.get(
         "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
     )
     eyes.configure.branch_name = "master_python"
     eyes.open(
-        driver=driver,
+        driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="TestChartsWithScrollRoot",
         viewport_size={"width": 1200, "height": 700},
@@ -315,11 +315,11 @@ def test_charts_with_scroll_root_fluent(eyes, driver):
     eyes.close()
 
 
-def test_check_window_with_match_region_paddings__fluent(eyes, driver):
-    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+def test_check_window_with_match_region_paddings__fluent(eyes, chrome_driver):
+    chrome_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.configure.branch_name = "master_python"
     eyes.open(
-        driver=driver,
+        driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="TestCheckWindowWithMatchRegionPaddings_Fluent",
         viewport_size={"width": 1200, "height": 700},

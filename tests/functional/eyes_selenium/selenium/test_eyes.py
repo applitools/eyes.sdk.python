@@ -39,12 +39,12 @@ from applitools.selenium.visual_grid import visual_grid_eyes
     ],
 )
 def test_layout_region_calculation_for_targets(
-    driver, fake_connector_class, target, expected_layout_region
+    chrome_driver, fake_connector_class, target, expected_layout_region
 ):
     eyes = Eyes()
     eyes.send_dom = False
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
+    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get(
         "https://applitools.github.io/demo/TestPages/"
         "SimpleTestPage/modal_scrollable.html"
@@ -59,10 +59,12 @@ def test_layout_region_calculation_for_targets(
 
 
 @pytest.mark.skip("Known bug, Trello#1644")
-def test_layout_region_calculation_for_frame_target(driver, fake_connector_class):
+def test_layout_region_calculation_for_frame_target(
+    chrome_driver, fake_connector_class
+):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
+    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
 
     eyes.check(
@@ -77,10 +79,12 @@ def test_layout_region_calculation_for_frame_target(driver, fake_connector_class
     ]
 
 
-def test_layout_region_calculation_for_frame_fully_target(driver, fake_connector_class):
+def test_layout_region_calculation_for_frame_fully_target(
+    chrome_driver, fake_connector_class
+):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(driver, "a", "b", RectangleSize(height=1024, width=768))
+    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
     driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
 
     eyes.check(
@@ -111,11 +115,11 @@ def test_agent_run_id(fake_connector_class, driver_mock, monkeypatch, spy):
     )
 
 
-def test_scrollable_modal_on_scrolled_down_page(driver):
-    driver.get("https://applitools.github.io/demo/TestPages/ModalsPage")
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/ModalsPage")
+def test_scrollable_modal_on_scrolled_down_page(chrome_driver):
     eyes = Eyes()
     driver = eyes.open(
-        driver,
+        chrome_driver,
         "TestModal",
         "ScrollableModalOnScrolledDownPage",
         RectangleSize(width=1024, height=768),
@@ -136,11 +140,13 @@ def test_scrollable_modal_on_scrolled_down_page(driver):
     eyes.close()
 
 
-def test_layout_region_calculation_within_frame(driver, fake_connector_class):
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+)
+def test_layout_region_calculation_within_frame(chrome_driver, fake_connector_class):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(driver, "a", "b", RectangleSize(width=1024, height=768))
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
+    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(width=1024, height=768))
 
     eyes.check(Target.frame("frame1").region("body").layout("#inner-frame-div"))
 

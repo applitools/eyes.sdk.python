@@ -1,10 +1,10 @@
 from mock import patch
 
 
-def test_match_window_data_contains_webapp_domain(eyes, driver):
-    driver.get("https://demo.applitools.com")
+def test_match_window_data_contains_webapp_domain(eyes, chrome_driver):
+    chrome_driver.get("https://demo.applitools.com")
     eyes.open(
-        driver,
+        chrome_driver,
         "TestCheckSourceSent",
         "Test tracking hostname",
         {"width": 1000, "height": 600},

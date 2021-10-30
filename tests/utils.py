@@ -64,3 +64,8 @@ def update_browser_cookies(cookies, required_domain, driver):
             driver.add_cookie(dict_from_cookie(cookie))
         except (UnableToSetCookieException, InvalidCookieDomainException):
             print(cookie)
+
+
+def get_pytest_marker(request, marker_name):
+    marker = request.node.get_closest_marker(marker_name)
+    return marker.args[-1] if marker else None

@@ -10,8 +10,8 @@ def batch_close_enabled(batch_info):
     batch_enabled.close()
 
 
-def test_batch_close(eyes, driver):
-    driver.get("https://demo.applitools.com")
-    eyes.open(driver, "TestBatchNotificationApp", "TestBatchClose")
+def test_batch_close(eyes, chrome_driver):
+    chrome_driver.get("https://demo.applitools.com")
+    eyes.open(chrome_driver, "TestBatchNotificationApp", "TestBatchClose")
     eyes.check_window()
     eyes.close(False)

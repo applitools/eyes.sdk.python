@@ -24,7 +24,7 @@ from applitools.selenium.visual_grid import VisualGridEyes
 from tests.utils import get_session_results
 
 
-def test_mobile_only(driver, batch_info):
+def test_mobile_only(chrome_driver, batch_info):
     runner = VisualGridRunner(30)
     eyes = Eyes(runner)
 
@@ -36,8 +36,8 @@ def test_mobile_only(driver, batch_info):
     sconf.add_device_emulation(DeviceName.Galaxy_S5)
 
     eyes.set_configuration(sconf)
-    eyes.open(driver)
-    driver.get(
+    eyes.open(chrome_driver)
+    chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/DynamicResolution/mobile.html"
     )
     eyes.check("Test Mobile Only", Target.window().fully())
@@ -46,7 +46,7 @@ def test_mobile_only(driver, batch_info):
 
 
 @pytest.mark.skip
-def test_viewports_test(driver, batch_info):
+def test_viewports_test(chrome_driver, batch_info):
     runner = VisualGridRunner(30)
     eyes = Eyes(runner)
 
@@ -81,8 +81,8 @@ def test_viewports_test(driver, batch_info):
     # sconf.add_browser(1600, 1200, BrowserType.IE_10)
     eyes.set_configuration(sconf)
 
-    eyes.open(driver)
-    driver.get("https://www.applitools.com")
+    eyes.open(chrome_driver)
+    chrome_driver.get("https://www.applitools.com")
     eyes.check("Test Viewport", Target.window().fully())
     eyes.close_async()
 
@@ -134,7 +134,7 @@ def test_viewports_test(driver, batch_info):
         ),
     ],
 )
-def test_special_rendering(url, test_name, batch_info, driver):
+def test_special_rendering(url, test_name, batch_info, chrome_driver):
     runner = VisualGridRunner(30)
     eyes = Eyes(runner)
     sconf = Configuration(
@@ -145,8 +145,8 @@ def test_special_rendering(url, test_name, batch_info, driver):
     sconf.add_browser(1200, 800, BrowserType.FIREFOX)
 
     eyes.set_configuration(sconf)
-    eyes.open(driver)
-    driver.get(url)
+    eyes.open(chrome_driver)
+    chrome_driver.get(url)
     datetime_utils.sleep(500)
     eyes.check(test_name, Target.window().fully())
     eyes.close_async()
@@ -154,8 +154,8 @@ def test_special_rendering(url, test_name, batch_info, driver):
 
 
 @pytest.mark.skip("Page is missing")
-def test_svg_parsing(driver, eyes, batch_info, vg_runner):
-    driver.get("https://danielschwartz85.github.io/static-test-page2/index.html")
+def test_svg_parsing(chrome_driver, eyes, batch_info, vg_runner):
+    chrome_driver.get("https://danielschwartz85.github.io/static-test-page2/index.html")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -164,14 +164,14 @@ def test_svg_parsing(driver, eyes, batch_info, vg_runner):
             batch=batch_info,
         ).add_browser(1200, 800, BrowserType.CHROME)
     )
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check_window()
     eyes.close_async()
     all_results = vg_runner.get_all_test_results()
 
 
-def test_css_relative_url_on_another_domain(driver, batch_info, vg_runner):
-    driver.get(
+def test_css_relative_url_on_another_domain(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/VisualGridTestPageWithRelativeBGImage/index.html"
     )
     eyes = Eyes(vg_runner)
@@ -191,15 +191,15 @@ def test_css_relative_url_on_another_domain(driver, batch_info, vg_runner):
         .add_device_emulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE)
         .add_device_emulation(DeviceName.iPad)
     )
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check_window()
     eyes.close_async()
     all_results = vg_runner.get_all_test_results(False)
     assert len(all_results) == 9
 
 
-def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo")
+def test_mobile_web_happy_flow(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -210,13 +210,13 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
             IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.LANDSCAPE)
         )
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_rendering_ios_simulator(driver, batch_info, vg_runner):
-    driver.get("http://applitools.github.io/demo")
+def test_rendering_ios_simulator(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("http://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -238,14 +238,14 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
         .set_save_diffs(False)
         .set_save_new_tests(False)
     )
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check_window()
     eyes.close_async()
     assert len(vg_runner.get_all_test_results()) == 3
 
 
-def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+def test_visual_viewport(chrome_driver, batch_info, vg_runner, fake_connector_class):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
     eyes.set_configuration(
@@ -255,7 +255,7 @@ def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
             batch=batch_info,
         ).add_browser(IosDeviceInfo("iPhone 7"))
     )
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check_window()
     eyes.close(False)
     running_test = vg_runner._get_all_running_tests()[0]
@@ -263,8 +263,10 @@ def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
     assert isinstance(match_data.app_output.viewport, RectangleSize)
 
 
-def test_render_resource_not_found(driver, fake_connector_class, spy):
-    driver.get("http://applitools.github.io/demo/DomSnapshot/test-visual-grid.html")
+def test_render_resource_not_found(chrome_driver, fake_connector_class, spy):
+    chrome_driver.get(
+        "http://applitools.github.io/demo/DomSnapshot/test-visual-grid.html"
+    )
     missing_blob_url = "http://applitools.github.io/blabla"
     missing_resource_url = "http://localhost:7374/get-cors.css"
 
@@ -273,7 +275,7 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
     eyes.configure.disable_browser_fetching = False
     eyes.server_connector = fake_connector_class()
     eyes.open(
-        driver,
+        chrome_driver,
         app_name="Visual Grid Render Test",
         test_name="TestRenderResourceNotFound",
     )
@@ -299,8 +301,8 @@ def test_render_resource_not_found(driver, fake_connector_class, spy):
     ]
 
 
-def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_explicit_layout_breakpoints(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -315,13 +317,13 @@ def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
         .add_browser(1200, 800, BrowserType.CHROME)
         .set_layout_breakpoints(500, 1000)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_inferred_layout_breakpoints(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -336,13 +338,13 @@ def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
         .add_browser(1200, 800, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_inferred_layout_breakpoints_with_devices(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_inferred_layout_breakpoints_with_devices(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -358,13 +360,13 @@ def test_inferred_layout_breakpoints_with_devices(driver, batch_info, vg_runner)
         .add_browser(1024, 768, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_explicit_layout_breakpoints(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -379,13 +381,13 @@ def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
         .add_browser(1200, 800, BrowserType.CHROME)
         .set_layout_breakpoints(500, 1000)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_inferred_layout_breakpoints(chrome_driver, batch_info, vg_runner):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -400,13 +402,15 @@ def test_inferred_layout_breakpoints(driver, batch_info, vg_runner):
         .add_browser(1200, 800, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_inferred_layout_breakpoints_with_big_devices(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_inferred_layout_breakpoints_with_big_devices(
+    chrome_driver, batch_info, vg_runner
+):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -421,13 +425,15 @@ def test_inferred_layout_breakpoints_with_big_devices(driver, batch_info, vg_run
         .add_browser(1024, 768, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()
 
 
-def test_inferred_layout_breakpoints_with_small_devices(driver, batch_info, vg_runner):
-    driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
+def test_inferred_layout_breakpoints_with_small_devices(
+    chrome_driver, batch_info, vg_runner
+):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -442,6 +448,6 @@ def test_inferred_layout_breakpoints_with_small_devices(driver, batch_info, vg_r
         .add_browser(1024, 768, BrowserType.CHROME)
         .set_layout_breakpoints(True)
     )
-    eyes.open(driver, viewport_size=RectangleSize(800, 600))
+    eyes.open(chrome_driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close()

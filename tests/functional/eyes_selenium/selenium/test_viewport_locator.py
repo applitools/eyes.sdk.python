@@ -34,11 +34,11 @@ def mobile_safari_driver():
         driver.quit()
 
 
-def test_add_remove_marker(driver, eyes):
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
-    device_pixel_ratio = driver.execute_script("return window.devicePixelRatio;")
-    eyes.open(
-        driver,
+def test_add_remove_marker(chrome_driver, eyes):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
+    device_pixel_ratio = chrome_driver.execute_script("return window.devicePixelRatio;")
+    driver = eyes.open(
+        chrome_driver,
         "Viewport locator tests",
         "Add and remove marker",
         {"width": 500, "height": 300},

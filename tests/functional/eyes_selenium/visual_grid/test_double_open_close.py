@@ -17,11 +17,11 @@ def name_suffix(eyes_runner):
         return "_VG"
 
 
-def test_double_open_check_close(driver, eyes_runner, name_suffix):
+def test_double_open_check_close(chrome_driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckClose" + name_suffix,
         dict(width=1200, height=800),
@@ -30,7 +30,7 @@ def test_double_open_check_close(driver, eyes_runner, name_suffix):
     eyes.close(False)
 
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckClose" + name_suffix,
         dict(width=1200, height=800),
@@ -42,11 +42,11 @@ def test_double_open_check_close(driver, eyes_runner, name_suffix):
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_open_check_close_async(driver, eyes_runner, name_suffix):
+def test_double_open_check_close_async(chrome_driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseAsync" + name_suffix,
         dict(width=1200, height=800),
@@ -55,7 +55,7 @@ def test_double_open_check_close_async(driver, eyes_runner, name_suffix):
     eyes.close_async()
 
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseAsync" + name_suffix,
         dict(width=1200, height=800),
@@ -68,12 +68,12 @@ def test_double_open_check_close_async(driver, eyes_runner, name_suffix):
 
 
 def test_double_open_check_close_with_different_instances(
-    driver, eyes_runner, name_suffix
+    chrome_driver, eyes_runner, name_suffix
 ):
     eyes1 = Eyes(eyes_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
@@ -83,7 +83,7 @@ def test_double_open_check_close_with_different_instances(
 
     eyes2 = Eyes(eyes_runner)
     eyes2.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
@@ -96,12 +96,12 @@ def test_double_open_check_close_with_different_instances(
 
 
 def test_double_open_check_close_async_with_different_instances(
-    driver, eyes_runner, name_suffix
+    chrome_driver, eyes_runner, name_suffix
 ):
     eyes1 = Eyes(eyes_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes1.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
@@ -111,7 +111,7 @@ def test_double_open_check_close_async_with_different_instances(
 
     eyes2 = Eyes(eyes_runner)
     eyes2.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleOpenCheckCloseAsyncWithDifferentInstances" + name_suffix,
         dict(width=1200, height=800),
@@ -123,11 +123,11 @@ def test_double_open_check_close_async_with_different_instances(
     assert len(all_test_results.all_results) == 2
 
 
-def test_double_check_dont_get_all_results(driver, eyes_runner, name_suffix):
+def test_double_check_dont_get_all_results(chrome_driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
-    driver.get("https://applitools.com/helloworld")
+    chrome_driver.get("https://applitools.com/helloworld")
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestDoubleCheckDontGetAllResults" + name_suffix,
         dict(width=1200, height=800),
@@ -137,11 +137,11 @@ def test_double_check_dont_get_all_results(driver, eyes_runner, name_suffix):
     eyes.close(False)
 
 
-def test_open_check_sleep_check_close(driver, eyes_runner, name_suffix):
+def test_open_check_sleep_check_close(chrome_driver, eyes_runner, name_suffix):
     eyes = Eyes(eyes_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes SDK",
         "TestOpenCheckSleepCheckClose" + name_suffix,
         dict(width=1200, height=800),

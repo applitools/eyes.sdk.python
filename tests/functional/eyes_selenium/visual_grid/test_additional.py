@@ -2,8 +2,10 @@ from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
 
-def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runner):
-    driver.get("https://demo.applitools.com")
+def test_check_element_and_window_in_sequence(
+    chrome_driver, eyes, batch_info, vg_runner
+):
+    chrome_driver.get("https://demo.applitools.com")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(
@@ -12,7 +14,7 @@ def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runne
             batch=batch_info,
         ).add_browser(1024, 768, BrowserType.CHROME)
     )
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check_window("Step 1")
     eyes.check(
         "Step 2",

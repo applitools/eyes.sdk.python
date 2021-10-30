@@ -38,12 +38,12 @@ def http_server():
         thread.join()
 
 
-def test_expiring_cookie_max_age(driver, http_server):
+def test_expiring_cookie_max_age(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Max-Age=60")]
     expiry = int(time.time() + 60)
-    driver.get("http://localhost:8000/")
+    chrome_driver.get("http://localhost:8000/")
 
-    cookie = driver.get_cookies()[0]
+    cookie = chrome_driver.get_cookies()[0]
 
     assert cookie.pop("expiry") - expiry < 1
     assert cookie == {
@@ -56,11 +56,11 @@ def test_expiring_cookie_max_age(driver, http_server):
     }
 
 
-def test_expiring_cookie_timestamp(driver, http_server):
+def test_expiring_cookie_timestamp(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Expires=Fri, 1 Jan 2100 01:01:01 GMT")]
-    driver.get("http://localhost:8000/")
+    chrome_driver.get("http://localhost:8000/")
 
-    cookie = driver.get_cookies()[0]
+    cookie = chrome_driver.get_cookies()[0]
 
     assert cookie == {
         "domain": "localhost",
@@ -73,20 +73,20 @@ def test_expiring_cookie_timestamp(driver, http_server):
     }
 
 
-def test_expired_cookie(driver, http_server):
+def test_expired_cookie(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Expires=Thu, 1 Jan 1970 00:00:00 GMT")]
-    driver.get("http://localhost:8000/")
+    chrome_driver.get("http://localhost:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == []
 
 
-def test_secure_cookie_is_secure(driver, http_server):
+def test_secure_cookie_is_secure(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Secure")]
-    driver.get("http://localhost:8000/")
+    chrome_driver.get("http://localhost:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -100,11 +100,11 @@ def test_secure_cookie_is_secure(driver, http_server):
     ]
 
 
-def test_domain_cookie_with_domain_attr_returns_dot_domain(driver, http_server):
+def test_domain_cookie_with_domain_attr_returns_dot_domain(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Domain=www.localtest.me")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -118,11 +118,13 @@ def test_domain_cookie_with_domain_attr_returns_dot_domain(driver, http_server):
     ]
 
 
-def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(driver, http_server):
+def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(
+    chrome_driver, http_server
+):
     http_server.headers = [("Set-Cookie", "a=b; Domain=.www.localtest.me")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -136,11 +138,11 @@ def test_domain_cookie_with_dot_domain_attr_returns_dot_domain(driver, http_serv
     ]
 
 
-def test_domain_cookie_with_top_domain_attr(driver, http_server):
+def test_domain_cookie_with_top_domain_attr(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Domain=localtest.me")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -154,11 +156,11 @@ def test_domain_cookie_with_top_domain_attr(driver, http_server):
     ]
 
 
-def test_domain_http_only(driver, http_server):
+def test_domain_http_only(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; HttpOnly")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -172,13 +174,13 @@ def test_domain_http_only(driver, http_server):
     ]
 
 
-def test_two_cookies_for_same_domain(driver, http_server):
+def test_two_cookies_for_same_domain(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b")]
-    driver.get("http://www.localtest.me:8000/a")
+    chrome_driver.get("http://www.localtest.me:8000/a")
     http_server.headers = [("Set-Cookie", "c=d")]
-    driver.get("http://www.localtest.me:8000/c")
+    chrome_driver.get("http://www.localtest.me:8000/c")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert sorted(cookies, key=lambda d: tuple(d[k] for k in sorted(d.keys()))) == [
         {
@@ -200,13 +202,13 @@ def test_two_cookies_for_same_domain(driver, http_server):
     ]
 
 
-def test_two_cookies_for_different_domains(driver, http_server):
+def test_two_cookies_for_different_domains(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b")]
-    driver.get("http://www.localtest.me:8000/a")
+    chrome_driver.get("http://www.localtest.me:8000/a")
     http_server.headers = [("Set-Cookie", "c=d")]
-    driver.get("http://vvv.localtest.me:8000/c")
+    chrome_driver.get("http://vvv.localtest.me:8000/c")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == [
         {
@@ -220,28 +222,28 @@ def test_two_cookies_for_different_domains(driver, http_server):
     ]
 
 
-def test_domain_cookie_with_wrong_domain_dropped(driver, http_server):
+def test_domain_cookie_with_wrong_domain_dropped(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "a=b; Domain=www.example.com")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == []
 
 
-def test_bad_host_prefix_cookie_is_dropped(driver, http_server):
+def test_bad_host_prefix_cookie_is_dropped(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "__Host-a=b")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == []
 
 
-def test_bad_secure_prefix_cookie_is_dropped(driver, http_server):
+def test_bad_secure_prefix_cookie_is_dropped(chrome_driver, http_server):
     http_server.headers = [("Set-Cookie", "__Secure-a=b")]
-    driver.get("http://www.localtest.me:8000/")
+    chrome_driver.get("http://www.localtest.me:8000/")
 
-    cookies = driver.get_cookies()
+    cookies = chrome_driver.get_cookies()
 
     assert cookies == []

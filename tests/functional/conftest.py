@@ -1,14 +1,10 @@
 import functools
-import itertools
 import os
 from collections import defaultdict
-from distutils.util import strtobool
-from os import path
 
 import attr
 import mock
 import pytest
-import yaml
 
 from applitools.common import (
     BatchInfo,

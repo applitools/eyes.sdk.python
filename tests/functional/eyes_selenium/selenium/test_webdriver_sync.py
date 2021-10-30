@@ -5,13 +5,15 @@ import pytest
 from applitools.selenium import EyesWebDriver
 
 
-def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, driver):
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
-    eyes_driver = EyesWebDriver(driver, eyes)
+def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, chrome_driver):
+    chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+    )
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
 
-    driver.switch_to.frame(0)
-    driver.switch_to.frame(0)
-    driver.switch_to.frame(0)
+    chrome_driver.switch_to.frame(0)
+    chrome_driver.switch_to.frame(0)
+    chrome_driver.switch_to.frame(0)
     eyes_driver.ensure_sync_with_underlying_driver()
 
     assert (
@@ -22,12 +24,14 @@ def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, driver):
     )
 
 
-def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, driver):
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
-    eyes_driver = EyesWebDriver(driver, eyes)
+def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, chrome_driver):
+    chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+    )
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
 
     eyes_driver.switch_to.frame(0)
-    driver.switch_to.default_content()
+    chrome_driver.switch_to.default_content()
     eyes_driver.ensure_sync_with_underlying_driver()
 
     assert eyes_driver.frame_chain.peek is None
@@ -58,7 +62,7 @@ def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, driver):
 )
 @pytest.mark.skip("Currently it is designed for manual performance measurement")
 def test_measure_ensure_sync_with_underlying_driver_performance(
-    driver,
+    chrome_driver,
     eyes,
     page_desc,
     url,
@@ -71,13 +75,13 @@ def test_measure_ensure_sync_with_underlying_driver_performance(
 ):
     driver_frames = far_frame_path if driver_frames == "far" else driver_frames
     eyes_frames = far_frame_path if eyes_frames == "far" else eyes_frames
-    driver.get(url)
+    chrome_driver.get(url)
     time.sleep(load_time)
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
     for n in eyes_frames:
         eyes_driver.switch_to.frame(n)
     for n in driver_frames:
-        driver.switch_to.frame(n)
+        chrome_driver.switch_to.frame(n)
     ts = time.monotonic()
     eyes_driver.ensure_sync_with_underlying_driver()
     r = time.monotonic() - ts

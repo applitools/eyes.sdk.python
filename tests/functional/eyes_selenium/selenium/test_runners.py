@@ -14,12 +14,14 @@ from applitools.selenium import (
 pytestmark = [pytest.mark.eyes_config(branch_name="master_python")]
 
 
-def test_classic_runner_works_normally(driver):
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/FramesTestPage/"
+)
+def test_classic_runner_works_normally(chrome_driver):
     classic_runner = ClassicRunner()
     eyes = Eyes(classic_runner)
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes Java SDK",
         "Classic Runner Test",
         dict(width=1200, height=800),
@@ -29,11 +31,11 @@ def test_classic_runner_works_normally(driver):
     print(classic_runner.get_all_test_results())
 
 
-def test_classic_runner_raise_exception(driver):
+def test_classic_runner_raise_exception(chrome_driver):
     classic_runner = ClassicRunner()
     eyes = Eyes(classic_runner)
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes Java SDK",
         "Classic Runner Test",
         dict(width=1200, height=800),
@@ -44,12 +46,14 @@ def test_classic_runner_raise_exception(driver):
         classic_runner.get_all_test_results()
 
 
-def test_eyes_none_runner(driver):
+def test_eyes_none_runner(chrome_driver):
     eyes = Eyes(None)
     eyes.configure.hide_scrollbars = True
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
-        driver, "Eyes Selenium SDK - Null Runner", "TestSeleniumEyesWithNullRunner"
+        chrome_driver,
+        "Eyes Selenium SDK - Null Runner",
+        "TestSeleniumEyesWithNullRunner",
     )
     eyes.check_window()
     eyes.close(False)
@@ -60,7 +64,7 @@ def test_eyes_none_runner(driver):
     [ClassicRunner()],
     ids=lambda o: "VG" if isinstance(o, VisualGridRunner) else "CR",
 )
-def test_eyes_runner(driver, runner):
+def test_eyes_runner(chrome_driver, runner):
     eyes = Eyes(runner)
     eyes2 = Eyes(runner)
     batch_info = BatchInfo("Runner Testing")
@@ -73,20 +77,20 @@ def test_eyes_runner(driver, runner):
     )
     eyes.set_configuration(config)
     eyes2.set_configuration(config)
-    driver.get(
+    chrome_driver.get(
         "http://applitools.github.io/demo/TestPages/VisualGridTestPage/index.html"
     )
     eyes.add_property(
         "Runner", "VisualGrid" if isinstance(runner, VisualGridRunner) else "Selenium"
     )
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes Java SDK",
         "Classic Runner Test",
         dict(width=1200, height=800),
     )
     eyes2.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes Java SDK",
         "Classic Runner 2 Test",
         dict(width=1200, height=800),
@@ -98,7 +102,7 @@ def test_eyes_runner(driver, runner):
     eyes.close_async()
 
     eyes.open(
-        driver,
+        chrome_driver,
         "Applitools Eyes Java SDK",
         "Classic Runner Test",
         dict(width=1200, height=800),
@@ -107,7 +111,6 @@ def test_eyes_runner(driver, runner):
     eyes.close_async()
     eyes2.close(True)
 
-    driver.quit()
     all_tests_results = runner.get_all_test_results()
     if len(all_tests_results.all_results) != 3:
         raise Exception

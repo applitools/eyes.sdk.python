@@ -17,10 +17,13 @@ def eyes(vg_runner, batch_info):
     return eyes
 
 
-def test_VG_tests_count_1(eyes, batch_info, driver):
+def test_VG_tests_count_1(eyes, batch_info, chrome_driver):
     eyes.batch = batch_info
     eyes.open(
-        driver, "Test Count", "Test_VGTestsCount_1", {"width": 640, "height": 480}
+        chrome_driver,
+        "Test Count",
+        "Test_VGTestsCount_1",
+        {"width": 640, "height": 480},
     )
     eyes.check("Test", Target.window())
     eyes.close()
@@ -28,7 +31,7 @@ def test_VG_tests_count_1(eyes, batch_info, driver):
     assert results_summary.size() == 1
 
 
-def test_VG_tests_count_2(eyes, batch_info, driver):
+def test_VG_tests_count_2(eyes, batch_info, chrome_driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -36,14 +39,14 @@ def test_VG_tests_count_2(eyes, batch_info, driver):
         .add_browser(1024, 768, BrowserType.CHROME)
     )
     eyes.set_configuration(config)
-    eyes.open(driver, "Test Count", "Test_VGTestsCount_2")
+    eyes.open(chrome_driver, "Test Count", "Test_VGTestsCount_2")
     eyes.check("Test", Target.window())
     eyes.close()
     results_summary = eyes._runner.get_all_test_results()
     assert results_summary.size() == 2
 
 
-def test_VG_tests_count_3(eyes, batch_info, driver):
+def test_VG_tests_count_3(eyes, batch_info, chrome_driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -53,14 +56,14 @@ def test_VG_tests_count_3(eyes, batch_info, driver):
         .set_test_name("Test_VGTestsCount_3")
     )
     eyes.set_configuration(config)
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check("Test", Target.window())
     eyes.close()
     results_summary = eyes._runner.get_all_test_results()
     assert results_summary.size() == 2
 
 
-def test_VG_tests_count_4(eyes, batch_info, driver):
+def test_VG_tests_count_4(eyes, batch_info, chrome_driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -68,14 +71,14 @@ def test_VG_tests_count_4(eyes, batch_info, driver):
         .set_test_name("Test_VGTestsCount_4")
     )
     eyes.set_configuration(config)
-    eyes.open(driver)
+    eyes.open(chrome_driver)
     eyes.check("Test", Target.window())
     eyes.close()
     results_summary = eyes._runner.get_all_test_results()
     assert results_summary.size() == 1
 
 
-def test_VG_tests_count_5(eyes, batch_info, driver):
+def test_VG_tests_count_5(eyes, batch_info, chrome_driver):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -84,7 +87,10 @@ def test_VG_tests_count_5(eyes, batch_info, driver):
     )
     eyes.set_configuration(config)
     eyes.open(
-        driver, "Test Count", "Test_VGTestsCount_5", {"width": 640, "height": 480}
+        chrome_driver,
+        "Test Count",
+        "Test_VGTestsCount_5",
+        {"width": 640, "height": 480},
     )
     eyes.check("Test", Target.window())
     eyes.close()

@@ -23,10 +23,10 @@ def eyes_for_class(request, eyes_opened):
 
 
 @pytest.fixture(scope="function")
-def driver_for_class(request, driver):
+def driver_for_class(request, chrome_driver):
     viewport_size = request.node.get_closest_marker("viewport_size").args[0]
 
-    driver = EyesWebDriver(driver, MagicMock(Eyes))
+    driver = EyesWebDriver(chrome_driver, MagicMock(Eyes))
     driver.quit = MagicMock()
     if viewport_size:
         eyes_selenium_utils.set_browser_size(driver, viewport_size)

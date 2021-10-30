@@ -5,17 +5,17 @@ from applitools.selenium import EyesWebDriver
 from tests.utils import get_resource_path
 
 
-def test_new_tab(eyes, driver):
-    driver.get("https://the-internet.herokuapp.com/windows")
-    driver.find_element_by_xpath("//a[contains(@href, 'new')]").click()
+def test_new_tab(eyes, chrome_driver):
+    chrome_driver.get("https://the-internet.herokuapp.com/windows")
+    chrome_driver.find_element_by_xpath("//a[contains(@href, 'new')]").click()
 
     # Switch to other tab / close / switch to the original tab
-    driver.switch_to.window(driver.window_handles[1])
-    driver.close()
-    driver.switch_to.window(driver.window_handles[0])
+    chrome_driver.switch_to.window(chrome_driver.window_handles[1])
+    chrome_driver.close()
+    chrome_driver.switch_to.window(chrome_driver.window_handles[0])
 
     # Now use the eyes driver for the same thing...
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
     eyes_driver.get("https://the-internet.herokuapp.com/windows")
     eyes_driver.find_element_by_xpath("//a[contains(@href, 'new')]").click()
 
@@ -24,13 +24,13 @@ def test_new_tab(eyes, driver):
     eyes_driver.switch_to.window(eyes_driver.window_handles[0])
 
 
-def test_element_find_element(eyes, driver):
-    driver.get("https://applitools.com/helloworld/")
+def test_element_find_element(eyes, chrome_driver):
+    chrome_driver.get("https://applitools.com/helloworld/")
     # Locate element
-    element = driver.find_element_by_xpath("//div[@class='demo-page center']")
+    element = chrome_driver.find_element_by_xpath("//div[@class='demo-page center']")
     element.find_element(By.XPATH, "//a[contains(@href, 'diff1')]").click()
 
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
     # Navigate the browser to the "hello world!" web-site.
     eyes_driver.get("https://applitools.com/helloworld/")
 
@@ -39,12 +39,14 @@ def test_element_find_element(eyes, driver):
     element.find_element(By.XPATH, "//a[contains(@href, 'diff1')]").click()
 
 
-def test_eyes_element_and_element_with_Select(eyes, driver):
-    driver.get("file://{}".format(get_resource_path("unit/multiple-selects.html")))
+def test_eyes_element_and_element_with_Select(eyes, chrome_driver):
+    chrome_driver.get(
+        "file://{}".format(get_resource_path("unit/multiple-selects.html"))
+    )
 
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
 
-    element = driver.find_element_by_xpath("//select[contains(@id, 'device')]")
+    element = chrome_driver.find_element_by_xpath("//select[contains(@id, 'device')]")
     sel_select = Select(element)
     sel_options = sel_select.options
     for index, option in enumerate(sel_options):
@@ -63,11 +65,13 @@ def test_eyes_element_and_element_with_Select(eyes, driver):
     assert sel_select.first_selected_option == eyes_select.first_selected_option
 
 
-def test_find_inside_element(eyes, driver):
-    driver.get("file://{}".format(get_resource_path("unit/multiple-selects.html")))
+def test_find_inside_element(eyes, chrome_driver):
+    chrome_driver.get(
+        "file://{}".format(get_resource_path("unit/multiple-selects.html"))
+    )
 
-    eyes_driver = EyesWebDriver(driver, eyes)
-    element = driver.find_element_by_xpath("//select[contains(@id, 'device')]")
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
+    element = chrome_driver.find_element_by_xpath("//select[contains(@id, 'device')]")
     eyes_element = eyes_driver.find_element_by_xpath(
         "//select[contains(@id, 'device')]"
     )
@@ -79,14 +83,14 @@ def test_find_inside_element(eyes, driver):
     )
 
 
-def test_driver_and_element_dir(eyes, driver):
-    driver.get("https://applitools.com/helloworld/")
+def test_driver_and_element_dir(eyes, chrome_driver):
+    chrome_driver.get("https://applitools.com/helloworld/")
 
-    eyes_driver = EyesWebDriver(driver, eyes)
+    eyes_driver = EyesWebDriver(chrome_driver, eyes)
     _dir = dir(eyes_driver)
-    assert all(elem in _dir for elem in dir(driver) if not elem.startswith("_"))
+    assert all(elem in _dir for elem in dir(chrome_driver) if not elem.startswith("_"))
 
-    element = driver.find_element_by_xpath("//div[@class='demo-page center']")
+    element = chrome_driver.find_element_by_xpath("//div[@class='demo-page center']")
     eyes_element = eyes_driver.find_element_by_xpath("//div[@class='demo-page center']")
     _dir = dir(eyes_element)
     assert all(elem in _dir for elem in dir(element) if not elem.startswith("_"))

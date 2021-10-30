@@ -15,8 +15,8 @@ def test_visual_grid_runner_runner_started_logging(fake_connector_class):
     assert event.event == '{"defaultConcurrency": 5, "type": "runnerStarted"}'
 
 
-def test_render_failure_aborts_session(driver, batch_info, vg_runner, spy):
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+def test_render_failure_aborts_session(chrome_driver, batch_info, vg_runner, spy):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
@@ -24,32 +24,32 @@ def test_render_failure_aborts_session(driver, batch_info, vg_runner, spy):
         raise Exception
 
     eyes.server_connector.render = broken
-    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
     eyes.check_window()
     eyes.close(False)
 
     assert close_session_spy.call_args_list == [spy.call(spy.ANY, True, False)]
 
 
-def test_snapshot_too_big_aborts_session(driver, vg_runner, spy, monkeypatch):
+def test_snapshot_too_big_aborts_session(chrome_driver, vg_runner, spy, monkeypatch):
     monkeypatch.setattr(RGridDom, "MAX_CDT_SIZE", 1)
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
-    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
     eyes.check_window()
     eyes.close(False)
 
     assert close_session_spy.call_args_list == [spy.call(spy.ANY, True, False)]
 
 
-def test_non_closed_tests_aborted(driver, vg_runner, spy, capsys):
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+def test_non_closed_tests_aborted(chrome_driver, vg_runner, spy, capsys):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
-    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
     eyes.check_window()
 
     vg_runner.get_all_test_results(False)
@@ -59,11 +59,13 @@ def test_non_closed_tests_aborted(driver, vg_runner, spy, capsys):
     assert "Warning: Unclosed tests found and aborted: {'UFG Render Error'}" in stdout
 
 
-def test_non_closed_finished_tests_do_not_issue_warning(driver, vg_runner, capsys):
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+def test_non_closed_finished_tests_do_not_issue_warning(
+    chrome_driver, vg_runner, capsys
+):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
 
-    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
     eyes.check_window()
     eyes.close_async()
     vg_runner.get_all_test_results(False)
@@ -72,8 +74,8 @@ def test_non_closed_finished_tests_do_not_issue_warning(driver, vg_runner, capsy
     assert "Warning: Unclosed tests found and aborted" not in stdout
 
 
-def test_null_render_status_aborts_test(driver, vg_runner, spy, capsys):
-    driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
+def test_null_render_status_aborts_test(chrome_driver, vg_runner, spy, capsys):
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
@@ -81,7 +83,7 @@ def test_null_render_status_aborts_test(driver, vg_runner, spy, capsys):
         return [None]
 
     eyes.server_connector.render_status_by_id = render_status_none
-    eyes.open(driver, "Eyes SDK", "UFG Render Error")
+    eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
     eyes.check_window()
     eyes.close_async()
     vg_runner.get_all_test_results(False)

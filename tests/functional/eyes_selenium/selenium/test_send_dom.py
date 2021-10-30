@@ -32,22 +32,22 @@ def dom_intercepting_eyes(eyes):
         ["https://applitools.github.io/demo/TestPages/DomTest/dom_capture_2.html", "2"],
     ],
 )
-def test_send_DOM_1_2(eyes, driver, batch_info, url, num):
-    driver.get(url)
+def test_send_DOM_1_2(eyes, chrome_driver, batch_info, url, num):
+    chrome_driver.get(url)
     config = Configuration().set_batch(batch_info)
     eyes.set_configuration(config)
-    eyes.open(driver, "Test Send DOM", "TestSendDOM_" + num)
+    eyes.open(chrome_driver, "Test Send DOM", "TestSendDOM_" + num)
     eyes.check_window()
     results = eyes.close(False)
     assert get_has_DOM(eyes.api_key, results)
 
 
-def test_not_send_DOM(eyes, driver, batch_info):
-    driver.get("https://applitools.com/helloworld")
+def test_not_send_DOM(eyes, chrome_driver, batch_info):
+    chrome_driver.get("https://applitools.com/helloworld")
     config = Configuration().set_batch(batch_info).set_send_dom(False)
     eyes.set_configuration(config)
     eyes.open(
-        driver,
+        chrome_driver,
         "Test NOT SendDom",
         "Test NOT SendDom",
         viewport_size={"width": 1000, "height": 700},
@@ -57,12 +57,14 @@ def test_not_send_DOM(eyes, driver, batch_info):
     assert not get_has_DOM(eyes.api_key, results)
 
 
-def test_send_DOM_Selector(eyes, driver, batch_info):
-    driver.get("https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html")
+def test_send_DOM_Selector(eyes, chrome_driver, batch_info):
+    chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html"
+    )
     config = Configuration().set_batch(batch_info)
     eyes.set_configuration(config)
     eyes.open(
-        driver,
+        chrome_driver,
         "Test SendDom",
         "Test SendDom",
         viewport_size={"width": 1000, "height": 700},
@@ -73,7 +75,9 @@ def test_send_DOM_Selector(eyes, driver, batch_info):
 
 
 @pytest.mark.expected_json("expected_dom1")
-def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expected_json):
+def test_send_DOM_full_window(
+    dom_intercepting_eyes, chrome_driver, batch_info, expected_json
+):
     config = (
         Configuration()
         .set_batch(batch_info)
@@ -85,8 +89,8 @@ def test_send_DOM_full_window(dom_intercepting_eyes, driver, batch_info, expecte
     )
     dom_intercepting_eyes.set_configuration(config)
 
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
-    dom_intercepting_eyes.open(driver, "Test Send DOM", "Full Window")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
+    dom_intercepting_eyes.open(chrome_driver, "Test Send DOM", "Full Window")
     dom_intercepting_eyes.check("Window", Target.window().fully())
     results = dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)
@@ -122,7 +126,7 @@ def get_step_DOM(eyes, results):
 
 
 def test_send_dom_cors_iframe(
-    dom_intercepting_eyes, driver, batch_info, expected_json, caplog
+    dom_intercepting_eyes, chrome_driver, batch_info, expected_json, caplog
 ):
     del expected_json["scriptVersion"]
     config = (
@@ -136,8 +140,10 @@ def test_send_dom_cors_iframe(
     )
     dom_intercepting_eyes.set_configuration(config)
 
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage")
-    dom_intercepting_eyes.open(driver, "Test Send DOM", "test_send_dom_cors_iframe")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage")
+    dom_intercepting_eyes.open(
+        chrome_driver, "Test Send DOM", "test_send_dom_cors_iframe"
+    )
     dom_intercepting_eyes.check("Window", Target.window().fully())
     dom_intercepting_eyes.close(False)
     actual = json.loads(dom_intercepting_eyes.captured_dom_json)

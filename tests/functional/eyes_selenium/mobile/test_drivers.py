@@ -18,15 +18,7 @@ def webdriver_module():
     if o["webdriver_module"].__name__.startswith("appium.")
     else "with Selenium",
 )
-@pytest.mark.capabilities(
-    **{
-        "browserName": "Chrome",
-        "platformName": "Android",
-        "platformVersion": "6.0",
-        "appiumVersion": "1.17.1",
-        "deviceName": "Android Emulator",
-        "deviceOrientation": "portrait",
-    }
-)
-def test_selenium_and_appium_work(eyes_opened):
-    eyes_opened.check_window("Home")
+def test_selenium_and_appium_work(eyes, sauce_galaxy_s9_android9_driver):
+    eyes.open("TestSeleniumAndAppiumWork")
+    eyes.check_window("Home")
+    eyes.close()

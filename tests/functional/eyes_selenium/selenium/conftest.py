@@ -3,14 +3,7 @@ from os import environ, path
 
 import pytest
 
-from applitools.common import BatchInfo
-
 samples_dir = path.join(path.dirname(__file__), "resources")
-
-
-@pytest.fixture
-def batch_info():
-    return BatchInfo("Python SDK Selenium")
 
 
 @pytest.fixture

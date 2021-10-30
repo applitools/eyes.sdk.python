@@ -5,26 +5,26 @@ from applitools.selenium import BatchInfo, Eyes, Target
 batch_info = BatchInfo("Test Visual Grid RCA")
 
 
-def test_VG_RCA_config(driver, vg_runner):
+def test_VG_RCA_config(chrome_driver, vg_runner):
     eyes = Eyes(vg_runner)
     eyes.batch = batch_info
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
-    eyes.open(driver, "Test Visual Grid", "Test RCA Config")
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
+    eyes.open(chrome_driver, "Test Visual Grid", "Test RCA Config")
     eyes.send_dom = True
     eyes.check("", Target.window())
     eyes.close()
     vg_runner.get_all_test_results()
 
 
-def test_VG_RCA_fluent(driver, vg_runner):
+def test_VG_RCA_fluent(chrome_driver, vg_runner):
     eyes = Eyes(vg_runner)
     eyes.batch = batch_info
-    driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
-    driver.switch_to.frame("iframe")
-    WebDriverWait(driver, 30)
-    driver.switch_to.default_content()
+    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
+    chrome_driver.switch_to.frame("iframe")
+    WebDriverWait(chrome_driver, 30)
+    chrome_driver.switch_to.default_content()
 
-    eyes.open(driver, "Test Visual Grid", "Test RCA Fluent")
+    eyes.open(chrome_driver, "Test Visual Grid", "Test RCA Fluent")
     eyes.send_dom = True
     eyes.check("", Target.window().send_dom(True))
     eyes.close()

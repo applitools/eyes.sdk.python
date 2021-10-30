@@ -1,33 +1,4 @@
-from os import environ
-
-import pytest
-from selenium import webdriver
-
-from applitools.common import StitchMode
-from applitools.selenium import Eyes, Target
-
-
-@pytest.fixture
-def sauce_driver_url():
-    return "https://{}:{}@ondemand.saucelabs.com:443/wd/hub".format(
-        environ["SAUCE_USERNAME"], environ["SAUCE_ACCESS_KEY"]
-    )
-
-
-@pytest.fixture
-def sauce_iphone8_ios14_driver(sauce_driver_url):
-    capabilities = {
-        "browserName": "Safari",
-        "deviceName": "iPhone 8 Simulator",
-        "deviceOrientation": "portrait",
-        "platformName": "iOS",
-        "platformVersion": "14.3",
-    }
-    driver = webdriver.Remote(sauce_driver_url, capabilities)
-    try:
-        yield driver
-    finally:
-        driver.quit()
+from applitools.selenium import StitchMode, Target
 
 
 def test_eyes_mobile_scroll_stitching(sauce_iphone8_ios14_driver, eyes):

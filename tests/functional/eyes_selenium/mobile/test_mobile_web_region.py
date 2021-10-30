@@ -1,13 +1,7 @@
 import pytest
-from appium import webdriver
 from selenium.webdriver.common.by import By
 
 from applitools.selenium import StitchMode, Target
-
-
-@pytest.fixture
-def webdriver_module():
-    return webdriver
 
 
 def _region_test_flow(eyes):
@@ -36,76 +30,44 @@ def _region_fully_test_flow(eyes):
     )
 
 
-@pytest.mark.platform("iOS")
-@pytest.mark.capabilities(
-    **{
-        "platformName": "iOS",
-        "browserName": "Safari",
-        "deviceName": "iPhone 11",
-        "platformVersion": "13.4",
-    }
-)
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-def test_region_capture_ios(eyes, driver):
+def test_region_capture_ios(eyes, sauce_iphone8_ios14_driver):
     eyes.configure.is_simulator = True
-    eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_iOS")
+    eyes.open(sauce_iphone8_ios14_driver, "Mobile Web Tests", "TestRegionCapture_iOS")
     _region_test_flow(eyes)
     eyes.close()
 
 
-@pytest.mark.platform("iOS")
-@pytest.mark.capabilities(
-    **{
-        "platformName": "iOS",
-        "browserName": "Safari",
-        "deviceName": "iPhone 11",
-        "platformVersion": "13.4",
-    }
-)
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-def test_region_fully_capture_ios(eyes, driver):
+def test_region_fully_capture_ios(eyes, sauce_iphone8_ios14_driver):
     eyes.configure.is_simulator = True
-    eyes.open(driver, "Mobile Web Tests", "TestRegionFullyCapture_iOS")
+    eyes.open(
+        sauce_iphone8_ios14_driver, "Mobile Web Tests", "TestRegionFullyCapture_iOS"
+    )
     _region_fully_test_flow(eyes)
     eyes.close()
 
 
-@pytest.mark.platform("Android")
-@pytest.mark.capabilities(
-    **{
-        "platformName": "Android",
-        "browserName": "Chrome",
-        "deviceName": "Samsung Galaxy S9 HD GoogleAPI Emulator",
-        "platformVersion": "9.0",
-    }
-)
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-def test_region_capture_android(eyes, driver):
+def test_region_capture_android(eyes, sauce_galaxy_s9_android9_driver):
     eyes.configure.is_simulator = True
-    eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_Android")
+    eyes.open(
+        sauce_galaxy_s9_android9_driver, "Mobile Web Tests", "TestRegionCapture_Android"
+    )
     _region_test_flow(eyes)
     eyes.close()
 
 
-@pytest.mark.platform("Android")
-@pytest.mark.capabilities(
-    **{
-        "platformName": "Android",
-        "browserName": "Chrome",
-        "deviceName": "Samsung Galaxy S9 HD GoogleAPI Emulator",
-        "platformVersion": "9.0",
-    }
-)
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-def test_region_fully_capture_android(eyes, driver):
+def test_region_fully_capture_android(eyes, sauce_galaxy_s9_android9_driver):
     eyes.configure.is_simulator = True
     eyes.open(driver, "Mobile Web Tests", "TestRegionFullyCapture_Android")
     _region_fully_test_flow(eyes)
