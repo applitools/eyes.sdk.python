@@ -106,7 +106,7 @@ def eyes_opened(request, eyes, driver, check_test_result):
     check_test_result.send(test_result)
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def driver(request, browser_config, webdriver_module):
     # type: (SubRequest, dict, webdriver) -> typing.Generator[dict]
     test_name = request.node.name
