@@ -38,6 +38,9 @@ from applitools.selenium.visual_grid import visual_grid_eyes
         ),
     ],
 )
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/SimpleTestPage/modal_scrollable.html"
+)
 def test_layout_region_calculation_for_targets(
     chrome_driver, fake_connector_class, target, expected_layout_region
 ):
@@ -45,10 +48,6 @@ def test_layout_region_calculation_for_targets(
     eyes.send_dom = False
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
-    driver.get(
-        "https://applitools.github.io/demo/TestPages/"
-        "SimpleTestPage/modal_scrollable.html"
-    )
 
     eyes.check(target)
     _, match_data = eyes.server_connector.calls["match_window"]
@@ -59,13 +58,15 @@ def test_layout_region_calculation_for_targets(
 
 
 @pytest.mark.skip("Known bug, Trello#1644")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+)
 def test_layout_region_calculation_for_frame_target(
     chrome_driver, fake_connector_class
 ):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
 
     eyes.check(
         Target.frame([By.CSS_SELECTOR, "body>iframe"]).layout(
@@ -79,13 +80,15 @@ def test_layout_region_calculation_for_frame_target(
     ]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+)
 def test_layout_region_calculation_for_frame_fully_target(
     chrome_driver, fake_connector_class
 ):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
-    driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/index.html")
+    eyes.open(chrome_driver, "a", "b", RectangleSize(height=1024, width=768))
 
     eyes.check(
         Target.frame([By.CSS_SELECTOR, "body>iframe"])
@@ -146,7 +149,7 @@ def test_scrollable_modal_on_scrolled_down_page(chrome_driver):
 def test_layout_region_calculation_within_frame(chrome_driver, fake_connector_class):
     eyes = Eyes()
     eyes.server_connector = fake_connector_class()
-    driver = eyes.open(chrome_driver, "a", "b", RectangleSize(width=1024, height=768))
+    eyes.open(chrome_driver, "a", "b", RectangleSize(width=1024, height=768))
 
     eyes.check(Target.frame("frame1").region("body").layout("#inner-frame-div"))
 

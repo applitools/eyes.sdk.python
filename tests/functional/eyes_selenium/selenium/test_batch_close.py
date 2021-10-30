@@ -10,8 +10,8 @@ def batch_close_enabled(batch_info):
     batch_enabled.close()
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_batch_close(eyes, chrome_driver):
-    chrome_driver.get("https://demo.applitools.com")
     eyes.open(chrome_driver, "TestBatchNotificationApp", "TestBatchClose")
     eyes.check_window()
     eyes.close(False)

@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from applitools.selenium import StitchMode, Target
 
 
-@pytest.mark.platform("Linux")
 @pytest.mark.skip
 @pytest.mark.test_page_url(
     "https://eventstest.wixsite.com/events-page-e2e/events/ba837913-7dad-41b9-b530-6c2cbfc4c265"
@@ -26,13 +25,12 @@ def test_wix_site(eyes, chrome_driver):
     eyes.close(False)
 
 
-@pytest.mark.platform("Linux", "Windows", "macOS")
 @pytest.mark.eyes_config(match_timeout=0, force_full_page_screenshot=False)
 @pytest.mark.test_page_url(
     "https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_iframe"
 )
 def test_w3schools_iframe(eyes, chrome_driver):
-    driver = eyes.open(
+    eyes.open(
         chrome_driver,
         app_name="Python SDK",
         test_name="W3 Schools frame",
@@ -44,11 +42,10 @@ def test_w3schools_iframe(eyes, chrome_driver):
     eyes.close(False)
 
 
-@pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 @pytest.mark.test_page_url("https://www.omnicomprgroup.com/")
 def test_omnicomprgroup(eyes, chrome_driver):
-    driver = eyes.open(
+    eyes.open(
         chrome_driver,
         "Python SDK",
         "TestOmnicomprgroup_FPS",
@@ -58,13 +55,12 @@ def test_omnicomprgroup(eyes, chrome_driver):
     eyes.close(False)
 
 
-@pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(stitch_mode=StitchMode.CSS, force_full_page_screenshot=True)
 @pytest.mark.test_page_url(
     "https://www.nationalgeographic.com/photography/proof/2016/05/omar-diop-refugee-mbororo-portraits/?disableAds=true"
 )
 def test_nationalgeographic(eyes, chrome_driver):
-    driver = eyes.open(
+    eyes.open(
         chrome_driver,
         "Python SDK",
         "TestNationalgeographic_FPS",
@@ -74,7 +70,6 @@ def test_nationalgeographic(eyes, chrome_driver):
     eyes.close(False)
 
 
-@pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(send_dom=False, stitch_mode=StitchMode.CSS)
 @pytest.mark.test_page_url("https://www.goodrx.com/xarelto/what-is")
 def test_zachs_app(eyes, chrome_driver):
@@ -93,7 +88,6 @@ def test_zachs_app(eyes, chrome_driver):
     eyes.close(False)
 
 
-@pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(
     hide_scrollbars=True, stitch_mode=StitchMode.Scroll, wait_before_screenshots=1
 )
@@ -101,8 +95,6 @@ def test_zachs_app(eyes, chrome_driver):
     "http://front-end-testing.appspot.com/duo_v3_default/secondary_auth?user=noone@atest.com"
 )
 def test_duo_v3_default(eyes, chrome_driver):
-    driver = eyes.open(
-        chrome_driver, "region", "test region", {"width": 1000, "height": 800}
-    )
+    eyes.open(chrome_driver, "region", "test region", {"width": 1000, "height": 800})
     eyes.check("Frame", Target.frame("duo_iframe"))
     eyes.close(False)

@@ -46,10 +46,12 @@ def test_classic_runner_raise_exception(chrome_driver):
         classic_runner.get_all_test_results()
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/FramesTestPage/"
+)
 def test_eyes_none_runner(chrome_driver):
     eyes = Eyes(None)
     eyes.configure.hide_scrollbars = True
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.open(
         chrome_driver,
         "Eyes Selenium SDK - Null Runner",
@@ -64,6 +66,9 @@ def test_eyes_none_runner(chrome_driver):
     [ClassicRunner()],
     ids=lambda o: "VG" if isinstance(o, VisualGridRunner) else "CR",
 )
+@pytest.mark.test_page_url(
+    "http://applitools.github.io/demo/TestPages/VisualGridTestPage/index.html"
+)
 def test_eyes_runner(chrome_driver, runner):
     eyes = Eyes(runner)
     eyes2 = Eyes(runner)
@@ -77,9 +82,6 @@ def test_eyes_runner(chrome_driver, runner):
     )
     eyes.set_configuration(config)
     eyes2.set_configuration(config)
-    chrome_driver.get(
-        "http://applitools.github.io/demo/TestPages/VisualGridTestPage/index.html"
-    )
     eyes.add_property(
         "Runner", "VisualGrid" if isinstance(runner, VisualGridRunner) else "Selenium"
     )

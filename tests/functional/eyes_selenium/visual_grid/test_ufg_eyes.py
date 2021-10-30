@@ -19,14 +19,14 @@ def _retrieve_urls(data):
 
 
 @pytest.mark.skip("Skip list temporary disabled. Trello 2363")
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/"
+    "VisualGridTestPageWithRelativeBGImage/index.html"
+)
 def test_ufg_skip_list(chrome_driver, fake_connector_class, spy):
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
-    chrome_driver.get(
-        "https://applitools.github.io/demo/TestPages/"
-        "VisualGridTestPageWithRelativeBGImage/index.html"
-    )
     eyes.open(chrome_driver, app_name="TestUFGEyes", test_name="TestUFGSkipList")
     create_dom_snapshot_spy = spy(dom_snapshot_script, "create_dom_snapshot")
     rc_task_factory_spy = spy(VisualGridEyes, "_resource_collection_task")
@@ -41,10 +41,12 @@ def test_ufg_skip_list(chrome_driver, fake_connector_class, spy):
     assert set(skip_list) - set(script_result["resource_urls"])
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/VisualGridTestPage"
+)
 def test_disable_browser_fetching(chrome_driver, vg_runner, spy, fake_connector_class):
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     eyes.open(chrome_driver, "Test Visual Grid", "Test Disable Browser Fetching Config")
     get_script_result = spy(VisualGridEyes, "get_script_result")
 
@@ -59,9 +61,11 @@ def test_disable_browser_fetching(chrome_driver, vg_runner, spy, fake_connector_
     "target",
     [Target.window(), Target.window().disable_browser_fetching()],
 )
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsCssTestPage/"
+)
 def test_fetch_deep_css_chain(chrome_driver, vg_runner, target):
     eyes = Eyes(vg_runner)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsCssTestPage/")
     eyes.open(chrome_driver, "Test Visual Grid", "Test Deep CSS chain")
 
     eyes.check(target)
@@ -70,14 +74,14 @@ def test_fetch_deep_css_chain(chrome_driver, vg_runner, target):
     vg_runner.get_all_test_results()
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html"
+)
 def test_coded_layout_regions_passed_to_match_window_request(
     chrome_driver, fake_connector_class, vg_runner, spy
 ):
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
-    chrome_driver.get(
-        "https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html"
-    )
     eyes.open(
         chrome_driver, "Test Visual Grid", "Test regions are passed to render request"
     )
@@ -106,10 +110,12 @@ def test_coded_layout_regions_passed_to_match_window_request(
     ]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CookiesTestPage/"
+)
 def test_cookies_passed_to_download_resource_request(
     chrome_driver, fake_connector_class, spy
 ):
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
     eyes.server_connector = fake_connector_class()
@@ -186,8 +192,10 @@ def test_cookies_passed_to_download_resource_request(
     ]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CookiesTestPage/"
+)
 def test_cookies_are_not_passed_when_disabled(chrome_driver, fake_connector_class, spy):
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
     vg_runner = VisualGridRunner(1)
     eyes = Eyes(vg_runner)
     eyes.configure.set_dont_use_cookies(True)

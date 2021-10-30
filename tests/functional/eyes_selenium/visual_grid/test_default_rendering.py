@@ -1,15 +1,17 @@
+import pytest
+
 from applitools.selenium import BrowserType, Eyes, Target
 
 
+@pytest.mark.test_page_url("https://applitools.com/helloworld")
 def test_default_rendering_of_multiple_targets(chrome_driver, vg_runner):
-    chrome_driver.get("https://applitools.com/helloworld")
     eyes = Eyes(vg_runner)
-    eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
-    eyes.configuration.add_browser(800, 600, BrowserType.FIREFOX)
-    eyes.configuration.add_browser(1200, 800, BrowserType.CHROME)
-    eyes.configuration.add_browser(1200, 800, BrowserType.FIREFOX)
-    eyes.configuration.app_name = "TestDefaultRendering"
-    eyes.configuration.test_name = "TestDefaultRenderingOfMultipleTargets"
+    eyes.configure.add_browser(800, 600, BrowserType.CHROME)
+    eyes.configure.add_browser(800, 600, BrowserType.FIREFOX)
+    eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
+    eyes.configure.add_browser(1200, 800, BrowserType.FIREFOX)
+    eyes.configure.app_name = "TestDefaultRendering"
+    eyes.configure.test_name = "TestDefaultRenderingOfMultipleTargets"
 
     try:
         eyes.open(chrome_driver)

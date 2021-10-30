@@ -1,11 +1,13 @@
+import pytest
+
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_check_element_and_window_in_sequence(
     chrome_driver, eyes, batch_info, vg_runner
 ):
-    chrome_driver.get("https://demo.applitools.com")
     eyes = Eyes(vg_runner)
     eyes.set_configuration(
         Configuration(

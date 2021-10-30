@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -5,8 +6,8 @@ from applitools.selenium import EyesWebDriver
 from tests.utils import get_resource_path
 
 
+@pytest.mark.test_page_url("https://the-internet.herokuapp.com/windows")
 def test_new_tab(eyes, chrome_driver):
-    chrome_driver.get("https://the-internet.herokuapp.com/windows")
     chrome_driver.find_element_by_xpath("//a[contains(@href, 'new')]").click()
 
     # Switch to other tab / close / switch to the original tab
@@ -83,9 +84,8 @@ def test_find_inside_element(eyes, chrome_driver):
     )
 
 
+@pytest.mark.test_page_url("https://applitools.com/helloworld/")
 def test_driver_and_element_dir(eyes, chrome_driver):
-    chrome_driver.get("https://applitools.com/helloworld/")
-
     eyes_driver = EyesWebDriver(chrome_driver, eyes)
     _dir = dir(eyes_driver)
     assert all(elem in _dir for elem in dir(chrome_driver) if not elem.startswith("_"))

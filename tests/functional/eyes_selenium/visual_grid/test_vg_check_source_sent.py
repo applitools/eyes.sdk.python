@@ -1,15 +1,16 @@
+import pytest
 from mock import patch
 
 from applitools.selenium import BrowserType, Eyes, Target
 
 
+@pytest.mark.test_page_url("https://applitools.com/helloworld")
 def test_test_vg_check_source_sent(chrome_driver, vg_runner):
-    chrome_driver.get("https://applitools.com/helloworld")
     eyes = Eyes(vg_runner)
-    eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
-    eyes.configuration.add_browser(800, 600, BrowserType.FIREFOX)
-    eyes.configuration.app_name = "TestCheckSourceSent"
-    eyes.configuration.test_name = "TestVgCheckSourceSent"
+    eyes.configure.add_browser(800, 600, BrowserType.CHROME)
+    eyes.configure.add_browser(800, 600, BrowserType.FIREFOX)
+    eyes.configure.app_name = "TestCheckSourceSent"
+    eyes.configure.test_name = "TestVgCheckSourceSent"
 
     try:
         eyes.open(chrome_driver)

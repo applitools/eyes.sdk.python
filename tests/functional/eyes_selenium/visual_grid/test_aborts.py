@@ -8,6 +8,7 @@ from applitools.core import ServerConnector
 from applitools.selenium import BrowserType, Eyes, Target
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_abort_when_not_rendered(chrome_driver, vg_runner, batch_info, monkeypatch):
     def failed_status(self, *ids):
         return [
@@ -20,13 +21,13 @@ def test_abort_when_not_rendered(chrome_driver, vg_runner, batch_info, monkeypat
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    chrome_driver.get("https://demo.applitools.com")
     eyes.open(chrome_driver)
     eyes.check(Target.window())
     eyes.close_async()
     all_results = vg_runner.get_all_test_results(False)
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_get_all_tests_results_timeout(
     chrome_driver, vg_runner, batch_info, monkeypatch
 ):
@@ -41,20 +42,19 @@ def test_get_all_tests_results_timeout(
     eyes.configure.test_name = "GetAllTestsResultsTimeout"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
-    chrome_driver.get("https://demo.applitools.com")
     eyes.open(chrome_driver)
     eyes.close_async()
     with pytest.raises(EyesError):
         vg_runner.get_all_test_results(False, 1)
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_abort_when_dom_snapshot_error(chrome_driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "TestAbortWhenDonSnapshotError"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(1200, 800, BrowserType.CHROME)
-    chrome_driver.get("https://demo.applitools.com")
     with patch(
         "applitools.selenium.visual_grid.visual_grid_eyes.VisualGridEyes.get_script_result",
         side_effect=Exception,
@@ -66,13 +66,13 @@ def test_abort_when_dom_snapshot_error(chrome_driver, vg_runner, batch_info):
         assert len(all_results) == 1
 
 
+@pytest.mark.test_page_url("data:text/html,<p>Test</p>")
 def test_abort_async_on_vg(chrome_driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "Test Abort_VG"
     eyes.configure.app_name = "Test Abort_VG"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(800, 600, BrowserType.CHROME)
-    chrome_driver.get("data:text/html,<p>Test</p>")
     eyes.open(chrome_driver)
     eyes.check(Target.window())
     time.sleep(15)
@@ -80,13 +80,13 @@ def test_abort_async_on_vg(chrome_driver, vg_runner, batch_info):
     all_results = vg_runner.get_all_test_results(False)
 
 
+@pytest.mark.test_page_url("data:text/html,<p>Test</p>")
 def test_abort_after_close_must_not_abort(chrome_driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "Test abort after close VG"
     eyes.configure.app_name = "Test Abort_VG"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(800, 600, BrowserType.CHROME)
-    chrome_driver.get("data:text/html,<p>Test</p>")
     eyes.open(chrome_driver)
     eyes.check(Target.window())
     eyes.close()
@@ -94,13 +94,13 @@ def test_abort_after_close_must_not_abort(chrome_driver, vg_runner, batch_info):
     all_results = vg_runner.get_all_test_results()
 
 
+@pytest.mark.test_page_url("data:text/html,<p>Test</p>")
 def test_abort_after_close_async_must_not_abort(chrome_driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "Test abort after close async VG"
     eyes.configure.app_name = "Test Abort_VG"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(800, 600, BrowserType.CHROME)
-    chrome_driver.get("data:text/html,<p>Test</p>")
     eyes.open(chrome_driver)
     eyes.check(Target.window())
     eyes.close_async()
@@ -108,6 +108,7 @@ def test_abort_after_close_async_must_not_abort(chrome_driver, vg_runner, batch_
     all_results = vg_runner.get_all_test_results()
 
 
+@pytest.mark.test_page_url("data:text/html,<p>Test</p>")
 def test_abort_async_after_close_async_must_not_abort(
     chrome_driver, vg_runner, batch_info
 ):
@@ -116,7 +117,6 @@ def test_abort_async_after_close_async_must_not_abort(
     eyes.configure.app_name = "Test Abort_VG"
     eyes.configure.batch = batch_info
     eyes.configure.add_browser(800, 600, BrowserType.CHROME)
-    chrome_driver.get("data:text/html,<p>Test</p>")
     eyes.open(chrome_driver)
     eyes.check(Target.window())
     eyes.close_async()

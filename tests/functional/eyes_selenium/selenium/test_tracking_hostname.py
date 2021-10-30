@@ -1,8 +1,9 @@
+import pytest
 from mock import patch
 
 
+@pytest.mark.test_page_url("https://demo.applitools.com")
 def test_match_window_data_contains_webapp_domain(eyes, chrome_driver):
-    chrome_driver.get("https://demo.applitools.com")
     eyes.open(
         chrome_driver,
         "TestCheckSourceSent",

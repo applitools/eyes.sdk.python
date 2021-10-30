@@ -3,9 +3,6 @@ import pytest
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 
 pytestmark = [
-    pytest.mark.platform("Linux"),
-    pytest.mark.test_suite_name("Eyes Selenium SDK - Fluent API"),
-    pytest.mark.viewport_size({"width": 700, "height": 460}),
     pytest.mark.test_page_url("https://applitools.com/helloworld"),
 ]
 

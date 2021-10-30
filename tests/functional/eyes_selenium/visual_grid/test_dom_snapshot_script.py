@@ -1,7 +1,7 @@
 import base64
 import json
 import zlib
-from time import sleep, time
+from time import sleep
 from typing import Text
 
 import mock
@@ -65,8 +65,8 @@ def test_dom_snapshot_args_conversion():
     assert json.loads(script.poll_args) == {"chunkByteLength": 100}
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_default(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run()
@@ -84,8 +84,8 @@ def test_dom_snapshot_default(chrome_driver):
     assert "compressed" not in poll_res.value["blobs"][0]
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_serialize_resources(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(serialize_resources=True)
@@ -105,8 +105,8 @@ def test_dom_snapshot_serialize_resources(chrome_driver):
     assert len(pic) == 22721
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_compressed(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(compress_resources=True)
@@ -128,8 +128,8 @@ def test_dom_snapshot_compressed(chrome_driver):
     assert len(pic) == 22721
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_compressed_serialized(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(compress_resources=True, serialize_resources=True)
@@ -151,8 +151,8 @@ def test_dom_snapshot_compressed_serialized(chrome_driver):
     assert len(pic) == 22721
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_dont_fetch_resources(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(dont_fetch_resources=True)
@@ -169,8 +169,8 @@ def test_dom_snapshot_dont_fetch_resources(chrome_driver):
     assert poll_res.value["resourceUrls"] == [picture_url]
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_serialize_chunks(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(serialize_resources=True)
@@ -188,8 +188,8 @@ def test_dom_snapshot_serialize_chunks(chrome_driver):
     assert len(poll_res.value) == 100
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/SimpleTestPage")
 def test_dom_snapshot_serialize_chunks_until_done(chrome_driver):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     script = DomSnapshotScriptGeneric(chrome_driver)
 
     run_res = script.run(serialize_resources=True)
@@ -391,9 +391,9 @@ def test_create_dom_snapshot_loop_chunks():
     assert res == {"a": "b"}
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 def test_create_dom_snapshot_with_cors_iframe(chrome_driver):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, False, [], 10000, True, False)
 
@@ -402,9 +402,9 @@ def test_create_dom_snapshot_with_cors_iframe(chrome_driver):
     assert "selector" in dom["frames"][0]["crossFrames"][0]
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 def test_create_dom_snapshot_has_cors_iframe_data(chrome_driver):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, False, [], 10000, True, False)
 
@@ -442,15 +442,16 @@ def test_has_cross_sub_frames_two_level_empty():
     assert has_cross_subframes(dom) is False
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 def test_create_dom_snapshot_disable_cross_origin_rendering(chrome_driver):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, False, [], 10000, False, False)
 
     assert len(dom["frames"][0]["frames"]) == 0
 
 
+@pytest.mark.test_page_url("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 def test_create_dom_snapshot_retries_on_single_failure(chrome_driver, monkeypatch):
     create_dom_snapshot_loop = RecursiveSnapshotter._create_dom_snapshot_loop
 
@@ -467,7 +468,6 @@ def test_create_dom_snapshot_retries_on_single_failure(chrome_driver, monkeypatc
     )
 
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/CorsTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, False, [], 1000000, True, False)
 
@@ -476,9 +476,11 @@ def test_create_dom_snapshot_retries_on_single_failure(chrome_driver, monkeypatc
     assert "selector" in dom["frames"][0]["crossFrames"][0]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CookiesTestPage/"
+)
 def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(chrome_driver):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, False, [], 10000, True, True)
 
@@ -546,11 +548,13 @@ def test_create_dom_snapshot_collects_cookies_when_handling_cors_frames(chrome_d
     ]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CookiesTestPage/"
+)
 def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(
     chrome_driver,
 ):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, True, [], 10000, False, True)
 
@@ -618,9 +622,11 @@ def test_create_dom_snapshot_collects_cookies_when_not_handling_cors_frames(
     ]
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CookiesTestPage/"
+)
 def test_create_dom_snapshot_doesnt_collect_cookies_when_disabled(chrome_driver):
     chrome_driver = EyesWebDriver(chrome_driver, None)
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/CookiesTestPage/")
 
     dom = create_dom_snapshot(chrome_driver, logger, True, [], 10000, True, False)
 

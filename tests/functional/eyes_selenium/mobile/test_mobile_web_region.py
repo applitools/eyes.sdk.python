@@ -75,6 +75,10 @@ def test_region_capture_android(eyes, sauce_galaxy_s9_android9_driver):
 )
 def test_region_fully_capture_android(eyes, sauce_galaxy_s9_android9_driver):
     eyes.configure.is_simulator = True
-    eyes.open(sauce_galaxy_s9_android9_driver, "Mobile Web Tests", "TestRegionFullyCapture_Android")
+    eyes.open(
+        sauce_galaxy_s9_android9_driver,
+        "Mobile Web Tests",
+        "TestRegionFullyCapture_Android",
+    )
     _region_fully_test_flow(eyes)
     eyes.close()

@@ -170,6 +170,9 @@ def test_replace_matched_step(params, chrome_driver, eyes, fake_connector_class)
         assert match_data.options.replace_last == expected
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/FramesTestPage/"
+)
 def test_screenshot_too_big(chrome_driver, eyes, fake_connector_class):
     eyes.server_connector = fake_connector_class()
     driver = eyes.open(
@@ -184,7 +187,6 @@ def test_screenshot_too_big(chrome_driver, eyes, fake_connector_class):
     eyes._selenium_eyes._debug_screenshots_provider.save = (
         lambda image, suffix: screenshots.append(image)
     )
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
     driver.find_element_by_id("stretched").click()
     frame = driver.find_element_by_css_selector("#modal2 iframe")
     driver.switch_to.frame(frame)
@@ -196,8 +198,8 @@ def test_screenshot_too_big(chrome_driver, eyes, fake_connector_class):
     assert r_info.max_image_height == image.height
 
 
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 def test_feature_target_window_captures_selected_frame(eyes, chrome_driver):
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.configure.set_features(Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME)
     eyes_driver = eyes.open(
         driver=chrome_driver,
@@ -212,10 +214,10 @@ def test_feature_target_window_captures_selected_frame(eyes, chrome_driver):
     eyes.close()
 
 
+@pytest.mark.test_page_url(
+    "http://applitools.github.io/demo/TestPages/FramesTestPage/longframe.html"
+)
 def test_capture_element_on_pre_scrolled_down_page(eyes, chrome_driver):
-    chrome_driver.get(
-        "http://applitools.github.io/demo/TestPages/FramesTestPage/longframe.html"
-    )
     driver = eyes.open(
         driver=chrome_driver,
         app_name="Applitools Eyes SDK",
@@ -228,10 +230,10 @@ def test_capture_element_on_pre_scrolled_down_page(eyes, chrome_driver):
     eyes.close()
 
 
+@pytest.mark.test_page_url(
+    "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
+)
 def test_charts_with_scroll_root(eyes, chrome_driver):
-    chrome_driver.get(
-        "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
-    )
     eyes.configure.branch_name = "master_python"
     driver = eyes.open(
         driver=chrome_driver,
@@ -257,11 +259,11 @@ def test_charts_with_scroll_root(eyes, chrome_driver):
     eyes.close()
 
 
+@pytest.mark.test_page_url(
+    "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
+)
+@pytest.mark.eyes_config(branch_name="master_python")
 def test_charts_with_scroll_root_fluent(eyes, chrome_driver):
-    chrome_driver.get(
-        "https://gistcdn.githack.com/skhalymon/048004f61ddcbf2d527daa6d6bc3b82f/raw/06cbf10fe444783445a5812691ae7f37b0db7559/MobileViewCorrect.html"
-    )
-    eyes.configure.branch_name = "master_python"
     eyes.open(
         driver=chrome_driver,
         app_name="Applitools Eyes SDK",
@@ -284,9 +286,9 @@ def test_charts_with_scroll_root_fluent(eyes, chrome_driver):
     eyes.close()
 
 
+@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+@pytest.mark.eyes_config(branch_name="master_python")
 def test_check_window_with_match_region_paddings__fluent(eyes, chrome_driver):
-    chrome_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
-    eyes.configure.branch_name = "master_python"
     eyes.open(
         driver=chrome_driver,
         app_name="Applitools Eyes SDK",

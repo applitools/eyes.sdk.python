@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 
 import pytest
 from mock import ANY, MagicMock, call, patch
@@ -44,7 +44,6 @@ def server_connector():
 
 
 @pytest.mark.usefixtures("driver_for_class")
-@pytest.mark.browser("chrome")
 @pytest.mark.viewport_size({"width": 800, "height": 600})
 class TestDomCaptureUnit(object):
     cur_dir = os.path.abspath(__file__).rpartition("/")[0]

@@ -5,10 +5,10 @@ import pytest
 from applitools.selenium import EyesWebDriver
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+)
 def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, chrome_driver):
-    chrome_driver.get(
-        "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
-    )
     eyes_driver = EyesWebDriver(chrome_driver, eyes)
 
     chrome_driver.switch_to.frame(0)
@@ -24,10 +24,10 @@ def test_iframe_selected_with_raw_selenium_driver_is_synced(eyes, chrome_driver)
     )
 
 
+@pytest.mark.test_page_url(
+    "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
+)
 def test_iframe_unselected_with_raw_selenium_driver_is_synced(eyes, chrome_driver):
-    chrome_driver.get(
-        "https://applitools.github.io/demo/TestPages/CorsTestPage/index.html"
-    )
     eyes_driver = EyesWebDriver(chrome_driver, eyes)
 
     eyes_driver.switch_to.frame(0)

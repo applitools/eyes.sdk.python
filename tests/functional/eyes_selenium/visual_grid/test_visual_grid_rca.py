@@ -1,14 +1,17 @@
+import pytest
 from selenium.webdriver.support.wait import WebDriverWait
 
-from applitools.selenium import BatchInfo, Eyes, Target
+from applitools.selenium import Eyes, Target
 
-batch_info = BatchInfo("Test Visual Grid RCA")
+pytestmark = [
+    pytest.mark.test_page_url(
+        "https://applitools.github.io/demo/TestPages/VisualGridTestPage"
+    ),
+]
 
 
 def test_VG_RCA_config(chrome_driver, vg_runner):
     eyes = Eyes(vg_runner)
-    eyes.batch = batch_info
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     eyes.open(chrome_driver, "Test Visual Grid", "Test RCA Config")
     eyes.send_dom = True
     eyes.check("", Target.window())
@@ -18,8 +21,6 @@ def test_VG_RCA_config(chrome_driver, vg_runner):
 
 def test_VG_RCA_fluent(chrome_driver, vg_runner):
     eyes = Eyes(vg_runner)
-    eyes.batch = batch_info
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage")
     chrome_driver.switch_to.frame("iframe")
     WebDriverWait(chrome_driver, 30)
     chrome_driver.switch_to.default_content()

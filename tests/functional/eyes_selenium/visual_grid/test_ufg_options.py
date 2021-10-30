@@ -1,8 +1,11 @@
+import pytest
+
 from applitools.common import VisualGridOption
 from applitools.common.selenium import BrowserType
 from applitools.selenium import Eyes, Target, VisualGridRunner
 
 
+@pytest.mark.test_page_url("https://google.com")
 def test_ufg_options(chrome_driver, fake_connector_class):
     runner = VisualGridRunner(1)
     eyes = Eyes(runner)
@@ -16,7 +19,6 @@ def test_ufg_options(chrome_driver, fake_connector_class):
         )
     )
 
-    chrome_driver.get("https://google.com")
     eyes.open(chrome_driver, "Mock app", "Mock Test")
     eyes.check(
         "",

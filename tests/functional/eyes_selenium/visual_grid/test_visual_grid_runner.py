@@ -3,6 +3,12 @@ import pytest
 from applitools.common import RGridDom
 from applitools.selenium import Eyes, VisualGridRunner
 
+pytestmark = [
+    pytest.mark.test_page_url(
+        "https://applitools.github.io/demo/TestPages/SimpleTestPage"
+    ),
+]
+
 
 def test_visual_grid_runner_runner_started_logging(fake_connector_class):
     connector = fake_connector_class()
@@ -16,7 +22,6 @@ def test_visual_grid_runner_runner_started_logging(fake_connector_class):
 
 
 def test_render_failure_aborts_session(chrome_driver, batch_info, vg_runner, spy):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
@@ -33,7 +38,6 @@ def test_render_failure_aborts_session(chrome_driver, batch_info, vg_runner, spy
 
 def test_snapshot_too_big_aborts_session(chrome_driver, vg_runner, spy, monkeypatch):
     monkeypatch.setattr(RGridDom, "MAX_CDT_SIZE", 1)
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
@@ -45,7 +49,6 @@ def test_snapshot_too_big_aborts_session(chrome_driver, vg_runner, spy, monkeypa
 
 
 def test_non_closed_tests_aborted(chrome_driver, vg_runner, spy, capsys):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
@@ -62,7 +65,6 @@ def test_non_closed_tests_aborted(chrome_driver, vg_runner, spy, capsys):
 def test_non_closed_finished_tests_do_not_issue_warning(
     chrome_driver, vg_runner, capsys
 ):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
 
     eyes.open(chrome_driver, "Eyes SDK", "UFG Render Error")
@@ -75,7 +77,6 @@ def test_non_closed_finished_tests_do_not_issue_warning(
 
 
 def test_null_render_status_aborts_test(chrome_driver, vg_runner, spy, capsys):
-    chrome_driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage")
     eyes = Eyes(vg_runner)
     close_session_spy = spy(eyes.server_connector, "stop_session")
 
