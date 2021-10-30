@@ -14,41 +14,14 @@ from applitools.selenium.selenium_eyes import SeleniumEyes
 from tests.functional.conftest import check_image_match_settings
 
 
-@pytest.mark.skip("Old test. test_hello_world implemented instead of this one")
-@pytest.mark.platform("Linux")
-@pytest.mark.test_page_url("https://applitools.com/helloworld")
-def test_quickstart_example(eyes, driver):
-    required_viewport = {"width": 1200, "height": 800}
-    eyes.set_viewport_size(driver, required_viewport)
-    eyes.open(
-        driver=driver,
-        app_name="TestQuickstartExample",
-        test_name="My first Selenium Python test!",
-        viewport_size={"width": 800, "height": 600},
-    )
-
-    eyes.check_window("Hello!")
-
-    driver.find_element_by_css_selector("button").click()
-    eyes.check_window("Click!")
-
-    eyes.check_region(Region(20, 20, 50, 50), "step")
-
-    eyes.close()
-
-
-@pytest.mark.browser("chrome")
-@pytest.mark.platform("Linux")
-def test_directly_set_viewport_size(eyes, driver):
+def test_directly_set_viewport_size(eyes, chrome_driver):
     required_viewport = {"width": 800, "height": 600}
-    eyes.set_viewport_size(driver, required_viewport)
-    driver = eyes.open(driver, "Python SDK", "TestViewPort-DirectlySetViewportt")
+    eyes.set_viewport_size(chrome_driver, required_viewport)
+    driver = eyes.open(chrome_driver, "Python SDK", "TestViewPort-DirectlySetViewportt")
     assert required_viewport == eyes.get_viewport_size(driver)
     eyes.close()
 
 
-@pytest.mark.browser("chrome")
-@pytest.mark.platform("Linux")
 @pytest.mark.eyes_config(hide_scrollbars=True)
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 def test_check_window_with_send_dom(eyes, chrome_driver):
@@ -109,15 +82,13 @@ def test_coordinates_resolving(eyes, chrome_driver):
     indirect=True,
     ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
 )
-@pytest.mark.platform("Windows")
-@pytest.mark.browser("internet explorer")
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage")
-def test_ie_viewport_screenshot_with_scrolling(eyes, chrome_driver):
+def test_ie_viewport_screenshot_with_scrolling(eyes, sauce_ie10_w7_d314):
     test_name = "TestIEViewportScreenshot"
     if eyes.force_full_page_screenshot:
         test_name += "_FPS"
     test_name += "_%s" % eyes.stitch_mode.value
-    driver = eyes.open(chrome_driver, "Python SDK", test_name)
+    driver = eyes.open(sauce_ie10_w7_d314, "Python SDK", test_name)
 
     eyes.check_window()
 
@@ -154,8 +125,6 @@ def test_switch_back_to_frame_after_check(eyes, chrome_driver):
     eyes.close()
 
 
-@pytest.mark.platform("Linux")
-@pytest.mark.browser("chrome")
 def test_execute_script_with_eyes_webelement(chrome_driver, eyes):
     elem = chrome_driver.find_element_by_tag_name("html")
     e_elem = EyesWebElement(elem, chrome_driver)
@@ -228,7 +197,7 @@ def test_screenshot_too_big(chrome_driver, eyes, fake_connector_class):
 
 
 def test_feature_target_window_captures_selected_frame(eyes, chrome_driver):
-    driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
+    chrome_driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/")
     eyes.configure.set_features(Feature.TARGET_WINDOW_CAPTURES_SELECTED_FRAME)
     eyes_driver = eyes.open(
         driver=chrome_driver,

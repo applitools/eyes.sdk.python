@@ -1,7 +1,13 @@
 import pytest
+from selenium import webdriver as selenium_webdriver
 from selenium.webdriver.common.by import By
 
 from applitools.selenium import StitchMode, Target
+
+
+@pytest.fixture
+def webdriver_module():
+    return selenium_webdriver
 
 
 def _region_test_flow(eyes):
@@ -69,6 +75,6 @@ def test_region_capture_android(eyes, sauce_galaxy_s9_android9_driver):
 )
 def test_region_fully_capture_android(eyes, sauce_galaxy_s9_android9_driver):
     eyes.configure.is_simulator = True
-    eyes.open(driver, "Mobile Web Tests", "TestRegionFullyCapture_Android")
+    eyes.open(sauce_galaxy_s9_android9_driver, "Mobile Web Tests", "TestRegionFullyCapture_Android")
     _region_fully_test_flow(eyes)
     eyes.close()
