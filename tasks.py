@@ -103,7 +103,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
             requires.append("flake8-bugbear")
     else:
         requires = dev_requires + testing_requires + lint_requires
-    c.run("pip install {}".format(" ".join(requires)), echo=True)
+    c.run("pip install -I {}".format(" ".join(requires)), echo=True)
 
 
 def _packages_resolver(
