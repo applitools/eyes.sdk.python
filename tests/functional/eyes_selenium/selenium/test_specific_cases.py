@@ -71,35 +71,6 @@ def test_coordinates_resolving(eyes, chrome_driver):
     eyes.close()
 
 
-@pytest.mark.parametrize(
-    "eyes",
-    [
-        {"force_full_page_screenshot": True, "stitch_mode": StitchMode.CSS},
-        {"force_full_page_screenshot": False, "stitch_mode": StitchMode.CSS},
-        {"force_full_page_screenshot": True, "stitch_mode": StitchMode.Scroll},
-        {"force_full_page_screenshot": False, "stitch_mode": StitchMode.Scroll},
-    ],
-    indirect=True,
-    ids=lambda o: "CSS" if o["stitch_mode"] == StitchMode.CSS else "Scroll",
-)
-@pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage")
-def test_ie_viewport_screenshot_with_scrolling(eyes, sauce_ie10_w7_d314):
-    test_name = "TestIEViewportScreenshot"
-    if eyes.force_full_page_screenshot:
-        test_name += "_FPS"
-    test_name += "_%s" % eyes.stitch_mode.value
-    driver = eyes.open(sauce_ie10_w7_d314, "Python SDK", test_name)
-
-    eyes.check_window()
-
-    driver.execute_script(
-        "arguments[0].scrollIntoView();",
-        driver.find_element_by_id("overflowing-div-image"),
-    )
-    eyes.check_window()
-    eyes.close()
-
-
 @pytest.mark.test_page_url("http://applitools.github.io/demo/TestPages/FramesTestPage/")
 @pytest.mark.eyes_config(parent_branch_name="master", branch_name="master_python")
 def test_switch_back_to_frame_after_check(eyes, chrome_driver):
