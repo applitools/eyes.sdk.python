@@ -264,7 +264,7 @@ def test_check_window_with_match_region_paddings__fluent(eyes, chrome_driver):
         driver=chrome_driver,
         app_name="Applitools Eyes SDK",
         test_name="TestCheckWindowWithMatchRegionPaddings_Fluent",
-        viewport_size={"width": 1200, "height": 700},
+        viewport_size={"width": 700, "height": 460},
     )
 
     eyes.check(
