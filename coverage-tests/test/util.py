@@ -37,3 +37,10 @@ def get_dom(results, dom_id):
     res = requests.get(url)
     res.raise_for_status()
     return res.json()
+
+
+def getNodesByAttribute(node, attribute):
+    nodes = [node] if attribute in node.get("attributes", {}) else []
+    for n in node.get("childNodes", []):
+        nodes.extend(getNodesByAttribute(n, attribute))
+    return nodes
