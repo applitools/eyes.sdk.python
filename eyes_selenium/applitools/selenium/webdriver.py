@@ -757,7 +757,12 @@ class EyesWebDriver(object):
         """
         returns the drivers current desired capabilities being used
         """
-        return self._driver.capabilities
+        try:
+            return self._driver.capabilities
+        except AttributeError:
+            # There is no evidence that driver without "capabilities" attribute exists,
+            # but have this in case there are old appium or incomplete custom drivers
+            return self._driver.desired_capabilities
 
     @property
     def desired_capabilities(self):
