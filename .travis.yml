@@ -1,385 +1,273 @@
 language: python
 services:
-  - xvfb
+    - xvfb
 git:
-  submodules: false
-before_install:
-  # Disable stderr/stdout buffering in python
-  - export PYTHONUNBUFFERED=1
-  # Run GUI apps in headless mode
-  - export DISPLAY=:99.0
-  - export PATH=`pwd`/bin:$PATH
-  - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
-  - mkdir bin && unzip chromedriver_linux64.zip -d bin
+    submodules: false
+install:
+    - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
+    - mkdir bin && unzip chromedriver_linux64.zip -d bin
+    - python -m pip install -U tox
 before_script:
-  - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
-  # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
-  - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
-      export TEST_REPORT_SANDBOX=False;
-      export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
-      export TMP_CHANGELOG=$(bash ./ci_scripts/extract_changelog.sh "$SDK_VERSION" "CHANGELOG.md");
-      export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
+    - export PATH=`pwd`/bin:$PATH
+    # Disable stderr/stdout buffering in python
+    - export PYTHONUNBUFFERED=1
+    # Run GUI apps in headless mode
+    - export DISPLAY=:99.0
+    # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
+    - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
+        export TEST_REPORT_SANDBOX=False;
+        export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
+        export TMP_CHANGELOG=$(bash ./ci_scripts/extract_changelog.sh "$SDK_VERSION" "CHANGELOG.md");
+        export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
 
-      if [[ (-z "$TMP_CHANGELOG") ]]; then
-        echo "THE CHANGELOG IS NOT CORRECT";
-        exit 1;
-      fi
-    fi
-  - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
-  - echo "v$SDK_VERSION $CHANGELOG"
-  - echo $TEST_REPORT_SANDBOX
-  - echo $APPLITOOLS_BATCH_ID
-stages:
-  - lint
-  - unit-tests
-  - integration-tests
-  - bumpversion
-  - functional-tests
-  - generated-tests
-  - deploy
-jobs:
-  include:
-    - stage: bumpversion
-      if: tag =~ ^RELEASE_CANDIDATE AND fork == false
-      script:
-        # Push new commit to $RELEASE_BRANCH with tag vN.N.N which lead to deploy to PyPi
-        # RELEASE_BRANCH should be set in Travis CI settings
-        - echo "v$SDK_VERSION $CHANGELOG"
-        - if [[ "$TMP_CHANGELOG" ]]; then
-            pip install bump2version;
-            bumpversion --new-version $SDK_VERSION patch;
-            git remote set-url origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
-            git push --tags origin HEAD:$RELEASE_BRANCH;
-          else
+        if [[ (-z "$TMP_CHANGELOG") ]]; then
             echo "THE CHANGELOG IS NOT CORRECT";
             exit 1;
-          fi
+        fi
 
+      fi
+    - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
+script:
+    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
+    - echo "v$SDK_VERSION $CHANGELOG"
+    - echo $TEST_REPORT_SANDBOX
+    - echo $APPLITOOLS_BATCH_ID
+    - tox -e $TOX_ENV
+stages:
+    - lint
+    - unit-tests
+    - integration-tests
+    - bumpversion
+    - functional-tests
+    - generated-tests
+    - deploy
+jobs:
+    include:
+        - stage: bumpversion
+          if: tag =~ ^RELEASE_CANDIDATE AND fork == false
+          script:
+              # Push new commit to $RELEASE_BRANCH with tag vN.N.N which lead to deploy to PyPi
+              # RELEASE_BRANCH should be set in Travis CI settings
+              - echo "v$SDK_VERSION $CHANGELOG"
+              - if [[ "$TMP_CHANGELOG" ]]; then
+                  pip install bump2version;
+                  bumpversion --new-version $SDK_VERSION patch;
+                  git remote set-url origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+                  git push --tags origin HEAD:$RELEASE_BRANCH;
+                else
+                  echo "THE CHANGELOG IS NOT CORRECT";
+                  exit 1;
+                fi
 
-    - stage: unit-tests
-      name: "Unit tests @ Python 3.7/win"
-      os: windows
-      python: 3.7
-      language: shell
-      env:
-        - PATH="/c/Python37:/c/Python37/Scripts:/c/Program Files/Nodejs:$PATH"
-      install:
-        - choco install python --version=3.7.7
-        - choco install -y --force nodejs-lts
-        - python -m ensurepip --upgrade
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e unit
-      cache:
-        directories:
-          - $LOCALAPPDATA/pip/Cache
+        - stage: unit-tests
+          os: windows
+          language: sh
+          python: 3.6
+          before_install:
+              - choco install python --version=3.6.6
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=unit
+              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                - $LOCALAPPDATA/pip/Cache
 
+        - os: windows
+          language: sh
+          before_install:
+              - choco install python2
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=unit
+              - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                - $LOCALAPPDATA/pip/Cache
 
-    - name: "Unit tests @ Python 2.7/win"
-      os: windows
-      python: 2.7
-      language: shell
-      env:
-        - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
-      install:
-        - choco install python2
-        - choco install -y --force nodejs-lts
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e unit
-      cache:
-        directories:
-          - $LOCALAPPDATA/pip/Cache
+        - os: osx
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=unit
 
+        - python: 2.7
+          env:
+              - TOX_ENV=unit
 
-    - name: "Unit tests @ Python 3.7/osx"
-      os: osx
-      language: shell
-      python: 3.7
-      install:
-        - python3 -m pip install -U pip setuptools
-        - python3 -m pip install tox
-      script:
-        - tox -e unit
+        - python: 3.6
+          env:
+              - TOX_ENV=unit
 
+        - stage: integration-tests
+          os: windows
+          language: sh
+          before_install:
+              - choco install python --version=3.6.8
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=integration
+              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                  - $LOCALAPPDATA/pip/Cache
 
-    - name: "Unit tests @ Python 2.7/linux"
-      python: 2.7
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e unit
+        - os: windows
+          language: sh
+          before_install:
+              - choco install python2 --version=2.7.18
+              - choco install -y --force nodejs-lts
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=integration
+              - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                  - $LOCALAPPDATA/pip/Cache
 
+        - os: osx
+          language: sh
+          python: 3.6
+          env:
+              - TOX_ENV=integration
 
-    - name: "Unit tests @ Python 3.7/linux"
-      python: 3.7
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e unit
+        - python: 2.7
+          env:
+              - TOX_ENV=integration
 
+        - python: 3.6
+          env:
+              - TOX_ENV=integration
 
-    - stage: integration-tests
-      name: "Integration tests @ Python 3.7/win"
-      os: windows
-      python: 3.7
-      language: shell
-      env:
-        - PATH="/c/Python37:/c/Python37/Scripts:/c/Program Files/Nodejs:$PATH"
-      install:
-        - choco install python --version=3.7.7
-        - choco install -y --force nodejs-lts
-        - python -m ensurepip --upgrade
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e integration
-      cache:
-        directories:
-          - $LOCALAPPDATA/pip/Cache
+        - stage: functional-tests
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.6
+          node_js: 14
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium-generated
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+              - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
+          before_install:
+              - git submodule update --init --remote --recursive
+              - nvm install node
+          script:
+              - tox -e selenium-generated
+              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+                  echo "REPORTING...";
+                  bash ./ci_scripts/all_tests_report.sh "$SDK";
+                  echo "REPORTED SUCCESSFULLY";
+                fi
 
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+            - TOX_ENV=robotframework
+            - TEST_PLATFORM="Linux"
 
-    - name: "Integration tests @ Python 2.7/win"
-      os: windows
-      python: 2.7
-      language: shell
-      env:
-        - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
-      install:
-        - choco install python2 --version=2.7.18
-        - choco install -y --force nodejs-lts
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e integration
-      cache:
-        directories:
-          - $LOCALAPPDATA/pip/Cache
+        - python: 2.7
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
 
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.6
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
 
-    - name: "Integration tests @ Python 3.7/osx"
-      os: osx
-      python: 3.7
-      language: shell
-      install:
-        - python3 -m pip install -U pip setuptools
-        - python3 -m pip install tox
-      script:
-        - tox -e integration
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="iOS"
+              - TEST_REMOTE=1
 
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
 
-    - name: "Integration tests @ Python 2.7/linux"
-      python: 2.7
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e integration
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=desktop
+              - TEST_PLATFORM=Linux
+              - TEST_RUN_ON_VG=true
+              - TEST_BROWSERS=chrome
 
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=mobile
+              - TEST_PLATFORM="Android"
+              - TEST_REMOTE=1
 
-    - name: "Integration tests @ Python 3.7/linux"
-      python: 3.7
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e integration
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          addons:
+              chrome: stable
+          env:
+              - TOX_ENV=selenium-visualgrid
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
 
+        - python: 3.6
+          if: NOT tag =~ ^RELEASE_CANDIDATE
+          env:
+              - TOX_ENV=images
+              - TEST_PLATFORM="Linux"
 
-    - stage: functional-tests
-      name: "Selenium tests @ Python 2.7/linux"
-      python: 2.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e selenium
+        - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
+          python: 3.6
+          script:
+            - pip install invoke
+            - inv install-requirements
+            - inv install-packages
+            - bash ./tutorials/tutorials.sh
 
+        - stage: deploy
+          if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
+          python: 3.6
+          script:
+              # Deploy to PyPi and send notification about the tests execution status
+              # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
+              - pip install -U invoke twine keyring==21.4.0
+              - echo "v$SDK_VERSION $CHANGELOG"
+              - echo $TMP_CHANGELOG
+              # Save the email of the person who did this commit in COMMITTER_EMAIL
+              - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
+              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
+                  echo "DEPLOY";
+                  TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
-    - name: "Selenium tests @ Python 3.7/linux"
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      python: 3.7
-      addons:
-        chrome: stable
-        firefox: latest
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e selenium
+                  bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+                  inv dist --from-env;
 
-
-    - name: "Mobile iOS tests"
-      python: 3.6
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      env:
-        - TEST_PLATFORM="iOS"
-        - TEST_REMOTE=1
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e mobile
-
-
-    - name: "Mobile Android tests"
-      python: 3.6
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      env:
-        - TEST_PLATFORM="Android"
-        - TEST_REMOTE=1
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e mobile
-
-
-    - name: "Generated tests"
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      python: 3.7
-      node_js: 14
-      addons:
-        chrome: stable
-        firefox: latest
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-        - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
-      install:
-        - git submodule update --init --remote --recursive
-        - nvm install node
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e selenium-generated
-        - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
-            echo "REPORTING...";
-            bash ./ci_scripts/all_tests_report.sh "$SDK";
-            echo "REPORTED SUCCESSFULLY";
-          fi
-
-
-    - name: "Robotframework tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM="Linux"
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e robotframework
-
-
-    - name: "Desktop tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e desktop
-
-
-    - name: "Desktop UFG tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_RUN_ON_VG=true
-        - TEST_BROWSERS=chrome
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e desktop
-
-
-    - name: "UFG tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      addons:
-        chrome: stable
-      env:
-        - TEST_PLATFORM=Linux
-        - TEST_BROWSERS=chrome
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e selenium-visualgrid
-
-
-    - name: "Images tests"
-      python: 3.7
-      if: NOT tag =~ ^RELEASE_CANDIDATE
-      env:
-        - TEST_PLATFORM="Linux"
-      install:
-        - python -m pip install -U pip setuptools
-        - python -m pip install tox
-      script:
-        - tox -e images
-
-
-    - name: "Tutorials tests"
-      if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
-      python: 3.7
-      install:
-        - python -m pip install -U pip setuptools
-        - pip install invoke
-      script:
-        - inv install-requirements
-        - inv install-packages
-        - bash ./tutorials/tutorials.sh
-
-
-    - stage: deploy
-      name: "Package deployment"
-      if: tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
-      python: 3.7
-      install:
-        - python -m pip install -U pip setuptools
-      script:
-        # Deploy to PyPi and send notification about the tests execution status
-        # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
-        - pip install -U invoke twine keyring==21.4.0
-        - echo "v$SDK_VERSION $CHANGELOG"
-        - echo $TMP_CHANGELOG
-        # Save the email of the person who did this commit in COMMITTER_EMAIL
-        - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
-        - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
-            echo "DEPLOY";
-            TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
-
-            bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
-            inv dist --from-env;
-
-            echo "DEPLOY SUCCESSFUL";
-          else
-            echo "DEPLOYMENT FAILED";
-            exit 1;
-          fi
+                  echo "DEPLOY SUCCESSFUL";
+                else
+                  echo "DEPLOYMENT FAILED";
+                  exit 1;
+                fi
