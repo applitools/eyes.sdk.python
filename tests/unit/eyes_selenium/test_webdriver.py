@@ -22,7 +22,7 @@ def test_driver_useragent_splits_version(version, major, minor):
 
 def test_driver_app_useragent_lowercase_os():
     driver_mock, eyes_mock = MagicMock(), MagicMock()
-    driver_mock.desired_capabilities = {
+    driver_mock.capabilities = {
         "app": "1.zip",
         "platformName": "ios",
         "platformVersion": "13.4",
