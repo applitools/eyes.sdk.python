@@ -14,7 +14,7 @@ Setup
         Eyes Open   batch=${BATCH_NAME}
     ELSE IF  '${BACKEND_LIBRARY_NAME}' == 'SeleniumLibrary'
         Open Browser   ${URL}   ${BROWSER_NAME}   remote_url=${REMOTE_URL}   desired_capabilities=${DESIRED CAPS}
-        Eyes Open   batch=${BATCH_NAME}  viewport_size=[1004 675]
+        Eyes Open   batch=${BATCH_NAME}  viewport_size=[989 637]
     END
 
 
