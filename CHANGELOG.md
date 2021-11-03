@@ -1,4 +1,4 @@
-## [vNext]
+## [4.25.3] - 2021-11-03
 ### Updated
 - Avoid using deprecated desired_capabilities attribute of Selenium 4 webdriver [Trello 2742](https://trello.com/c/QbCUSeH2)
 
