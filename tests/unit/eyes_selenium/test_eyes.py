@@ -33,11 +33,11 @@ def open_and_get_start_session_info(
     driver.is_mobile_platform = is_app or is_mobile_web
     driver.is_mobile_web = is_mobile_web
 
-    driver.desired_capabilities = {}
+    driver.capabilities = {}
     if platform_name:
-        driver.desired_capabilities["platformName"] = platform_name
+        driver.capabilities["platformName"] = platform_name
     if device_name:
-        driver.desired_capabilities["deviceName"] = device_name
+        driver.capabilities["deviceName"] = device_name
 
     eyes.api_key = "Some API KEY"
     eyes._is_viewport_size_set = True

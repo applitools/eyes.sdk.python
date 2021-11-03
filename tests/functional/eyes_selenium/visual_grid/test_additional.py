@@ -32,12 +32,12 @@ def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runne
         "left": 80,
         "top": 322,
         "width": 290,
-        "height": 64,
+        "height": 62,
     }
     assert len(actual_output[2]["imageMatchSettings"]["ignore"]) == 1
     assert actual_output[2]["imageMatchSettings"]["ignore"][0] == {
         "left": 367,
         "top": 322,
         "width": 290,
-        "height": 64,
+        "height": 62,
     }

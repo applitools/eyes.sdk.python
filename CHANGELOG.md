@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Avoid using deprecated desired_capabilities attribute of Selenium 4 webdriver [Trello 2742](https://trello.com/c/QbCUSeH2)
+
 ## [4.25.2] - 2021-10-15
 ### Fixed
 - Appium EyesWebDriver crashes on user_agent access [Trello 2734](https://trello.com/c/OMkTvYDh)

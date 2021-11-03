@@ -21,16 +21,16 @@ from applitools.selenium import eyes_selenium_utils
     ],
 )
 def test_different_mobile_platform_names(driver_mock, platform_name):
-    driver_mock.desired_capabilities["platformName"] = platform_name
-    driver_mock.desired_capabilities["browserName"] = "someBrowser"
+    driver_mock.capabilities["platformName"] = platform_name
+    driver_mock.capabilities["browserName"] = "someBrowser"
     assert eyes_selenium_utils.is_mobile_web(driver_mock)
     assert not eyes_selenium_utils.is_mobile_app(driver_mock)
 
 
 @pytest.mark.parametrize("platform_name", ["Windows", "Winmo", "Linux", "macOs"])
 def test_different_not_mobile_platform_names(driver_mock, platform_name):
-    driver_mock.desired_capabilities["platformName"] = platform_name
-    driver_mock.desired_capabilities["browserName"] = "someBrowser"
+    driver_mock.capabilities["platformName"] = platform_name
+    driver_mock.capabilities["browserName"] = "someBrowser"
     assert not eyes_selenium_utils.is_mobile_web(driver_mock)
     assert not eyes_selenium_utils.is_mobile_app(driver_mock)
     assert not eyes_selenium_utils.is_mobile_platform(driver_mock)
@@ -46,8 +46,8 @@ def test_appium_webdriver(driver_mock):
     "param", ["app", "appActivity", "appPackage", "bundleId", "appName"]
 )
 def test_using_mobile_app(driver_mock, platform_name, param):
-    driver_mock.desired_capabilities[param] = "some_app"
-    driver_mock.desired_capabilities["platformName"] = platform_name
+    driver_mock.capabilities[param] = "some_app"
+    driver_mock.capabilities["platformName"] = platform_name
     assert eyes_selenium_utils.is_mobile_app(driver_mock)
     assert not eyes_selenium_utils.is_mobile_web(driver_mock)
 
@@ -57,13 +57,13 @@ def test_get_app_name_missing(driver_mock):
 
 
 def test_get_app_name_android(driver_mock):
-    driver_mock.desired_capabilities["appPackage"] = "com.example.appid"
+    driver_mock.capabilities["appPackage"] = "com.example.appid"
 
     assert eyes_selenium_utils.get_app_name(driver_mock) == "com.example.appid"
 
 
 def test_get_app_name_ios(driver_mock):
-    driver_mock.desired_capabilities["app"] = "https://host/dir/app_1_0.zip"
+    driver_mock.capabilities["app"] = "https://host/dir/app_1_0.zip"
 
     assert eyes_selenium_utils.get_app_name(driver_mock) == "app_1_0.zip"
 
@@ -75,8 +75,8 @@ def test_get_app_domain(driver_mock):
 
 
 def test_check_source_mobile(driver_mock):
-    driver_mock.desired_capabilities["appPackage"] = "com.example.appid"
-    driver_mock.desired_capabilities["platformName"] = "Android"
+    driver_mock.capabilities["appPackage"] = "com.example.appid"
+    driver_mock.capabilities["platformName"] = "Android"
 
     assert eyes_selenium_utils.get_check_source(driver_mock) == "com.example.appid"
 

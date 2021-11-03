@@ -121,8 +121,8 @@ def is_mobile_web(driver):
     Returns whether the platform running is a mobile browser.
     """
     # if driver is selenium based
-    platform_name = driver.desired_capabilities.get("platformName", "").lower()
-    browser_name = driver.desired_capabilities.get("browserName", "").lower()
+    platform_name = driver.capabilities.get("platformName", "").lower()
+    browser_name = driver.capabilities.get("browserName", "").lower()
     is_mobile = "android" in platform_name or "ios" in platform_name
     if is_mobile and browser_name:
         return True
@@ -130,7 +130,7 @@ def is_mobile_web(driver):
 
 
 def is_android(driver):
-    return "android" in driver.desired_capabilities.get("platformName", "").lower()
+    return "android" in driver.capabilities.get("platformName", "").lower()
 
 
 def is_mobile_app(driver):
@@ -138,7 +138,7 @@ def is_mobile_app(driver):
     """
     Returns whether the platform running is a mobile app.
     """
-    caps = driver.desired_capabilities
+    caps = driver.capabilities
     platform_name = caps.get("platformName", "").lower()
     browser_name = caps.get("browserName", "").lower()
     is_app = any(
@@ -503,7 +503,7 @@ def get_default_content_scroll_position(current_frames, driver):
 
 
 def get_app_name(driver):
-    caps = driver.desired_capabilities
+    caps = driver.capabilities
     return caps.get("appPackage", None) or caps.get("app", "").split("/")[-1] or None
 
 

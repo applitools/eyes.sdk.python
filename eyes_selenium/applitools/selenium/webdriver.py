@@ -326,12 +326,12 @@ class EyesWebDriver(object):
     @cached_property
     def platform_name(self):
         # type: () -> Optional[Text]
-        return self._driver.desired_capabilities.get("platformName", None)
+        return self._driver.capabilities.get("platformName", None)
 
     @cached_property
     def platform_version(self):
         # type: () -> Optional[Text]
-        return self._driver.desired_capabilities.get("platformVersion", None)
+        return self._driver.capabilities.get("platformVersion", None)
 
     @deprecated.attribute("use `is_mobile_platform` property instead")
     def is_mobile_device(self):
@@ -750,6 +750,19 @@ class EyesWebDriver(object):
 
     def set_window_position(self, x, y, windowHandle="current"):
         self._driver.set_window_position(x, y, windowHandle)
+
+    @property
+    def capabilities(self):
+        # type: () -> Dict
+        """
+        returns the drivers current desired capabilities being used
+        """
+        try:
+            return self._driver.capabilities
+        except AttributeError:
+            # There is no evidence that driver without "capabilities" attribute exists,
+            # but have this in case there are old appium or incomplete custom drivers
+            return self._driver.desired_capabilities
 
     @property
     def desired_capabilities(self):
