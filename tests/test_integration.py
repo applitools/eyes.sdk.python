@@ -6,9 +6,15 @@ root_dir = os.path.normpath(os.path.join(here, os.pardir))
 
 
 def _packages_resolver(
-    common=False, core=False, selenium=False, images=False, robotframework=False
+    server=False,
+    common=False,
+    core=False,
+    selenium=False,
+    images=False,
+    robotframework=False,
 ):
-    common_pkg, core_pkg, selenium_pkg, images_pkg, robotframework_pkg = (
+    server_pkg, common_pkg, core_pkg, selenium_pkg, images_pkg, robotframework_pkg = (
+        "eyes_server",
         "eyes_common",
         "eyes_core",
         "eyes_selenium",
@@ -16,7 +22,9 @@ def _packages_resolver(
         "eyes_robotframework",
     )
 
-    if common:
+    if server:
+        pack = server_pkg
+    elif common:
         pack = common_pkg
     elif core:
         pack = core_pkg
@@ -53,19 +61,23 @@ def test_setup_eyes_images(venv):
 
 
 def test_setup_eyes_selenium(venv):
+    venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(common=True), editable=True)
     venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
+    assert venv.get_version("eyes-server")
     assert venv.get_version("eyes-common")
     assert venv.get_version("eyes-core")
     assert venv.get_version("eyes-selenium")
 
 
 def test_setup_eyes_robot(venv):
+    venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(common=True), editable=True)
     venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     venv.install(_packages_resolver(robotframework=True), editable=True)
+    assert venv.get_version("eyes-server")
     assert venv.get_version("eyes-common")
     assert venv.get_version("eyes-core")
     assert venv.get_version("eyes-selenium")
@@ -91,6 +103,7 @@ def test_eyes_images_namespace_package(venv):
 
 
 def test_eyes_selenium_namespace_package(venv):
+    venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(common=True), editable=True)
     venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
@@ -98,6 +111,7 @@ def test_eyes_selenium_namespace_package(venv):
 
 
 def test_eyes_robot_namespace_package(venv):
+    venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(common=True), editable=True)
     venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
