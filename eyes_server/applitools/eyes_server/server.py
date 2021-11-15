@@ -6,10 +6,11 @@ from time import sleep
 
 from pkg_resources import resource_filename
 
+logger = getLogger(__name__)
+
 
 class SDKServer(object):
     def __init__(self, executable_path, log_file_name=None):
-        self.logger = getLogger(__name__)
         if log_file_name:
             self._log_file = open(log_file_name, "w+b")
             self.log_file_name = log_file_name
@@ -21,7 +22,8 @@ class SDKServer(object):
             [executable_path, "--no-singleton"], stdout=self._log_file, stderr=STDOUT
         )
         self.port = self._read_port()
-        self.logger.info("Started Universal SDK server at %s", self.port)
+        self.is_closed = False  # explicit flag because python2 calls __del__ many times
+        logger.info("Started Universal SDK server at %s", self.port)
 
     def _read_port(self):
         while True:
@@ -34,13 +36,10 @@ class SDKServer(object):
 
     def close(self):
         if not self.is_closed:
-            self.logger.info("Quit Universal SDK server at %s", self.port)
+            self.is_closed = True
+            logger.info("Quit Universal SDK server at %s", self.port)
             self._sdk_process.terminate()
             self._log_file.close()
-
-    @property
-    def is_closed(self):
-        return self._sdk_process.returncode is not None
 
     def __repr__(self):
         return "SDKServer(port={})".format(self.port)
