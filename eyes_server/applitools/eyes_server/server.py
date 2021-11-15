@@ -21,7 +21,6 @@ class SDKServer(object):
         self._sdk_process = Popen(
             [executable_path, "--no-singleton"], stdout=self._log_file, stderr=STDOUT
         )
-        self.is_closed = False
         self.port = self._read_port()
         logger.info("Started Universal SDK server at %s", self.port)
 
@@ -39,7 +38,10 @@ class SDKServer(object):
             logger.info("Quit Universal SDK server at %s", self.port)
             self._sdk_process.terminate()
             self._log_file.close()
-            self.is_closed = True
+
+    @property
+    def is_closed(self):
+        return self._sdk_process.returncode is not None
 
     def __repr__(self):
         return "SDKServer(port={})".format(self.port)
