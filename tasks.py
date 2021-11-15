@@ -30,6 +30,7 @@ def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
 @task(pre=[clean])
 def dist(
     c,
+    server=False,
     common=False,
     core=False,
     selenium=False,
@@ -44,6 +45,7 @@ def dist(
 
     packages = list(
         _packages_resolver(
+            server,
             common,
             core,
             selenium,
@@ -106,6 +108,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
 
 
 def _packages_resolver(
+    server=False,
     common=False,
     core=False,
     selenium=False,
@@ -115,13 +118,16 @@ def _packages_resolver(
     path_as_str=False,
 ):
     packages = []
-    common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg = (
+    server_pkg, common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg = (
+        "eyes_server",
         "eyes_common",
         "eyes_core",
         "eyes_selenium",
         "eyes_images",
         "eyes_robotframework",
     )
+    if server:
+        packages.append(server_pkg)
     if common:
         packages.append(common_pkg)
     if core:
@@ -133,7 +139,14 @@ def _packages_resolver(
     if robotframework:
         packages.append(robot_pkg)
     if not packages:
-        packages = [common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg]
+        packages = [
+            server_pkg,
+            common_pkg,
+            core_pkg,
+            selenium_pkg,
+            images_pkg,
+            robot_pkg,
+        ]
 
     for pack in packages:
         if full_path:
@@ -152,6 +165,7 @@ def _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework
 @task
 def install_packages(
     c,
+    server=False,
     common=False,
     core=False,
     selenium=False,
@@ -160,7 +174,14 @@ def install_packages(
     editable=False,
 ):
     packages = _packages_resolver(
-        common, core, selenium, images, robotframework, full_path=True, path_as_str=True
+        server,
+        common,
+        core,
+        selenium,
+        images,
+        robotframework,
+        full_path=True,
+        path_as_str=True,
     )
 
     _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework)
