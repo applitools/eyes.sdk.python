@@ -19,7 +19,7 @@ class SDKServer(object):
             self.log_file_name = self._log_file.name
         self.executable_path = executable_path
         self._sdk_process = Popen(
-            [executable_path], stdout=self._log_file, stderr=STDOUT
+            [executable_path, "--no-singleton"], stdout=self._log_file, stderr=STDOUT
         )
         self.is_closed = False
         self.port = self._read_port()
