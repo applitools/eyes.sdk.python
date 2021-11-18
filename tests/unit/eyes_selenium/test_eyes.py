@@ -52,38 +52,9 @@ def open_and_get_start_session_info(
     return start_session.call_args_list[0][0][0]
 
 
-@pytest.mark.parametrize(
-    "kwargs", [{}, {"test_name": "TestName"}, {"app_name": "AppName"}]
-)
-def test_open_with_missing_test_name_and_app_name(eyes, driver_mock, kwargs):
-    with pytest.raises(ValueError):
-        eyes.open(driver_mock, **kwargs)
-
-
-@pytest.mark.parametrize(
-    "config",
-    [
-        Configuration(),
-        Configuration(test_name="TestName"),
-        Configuration(app_name="AppName"),
-    ],
-)
-def test_open_with_missing_test_name_and_app_name_with_config(
-    eyes, driver_mock, config
-):
-    with pytest.raises(ValueError):
-        eyes.set_configuration(config)
-        eyes.open(driver_mock)
-
-
 def test_set_get_scale_ratio(eyes):
     eyes.scale_ratio = 2.0
-    if eyes._is_visual_grid_eyes:
-        assert eyes.scale_ratio == 0
-    else:
-        assert eyes.scale_ratio == 2.0
-        eyes.scale_ratio = None
-        assert eyes.scale_ratio == NullScaleProvider.UNKNOWN_SCALE_RATIO
+    assert eyes.scale_ratio == 2.0
 
 
 def test_match_level(eyes):

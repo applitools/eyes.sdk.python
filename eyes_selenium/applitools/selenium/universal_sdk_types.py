@@ -654,7 +654,7 @@ class EyesConfig(
             scroll_root_element=None,  # TODO: verify
             cut=None,  # TODO: verify,
             rotation=None,  # TODO: verify
-            scale_ratio=None,  # TODO: verify
+            scale_ratio=config.scale_ratio,
             # EyesUFGConfig
             concurrent_sessions=None,  # TODO: verify
             browsers_info=browsers_info_convert(config.browsers_info),

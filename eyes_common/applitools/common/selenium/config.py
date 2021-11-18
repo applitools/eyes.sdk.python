@@ -70,6 +70,7 @@ class Configuration(ConfigurationBase):
     layout_breakpoints = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Union[bool, List[int]]]
+    scale_ratio = attr.ib(default=None)  # type: Optional[float]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration

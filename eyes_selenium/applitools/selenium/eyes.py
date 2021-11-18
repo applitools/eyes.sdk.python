@@ -146,7 +146,10 @@ class Eyes(object):
         return getattr(self.configure, item)
 
     def __setattr__(self, key, value):
-        if "configure" in vars(self) and key in vars(self.configure):
+        if "configure" in vars(self) and (
+            key in vars(self.configure)
+            or key in ("match_level", "ignore_displacements")
+        ):
             return setattr(self.configure, key, value)
         else:
             return super(Eyes, self).__setattr__(key, value)
@@ -380,19 +383,6 @@ class Eyes(object):
 
         :return The device pixel ratio, or if the DPR is not known yet or if it wasn't
         possible to extract it.
-        """
-        raise NotImplementedError
-
-    @property
-    def scale_ratio(self):
-        # type: () -> float
-        raise NotImplementedError
-
-    @scale_ratio.setter
-    def scale_ratio(self, value):
-        # type: (float) -> None
-        """
-        Manually set the scale ratio for the images being validated.
         """
         raise NotImplementedError
 
