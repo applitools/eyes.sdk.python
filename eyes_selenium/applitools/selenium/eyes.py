@@ -316,17 +316,17 @@ class Eyes(object):
         self.configure = configuration.clone()
 
     @property
+    def is_open(self):
+        # type: () -> bool
+        return self._eyes_ref is not None
+
+    @property
     def server_connector(self):
         raise NotImplementedError
 
     @server_connector.setter
     def server_connector(self, server_connector):
         raise NotImplementedError
-
-    @property
-    def is_open(self):
-        # type: () -> bool
-        return self._eyes_ref is not None
 
     @property
     def rotation(self):
@@ -355,16 +355,6 @@ class Eyes(object):
 
         """
         raise NotImplementedError
-
-    @property
-    def match_level(self):
-        # type: () -> MatchLevel
-        return self.configure.match_level
-
-    @match_level.setter
-    def match_level(self, match_level):
-        # type: (MatchLevel) -> None
-        self.configure.match_level = match_level
 
     @property
     def should_stitch_content(self):
@@ -414,43 +404,7 @@ class Eyes(object):
         raise NotImplementedError
 
     @property
-    def save_debug_screenshots(self):
-        # type: () -> bool
-        """True if screenshots saving enabled."""
-        raise NotImplementedError
-
-    @save_debug_screenshots.setter
-    def save_debug_screenshots(self, save):
-        # type: (bool) -> None
-        """If True, will save all screenshots to local directory."""
-        raise NotImplementedError
-
-    @property
     def debug_screenshots_provider(self):
-        raise NotImplementedError
-
-    @property
-    def debug_screenshots_path(self):
-        # type: () -> Optional[Text]
-        """The path where you save the debug screenshots."""
-        raise NotImplementedError
-
-    @debug_screenshots_path.setter
-    def debug_screenshots_path(self, path_to_save):
-        # type: (Text) -> None
-        """The path where you want to save the debug screenshots."""
-        raise NotImplementedError
-
-    @property
-    def debug_screenshots_prefix(self):
-        # type: () -> Optional[Text]
-        """The prefix for the screenshots' names."""
-        raise NotImplementedError
-
-    @debug_screenshots_prefix.setter
-    def debug_screenshots_prefix(self, prefix):
-        # type: (Text) -> None
-        """The prefix for the screenshots' names."""
         raise NotImplementedError
 
     @position_provider.setter

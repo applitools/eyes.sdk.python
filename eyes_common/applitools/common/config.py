@@ -218,6 +218,14 @@ class Configuration(object):
         metadata={JsonInclude.NON_NONE: True}, factory=set
     )  # type: Set[Feature]
     proxy = attr.ib(default=None)  # type: ProxySettings
+    save_debug_screenshots = attr.ib(default=False)  # type: bool
+    debug_screenshots_path = attr.ib(
+        converter=str, factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PATH", "")
+    )
+    debug_screenshots_prefix = attr.ib(
+        converter=str,
+        factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_"),
+    )
 
     @property
     def enable_patterns(self):

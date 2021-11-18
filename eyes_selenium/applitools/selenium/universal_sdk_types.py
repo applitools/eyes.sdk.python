@@ -603,7 +603,11 @@ class EyesConfig(
         return cls(
             # EyesBaseConfig
             logs=None,  # TODO: verify
-            debug_screenshots=None,  # TODO: verify
+            debug_screenshots=DebugScreenshotHandler(
+                config.save_debug_screenshots,
+                config.debug_screenshots_path,
+                config.debug_screenshots_prefix,
+            ),
             agent_id=config.agent_id,
             api_key=config.api_key,
             server_url=config.server_url,
