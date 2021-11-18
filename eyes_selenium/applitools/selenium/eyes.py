@@ -141,13 +141,15 @@ class Eyes(object):
             self._runner = runner  # type: _EyesManager
         self.logger = self._runner.logger.bind(eyes_id=id(self))
         self._commands = None
-        self.__setattr__ = self.__setattr_delayed
 
     def __getattr__(self, item):
         return getattr(self.configure, item)
 
-    def __setattr_delayed(self, key, value):
-        return setattr(self.configure, key, value)
+    def __setattr__(self, key, value):
+        if "configure" in vars(self) and key in vars(self.configure):
+            return setattr(self.configure, key, value)
+        else:
+            return super(Eyes, self).__setattr__(key, value)
 
     def open(
         self,
