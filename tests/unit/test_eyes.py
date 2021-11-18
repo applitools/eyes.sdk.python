@@ -22,9 +22,7 @@ def clean_environ():
 
 def pytest_generate_tests(metafunc):
     if "eyes" in metafunc.fixturenames:
-        metafunc.parametrize(
-            "eyes", ["selenium", "visual_grid", "images"], indirect=True
-        )
+        metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
 
 
 def test_base_agent_id(eyes):

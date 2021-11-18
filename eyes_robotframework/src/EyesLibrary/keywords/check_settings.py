@@ -738,7 +738,7 @@ class CheckSettingsKeywords(
         *Example:*
             | Eyes Check   |  Target Window  |  Match Level  STRICT |
         """
-        match_level = MatchLevel(match_level.upper())
+        match_level = MatchLevel(match_level.capitalize())
         return new_or_cur_check_settings(check_settings).match_level(match_level)
 
     @keyword("Enable Patterns")
