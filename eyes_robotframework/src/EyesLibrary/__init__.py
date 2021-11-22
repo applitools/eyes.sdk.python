@@ -233,7 +233,7 @@ class EyesLibrary(DynamicCore):
     @eyes_runner.setter
     def eyes_runner(self, runner):
         # type: (EyesRunner) -> None
-        argument_guard.is_a(runner, EyesRunner)
+        argument_guard.is_a(runner, (ClassicRunner, VisualGridRunner))
         self._eyes_runner = runner
 
     def clean_eyes_runner(self):

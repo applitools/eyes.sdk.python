@@ -31,10 +31,7 @@ def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
 def dist(
     c,
     server=False,
-    common=False,
-    core=False,
     selenium=False,
-    images=False,
     robotframework=False,
     prod=False,
     from_env=False,
@@ -46,16 +43,13 @@ def dist(
     packages = list(
         _packages_resolver(
             server,
-            common,
-            core,
             selenium,
-            images,
             robotframework,
             full_path=True,
             path_as_str=True,
         )
     )
-    _fetch_js_libs_if_required(c, common, core, images, selenium, robotframework)
+    _fetch_js_libs_if_required(c, selenium, robotframework)
 
     if from_env:
         twine_command = "twine upload dist/*"
@@ -109,44 +103,25 @@ def install_requirements(c, dev=False, testing=False, lint=False):
 
 def _packages_resolver(
     server=False,
-    common=False,
-    core=False,
     selenium=False,
-    images=False,
     robotframework=False,
     full_path=False,
     path_as_str=False,
 ):
     packages = []
-    server_pkg, common_pkg, core_pkg, selenium_pkg, images_pkg, robot_pkg = (
+    server_pkg, selenium_pkg, robot_pkg = (
         "eyes_server",
-        "eyes_common",
-        "eyes_core",
         "eyes_selenium",
-        "eyes_images",
         "eyes_robotframework",
     )
     if server:
         packages.append(server_pkg)
-    if common:
-        packages.append(common_pkg)
-    if core:
-        packages.append(core_pkg)
     if selenium:
         packages.append(selenium_pkg)
-    if images:
-        packages.append(images_pkg)
     if robotframework:
         packages.append(robot_pkg)
     if not packages:
-        packages = [
-            server_pkg,
-            common_pkg,
-            core_pkg,
-            selenium_pkg,
-            images_pkg,
-            robot_pkg,
-        ]
+        packages = [server_pkg, selenium_pkg, robot_pkg]
 
     for pack in packages:
         if full_path:
@@ -156,9 +131,9 @@ def _packages_resolver(
         yield pack
 
 
-def _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework):
+def _fetch_js_libs_if_required(c, selenium, robotframework):
     # get js libs only if selenium lib is installing
-    if selenium or not any([common, core, selenium, images, robotframework]):
+    if selenium or not any([selenium, robotframework]):
         retrieve_js(c)
 
 
@@ -166,25 +141,19 @@ def _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework
 def install_packages(
     c,
     server=False,
-    common=False,
-    core=False,
     selenium=False,
-    images=False,
     robotframework=False,
     editable=False,
 ):
     packages = _packages_resolver(
         server,
-        common,
-        core,
         selenium,
-        images,
         robotframework,
         full_path=True,
         path_as_str=True,
     )
 
-    _fetch_js_libs_if_required(c, common, core, selenium, images, robotframework)
+    _fetch_js_libs_if_required(c, selenium, robotframework)
 
     editable = "-e" if editable else ""
     if sys.platform == "darwin":
@@ -198,20 +167,14 @@ def install_packages(
 
 
 @task
-def uninstall_packages(c, common=False, core=False, selenium=False, images=False):
-    packages = _packages_resolver(common, core, selenium, images)
-    c.run("pip uninstall {}".format(" ".join(packages)), echo=True)
-
-
-@task
-def pep_check(c, common=False, core=False, selenium=False, images=False):
-    for pack in _packages_resolver(common, core, selenium, images, full_path=True):
+def pep_check(c, selenium=False):
+    for pack in _packages_resolver(selenium=selenium, full_path=True):
         c.run("flake8 {}".format(pack), echo=True)
 
 
 @task
-def mypy_check(c, common=False, core=False, selenium=False, images=False):
-    for pack in _packages_resolver(common, core, selenium, images, full_path=True):
+def mypy_check(c, selenium=False):
+    for pack in _packages_resolver(selenium=selenium, full_path=True):
         c.run(
             "mypy --no-incremental --ignore-missing-imports {}/applitools".format(pack),
             echo=True,
