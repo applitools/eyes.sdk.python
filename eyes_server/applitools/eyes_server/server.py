@@ -48,7 +48,12 @@ class SDKServer(object):
         self.close()
 
 
-_platform_suffixes = {"darwin": "macos", "linux": "linux", "win32": "win.exe"}
+_platform_suffixes = {
+    "darwin": "macos",
+    "linux": "linux",
+    "linux2": "linux",  # python2 included kernel major version
+    "win32": "win.exe",
+}
 executable_path = resource_filename(
     "applitools.eyes_server", "bin/eyes-universal-" + _platform_suffixes[sys.platform]
 )
