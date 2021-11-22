@@ -32,11 +32,7 @@ if TYPE_CHECKING:
 
 BROWSERS_WEBDRIVERS = {
     "firefox": (GeckoDriverManager, webdriver.Firefox, webdriver.FirefoxOptions),
-    "chrome": (
-        lambda: ChromeDriverManager(version="94.0.4606.41"),
-        webdriver.Chrome,
-        webdriver.ChromeOptions,
-    ),
+    "chrome": (ChromeDriverManager, webdriver.Chrome, webdriver.ChromeOptions),
     "internet explorer": (IEDriverManager, webdriver.Ie, webdriver.IeOptions),
     "safari": (None, webdriver.Safari, None),
 }
