@@ -1,4 +1,3 @@
-import sys
 import weakref
 from concurrent.futures import Future
 from itertools import count
@@ -8,20 +7,24 @@ from typing import Optional, Text
 
 from websocket import WebSocket
 
+from applitools.eyes_server import get_instance, server
+
 
 class USDKConnection(object):
-    def __init__(self, websocket):
-        # type: (WebSocket) -> None
+    def __init__(self, websocket, server_log_file=None):
+        # type: (WebSocket, Optional[Text]) -> None
+        self.server_log_file = server_log_file
         self._websocket = websocket
         self._keys = count(1)
 
     @classmethod
-    def create(cls, port=2107):
-        # type: (int) -> USDKConnection
+    def create(cls, server=None):
+        # type: (Optional[server.SDKServer]) -> USDKConnection
+        server = server or get_instance()
         websocket = WebSocket()
-        websocket.connect("ws://localhost:{}/eyes".format(port))
+        websocket.connect("ws://localhost:{}/eyes".format(server.port))
         websocket.settimeout(3 * 60)
-        return cls(websocket)
+        return cls(websocket, server.log_file_name)
 
     def notification(self, name, payload):
         # type: (Text, dict) -> None
@@ -45,8 +48,9 @@ class USDKConnection(object):
 
 
 class USDKSharedConnection(object):
-    def __init__(self, websocket):
-        # type: (WebSocket) -> None
+    def __init__(self, websocket, server_log_file=None):
+        # type: (WebSocket, Optional[Text]) -> None
+        self.server_log_file = server_log_file
         self._websocket = websocket
         self._keys = count(1)
         self._response_futures = {}
@@ -58,12 +62,13 @@ class USDKSharedConnection(object):
         self._receiver_thread.start()
 
     @classmethod
-    def create(cls, port=2107):
-        # type: (int) -> USDKConnection
-        websocket = WebSocket(enable_multithread=True)
-        websocket.connect("ws://localhost:{}/eyes".format(port))
+    def create(cls, server=None):
+        # type: (Optional[server.SDKServer]) -> USDKSharedConnection
+        server = server or get_instance()
+        websocket = WebSocket()
+        websocket.connect("ws://localhost:{}/eyes".format(server.port))
         websocket.settimeout(3 * 60)
-        return cls(websocket)
+        return cls(websocket, server.log_file_name)
 
     def notification(self, name, payload):
         # type: (Text, dict) -> None
