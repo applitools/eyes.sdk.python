@@ -649,7 +649,7 @@ class EyesConfig(
             save_failed_tests=config.save_failed_tests,
             save_new_tests=config.save_new_tests,
             save_diffs=config.save_diffs,
-            dont_close_batches=None,  # TODO: verify
+            dont_close_batches=True,  # TODO: verify
             # EyesCheckConfig
             send_dom=config.send_dom,
             match_timeout=config.match_timeout,
