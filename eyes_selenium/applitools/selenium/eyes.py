@@ -367,90 +367,12 @@ class Eyes(object):
             return "{} [{}]".format(self.configure.agent_id, self.base_agent_id)
 
     @property
-    def should_stitch_content(self):
-        # type: () -> bool
-        raise NotImplementedError
-
-    @property
-    def original_fc(self):
-        """Gets original frame chain
-
-        Before check() call we save original frame chain
-
-        Returns:
-            Frame chain saved before check() call
-        """
-        raise NotImplementedError
-
-    @property
-    def device_pixel_ratio(self):
-        # type: () -> int
-        """
-        Gets device pixel ratio.
-
-        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't
-        possible to extract it.
-        """
-        raise NotImplementedError
-
-    @property
-    def position_provider(self):
-        """
-        Sets position provider.
-        """
-        raise NotImplementedError
-
-    @property
-    def debug_screenshots_provider(self):
-        raise NotImplementedError
-
-    @position_provider.setter
-    def position_provider(self, provider):
-        """
-        Gets position provider.
-        """
-        raise NotImplementedError
-
-    @property
     def is_cut_provider_explicitly_set(self):
         # type: () -> bool
         """
         Gets is cut provider explicitly set.
         """
         raise self.configure.cut_provider is not None
-
-    @property
-    def agent_setup(self):
-        # type: () -> Optional[Text]
-        """
-        Gets agent setup.
-        """
-        raise NotImplementedError
-
-    @property
-    def current_frame_position_provider(self):
-        # type: () -> Optional[PositionProvider]
-        raise NotImplementedError
-
-    def add_mouse_trigger_by_element(self, action, element):
-        # type: (Text, WebElement) -> None
-        """
-        Adds a mouse trigger.
-
-        :param action: Mouse action (click, double click etc.)
-        :param element: The element on which the action was performed.
-        """
-        raise NotImplementedError
-
-    def add_text_trigger_by_element(self, element, text):
-        # type: (WebElement, Text) -> None
-        """
-        Adds a text trigger.
-
-        :param element: The element to which the text was sent.
-        :param text: The trigger's text.
-        """
-        raise NotImplementedError
 
     @property
     def driver(self):
@@ -559,6 +481,75 @@ class Eyes(object):
             .stitch_content(stitch_content)
             .timeout(match_timeout),
         )
+
+    # Impossible to implement via universal sdk
+    @property
+    def should_stitch_content(self):
+        # type: () -> bool
+        raise NotImplementedError
+
+    @property
+    def original_fc(self):
+        """Gets original frame chain
+
+        Before check() call we save original frame chain
+
+        Returns:
+            Frame chain saved before check() call
+        """
+        raise NotImplementedError
+
+    @property
+    def device_pixel_ratio(self):
+        # type: () -> int
+        """
+        Gets device pixel ratio.
+
+        :return The device pixel ratio, or if the DPR is not known yet or if it wasn't
+        possible to extract it.
+        """
+        raise NotImplementedError
+
+    @property
+    def debug_screenshots_provider(self):
+        raise NotImplementedError
+
+    @property
+    def position_provider(self):
+        """
+        Sets position provider.
+        """
+        raise NotImplementedError
+
+    @property
+    def current_frame_position_provider(self):
+        # type: () -> Optional[PositionProvider]
+        raise NotImplementedError
+
+    def add_mouse_trigger_by_element(self, action, element):
+        # type: (Text, WebElement) -> None
+        """
+        Adds a mouse trigger.
+
+        :param action: Mouse action (click, double click etc.)
+        :param element: The element on which the action was performed.
+        """
+        raise NotImplementedError
+
+    def add_text_trigger_by_element(self, element, text):
+        # type: (WebElement, Text) -> None
+        """
+        Adds a text trigger.
+
+        :param element: The element to which the text was sent.
+        :param text: The trigger's text.
+        """
+        raise NotImplementedError
+
+    @property
+    def agent_setup(self):
+        # Saved for backward compatibility
+        return None
 
 
 def _log_session_results_and_raise_exception(logger, raise_ex, results):

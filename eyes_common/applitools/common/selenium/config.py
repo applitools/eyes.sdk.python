@@ -23,6 +23,8 @@ from .misc import BrowserType, StitchMode
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import DeviceName
 
+    from ...core.cut import CutProvider
+
 __all__ = ("Configuration",)
 
 DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
@@ -71,6 +73,8 @@ class Configuration(ConfigurationBase):
         metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[Union[bool, List[int]]]
     scale_ratio = attr.ib(default=None)  # type: Optional[float]
+    cut_provider = attr.ib(default=None)  # type: Optional[CutProvider]
+    rotation = attr.ib(default=None)  # type: Optional[int]
 
     def set_force_full_page_screenshot(self, force_full_page_screenshot):
         # type: (bool) -> Configuration
