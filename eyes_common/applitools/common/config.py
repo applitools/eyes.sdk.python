@@ -227,7 +227,8 @@ class Configuration(object):
         converter=str,
         factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_"),
     )
-    cut_provider = attr.ib(default=None)  # type: CutProvider
+    rotation = attr.ib(default=None)  # type: Optional[int]
+    cut_provider = attr.ib(default=None)  # type: Optional[CutProvider]
 
     @property
     def enable_patterns(self):

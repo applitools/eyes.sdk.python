@@ -332,16 +332,6 @@ class Eyes(object):
         raise NotImplementedError
 
     @property
-    def rotation(self):
-        # type: () -> Optional[int]
-        raise NotImplementedError
-
-    @rotation.setter
-    def rotation(self, rotation):
-        # type: (Union[int,float]) -> None
-        raise NotImplementedError
-
-    @property
     def base_agent_id(self):
         # type: () -> Text
         """

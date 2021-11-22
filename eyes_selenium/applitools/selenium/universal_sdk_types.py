@@ -662,7 +662,7 @@ class EyesConfig(
             stitch_overlap=config.stitch_overlap,
             scroll_root_element=None,  # TODO: verify
             cut=cut,
-            rotation=None,  # TODO: verify
+            rotation=config.rotation,
             scale_ratio=config.scale_ratio,
             # EyesUFGConfig
             concurrent_sessions=None,  # TODO: verify

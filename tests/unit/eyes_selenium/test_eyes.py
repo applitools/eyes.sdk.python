@@ -123,15 +123,11 @@ def test_eyes_base_abort(eyes):
     eyes.abort()
 
 
-def test_rotation(driver_mock):
+def test_rotation():
     eyes = Eyes()
     eyes.rotation = 2
-    assert eyes.rotation is None
-
-    open_and_get_start_session_info(eyes, driver_mock)
-    eyes.rotation = 2
     assert eyes.rotation == 2
-    assert eyes._driver.rotation == 2
+    assert eyes.configure.rotation == 2
 
 
 def test_add_clear_properties(eyes):
