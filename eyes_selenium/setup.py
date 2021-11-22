@@ -31,7 +31,6 @@ install_requires = [
     # uses for check if the mobile platform is used in the test
     "ua_parser==0.10.0",
     "attrs>=19.2.0,<23",
-    "cattrs<=1.0.0",
     "transitions>=0.6,<=0.8.3",
     "lxml>=4.4,<5",
     "structlog<=20.1.0",
@@ -40,10 +39,12 @@ install_requires = [
 
 
 if sys.version_info[:2] <= (2, 7):
+    install_requires.append("cattrs<=1.0.0")
     install_requires.append("Pillow >= 5.0.0,<7.0.0")
     install_requires.append("Appium-Python-Client>=0.4,<1.0.0")
     install_requires.append("tinycss2==0.6.1")
 else:
+    install_requires.append("cattrs>1.0.0")
     install_requires.append("Pillow >= 5.0.0")
     install_requires.append("Appium-Python-Client>=0.4,<2")
     install_requires.append("tinycss2>=0.6.1,<1.1.0")

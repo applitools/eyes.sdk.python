@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
-import cattr.generation
 from selenium.webdriver.remote.webelement import WebElement
 from six import text_type
 
