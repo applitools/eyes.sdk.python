@@ -293,6 +293,18 @@ class Eyes(object):
             self._commands = None
             return demarshal_test_results(results)
 
+    def close_async(self):
+        # type: () -> Optional[TestResults]
+        return self.close(False)
+
+    def abort_async(self):
+        # type: () -> Optional[TestResults]
+        return self.abort()
+
+    @deprecated.attribute("use `abort()` instead")
+    def abort_if_not_closed(self):
+        return self.abort()
+
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
@@ -547,18 +559,6 @@ class Eyes(object):
             .stitch_content(stitch_content)
             .timeout(match_timeout),
         )
-
-    def close_async(self):
-        # type: () -> Optional[TestResults]
-        raise NotImplementedError
-
-    def abort_async(self):
-        # type: () -> Optional[TestResults]
-        raise NotImplementedError
-
-    @deprecated.attribute("use `abort()` instead")
-    def abort_if_not_closed(self):
-        self.abort()
 
 
 def _log_session_results_and_raise_exception(logger, raise_ex, results):
