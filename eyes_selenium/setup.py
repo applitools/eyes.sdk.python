@@ -33,6 +33,8 @@ install_requires = [
     "lxml>=4.4,<5",
     "structlog<=20.1.0",
     "websocket-client<=0.59",
+    "urllib3>=1.25.10",
+    "requests>=2.22.0",
 ]
 
 
@@ -53,6 +55,8 @@ else:
     install_requires.append("cattrs>=1.1.0")
 
 
+if sys.version_info[:2] < (3, 4):
+    install_requires.append("enum34==1.1.6")
 # using this way of defining instead of 'typing>=3.5.2; python_version<="3.4"'
 # for run on old version of setuptools without issues
 if sys.version_info[:2] < (3, 5):
