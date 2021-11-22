@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar
 
     from applitools.common.utils.custom_types import ViewPort
+    from applitools.core.cut import CutProvider
     from applitools.core.feature import Feature
 
     Self = TypeVar("Self", bound="Configuration")  # typedef
@@ -226,6 +227,7 @@ class Configuration(object):
         converter=str,
         factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_"),
     )
+    cut_provider = attr.ib(default=None)  # type: CutProvider
 
     @property
     def enable_patterns(self):

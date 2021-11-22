@@ -600,6 +600,15 @@ class EyesConfig(
     @classmethod
     def convert(cls, config):
         # type: (Configuration) -> EyesConfig
+        if config.cut_provider:
+            cut = ImageCropRect(
+                config.cut_provider.header,
+                config.cut_provider.right,
+                config.cut_provider.footer,
+                config.cut_provider.left,
+            )
+        else:
+            cut = None
         return cls(
             # EyesBaseConfig
             logs=None,  # TODO: verify
@@ -652,7 +661,7 @@ class EyesConfig(
             hide_caret=config.hide_caret,
             stitch_overlap=config.stitch_overlap,
             scroll_root_element=None,  # TODO: verify
-            cut=None,  # TODO: verify,
+            cut=cut,
             rotation=None,  # TODO: verify
             scale_ratio=config.scale_ratio,
             # EyesUFGConfig

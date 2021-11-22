@@ -405,26 +405,12 @@ class Eyes(object):
         raise NotImplementedError
 
     @property
-    def cut_provider(self):
-        """
-        Gets current cut provider
-        """
-        raise NotImplementedError
-
-    @cut_provider.setter
-    def cut_provider(self, cutprovider):
-        """
-        Manually set the the sizes to cut from an image before it's validated.
-        """
-        raise NotImplementedError
-
-    @property
     def is_cut_provider_explicitly_set(self):
         # type: () -> bool
         """
         Gets is cut provider explicitly set.
         """
-        raise NotImplementedError
+        raise self.configure.cut_provider is not None
 
     @property
     def agent_setup(self):
@@ -438,21 +424,6 @@ class Eyes(object):
     def current_frame_position_provider(self):
         # type: () -> Optional[PositionProvider]
         raise NotImplementedError
-
-    def add_property(self, name, value):
-        # type: (Text, Text) -> None
-        """
-        Associates a key/value pair with the test. This can be used later for filtering.
-        :param name: (string) The property name.
-        :param value: (string) The property value
-        """
-        self.configure.add_property(name, value)
-
-    def clear_properties(self):
-        """
-        Clears the list of custom properties.
-        """
-        self.configure.clear_properties()
 
     def add_mouse_trigger_by_element(self, action, element):
         # type: (Text, WebElement) -> None
@@ -478,16 +449,6 @@ class Eyes(object):
     def driver(self):
         # type: () -> WebDriver
         return self._driver
-
-    @property
-    def send_dom(self):
-        # type: () -> bool
-        return self.configure.send_dom
-
-    @send_dom.setter
-    def send_dom(self, value):
-        # type: (bool) -> None
-        self.configure.send_dom = value
 
     def check_window(self, tag=None, match_timeout=-1, fully=None):
         # type: (Optional[Text], int, Optional[bool]) -> MatchResult

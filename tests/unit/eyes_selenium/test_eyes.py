@@ -93,19 +93,11 @@ def test_baseline_name(eyes, driver_mock):
     assert eyes.baseline_branch_name == "Baseline"
     assert eyes.configure.baseline_branch_name == "Baseline"
 
-    if not eyes._visual_grid_eyes:
-        session_info = open_and_get_start_session_info(eyes, driver_mock)
-        assert session_info.baseline_branch_name == "Baseline"
-
 
 def test_branch_name(eyes, driver_mock):
     eyes.branch_name = "Branch"
     assert eyes.branch_name == "Branch"
     assert eyes.configure.branch_name == "Branch"
-
-    if not eyes._visual_grid_eyes:
-        session_info = open_and_get_start_session_info(eyes, driver_mock)
-        assert session_info.branch_name == "Branch"
 
 
 def test_baseline_env_name(eyes, driver_mock):
@@ -113,38 +105,12 @@ def test_baseline_env_name(eyes, driver_mock):
     assert eyes.baseline_env_name == "Baseline Env"
     assert eyes.configure.baseline_env_name == "Baseline Env"
 
-    if not eyes._visual_grid_eyes:
-        session_info = open_and_get_start_session_info(eyes, driver_mock)
-        assert session_info.baseline_env_name == "Baseline Env"
-
-
-def test_batch_info_serializing(eyes, driver_mock):
-    if eyes._visual_grid_eyes:
-        pytest.skip("Not relevant for UFG")
-
-    date = datetime.datetime.strptime("2019-06-04T10:27:15Z", "%Y-%m-%dT%H:%M:%SZ")
-    eyes.batch = BatchInfo("Batch Info", date)
-    eyes.batch.sequence_name = "Sequence"
-
-    session_info = open_and_get_start_session_info(eyes, driver_mock)
-    info_json = json_utils.to_json(session_info)
-    batch_info = json.loads(info_json)["startInfo"]["batchInfo"]
-
-    assert batch_info["name"] == "Batch Info"
-    assert batch_info["batchSequenceName"] == "Sequence"
-    assert batch_info["startedAt"] == "2019-06-04T10:27:15Z"
-
 
 def test_get_set_cut_provider(eyes):
-    if eyes._visual_grid_eyes:
-        pytest.skip("Not relevant for UFG")
-
     eyes.cut_provider = FixedCutProvider(20, 0, 0, 0)
-    assert isinstance(eyes._current_eyes._cut_provider, FixedCutProvider)
     assert isinstance(eyes.cut_provider, FixedCutProvider)
 
     eyes.cut_provider = UnscaledFixedCutProvider(10, 0, 5, 0)
-    assert isinstance(eyes._current_eyes._cut_provider, UnscaledFixedCutProvider)
     assert isinstance(eyes.cut_provider, UnscaledFixedCutProvider)
 
 
