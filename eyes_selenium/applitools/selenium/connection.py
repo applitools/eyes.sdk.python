@@ -16,43 +16,6 @@ class USDKConnection(object):
         self.server_log_file = server_log_file
         self._websocket = websocket
         self._keys = count(1)
-
-    @classmethod
-    def create(cls, server=None):
-        # type: (Optional[server.SDKServer]) -> USDKConnection
-        server = server or get_instance()
-        websocket = WebSocket()
-        websocket.connect("ws://localhost:{}/eyes".format(server.port))
-        websocket.settimeout(3 * 60)
-        return cls(websocket, server.log_file_name)
-
-    def notification(self, name, payload):
-        # type: (Text, dict) -> None
-        self._websocket.send(dumps({"name": name, "payload": payload}))
-
-    def command(self, name, payload):
-        # type: (Text, dict) -> dict
-        key = next(self._keys)
-        self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
-        response = loads(self._websocket.recv())
-        assert response["name"] == name and response["key"] == key
-        return response
-
-    def set_timeout(self, timeout):
-        # type: (Optional[float]) -> None
-        self._websocket.settimeout(timeout)
-
-    def close(self):
-        self._websocket.close()
-        self._websocket = None
-
-
-class USDKSharedConnection(object):
-    def __init__(self, websocket, server_log_file=None):
-        # type: (WebSocket, Optional[Text]) -> None
-        self.server_log_file = server_log_file
-        self._websocket = websocket
-        self._keys = count(1)
         self._response_futures = {}
         self._receiver_thread = Thread(
             target=self._receiver_loop,
@@ -63,7 +26,7 @@ class USDKSharedConnection(object):
 
     @classmethod
     def create(cls, server=None):
-        # type: (Optional[server.SDKServer]) -> USDKSharedConnection
+        # type: (Optional[server.SDKServer]) -> USDKConnection
         server = server or get_instance()
         websocket = WebSocket()
         websocket.connect("ws://localhost:{}/eyes".format(server.port))
