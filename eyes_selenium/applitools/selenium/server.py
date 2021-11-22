@@ -1,9 +1,11 @@
+from typing import Text
+
 from .command_executor import CommandExecutor
 from .connection import USDKConnection
 
 
-def connect():
-    # type: () -> CommandExecutor
+def connect(name, version):
+    # type: (Text, Text) -> CommandExecutor
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk(name, version)
     return commands

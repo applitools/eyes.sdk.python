@@ -1,12 +1,11 @@
-from copy import deepcopy
+from __future__ import absolute_import
+
 from enum import Enum
 from typing import Any, List, Optional, Text
 
 from selenium.common.exceptions import StaleElementReferenceException
 
 from .connection import USDKConnection
-
-SDK_NAME = "eyes.sdk.python"
 
 
 class Failure(Exception):
@@ -33,10 +32,10 @@ class CommandExecutor(object):
         # type: (USDKConnection) -> None
         self._connection = connection
 
-    def make_sdk(self):
-        # type: () -> None
+    def make_sdk(self, name, version):
+        # type: (Text, Text) -> None
         self._connection.notification(
-            "Core.makeSDK", {"name": SDK_NAME, "version": "1", "protocol": "webdriver"}
+            "Core.makeSDK", {"name": name, "version": version, "protocol": "webdriver"}
         )
 
     def core_make_manager(self, manager_type, concurrency=None, is_legacy=None):

@@ -22,6 +22,7 @@ from applitools.common import (
 from applitools.common.selenium import Configuration
 
 from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
+from .__version__ import __version__
 from .command_executor import ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
@@ -53,13 +54,14 @@ if typing.TYPE_CHECKING:
 
 class _EyesManager(object):
     check_window_fully_arg_default = None
+    BASE_AGENT_ID = "eyes.sdk.python"
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
         from . import server
 
         self.logger = logger.bind(runner=id(self))
-        self._commands = server.connect()
+        self._commands = server.connect(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
         )
@@ -338,7 +340,7 @@ class Eyes(object):
         Must return version of SDK. (e.g. selenium, visualgrid) in next format:
             "eyes.{package}.python/{lib_version}"
         """
-        raise NotImplementedError
+        return "{}/{}".format(self._runner.BASE_AGENT_ID, __version__)
 
     @property
     def full_agent_id(self):
@@ -347,7 +349,10 @@ class Eyes(object):
         Gets the agent id, which identifies the current library using the SDK.
 
         """
-        raise NotImplementedError
+        if self.configure.agent_id is None:
+            return self.base_agent_id
+        else:
+            return "{} [{}]".format(self.configure.agent_id, self.base_agent_id)
 
     @property
     def should_stitch_content(self):
