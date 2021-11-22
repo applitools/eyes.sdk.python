@@ -2,7 +2,6 @@ import json
 import os
 
 import requests
-from pip._vendor.retrying import retry
 
 from applitools.common.utils import urlencode, urlsplit, urlunsplit
 
