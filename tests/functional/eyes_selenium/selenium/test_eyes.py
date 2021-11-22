@@ -102,8 +102,9 @@ def test_agent_run_id(fake_connector_class, driver_mock, monkeypatch, spy):
     eyes.server_connector = fake_connector_class()
 
     eyes.open(driver_mock, "A", "B", {"width": 100, "height": 100})
-    sleep(1)  # wait until runner opens session in background thread
-
+    eyes.abort_async()
+    while "start_session" not in eyes.server_connector.calls:
+        sleep(1)  # wait until runner opens session in background thread
     assert (
         eyes.server_connector.calls["start_session"].agent_run_id
         == "B_" + random_alphanum_spy.return_list[0]

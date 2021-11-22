@@ -411,11 +411,12 @@ class VisualGridEyes(object):
         # type: (RenderBrowserInfo, JobInfo) -> EyesConnector
         agent_run_id = "{}_{}".format(self.configure.test_name, random_alphanum(10))
         return EyesConnector(
-            b_info,
-            self.configure.clone(),
-            deepcopy(self.server_connector),
-            agent_run_id,
-            job_info,
+            browser_info=b_info,
+            config=self.configure.clone(),
+            server_connector=deepcopy(self.server_connector),
+            agent_run_id=agent_run_id,
+            base_agent_id=self.base_agent_id,
+            job_info=job_info,
         )
 
     def _try_set_target_selector(self, check_settings):

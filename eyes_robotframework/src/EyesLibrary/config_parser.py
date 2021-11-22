@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import itertools
 import os
 from enum import Enum
-from typing import Text
+from typing import Text, Type
 
 import trafaret as trf
 import yaml
@@ -27,7 +27,7 @@ from applitools.selenium import BatchInfo, RunnerOptions
 
 from .config import RobotConfiguration
 from .errors import EyesLibraryConfigError, EyesLibraryValueError
-from .utils import parse_viewport_size
+from .utils import get_enum_by_name, parse_viewport_size
 
 
 class SelectedRunner(Enum):
@@ -36,14 +36,20 @@ class SelectedRunner(Enum):
     mobile_native = "mobile_native"
 
 
+class RobotStitchMode(Enum):
+    CSS = StitchMode.CSS
+    SCROLL = StitchMode.Scroll
+
+
 class ToEnumTrafaret(trf.Trafaret):
     def __init__(self, convert_to_enum):
+        # type: (Type[Enum])->None
         self.converter = convert_to_enum
 
     def check_and_return(self, value, context=None):
         try:
-            return getattr(self.converter, value)
-        except AttributeError:
+            return get_enum_by_name(value, self.converter)
+        except ValueError:
             raise trf.DataError(
                 "Incorrect value `{val}`. Possible variants: {possible_vals}".format(
                     val=value,
@@ -211,7 +217,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         {
             trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
             trf.Key("wait_before_screenshots", optional=True): trf.Int,
-            trf.Key("stitch_mode", optional=True): ToEnumTrafaret(StitchMode),
+            trf.Key("stitch_mode", optional=True): ToEnumTrafaret(RobotStitchMode),
             trf.Key("hide_scrollbars", optional=True): trf.Bool,
             trf.Key("hide_caret", optional=True): trf.Bool,
         },

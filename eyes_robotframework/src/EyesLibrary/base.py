@@ -8,7 +8,7 @@ from robot.api.deco import keyword  # noqa
 from SeleniumLibrary import SeleniumLibrary
 
 from applitools.common.utils import cached_property
-from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium import ClassicRunner, VisualGridRunner
 
 from .config_parser import SelectedRunner
 from .errors import EyesLibraryValueError
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
     from . import EyesLibrary
     from .custom_types import Locator
+    from .eyes import RobotEyes
 
 __all__ = ("ContextAware", "LibraryComponent", "keyword")
 
@@ -112,8 +113,13 @@ class LibraryComponent(ContextAware):
         return self.ctx.eyes_runner
 
     @property
+    def selected_runner(self):
+        # type: () -> SelectedRunner
+        return self.ctx.selected_runner
+
+    @property
     def current_eyes(self):
-        # type: () -> Eyes
+        # type: () -> RobotEyes
         return self.ctx.current_eyes
 
     def _create_eyes_runner_if_needed(self):

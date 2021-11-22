@@ -2,7 +2,7 @@ import logging
 import os
 import traceback
 import typing
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Union
 
 import structlog
 from robot.api import logger as robot_logger
@@ -13,9 +13,9 @@ from robotlibcore import DynamicCore
 from applitools.common import BatchInfo
 from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import raise_from
+from applitools.common.utils.compat import basestring, raise_from
 from applitools.core import EyesRunner
-from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium import ClassicRunner, VisualGridRunner
 
 from .__version__ import __version__
 from .config import RobotConfiguration
@@ -26,6 +26,7 @@ from .config_parser import (
     try_parse_runner,
 )
 from .errors import EyesLibraryConfigError, EyesLibraryError
+from .eyes import RobotEyes
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -42,9 +43,6 @@ if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Optional, Text
 
     from applitools.common.utils.custom_types import AnyWebDriver
-
-
-EyesT = typing.TypeVar("EyesT", bound=Eyes)
 
 
 def get_suite_path():
@@ -299,13 +297,18 @@ class EyesLibrary(DynamicCore):
         """Add's a `Eyes` to the library EyesCache."""
         return self._eyes_registry.register(eyes, alias)
 
-    def register_or_get_batch(self, batch_name):
-        # type: (Text) -> BatchInfo
-        return self._batch_registry.setdefault(batch_name, BatchInfo(batch_name))
+    def register_or_get_batch(self, batch):
+        # type: (Union[basestring, BatchInfo]) -> BatchInfo
+        if isinstance(batch, basestring):
+            return self._batch_registry.setdefault(batch, BatchInfo(batch))
+        elif isinstance(batch, BatchInfo):
+            return self._batch_registry.setdefault(batch.id, batch)
+        else:
+            raise ValueError("Not supported `batch` value")
 
     @property
     def current_eyes(self):
-        # type: () -> Eyes
+        # type: () -> RobotEyes
         if not self._eyes_registry.current:
             raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current

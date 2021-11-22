@@ -1,6 +1,13 @@
-## [vNext]
+## [4.25.2] - 2021-10-15
+### Fixed
+- Appium EyesWebDriver crashes on user_agent access [Trello 2734](https://trello.com/c/OMkTvYDh)
+
+## [4.25.1] - 2021-10-10
 ### Fixed
 - Error when checking full element in mobile browsers [Trello 2716](https://trello.com/c/cOwG4zO6)
+- [eyes-robotframework] No agent_id [Trello 2729](https://trello.com/c/xZUPhEfx)
+- [eyes-robotframework] Not possible to assign batch info in `Eyes Open` [Trello 2730](https://trello.com/c/n6T8qzWK)
+- [eyes-robotframework] Consistence usage of enums [Trello 2731](https://trello.com/c/AvrEdz8ck)
 
 ## [4.25.0] - 2021-09-09
 ### Added

@@ -4,7 +4,8 @@ import os
 import re
 import shutil
 from collections import OrderedDict
-from typing import Any, Generator, Text
+from enum import Enum
+from typing import Any, Generator, Text, Type
 
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -128,3 +129,11 @@ def copy_config_to(path_to_dir):
     if not os.path.exists(path_to_dir):
         raise ValueError("Directory doesn't exists")
     return shutil.copy(get_config_file_path(), path_to_dir)
+
+
+def get_enum_by_name(name, enm):
+    # type: (Text, Type[Enum]) -> Enum
+    try:
+        return getattr(enm, name.upper())
+    except AttributeError:
+        raise ValueError("`{}` does not contain `{}`".format(enm, name))

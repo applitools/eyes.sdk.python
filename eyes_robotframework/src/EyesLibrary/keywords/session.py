@@ -1,14 +1,15 @@
 from __future__ import absolute_import, unicode_literals
 
-from typing import Optional, Text, Union
+from typing import Optional, Text
 
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
-from applitools.selenium import Eyes, EyesWebDriver
+from applitools.selenium import EyesWebDriver
 
 from ..base import LibraryComponent, keyword
-from ..utils import parse_viewport_size
+from ..eyes import RobotEyes
+from ..utils import get_enum_by_name, parse_viewport_size
 from .keyword_tags import CHECK_FLOW
 
 
@@ -57,7 +58,7 @@ class SessionKeywords(LibraryComponent):
         host_app=None,  # type: Optional[Text]
         match_level=None,  # type: Optional[Text]
         baseline_env_name=None,  # type: Optional[Text]
-        batch=None,  # type: Optional[Union[BatchInfo,Text]]
+        batch=None,  # type: Optional[Text]
         branch_name=None,  # type: Optional[Text]
         parent_branch_name=None,  # type: Optional[Text]
         force_full_page_screenshot=None,  # type: Optional[bool]
@@ -71,7 +72,7 @@ class SessionKeywords(LibraryComponent):
     ):
         # type: (...)->EyesWebDriver
         """
-        Shared parameters section from `applitools.yaml` could be overwritten during Open call, see `Preconditions`.
+        Shared parameters section from `applitools.yaml` could be overwritten during `Eyes Open` call, see `Preconditions`.
 
             | =Arguments=                  | =Description=                                                                                                                               |
             | Test Name                    | By default fetched from name of current test. Could be overfritet here.                                                                     |
@@ -81,7 +82,7 @@ class SessionKeywords(LibraryComponent):
             | Host App                     | The browser name for the test, can be used to override the browser name to allow cross browser verification                                 |
             | Match Level                  | The match level for the comparison of this test's checkpoints - can be STRICT, LAYOUT, CONTENT or EXACT                                     |
             | Baseline Env Name            | Name of the branch where the baseline reference will be taken from and where new and accepted steps will be saved to                        |
-            | Batch                        | The desired batch. See `Group tests into batches`                                                                                           |
+            | Batch                        | Accepts desired batch returned by `Create Batch Info` or batch name                                                                         |
             | Branch Name                  | The branch to use to check test                                                                                                             |
             | Parent Branch Name           | Parent Branch to base the new Branch on                                                                                                     |
             | Force Full Page Screenshot   | Will force the browser to take a screenshot of whole page                                                                                   |
@@ -91,10 +92,8 @@ class SessionKeywords(LibraryComponent):
             | Save New Tests               | Sets if the new checkpoints on this session are automatically accepted, by passing 'True' or 'False' in the variable                        |
             | Wait Before Screenshots      | Determines the number of milliseconds that Eyes will wait before capturing a screenshot on this test checkpoints                            |
             | Send DOM                     | Sets if DOM information should be sent for this session's checkpoints                                                                       |
-            | Stitch Content               | If this test checkpoint's elements/region are scrollable, determines if Eyes will scroll this them to take a full region/element screenshot |
             | Is Disabled                  | Determines whether or not interactions with Eyes will be silently ignored for this test                                                     |
 
-        When opening the session on a mobile browser or hybrid app, the context must be set to WEBVIEW in order to retrieve the correct viewport size. Geolocation of the device may have to be set after switching context.
         *Example:*
             | Eyes Open | TestName | [1024 768] | AppNameOverride | OSOverride | HostAppOverride | batchname=Some batch name |
         """
@@ -111,12 +110,7 @@ class SessionKeywords(LibraryComponent):
             config_cloned.test_name = BuiltIn().get_variable_value("${TEST NAME}")
 
         if batch:
-            if isinstance(batch, str):
-                batch = self.ctx.register_or_get_batch(batch)
-            if isinstance(batch, BatchInfo):
-                config_cloned.batch = batch
-            else:
-                raise TypeError("No proper value for BatchInfo")
+            config_cloned.batch = self.ctx.register_or_get_batch(batch)
 
         if viewport_size:
             config_cloned.viewport_size = parse_viewport_size(viewport_size)
@@ -126,7 +120,7 @@ class SessionKeywords(LibraryComponent):
         if host_app:
             config_cloned.host_app = host_app
         if match_level:
-            config_cloned.match_level = MatchLevel(match_level)
+            config_cloned.match_level = get_enum_by_name(match_level, MatchLevel)
         if baseline_env_name:
             config_cloned.baseline_env_name = baseline_env_name
         if branch_name:
@@ -150,7 +144,9 @@ class SessionKeywords(LibraryComponent):
         if is_disabled:
             config_cloned.is_disabled = is_disabled
 
-        eyes = Eyes(self.eyes_runner)
+        eyes = RobotEyes.from_current_library(
+            self.ctx.current_library, self.eyes_runner
+        )
         eyes.set_configuration(config_cloned)
         self.register_eyes(eyes)
         return eyes.open(self.fetch_driver())
