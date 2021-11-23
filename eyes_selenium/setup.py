@@ -3,7 +3,7 @@ import re
 import sys
 from os import path
 
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -76,7 +76,7 @@ else:
 setup(
     name="eyes_selenium",
     version=get_version("selenium"),
-    packages=find_packages(),
+    packages=find_namespace_packages(),
     url="http://www.applitools.com",
     author="Applitools Team",
     author_email="team@applitools.com",
