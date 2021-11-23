@@ -11,8 +11,8 @@ def read(filename):
     return codecs.open(path.join(here, filename), "r", "utf-8").read()
 
 
-def get_version(package_name):
-    version_file = read("applitools/{}/__version__.py".format(package_name))
+def get_version():
+    version_file = read("applitools/selenium/__version__.py")
     try:
         version = re.findall(r"^__version__ = \"([^']+)\"\r?$", version_file, re.M)[0]
     except IndexError:
@@ -21,7 +21,4 @@ def get_version(package_name):
     return version
 
 
-setup(
-    version=get_version("selenium"),
-    package_data={"applitools.selenium": ["py.typed", "resources/*.js"]},
-)
+setup(version=get_version())
