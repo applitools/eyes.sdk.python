@@ -32,10 +32,11 @@ class CommandExecutor(object):
         # type: (USDKConnection) -> None
         self._connection = connection
 
-    def make_sdk(self, name, version):
-        # type: (Text, Text) -> None
+    def make_sdk(self, name, version, cwd):
+        # type: (Text, Text, Text) -> None
         self._connection.notification(
-            "Core.makeSDK", {"name": name, "version": version, "protocol": "webdriver"}
+            "Core.makeSDK",
+            {"name": name, "version": version, "cwd": cwd, "protocol": "webdriver"},
         )
 
     def core_make_manager(self, manager_type, concurrency=None, is_legacy=None):
