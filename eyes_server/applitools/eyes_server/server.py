@@ -8,19 +8,28 @@ from pkg_resources import resource_filename
 
 logger = getLogger(__name__)
 
+_platform_suffixes = {
+    "darwin": "macos",
+    "linux": "linux",
+    "linux2": "linux",  # python2 included kernel major version
+    "win32": "win.exe",
+}
+executable_path = resource_filename(
+    "applitools.eyes_server", "bin/eyes-universal-" + _platform_suffixes[sys.platform]
+)
+
 
 class SDKServer(object):
-    def __init__(self, executable_path, log_file_name=None):
+    def __init__(self, executable=executable_path, singleton=False, log_file_name=None):
         if log_file_name:
             self._log_file = open(log_file_name, "w+b")
             self.log_file_name = log_file_name
         else:
             self._log_file = NamedTemporaryFile("w+b")
             self.log_file_name = self._log_file.name
-        self.executable_path = executable_path
-        self._sdk_process = Popen(
-            [executable_path, "--no-singleton"], stdout=self._log_file, stderr=STDOUT
-        )
+        self.executable = executable
+        command = [executable] if singleton else [executable, "--no-singleton"]
+        self._sdk_process = Popen(command, stdout=self._log_file, stderr=STDOUT)
         self.port = self._read_port()
         self.is_closed = False  # explicit flag because python2 calls __del__ many times
         logger.info("Started Universal SDK server at %s", self.port)
@@ -46,14 +55,3 @@ class SDKServer(object):
 
     def __del__(self):
         self.close()
-
-
-_platform_suffixes = {
-    "darwin": "macos",
-    "linux": "linux",
-    "linux2": "linux",  # python2 included kernel major version
-    "win32": "win.exe",
-}
-executable_path = resource_filename(
-    "applitools.eyes_server", "bin/eyes-universal-" + _platform_suffixes[sys.platform]
-)

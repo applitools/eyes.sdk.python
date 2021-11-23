@@ -175,7 +175,6 @@ class Eyes(object):
         else:
             from . import server
 
-            # self._commands = server.connect()
             self._commands = self._runner._commands  # noqa
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
@@ -271,7 +270,6 @@ class Eyes(object):
             raise EyesError("Eyes not open")
         results = self._commands.eyes_close_eyes(self._eyes_ref)
         self._eyes_ref = None
-        # self._commands.close()
         self._commands = None
         results = demarshal_test_results(results)
         for r in results:
