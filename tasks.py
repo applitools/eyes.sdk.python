@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 from os import path
 
@@ -9,7 +8,7 @@ here = path.dirname(path.abspath(__file__))
 
 
 @task
-def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
+def clean(c, docs=False, bytecode=False, dist=True, extra=""):
     patterns = ["build", "*/temp"]
     if docs:
         patterns.append("docs/_build")
@@ -19,8 +18,6 @@ def clean(c, docs=False, bytecode=False, dist=True, node=True, extra=""):
         patterns.append("**/dist")
         patterns.append("**/build")
         patterns.append("**/*.egg-info")
-    if node:
-        patterns.append("*/node_modules")
     if extra:
         patterns.append(extra)
     for pattern in patterns:
@@ -49,8 +46,6 @@ def dist(
             path_as_str=True,
         )
     )
-    _fetch_js_libs_if_required(c, selenium, robotframework)
-
     if from_env:
         twine_command = "twine upload dist/*"
     else:
@@ -131,12 +126,6 @@ def _packages_resolver(
         yield pack
 
 
-def _fetch_js_libs_if_required(c, selenium, robotframework):
-    # get js libs only if selenium lib is installing
-    if selenium or not any([selenium, robotframework]):
-        retrieve_js(c)
-
-
 @task
 def install_packages(
     c,
@@ -152,8 +141,6 @@ def install_packages(
         full_path=True,
         path_as_str=True,
     )
-
-    _fetch_js_libs_if_required(c, selenium, robotframework)
 
     editable = "-e" if editable else ""
     if sys.platform == "darwin":
@@ -179,37 +166,6 @@ def mypy_check(c, selenium=False):
             "mypy --no-incremental --ignore-missing-imports {}/applitools".format(pack),
             echo=True,
         )
-
-
-@task
-def retrieve_js(c):
-    for pack in _packages_resolver(selenium=True, full_path=True):
-        if path.exists(path.join(pack, "package-lock.json")):
-            os.remove(path.join(pack, "package-lock.json"))
-
-        with c.cd(pack):
-            c.run("npm update", echo=True)
-        print("Moving js for {}".format(pack))
-        move_js_resources_to(pack)
-
-
-def move_js_resources_to(pack):
-    paths = [
-        path.join("dom-capture", "dist", "captureDomAndPoll.js"),
-        path.join("dom-capture", "dist", "captureDomAndPollForIE.js"),
-        path.join("dom-snapshot", "dist", "pollResult.js"),
-        path.join("dom-snapshot", "dist", "pollResultForIE.js"),
-        path.join("dom-snapshot", "dist", "processPagePoll.js"),
-        path.join("dom-snapshot", "dist", "processPagePollForIE.js"),
-    ]
-    node_resources = path.join(pack, "applitools", "selenium", "resources")
-    node_modules = path.join(pack, "node_modules", "@applitools")
-    for pth in paths:
-        from_ = path.join(node_modules, pth)
-        name = path.basename(from_)
-        to = path.join(node_resources, name)
-        print("Moving js lib from {} to {}".format(from_, to))
-        shutil.copy(from_, dst=to)
 
 
 @task
