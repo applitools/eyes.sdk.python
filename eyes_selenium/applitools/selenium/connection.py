@@ -1,3 +1,4 @@
+import atexit
 import weakref
 from concurrent.futures import Future
 from itertools import count
@@ -9,6 +10,8 @@ from websocket import WebSocket
 
 from applitools.eyes_server import get_instance, server
 
+_all_sockets = []
+
 
 class USDKConnection(object):
     def __init__(self, websocket, server_log_file=None):
@@ -17,11 +20,17 @@ class USDKConnection(object):
         self._websocket = websocket
         self._keys = count(1)
         self._response_futures = {}
+        weak_socket = weakref.ref(self._websocket)
         self._receiver_thread = Thread(
             target=self._receiver_loop,
             name="USDK Receiver",
-            args=(weakref.ref(self._websocket), self._response_futures),
+            args=(weak_socket, self._response_futures),
         )
+        # Receiver threads are designed to exit even if they serve leaked unclosed
+        # connections. But non-daemon threads are joined on shutdown deadlocking with
+        # garbage collector and atexit manager that should close the socket
+        self._receiver_thread.daemon = True
+        _all_sockets.append(weak_socket)
         self._receiver_thread.start()
 
     @classmethod
@@ -50,14 +59,13 @@ class USDKConnection(object):
         self._websocket.settimeout(timeout)
 
     def close(self):
-        self._websocket.close()
-        self._websocket = None
-        self._receiver_thread.join()
-        self._receiver_thread = None
+        if self._websocket:
+            self._websocket.close()
+            self._websocket = None
+            self._receiver_thread = None
 
     def __del__(self):
-        if self._websocket:
-            self.close()
+        self.close()
 
     @staticmethod
     def _receiver_loop(weak_socket, response_futures):
@@ -77,3 +85,11 @@ class USDKConnection(object):
                 for future in response_futures.values():
                     future.set_exception(exc)
                 break
+
+
+@atexit.register
+def ensure_all_closed():
+    for weak_ref in _all_sockets:
+        socket = weak_ref()
+        if socket:
+            socket.close()
