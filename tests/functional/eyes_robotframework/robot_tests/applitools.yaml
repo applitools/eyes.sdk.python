@@ -3,8 +3,8 @@
 #server_url: "https://eyesapi.applitools.com" #optional
 #api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
 
-#proxy:
-#  url: "http://someproxy-url.com"
+proxy:
+  url: "http://localhost:8000"
 #  host: HOST_ADDRESS  #optional
 #  port: HOST_PORT  #optional
 #  username: YOUR_NAME  #optional
