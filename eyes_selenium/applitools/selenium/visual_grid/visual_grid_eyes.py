@@ -25,7 +25,6 @@ from applitools.core import CheckSettings, GetRegion, ServerConnector
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.__version__ import __version__
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.visual_grid import dom_snapshot_script
 
 from .eyes_connector import EyesConnector
 from .helpers import collect_test_results, wait_till_tests_completed
@@ -191,18 +190,6 @@ class VisualGridEyes(object):
         self.logger.debug(
             "get_script_result call", dont_fetch_resources=dont_fetch_resources
         )
-        try:
-            return dom_snapshot_script.create_dom_snapshot(
-                self.driver,
-                self.logger,
-                dont_fetch_resources,
-                None,
-                DOM_EXTRACTION_TIMEOUT,
-                self.configure.enable_cross_origin_rendering,
-                not self.configure.dont_use_cookies,
-            )
-        except dom_snapshot_script.DomSnapshotFailure as e:
-            raise_from(EyesError("Failed to capture dom snapshot"), e)
 
     @staticmethod
     def _options_dict(configuration_options, check_settings_options):

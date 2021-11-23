@@ -33,7 +33,7 @@ from applitools.core.feature import Feature
 
 from . import eyes_selenium_utils
 from .__version__ import __version__
-from .capture import EyesWebDriverScreenshot, dom_capture
+from .capture import EyesWebDriverScreenshot
 from .capture.eyes_webdriver_screenshot import EyesWebDriverScreenshotFactory
 from .capture.full_page_capture_algorithm import FullPageCaptureAlgorithm
 from .capture.image_providers import get_image_provider
@@ -836,10 +836,7 @@ class SeleniumEyes(EyesBase):
             # and mislead users.
             return None
         try:
-            dom_json = dom_capture.get_full_window_dom(
-                self._driver, self.server_connector, False
-            )
-            return dom_json
+            return ""
         except Exception:
             logger.warning("dom-capture script failed, skipping it", exc_info=True)
             return None

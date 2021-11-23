@@ -8,7 +8,7 @@ from applitools.common import (
 )
 from applitools.common.geometry import AccessibilityRegion
 from applitools.selenium import Eyes, Target, VisualGridRunner
-from applitools.selenium.visual_grid import VisualGridEyes, dom_snapshot_script
+from applitools.selenium.visual_grid import VisualGridEyes
 
 
 def _retrieve_urls(data):
@@ -16,29 +16,6 @@ def _retrieve_urls(data):
         blobs=[b["url"] for b in data.get("blobs", [])],
         resource_urls=data.get("resourceUrls", []),
     )
-
-
-@pytest.mark.skip("Skip list temporary disabled. Trello 2363")
-def test_ufg_skip_list(driver, fake_connector_class, spy):
-    vg_runner = VisualGridRunner(1)
-    eyes = Eyes(vg_runner)
-    eyes.server_connector = fake_connector_class()
-    driver.get(
-        "https://applitools.github.io/demo/TestPages/"
-        "VisualGridTestPageWithRelativeBGImage/index.html"
-    )
-    eyes.open(driver, app_name="TestUFGEyes", test_name="TestUFGSkipList")
-    create_dom_snapshot_spy = spy(dom_snapshot_script, "create_dom_snapshot")
-    rc_task_factory_spy = spy(VisualGridEyes, "_resource_collection_task")
-
-    eyes.check_window("check 1")
-    eyes.check_window("check 2")
-    eyes.check_window("check 3")
-    eyes.close(False)
-
-    skip_list = create_dom_snapshot_spy.call_args.args[2]
-    script_result = _retrieve_urls(rc_task_factory_spy.call_args.args[4])
-    assert set(skip_list) - set(script_result["resource_urls"])
 
 
 def test_disable_browser_fetching(driver, vg_runner, spy, fake_connector_class):
