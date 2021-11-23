@@ -15,10 +15,10 @@ from .errors import EyesLibraryValueError
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebDriver, BySelector
+    from applitools.selenium import Eyes
 
     from . import EyesLibrary
     from .custom_types import Locator
-    from .eyes import RobotEyes
 
 __all__ = ("ContextAware", "LibraryComponent", "keyword")
 
@@ -66,13 +66,25 @@ class ContextAware(object):
         return list(self.ctx.keywords.keys())
 
 
+class RobotWebRunner(ClassicRunner):
+    BASE_AGENT_ID = "eyes.python.robotframework.selenium"
+
+
+class RobotMobileNativeRunner(ClassicRunner):
+    BASE_AGENT_ID = "eyes.python.robotframework.appium"
+
+
+class RobotWebUFGRunner(VisualGridRunner):
+    BASE_AGENT_ID = "eyes.python.robotframework.visual_grid"
+
+
 class LibraryComponent(ContextAware):
     _selected_runner = None
     _log_level = None
     _selected_runner_to_eyes_runner = {
-        SelectedRunner.web: ClassicRunner,
-        SelectedRunner.mobile_native: ClassicRunner,
-        SelectedRunner.web_ufg: VisualGridRunner,
+        SelectedRunner.web: RobotWebRunner,
+        SelectedRunner.mobile_native: RobotMobileNativeRunner,
+        SelectedRunner.web_ufg: RobotWebUFGRunner,
     }
 
     def to_by_selector(self, locator):
@@ -119,7 +131,7 @@ class LibraryComponent(ContextAware):
 
     @property
     def current_eyes(self):
-        # type: () -> RobotEyes
+        # type: () -> Eyes
         return self.ctx.current_eyes
 
     def _create_eyes_runner_if_needed(self):

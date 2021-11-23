@@ -15,7 +15,7 @@ from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring, raise_from
 from applitools.core import EyesRunner
-from applitools.selenium import ClassicRunner, VisualGridRunner
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 from .__version__ import __version__
 from .config import RobotConfiguration
@@ -26,7 +26,6 @@ from .config_parser import (
     try_parse_runner,
 )
 from .errors import EyesLibraryConfigError, EyesLibraryError
-from .eyes import RobotEyes
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -308,7 +307,7 @@ class EyesLibrary(DynamicCore):
 
     @property
     def current_eyes(self):
-        # type: () -> RobotEyes
+        # type: () -> Eyes
         if not self._eyes_registry.current:
             raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current
