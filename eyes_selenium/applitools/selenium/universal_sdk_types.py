@@ -1,5 +1,4 @@
-from enum import Enum
-from json import dumps, loads
+from json import dumps
 from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
@@ -52,32 +51,12 @@ if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
 
     from applitools.common import BatchInfo, ImageMatchSettings, ProxySettings
-    from applitools.common.selenium import Configuration
+    from applitools.common.selenium import BrowserType, Configuration
 
     from ..common.utils.custom_types import ViewPort
     from . import EyesWebElement, OCRRegion
     from .fluent import FrameLocator, SeleniumCheckSettings
     from .fluent.selenium_check_settings import SeleniumCheckSettingsValues
-
-
-class DesktopBrowser(Enum):
-    CHROME = "chrome"
-    # | 'chrome-one-version-back'
-    # | 'chrome-two-versions-back'
-    # | 'firefox'
-    # | 'firefox-one-version-back'
-    # | 'firefox-two-versions-back'
-    # | 'ie'
-    # | 'ie10'
-    # | 'edge'
-    # | 'edgechromium'
-    # | 'edgelegacy'
-    # | 'edgechromium-one-version-back'
-    # | 'edgechromium-two-versions-back'
-    # | 'safari'
-    # | 'safari-earlyaccess'
-    # | 'safari-one-version-back'
-    # | 'safari-two-versions-back'
 
 
 @attr.s
@@ -274,7 +253,7 @@ class AccessibilitySettings(object):
 class DesktopBrowserRenderer(object):
     width = attr.ib()  # type: float
     height = attr.ib()  # type: float
-    name = attr.ib(default=None)  # type: Optional[DesktopBrowser]
+    name = attr.ib(default=None)  # type: Optional[BrowserType]
 
 
 @attr.s
