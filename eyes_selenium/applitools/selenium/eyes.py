@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import typing
+from contextlib import closing
 from typing import List, Optional, Text, Tuple, Union
 
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -22,6 +23,7 @@ from applitools.common import (
 from applitools.common.selenium import Configuration
 
 from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
+from . import server
 from .__version__ import __version__
 from .command_executor import ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
@@ -58,8 +60,6 @@ class _EyesManager(object):
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
-        from . import server
-
         self.logger = logger.bind(runner=id(self))
         self._commands = server.connect(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
@@ -173,8 +173,6 @@ class Eyes(object):
         if self.configure.is_disabled:
             self.logger.info("open(): ignored (disabled)")
         else:
-            from . import server
-
             self._commands = self._runner._commands  # noqa
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
@@ -306,21 +304,17 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
-        from .server import connect
-
-        command_executor = connect()
-        result = command_executor.core_get_viewport_size(marshal_webdriver_ref(driver))
-        return RectangleSize.from_(result)
+        with closing(server.connect(_EyesManager.BASE_AGENT_ID, __version__)) as cmd:
+            result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
+            return RectangleSize.from_(result)
 
     @staticmethod
     def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        from .server import connect
-
-        command_executor = connect()
-        command_executor.core_set_viewport_size(
-            marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
-        )
+        with closing(server.connect(_EyesManager.BASE_AGENT_ID, __version__)) as cmd:
+            cmd.core_set_viewport_size(
+                marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
+            )
 
     def get_configuration(self):
         # type:() -> Configuration
