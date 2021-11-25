@@ -226,7 +226,10 @@ class Eyes(object):
             marshal_check_settings(check_settings),
             marshal_configuration(self.configure),
         )
-        return demarshal_match_result(results)
+        if results:
+            return demarshal_match_result(results)
+        else:
+            return None
 
     def locate(self, visual_locator_settings):
         # type: (VisualLocatorSettings) -> LOCATORS_TYPE
