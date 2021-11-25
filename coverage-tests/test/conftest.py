@@ -229,7 +229,7 @@ def safari11(sauce_url):
 
 
 @pytest.fixture(scope="function")
-def safari12(sauce_url):
+def safari12(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
