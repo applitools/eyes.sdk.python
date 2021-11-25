@@ -74,20 +74,6 @@ class CustomProperty(object):
 
 
 @attr.s
-class Record(object):
-    key = attr.ib()  # type: Text
-    value = attr.ib()  # type: Any
-
-    @classmethod
-    def convert(cls, records):
-        # type: (Optional[Iterable[VisualGridOption]]) -> Optional[List[Record]]
-        if records:
-            return [cls(r.key, r.value) for r in records]
-        else:
-            return None
-
-
-@attr.s
 class Batch(object):
     id = attr.ib(default=None)  # type: Optional[Text]
     name = attr.ib(default=None)  # type: Optional[Text]
@@ -305,6 +291,14 @@ FrameReference = Union[ElementReference, int, Text]
 BrowserInfo = Union[
     DesktopBrowserRenderer, ChromeEmulationDeviceRenderer, IOSDeviceRenderer
 ]
+
+
+def record_convert(records):
+    # type: (Optional[Iterable[VisualGridOption]]) -> Optional[Dict[Text, Any]]
+    if records:
+        return {r.key: r.value for r in records}
+    else:
+        return None
 
 
 def element_reference_convert(selector=None, element=None):
@@ -567,7 +561,7 @@ class EyesClassicConfig(object):
 class EyesUFGConfig(object):
     concurrent_sessions = attr.ib(default=None)  # type: Optional[int]
     browsers_info = attr.ib(default=None)  # type: Optional[List[BrowserInfo]]
-    visual_grid_options = attr.ib(default=None)  # type: Optional[List[Record]]
+    visual_grid_options = attr.ib(default=None)  # type: Optional[Dict[Text, Any]]
     layout_breakpoints = attr.ib(default=None)  # type: Optional[Union[bool, List[int]]]
     disable_browser_fetching = attr.ib(default=None)  # type: Optional[bool]
 
@@ -646,7 +640,7 @@ class EyesConfig(
             # EyesUFGConfig
             concurrent_sessions=None,  # TODO: verify
             browsers_info=browsers_info_convert(config.browsers_info),
-            visual_grid_options=Record.convert(config.visual_grid_options),
+            visual_grid_options=record_convert(config.visual_grid_options),
             layout_breakpoints=config.layout_breakpoints,
             disable_browser_fetching=config.disable_browser_fetching,
         )
@@ -695,7 +689,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     name = attr.ib(default=None)  # type: Optional[Text]
     disable_browser_fetching = attr.ib(default=None)  # type: Optional[bool]
     layout_breakpoints = attr.ib(default=None)  # type: Optional[bool, List[int]]
-    visual_grid_options = attr.ib(default=None)  # type: Optional[List[Record]]
+    visual_grid_options = attr.ib(default=None)  # type: Optional[Dict[Text, Any]]
     hooks = attr.ib(default=None)  # type: Optional[CheckSettingsHooks]
     render_id = attr.ib(default=None)  # type: Optional[Text]
     variation_group_id = attr.ib(default=None)  # type: Optional[Text]
@@ -713,7 +707,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             name=values.name,
             disable_browser_fetching=values.disable_browser_fetching,
             layout_breakpoints=values.layout_breakpoints,
-            visual_grid_options=Record.convert(values.visual_grid_options),
+            visual_grid_options=record_convert(values.visual_grid_options),
             hooks=hooks,
             render_id=None,  # TODO: verify
             variation_group_id=values.variation_group_id,
