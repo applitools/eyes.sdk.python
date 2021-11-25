@@ -261,41 +261,21 @@ class Eyes(object):
         :param raise_ex: If true, an exception will be raised for failed/new tests.
         :return: The test results.
         """
-        if self.configure.is_disabled:
-            self.logger.info("close(): ignored (disabled)")
-            return None
-        if not self.is_open:
-            raise EyesError("Eyes not open")
-        results = self._commands.eyes_close_eyes(self._eyes_ref)
-        self._eyes_ref = None
-        self._commands = None
-        results = demarshal_test_results(results)
-        for r in results:
-            _log_session_results_and_raise_exception(self.logger, raise_ex, r)
-        return results[0]  # Original interface returns just one result
-
-    def abort(self):
-        # type: () -> Optional[List[TestResults]]
-        """
-        If a test is running, aborts it. Otherwise, does nothing.
-        """
-        if self.configure.is_disabled:
-            self.logger.info("abort(): ignored (disabled)")
-            return None
-        elif self.is_open:
-            results = self._commands.eyes_abort_eyes(self._eyes_ref)
-            self._eyes_ref = None
-            # self._commands.close()
-            self._commands = None
-            return demarshal_test_results(results)
+        return self._close(raise_ex, True)
 
     def close_async(self):
         # type: () -> Optional[TestResults]
-        return self.close(False)
+        return self._close(False, False)
+
+    def abort(self):
+        # type: () -> Optional[TestResults]
+        """
+        If a test is running, aborts it. Otherwise, does nothing.
+        """
+        return self._abort(True)
 
     def abort_async(self):
-        # type: () -> Optional[TestResults]
-        return self.abort()
+        return self._abort(False)
 
     @deprecated.attribute("use `abort()` instead")
     def abort_if_not_closed(self):
@@ -542,6 +522,38 @@ class Eyes(object):
     def agent_setup(self):
         # Saved for backward compatibility
         return None
+
+    def _close(self, raise_ex, wait_result):
+        # type: (bool, bool) -> Optional[TestResults]
+        if self.configure.is_disabled:
+            self.logger.info("close(): ignored (disabled)")
+            return None
+        if not self.is_open:
+            raise EyesError("Eyes not open")
+        results = self._commands.eyes_close_eyes(self._eyes_ref, wait_result)
+        self._eyes_ref = None
+        self._commands = None
+        if wait_result:
+            results = demarshal_test_results(results)
+            for r in results:
+                _log_session_results_and_raise_exception(self.logger, raise_ex, r)
+            return results[0]  # Original interface returns just one result
+        else:
+            return None
+
+    def _abort(self, wait_result):
+        # type: (bool) -> Optional[List[TestResults]]
+        if self.configure.is_disabled:
+            self.logger.info("abort(): ignored (disabled)")
+            return None
+        elif self.is_open:
+            results = self._commands.eyes_abort_eyes(self._eyes_ref, wait_result)
+            self._eyes_ref = None
+            self._commands = None
+            if wait_result:
+                return demarshal_test_results(results)
+            else:
+                return None
 
 
 def _log_session_results_and_raise_exception(logger, raise_ex, results):

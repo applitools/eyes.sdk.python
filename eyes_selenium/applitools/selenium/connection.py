@@ -46,13 +46,16 @@ class USDKConnection(object):
         # type: (Text, dict) -> None
         self._websocket.send(dumps({"name": name, "payload": payload}))
 
-    def command(self, name, payload):
-        # type: (Text, dict) -> dict
+    def command(self, name, payload, wait_result):
+        # type: (Text, dict, bool) -> Optional[dict]
         key = next(self._keys)
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
-        return future.result(3 * 60)
+        if wait_result:
+            return future.result(3 * 60)
+        else:
+            return None
 
     def set_timeout(self, timeout):
         # type: (Optional[float]) -> None

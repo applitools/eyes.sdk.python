@@ -23,9 +23,9 @@ def test_five_threads(runner_type):
                     {"width": 1024, "height": 768},
                 )
                 eyes.check_window(fully=False)
-                eyes.close(False)
+                eyes.close_async()
             finally:
-                eyes.abort()
+                eyes.abort_async()
 
     executor = ThreadPoolExecutor(5)
     list(executor.map(perform_test, range(5)))

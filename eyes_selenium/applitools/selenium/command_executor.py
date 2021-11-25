@@ -97,13 +97,13 @@ class CommandExecutor(object):
             payload["config"] = config
         return self._checked_command("Eyes.extractTextRegions", payload)
 
-    def eyes_close_eyes(self, eyes):
-        # type: (dict) -> List[dict]
-        return self._checked_command("Eyes.close", {"eyes": eyes})
+    def eyes_close_eyes(self, eyes, wait_result):
+        # type: (dict, bool) -> List[dict]
+        return self._checked_command("Eyes.close", {"eyes": eyes}, wait_result)
 
-    def eyes_abort_eyes(self, eyes):
-        # type: (dict) -> List[dict]
-        return self._checked_command("Eyes.abort", {"eyes": eyes})
+    def eyes_abort_eyes(self, eyes, wait_result):
+        # type: (dict, bool) -> List[dict]
+        return self._checked_command("Eyes.abort", {"eyes": eyes}, wait_result)
 
     def set_timeout(self, timeout):
         # type: (Optional[float]) -> None
@@ -112,9 +112,12 @@ class CommandExecutor(object):
     def close(self):
         self._connection.close()
 
-    def _checked_command(self, name, payload):
-        # type: (Text, dict) -> Optional[Any]
-        response = self._connection.command(name, payload)
-        response_payload = response["payload"]
-        Failure.check(response_payload, self._connection.server_log_file)
-        return response_payload.get("result")
+    def _checked_command(self, name, payload, wait_result=True):
+        # type: (Text, dict, bool) -> Optional[Any]
+        response = self._connection.command(name, payload, wait_result)
+        if wait_result:
+            response_payload = response["payload"]
+            Failure.check(response_payload, self._connection.server_log_file)
+            return response_payload.get("result")
+        else:
+            return None
