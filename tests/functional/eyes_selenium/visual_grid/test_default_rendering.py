@@ -1,3 +1,4 @@
+from applitools.common import RectangleSize
 from applitools.selenium import BrowserType, Eyes, Target
 
 
@@ -10,6 +11,7 @@ def test_default_rendering_of_multiple_targets(driver, vg_runner):
     eyes.configuration.add_browser(1200, 800, BrowserType.FIREFOX)
     eyes.configuration.app_name = "TestDefaultRendering"
     eyes.configuration.test_name = "TestDefaultRenderingOfMultipleTargets"
+    eyes.configuration.viewport_size = RectangleSize(800, 600)
 
     try:
         eyes.open(driver)

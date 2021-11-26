@@ -299,6 +299,10 @@ class Eyes(object):
                 marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
             )
 
+    @property
+    def configuration(self):
+        return self.configure
+
     def get_configuration(self):
         # type:() -> Configuration
         return self.configure.clone()

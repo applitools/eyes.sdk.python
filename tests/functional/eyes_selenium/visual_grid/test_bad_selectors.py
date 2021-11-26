@@ -24,7 +24,10 @@ def test_check_region_with_bad_ignore_selector(driver, vg_runner):
     eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
     eyes.open(
-        driver, "Applitools Eyes Python SDK", "TestCheckRegionWithBadIgnoreSelector_VG"
+        driver,
+        "Applitools Eyes Python SDK",
+        "TestCheckRegionWithBadIgnoreSelector_VG",
+        RectangleSize(800, 600),
     )
     eyes.check(
         "",
