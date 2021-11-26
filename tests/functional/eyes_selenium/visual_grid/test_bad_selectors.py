@@ -1,6 +1,7 @@
 import pytest
 from selenium.common.exceptions import NoSuchElementException
 
+from applitools.common import RectangleSize
 from applitools.selenium import Eyes, Target
 
 
@@ -44,6 +45,7 @@ def test_check_region_with_bad_selector_before_valid_check(driver, vg_runner):
         driver,
         "Applitools Eyes Python SDK",
         "TestCheckRegionWithBadSelectorBeforeValidCheck_VG",
+        viewport_size=RectangleSize(800, 600),
     )
     with pytest.raises(NoSuchElementException):
         eyes.check_region("#element_that_does_not_exist")
