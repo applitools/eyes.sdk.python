@@ -1,5 +1,6 @@
 import pytest
 
+from applitools.common import RectangleSize
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 
 pytestmark = [
@@ -66,6 +67,7 @@ def test_VG_tests_count_4(eyes, batch_info, driver):
         .set_batch(batch_info)
         .set_app_name("Test Count")
         .set_test_name("Test_VGTestsCount_4")
+        .set_viewport_size(RectangleSize(800, 600))
     )
     eyes.set_configuration(config)
     eyes.open(driver)

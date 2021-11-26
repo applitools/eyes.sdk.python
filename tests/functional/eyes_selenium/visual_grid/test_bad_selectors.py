@@ -5,6 +5,7 @@ from applitools.common import RectangleSize
 from applitools.selenium import Eyes, Target
 
 
+@pytest.mark.skip("USDK Difference")
 def test_check_region_with_bad_selector(driver, vg_runner):
     eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")

@@ -238,7 +238,7 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
         .set_save_diffs(False)
         .set_save_new_tests(False)
     )
-    eyes.open(driver)
+    eyes.open(driver, viewport_size=RectangleSize(800, 600))
     eyes.check_window()
     eyes.close_async()
     assert len(vg_runner.get_all_test_results()) == 3
@@ -261,42 +261,6 @@ def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
     running_test = vg_runner._get_all_running_tests()[0]
     _, match_data = running_test.eyes.server_connector.input_calls["match_window"][0]
     assert isinstance(match_data.app_output.viewport, RectangleSize)
-
-
-def test_render_resource_not_found(driver, fake_connector_class, spy):
-    driver.get("http://applitools.github.io/demo/DomSnapshot/test-visual-grid.html")
-    missing_blob_url = "http://applitools.github.io/blabla"
-    missing_resource_url = "http://localhost:7374/get-cors.css"
-
-    vg_runner = VisualGridRunner(1)
-    eyes = Eyes(vg_runner)
-    eyes.configure.disable_browser_fetching = False
-    eyes.server_connector = fake_connector_class()
-    eyes.open(
-        driver,
-        app_name="Visual Grid Render Test",
-        test_name="TestRenderResourceNotFound",
-    )
-
-    running_test = vg_runner._get_all_running_tests()[0]
-    rc_task_factory_spy = spy(VisualGridEyes, "_resource_collection_task")
-
-    eyes.check_window("check")
-    eyes.close(False)
-    vg_runner.get_all_test_results(False)
-
-    blobs = rc_task_factory_spy.call_args.args[4]["blobs"]
-    error_blob = [b for b in blobs if b["url"] == missing_blob_url][-1]
-    assert error_blob["errorStatusCode"] == 404
-    assert error_blob["url"] == missing_blob_url
-
-    render_request = eyes.server_connector.calls["render"][0]
-    assert render_request.resources[missing_blob_url].error_status_code == "404"
-    assert render_request.resources[missing_resource_url].error_status_code in [
-        "404",
-        "444",
-        "503",
-    ]
 
 
 def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
