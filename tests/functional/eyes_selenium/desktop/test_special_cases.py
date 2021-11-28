@@ -62,6 +62,7 @@ def test_charts_with_scroll_root(eyes_opened):
 @pytest.mark.viewport_size({"width": 1200, "height": 700})
 @pytest.mark.test_name("TestChartsWithScrollRoot")
 @pytest.mark.eyes_config(branch_name="master_python")
+@pytest.mark.skip("USDK Difference")
 def test_charts_with_scroll_root_fluent(eyes_opened):
     eyes_opened.configure.add_property("Fluent", True)
     eyes_opened.check(
