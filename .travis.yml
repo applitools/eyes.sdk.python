@@ -33,7 +33,7 @@ script:
     - echo $TEST_REPORT_SANDBOX
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
-    - taskkill /f /im eyes-universal-win.exe
+    - taskkill /f /im eyes-universal-win.exe || true
 stages:
     - lint
     - unit-tests
