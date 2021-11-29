@@ -39,7 +39,7 @@ class USDKConnection(object):
         server = server or get_instance()
         websocket = WebSocket()
         websocket.connect("ws://localhost:{}/eyes".format(server.port))
-        websocket.settimeout(3 * 60)
+        websocket.settimeout(9 * 60)
         return cls(websocket, server.log_file_name)
 
     def notification(self, name, payload):
@@ -53,7 +53,7 @@ class USDKConnection(object):
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
         if wait_result:
-            return future.result(3 * 60)
+            return future.result(9 * 60)
         else:
             return None
 
