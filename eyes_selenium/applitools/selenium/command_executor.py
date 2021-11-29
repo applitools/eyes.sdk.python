@@ -10,16 +10,14 @@ from .connection import USDKConnection
 
 class Failure(Exception):
     @classmethod
-    def check(cls, payload, server_log_file):
-        # type: (dict, Text) -> None
+    def check(cls, payload):
+        # type: (dict) -> None
         error = payload.get("error")
         if error:
             if error["message"].startswith("stale element reference"):
                 raise StaleElementReferenceException(error["message"])
             else:
-                with open(server_log_file, "r") as log_file:
-                    log_file_contents = log_file.readlines()
-                raise cls(error["message"], error["stack"], log_file_contents)
+                raise cls(error["message"], error["stack"])
 
 
 class ManagerType(Enum):
@@ -117,7 +115,7 @@ class CommandExecutor(object):
         response = self._connection.command(name, payload, wait_result)
         if wait_result:
             response_payload = response["payload"]
-            Failure.check(response_payload, self._connection.server_log_file)
+            Failure.check(response_payload)
             return response_payload.get("result")
         else:
             return None
