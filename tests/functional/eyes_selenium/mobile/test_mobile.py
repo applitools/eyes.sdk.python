@@ -182,6 +182,7 @@ def test_android__sauce_labs(mobile_eyes):
         o["deviceName"], o["platformVersion"], o["deviceOrientation"]
     ),
 )
+@pytest.mark.skip("USDK Difference")
 def test_IOS_safari_crop__sauce_labs(mobile_eyes):
     eyes, fully = mobile_eyes
     eyes.check("", Target.window().fully(fully))
