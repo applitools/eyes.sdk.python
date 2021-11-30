@@ -1,7 +1,10 @@
+import pytest
+
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
 
+@pytest.mark.skip("USDK Difference")
 def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runner):
     driver.get("https://demo.applitools.com")
     eyes = Eyes(vg_runner)
