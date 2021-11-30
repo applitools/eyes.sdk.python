@@ -20,7 +20,6 @@ from applitools.selenium import (
     VisualGridRunner,
     logger,
 )
-from applitools.selenium.visual_grid import VisualGridEyes
 from tests.utils import get_session_results
 
 

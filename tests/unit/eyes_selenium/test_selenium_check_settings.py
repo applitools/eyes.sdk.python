@@ -214,65 +214,6 @@ def test_before_render_screenshot_hook():
     assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"
 
 
-def test_disable_browser_fetching_combinations():
-    from applitools.selenium import Configuration, Target
-    from applitools.selenium.visual_grid import VisualGridEyes
-
-    effective_option = VisualGridEyes._effective_disable_browser_fetching
-    cfg = Configuration()
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-    cfg.set_disable_browser_fetching(False)
-
-    assert effective_option(cfg, Target.window()) is False
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-    cfg.set_disable_browser_fetching(True)
-
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-
-def test_layout_breakpoints_combinations():
-    from applitools.selenium import Configuration, Target
-    from applitools.selenium.visual_grid import VisualGridEyes
-
-    effective_option = VisualGridEyes._effective_layout_breakpoints
-    cfg = Configuration()
-
-    assert effective_option(cfg, Target.window()) is None
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-    cfg.set_layout_breakpoints(3, 4)
-
-    assert effective_option(cfg, Target.window()) == [3, 4]
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-    cfg.set_layout_breakpoints(True)
-
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_region_padding_are_added(method_name):
     regions_selector = get_regions_from_(

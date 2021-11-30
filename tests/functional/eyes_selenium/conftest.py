@@ -15,9 +15,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import IEDriverManager
 
-from applitools.selenium import Configuration, Eyes, StitchMode, logger
+from applitools.selenium import (
+    Configuration,
+    Eyes,
+    StitchMode,
+    VisualGridRunner,
+    logger,
+)
 from applitools.selenium.__version__ import __version__
-from applitools.selenium.visual_grid import VisualGridRunner
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:

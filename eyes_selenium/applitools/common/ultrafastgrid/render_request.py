@@ -23,7 +23,6 @@ if typing.TYPE_CHECKING:
     from requests import Response
 
     from applitools.common.utils.custom_types import Num
-    from applitools.selenium.visual_grid.vg_task import VGTask
 
 __all__ = (
     "RenderStatus",
@@ -285,7 +284,7 @@ class RenderRequest(object):
     render_id = attr.ib(
         default=None, repr=True, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
-    task = attr.ib(default=None)  # type: Optional[VGTask]
+    task = attr.ib(default=None)
     browser = attr.ib(init=False, default=None, metadata={JsonInclude.NON_NONE: True})
     platform = attr.ib(
         init=False, default=None, metadata={JsonInclude.NON_NONE: True}
