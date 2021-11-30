@@ -1,4 +1,4 @@
-from mock import patch
+import pytest
 
 from applitools.common import EyesError, MatchLevel, StitchMode
 from applitools.core import FixedCutProvider, UnscaledFixedCutProvider
