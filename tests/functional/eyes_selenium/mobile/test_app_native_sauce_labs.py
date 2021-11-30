@@ -133,14 +133,3 @@ def test_android_native_sauce_labs_tracking_id_sent(mobile_eyes):
         match_window_data = smw.call_args[0][1]  # type: MatchWindowData
 
     assert match_window_data.options.source == "com.example.android.contactmanager"
-
-
-@pytest.mark.platform("iOS")
-def test_iOS_native_region_sauce_labs_tracking_id_sent(mobile_eyes):
-    eyes, mobile_driver = mobile_eyes
-    eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp trackingIdSent")
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-        eyes.check("Contact list", Target.window())
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-
-    assert match_window_data.options.source == "eyes-ios-hello-world.zip"
