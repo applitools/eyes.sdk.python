@@ -1,4 +1,3 @@
-from applitools.common import ProxySettings
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
@@ -7,7 +6,6 @@ def test_create_open_eyes(local_chrome_driver):
         "https://applitools.github.io/demo/TestPages/SimpleTestPage"
     )
     eyes = Eyes()
-    eyes.configure.set_proxy(ProxySettings("http://localhost:8000"))
     eyes.open(local_chrome_driver, "USDK Test", "Test create open eyes")
     check_result = eyes.check_window()
 
