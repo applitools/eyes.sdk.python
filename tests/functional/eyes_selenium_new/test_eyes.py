@@ -25,10 +25,10 @@ def test_create_open_vg_eyes(local_chrome_driver):
         {"width": 1024, "height": 768},
     )
     check_result = eyes.check_window()
-    close_result = eyes.close()
+    eyes.close_async()
     all_results = runner.get_all_test_results().all_results
 
-    assert check_result.as_expected is None
+    assert check_result is None
     assert len(all_results) == 1
     assert all_results[0].test_results.is_passed
 

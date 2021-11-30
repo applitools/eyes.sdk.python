@@ -1,4 +1,3 @@
-import pytest
 from mock import patch
 
 from applitools.common import EyesError, MatchLevel, StitchMode
@@ -9,37 +8,6 @@ from applitools.selenium import Eyes, Target
 def pytest_generate_tests(metafunc):
     if "eyes" in metafunc.fixturenames:
         metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
-
-
-def open_and_get_start_session_info(
-    eyes,
-    driver,
-    is_app=False,
-    is_mobile_web=False,
-    platform_name=None,
-    device_name=None,
-):
-    driver.is_mobile_app = is_app
-    driver.is_mobile_platform = is_app or is_mobile_web
-    driver.is_mobile_web = is_mobile_web
-
-    driver.desired_capabilities = {}
-    if platform_name:
-        driver.desired_capabilities["platformName"] = platform_name
-    if device_name:
-        driver.desired_capabilities["deviceName"] = device_name
-
-    eyes.api_key = "Some API KEY"
-    eyes._is_viewport_size_set = True
-
-    with patch(
-        "applitools.core.server_connector.ServerConnector.start_session"
-    ) as start_session:
-        with patch(
-            "applitools.core.eyes_base.EyesBase._EyesBase__ensure_viewport_size"
-        ):
-            eyes.open(driver, "TestApp", "TestName")
-    return start_session.call_args_list[0][0][0]
 
 
 def test_set_get_scale_ratio(eyes):

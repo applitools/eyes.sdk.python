@@ -109,5 +109,4 @@ def test_eyes_runner(driver, runner):
 
     driver.quit()
     all_tests_results = runner.get_all_test_results()
-    if len(all_tests_results.all_results) != 3:
-        raise Exception
+    assert len(all_tests_results.all_results) == 3

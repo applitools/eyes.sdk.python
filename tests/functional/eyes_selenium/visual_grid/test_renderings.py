@@ -243,25 +243,6 @@ def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     assert len(vg_runner.get_all_test_results()) == 3
 
 
-def test_visual_viewport(driver, batch_info, vg_runner, fake_connector_class):
-    driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/")
-    eyes = Eyes(vg_runner)
-    eyes.server_connector = fake_connector_class()
-    eyes.set_configuration(
-        Configuration(
-            app_name="Visual Grid Render Test",
-            test_name="TestVisualViewport",
-            batch=batch_info,
-        ).add_browser(IosDeviceInfo("iPhone 7"))
-    )
-    eyes.open(driver)
-    eyes.check_window()
-    eyes.close(False)
-    running_test = vg_runner._get_all_running_tests()[0]
-    _, match_data = running_test.eyes.server_connector.input_calls["match_window"][0]
-    assert isinstance(match_data.app_output.viewport, RectangleSize)
-
-
 def test_explicit_layout_breakpoints(driver, batch_info, vg_runner):
     driver.get("https://applitools.github.io/demo/TestPages/JsLayout")
     eyes = Eyes(vg_runner)

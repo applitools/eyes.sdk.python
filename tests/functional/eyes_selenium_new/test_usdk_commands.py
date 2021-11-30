@@ -2,12 +2,12 @@ import pytest
 
 from applitools.selenium.command_executor import CommandExecutor, ManagerType
 from applitools.selenium.connection import USDKConnection
-from applitools.selenium.webdriver_marshal import marshal_webdriver_ref
+from applitools.selenium.universal_sdk_types import marshal_webdriver_ref
 
 
 def test_usdk_commands_make_manager():
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk("name", "version", ".")
 
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
 
@@ -17,7 +17,7 @@ def test_usdk_commands_make_manager():
 def test_usdk_commands_set_get_viewport_size(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk("name", "version", ".")
 
     commands.core_set_viewport_size(driver, {"width": 800, "height": 600})
     returned_size = commands.core_get_viewport_size(driver)
@@ -28,7 +28,7 @@ def test_usdk_commands_set_get_viewport_size(local_chrome_driver):
 def test_usdk_commands_open_close_eyes(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk("name", "version", ".")
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(
         mgr,
@@ -41,23 +41,23 @@ def test_usdk_commands_open_close_eyes(local_chrome_driver):
 
     assert "applitools-ref-id" in mgr
 
-    eyes_close_result = commands.eyes_close_eyes(eyes)
+    eyes_close_result = commands.eyes_close_eyes(eyes, True)
     test_result = eyes_close_result[0]
 
     assert len(eyes_close_result) == 1
     assert test_result["appName"] == "app name"
     assert test_result["name"] == "test name"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr)
+    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
 
     assert manager_close_result == eyes_close_result
 
 
-@pytest.mark.skip("Aborted test is missing from results")
+@pytest.mark.skip("Aborted test is missing from all results")
 def test_usdk_commands_open_abort_eyes(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk("name", "version", ".")
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(
         mgr,
@@ -70,14 +70,14 @@ def test_usdk_commands_open_abort_eyes(local_chrome_driver):
 
     assert "applitools-ref-id" in mgr
 
-    eyes_abort_result = commands.eyes_abort_eyes(eyes)
+    eyes_abort_result = commands.eyes_abort_eyes(eyes, True)
     test_result = eyes_abort_result[0]
 
     assert len(eyes_abort_result) == 1
     assert test_result["appName"] == "app name"
     assert test_result["name"] == "test name"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr)
+    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
 
     assert manager_close_result == eyes_abort_result
 
@@ -89,7 +89,7 @@ def test_usdk_commands_open_check_close_eyes(local_chrome_driver):
     config = {"appName": "app name", "testName": "test name"}
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
-    commands.make_sdk()
+    commands.make_sdk("name", "version", ".")
     mgr = commands.core_make_manager(ManagerType.CLASSIC)
     eyes = commands.manager_open_eyes(mgr, driver, config)
 
@@ -99,13 +99,13 @@ def test_usdk_commands_open_check_close_eyes(local_chrome_driver):
 
     assert check_result == {"asExpected": True}
 
-    eyes_close_result = commands.eyes_close_eyes(eyes)
+    eyes_close_result = commands.eyes_close_eyes(eyes, True)
     test_result = eyes_close_result[0]
 
     assert len(eyes_close_result) == 1
     assert test_result["appName"] == "app name"
     assert test_result["name"] == "test name"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr)
+    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
 
     assert manager_close_result == eyes_close_result
