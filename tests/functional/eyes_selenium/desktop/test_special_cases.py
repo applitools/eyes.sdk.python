@@ -34,6 +34,7 @@ def test_check_region_in_a_very_big_frame_after_manual_switch_to_frame(eyes_open
 @pytest.mark.viewport_size({"width": 1200, "height": 700})
 @pytest.mark.test_name("TestChartsWithScrollRoot")
 @pytest.mark.eyes_config(branch_name="master_python")
+@pytest.mark.skip("USDK Difference, hangs")
 def test_charts_with_scroll_root(eyes_opened):
     eyes_opened.configure.add_property("Fluent", False)
     driver = eyes_opened.driver
