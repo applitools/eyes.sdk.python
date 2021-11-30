@@ -61,9 +61,11 @@ class CommandExecutor(object):
             payload["config"] = config
         return self._checked_command("EyesManager.openEyes", payload)
 
-    def manager_close_all_eyes(self, manager):
-        # type: (dict) -> List[dict]
-        return self._checked_command("EyesManager.closeAllEyes", {"manager": manager})
+    def manager_close_all_eyes(self, manager, timeout):
+        # type: (dict, float) -> List[dict]
+        return self._checked_command(
+            "EyesManager.closeAllEyes", {"manager": manager}, wait_timeout=timeout
+        )
 
     def eyes_check(self, eyes, settings=None, config=None):
         # type: (dict, Optional[dict], Optional[dict]) -> dict
@@ -103,16 +105,12 @@ class CommandExecutor(object):
         # type: (dict, bool) -> List[dict]
         return self._checked_command("Eyes.abort", {"eyes": eyes}, wait_result)
 
-    def set_timeout(self, timeout):
-        # type: (Optional[float]) -> None
-        self._connection.set_timeout(timeout)
-
     def close(self):
         self._connection.close()
 
-    def _checked_command(self, name, payload, wait_result=True):
-        # type: (Text, dict, bool) -> Optional[Any]
-        response = self._connection.command(name, payload, wait_result)
+    def _checked_command(self, name, payload, wait_result=True, wait_timeout=9 * 60):
+        # type: (Text, dict, bool, float) -> Optional[Any]
+        response = self._connection.command(name, payload, wait_result, wait_timeout)
         if wait_result:
             response_payload = response["payload"]
             Failure.check(response_payload)

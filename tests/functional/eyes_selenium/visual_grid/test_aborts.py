@@ -3,7 +3,12 @@ import time
 import pytest
 from mock import patch
 
-from applitools.common import EyesError, RenderStatus, RenderStatusResults
+from applitools.common import (
+    EyesError,
+    RectangleSize,
+    RenderStatus,
+    RenderStatusResults,
+)
 from applitools.core import ServerConnector
 from applitools.selenium import BrowserType, Eyes, Target
 
@@ -27,23 +32,18 @@ def test_abort_when_not_rendered(driver, vg_runner, batch_info, monkeypatch):
     all_results = vg_runner.get_all_test_results(False)
 
 
-def test_get_all_tests_results_timeout(driver, vg_runner, batch_info, monkeypatch):
-    original_renderinfo = ServerConnector.render_info
-
-    def delay_renderinfo(self, *ids):
-        time.sleep(2)
-        return original_renderinfo(self, *ids)
-
-    monkeypatch.setattr(ServerConnector, "render_info", delay_renderinfo)
+def test_get_all_tests_results_timeout(driver, vg_runner, batch_info):
     eyes = Eyes(vg_runner)
     eyes.configure.test_name = "GetAllTestsResultsTimeout"
     eyes.configure.app_name = "Visual Grid Render Test"
     eyes.configure.batch = batch_info
+    eyes.configure.viewport_size = RectangleSize(1024, 768)
     driver.get("https://demo.applitools.com")
     eyes.open(driver)
+    eyes.check_window()
     eyes.close_async()
     with pytest.raises(EyesError):
-        vg_runner.get_all_test_results(False, 1)
+        vg_runner.get_all_test_results(False, 0.001)
 
 
 def test_abort_when_dom_snapshot_error(driver, vg_runner, batch_info):

@@ -39,27 +39,23 @@ class USDKConnection(object):
         server = server or get_instance()
         websocket = WebSocket()
         websocket.connect("ws://localhost:{}/eyes".format(server.port))
-        websocket.settimeout(9 * 60)
+        websocket.settimeout(20 * 60)
         return cls(websocket, server.log_file_name)
 
     def notification(self, name, payload):
         # type: (Text, dict) -> None
         self._websocket.send(dumps({"name": name, "payload": payload}))
 
-    def command(self, name, payload, wait_result):
-        # type: (Text, dict, bool) -> Optional[dict]
+    def command(self, name, payload, wait_result, wait_timeout):
+        # type: (Text, dict, bool, float) -> Optional[dict]
         key = next(self._keys)
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
         if wait_result:
-            return future.result(9 * 60)
+            return future.result(wait_timeout)
         else:
             return None
-
-    def set_timeout(self, timeout):
-        # type: (Optional[float]) -> None
-        self._websocket.settimeout(timeout)
 
     def close(self):
         if self._websocket:

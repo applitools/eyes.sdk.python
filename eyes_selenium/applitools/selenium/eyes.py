@@ -1,13 +1,13 @@
 from __future__ import absolute_import, unicode_literals
 
 import typing
+from concurrent.futures import TimeoutError
 from contextlib import closing
 from typing import List, Optional, Text, Tuple, Union
 
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
-from websocket import WebSocketTimeoutException
 
 from applitools.common import (
     DiffsFoundError,
@@ -66,17 +66,18 @@ class _EyesManager(object):
             manager_type, concurrency, is_legacy
         )
 
-    def get_all_test_results(self, should_raise_exception=True, timeout=10 * 60):
+    def get_all_test_results(
+        self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
+    ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         if not self._commands:
             self.logger.error("Test results are already retrieved")
             return TestResultsSummary([])
-        self._commands.set_timeout(timeout)
         try:
             if self._ref:
                 try:
-                    results = self._commands.manager_close_all_eyes(self._ref)
-                except WebSocketTimeoutException:
+                    results = self._commands.manager_close_all_eyes(self._ref, timeout)
+                except TimeoutError:
                     self.logger.warning(
                         "Tests completion timeout exceeded", timeout=timeout
                     )
