@@ -4,8 +4,7 @@ from mock import MagicMock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
-from applitools.common import EyesError, FloatingBounds
-from applitools.common.selenium import BrowserType
+from applitools.common import FloatingBounds
 from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 

@@ -1,19 +1,9 @@
-import datetime
-import json
-import sys
-
 import pytest
-from mock import MagicMock, call, patch
+from mock import patch
 
-from applitools.common import BatchInfo, EyesError, MatchLevel, StitchMode
-from applitools.common.utils import json_utils
-from applitools.core import (
-    FixedCutProvider,
-    NullScaleProvider,
-    UnscaledFixedCutProvider,
-)
-from applitools.selenium import Configuration, Eyes, Target
-from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.common import EyesError, MatchLevel, StitchMode
+from applitools.core import FixedCutProvider, UnscaledFixedCutProvider
+from applitools.selenium import Eyes, Target
 
 
 def pytest_generate_tests(metafunc):
