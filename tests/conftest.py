@@ -57,8 +57,8 @@ def driver_mock():
     driver._driver = mock.Mock(WebDriver)
 
     desired_capabilities = {"platformName": ""}
-    driver.desired_capabilities = desired_capabilities
-    driver._driver.desired_capabilities = desired_capabilities
+    driver.capabilities = desired_capabilities
+    driver._driver.capabilities = desired_capabilities
 
     # need to configure below
     driver._driver.execute_script = mock.Mock(side_effect=WebDriverException())

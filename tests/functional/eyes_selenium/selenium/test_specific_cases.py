@@ -1,7 +1,6 @@
 import time
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from applitools.core.feature import Feature
 from applitools.selenium import (
@@ -12,7 +11,6 @@ from applitools.selenium import (
     StitchMode,
     Target,
 )
-from tests.utils import get_resource_path
 
 
 @pytest.mark.skip("Old test. test_hello_world implemented instead of this one")

@@ -742,7 +742,7 @@ class SeleniumEyes(EyesBase):
         os = self.configure.host_os
 
         device_info = (
-            self._driver.desired_capabilities.get("deviceName", "")
+            self._driver.capabilities.get("deviceName", "")
             if self.driver.is_mobile_platform
             else "Desktop"
         )
