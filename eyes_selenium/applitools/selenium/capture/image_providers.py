@@ -7,28 +7,13 @@ from applitools.common import RectangleSize, Region, logger
 from applitools.common.utils import image_utils
 from applitools.core.capture import ImageProvider
 from applitools.selenium.positioning import ScrollPositionProvider
-from applitools.selenium.useragent import BrowserNames, UserAgent
 from applitools.selenium.viewport_locator import device_viewport_location
 
 if typing.TYPE_CHECKING:
     from PIL.Image import Image
 
     from applitools.selenium.frames import FrameChain
-    from applitools.selenium.selenium_eyes import SeleniumEyes
     from applitools.selenium.webdriver import EyesWebDriver
-
-
-def get_image_provider(ua, eyes):
-    # type: (UserAgent, SeleniumEyes) -> ImageProvider
-    if ua:
-        if ua.browser == BrowserNames.Firefox:
-            if ua.browser_major_version >= 48:
-                return FirefoxScreenshotImageProvider(eyes)
-        elif ua.browser == BrowserNames.Safari:
-            return SafariScreenshotImageProvider(eyes, ua)
-        elif ua.browser == BrowserNames.MobileSafari:
-            return MobileSafariScreenshotImageProvider(eyes, ua)
-    return TakesScreenshotImageProvider(eyes)
 
 
 @attr.s(hash=False)
@@ -50,8 +35,8 @@ class DeviceData(object):
 @attr.s
 class MobileSafariScreenshotImageProvider(ImageProvider):
     _devices_regions = None
-    _eyes = attr.ib()  # type: SeleniumEyes
-    _useragent = attr.ib()  # type: UserAgent
+    _eyes = attr.ib()
+    _useragent = attr.ib()
 
     def get_image(self):
         image = TakesScreenshotImageProvider(self._eyes).get_image()
@@ -141,8 +126,8 @@ class MobileSafariScreenshotImageProvider(ImageProvider):
 
 @attr.s
 class SafariScreenshotImageProvider(ImageProvider):
-    _eyes = attr.ib()  # type: SeleniumEyes
-    _useragent = attr.ib()  # type: UserAgent
+    _eyes = attr.ib()
+    _useragent = attr.ib()
 
     def get_image(self):
         image = TakesScreenshotImageProvider(self._eyes).get_image()

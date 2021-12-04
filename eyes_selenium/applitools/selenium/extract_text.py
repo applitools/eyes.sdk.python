@@ -14,7 +14,6 @@ from applitools.core.extract_text import (
 )
 from applitools.selenium import eyes_selenium_utils
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.selenium_eyes import SeleniumEyes
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import (
@@ -57,7 +56,7 @@ class OCRRegion(BaseOCRRegion):
 
 class SeleniumExtractTextProvider(ExtractTextProvider):
     def __init__(self, driver, eyes):
-        # type: (AnyWebDriver, SeleniumEyes) -> None
+        # type: (AnyWebDriver, object) -> None
         self._driver = driver
         self._eyes = eyes
         self._server_connector = eyes.server_connector  # type: ServerConnector

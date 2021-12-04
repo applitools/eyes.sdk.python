@@ -12,7 +12,6 @@ from applitools.common.geometry import CoordinatesType, Point, Region
 from applitools.common.utils.general_utils import all_attrs, proxy_to
 
 from . import eyes_selenium_utils
-from .useragent import BrowserNames, OSNames
 
 if tp.TYPE_CHECKING:
     from typing import Dict, Optional, Text, Union
@@ -403,18 +402,3 @@ class MobileSafariElementAdapter(EyesWebElement):
         rect = super(MobileSafariElementAdapter, self).rect
         x, y = self.location
         return dict(x=x, y=y, width=rect["width"], height=rect["height"])
-
-
-def adapt_element(eyes_element):
-    # type: (EyesWebElement) -> EyesWebElement
-
-    element, driver = eyes_element.element, eyes_element.driver
-    user_agent = driver.user_agent
-    is_simulator = driver.eyes.configure.is_simulator
-
-    if is_simulator:
-        if user_agent.browser == BrowserNames.MobileSafari:
-            return MobileSafariElementAdapter(element, driver)
-        elif user_agent.is_chrome and user_agent.os == OSNames.Android:
-            return AndroidChromeElementAdapter(element, driver)
-    return eyes_element

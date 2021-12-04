@@ -9,7 +9,6 @@ from applitools.common.geometry import RectangleSize
 from applitools.core import PositionMemento, PositionProvider
 
 from . import eyes_selenium_utils
-from .useragent import BrowserNames, OSNames
 
 if typing.TYPE_CHECKING:
     from typing import Optional
@@ -239,21 +238,3 @@ class CSSMobileSafariPositionProvider(CSSTranslatePositionProvider):
         return eyes_selenium_utils.get_current_position(
             self._driver, self._scroll_root_element
         )
-
-
-def create_position_provider(driver, stitch_mode, scroll_root_element, target_element):
-    # type: (EyesWebDriver,StitchMode,EyesWebElement,Optional[EyesWebElement])->PositionProvider
-    logger.debug("initializing position provider. stitch_mode: {}".format(stitch_mode))
-    if stitch_mode == StitchMode.Scroll:
-        return ScrollPositionProvider(driver, scroll_root_element)
-    elif stitch_mode == StitchMode.CSS:
-        if (
-            driver.user_agent.os == OSNames.IOS
-            and driver.user_agent.browser == BrowserNames.MobileSafari
-        ):
-            return CSSMobileSafariPositionProvider(
-                driver, scroll_root_element, target_element
-            )
-        return CSSTranslatePositionProvider(driver, scroll_root_element)
-    else:
-        raise EyesError("Wrong sitch_mode")
