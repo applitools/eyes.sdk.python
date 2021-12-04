@@ -3,13 +3,10 @@ from abc import abstractmethod
 
 import attr
 
-from applitools.common import CoordinatesType, FloatingMatchSettings
 from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.utils import ABC
 from applitools.core import GetFloatingRegion, GetRegion
 from applitools.core.fluent.region import GetAccessibilityRegion
-from applitools.selenium.capture import EyesWebDriverScreenshot
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional
@@ -20,7 +17,6 @@ if typing.TYPE_CHECKING:
         AnyWebElement,
         CodedRegionPadding,
     )
-    from applitools.selenium.selenium_eyes import SeleniumEyes
 
 __all__ = (
     "RegionBySelector",
@@ -32,29 +28,7 @@ __all__ = (
 )
 
 
-def _region_from_element(element, screenshot, padding=None):
-    # type: (AnyWebElement,EyesWebDriverScreenshot,Optional[CodedRegionPadding])->Region
-    location = element.location
-    if screenshot:
-        # Element's coordinates are context relative, so we need to convert them first.
-        adjusted_location = screenshot.location_in_screenshot(
-            Point.from_(location), CoordinatesType.CONTEXT_RELATIVE
-        )
-    else:
-        adjusted_location = Point.from_(location)
-    region = Region.from_(adjusted_location, element.size)
-
-    if padding:
-        region = region.padding(padding)
-    return region
-
-
 class GetSeleniumRegion(GetRegion, ABC):
-    def get_regions(self, eyes, screenshot):
-        # type: (SeleniumEyes, EyesWebDriverScreenshot) -> List[Region]
-        elements = self._fetch_elements(eyes.driver)
-        return [_region_from_element(el, screenshot, self._padding) for el in elements]
-
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)
@@ -94,14 +68,6 @@ class RegionBySelector(GetSeleniumRegion):
 
 
 class GetSeleniumFloatingRegion(GetFloatingRegion, ABC):
-    def get_regions(self, eyes, screenshot):
-        # type: (SeleniumEyes, EyesWebDriverScreenshot) ->  List[FloatingMatchSettings]
-        elements = self._fetch_elements(eyes.driver)
-        regions = (_region_from_element(el, screenshot) for el in elements)
-        return [
-            FloatingMatchSettings(region, self.floating_bounds) for region in regions
-        ]
-
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)
@@ -155,15 +121,6 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
 
 
 class GetSeleniumAccessibilityRegion(GetAccessibilityRegion, ABC):
-    def get_regions(self, eyes, screenshot):
-        # type:(SeleniumEyes,EyesWebDriverScreenshot)->List[AccessibilityRegion]
-        elements = self._fetch_elements(eyes.driver)
-        regions = (_region_from_element(el, screenshot) for el in elements)
-        return [
-            AccessibilityRegion.from_(region, self.accessibility_type)
-            for region in regions
-        ]
-
     def get_elements(self, driver):
         # type: (AnyWebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)

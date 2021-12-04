@@ -13,7 +13,6 @@ from applitools.selenium import (
     StitchMode,
     Target,
 )
-from applitools.selenium.selenium_eyes import SeleniumEyes
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
