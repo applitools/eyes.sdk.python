@@ -214,9 +214,6 @@ class Configuration(object):
         ),
     )  # type: Text
     _timeout = attr.ib(default=DEFAULT_SERVER_REQUEST_TIMEOUT_MS)  # type: int # ms
-    features = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, factory=set
-    )  # type: Set[Feature]
     proxy = attr.ib(default=None)  # type: ProxySettings
     save_debug_screenshots = attr.ib(default=False)  # type: bool
     debug_screenshots_path = attr.ib(
@@ -467,7 +464,6 @@ class Configuration(object):
         conf.viewport_size = copy(conf.viewport_size)
         conf.properties = deepcopy(conf.properties)
         conf.default_match_settings = deepcopy(conf.default_match_settings)
-        conf.features = deepcopy(conf.features)
         return conf
 
     def add_property(self, name, value):
@@ -487,15 +483,6 @@ class Configuration(object):
         """
         del self.properties[:]
         return self
-
-    def set_features(self, *features):
-        # type: (*Feature) -> Self
-        self.features = set(features)
-        return self
-
-    def is_feature_activated(self, feature):
-        # type: (Feature) -> bool
-        return feature in self.features
 
     def set_proxy(self, proxy):
         # type: (Optional[ProxySettings]) -> Self
