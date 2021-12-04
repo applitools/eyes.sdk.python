@@ -1,24 +1,19 @@
 from __future__ import absolute_import
 
-from typing import TYPE_CHECKING, Any, Dict, List, Text, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Text, Union
 
 if TYPE_CHECKING:
     from appium.webdriver import WebElement as AppiumWebElement
-    from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
     from applitools.common.geometry import RectangleSize, Region
     from applitools.core.triggers import ActionTrigger
-    from applitools.selenium.webelement import EyesWebElement
 
     ViewPort = Union[Dict[Text, int], RectangleSize]  # typedef
     CodedRegionPadding = Dict[Text, int]  # typedef
     Num = Union[int, float]
 
-    AnyWebDriver = WebDriver
-    AnyWebElement = Union[
-        EyesWebElement, SeleniumWebElement, AppiumWebElement
-    ]  # typedef
+    AnyWebElement = Union[SeleniumWebElement, AppiumWebElement]  # typedef
 
     FrameNameOrId = Text  # typedef
     FrameIndex = int  # typedef
@@ -26,7 +21,7 @@ if TYPE_CHECKING:
 
     # could contain MouseTrigger, TextTrigger
     UserInputs = List[ActionTrigger]  # typedef
-    RegionOrElement = Union[EyesWebElement, Region]  # typedef
+    RegionOrElement = Union[AnyWebElement, Region]  # typedef
 
     SeleniumBy = Text  # typedef
     BySelector = List[SeleniumBy, Text]  # typedef

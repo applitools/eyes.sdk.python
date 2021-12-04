@@ -13,9 +13,9 @@ if typing.TYPE_CHECKING:
 
     from applitools.common import FloatingBounds
     from applitools.common.utils.custom_types import (
-        AnyWebDriver,
         AnyWebElement,
         CodedRegionPadding,
+        WebDriver,
     )
 
 __all__ = (
@@ -30,12 +30,12 @@ __all__ = (
 
 class GetSeleniumRegion(GetRegion, ABC):
     def get_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)
 
     @abstractmethod
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         pass
 
 
@@ -45,7 +45,7 @@ class RegionByElement(GetSeleniumRegion):
     _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return [self._element]
 
 
@@ -63,18 +63,18 @@ class RegionBySelector(GetSeleniumRegion):
     _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return driver.find_elements(self._by, self._value)
 
 
 class GetSeleniumFloatingRegion(GetFloatingRegion, ABC):
     def get_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)
 
     @abstractmethod
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         pass
 
 
@@ -89,7 +89,7 @@ class FloatingRegionByElement(GetSeleniumFloatingRegion):
     _bounds = attr.ib()  # type: FloatingBounds
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return [self._element]
 
     @property
@@ -111,7 +111,7 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     _bounds = attr.ib()  # type: FloatingBounds
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return driver.find_elements(self._by, self._value)
 
     @property
@@ -122,12 +122,12 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
 
 class GetSeleniumAccessibilityRegion(GetAccessibilityRegion, ABC):
     def get_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return self._fetch_elements(driver)
 
     @abstractmethod
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         pass
 
 
@@ -138,7 +138,7 @@ class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
     _type = attr.ib()  # type: AccessibilityRegionType
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return driver.find_elements(self._by, self._value)
 
     @property
@@ -153,7 +153,7 @@ class AccessibilityRegionByElement(GetSeleniumAccessibilityRegion):
     _type = attr.ib()  # type: AccessibilityRegionType
 
     def _fetch_elements(self, driver):
-        # type: (AnyWebDriver) -> List[AnyWebElement]
+        # type: (WebDriver) -> List[AnyWebElement]
         return [self._element]
 
     @property
