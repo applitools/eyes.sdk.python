@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Set
 
 import attr
 
+from applitools.common import deprecated
 from applitools.common.accessibility import AccessibilitySettings
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
@@ -488,3 +489,7 @@ class Configuration(object):
         argument_guard.is_a(proxy, ProxySettings)
         self.proxy = proxy
         return self
+
+    @deprecated.attribute("Configuration features are not supported")
+    def set_features(self, *_):
+        pass
