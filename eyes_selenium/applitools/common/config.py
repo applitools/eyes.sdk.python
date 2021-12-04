@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar
 
     from applitools.common.utils.custom_types import ViewPort
-    from applitools.core.feature import Feature
 
     Self = TypeVar("Self", bound="Configuration")  # typedef
 

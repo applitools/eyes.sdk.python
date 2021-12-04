@@ -413,7 +413,7 @@ def accessibility_region_references_convert(regions):
         if isinstance(r, AccessibilityRegionBySelector):
             region = element_reference_convert(selector=[r._by, r._value])  # noqa
             type_ = r._type  # noqa
-        elif isinstance(r, FloatingRegionByRectangle):
+        elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
         else:
             raise RuntimeError("Unexpected region type", type(r))
