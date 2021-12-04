@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import itertools
-import json
 import typing
 import uuid
 from threading import Condition
@@ -13,24 +12,15 @@ from requests import Response
 from requests.packages import urllib3  # noqa
 
 from applitools.common import DeviceName, IosDeviceName, Region, RunningSession, logger
-from applitools.common.client_event import LogSessionsClientEvents
 from applitools.common.errors import EyesError, EyesServiceUnavailableError
 from applitools.common.match import MatchResult
 from applitools.common.match_window_data import MatchWindowData
 from applitools.common.metadata import SessionStartInfo
 from applitools.common.test_results import TestResults
-from applitools.common.ultrafastgrid import (
-    JobInfo,
-    RenderingInfo,
-    RenderRequest,
-    RenderStatusResults,
-    RunningRender,
-    VGResource,
-)
+from applitools.common.ultrafastgrid.render_request import RenderingInfo
 from applitools.common.utils import (
     argument_guard,
     datetime_utils,
-    gzip_compress,
     iteritems,
     json_utils,
     urljoin,
@@ -47,11 +37,6 @@ if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Text, Union
     from uuid import UUID
 
-    from applitools.common.client_event import ClientEvent
-
-# Prints out all data sent/received through 'requests'
-# import httplib
-# httplib.HTTPConnection.debuglevel = 1
 
 # Remove Unverified SSL warnings propagated by requests' internal urllib3 module
 if hasattr(urllib3, "disable_warnings") and callable(urllib3.disable_warnings):
@@ -552,30 +537,6 @@ class ServerConnector(object):
         return json_utils.attr_from_response(response, MatchResult)
 
     @retry()
-    def post_dom_capture(self, dom_json):
-        # type: (Text) -> Optional[Text]
-        """
-        Upload the DOM of the tested page.
-        Return an URL of uploaded resource which should be posted to :py:   `AppOutput`.
-        """
-        logger.debug("post_dom_snapshot called.")
-
-        if not self.is_session_started:
-            raise EyesError("Session not started")
-
-        dom_bytes = gzip_compress(dom_json.encode("utf-8"))
-        return self._try_upload_data(
-            dom_bytes, "application/octet-stream", "application/json"
-        )
-
-    def _ufg_request(self, method, url_resource, **kwargs):
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-        full_url = urljoin(self._render_info.service_url, url_resource)
-        return self._com.request(method, full_url, headers=headers, **kwargs)
-
-    @retry()
     def render_info(self):
         # type: () -> Optional[RenderingInfo]
         logger.debug("render_info() called.")
@@ -594,132 +555,6 @@ class ServerConnector(object):
         return self._render_info
 
     @retry()
-    def render(self, *render_requests):
-        # type: (*RenderRequest) -> List[RunningRender]
-        logger.debug("render called with {}".format(render_requests))
-        if self._render_info is None:
-            raise EyesError("render_info must be fetched first")
-
-        url = urljoin(self._render_info.service_url, self.RENDER)
-
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-
-        data = json_utils.to_json(render_requests)
-        response = self._com.request(
-            "post", url_resource=url, use_api_key=False, headers=headers, data=data
-        )
-        if response.ok or response.status_code == requests.codes.not_found:
-            return json_utils.attr_from_response(response, RunningRender)
-        raise EyesError(
-            "ServerConnector.render - unexpected status ({})\n\tcontent{}".format(
-                response.status_code, response.content
-            )
-        )
-
-    @retry()
-    def render_put_resource(self, resource):
-        # type: (VGResource) -> Text
-        argument_guard.not_none(resource)
-        if self._render_info is None:
-            raise EyesError("render_info must be fetched first")
-
-        logger.debug("resource hash: {} url: {}".format(resource.hash, resource.url))
-        content = resource.content
-        argument_guard.not_none(content)
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = resource.content_type
-        headers["X-Auth-Token"] = self._render_info.access_token
-
-        url = urljoin(
-            self._render_info.service_url, self.RESOURCES_SHA_256 + resource.hash
-        )
-        response = self._com.request(
-            "put",
-            url,
-            use_api_key=False,
-            headers=headers,
-            data=content,
-            params={"render-id": "NONE"},
-        )
-        logger.debug("ServerConnector.put_resource - request succeeded")
-        if not response.ok:
-            raise EyesError(
-                "Error putting resource: {}, {}".format(
-                    response.status_code, response.content
-                )
-            )
-        return resource.hash
-
-    def download_resource(self, url, cookies):
-        # type: (Text, List[Dict[Text, Text]]) -> Response
-        headers = {
-            "Accept-Encoding": "identity",
-            "Accept-Language": "*",
-        }
-        cookies = {c["name"]: c["value"] for c in cookies}
-        if self._ua_string:
-            headers["User-Agent"] = self._ua_string
-        logger.debug("Fetching URL {}\nwith headers {}".format(url, headers))
-        timeout_sec = datetime_utils.to_sec(self._com.timeout_ms)
-        try:
-            return self._try_download_resources(headers, timeout_sec, url, cookies)
-        except (requests.HTTPError, requests.ConnectionError) as e:
-            logger.warning("Failed to download resource", url=url, exc=e)
-            response = Response()
-            response._content = b""
-            response.status_code = requests.codes.no_response
-            return response
-
-    @retry()
-    def _try_download_resources(self, headers, timeout_sec, url, cookies):
-        response = requests.get(
-            url,
-            headers=headers,
-            cookies=cookies,
-            proxies=self._proxies,
-            timeout=timeout_sec,
-            verify=False,
-        )
-        if response.status_code == requests.codes.not_acceptable:
-            response = requests.get(
-                url,
-                cookies=cookies,
-                proxies=self._proxies,
-                timeout=timeout_sec,
-                verify=False,
-            )
-        return response
-
-    @retry()
-    def render_status_by_id(self, *render_ids):
-        # type: (*Text) -> List[RenderStatusResults]
-        argument_guard.not_none(render_ids)
-        if self._render_info is None:
-            raise EyesError("render_info must be fetched first")
-
-        headers = ServerConnector.DEFAULT_HEADERS.copy()
-        headers["Content-Type"] = "application/json"
-        headers["X-Auth-Token"] = self._render_info.access_token
-        url = urljoin(self._render_info.service_url, self.RENDER_STATUS)
-        response = self._com.request(
-            "post",
-            url,
-            use_api_key=False,
-            headers=headers,
-            data=json.dumps(render_ids),
-        )
-        if not response.ok:
-            raise EyesError(
-                "Error getting server status, {} {}".format(
-                    response.status_code, response.content
-                )
-            )
-        # TODO: improve parser to handle similar names
-        return json_utils.attr_from_response(response, RenderStatusResults)
-
-    @retry()
     def post_locators(self, visual_locators_data):
         # type: (VisualLocatorsData) -> LOCATORS_TYPE
         data = json_utils.to_json(visual_locators_data)
@@ -729,46 +564,6 @@ class ServerConnector(object):
             locator_id: json_utils.attr_from_dict(regions, Region)
             for locator_id, regions in iteritems(response.json())
         }
-
-    @retry()
-    def job_info(self, render_requests):
-        # type: (List[RenderRequest]) -> List[JobInfo]
-        resp = self._ufg_request(
-            "post", self.RENDERER_INFO, data=json_utils.to_json(render_requests)
-        )
-        resp.raise_for_status()
-        # TODO: improve parser to skip parsing of inner structures if required
-        return [
-            JobInfo(
-                renderer=d.get("renderer"), eyes_environment=d.get("eyesEnvironment")
-            )
-            for d in resp.json()
-        ]
-
-    @retry()
-    def get_devices_sizes(self, device_type):
-        response = self._ufg_request("get", self.DEVICES_SIZES[device_type])
-        return response.raise_for_status() or response.json()
-
-    @retry()
-    def check_resource_status(self, resources):
-        hashes = [{"hashFormat": r.hash_format, "hash": r.hash} for r in resources]
-        response = self._ufg_request(
-            "post",
-            self.RESOURCE_STATUS,
-            data=json.dumps(hashes),
-            params={"rg_render-id": "NONE"},
-        )
-        return response.json()
-
-    def send_logs(self, *client_events):
-        # type: (*ClientEvent) -> None
-        # try once
-        try:
-            events = json_utils.to_json(LogSessionsClientEvents(client_events))
-            self._com.request("post", self.API_SESSIONS_LOG, data=events)
-        except Exception:
-            logger.exception("send_logs failed")
 
     @retry()
     def delete_session(self, test_results):

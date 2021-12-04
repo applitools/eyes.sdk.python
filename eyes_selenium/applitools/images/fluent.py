@@ -4,7 +4,7 @@ import attr
 from PIL import Image
 
 from applitools.common.utils import image_utils
-from applitools.core import CheckSettings, CheckSettingsValues, CheckTarget
+from applitools.core import CheckSettings, CheckSettingsValues
 
 if TYPE_CHECKING:
     from applitools.common import Region

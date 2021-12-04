@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 from typing import TYPE_CHECKING, overload
 
-from applitools.core.fluent import CheckTarget
-
 from .selenium_check_settings import SeleniumCheckSettings
 
 if TYPE_CHECKING:
@@ -19,7 +17,7 @@ if TYPE_CHECKING:
 __all__ = ("Target",)
 
 
-class Target(CheckTarget):
+class Target(object):
     """
     Target for an eyes.check_window/region.
     """

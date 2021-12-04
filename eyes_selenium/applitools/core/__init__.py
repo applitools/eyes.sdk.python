@@ -12,7 +12,6 @@ from .eyes_runner import EyesRunner
 from .fluent import (
     CheckSettings,
     CheckSettingsValues,
-    CheckTarget,
     FloatingRegionByRectangle,
     GetFloatingRegion,
     GetRegion,
@@ -57,7 +56,6 @@ __all__ = (
     "NULL_REGION_PROVIDER",
     "CheckSettings",
     "CheckSettingsValues",
-    "CheckTarget",
     "GetRegion",
     "GetFloatingRegion",
     "FloatingRegionByRectangle",

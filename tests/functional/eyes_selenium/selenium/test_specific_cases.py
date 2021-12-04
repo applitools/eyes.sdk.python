@@ -2,15 +2,7 @@ import time
 
 import pytest
 
-from applitools.core.feature import Feature
-from applitools.selenium import (
-    Eyes,
-    EyesWebDriver,
-    EyesWebElement,
-    Region,
-    StitchMode,
-    Target,
-)
+from applitools.selenium import Eyes, Region, StitchMode, Target
 
 
 @pytest.mark.skip("Old test. test_hello_world implemented instead of this one")
@@ -151,18 +143,6 @@ def test_switch_back_to_frame_after_check(eyes, driver):
     # locate the same element inside the frame - failed
     eyes_driver.find_element_by_css_selector("#inner-frame-div")
     eyes.close()
-
-
-@pytest.mark.platform("Linux")
-@pytest.mark.browser("chrome")
-def test_execute_script_with_eyes_webelement(driver, eyes):
-    elem = driver.find_element_by_tag_name("html")
-    e_elem = EyesWebElement(elem, driver)
-    driver.execute_script("arguments[0].scrollIntoView();", elem)
-
-    eyes_driver = EyesWebDriver(driver, eyes)
-    eyes_driver.execute_script("arguments[0].scrollIntoView();", elem)
-    eyes_driver.execute_script("arguments[0].scrollIntoView();", e_elem)
 
 
 def test_capture_element_on_pre_scrolled_down_page(eyes, driver):

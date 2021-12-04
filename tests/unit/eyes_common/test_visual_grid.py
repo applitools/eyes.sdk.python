@@ -2,7 +2,7 @@ import json
 import os
 from collections import namedtuple
 
-from applitools.common import IosVersion, VGResource
+from applitools.common import IosVersion
 from applitools.common.ultrafastgrid import (
     BrowserType,
     ChromeEmulationInfo,
@@ -18,29 +18,6 @@ from applitools.common.utils import json_utils
 class DummyTest(namedtuple("DummyTest", ("name", "browser_info"))):
     def __new__(cls, name, width):
         return super(DummyTest, cls).__new__(cls, name, DesktopBrowserInfo(width, 0))
-
-
-def test_vgresource_with_function_that_raises_exception_should_not_break():
-    def _raise():
-        raise Exception
-
-    VGResource.from_blob(
-        {
-            "url": "https://someurl.com",
-            "type": "application/empty-response",
-            "content": b"",
-        },
-        _raise,
-    )
-
-
-def test_vg_resource_big_content_should_be_cutted_in_vg_resource():
-    resource = VGResource(
-        "https://test.url",
-        "content-type/test",
-        os.urandom(VGResource.MAX_RESOURCE_SIZE + 5),
-    )
-    assert len(resource.content) == VGResource.MAX_RESOURCE_SIZE
 
 
 def test_chrome_emulation_info():

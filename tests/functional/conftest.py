@@ -1,28 +1,21 @@
 import functools
-import itertools
 import os
 from collections import defaultdict
-from distutils.util import strtobool
-from os import path
 
 import attr
 import mock
 import pytest
-import yaml
 
 from applitools.common import (
     BatchInfo,
     Configuration,
-    JobInfo,
     MatchResult,
-    RenderingInfo,
-    RenderStatusResults,
-    RunningRender,
     RunningSession,
     StdoutLogger,
     TestResults,
     logger,
 )
+from applitools.common.ultrafastgrid.render_request import RenderingInfo
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from applitools.core import ServerConnector
@@ -163,45 +156,6 @@ class FakeServerConnector(ServerConnector):
         self.output_calls["match_window"].append(result)
         return result
 
-    def render(self, *render_requests):
-        self.input_calls["render"].append(render_requests)
-        result = [
-            RunningRender(
-                **{
-                    "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
-                    "job_id": "33305ec6-c03e-4fdf-8a11-bae62f3900a8",
-                    "render_status": "rendering",
-                }
-            )
-        ]
-        self.output_calls["render"].append(result)
-        return result
-
-    def render_status_by_id(self, *render_ids):
-        self.input_calls["render_status_by_id"].append(render_ids)
-        result = [
-            RenderStatusResults(
-                **{
-                    "image_location": "https://eyesapi.applitools.com/api/images/sti/se%-4e8e-9fd7-c01b33e47dcc?accessKey=None",
-                    "status": "rendered",
-                    "os": "linux",
-                    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/85.0.4183.83 Safari/537.36",
-                    "visual_viewport": {"width": 800, "height": 600},
-                    "device_size": {"width": 800, "height": 600},
-                    "retry_count": 0,
-                    "dom_location": "https://eyespublicw0.blob.core/a255-se/40b1-bf12df29cd5?sv=2017-04-17&sr=c&sig=1smaTPYU27cwPZuGx9pEooNNc%3D&se=2015%3A11%3A50Z&sp=w&accessKey=None",
-                    "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
-                }
-            )
-        ]
-        self.output_calls["render_status_by_id"].append(result)
-        return result
-
-    def render_put_resource(self, resource):
-        self.input_calls["render_put_resource"].append(resource)
-        self.output_calls["render_put_resource"].append(resource.hash)
-        return resource.hash
-
     def render_info(self):
         self.input_calls["render_info"].append(True)
 
@@ -217,24 +171,6 @@ class FakeServerConnector(ServerConnector):
         )
         self.output_calls["render_info"].append(result)
         return result
-
-    def job_info(self, render_requests):
-        self.input_calls["job_info"].append(render_requests)
-        result = [
-            JobInfo(renderer=rr.renderer, eyes_environment=rr.browser_name)
-            for rr in render_requests
-        ]
-        self.output_calls["job_info"].append(result)
-        return result
-
-    def check_resource_status(self, resources):
-        self.input_calls["check_resource_status"].append(resources)
-        result = [True for _ in resources]
-        self.output_calls["check_resource_status"].append(result)
-        return result
-
-    def send_logs(self, *events):
-        self.input_calls["send_logs"].append(events)
 
     def __deepcopy__(self, memo):
         return self

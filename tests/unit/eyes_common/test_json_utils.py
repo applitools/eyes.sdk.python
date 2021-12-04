@@ -10,12 +10,8 @@ from applitools.common import (
     Options,
     RectangleSize,
     Region,
-    RenderInfo,
-    RenderRequest,
-    RGridDom,
     RunningSession,
     TestResults,
-    VGResource,
 )
 from applitools.common.accessibility import (
     AccessibilityGuidelinesVersion,
@@ -29,59 +25,6 @@ from applitools.common.selenium import BrowserType
 from applitools.common.test_results import TestResultsStatus
 from applitools.common.utils import json_utils
 from tests.utils import get_resource
-
-
-@pytest.mark.parametrize(
-    "browser_type",
-    [
-        BrowserType.CHROME,
-        BrowserType.CHROME_ONE_VERSION_BACK,
-        BrowserType.CHROME_TWO_VERSIONS_BACK,
-        BrowserType.FIREFOX,
-        BrowserType.FIREFOX_ONE_VERSION_BACK,
-        BrowserType.FIREFOX_TWO_VERSIONS_BACK,
-        BrowserType.SAFARI_ONE_VERSION_BACK,
-        BrowserType.SAFARI_TWO_VERSIONS_BACK,
-        BrowserType.SAFARI_EARLY_ACCESS,
-    ],
-)
-def test_render_request_serialize(browser_type):
-    request_resources = {
-        "url": VGResource(
-            "some-url.com", content_type="application/png", content=b"some-content"
-        )
-    }
-    dom_url = "dom-url.com"
-    r_info = RenderInfo(
-        width=500,
-        height=600,
-        size_mode="full-page",
-        selector=None,
-        region=None,
-        emulation_info=None,
-    )
-    dom = RGridDom(url=dom_url, dom_nodes=[{}], resources=request_resources)
-    requests = [
-        RenderRequest(
-            webhook="some-webhook.com",
-            agent_id="my-agent-id",
-            stitching_service="https://some.stitchingserviceuri.com",
-            url=dom_url,
-            dom=dom,
-            resources=request_resources,
-            render_info=r_info,
-            browser_name=browser_type.value,
-            platform_name="linux",
-            script_hooks=dict(),
-            selectors_to_find_regions_for=[],
-            send_dom=False,
-        )
-    ]
-    test_results_data = get_resource("unit/renderResult.json").decode("utf-8")
-    test_results_data %= browser_type.value
-    assert json.loads(test_results_data.replace("\n", "")) == json.loads(
-        json_utils.to_json(requests)
-    )
 
 
 def test_running_session_serialization_and_deserialization():

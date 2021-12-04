@@ -8,7 +8,6 @@ from applitools.common.errors import OutOfBoundsError
 from applitools.common.geometry import AccessibilityRegion, Point, Region
 from applitools.common.match import ImageMatchSettings
 from applitools.common.match_window_data import MatchWindowData, Options
-from applitools.common.ultrafastgrid import VisualGridSelector
 from applitools.common.utils import datetime_utils, image_utils
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
 from applitools.core.fluent.region import (
@@ -60,7 +59,7 @@ def filter_empty_entries_and_combine(regions, location, region_selectors):
 
 
 def collect_regions_from_selectors(image_match_settings, regions, region_selectors):
-    # type:(ImageMatchSettings,List[Region],List[List[VisualGridSelector]])->ImageMatchSettings
+    # type:(ImageMatchSettings,List[Region],None)->ImageMatchSettings
     if not regions:
         return image_match_settings
     logger.debug(
@@ -330,7 +329,7 @@ class MatchWindowTask(object):
         eyes,  # type: EyesBase
         user_inputs=None,  # type: Optional[UserInputs]
         regions=None,  # type: Optional[List[Region]]
-        region_selectors=None,  # type: Optional[List[List[VisualGridSelector]]]
+        region_selectors=None,  # type: None
         check_settings=None,  # type: Optional[CheckSettings]
         render_id=None,  # type: Optional[Text]
         source=None,  # type: Optional[Text]
