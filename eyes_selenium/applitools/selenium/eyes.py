@@ -541,6 +541,7 @@ class Eyes(object):
         results = self._commands.eyes_close_eyes(self._eyes_ref, wait_result)
         self._eyes_ref = None
         self._commands = None
+        self._driver = None
         if wait_result:
             results = demarshal_test_results(results, self.configure)
             for r in results:
@@ -558,6 +559,7 @@ class Eyes(object):
             results = self._commands.eyes_abort_eyes(self._eyes_ref, wait_result)
             self._eyes_ref = None
             self._commands = None
+            self._driver = None
             if wait_result:
                 return demarshal_test_results(results, self.configure)
             else:
