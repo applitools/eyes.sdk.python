@@ -5,7 +5,6 @@ import attr
 
 from applitools.common.geometry import RectangleSize
 from applitools.common.selenium.misc import BrowserType
-from applitools.common.ultrafastgrid import device_sizes_db
 from applitools.common.utils import ABC
 from applitools.common.utils.json_utils import JsonInclude
 
@@ -77,12 +76,12 @@ class ChromeEmulationInfo(EmulationBaseInfo, IRenderBrowserInfo):
     @property
     def width(self):
         # type: () -> int
-        return device_sizes_db.size(self.device_name, self.screen_orientation).width
+        return 0
 
     @property
     def height(self):
         # type: () -> int
-        return device_sizes_db.size(self.device_name, self.screen_orientation).height
+        return 0
 
     @property
     def browser(self):
@@ -121,12 +120,12 @@ class IosDeviceInfo(IRenderBrowserInfo):
     @property
     def width(self):
         # type: () -> int
-        return device_sizes_db.size(self.device_name, self.screen_orientation).width
+        return 0
 
     @property
     def height(self):
         # type: () -> int
-        return device_sizes_db.size(self.device_name, self.screen_orientation).height
+        return 0
 
     @property
     def platform(self):
