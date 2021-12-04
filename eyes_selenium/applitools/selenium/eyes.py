@@ -2,7 +2,6 @@ from __future__ import absolute_import, unicode_literals
 
 import typing
 from concurrent.futures import TimeoutError
-from contextlib import closing
 from typing import List, Optional, Text, Tuple, Union
 
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -287,18 +286,14 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
-        with closing(
-            CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__)
-        ) as cmd:
+        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
             result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
             return RectangleSize.from_(result)
 
     @staticmethod
     def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        with closing(
-            CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__)
-        ) as cmd:
+        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
             cmd.core_set_viewport_size(
                 marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
             )

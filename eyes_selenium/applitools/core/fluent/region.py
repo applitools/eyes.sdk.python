@@ -1,4 +1,3 @@
-import abc
 import typing
 
 import attr
@@ -34,19 +33,11 @@ class GetRegion(ABC):
 
 
 class GetFloatingRegion(GetRegion, ABC):
-    @property
-    @abc.abstractmethod
-    def floating_bounds(self):
-        # type: () -> FloatingBounds
-        pass
+    pass
 
 
 class GetAccessibilityRegion(GetRegion, ABC):
-    @property
-    @abc.abstractmethod
-    def accessibility_type(self):
-        # type: () -> AccessibilityRegionType
-        pass
+    pass
 
 
 @attr.s

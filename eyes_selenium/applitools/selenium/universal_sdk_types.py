@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 
     from applitools.common import BatchInfo, ImageMatchSettings, ProxySettings
     from applitools.common.selenium import BrowserType, Configuration
+    from applitools.core.batch_close import _EnabledBatchClose
 
     from ..common.utils.custom_types import ViewPort
     from . import OCRRegion
@@ -794,6 +795,24 @@ class OCRExtractSettings(object):
         ]
 
 
+@attr.s
+class CloseBatchesSettings(object):
+    batch_ids = attr.ib()  # type: List[Text]
+    serverUrl = attr.ib()  # type: Optional[Text]
+    api_key = attr.ib()  # type: Optional[Text]
+    proxy = attr.ib()  # type: Optional[Proxy]
+
+    @classmethod
+    def convert(cls, enabled_batch_close):
+        # type: (_EnabledBatchClose) -> CloseBatchesSettings
+        return cls(
+            list(enabled_batch_close._ids),
+            enabled_batch_close.server_url,
+            enabled_batch_close.api_key,
+            Proxy.convert(enabled_batch_close.proxy),
+        )
+
+
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
     transformed = TransformedDriver.convert(driver)
@@ -840,6 +859,11 @@ def marshal_viewport_size(viewport_size):
     # type: (ViewPort) -> dict
     size = Size.convert_viewport(viewport_size)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(size))
+
+
+def marshal_enabled_batch_close(close_batches):
+    close_batches = CloseBatchesSettings.convert(close_batches)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(close_batches))
 
 
 def demarshal_match_result(results_dict):

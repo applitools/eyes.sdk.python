@@ -1,12 +1,10 @@
 from typing import List, Optional, Text, Union
 
 import attr
-import requests
 
 from applitools.common import ProxySettings
 from applitools.common.config import DEFAULT_SERVER_URL
-from applitools.common.utils import argument_guard, quote_plus, urljoin
-from applitools.common.utils.converters import str2bool
+from applitools.common.utils import argument_guard
 from applitools.common.utils.general_utils import get_env_with_prefix
 
 
@@ -34,28 +32,14 @@ class _EnabledBatchClose(object):
         return self
 
     def close(self):
-        if self.api_key is None:
-            print("WARNING: BatchClose wont be done cause no APPLITOOLS_API_KEY is set")
-            return
-        if str2bool(get_env_with_prefix("APPLITOOLS_DONT_CLOSE_BATCHES")):
-            print("APPLITOOLS_DONT_CLOSE_BATCHES environment variable set to true.")
-            return
-        for batch_id in self._ids:
-            print("close batch called with {}".format(batch_id))
-            url = urljoin(
-                self.server_url.rstrip("/"),
-                "api/sessions/batches/{}/close/bypointerid".format(
-                    quote_plus(batch_id)
-                ),
-            )
-            if self.proxy:
-                proxies = {"http": self.proxy.url, "https": self.proxy.url}
-            else:
-                proxies = None
-            res = requests.delete(
-                url, params={"apiKey": self.api_key}, verify=False, proxies=proxies
-            )
-            print("delete batch is done with {} status".format(res.status_code))
+        from applitools.selenium.__version__ import __version__
+        from applitools.selenium.command_executor import CommandExecutor
+        from applitools.selenium.eyes import _EyesManager
+        from applitools.selenium.universal_sdk_types import marshal_enabled_batch_close
+
+        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
+            marshaled = marshal_enabled_batch_close(self)
+            cmd.core_close_batches(marshaled)
 
 
 @attr.s

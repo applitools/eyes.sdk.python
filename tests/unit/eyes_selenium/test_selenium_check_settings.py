@@ -157,18 +157,18 @@ def test_match_regions_with_by_values(method_name):
 
 def test_match_floating_region():
     regions = get_regions_from_("floating", 5, [By.NAME, "name"])
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
     assert regions[0]._by == By.NAME
     assert regions[0]._value == "name"
 
     regions = get_regions_from_("floating", 5, "name")
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
     assert regions[0]._by == By.CSS_SELECTOR
     assert regions[0]._value == "name"
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
     assert regions[0]._element == element
 
 
@@ -176,14 +176,14 @@ def test_match_accessibility_region():
     regions = get_regions_from_(
         "accessibility", [By.NAME, "name"], AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
+    assert regions[0]._type == AccessibilityRegionType.BoldText
     assert regions[0]._by == By.NAME
     assert regions[0]._value == "name"
 
     regions = get_regions_from_(
         "accessibility", "name", AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
+    assert regions[0]._type == AccessibilityRegionType.BoldText
     assert regions[0]._by == By.CSS_SELECTOR
     assert regions[0]._value == "name"
 
@@ -191,7 +191,7 @@ def test_match_accessibility_region():
     regions = get_regions_from_(
         "accessibility", element, AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
+    assert regions[0]._type == AccessibilityRegionType.BoldText
     assert regions[0]._element == element
 
 

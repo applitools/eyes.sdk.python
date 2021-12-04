@@ -38,6 +38,12 @@ class CommandExecutor(object):
         # type: (USDKConnection) -> None
         self._connection = connection
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def make_sdk(self, name, version, cwd):
         # type: (Text, Text, Text) -> None
         self._connection.notification(
@@ -55,12 +61,16 @@ class CommandExecutor(object):
         return self._checked_command("Core.makeManager", payload)
 
     def core_get_viewport_size(self, driver):
-        # type (dict) -> dict
+        # type: (dict) -> dict
         return self._checked_command("Core.getViewportSize", {"driver": driver})
 
     def core_set_viewport_size(self, driver, size):
-        # type (dict, dict) -> None
+        # type: (dict, dict) -> None
         self._checked_command("Core.setViewportSize", {"driver": driver, "size": size})
+
+    def core_close_batches(self, close_batches_settings):
+        # type: (dict) -> None
+        self._checked_command("Core.closeBatches", {"settings": close_batches_settings})
 
     def manager_open_eyes(self, manager, driver, config=None):
         # type: (dict, dict, Optional[dict]) -> dict
