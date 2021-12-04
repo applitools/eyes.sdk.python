@@ -321,6 +321,7 @@ class ServerConnector(object):
         """
         self._render_info = None  # type: Optional[RenderingInfo]
         self._ua_string = None  # type: Optional[Text]
+        self.proxy = None
         self._proxies = None
 
         if client_session:
@@ -345,6 +346,7 @@ class ServerConnector(object):
             self._ua_string = ua_string
         self.DEFAULT_HEADERS["x-applitools-eyes-client"] = full_agent_id
         if conf.proxy is not None:
+            self.proxy = conf.proxy
             self._proxies = {"http": conf.proxy.url, "https": conf.proxy.url}
             self._com.client_session.use_proxies(self._proxies)
 
@@ -434,7 +436,7 @@ class ServerConnector(object):
         )
 
         test_results = json_utils.attr_from_response(response, TestResults)
-        test_results.set_server_connector(self)
+        test_results.set_connection_config(self.server_url, self.api_key, self.proxy)
 
         logger.debug("stop_session(): parsed response: {}".format(test_results))
 

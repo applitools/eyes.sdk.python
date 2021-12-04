@@ -54,6 +54,14 @@ def test_open_close_abort_eyes(local_chrome_driver):
     assert abort_result is None
 
 
+def test_run_test_delete_result(local_chrome_driver):
+    eyes = Eyes()
+    eyes.open(local_chrome_driver, "USDK Test", "Test run_test_delete_result")
+    eyes.check_window()
+    result = eyes.close(False)
+    result.delete()
+
+
 def test_get_all_test_results(local_chrome_driver):
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/SimpleTestPage"

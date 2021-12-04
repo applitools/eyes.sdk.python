@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional, Text
+from typing import TYPE_CHECKING, List, Optional, Text, Tuple
 
 import attr
 
@@ -12,8 +12,7 @@ from .geometry import RectangleSize
 from .match import ImageMatchSettings
 
 if TYPE_CHECKING:
-    from applitools.core import ServerConnector
-
+    from . import ProxySettings
     from .ultrafastgrid import RenderBrowserInfo
 
 
@@ -192,14 +191,13 @@ class TestResults(object):
         type=SessionAccessibilityStatus,
         metadata={JsonInclude.THIS: True},
     )  # type: SessionAccessibilityStatus
-    _server_connector = attr.ib(
-        default=None,
+    _connection_config = attr.ib(
+        default=(None, None, None),
         eq=False,
         order=False,
         metadata={JsonInclude.THIS: False},
         repr=False,
-    )  # type: ServerConnector
-
+    )  # type: Tuple[Optional[Text], Optional[Text], Optional[ProxySettings]]
     __test__ = False  # avoid warnings in test frameworks
 
     @property
@@ -217,19 +215,26 @@ class TestResults(object):
         # type: () -> bool
         return self.status == TestResultsStatus.Failed
 
-    def set_server_connector(self, server_connector):
-        # type: (ServerConnector) -> None
-        self._server_connector = server_connector
+    def set_connection_config(self, server_url, api_key, proxy_settings):
+        # type: (Text, Text, Optional[ProxySettings]) -> None
+        self._connection_config = (server_url, api_key, proxy_settings)
 
     def delete(self):
         # type: () -> None
-        if self._server_connector:
-            self._server_connector.delete_session(self)
+        from applitools.selenium.__version__ import __version__
+        from applitools.selenium.command_executor import CommandExecutor
+        from applitools.selenium.eyes import _EyesManager
+        from applitools.selenium.universal_sdk_types import marshal_delete_test_settings
 
-    def __str__(self):
-        origin_str = super(TestResults, self).__str__()
-        preamble = "New test" if self.is_new else "Existing test"
-        return "{} [{}]".format(preamble, origin_str)
+        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
+            marshaled = marshal_delete_test_settings(self)
+            cmd.core_delete_test(marshaled)
+
+
+def __str__(self):
+    origin_str = super(TestResults, self).__str__()
+    preamble = "New test" if self.is_new else "Existing test"
+    return "{} [{}]".format(preamble, origin_str)
 
 
 @attr.s(repr=False, str=False)

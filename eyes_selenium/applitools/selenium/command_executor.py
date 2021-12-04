@@ -72,6 +72,10 @@ class CommandExecutor(object):
         # type: (dict) -> None
         self._checked_command("Core.closeBatches", {"settings": close_batches_settings})
 
+    def core_delete_test(self, close_test_settings):
+        # type: (dict) -> None
+        self._checked_command("Core.deleteTest", {"settings": close_test_settings})
+
     def manager_open_eyes(self, manager, driver, config=None):
         # type: (dict, dict, Optional[dict]) -> dict
         payload = {"manager": manager, "driver": driver}

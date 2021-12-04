@@ -80,7 +80,9 @@ class _EyesManager(object):
                         "Tests completion timeout exceeded", timeout=timeout
                     )
                     raise EyesError("Tests didn't finish in {} seconds".format(timeout))
-                structured_results = demarshal_test_results(results)
+                # We don't have server_url, api_key and proxy settings in runner
+                # USDK should return them back as a part of TestResults
+                structured_results = demarshal_test_results(results, None)
                 for r in structured_results:
                     _log_session_results_and_raise_exception(
                         self.logger, should_raise_exception, r
@@ -540,7 +542,7 @@ class Eyes(object):
         self._eyes_ref = None
         self._commands = None
         if wait_result:
-            results = demarshal_test_results(results)
+            results = demarshal_test_results(results, self.configure)
             for r in results:
                 _log_session_results_and_raise_exception(self.logger, raise_ex, r)
             return results[0]  # Original interface returns just one result
@@ -557,7 +559,7 @@ class Eyes(object):
             self._eyes_ref = None
             self._commands = None
             if wait_result:
-                return demarshal_test_results(results)
+                return demarshal_test_results(results, self.configure)
             else:
                 return None
 

@@ -798,7 +798,7 @@ class OCRExtractSettings(object):
 @attr.s
 class CloseBatchesSettings(object):
     batch_ids = attr.ib()  # type: List[Text]
-    serverUrl = attr.ib()  # type: Optional[Text]
+    server_url = attr.ib()  # type: Optional[Text]
     api_key = attr.ib()  # type: Optional[Text]
     proxy = attr.ib()  # type: Optional[Proxy]
 
@@ -810,6 +810,29 @@ class CloseBatchesSettings(object):
             enabled_batch_close.server_url,
             enabled_batch_close.api_key,
             Proxy.convert(enabled_batch_close.proxy),
+        )
+
+
+@attr.s
+class DeleteTestSettings(object):
+    test_id = attr.ib()  # type: Text
+    batch_id = attr.ib()  # type: Text
+    secret_token = attr.ib()  # type: Text
+    server_url = attr.ib()  # type: Optional[Text]
+    api_key = attr.ib()  # type: Optional[Text]
+    proxy = attr.ib()  # type: Optional[Proxy]
+
+    @classmethod
+    def convert(cls, test_results):
+        # type: (TestResults) -> DeleteTestSettings
+        server_url, api_key, proxy = test_results._connection_config  # noqa
+        return cls(
+            test_results.id,
+            test_results.batch_id,
+            test_results.secret_token,
+            server_url,
+            api_key,
+            Proxy.convert(proxy),
         )
 
 
@@ -862,8 +885,15 @@ def marshal_viewport_size(viewport_size):
 
 
 def marshal_enabled_batch_close(close_batches):
+    # type: (_EnabledBatchClose) -> dict
     close_batches = CloseBatchesSettings.convert(close_batches)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(close_batches))
+
+
+def marshal_delete_test_settings(test_results):
+    # type: (TestResults) -> dict
+    delete_settings = DeleteTestSettings.convert(test_results)
+    return _keys_underscore_to_camel_remove_none(cattr.unstructure(delete_settings))
 
 
 def demarshal_match_result(results_dict):
@@ -879,9 +909,15 @@ def demarshal_locate_result(results):
     }
 
 
-def demarshal_test_results(results_dict_list):
-    # type: (List[dict]) -> List[TestResults]
-    return [attr_from_json(dumps(r), TestResults) for r in results_dict_list]
+def demarshal_test_results(results_dict_list, config):
+    # type: (List[dict], Optional[Configuration]) -> List[TestResults]
+    results = [attr_from_json(dumps(r), TestResults) for r in results_dict_list]
+    if config:
+        for result in results:
+            result.set_connection_config(
+                config.server_url, config.api_key, config.proxy
+            )
+    return results
 
 
 def _keys_underscore_to_camel_remove_none(obj):
