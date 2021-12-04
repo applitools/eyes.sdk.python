@@ -106,7 +106,7 @@ class CommandExecutor(object):
         return self._checked_command("Eyes.locate", payload)
 
     def eyes_extract_text(self, eyes, regions, config=None):
-        # type: (dict, dict, Optional[dict]) -> dict
+        # type: (dict, dict, Optional[dict]) -> List[Text]
         payload = {"eyes": eyes, "regions": regions}
         if config:
             payload["config"] = config

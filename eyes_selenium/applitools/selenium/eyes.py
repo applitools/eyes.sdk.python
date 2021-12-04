@@ -98,7 +98,6 @@ class _EyesManager(object):
         finally:
             self._ref = None
             self._commands.close()
-            self._commands = None
 
 
 class RunnerOptions(object):
@@ -143,7 +142,7 @@ class Eyes(object):
         else:
             self._runner = runner  # type: _EyesManager
         self.logger = self._runner.logger.bind(eyes_id=id(self))
-        self._commands = None
+        self._commands = self._runner._commands  # noqa
 
     def __getattr__(self, item):
         return getattr(self.configure, item)
@@ -174,7 +173,6 @@ class Eyes(object):
         if self.configure.is_disabled:
             self.logger.info("open(): ignored (disabled)")
         else:
-            self._commands = self._runner._commands  # noqa
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
                 self._runner._ref,  # noqa
@@ -540,7 +538,6 @@ class Eyes(object):
             raise EyesError("Eyes not open")
         results = self._commands.eyes_close_eyes(self._eyes_ref, wait_result)
         self._eyes_ref = None
-        self._commands = None
         self._driver = None
         if wait_result:
             results = demarshal_test_results(results, self.configure)
@@ -558,7 +555,6 @@ class Eyes(object):
         elif self.is_open:
             results = self._commands.eyes_abort_eyes(self._eyes_ref, wait_result)
             self._eyes_ref = None
-            self._commands = None
             self._driver = None
             if wait_result:
                 return demarshal_test_results(results, self.configure)
