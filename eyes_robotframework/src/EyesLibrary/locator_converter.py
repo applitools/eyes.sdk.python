@@ -9,7 +9,7 @@ from selenium.webdriver.remote.webelement import By
 from SeleniumLibrary import SeleniumLibrary
 from SeleniumLibrary.locators import ElementFinder as SeleniumElementFinder
 
-from applitools.selenium.validators import is_webelement
+from applitools.common.validators import is_webelement
 
 from .base import LibraryComponent
 from .errors import EyesLibraryValueError

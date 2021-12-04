@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
 from applitools.common import FloatingBounds
-from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
+from applitools.selenium import AccessibilityRegionType, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 
@@ -64,10 +64,6 @@ def test_check_frame(method_name="frame"):
     cs = get_cs_from_method(method_name, frame_index)
     assert cs.values.frame_chain[0].frame_index == frame_index
 
-    frame_element = MagicMock(EyesWebElement)
-    cs = get_cs_from_method(method_name, frame_element)
-    assert cs.values.frame_chain[0].frame_element == frame_element
-
 
 def test_check_region_with_region(method_name="region"):
     region = Region(0, 1, 2, 3)
@@ -76,10 +72,6 @@ def test_check_region_with_region(method_name="region"):
 
 
 def test_check_region_with_elements(method_name="region"):
-    eyes_element = MagicMock(EyesWebElement)
-    cs = get_cs_from_method(method_name, eyes_element)
-    assert cs.values.target_element == eyes_element
-
     selenium_element = MagicMock(SeleniumWebElement)
     cs = get_cs_from_method(method_name, selenium_element)
     assert cs.values.target_element == selenium_element
@@ -129,16 +121,12 @@ def test_match_regions_with_regions_input(method_name):
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_match_regions_with_elements(method_name):
-    eyes_element = MagicMock(EyesWebElement)
     selenium_element = MagicMock(SeleniumWebElement)
     appium_element = MagicMock(AppiumWebElement)
 
-    regions = get_regions_from_(
-        method_name, eyes_element, selenium_element, appium_element
-    )
-    assert regions[0]._element == eyes_element
-    assert regions[1]._element == selenium_element
-    assert regions[2]._element == appium_element
+    regions = get_regions_from_(method_name, selenium_element, appium_element)
+    assert regions[0]._element == selenium_element
+    assert regions[1]._element == appium_element
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -218,9 +206,5 @@ def test_region_padding_are_added(method_name):
     regions_selector = get_regions_from_(
         method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}
     )
-    regions_element = get_regions_from_(
-        method_name, MagicMock(EyesWebElement), padding={"right": 200, "left": 5}
-    )
 
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
-    assert regions_element[0]._padding == {"right": 200, "left": 5}

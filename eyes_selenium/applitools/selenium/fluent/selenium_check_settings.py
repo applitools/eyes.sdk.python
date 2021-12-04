@@ -12,8 +12,8 @@ from applitools.common.ultrafastgrid import VisualGridOption
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
+from applitools.common.validators import is_list_or_tuple, is_webelement
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
-from applitools.selenium.validators import is_list_or_tuple, is_webelement
 from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
