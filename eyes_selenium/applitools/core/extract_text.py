@@ -150,6 +150,10 @@ class BaseOCRRegion(object):
         return copy(self)
 
 
+class OCRRegion(BaseOCRRegion):
+    pass
+
+
 @attr.s
 class TextSettingsData(object):
     app_output = attr.ib(

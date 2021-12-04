@@ -36,7 +36,7 @@ from applitools.core.cut import (  # noqa
 )
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 
-from .extract_text import OCRRegion, TextRegionSettings
+from ..core.extract_text import OCRRegion, TextRegionSettings
 from .eyes import ClassicRunner, Eyes, RunnerOptions, VisualGridRunner
 from .fluent.target import Target  # noqa
 
