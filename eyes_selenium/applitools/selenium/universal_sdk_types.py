@@ -48,13 +48,13 @@ from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySe
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
 
-    from selenium.webdriver.remote.webdriver import WebDriver
+    from selenium.webdriver.remote.webdriver import WebDriver, WebElement
 
     from applitools.common import BatchInfo, ImageMatchSettings, ProxySettings
     from applitools.common.selenium import BrowserType, Configuration
 
     from ..common.utils.custom_types import ViewPort
-    from . import EyesWebElement, OCRRegion
+    from . import OCRRegion
     from .fluent import FrameLocator, SeleniumCheckSettings
     from .fluent.selenium_check_settings import SeleniumCheckSettingsValues
 
@@ -197,7 +197,7 @@ class TransformedElement(object):
 
     @classmethod
     def convert(cls, web_element):
-        # type: (Optional[EyesWebElement]) -> Optional[TransformedElement]
+        # type: (Optional[WebElement]) -> Optional[TransformedElement]
         if web_element:
             return TransformedElement(web_element._id)  # noqa
         else:
@@ -302,7 +302,7 @@ def record_convert(records):
 
 
 def element_reference_convert(selector=None, element=None):
-    # type: (Optional[List[Text, Text]], Optional[EyesWebElement]) -> ElementReference
+    # type: (Optional[List[Text, Text]], Optional[WebElement]) -> ElementReference
     if selector is not None:
         return TransformedSelector.convert(*selector)
     elif element is not None:
@@ -801,7 +801,7 @@ def marshal_webdriver_ref(driver):
 
 
 def marshal_webelement_ref(webelement):
-    # type: (Union[WebElement, EyesWebElement]) -> TransformedElement
+    # type: (Union[WebElement, WebElement]) -> TransformedElement
     return TransformedElement(webelement._id)
 
 

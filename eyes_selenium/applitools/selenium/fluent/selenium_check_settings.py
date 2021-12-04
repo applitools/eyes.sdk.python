@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import logger
 from applitools.common.accessibility import AccessibilityRegionType
@@ -14,7 +15,6 @@ from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple, is_webelement
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
-from applitools.selenium.webelement import EyesWebElement
 
 from .region import (
     AccessibilityRegionByElement,
@@ -56,7 +56,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
     scroll_root_element = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: EyesWebElement
+    )  # type: WebElement
     scroll_root_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: BySelector
@@ -65,7 +65,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     )  # type: BySelector
     target_element = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: EyesWebElement
+    )  # type: WebElement
     frame_chain = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[FrameLocator]
