@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from enum import Enum
+from os import getcwd
 from typing import Any, List, Optional, Text
 
 from selenium.common.exceptions import StaleElementReferenceException
@@ -26,6 +27,13 @@ class ManagerType(Enum):
 
 
 class CommandExecutor(object):
+    @classmethod
+    def create(cls, name, version):
+        # type: (Text, Text) -> CommandExecutor
+        commands = cls(USDKConnection.create())
+        commands.make_sdk(name, version, getcwd())
+        return commands
+
     def __init__(self, connection):
         # type: (USDKConnection) -> None
         self._connection = connection

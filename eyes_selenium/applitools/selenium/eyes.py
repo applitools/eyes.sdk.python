@@ -23,9 +23,8 @@ from applitools.common import (
 from applitools.common.selenium import Configuration
 
 from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
-from . import server
 from .__version__ import __version__
-from .command_executor import ManagerType
+from .command_executor import CommandExecutor, ManagerType
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
 from .universal_sdk_types import (
@@ -61,7 +60,7 @@ class _EyesManager(object):
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
         self.logger = logger.bind(runner=id(self))
-        self._commands = server.connect(self.BASE_AGENT_ID, __version__)
+        self._commands = CommandExecutor.create(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
         )
@@ -288,14 +287,18 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
-        with closing(server.connect(_EyesManager.BASE_AGENT_ID, __version__)) as cmd:
+        with closing(
+            CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__)
+        ) as cmd:
             result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
             return RectangleSize.from_(result)
 
     @staticmethod
     def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        with closing(server.connect(_EyesManager.BASE_AGENT_ID, __version__)) as cmd:
+        with closing(
+            CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__)
+        ) as cmd:
             cmd.core_set_viewport_size(
                 marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
             )
