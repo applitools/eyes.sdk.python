@@ -27,11 +27,6 @@ __all__ = (
 
 
 class GetRegion(ABC):
-    @abc.abstractmethod
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List
-        pass
-
     @property
     def padding(self):
         # type: () -> Optional[CodedRegionPadding]
@@ -45,22 +40,12 @@ class GetFloatingRegion(GetRegion, ABC):
         # type: () -> FloatingBounds
         pass
 
-    @abc.abstractmethod
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List
-        pass
-
 
 class GetAccessibilityRegion(GetRegion, ABC):
     @property
     @abc.abstractmethod
     def accessibility_type(self):
         # type: () -> AccessibilityRegionType
-        pass
-
-    @abc.abstractmethod
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List
         pass
 
 
