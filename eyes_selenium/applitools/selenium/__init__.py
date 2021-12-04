@@ -39,7 +39,6 @@ from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 from .extract_text import OCRRegion, TextRegionSettings
 from .eyes import ClassicRunner, Eyes, RunnerOptions, VisualGridRunner
 from .fluent.target import Target  # noqa
-from .webdriver import EyesWebDriver  # noqa
 from .webelement import EyesWebElement  # noqa
 
 __all__ = (

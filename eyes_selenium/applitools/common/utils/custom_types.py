@@ -9,14 +9,13 @@ if TYPE_CHECKING:
 
     from applitools.common.geometry import RectangleSize, Region
     from applitools.core.triggers import ActionTrigger
-    from applitools.selenium.webdriver import EyesWebDriver
     from applitools.selenium.webelement import EyesWebElement
 
     ViewPort = Union[Dict[Text, int], RectangleSize]  # typedef
     CodedRegionPadding = Dict[Text, int]  # typedef
     Num = Union[int, float]
 
-    AnyWebDriver = Union[EyesWebDriver, WebDriver]  # typedef
+    AnyWebDriver = WebDriver
     AnyWebElement = Union[
         EyesWebElement, SeleniumWebElement, AppiumWebElement
     ]  # typedef

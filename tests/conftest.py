@@ -48,18 +48,6 @@ def fake_httpserver():
 
 @pytest.fixture
 def driver_mock():
-    from selenium.common.exceptions import WebDriverException
     from selenium.webdriver.remote.webdriver import WebDriver
 
-    from applitools.selenium import EyesWebDriver
-
-    driver = mock.MagicMock(EyesWebDriver)
-    driver._driver = mock.Mock(WebDriver)
-
-    desired_capabilities = {"platformName": ""}
-    driver.capabilities = desired_capabilities
-    driver._driver.capabilities = desired_capabilities
-
-    # need to configure below
-    driver._driver.execute_script = mock.Mock(side_effect=WebDriverException())
-    return driver
+    return mock.Mock(WebDriver)

@@ -3,9 +3,10 @@ from __future__ import absolute_import, unicode_literals
 from typing import Optional, Text
 
 from robot.libraries.BuiltIn import BuiltIn
+from selenium.webdriver.remote.webdriver import WebDriver
 
 from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
-from applitools.selenium import Eyes, EyesWebDriver
+from applitools.selenium import Eyes
 
 from ..base import LibraryComponent, keyword
 from ..utils import get_enum_by_name, parse_viewport_size
@@ -69,7 +70,7 @@ class SessionKeywords(LibraryComponent):
         send_dom=None,  # type: Optional[bool]
         is_disabled=None,  # type: Optional[bool]
     ):
-        # type: (...)->EyesWebDriver
+        # type: (...)->WebDriver
         """
         Shared parameters section from `applitools.yaml` could be overwritten during `Eyes Open` call, see `Preconditions`.
 
