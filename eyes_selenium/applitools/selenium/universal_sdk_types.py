@@ -914,9 +914,10 @@ def demarshal_test_results(results_dict_list, config):
     results = [attr_from_json(dumps(r), TestResults) for r in results_dict_list]
     if config:
         for result in results:
-            result.set_connection_config(
-                config.server_url, config.api_key, config.proxy
-            )
+            if result:  # in case of internal USDK failure, None result is observed
+                result.set_connection_config(
+                    config.server_url, config.api_key, config.proxy
+                )
     return results
 
 
