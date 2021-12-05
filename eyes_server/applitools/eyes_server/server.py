@@ -30,7 +30,9 @@ class SDKServer(object):
             self.log_file_name = self._log_file.name
         self.executable = executable
         command = [executable] if singleton else [executable, "--no-singleton"]
-        self._sdk_process = Popen(command, stdout=self._log_file, stderr=STDOUT)
+        self._sdk_process = Popen(
+            command, stdout=self._log_file, stderr=STDOUT, close_fds=True
+        )
         self.port = self._read_port()
         if singleton:
             self._sdk_process = None  # leak the process, it self-terminates being idle
