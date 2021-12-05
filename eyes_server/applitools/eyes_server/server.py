@@ -30,12 +30,14 @@ class SDKServer(object):
             self.log_file_name = self._log_file.name
         self.executable = executable
         command = [executable] if singleton else [executable, "--no-singleton"]
-        self._sdk_process = Popen(
-            command, stdout=self._log_file, stderr=STDOUT, close_fds=True
-        )
+        if sys.version_info < (3,) and sys.platform != "win32":
+            # python2 tends to hang if there are unclosed fds owned by child process
+            # close_fds is not supported by windows python2 so not using it there
+            sdk = Popen(command, stdout=self._log_file, stderr=STDOUT, close_fds=True)
+        else:
+            sdk = Popen(command, stdout=self._log_file, stderr=STDOUT)
+        self._sdk_process = None if singleton else sdk  # leak the singleton process
         self.port = self._read_port()
-        if singleton:
-            self._sdk_process = None  # leak the process, it self-terminates being idle
         self.is_closed = False  # explicit flag because python2 calls __del__ many times
         logger.info("Started Universal SDK server at %s", self.port)
 
