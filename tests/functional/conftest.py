@@ -1,4 +1,5 @@
 import functools
+import json
 import os
 
 import attr
@@ -7,7 +8,7 @@ import pytest
 
 from applitools.common import BatchInfo, Configuration, StdoutLogger, logger
 from applitools.common.utils import iteritems
-from applitools.common.utils.json_utils import attr_from_dict
+from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
 
 try:
@@ -66,10 +67,10 @@ def check_image_match_settings(eyes, test_result, comparision):
         actual = img[param["actual_name"]]
         expected = param["expected"]
         if attr.has(expected.__class__):
-            actual = attr_from_dict(actual, expected.__class__)
+            actual = attr_from_json(json.dumps(actual), expected.__class__)
         elif isinstance(expected, list):
             expected_cls = expected[0].__class__
-            actual = [attr_from_dict(a, expected_cls) for a in actual]
+            actual = [attr_from_json(json.dumps(a), expected_cls) for a in actual]
         assert actual == expected
 
 

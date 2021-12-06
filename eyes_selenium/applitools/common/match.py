@@ -10,7 +10,7 @@ from .utils.json_utils import JsonInclude
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Text, Union
 
-    from applitools.common import EyesScreenshot, Point
+    from applitools.common import Point
 
 __all__ = (
     "MatchLevel",
@@ -51,9 +51,7 @@ class MatchResult(object):
     window_id = attr.ib(
         default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[Text]
-    screenshot = attr.ib(
-        default=None, metadata={JsonInclude.THIS: True}
-    )  # type: Optional[EyesScreenshot]
+    screenshot = attr.ib(default=None, metadata={JsonInclude.THIS: True})
 
 
 @attr.s(eq=False)

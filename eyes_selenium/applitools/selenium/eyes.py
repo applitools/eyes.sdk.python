@@ -11,6 +11,7 @@ from six import string_types
 from applitools.common import (
     DiffsFoundError,
     EyesError,
+    FailureReports,
     NewTestError,
     RectangleSize,
     TestFailedError,
@@ -216,7 +217,18 @@ class Eyes(object):
             marshal_configuration(self.configure),
         )
         if results:
-            return demarshal_match_result(results)
+            results = demarshal_match_result(results)
+            if (
+                not results.as_expected
+                and self.configure.failure_reports is FailureReports.IMMEDIATE
+            ):
+                raise TestFailedError(
+                    "Mismatch found in '{}' of '{}'".format(
+                        self.configure.test_name, self.configure.app_name
+                    )
+                )
+            else:
+                return results
         else:
             return None
 
