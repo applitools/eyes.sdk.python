@@ -177,22 +177,6 @@ class FloatingRegion(object):
 
 
 @attr.s
-class TransformedDriver(object):
-    session_id = attr.ib()  # type: Text
-    server_url = attr.ib()  # type: Text
-    capabilities = attr.ib()  # type: Dict[Text, Any]
-
-    @classmethod
-    def convert(cls, driver):
-        # type: (WebDriver) -> TransformedDriver
-        return cls(
-            driver.session_id,
-            driver.command_executor._url,  # noqa
-            driver.capabilities,
-        )
-
-
-@attr.s
 class TransformedElement(object):
     element_id = attr.ib(type=text_type)
 
@@ -838,15 +822,11 @@ class DeleteTestSettings(object):
 
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
-    transformed = TransformedDriver.convert(driver)
-    return _keys_underscore_to_camel_remove_none(
-        cattr.unstructure(transformed), {"capabilities"}
-    )
-
-
-def marshal_webelement_ref(webelement):
-    # type: (Union[WebElement, WebElement]) -> TransformedElement
-    return TransformedElement(webelement._id)
+    return {
+        "sessionId": driver.session_id,
+        "serverUrl": driver.command_executor._url,  # noqa
+        "capabilities": driver.capabilities,
+    }
 
 
 def marshal_configuration(configuration):
@@ -922,16 +902,14 @@ def demarshal_test_results(results_dict_list, config):
     return results
 
 
-def _keys_underscore_to_camel_remove_none(obj, skip=set()):
+def _keys_underscore_to_camel_remove_none(obj):
     if isinstance(obj, dict):
         return {
-            (
-                k if k in skip else underscore_to_camelcase(k)
-            ): _keys_underscore_to_camel_remove_none(v, skip)
+            underscore_to_camelcase(k): _keys_underscore_to_camel_remove_none(v)
             for k, v in obj.items()
             if v is not None
         }
     elif isinstance(obj, list):
-        return [_keys_underscore_to_camel_remove_none(i, skip) for i in obj]
+        return [_keys_underscore_to_camel_remove_none(i) for i in obj]
     else:
         return obj

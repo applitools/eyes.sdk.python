@@ -1,9 +1,9 @@
+import time
 from collections import defaultdict
 
 import pytest
 
 from applitools.common import ChromeEmulationInfo
-from applitools.common.utils import datetime_utils
 from applitools.selenium import (
     BrowserType,
     Configuration,
@@ -146,7 +146,7 @@ def test_special_rendering(url, test_name, batch_info, driver):
     eyes.set_configuration(sconf)
     eyes.open(driver)
     driver.get(url)
-    datetime_utils.sleep(500)
+    time.sleep(0.5)
     eyes.check(test_name, Target.window().fully())
     eyes.close_async()
     all_results = runner.get_all_test_results()
