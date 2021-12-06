@@ -11,18 +11,6 @@ from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
 
 
-class ExtractTextProvider(ABC):
-    @abstractmethod
-    def get_text(self, *regions):
-        # type: (*OCRRegion) -> Text
-        pass
-
-    @abstractmethod
-    def get_text_regions(self, config):
-        # type: (TextRegionSettings) -> List[Text]
-        pass
-
-
 class TextRegionSettings(object):
     def __init__(self, *patterns):
         # type: (*Union[Text, List[Text]]) -> None
@@ -100,23 +88,6 @@ class TextRegion(Rectangle):
         # type: (...) -> None
         super(TextRegion, self).__init__(left, top, width, height)
         self.text = text
-
-
-@attr.s(slots=True, init=False)
-class ExpectedTextRegion(Rectangle):
-    expected = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-
-    def __init__(
-        self,
-        left,  # type: int
-        top,  # type: int
-        width,  # type: int
-        height,  # type: int
-        expected=None,  # type: Text
-    ):
-        # type: (...) -> None
-        super(ExpectedTextRegion, self).__init__(left, top, width, height)
-        self.expected = expected
 
 
 class OCRRegion(object):

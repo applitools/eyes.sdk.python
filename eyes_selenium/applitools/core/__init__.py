@@ -1,6 +1,6 @@
 from .batch_close import BatchClose
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
-from .extract_text import ExtractTextProvider, TextRegionSettings
+from .extract_text import TextRegionSettings
 from .feature import Feature
 from .fluent import (
     CheckSettings,
@@ -30,5 +30,4 @@ __all__ = (
     "VisualLocator",
     "VisualLocatorSettings",
     "TextRegionSettings",
-    "ExtractTextProvider",
 )

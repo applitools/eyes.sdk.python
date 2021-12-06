@@ -8,7 +8,6 @@ import attr
 from PIL.Image import Image
 
 from .accessibility import AccessibilityRegionType
-from .mixins import DictAccessMixin
 from .utils import argument_guard
 from .utils.compat import basestring
 from .utils.converters import round_converter
@@ -54,6 +53,18 @@ class CoordinatesType(Enum):
     # an element's region, we will need to calculate their respective "as
     # is" coordinates.
     CONTEXT_RELATIVE = "CONTEXT_RELATIVE"
+
+
+class DictAccessMixin(object):
+    """Make dict-like object from attrs class"""
+
+    def __getitem__(self, item):
+        fields = [a.name for a in attr.fields(self.__class__)]
+        if isinstance(item, int):
+            item = fields[item]
+        if item not in fields:
+            raise KeyError("item: {}, fields: {}".format(item, fields))
+        return getattr(self, item)
 
 
 @attr.s(slots=True, eq=False, hash=True, init=False)
