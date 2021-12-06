@@ -14,7 +14,7 @@ from applitools.common.utils.json_utils import JsonInclude
 class ExtractTextProvider(ABC):
     @abstractmethod
     def get_text(self, *regions):
-        # type: (*BaseOCRRegion) -> Text
+        # type: (*OCRRegion) -> Text
         pass
 
     @abstractmethod
@@ -119,7 +119,7 @@ class ExpectedTextRegion(Rectangle):
         self.expected = expected
 
 
-class BaseOCRRegion(object):
+class OCRRegion(object):
     def __init__(self, target):
         # type: (Union[Region, Any]) -> None
         self.target = target
@@ -150,9 +150,5 @@ class BaseOCRRegion(object):
         return copy(self)
 
 
-class OCRRegion(BaseOCRRegion):
-    pass
-
-
 PATTERN_TEXT_REGIONS = Dict[Text, List[TextRegion]]  # typedef
-Self = TypeVar("Self", bound="BaseOCRRegion")  # typedef
+Self = TypeVar("Self", bound="OCRRegion")  # typedef
