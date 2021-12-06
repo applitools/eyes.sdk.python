@@ -1,10 +1,4 @@
 from .batch_close import BatchClose
-from .capture import (
-    AppOutputProvider,
-    AppOutputWithScreenshot,
-    EyesScreenshotFactory,
-    ImageProvider,
-)
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
 from .extract_text import BaseOCRRegion, ExtractTextProvider, TextRegionSettings
 from .eyes_runner import EyesRunner
@@ -57,10 +51,6 @@ __all__ = (
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
-    "AppOutputWithScreenshot",
-    "AppOutputProvider",
-    "EyesScreenshotFactory",
-    "ImageProvider",
     "EyesRunner",
     "BatchClose",
     "VisualLocator",

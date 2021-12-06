@@ -1,21 +1,11 @@
 import functools
 import os
-from collections import defaultdict
 
 import attr
 import mock
 import pytest
 
-from applitools.common import (
-    BatchInfo,
-    Configuration,
-    MatchResult,
-    RunningSession,
-    StdoutLogger,
-    TestResults,
-    logger,
-)
-from applitools.common.ultrafastgrid.render_request import RenderingInfo
+from applitools.common import BatchInfo, Configuration, StdoutLogger, logger
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
 from tests.utils import get_session_results

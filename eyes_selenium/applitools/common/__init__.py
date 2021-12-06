@@ -1,6 +1,5 @@
 from . import (  # noqa
     app_output,
-    capture,
     config,
     errors,
     geometry,
@@ -19,7 +18,6 @@ from .accessibility import (  # noqa
     AccessibilitySettings,
 )
 from .app_output import AppOutput  # noqa
-from .capture import EyesScreenshot  # noqa
 from .config import BatchInfo, Configuration, ProxySettings  # noqa
 from .errors import (  # noqa
     CoordinatesTypeConversionError,
@@ -72,7 +70,6 @@ __all__ = (
     + match.__all__  # noqa
     + metadata.__all__  # noqa
     + app_output.__all__  # noqa
-    + capture.__all__  # noqa
     + test_results.__all__  # noqa
     + server.__all__  # noqa
     + (
