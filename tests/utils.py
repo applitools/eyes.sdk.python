@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Dict, Text
 import requests
 
 from applitools.common import TestResults
-from applitools.common.utils.datetime_utils import retry
 
 if TYPE_CHECKING:
     from http.cookiejar import CookieJar
@@ -14,7 +13,6 @@ if TYPE_CHECKING:
 TESTS_DIR = path.dirname(path.abspath(__file__))
 
 
-@retry(exception=requests.HTTPError)
 def get_session_results(api_key, results):
     # type: (Text, TestResults) -> Dict
     api_session_url = results.api_urls.session

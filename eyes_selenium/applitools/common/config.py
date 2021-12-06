@@ -10,9 +10,10 @@ from applitools.common.accessibility import AccessibilitySettings
 from applitools.common.geometry import RectangleSize
 from applitools.common.match import ImageMatchSettings, MatchLevel
 from applitools.common.server import FailureReports, SessionType
-from applitools.common.utils import UTC, argument_guard
+from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import urlparse, urlunsplit
 from applitools.common.utils.converters import str2bool
+from applitools.common.utils.datetime_utils import UTC
 from applitools.common.utils.general_utils import get_env_with_prefix
 from applitools.common.utils.json_utils import JsonInclude
 
