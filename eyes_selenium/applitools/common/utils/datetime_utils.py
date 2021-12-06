@@ -1,7 +1,5 @@
 from datetime import timedelta, tzinfo
 
-from applitools.common import logger
-
 __all__ = ("UTC",)
 
 
