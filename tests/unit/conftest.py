@@ -20,7 +20,6 @@ from applitools.common import (
 from applitools.common.utils.json_utils import attr_from_json
 from applitools.core import EyesBase, ServerConnector
 from applitools.core.capture import AppOutputProvider, AppOutputWithScreenshot
-from applitools.images import Eyes as EyesImages
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
@@ -63,13 +62,6 @@ def started_connector(configured_connector):
 
 
 @pytest.fixture
-def screenshot(image):
-    from applitools.images.capture import EyesImagesScreenshot
-
-    return EyesImagesScreenshot(image)
-
-
-@pytest.fixture
 def app_output():
     return AppOutput("output", None)
 
@@ -94,9 +86,7 @@ def app_output_provider(image, app_output_with_screenshot):
 
 @pytest.fixture(scope="function")
 def eyes(request):
-    if request.param == "images":
-        return EyesImages()
-    elif request.param == "selenium":
+    if request.param == "selenium":
         return Eyes(ClassicRunner())
     elif request.param == "visual_grid":
         return Eyes(VisualGridRunner())
