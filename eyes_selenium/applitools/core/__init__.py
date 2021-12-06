@@ -18,7 +18,6 @@ from .fluent import (
     RegionByRectangle,
 )
 from .locators import VisualLocator, VisualLocatorSettings
-from .match_window_task import MatchWindowTask
 from .positioning import (
     NULL_REGION_PROVIDER,
     InvalidPositionProvider,
@@ -38,7 +37,6 @@ from .triggers import MouseTrigger, TextTrigger
 __all__ = (
     "TextTrigger",
     "MouseTrigger",
-    "MatchWindowTask",
     "ContextBasedScaleProvider",
     "FixedScaleProvider",
     "Feature",

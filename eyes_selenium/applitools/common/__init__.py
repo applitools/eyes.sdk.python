@@ -6,7 +6,6 @@ from . import (  # noqa
     geometry,
     logger,
     match,
-    match_window_data,
     metadata,
     selenium,
     server,
@@ -47,7 +46,6 @@ from .match import (  # noqa
     MatchLevel,
     MatchResult,
 )
-from .match_window_data import MatchWindowData, Options  # noqa
 from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
 from .scale_provider import ScaleProvider
 from .selenium import StitchMode  # noqa
@@ -75,7 +73,6 @@ __all__ = (
     + metadata.__all__  # noqa
     + app_output.__all__  # noqa
     + capture.__all__  # noqa
-    + match_window_data.__all__  # noqa
     + test_results.__all__  # noqa
     + server.__all__  # noqa
     + (
