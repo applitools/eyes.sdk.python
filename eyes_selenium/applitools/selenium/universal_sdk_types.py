@@ -839,7 +839,9 @@ class DeleteTestSettings(object):
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
     transformed = TransformedDriver.convert(driver)
-    return _keys_underscore_to_camel_remove_none(cattr.unstructure(transformed))
+    return _keys_underscore_to_camel_remove_none(
+        cattr.unstructure(transformed), {"capabilities"}
+    )
 
 
 def marshal_webelement_ref(webelement):
@@ -856,7 +858,6 @@ def marshal_configuration(configuration):
 def marshal_check_settings(check_settings):
     # type: (SeleniumCheckSettings) -> dict
     check_settings = CheckSettings.convert(check_settings.values)
-    # check_settings.ocr_region
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
 
 
@@ -921,14 +922,16 @@ def demarshal_test_results(results_dict_list, config):
     return results
 
 
-def _keys_underscore_to_camel_remove_none(obj):
+def _keys_underscore_to_camel_remove_none(obj, skip=set()):
     if isinstance(obj, dict):
         return {
-            underscore_to_camelcase(k): _keys_underscore_to_camel_remove_none(v)
+            (
+                k if k in skip else underscore_to_camelcase(k)
+            ): _keys_underscore_to_camel_remove_none(v, skip)
             for k, v in obj.items()
             if v is not None
         }
     elif isinstance(obj, list):
-        return [_keys_underscore_to_camel_remove_none(i) for i in obj]
+        return [_keys_underscore_to_camel_remove_none(i, skip) for i in obj]
     else:
         return obj
