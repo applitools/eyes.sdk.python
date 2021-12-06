@@ -63,11 +63,11 @@ def test_suite_dir_classic_runner():
 @pytest.mark.parametrize(
     "data",
     [
-        ("web", "selenium", "android"),
-        ("web", "selenium", "ios"),
-        ("web", "appium", "android"),
+        # ("web", "appium", "android"),
         ("web", "appium", "ios"),
+        # ("web", "selenium", "android"),
         ("web", "selenium", "desktop"),
+        ("web", "selenium", "ios"),
         ("web_ufg", "selenium", "desktop"),
     ],
     ids=lambda d: str(d),
