@@ -236,12 +236,6 @@ jobs:
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
 
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=images
-              - TEST_PLATFORM="Linux"
-
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6
           script:
