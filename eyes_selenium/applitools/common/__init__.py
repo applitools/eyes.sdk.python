@@ -41,7 +41,6 @@ from .match import (  # noqa
     MatchLevel,
     MatchResult,
 )
-from .scale_provider import ScaleProvider
 from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
 from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
@@ -69,7 +68,6 @@ __all__ = (
     + (
         "logger",
         "StitchMode",
-        "ScaleProvider",
         "ChromeEmulationInfo",
         "DesktopBrowserInfo",
         "DeviceName",

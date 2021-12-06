@@ -13,10 +13,6 @@ if TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Tuple, Type
 
 
-def to_json(val):
-    return json.dumps(val, default=_to_serializable, sort_keys=True)
-
-
 def _fields_name_from_attr(cls):
     # type: (Type) -> Generator[Tuple[Text, Optional[Text]]]
     if not attr.has(cls):
@@ -104,68 +100,6 @@ def attr_from_json(content, cls):
 
     instance = json.loads(content, object_hook=obj_came)
     return instance
-
-
-def attr_from_response(response, cls):
-    return attr_from_json(response.text, cls)
-
-
-def attr_from_dict(dct, cls):
-    return attr_from_json(json.dumps(dct), cls)
-
-
-def _cleaned_dict_from_attrs(val):
-    # Uses for replacing of regular attr.name to specified in metadata
-    replace_to_dict = dict()  # type: Dict[Text, Text]
-
-    class _CamelCasedDict(dict):
-        def __setitem__(self, key, value):
-            if key in replace_to_dict:
-                # use key specified in metadata
-                old_key = key
-                key = replace_to_dict[old_key]
-            else:
-                # convert key into camel case format
-                key = underscore_to_camelcase(key)
-            # process Enum's
-            if hasattr(value, "value"):
-                value = value.value
-            super(_CamelCasedDict, self).__setitem__(key, value)
-
-    def filter(attr_, value):
-        if attr_.name.startswith("_") and not attr_.metadata.get(JsonInclude.NAME):
-            return False
-        if attr_.metadata.get(JsonInclude.NON_NONE):
-            if value is None:
-                return False
-            return True
-        if attr_.metadata.get(JsonInclude.THIS):
-            return True
-        if attr_.metadata.get(JsonInclude.NAME):
-            # set key from metadata which would be used by default
-            replace_to_dict[attr_.name] = attr_.metadata[JsonInclude.NAME]
-            return True
-        return False
-
-    return attr.asdict(val, filter=filter, dict_factory=_CamelCasedDict)
-
-
-def _to_serializable(val):
-    if isinstance(val, datetime):
-        return val.strftime("%Y-%m-%dT%H:%M:%SZ")
-    elif isinstance(val, enum.Enum):
-        return val.value
-    elif attr.has(val.__class__):
-        name = getattr(val, "JSON_NAME", None)
-        obj = _cleaned_dict_from_attrs(val)
-        if name:
-            return {name: obj}
-        return obj
-    elif isinstance(val, bytes):
-        return val
-    elif isinstance(val, Exception):
-        return {"error": val.__class__.__name__, "args": val.args}
-    return str(val)
 
 
 def camelcase_to_underscore(text):
