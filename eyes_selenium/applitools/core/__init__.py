@@ -7,7 +7,6 @@ from .capture import (
 )
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
 from .extract_text import BaseOCRRegion, ExtractTextProvider, TextRegionSettings
-from .eyes_base import EyesBase
 from .eyes_runner import EyesRunner
 from .feature import Feature
 from .fluent import (
@@ -34,7 +33,6 @@ from .scaling import (
     NullScaleProvider,
     ScaleProvider,
 )
-from .server_connector import ServerConnector
 from .triggers import MouseTrigger, TextTrigger
 
 __all__ = (
@@ -46,7 +44,6 @@ __all__ = (
     "Feature",
     "NullScaleProvider",
     "ScaleProvider",
-    "EyesBase",
     "PositionProvider",
     "PositionMemento",
     "InvalidPositionProvider",
@@ -62,7 +59,6 @@ __all__ = (
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
-    "ServerConnector",
     "AppOutputWithScreenshot",
     "AppOutputProvider",
     "EyesScreenshotFactory",

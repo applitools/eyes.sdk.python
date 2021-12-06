@@ -3,11 +3,7 @@ import os
 import mock
 import pytest
 
-from applitools.core import ServerConnector, __version__
-from applitools.core.debug import (
-    FileDebugScreenshotsProvider,
-    NullDebugScreenshotsProvider,
-)
+from applitools.selenium import __version__
 
 
 @pytest.fixture

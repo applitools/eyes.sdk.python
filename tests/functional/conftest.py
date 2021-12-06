@@ -18,7 +18,6 @@ from applitools.common import (
 from applitools.common.ultrafastgrid.render_request import RenderingInfo
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_dict
-from applitools.core import ServerConnector
 from tests.utils import get_session_results
 
 try:
@@ -112,68 +111,6 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
-
-
-@pytest.fixture
-def fake_connector_class():
-    return FakeServerConnector
-
-
-class FakeServerConnector(ServerConnector):
-    def __init__(self):
-        super(FakeServerConnector, self).__init__()
-        self.input_calls = defaultdict(list)
-        self.output_calls = defaultdict(list)
-        self.running_session_result = RunningSession(
-            **{
-                "id": "MDAwMDANzk~",
-                "session_id": "000002518",
-                "batch_id": "000002518010",
-                "baseline_id": "5411539b-558a-44c6-8a93-d95ddf909552",
-                "is_new_session": False,
-                "url": "https://eyes.applitools.com/app/batches/2124/04235423?accountId=asfd1124~~",
-            }
-        )
-        self.test_result = TestResults(status="Passed")
-
-    @property
-    def calls(self):
-        return {key: results[0] for key, results in iteritems(self.input_calls)}
-
-    def start_session(self, session_start_info):
-        self.input_calls["start_session"].append(session_start_info)
-        self.output_calls["start_session"].append(self.running_session_result)
-        return self.running_session_result
-
-    def stop_session(self, running_session, is_aborted, save):
-        self.input_calls["stop_session"].append((running_session, is_aborted, save))
-        self.output_calls["stop_session"].append(self.test_result)
-        return self.test_result
-
-    def match_window(self, running_session, match_data):
-        self.input_calls["match_window"].append((running_session, match_data))
-        result = MatchResult(as_expected=True)
-        self.output_calls["match_window"].append(result)
-        return result
-
-    def render_info(self):
-        self.input_calls["render_info"].append(True)
-
-        result = RenderingInfo(
-            **{
-                "service_url": "https://render.applitools.com",
-                "stitching_service_url": "https://eyesapi.applitools.com/api/images/s?accessKey=None",
-                "access_token": "NYNyBxWppb1a0NvMrZXmMHqrUrdYUM",
-                "results_url": "https://eyespublicwi0.blob.core/a-se/__random__?sv=2&sr=c&sig=wrasda%3D&se=09-29T10%3A12%3A13Z&sp=w&accessKey=None",
-                "max_image_height": 15000,
-                "max_image_area": 37500000,
-            }
-        )
-        self.output_calls["render_info"].append(result)
-        return result
-
-    def __deepcopy__(self, memo):
-        return self
 
 
 @pytest.fixture(scope="function")

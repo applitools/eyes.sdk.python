@@ -25,13 +25,11 @@ from EyesLibrary.base import RobotMobileNativeRunner, RobotWebRunner, RobotWebUF
     ],
 )
 @pytest.mark.skip(reason="Should be adapted to USDK")
-def test_agent_id(
-    fake_connector_class, driver_mock, monkeypatch, library, runner, agent_id
-):
+def test_agent_id(driver_mock, monkeypatch, library, runner, agent_id):
     monkeypatch.setattr(eyes_selenium_utils, "set_viewport_size", lambda *_: None)
     eyes = Eyes(runner())
     # avoid use custom setter on Eyes object
-    eyes._current_eyes.server_connector = fake_connector_class()
+    # eyes._current_eyes.server_connector = fake_connector_class()
 
     eyes.open(driver_mock, "A", "B", {"width": 100, "height": 100})
     eyes.abort_async()
