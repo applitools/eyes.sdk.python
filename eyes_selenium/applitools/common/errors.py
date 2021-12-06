@@ -4,7 +4,6 @@ __all__ = (
     "TestFailedError",
     "NewTestError",
     "DiffsFoundError",
-    "CoordinatesTypeConversionError",
 )
 
 
@@ -55,9 +54,3 @@ class DiffsFoundError(TestFailedError):
     """
     Indicates that an existing test ended, and that differences where found from the baseline.
     """
-
-
-class CoordinatesTypeConversionError(EyesError):
-    def __init__(self, from_, to, test_results=None):
-        message = "Cannot convert from {} to {}".format(from_, to)
-        super(CoordinatesTypeConversionError, self).__init__(message, test_results)

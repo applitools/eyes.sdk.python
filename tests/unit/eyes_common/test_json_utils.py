@@ -1,15 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
-
-import pytest
-
-from applitools.common import (
-    AppOutput,
-    ImageMatchSettings,
-    RectangleSize,
-    Region,
-    RunningSession,
-    TestResults,
-)
+from applitools.common import RectangleSize, Region, TestResults
 from applitools.common.accessibility import (
     AccessibilityGuidelinesVersion,
     AccessibilityLevel,
@@ -21,20 +10,6 @@ from applitools.common.geometry import AccessibilityRegion
 from applitools.common.test_results import TestResultsStatus
 from applitools.common.utils import json_utils
 from tests.utils import get_resource
-
-
-def test_running_session_serialization_and_deserialization():
-    rs = RunningSession(
-        id="some-id",
-        session_id="session-id",
-        batch_id="batch-id",
-        baseline_id="baseline_id",
-        url="url",
-        is_new_session=True,
-    )
-    rs_json = json_utils.to_json(rs)
-    assert '"isNew": true' in rs_json
-    assert rs == json_utils.attr_from_json(rs_json, RunningSession)
 
 
 def test_test_results_deserialization():

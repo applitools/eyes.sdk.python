@@ -5,7 +5,6 @@ from . import (  # noqa
     geometry,
     logger,
     match,
-    metadata,
     selenium,
     server,
     test_results,
@@ -20,7 +19,6 @@ from .accessibility import (  # noqa
 from .app_output import AppOutput  # noqa
 from .config import BatchInfo, Configuration, ProxySettings  # noqa
 from .errors import (  # noqa
-    CoordinatesTypeConversionError,
     DiffsFoundError,
     EyesError,
     NewTestError,
@@ -44,7 +42,6 @@ from .match import (  # noqa
     MatchLevel,
     MatchResult,
 )
-from .metadata import AppEnvironment, RunningSession, SessionStartInfo  # noqa
 from .scale_provider import ScaleProvider
 from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
@@ -68,7 +65,6 @@ __all__ = (
     + errors.__all__  # noqa
     + geometry.__all__  # noqa
     + match.__all__  # noqa
-    + metadata.__all__  # noqa
     + app_output.__all__  # noqa
     + test_results.__all__  # noqa
     + server.__all__  # noqa
@@ -80,15 +76,6 @@ __all__ = (
         "DesktopBrowserInfo",
         "DeviceName",
         "ScreenOrientation",
-        "RenderInfo",
-        "RenderingInfo",
-        "RenderRequest",
-        "RenderStatus",
-        "RenderStatusResults",
-        "RGridDom",
-        "RunningRender",
-        "VGResource",
-        "VisualGridSelector",
         "AccessibilityRegionType",
         "AccessibilitySettings",
         "AccessibilityLevel",
