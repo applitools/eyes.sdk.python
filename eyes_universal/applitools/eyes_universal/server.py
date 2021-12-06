@@ -15,7 +15,8 @@ _platform_suffixes = {
     "win32": "win.exe",
 }
 executable_path = resource_filename(
-    "applitools.eyes_server", "bin/eyes-universal-" + _platform_suffixes[sys.platform]
+    "applitools.eyes_universal",
+    "bin/eyes-universal-" + _platform_suffixes[sys.platform],
 )
 
 

@@ -1,4 +1,4 @@
-from applitools.eyes_server import get_instance
+from applitools.eyes_universal import get_instance
 
 
 def test_server_instance():

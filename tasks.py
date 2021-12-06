@@ -27,7 +27,7 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
 @task(pre=[clean])
 def dist(
     c,
-    server=False,
+    universal=False,
     selenium=False,
     robotframework=False,
     prod=False,
@@ -39,7 +39,7 @@ def dist(
 
     packages = list(
         _packages_resolver(
-            server,
+            universal,
             selenium,
             robotframework,
             full_path=True,
@@ -97,26 +97,26 @@ def install_requirements(c, dev=False, testing=False, lint=False):
 
 
 def _packages_resolver(
-    server=False,
+    universal=False,
     selenium=False,
     robotframework=False,
     full_path=False,
     path_as_str=False,
 ):
     packages = []
-    server_pkg, selenium_pkg, robot_pkg = (
-        "eyes_server",
+    universal_pkg, selenium_pkg, robot_pkg = (
+        "eyes_universal",
         "eyes_selenium",
         "eyes_robotframework",
     )
-    if server:
-        packages.append(server_pkg)
+    if universal:
+        packages.append(universal_pkg)
     if selenium:
         packages.append(selenium_pkg)
     if robotframework:
         packages.append(robot_pkg)
     if not packages:
-        packages = [server_pkg, selenium_pkg, robot_pkg]
+        packages = [universal_pkg, selenium_pkg, robot_pkg]
 
     for pack in packages:
         if full_path:
@@ -129,13 +129,13 @@ def _packages_resolver(
 @task
 def install_packages(
     c,
-    server=False,
+    universal=False,
     selenium=False,
     robotframework=False,
     editable=False,
 ):
     packages = _packages_resolver(
-        server,
+        universal,
         selenium,
         robotframework,
         full_path=True,

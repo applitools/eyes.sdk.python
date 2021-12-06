@@ -11,7 +11,7 @@ def _packages_resolver(
     robotframework=False,
 ):
     server_pkg, selenium_pkg, robotframework_pkg = (
-        "eyes_server",
+        "eyes_universal",
         "eyes_selenium",
         "eyes_robotframework",
     )
@@ -30,7 +30,7 @@ def _packages_resolver(
 def test_setup_eyes_selenium(venv):
     venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
-    assert venv.get_version("eyes-server")
+    assert venv.get_version("eyes-universal")
     assert venv.get_version("eyes-selenium")
 
 
@@ -38,7 +38,7 @@ def test_setup_eyes_robot(venv):
     venv.install(_packages_resolver(server=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     venv.install(_packages_resolver(robotframework=True), editable=True)
-    assert venv.get_version("eyes-server")
+    assert venv.get_version("eyes-universal")
     assert venv.get_version("eyes-selenium")
     assert venv.get_version("eyes-robotframework")
 

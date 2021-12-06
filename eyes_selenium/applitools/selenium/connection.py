@@ -8,7 +8,7 @@ from typing import Optional, Text
 
 from websocket import WebSocket
 
-from applitools.eyes_server import get_instance, server
+from applitools.eyes_universal import get_instance, server
 
 _all_sockets = []
 
