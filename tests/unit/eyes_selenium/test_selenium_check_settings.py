@@ -110,13 +110,10 @@ def test_match_regions_with_regions_input(method_name):
     region, region1 = Region(0, 1, 2, 3), Region(0, 2, 4, 5)
     regions = get_regions_from_(method_name, region)
     assert regions[0]._region == region
-    assert regions[0].get_regions(None, None) == [region]
 
     regions = get_regions_from_(method_name, region, region1)
     assert regions[0]._region == region
     assert regions[1]._region == region1
-    assert regions[0].get_regions(None, None) == [region]
-    assert regions[1].get_regions(None, None) == [region1]
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])

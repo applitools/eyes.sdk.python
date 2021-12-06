@@ -5,15 +5,12 @@ import attr
 from applitools.common import FloatingBounds
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
-from applitools.common.match import FloatingMatchSettings
 from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Union
 
-    from applitools.common.capture import EyesScreenshot
     from applitools.common.utils.custom_types import CodedRegionPadding
-    from applitools.core.eyes_base import EyesBase
 
 __all__ = (
     "GetFloatingRegion",
@@ -44,19 +41,11 @@ class GetAccessibilityRegion(GetRegion, ABC):
 class RegionByRectangle(GetRegion):
     _region = attr.ib()  # type: Union[Region, Rectangle]
 
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List[Region]
-        return [Region.from_(self._region)]
-
 
 @attr.s
 class FloatingRegionByRectangle(GetFloatingRegion):
     _rect = attr.ib()  # type: Union[Region, Rectangle]
     _bounds = attr.ib()  # type: FloatingBounds
-
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List[FloatingMatchSettings]
-        return [FloatingMatchSettings(self._rect, self.floating_bounds)]
 
     @property
     def floating_bounds(self):
@@ -67,10 +56,6 @@ class FloatingRegionByRectangle(GetFloatingRegion):
 class AccessibilityRegionByRectangle(GetAccessibilityRegion):
     _rect = attr.ib()  # type: Union[Region, Rectangle, AccessibilityRegion]
     _type = attr.ib(default=None)  # type: Optional[AccessibilityRegionType]
-
-    def get_regions(self, eyes, screenshot):
-        # type: (EyesBase, EyesScreenshot) -> List[AccessibilityRegion]
-        return [AccessibilityRegion.from_(self._rect, self.accessibility_type)]
 
     @property
     def accessibility_type(self):

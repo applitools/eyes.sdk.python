@@ -22,8 +22,7 @@ from .misc import BrowserType, StitchMode
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import DeviceName
-
-    from ...core.cut import CutProvider
+    from applitools.core.cut import CutProvider
 
 __all__ = ("Configuration",)
 
