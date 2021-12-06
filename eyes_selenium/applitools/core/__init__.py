@@ -1,7 +1,6 @@
 from .batch_close import BatchClose
 from .cut import FixedCutProvider, NullCutProvider, UnscaledFixedCutProvider
 from .extract_text import BaseOCRRegion, ExtractTextProvider, TextRegionSettings
-from .eyes_runner import EyesRunner
 from .feature import Feature
 from .fluent import (
     CheckSettings,
@@ -12,14 +11,6 @@ from .fluent import (
     RegionByRectangle,
 )
 from .locators import VisualLocator, VisualLocatorSettings
-from .positioning import (
-    NULL_REGION_PROVIDER,
-    InvalidPositionProvider,
-    NullRegionProvider,
-    PositionMemento,
-    PositionProvider,
-    RegionProvider,
-)
 from .scaling import (
     ContextBasedScaleProvider,
     FixedScaleProvider,
@@ -36,22 +27,15 @@ __all__ = (
     "Feature",
     "NullScaleProvider",
     "ScaleProvider",
-    "PositionProvider",
-    "PositionMemento",
-    "InvalidPositionProvider",
-    "RegionProvider",
     "FixedCutProvider",
     "NullCutProvider",
     "UnscaledFixedCutProvider",
-    "NullRegionProvider",
-    "NULL_REGION_PROVIDER",
     "CheckSettings",
     "CheckSettingsValues",
     "GetRegion",
     "GetFloatingRegion",
     "FloatingRegionByRectangle",
     "RegionByRectangle",
-    "EyesRunner",
     "BatchClose",
     "VisualLocator",
     "VisualLocatorSettings",

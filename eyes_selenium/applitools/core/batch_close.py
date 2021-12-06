@@ -34,10 +34,10 @@ class _EnabledBatchClose(object):
     def close(self):
         from applitools.selenium.__version__ import __version__
         from applitools.selenium.command_executor import CommandExecutor
-        from applitools.selenium.eyes import _EyesManager
+        from applitools.selenium.eyes import EyesRunner
         from applitools.selenium.universal_sdk_types import marshal_enabled_batch_close
 
-        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
+        with CommandExecutor.create(EyesRunner.BASE_AGENT_ID, __version__) as cmd:
             marshaled = marshal_enabled_batch_close(self)
             cmd.core_close_batches(marshaled)
 

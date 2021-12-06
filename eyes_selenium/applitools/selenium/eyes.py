@@ -52,7 +52,7 @@ if typing.TYPE_CHECKING:
     from applitools.selenium import OCRRegion
 
 
-class _EyesManager(object):
+class EyesRunner(object):
     AUTO_CLOSE_MODE_SYNC = True
     BASE_AGENT_ID = "eyes.sdk.python"
     CHECK_WINDOW_FULLY_ARG_DEFAULT = None
@@ -110,7 +110,7 @@ class RunnerOptions(object):
         return self
 
 
-class VisualGridRunner(_EyesManager):
+class VisualGridRunner(EyesRunner):
     AUTO_CLOSE_MODE_SYNC = False
     CHECK_WINDOW_FULLY_ARG_DEFAULT = True
 
@@ -125,14 +125,14 @@ class VisualGridRunner(_EyesManager):
         super(VisualGridRunner, self).__init__(ManagerType.VG, concurrency, is_legacy)
 
 
-class ClassicRunner(_EyesManager):
+class ClassicRunner(EyesRunner):
     def __init__(self):
         super(ClassicRunner, self).__init__(ManagerType.CLASSIC)
 
 
 class Eyes(object):
     def __init__(self, runner=None):
-        # type: (Union[None, _EyesManager, Text]) -> None
+        # type: (Union[None, EyesRunner, Text]) -> None
         self.configure = Configuration()
         self._driver = None
         self._eyes_ref = None
@@ -142,7 +142,7 @@ class Eyes(object):
             self.configure.server_url = runner
             self._runner = ClassicRunner()
         else:
-            self._runner = runner  # type: _EyesManager
+            self._runner = runner  # type: EyesRunner
         self.logger = self._runner.logger.bind(eyes_id=id(self))
         self._commands = self._runner._commands  # noqa
 
@@ -276,14 +276,14 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
-        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
+        with CommandExecutor.create(EyesRunner.BASE_AGENT_ID, __version__) as cmd:
             result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
             return RectangleSize.from_(result)
 
     @staticmethod
     def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        with CommandExecutor.create(_EyesManager.BASE_AGENT_ID, __version__) as cmd:
+        with CommandExecutor.create(EyesRunner.BASE_AGENT_ID, __version__) as cmd:
             cmd.core_set_viewport_size(
                 marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
             )

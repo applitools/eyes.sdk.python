@@ -14,8 +14,8 @@ from applitools.common import BatchInfo
 from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import basestring, raise_from
-from applitools.core import EyesRunner
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium.eyes import EyesRunner
 
 from .__version__ import __version__
 from .config import RobotConfiguration
