@@ -53,8 +53,9 @@ if typing.TYPE_CHECKING:
 
 
 class _EyesManager(object):
-    check_window_fully_arg_default = None
+    AUTO_CLOSE_MODE_SYNC = True
     BASE_AGENT_ID = "eyes.sdk.python"
+    CHECK_WINDOW_FULLY_ARG_DEFAULT = None
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
@@ -110,7 +111,8 @@ class RunnerOptions(object):
 
 
 class VisualGridRunner(_EyesManager):
-    check_window_fully_arg_default = True
+    AUTO_CLOSE_MODE_SYNC = False
+    CHECK_WINDOW_FULLY_ARG_DEFAULT = True
 
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
@@ -143,18 +145,6 @@ class Eyes(object):
             self._runner = runner  # type: _EyesManager
         self.logger = self._runner.logger.bind(eyes_id=id(self))
         self._commands = self._runner._commands  # noqa
-
-    def __getattr__(self, item):
-        return getattr(self.configure, item)
-
-    def __setattr__(self, key, value):
-        if "configure" in vars(self) and (
-            key in vars(self.configure)
-            or key in ("match_level", "ignore_displacements")
-        ):
-            return setattr(self.configure, key, value)
-        else:
-            return super(Eyes, self).__setattr__(key, value)
 
     def open(
         self,
@@ -368,7 +358,7 @@ class Eyes(object):
         :param fully: Defines that the screenshot will contain the entire window.
         """
         if fully is None:
-            fully = self._runner.check_window_fully_arg_default
+            fully = self._runner.CHECK_WINDOW_FULLY_ARG_DEFAULT
         return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
 
     def check_frame(self, frame_reference, tag=None, match_timeout=-1):
@@ -560,6 +550,27 @@ class Eyes(object):
                 return demarshal_test_results(results, self.configure)
             else:
                 return None
+
+    def __getattr__(self, item):
+        return getattr(self.configure, item)
+
+    def __setattr__(self, key, value):
+        if "configure" in vars(self) and (
+            key in vars(self.configure)
+            or key in ("match_level", "ignore_displacements")
+        ):
+            return setattr(self.configure, key, value)
+        else:
+            return super(Eyes, self).__setattr__(key, value)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self._abort(self._runner.AUTO_CLOSE_MODE_SYNC)
+        else:
+            self._close(True, self._runner.AUTO_CLOSE_MODE_SYNC)
 
 
 def _log_session_results_and_raise_exception(logger, raise_ex, results):
