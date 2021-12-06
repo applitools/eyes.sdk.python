@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar, overload
 
 import attr
+from six import raise_from
 
 from applitools.common import FloatingBounds, MatchLevel, logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
 from applitools.common.utils import argument_guard, json_utils
-from applitools.common.utils.compat import raise_from
 from applitools.common.utils.json_utils import JsonInclude
 
 from .region import (

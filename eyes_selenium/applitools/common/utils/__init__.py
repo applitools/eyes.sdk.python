@@ -1,7 +1,6 @@
 from . import argument_guard, compat, datetime_utils  # noqa
 from .compat import (  # type: ignore # noqa
     ABC,
-    gzip_compress,
     iteritems,
     parse_qs,
     quote_plus,

@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
+from six import raise_from
 
 from applitools.common.config import Configuration as ConfigurationBase
 from applitools.common.ultrafastgrid import (
@@ -14,7 +15,6 @@ from applitools.common.ultrafastgrid import (
     VisualGridOption,
 )
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import raise_from
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
 

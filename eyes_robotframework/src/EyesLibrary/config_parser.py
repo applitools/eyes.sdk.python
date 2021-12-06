@@ -7,6 +7,7 @@ from typing import Text, Type
 
 import trafaret as trf
 import yaml
+from six import raise_from
 
 from applitools.common import (
     ChromeEmulationInfo,
@@ -22,7 +23,6 @@ from applitools.common import (
     VisualGridOption,
 )
 from applitools.common.selenium import BrowserType
-from applitools.common.utils.compat import raise_from
 from applitools.selenium import BatchInfo, RunnerOptions
 
 from .config import RobotConfiguration
