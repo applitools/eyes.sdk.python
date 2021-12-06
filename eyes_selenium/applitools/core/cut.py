@@ -2,10 +2,8 @@ import math
 from abc import abstractmethod
 
 import attr
-from PIL.Image import Image
 
-from applitools.common import Region
-from applitools.common.utils import ABC, image_utils
+from applitools.common.utils import ABC
 
 __all__ = ("FixedCutProvider", "UnscaledFixedCutProvider", "NullCutProvider")
 
@@ -16,19 +14,6 @@ class CutProvider(ABC):
     footer = attr.ib()  # type: int
     left = attr.ib()  # type: int
     right = attr.ib()  # type: int
-
-    def cut(self, image):
-        # type: (Image) -> Image
-        if self.header == 0 and self.footer == 0 and self.right == 0 and self.left == 0:
-            return image
-
-        target_region = Region(
-            self.left,
-            self.header,
-            image.width - self.left - self.right,
-            image.height - self.header - self.footer,
-        )
-        return image_utils.crop_image(image, target_region)
 
     @abstractmethod
     def scale(self, scale_ratio):

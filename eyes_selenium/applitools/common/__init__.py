@@ -1,8 +1,8 @@
-from . import (  # noqa
-    app_output,
+from . import geometry  # noqa
+from . import (
+    accessibility,
     config,
     errors,
-    geometry,
     logger,
     match,
     selenium,
@@ -16,7 +16,6 @@ from .accessibility import (  # noqa
     AccessibilityRegionType,
     AccessibilitySettings,
 )
-from .app_output import AppOutput  # noqa
 from .config import BatchInfo, Configuration, ProxySettings  # noqa
 from .errors import (  # noqa
     DiffsFoundError,
@@ -65,7 +64,6 @@ __all__ = (
     + errors.__all__  # noqa
     + geometry.__all__  # noqa
     + match.__all__  # noqa
-    + app_output.__all__  # noqa
     + test_results.__all__  # noqa
     + server.__all__  # noqa
     + (

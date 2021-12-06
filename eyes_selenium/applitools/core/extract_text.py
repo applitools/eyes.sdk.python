@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Text, TypeVar, Union
 
 import attr
 
-from applitools.common import AppOutput, Region
+from applitools.common import Region
 from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.compat import ABC, basestring
@@ -152,29 +152,6 @@ class BaseOCRRegion(object):
 
 class OCRRegion(BaseOCRRegion):
     pass
-
-
-@attr.s
-class TextSettingsData(object):
-    app_output = attr.ib(
-        type=AppOutput, metadata={JsonInclude.THIS: True}
-    )  # type: AppOutput
-    language = attr.ib(metadata={JsonInclude.THIS: True})  # type: Text
-    min_match = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[float]
-    regions = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[List[ExpectedTextRegion]]
-    patterns = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[List[Text]]
-    ignore_case = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[bool]
-    first_only = attr.ib(
-        default=None, metadata={JsonInclude.NON_NONE: True}
-    )  # type: Optional[bool]
 
 
 PATTERN_TEXT_REGIONS = Dict[Text, List[TextRegion]]  # typedef
