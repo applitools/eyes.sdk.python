@@ -1,4 +1,3 @@
-from distutils.util import get_platform
 from os import chmod, path
 
 from setuptools import setup
@@ -17,22 +16,29 @@ download_dir = (
 
 
 class build_py(_build_py):
+    user_options = _build_py.user_options + [
+        ("os-names=", None, "os to get binaries for (linux,macos,win)")
+    ]
+
+    def initialize_options(self):
+        self.os_names = "linux,macos,win"
+        _build_py.initialize_options(self)
+
     def get_data_files(self):
-        platform = get_platform()
-        if "linux" in platform:
-            file_name = "eyes-universal-linux"
-        elif "macosx" in platform:
-            file_name = "eyes-universal-macos"
-        elif "win" in platform:
-            file_name = "eyes-universal-win.exe"
-        else:
-            raise RuntimeError("Unsupported platform", platform)
-        target = path.join("applitools", "eyes_universal", "bin", file_name)
-        url = "{}{}/{}".format(download_dir, self.distribution.get_version(), file_name)
-        if not path.isfile(target):
-            self.mkpath(path.dirname(target))
-            urlretrieve(url, target)
-            chmod(target, 0o755)
+        version = self.distribution.get_version()
+        os_binaries = {
+            "linux": "eyes-universal-linux",
+            "macos": "eyes-universal-macos",
+            "win": "eyes-universal-win.exe",
+        }
+        for os in self.os_names.split(","):
+            file_name = os_binaries[os]
+            target = path.join("applitools", "eyes_universal", "bin", file_name)
+            url = "{}{}/{}".format(download_dir, version, file_name)
+            if not path.isfile(target):
+                self.mkpath(path.dirname(target))
+                urlretrieve(url, target)
+                chmod(target, 0o755)
         return _build_py.get_data_files(self)
 
 
