@@ -1,12 +1,9 @@
-import json
 import os
 
 import requests
+from six.moves.urllib.parse import urlencode, urlsplit, urlunsplit
 
-from applitools.common.utils import urlencode, urlsplit, urlunsplit
 
-
-# @retry(exception=requests.HTTPError)
 def get_test_info(api_key, results):
     api_session_url = results.api_urls.session
     r = requests.get(

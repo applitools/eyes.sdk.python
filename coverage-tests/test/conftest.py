@@ -9,17 +9,7 @@ from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
-from applitools.selenium import (
-    BatchInfo,
-    BrowserType,
-    ClassicRunner,
-    Configuration,
-    Eyes,
-    Region,
-    StitchMode,
-    Target,
-    VisualGridRunner,
-)
+from applitools.selenium import BatchInfo, Eyes, StitchMode
 
 
 @pytest.fixture(scope="session")
