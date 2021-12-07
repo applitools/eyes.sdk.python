@@ -27,7 +27,7 @@ def test_five_threads(runner_type):
             finally:
                 eyes.abort_async()
 
-    executor = ThreadPoolExecutor(5)
-    list(executor.map(perform_test, range(5)))
+    with ThreadPoolExecutor(5) as executor:
+        list(executor.map(perform_test, range(5)))
     results = runner.get_all_test_results()
     assert len(results) == 5
