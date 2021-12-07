@@ -67,22 +67,21 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "wheel",
         "twine",
         "pre-commit",
-        "browser_cookie3",
     ]
     testing_requires = [
-        "pytest==3.9.3",
-        "pytest-cov==2.6.1",
-        "pytest-xdist==1.26.1",
         "PyYAML",
-        "virtualenv==20.4.0",
-        "pytest-venv==0.2.1",
-        "mock",
-        "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
-        "tox==3.14.3",
-        "pytest-rerunfailures",
-        "pytest-dictsdiff",
-        "dictdiffer==0.8.1",
         "contextlib2",
+        "dictdiffer==0.8.1",
+        "mock",
+        "pytest-dictsdiff",
+        "pytest-rerunfailures",
+        "pytest-venv==0.2.1",
+        "pytest-xdist==1.26.1",
+        "pytest==3.9.3",
+        "requests",
+        "tox==3.14.3",
+        "virtualenv==20.4.0",
+        "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
     ]
     lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
     if testing:
