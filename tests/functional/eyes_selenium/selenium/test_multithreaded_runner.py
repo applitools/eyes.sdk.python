@@ -7,7 +7,7 @@ from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
 @pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
-def test_five_threads(runner_type):
+def test_ten_threads(runner_type):
     runner = runner_type()
 
     def perform_test(n):
@@ -19,7 +19,7 @@ def test_five_threads(runner_type):
                 eyes.open(
                     driver,
                     "USDK Tests",
-                    "{} Threaded test {}".format(runner_type.__name__, n),
+                    "{} Threaded test {}".format(type(runner).__name__, n),
                     {"width": 1024, "height": 768},
                 )
                 eyes.check_window(fully=False)
@@ -27,7 +27,7 @@ def test_five_threads(runner_type):
             finally:
                 eyes.abort_async()
 
-    with ThreadPoolExecutor(5) as executor:
-        list(executor.map(perform_test, range(5)))
+    with ThreadPoolExecutor(10) as executor:
+        list(executor.map(perform_test, range(10)))
     results = runner.get_all_test_results()
-    assert len(results) == 5
+    assert len(results) == 10

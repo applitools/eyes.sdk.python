@@ -200,7 +200,7 @@ jobs:
           before_install:
               - choco install python --version=3.6.6
               - choco install googlechrome
-              - ls -la "C:/Program Files (x86)/"
+              - ls -la "C:/Program Files (x86)/Google"
               - choco install chromedriver
               - python -m pip install -U pip setuptools
           env:
