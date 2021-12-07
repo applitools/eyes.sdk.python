@@ -9,9 +9,9 @@ except ImportError:
     from urllib import urlretrieve
 
 
-download_dir = (
+download_url_template = (
     "https://github.com/applitools/eyes.sdk.javascript1/releases/download/"
-    "%40applitools%2Feyes-universal%40"
+    "%40applitools%2Feyes-universal%40{version}/{file}"
 )
 
 
@@ -34,8 +34,8 @@ class build_py(_build_py):
         for os in self.os_names.split(","):
             file_name = os_binaries[os]
             target = path.join("applitools", "eyes_universal", "bin", file_name)
-            url = "{}{}/{}".format(download_dir, version, file_name)
             if not path.isfile(target):
+                url = download_url_template.format(version=version, file=file_name)
                 self.mkpath(path.dirname(target))
                 urlretrieve(url, target)
                 chmod(target, 0o755)
