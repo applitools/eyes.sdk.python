@@ -173,13 +173,7 @@ def run_tests_on_CI(c, tests):
         )
     )
 
-    # use Unix background task execution for run tests in parallel
-    command = pattern
-    if browsers:
-        command = "&".join(
-            ["TEST_BROWSERS={} ".format(browser) + pattern for browser in browsers]
-        )
-    c.run(command, echo=True)
+    c.run(pattern, echo=True)
 
 
 @task
