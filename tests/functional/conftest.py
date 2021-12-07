@@ -1,20 +1,13 @@
-import functools
 import json
 import os
 
 import attr
-import mock
 import pytest
 
 from applitools.common import BatchInfo, Configuration, StdoutLogger, logger
 from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
-
-try:
-    from contextlib import ExitStack
-except ImportError:
-    from contextlib2 import ExitStack
 
 logger.set_logger(StdoutLogger(is_verbose=True))
 
@@ -102,31 +95,3 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
-
-
-@pytest.fixture(scope="function")
-def spy():
-    def make_spy(obj, attribute):
-        method = getattr(obj, attribute)
-
-        @functools.wraps(method)
-        def wrapped(*args, **kwargs):
-            try:
-                patched.return_list.append(method(*args, **kwargs))
-                return patched.return_list[-1]
-            except Exception as e:
-                patched.raised_list.append(e)
-                raise
-
-        patched = exit_stack.enter_context(
-            mock.patch.object(obj, attribute, side_effect=wrapped, autospec=True)
-        )
-        patched.return_list = []
-        patched.raised_list = []
-        return patched
-
-    exit_stack = ExitStack()
-    make_spy.ANY = mock.ANY
-    make_spy.call = mock.call
-    with exit_stack:
-        yield make_spy

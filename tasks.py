@@ -61,20 +61,14 @@ def dist(
 @task
 def install_requirements(c, dev=False, testing=False, lint=False):
     dev_requires = [
-        "ipython",
-        "ipdb",
         "bump2version",
-        "wheel",
-        "twine",
         "pre-commit",
+        "twine",
+        "wheel",
     ]
     testing_requires = [
         "PyYAML",
-        "contextlib2",
-        "dictdiffer==0.8.1",
         "mock",
-        "pytest-dictsdiff",
-        "pytest-rerunfailures",
         "pytest-venv==0.2.1",
         "pytest-xdist==1.26.1",
         "pytest==3.9.3",
@@ -83,15 +77,12 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "virtualenv==20.4.0",
         "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
     ]
-    lint_requires = ["flake8", "flake8-import-order", "flake8-bugbear", "mypy"]
     if testing:
         requires = testing_requires
     elif dev:
         requires = dev_requires
-    elif lint:
-        requires = lint_requires
     else:
-        requires = dev_requires + testing_requires + lint_requires
+        requires = dev_requires + testing_requires
     c.run("pip install {}".format(" ".join(requires)), echo=True)
 
 

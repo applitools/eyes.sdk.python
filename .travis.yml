@@ -36,7 +36,6 @@ script:
     - tox -e $TOX_ENV
     - taskkill -f -im eyes-universal-win.exe || true
 stages:
-    - lint
     - unit-tests
     - integration-tests
     - bumpversion
