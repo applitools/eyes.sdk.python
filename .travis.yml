@@ -200,10 +200,11 @@ jobs:
           before_install:
               - choco install python --version=3.6.6
               - choco install googlechrome
+              - choco install chromedriver
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
+              - TEST_PLATFORM="Windows 10"
               - TEST_BROWSERS=chrome
               - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
