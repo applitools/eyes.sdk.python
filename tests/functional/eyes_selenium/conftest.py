@@ -399,3 +399,9 @@ def pytest_runtest_setup(item):
         browsers = browser_marker.args
         if bool(set(browsers_env).intersection(set(browsers))):
             pytest.skip("test requires browsers %s" % browsers_env)
+
+
+@pytest.fixture
+def local_chrome_driver():
+    with webdriver.Chrome() as driver:
+        yield driver

@@ -7,8 +7,8 @@ from os import path
 
 import pytest
 import requests
+from six.moves.urllib.parse import urljoin
 
-from applitools.common.utils import urljoin
 from applitools.common.utils.json_utils import underscore_to_camelcase
 
 REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
