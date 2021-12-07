@@ -1,15 +1,16 @@
 import math
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 import attr
 
-from applitools.common.utils import ABC
-
 __all__ = ("FixedCutProvider", "UnscaledFixedCutProvider", "NullCutProvider")
 
+from six import add_metaclass
 
+
+@add_metaclass(ABCMeta)
 @attr.s
-class CutProvider(ABC):
+class CutProvider(object):
     header = attr.ib()  # type: int
     footer = attr.ib()  # type: int
     left = attr.ib()  # type: int

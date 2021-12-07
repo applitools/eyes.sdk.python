@@ -1,6 +1,6 @@
-from applitools.common.validators import is_list_or_tuple
+from six import iteritems
 
-from .compat import iteritems
+from applitools.common.validators import is_list_or_tuple
 
 
 def get_name_from_param(param):

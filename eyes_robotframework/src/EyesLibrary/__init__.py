@@ -10,11 +10,11 @@ from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
 from six import raise_from
+from six import string_types as basestring
 
 from applitools.common import BatchInfo
 from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 from applitools.selenium.eyes import EyesRunner
 

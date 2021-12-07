@@ -1,13 +1,10 @@
-import enum
 import json
 import re
 from collections import Counter, defaultdict
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 import attr
-
-from .compat import iteritems
+from six import iteritems
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Generator, Optional, Text, Tuple, Type

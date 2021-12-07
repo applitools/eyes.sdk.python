@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Any, Optional, Text, Union
 
 from robot.api.deco import keyword
+from six import string_types as basestring
 
-from applitools.common.utils.compat import basestring
 from applitools.selenium import BatchInfo
 
 from ..base import LibraryComponent

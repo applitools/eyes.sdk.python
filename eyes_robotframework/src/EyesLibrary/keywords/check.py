@@ -6,10 +6,10 @@ from appium.webdriver import WebElement as AppiumWebElement
 from robot.api.deco import keyword as original_keyword
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
+from six import string_types as basestring
 
 from applitools.common import MatchResult
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring
 from applitools.selenium import Target
 
 from ..base import LibraryComponent

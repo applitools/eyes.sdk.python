@@ -1,15 +1,7 @@
 from __future__ import absolute_import
 
-import hashlib
-import inspect
 import os
-import random
 import typing
-from string import ascii_lowercase, ascii_uppercase, digits
-
-import attr
-
-from .compat import parse_qs, urlencode, urlsplit, urlunsplit
 
 """
 General purpose utilities.

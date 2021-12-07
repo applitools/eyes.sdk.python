@@ -3,7 +3,6 @@ import typing
 import attr
 
 from applitools.common.accessibility import AccessibilityRegionType
-from applitools.common.utils import ABC
 from applitools.core import GetFloatingRegion, GetRegion
 from applitools.core.fluent.region import GetAccessibilityRegion
 
@@ -23,7 +22,7 @@ __all__ = (
 )
 
 
-class GetSeleniumRegion(GetRegion, ABC):
+class GetSeleniumRegion(GetRegion):
     pass
 
 
@@ -47,7 +46,7 @@ class RegionBySelector(GetSeleniumRegion):
     _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
 
-class GetSeleniumFloatingRegion(GetFloatingRegion, ABC):
+class GetSeleniumFloatingRegion(GetFloatingRegion):
     pass
 
 
@@ -75,7 +74,7 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     _bounds = attr.ib()  # type: FloatingBounds
 
 
-class GetSeleniumAccessibilityRegion(GetAccessibilityRegion, ABC):
+class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
     pass
 
 

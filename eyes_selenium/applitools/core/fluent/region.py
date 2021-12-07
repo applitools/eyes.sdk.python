@@ -5,7 +5,6 @@ import attr
 from applitools.common import FloatingBounds
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
-from applitools.common.utils import ABC
 
 if typing.TYPE_CHECKING:
     from typing import List, Optional, Union
@@ -22,18 +21,18 @@ __all__ = (
 )
 
 
-class GetRegion(ABC):
+class GetRegion(object):
     @property
     def padding(self):
         # type: () -> Optional[CodedRegionPadding]
         return getattr(self, "_padding", None)
 
 
-class GetFloatingRegion(GetRegion, ABC):
+class GetFloatingRegion(GetRegion):
     pass
 
 
-class GetAccessibilityRegion(GetRegion, ABC):
+class GetAccessibilityRegion(GetRegion):
     pass
 
 

@@ -1,17 +1,18 @@
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import Optional, Text
 
 import attr
+from six import add_metaclass
 
 from applitools.common.geometry import RectangleSize
 from applitools.common.selenium.misc import BrowserType
-from applitools.common.utils import ABC
 from applitools.common.utils.json_utils import JsonInclude
 
 from .config import DeviceName, IosDeviceName, IosVersion, ScreenOrientation
 
 
-class IRenderBrowserInfo(ABC):
+@add_metaclass(ABCMeta)
+class IRenderBrowserInfo(object):
     @property
     @abstractmethod
     def platform(self):
@@ -48,7 +49,7 @@ class IRenderBrowserInfo(ABC):
 
 
 @attr.s
-class EmulationBaseInfo(ABC):
+class EmulationBaseInfo(object):
     device_name = attr.ib()  # type: DeviceName
     screen_orientation = attr.ib()  # type: ScreenOrientation
 

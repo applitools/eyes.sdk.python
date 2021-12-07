@@ -1,12 +1,11 @@
-from abc import abstractmethod
 from copy import copy
 from typing import Dict, List, Text, Union
 
 import attr
+from six import string_types as basestring
 
 from applitools.common import Region
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import ABC, basestring
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
 
@@ -34,7 +33,7 @@ class VisualLocatorSettingsValues(object):
         return self.first_only
 
 
-class VisualLocatorSettings(ABC):
+class VisualLocatorSettings(object):
     def __init__(self, *names):
         # type: (*Text) -> None
         self.values = VisualLocatorSettingsValues(names=list(names))
@@ -70,7 +69,7 @@ class VisualLocatorSettings(ABC):
         return cloned
 
 
-class VisualLocator(ABC):
+class VisualLocator(object):
     @staticmethod
     def name(name):
         # type: (Text) -> VisualLocatorSettings
@@ -81,13 +80,6 @@ class VisualLocator(ABC):
     def names(*names):
         # type: (*Union[Text, List[Text]]) -> VisualLocatorSettings
         return VisualLocatorSettings(*_clean_names(names))
-
-
-class VisualLocatorsProvider(ABC):
-    @abstractmethod
-    def get_locators(self, visual_locator_settings):
-        # type: (VisualLocatorSettings) -> LOCATORS_TYPE
-        pass
 
 
 @attr.s

@@ -5,10 +5,10 @@ from enum import Enum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
 
 import attr
+from six import string_types as basestring
 
 from .accessibility import AccessibilityRegionType
 from .utils import argument_guard
-from .utils.compat import basestring
 from .utils.converters import round_converter
 from .utils.json_utils import JsonInclude
 

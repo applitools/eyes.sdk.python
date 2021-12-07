@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from six import string_types as basestring
 
 from applitools.common import logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Region
 from applitools.common.ultrafastgrid import VisualGridOption
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple, is_webelement
 from applitools.core.fluent import CheckSettings, CheckSettingsValues

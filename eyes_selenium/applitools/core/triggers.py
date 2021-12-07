@@ -4,10 +4,12 @@ Contains the Trigger classes (e.g., click, text writing) used by Eyes.
 from __future__ import absolute_import
 
 import typing as tp
+from abc import ABCMeta
 from collections import OrderedDict
 
+from six import add_metaclass
+
 from applitools.common.errors import EyesError
-from applitools.common.utils import ABC
 
 if tp.TYPE_CHECKING:
     from applitools.common.geometry import Point, Region
@@ -32,7 +34,8 @@ _TRIGGER_TYPE = {
 }
 
 
-class ActionTrigger(ABC):
+@add_metaclass(ABCMeta)
+class ActionTrigger(object):
     pass
 
 
