@@ -23,7 +23,7 @@ def test_ten_threads(runner_type):
                     {"width": 1024, "height": 768},
                 )
                 eyes.check_window(fully=False)
-                eyes.close_async()
+                eyes.close(False)
             finally:
                 eyes.abort_async()
 
