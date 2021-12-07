@@ -200,7 +200,7 @@ jobs:
           before_install:
               - choco install python --version=3.6.6
               - choco install googlechrome
-              - tail -n 1000 C:/ProgramData/chocolatey/logs/chocolatey.log
+              - tail -n 1000 C:/Users/travis/AppData/Local/Temp/chocolatey/GoogleChrome.96.0.4664.93.MsiInstall.log
               - choco install chromedriver
               - python -m pip install -U pip setuptools
           env:
