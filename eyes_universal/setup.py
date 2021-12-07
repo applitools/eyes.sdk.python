@@ -15,13 +15,13 @@ download_url_template = (
 )
 
 
-class build_py(_build_py):
+class build_py(_build_py):  # noqa
     user_options = _build_py.user_options + [
         ("os-names=", None, "os to get binaries for (linux,macos,win)")
     ]
 
     def initialize_options(self):
-        self.os_names = "linux,macos,win"
+        self.os_names = "linux,macos,win"  # noqa
         _build_py.initialize_options(self)
 
     def get_data_files(self):

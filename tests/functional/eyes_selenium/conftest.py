@@ -310,8 +310,11 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
 
 
 def _setup_env_vars_for_session():
-    os.environ["APPLITOOLS_BATCH_NAME"] = "Py|Sel|{}|{}".format(
-        __version__, os.getenv("TEST_PLATFORM")
+    os.environ["APPLITOOLS_BATCH_NAME"] = "Py{}.{}|Sel|{}|{}".format(
+        sys.version_info.major,
+        sys.version_info.minor,
+        __version__,
+        os.getenv("TEST_PLATFORM"),
     )
 
 
