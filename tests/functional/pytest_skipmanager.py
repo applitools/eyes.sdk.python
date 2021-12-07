@@ -6,8 +6,7 @@ from os import path
 
 import pytest
 import yaml
-
-from applitools.common.utils import iteritems
+from six import iteritems
 
 here = path.abspath(path.dirname(__file__))
 

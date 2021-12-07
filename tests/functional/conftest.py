@@ -3,9 +3,9 @@ import os
 
 import attr
 import pytest
+from six import iteritems
 
 from applitools.common import BatchInfo, Configuration, StdoutLogger, logger
-from applitools.common.utils import iteritems
 from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
 
