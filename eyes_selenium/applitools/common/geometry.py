@@ -5,7 +5,6 @@ from enum import Enum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
 
 import attr
-from PIL.Image import Image
 
 from .accessibility import AccessibilityRegionType
 from .utils import argument_guard
@@ -124,7 +123,7 @@ class RectangleSize(DictAccessMixin):
 
     @classmethod
     def from_(cls, obj):
-        # type: (Union[dict,Image,IRenderBrowserinfo,RectangleSize])->RectangleSize
+        # type: (Union[dict,IRenderBrowserinfo,RectangleSize])->RectangleSize
         """Creates a new RectangleSize instance."""
         if isinstance(obj, dict):
             return cls(width=obj["width"], height=obj["height"])
@@ -514,20 +513,8 @@ class Region(Rectangle):
 
     @classmethod  # noqa
     @overload
-    def from_(cls, location, image):
-        # type: (Union[Point, Dict], Image) -> Region
-        pass
-
-    @classmethod  # noqa
-    @overload
     def from_(cls, location, size):
         # type: (Union[Point, Dict], Union[Dict,RectangleSize]) -> Region
-        pass
-
-    @classmethod  # noqa
-    @overload
-    def from_(cls, image):
-        # type: (Image) -> Region
         pass
 
     @classmethod  # noqa
@@ -552,13 +539,8 @@ class Region(Rectangle):
             return cls(obj.left, obj.top, obj.width, obj.height)
         if isinstance(obj, Region):
             return cls(obj.left, obj.top, obj.width, obj.height, obj.coordinates_type)
-        elif isinstance(obj, Image):
-            return cls(0, 0, obj.width, obj.height)
         elif isinstance(obj, Point) or isinstance(obj, dict) and obj2:
-            if isinstance(obj2, Image):
-                return cls(obj["x"], obj["y"], obj2.width, obj2.height)
-            else:
-                return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
+            return cls(obj["x"], obj["y"], obj2["width"], obj2["height"])
         elif isinstance(obj, dict) and obj2 is None:
             return cls(
                 obj["left"],

@@ -231,12 +231,6 @@ class TestResults(object):
             cmd.core_delete_test(marshaled)
 
 
-def __str__(self):
-    origin_str = super(TestResults, self).__str__()
-    preamble = "New test" if self.is_new else "Existing test"
-    return "{} [{}]".format(preamble, origin_str)
-
-
 @attr.s(repr=False, str=False)
 class TestResultContainer(object):
     test_results = attr.ib()  # type: TestResults
