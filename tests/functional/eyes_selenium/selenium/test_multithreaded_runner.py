@@ -1,7 +1,9 @@
 from __future__ import print_function
 
+import re
 from concurrent.futures import ThreadPoolExecutor
 from os import path, walk
+from time import sleep
 
 import pytest
 from selenium import webdriver
@@ -36,6 +38,7 @@ def test_ten_threads(runner_type):
             list(executor.map(perform_test, range(10)))
         results = runner.get_all_test_results()
         assert len(results) == 10
+        raise Exception
     except Exception:
         for root, _, log_files in walk(logs_dir):
             for log_file in log_files:
@@ -43,5 +46,8 @@ def test_ten_threads(runner_type):
                 print("Server log file", log_file, "contents")
                 with open(log_file) as file:
                     last_lines = file.readlines()[-1000:]
-                    print("".join(last_lines), flush=True)
+                    last_lines = "".join(last_lines)
+                    last_lines = re.sub("\x1b\[[0-9;]*m", "", last_lines)
+                    print(last_lines, flush=True)
+        sleep(5)
         raise
