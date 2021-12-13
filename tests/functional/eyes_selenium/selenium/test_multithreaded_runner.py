@@ -6,7 +6,7 @@ from selenium import webdriver
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
-@pytest.mark.parametrize("runner_type", [ClassicRunner])
+@pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
 def test_ten_threads(runner_type):
     runner = runner_type()
 
