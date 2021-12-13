@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from os import path, walk
 
 import pytest
 from selenium import webdriver
@@ -8,6 +9,7 @@ from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 @pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
 def test_ten_threads(runner_type):
+    logs_dir = runner_type.get_server_info().logs_dir
     runner = runner_type()
 
     def perform_test(n):
@@ -27,7 +29,16 @@ def test_ten_threads(runner_type):
             finally:
                 eyes.abort_async()
 
-    with ThreadPoolExecutor(10) as executor:
-        list(executor.map(perform_test, range(10)))
-    results = runner.get_all_test_results()
-    assert len(results) == 10
+    try:
+        with ThreadPoolExecutor(10) as executor:
+            list(executor.map(perform_test, range(10)))
+        results = runner.get_all_test_results()
+        assert len(results) == 10
+    except Exception:
+        for root, _, log_files in walk(logs_dir):
+            for log_file in log_files:
+                log_file = path.join(root, log_file)
+                print("Server log file", log_file, "contents")
+                with open(log_file) as file:
+                    print(file.read())
+        raise

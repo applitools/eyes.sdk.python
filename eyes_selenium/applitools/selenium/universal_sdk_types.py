@@ -820,6 +820,11 @@ class DeleteTestSettings(object):
         )
 
 
+@attr.s
+class ServerInfo(object):
+    logs_dir = attr.ib()  # type: Text
+
+
 def marshal_webdriver_ref(driver):
     # type: (WebDriver) -> dict
     return {
@@ -900,6 +905,11 @@ def demarshal_test_results(results_dict_list, config):
                     config.server_url, config.api_key, config.proxy
                 )
     return results
+
+
+def demarshal_server_info(info_dict):
+    # type: (dict) -> ServerInfo
+    return ServerInfo(info_dict["logsDir"])
 
 
 def _keys_underscore_to_camel_remove_none(obj):

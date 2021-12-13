@@ -127,6 +127,10 @@ class CommandExecutor(object):
         # type: (dict, bool) -> List[dict]
         return self._checked_command("Eyes.abort", {"eyes": eyes}, wait_result)
 
+    def server_get_info(self):
+        # type: () -> dict
+        return self._checked_command("Server.getInfo", {})
+
     def close(self):
         self._connection.close()
 

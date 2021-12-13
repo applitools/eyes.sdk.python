@@ -30,6 +30,7 @@ from .fluent.target import Target
 from .universal_sdk_types import (
     demarshal_locate_result,
     demarshal_match_result,
+    demarshal_server_info,
     demarshal_test_results,
     marshal_check_settings,
     marshal_configuration,
@@ -65,6 +66,12 @@ class EyesRunner(object):
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
         )
+
+    @classmethod
+    def get_server_info(cls):
+        with CommandExecutor.create(cls.BASE_AGENT_ID, __version__) as cmd:
+            result = cmd.server_get_info()
+            return demarshal_server_info(result)
 
     def get_all_test_results(
         self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
