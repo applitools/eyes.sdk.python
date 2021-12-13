@@ -8,7 +8,7 @@ from selenium import webdriver
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
-@pytest.mark.parametrize("runner_type", [ClassicRunner])
+@pytest.mark.parametrize("runner_type", [VisualGridRunner])
 def test_ten_threads(runner_type):
     logs_dir = runner_type.get_server_info().logs_dir
     runner = runner_type()
@@ -38,3 +38,16 @@ def test_ten_threads(runner_type):
         list(executor.map(perform_test, range(10)))
     results = runner.get_all_test_results()
     assert len(results) == 10
+
+
+def test_parallel_set_viewport_size():
+    def perform_test(n):
+        with webdriver.Chrome() as driver:
+            driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
+            driver.execute_script("window.scrollTo(0,{});".format(n * 55))
+            print("Trying to set viwport size {}".format(n))
+            Eyes.set_viewport_size(driver, {"width": 1024, "height": 768})
+            print("Done setting viewport size {}".format(n))
+
+    with ThreadPoolExecutor(10) as executor:
+        list(executor.map(perform_test, range(10)))
