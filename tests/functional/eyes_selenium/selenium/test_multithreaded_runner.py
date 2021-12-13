@@ -43,7 +43,9 @@ def test_ten_threads(runner_type):
 @pytest.mark.parametrize("parallelism", [1, 10])
 def test_parallel_set_viewport_size(parallelism):
     def perform_test(n):
-        with webdriver.Chrome() as driver:
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        with webdriver.Chrome(options=options) as driver:
             driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             print("Trying to set viwport size {}".format(n))
