@@ -41,5 +41,5 @@ def test_ten_threads(runner_type):
                 print("Server log file", log_file, "contents")
                 with open(log_file) as file:
                     last_lines = file.readlines()[-2000:]
-                    print("".join(last_lines))
+                    print("".join(last_lines), flush=True)
         raise
