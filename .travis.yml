@@ -36,7 +36,7 @@ script:
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
     - echo "Done executing tox, prining logs"
-    - tail -n 1000 /tmp/applitools*/*.log || true
+    - tail -n 2000 /tmp/applitools*/*.log || true
     - sleep 5 || true
     - taskkill -f -im eyes-universal-win.exe || true
 stages:
