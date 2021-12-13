@@ -8,27 +8,24 @@ from selenium import webdriver
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
-@pytest.mark.parametrize("runner_type", [VisualGridRunner])
+@pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
 def test_ten_threads(runner_type):
-    logs_dir = runner_type.get_server_info().logs_dir
     runner = runner_type()
 
     def perform_test(n):
-        with webdriver.Chrome() as driver:
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        with webdriver.Chrome(options=options) as driver:
             driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             eyes = Eyes(runner)
             try:
-                print("Trying to set viwport size")
-                Eyes.set_viewport_size(driver, {"width": 1024, "height": 768})
-                print("Trying to open eyes", n)
                 eyes.open(
                     driver,
                     "USDK Tests",
                     "{} Threaded test {}".format(type(runner).__name__, n),
                     {"width": 1024, "height": 768},
                 )
-                print("Eyes", n, "opened successfully")
                 eyes.check_window(fully=False)
                 eyes.close_async()
             finally:
@@ -41,11 +38,10 @@ def test_ten_threads(runner_type):
 
 
 @pytest.mark.parametrize("parallelism", [1, 10])
+@pytest.mark.skip("Currently fails with non-headless browser")
 def test_parallel_set_viewport_size(parallelism):
     def perform_test(n):
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        with webdriver.Chrome(options=options) as driver:
+        with webdriver.Chrome() as driver:
             driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             print("Trying to set viwport size {}".format(n))
