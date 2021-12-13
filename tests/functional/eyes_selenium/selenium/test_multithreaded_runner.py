@@ -7,7 +7,7 @@ from selenium import webdriver
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
-@pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
+@pytest.mark.parametrize("runner_type", [VisualGridRunner])
 def test_ten_threads(runner_type):
     logs_dir = runner_type.get_server_info().logs_dir
     runner = runner_type()
@@ -40,5 +40,6 @@ def test_ten_threads(runner_type):
                 log_file = path.join(root, log_file)
                 print("Server log file", log_file, "contents")
                 with open(log_file) as file:
-                    print(file.read())
+                    last_lines = file.readlines()[-2000:]
+                    print("".join(last_lines))
         raise
