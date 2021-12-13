@@ -2,7 +2,6 @@ from __future__ import print_function
 
 from concurrent.futures import ThreadPoolExecutor
 from os import path, walk
-from time import sleep
 
 import pytest
 from selenium import webdriver
@@ -38,13 +37,11 @@ def test_ten_threads(runner_type):
         results = runner.get_all_test_results()
         assert len(results) == 10
     except Exception:
-        sleep(2)
         for root, _, log_files in walk(logs_dir):
             for log_file in log_files:
                 log_file = path.join(root, log_file)
                 print("Server log file", log_file, "contents")
                 with open(log_file) as file:
-                    for line in file.readlines()[-1000:]:
-                        print(line, flush=True)
-        print("Last 1000 lines printed", flush=True)
+                    last_lines = file.readlines()[-1000:]
+                    print("".join(last_lines), flush=True)
         raise
