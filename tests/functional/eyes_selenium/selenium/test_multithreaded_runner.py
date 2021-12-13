@@ -8,7 +8,7 @@ from selenium import webdriver
 from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
 
 
-@pytest.mark.parametrize("runner_type", [VisualGridRunner])
+@pytest.mark.parametrize("runner_type", [ClassicRunner])
 def test_ten_threads(runner_type):
     logs_dir = runner_type.get_server_info().logs_dir
     runner = runner_type()
