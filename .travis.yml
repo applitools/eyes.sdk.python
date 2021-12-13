@@ -9,6 +9,7 @@ install:
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
     - python -m pip install -U tox
 before_script:
+    - export NO_COLOR=1
     - export PATH=`pwd`/bin:$PATH
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
