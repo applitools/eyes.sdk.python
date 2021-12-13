@@ -5,6 +5,7 @@ from itertools import count
 from json import dumps, loads
 from threading import Thread
 from typing import Optional, Text
+from uuid import uuid4
 
 from websocket import WebSocket
 
@@ -48,7 +49,7 @@ class USDKConnection(object):
 
     def command(self, name, payload, wait_result, wait_timeout):
         # type: (Text, dict, bool, float) -> Optional[dict]
-        key = next(self._keys)
+        key = str(uuid4())
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
