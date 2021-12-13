@@ -19,6 +19,8 @@ def test_ten_threads(runner_type):
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             eyes = Eyes(runner)
             try:
+                print("Trying to set viwport size")
+                Eyes.set_viewport_size(driver, {"width": 1024, "height": 768})
                 print("Trying to open eyes", n)
                 eyes.open(
                     driver,
