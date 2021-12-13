@@ -40,7 +40,8 @@ def test_ten_threads(runner_type):
     assert len(results) == 10
 
 
-def test_parallel_set_viewport_size():
+@pytest.mark.parametrize("parallelism", [1, 10])
+def test_parallel_set_viewport_size(parallelism):
     def perform_test(n):
         with webdriver.Chrome() as driver:
             driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
@@ -49,5 +50,5 @@ def test_parallel_set_viewport_size():
             Eyes.set_viewport_size(driver, {"width": 1024, "height": 768})
             print("Done setting viewport size {}".format(n))
 
-    with ThreadPoolExecutor(10) as executor:
+    with ThreadPoolExecutor(parallelism) as executor:
         list(executor.map(perform_test, range(10)))
