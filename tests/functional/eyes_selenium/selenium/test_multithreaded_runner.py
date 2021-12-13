@@ -19,14 +19,16 @@ def test_ten_threads(runner_type):
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             eyes = Eyes(runner)
             try:
+                print("Trying to open eyes", n)
                 eyes.open(
                     driver,
                     "USDK Tests",
                     "{} Threaded test {}".format(type(runner).__name__, n),
                     {"width": 1024, "height": 768},
                 )
+                print("Eyes", n, "opened successfully")
                 eyes.check_window(fully=False)
-                eyes.close(False)
+                eyes.close_async()
             finally:
                 eyes.abort_async()
 
