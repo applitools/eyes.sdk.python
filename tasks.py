@@ -15,6 +15,7 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
     if bytecode:
         patterns.append("**/*.pyc")
     if dist:
+        patterns.append("dist")
         patterns.append("**/dist")
         patterns.append("**/build")
         patterns.append("**/*.egg-info")
@@ -22,6 +23,27 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
         patterns.append(extra)
     for pattern in patterns:
         c.run("rm -rf {}".format(pattern))
+
+
+@task(pre=[clean])
+def build_packages(c, stubs=True, universal=True, selenium=True, robot=True):
+    dist = path.abspath("dist")
+    package_dirs = []
+    if stubs:
+        package_dirs.extend(["eyes_common", "eyes_core"])
+    if universal:
+        package_dirs.extend(["eyes_universal"])
+    if selenium:
+        package_dirs.append("eyes_selenium")
+    if robot:
+        package_dirs.append("eyes_robotframework")
+    for package_dir in package_dirs:
+        if package_dir == "eyes_universal":
+            build_cmd = "./build_wheels.sh --dist-dir=" + dist
+        else:
+            build_cmd = "python setup.py sdist --dist-dir=" + dist
+        with c.cd(package_dir):
+            c.run(build_cmd, echo=True)
 
 
 @task(pre=[clean])
