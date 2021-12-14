@@ -1,6 +1,8 @@
 import pytest
 from appium import webdriver as appium_webdriver
 
+from applitools.core import Feature
+
 ANDROID_CAPS = {
     "app": "http://saucelabs.com/example_files/ContactManager.apk",
     "clearSystemFiles": True,
@@ -45,9 +47,9 @@ def test_android_native(eyes, driver):
 @pytest.mark.platform("Android")
 @pytest.mark.capabilities(**ANDROID_CAPS)
 @pytest.mark.eyes_config(hide_scrollbars=False)
-@pytest.mark.skip("USDK Difference")
+# @pytest.mark.skip("USDK Difference")
 def test_android_native_scale_app_native_feature(eyes, driver):
-    # eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
+    eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(
         driver, "Mobile Native Tests", "Android Native App 1 Scale Native Feature"
     )

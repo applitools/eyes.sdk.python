@@ -4,7 +4,7 @@ from applitools.common import RectangleSize
 from applitools.selenium import Eyes, Target
 
 
-@pytest.mark.skip("USDK Difference")
+# @pytest.mark.skip("USDK Difference")
 def test_scrollable_modal_on_scrolled_down_page(driver):
     driver.get("https://applitools.github.io/demo/TestPages/ModalsPage")
     eyes = Eyes()
