@@ -49,7 +49,7 @@ class USDKConnection(object):
 
     def command(self, name, payload, wait_result, wait_timeout):
         # type: (Text, dict, bool, float) -> Optional[dict]
-        key = str(uuid4())
+        key = next(self._keys)
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))

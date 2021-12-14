@@ -4,6 +4,8 @@ from applitools.selenium.connection import USDKConnection
 def test_make_manager():
     ec = USDKConnection.create()
     ec.notification(
-        "Session.init", {"name": "aa", "version": "1", "protocol": "webdriver"}
+        "Core.makeSDK", {"name": "a", "version": "1", "protocol": "webdriver"}
     )
-    ec.command("Core.makeManager", {"type": "classic"}, False, 0)
+    res = ec.command("Core.makeManager", {"type": "classic"}, True, 1)
+    assert res["key"] == 1
+    assert "applitools-ref-id" in res["payload"]["result"]
