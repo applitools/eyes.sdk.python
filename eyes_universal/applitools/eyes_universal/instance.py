@@ -4,5 +4,5 @@ import atexit
 
 from .server import SDKServer
 
-instance = SDKServer(singleton=True)
+instance = SDKServer()
 atexit.register(instance.close)  # python2 destructs objects in non-specified manner

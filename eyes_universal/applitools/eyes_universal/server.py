@@ -1,10 +1,14 @@
 import sys
+import typing
 from logging import getLogger
 from subprocess import STDOUT, Popen
 from tempfile import NamedTemporaryFile
 from time import sleep
 
 from pkg_resources import resource_filename
+
+if typing.TYPE_CHECKING:
+    from typing import Optional
 
 logger = getLogger(__name__)
 
@@ -21,8 +25,15 @@ executable_path = resource_filename(
 
 
 class SDKServer(object):
-    def __init__(self, singleton=False, log_file_name=None, executable=executable_path):
-        # type: (bool, str, str) -> None
+    def __init__(
+        self,
+        port=None,  # type: Optional[int]
+        singleton=True,  # type: bool
+        lazy=False,  # type: bool
+        idle_timeout=None,  # type: Optional[int]
+        log_file_name=None,  # type: Optional[str]
+        executable=executable_path,  # type: str
+    ):
         if log_file_name:
             self._log_file = open(log_file_name, "w+b")
             self.log_file_name = log_file_name
@@ -30,7 +41,15 @@ class SDKServer(object):
             self._log_file = NamedTemporaryFile("w+b")
             self.log_file_name = self._log_file.name
         self.executable = executable
-        command = [executable] if singleton else [executable, "--no-singleton"]
+        command = [executable]
+        if port is not None:
+            command.extend(["--port", port])
+        if not singleton:
+            command.append("--no-singleton")
+        if lazy:
+            command.append("--lazy")
+        if idle_timeout is not None:
+            command.extend(["--idle-timeout", idle_timeout])
         if sys.version_info < (3,) and sys.platform != "win32":
             # python2 tends to hang if there are unclosed fds owned by child process
             # close_fds is not supported by windows python2 so not using it there
@@ -54,8 +73,8 @@ class SDKServer(object):
     def close(self):
         if not self.is_closed:
             self.is_closed = True
-            logger.info("Quit Universal SDK server at %s", self.port)
             if self._sdk_process:
+                logger.info("Terminating Universal SDK server at %s", self.port)
                 self._sdk_process.terminate()
             self._log_file.close()
 
