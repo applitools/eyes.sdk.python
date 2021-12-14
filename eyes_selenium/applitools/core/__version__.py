@@ -1,1 +1,1 @@
-__version__ = "4.25.3"
+from ..selenium import __version__
