@@ -26,18 +26,14 @@ def clean(c, docs=False, bytecode=False, dist=True, extra=""):
 
 
 @task(pre=[clean])
-def build_packages(c, stubs=True, universal=True, selenium=True, robot=True):
+def build_packages(
+    c, common=False, core=False, universal=False, selenium=False, robotframework=False
+):
+    packages = list(
+        _packages_resolver(common, core, universal, selenium, robotframework)
+    )
     dist = path.abspath("dist")
-    package_dirs = []
-    if stubs:
-        package_dirs.extend(["eyes_common", "eyes_core"])
-    if universal:
-        package_dirs.extend(["eyes_universal"])
-    if selenium:
-        package_dirs.append("eyes_selenium")
-    if robot:
-        package_dirs.append("eyes_robotframework")
-    for package_dir in package_dirs:
+    for package_dir in packages:
         if package_dir == "eyes_universal":
             build_cmd = "./build_wheels.sh --dist-dir=" + dist
         else:
@@ -49,7 +45,6 @@ def build_packages(c, stubs=True, universal=True, selenium=True, robot=True):
 @task(pre=[clean])
 def dist(
     c,
-    universal=False,
     selenium=False,
     robotframework=False,
     prod=False,
@@ -61,9 +56,8 @@ def dist(
 
     packages = list(
         _packages_resolver(
-            universal,
-            selenium,
-            robotframework,
+            selenium=selenium,
+            robotframework=robotframework,
             full_path=True,
             path_as_str=True,
         )
@@ -109,6 +103,8 @@ def install_requirements(c, dev=False, testing=False, lint=False):
 
 
 def _packages_resolver(
+    common=False,
+    core=False,
     universal=False,
     selenium=False,
     robotframework=False,
@@ -116,11 +112,17 @@ def _packages_resolver(
     path_as_str=False,
 ):
     packages = []
-    universal_pkg, selenium_pkg, robot_pkg = (
+    common_pkg, core_pkg, universal_pkg, selenium_pkg, robot_pkg = (
+        "eyes_common",
+        "eyes_core",
         "eyes_universal",
         "eyes_selenium",
         "eyes_robotframework",
     )
+    if common:
+        packages.append(common_pkg)
+    if core:
+        packages.append(core_pkg)
     if universal:
         packages.append(universal_pkg)
     if selenium:
@@ -128,7 +130,7 @@ def _packages_resolver(
     if robotframework:
         packages.append(robot_pkg)
     if not packages:
-        packages = [universal_pkg, selenium_pkg, robot_pkg]
+        packages = [common_pkg, core_pkg, universal_pkg, selenium_pkg, robot_pkg]
 
     for pack in packages:
         if full_path:
@@ -141,12 +143,16 @@ def _packages_resolver(
 @task
 def install_packages(
     c,
+    common=False,
+    core=False,
     universal=False,
     selenium=False,
     robotframework=False,
     editable=False,
 ):
     packages = _packages_resolver(
+        common,
+        core,
         universal,
         selenium,
         robotframework,
