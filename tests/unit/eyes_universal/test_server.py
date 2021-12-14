@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from mock import Mock, call
 
@@ -22,14 +24,22 @@ def tempfile(monkeypatch):
     return tempfile_mock
 
 
-def test_sdk_server_default_args(popen, tempfile):
+@pytest.fixture
+def close_fds_kw():
+    if sys.version_info < (3,) and sys.platform != "win32":
+        return {"close_fds": True}
+    else:
+        return {}
+
+
+def test_sdk_server_default_args(popen, tempfile, close_fds_kw):
     server = SDKServer()
     server.close()
 
     assert server.port == 123
     assert server.log_file_name == "temp_file_name"
     assert popen.mock_calls == [
-        call([executable_path], stdout=tempfile.return_value, stderr=-2)
+        call([executable_path], stdout=tempfile.return_value, stderr=-2, **close_fds_kw)
     ]
     assert tempfile.mock_calls == [
         call("w+b"),
@@ -54,14 +64,19 @@ def test_sdk_server_file_not_read_immediately(popen, tempfile):
     ]
 
 
-def test_sdk_server_with_port(popen, tempfile):
+def test_sdk_server_with_port(popen, tempfile, close_fds_kw):
     server = SDKServer(port=345)
     server.close()
 
     assert server.port == 123  # mock return this
     assert server.log_file_name == "temp_file_name"
     assert popen.mock_calls == [
-        call([executable_path, "--port", 345], stdout=tempfile.return_value, stderr=-2)
+        call(
+            [executable_path, "--port", 345],
+            stdout=tempfile.return_value,
+            stderr=-2,
+            **close_fds_kw
+        )
     ]
     assert tempfile.mock_calls == [
         call("w+b"),
@@ -71,7 +86,7 @@ def test_sdk_server_with_port(popen, tempfile):
     ]
 
 
-def test_sdk_server_no_singleton(popen, tempfile):
+def test_sdk_server_no_singleton(popen, tempfile, close_fds_kw):
     server = SDKServer(singleton=False)
     server.close()
 
@@ -79,7 +94,10 @@ def test_sdk_server_no_singleton(popen, tempfile):
     assert server.log_file_name == "temp_file_name"
     assert popen.mock_calls == [
         call(
-            [executable_path, "--no-singleton"], stdout=tempfile.return_value, stderr=-2
+            [executable_path, "--no-singleton"],
+            stdout=tempfile.return_value,
+            stderr=-2,
+            **close_fds_kw
         ),
         call().terminate(),
     ]
@@ -91,18 +109,23 @@ def test_sdk_server_no_singleton(popen, tempfile):
     ]
 
 
-def test_sdk_server_lazy(popen, tempfile):
+def test_sdk_server_lazy(popen, tempfile, close_fds_kw):
     server = SDKServer(lazy=True)
     server.close()
 
     assert server.port == 123
     assert server.log_file_name == "temp_file_name"
     assert popen.mock_calls == [
-        call([executable_path, "--lazy"], stdout=tempfile.return_value, stderr=-2),
+        call(
+            [executable_path, "--lazy"],
+            stdout=tempfile.return_value,
+            stderr=-2,
+            **close_fds_kw
+        ),
     ]
 
 
-def test_sdk_server_idle_timeout(popen, tempfile):
+def test_sdk_server_idle_timeout(popen, tempfile, close_fds_kw):
     server = SDKServer(idle_timeout=True)
     server.close()
 
@@ -113,5 +136,6 @@ def test_sdk_server_idle_timeout(popen, tempfile):
             [executable_path, "--idle-timeout", 1],
             stdout=tempfile.return_value,
             stderr=-2,
+            **close_fds_kw
         ),
     ]
