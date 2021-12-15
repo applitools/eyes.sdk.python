@@ -158,7 +158,7 @@ def firefox(options):
 
 
 @pytest.fixture(scope="function")
-def firefox48(sauce_url):
+def firefox48(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "firefox"
@@ -201,7 +201,7 @@ def edge(sauce_url):
 
 
 @pytest.fixture(scope="function")
-def safari11(sauce_url):
+def safari11(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
