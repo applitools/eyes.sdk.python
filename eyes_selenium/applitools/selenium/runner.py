@@ -25,7 +25,6 @@ if typing.TYPE_CHECKING:
 class EyesRunner(object):
     AUTO_CLOSE_MODE_SYNC = True
     BASE_AGENT_ID = "eyes.sdk.python"
-    CHECK_WINDOW_FULLY_ARG_DEFAULT = None
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
@@ -88,7 +87,6 @@ class RunnerOptions(object):
 
 class VisualGridRunner(EyesRunner):
     AUTO_CLOSE_MODE_SYNC = False
-    CHECK_WINDOW_FULLY_ARG_DEFAULT = True
 
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
