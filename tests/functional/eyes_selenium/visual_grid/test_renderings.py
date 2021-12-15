@@ -99,6 +99,7 @@ def test_css_relative_url_on_another_domain(driver, batch_info, vg_runner):
     assert len(all_results) == 9
 
 
+@pytest.mark.skip("USDK Difference, check_window not fully anymore")
 def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
     driver.get("https://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
@@ -116,6 +117,7 @@ def test_mobile_web_happy_flow(driver, batch_info, vg_runner):
     eyes.close()
 
 
+@pytest.mark.skip("USDK Difference, check_window not fully anymore")
 def test_rendering_ios_simulator(driver, batch_info, vg_runner):
     driver.get("http://applitools.github.io/demo")
     eyes = Eyes(vg_runner)
