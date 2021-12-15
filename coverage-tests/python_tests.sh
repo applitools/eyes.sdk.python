@@ -4,13 +4,13 @@ if [ $? -ne 0 ]; then
     RESULT=1
     echo "npm install have failed"
 fi
-npm run python:generate:eg
+npm run python:generate
 if [ $? -ne 0 ]; then
     RESULT=1
     echo "npm run python:generate have failed"
 fi
 
-npm run python:run:eg
+npm run python:run:parallel
 if [ $? -ne 0 ]; then
     RESULT=1
     echo "npm run python:run:parallel have failed"
