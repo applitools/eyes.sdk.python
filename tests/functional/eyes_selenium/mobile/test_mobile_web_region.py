@@ -86,7 +86,7 @@ def test_region_fully_capture_ios(eyes, driver):
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-@pytest.mark.skip("USDK Difference")
+@pytest.mark.skip("USDK Difference, probably different emulator")
 def test_region_capture_android(eyes, driver):
     eyes.configure.is_simulator = True
     eyes.open(driver, "Mobile Web Tests", "TestRegionCapture_Android")
@@ -106,7 +106,7 @@ def test_region_capture_android(eyes, driver):
 @pytest.mark.test_page_url(
     "https://applitools.github.io/demo/TestPages/RegionOutOfViewport/"
 )
-@pytest.mark.skip("USDK Difference")
+# @pytest.mark.skip("USDK Difference")
 def test_region_fully_capture_android(eyes, driver):
     eyes.configure.is_simulator = True
     eyes.open(driver, "Mobile Web Tests", "TestRegionFullyCapture_Android")
