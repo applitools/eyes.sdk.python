@@ -203,8 +203,8 @@ class Configuration(object):
         metadata={JsonInclude.NON_NONE: True}, factory=ImageMatchSettings
     )  # type: ImageMatchSettings
     stitch_overlap = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=5
-    )  # type: int
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[int]
     api_key = attr.ib(
         factory=lambda: get_env_with_prefix("APPLITOOLS_API_KEY", None)
     )  # type: Optional[Text]
