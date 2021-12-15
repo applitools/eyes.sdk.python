@@ -21,7 +21,7 @@ def test_check_region_with_bad_selector(driver, vg_runner):
         vg_runner.get_all_test_results()
 
 
-@pytest.mark.skip("USDK Difference")
+@pytest.mark.skip("USDK Difference, smaller screenshot size viewport instead of fully")
 def test_check_region_with_bad_ignore_selector(driver, vg_runner):
     eyes = Eyes(vg_runner)
     driver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage/")
