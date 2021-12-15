@@ -285,8 +285,6 @@ class Eyes(object):
         :param match_timeout:  The amount of time to retry matching (milliseconds)
         :param fully: Defines that the screenshot will contain the entire window.
         """
-        if fully is None:
-            fully = self._runner.CHECK_WINDOW_FULLY_ARG_DEFAULT
         return self.check(tag, Target.window().timeout(match_timeout).fully(fully))
 
     def check_frame(self, frame_reference, tag=None, match_timeout=-1):
