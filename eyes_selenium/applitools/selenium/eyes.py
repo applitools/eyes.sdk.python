@@ -1,7 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
 import typing
-from concurrent.futures import TimeoutError
 from typing import List, Optional, Text, Tuple, Union
 
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -9,28 +8,22 @@ from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
 
 from applitools.common import (
-    DiffsFoundError,
     EyesError,
     FailureReports,
-    NewTestError,
     RectangleSize,
     TestFailedError,
-    TestResultContainer,
-    TestResultsSummary,
     deprecated,
-    logger,
 )
 from applitools.common.selenium import Configuration
 
-from ..common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 from .__version__ import __version__
-from .command_executor import CommandExecutor, ManagerType
+from .command_executor import CommandExecutor
 from .fluent.selenium_check_settings import SeleniumCheckSettings
 from .fluent.target import Target
+from .runner import ClassicRunner, EyesRunner, log_session_results_and_raise_exception
 from .universal_sdk_types import (
     demarshal_locate_result,
     demarshal_match_result,
-    demarshal_server_info,
     demarshal_test_results,
     marshal_check_settings,
     marshal_configuration,
@@ -42,7 +35,7 @@ from .universal_sdk_types import (
 )
 
 if typing.TYPE_CHECKING:
-    from applitools.common import MatchLevel, MatchResult, Region, TestResults
+    from applitools.common import MatchResult, Region, TestResults
     from applitools.common.utils.custom_types import FrameReference, ViewPort
     from applitools.core import (
         PositionProvider,
@@ -52,90 +45,6 @@ if typing.TYPE_CHECKING:
     from applitools.core.extract_text import PATTERN_TEXT_REGIONS
     from applitools.core.locators import LOCATORS_TYPE
     from applitools.selenium import OCRRegion
-
-
-class EyesRunner(object):
-    AUTO_CLOSE_MODE_SYNC = True
-    BASE_AGENT_ID = "eyes.sdk.python"
-    CHECK_WINDOW_FULLY_ARG_DEFAULT = None
-
-    def __init__(self, manager_type, concurrency=None, is_legacy=None):
-        # type: (ManagerType, Optional[int], Optional[bool]) -> None
-        self.logger = logger.bind(runner=id(self))
-        self._commands = CommandExecutor.create(self.BASE_AGENT_ID, __version__)
-        self._ref = self._commands.core_make_manager(
-            manager_type, concurrency, is_legacy
-        )
-
-    @classmethod
-    def get_server_info(cls):
-        with CommandExecutor.create(cls.BASE_AGENT_ID, __version__) as cmd:
-            result = cmd.server_get_info()
-            return demarshal_server_info(result)
-
-    def get_all_test_results(
-        self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
-    ):
-        # type: (bool, Optional[int]) -> TestResultsSummary
-        if not self._commands:
-            self.logger.error("Test results are already retrieved")
-            return TestResultsSummary([])
-        try:
-            if self._ref:
-                try:
-                    results = self._commands.manager_close_all_eyes(self._ref, timeout)
-                except TimeoutError:
-                    self.logger.warning(
-                        "Tests completion timeout exceeded", timeout=timeout
-                    )
-                    raise EyesError("Tests didn't finish in {} seconds".format(timeout))
-                # We don't have server_url, api_key and proxy settings in runner
-                # USDK should return them back as a part of TestResults
-                structured_results = demarshal_test_results(results, None)
-                for r in structured_results:
-                    _log_session_results_and_raise_exception(
-                        self.logger, should_raise_exception, r
-                    )
-            else:
-                structured_results = []
-            return TestResultsSummary(
-                [
-                    TestResultContainer(result, None, None)
-                    for result in structured_results
-                ]
-            )
-        finally:
-            self._ref = None
-            self._commands.close()
-
-
-class RunnerOptions(object):
-    concurrency = 5
-
-    def test_concurrency(self, value):
-        # type: (int) -> RunnerOptions
-        self.concurrency = value
-        return self
-
-
-class VisualGridRunner(EyesRunner):
-    AUTO_CLOSE_MODE_SYNC = False
-    CHECK_WINDOW_FULLY_ARG_DEFAULT = True
-
-    def __init__(self, options_or_concurrency=RunnerOptions()):
-        # type: (Union[RunnerOptions, int]) -> None
-        if isinstance(options_or_concurrency, int):
-            concurrency = options_or_concurrency * 5  # legacy factor
-            is_legacy = True
-        else:
-            concurrency = options_or_concurrency.concurrency
-            is_legacy = False
-        super(VisualGridRunner, self).__init__(ManagerType.VG, concurrency, is_legacy)
-
-
-class ClassicRunner(EyesRunner):
-    def __init__(self):
-        super(ClassicRunner, self).__init__(ManagerType.CLASSIC)
 
 
 class Eyes(object):
@@ -551,7 +460,7 @@ class Eyes(object):
         if wait_result:
             results = demarshal_test_results(results, self.configure)
             for r in results:
-                _log_session_results_and_raise_exception(self.logger, raise_ex, r)
+                log_session_results_and_raise_exception(self.logger, raise_ex, r)
             return results[0]  # Original interface returns just one result
         else:
             return None
@@ -590,35 +499,3 @@ class Eyes(object):
             self._abort(self._runner.AUTO_CLOSE_MODE_SYNC)
         else:
             self._close(True, self._runner.AUTO_CLOSE_MODE_SYNC)
-
-
-def _log_session_results_and_raise_exception(logger, raise_ex, results):
-    logger.info("close({}): {}".format(raise_ex, results))
-    results_url = results.url
-    scenario_id_or_name = results.name
-    app_id_or_name = results.app_name
-    if results.steps == 0:
-        logger.info("--- Test has no checks. \n\tSee details at {}".format(results_url))
-        if raise_ex:
-            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
-    elif results.is_unresolved:
-        if results.is_new:
-            logger.info(
-                "--- New test ended. \n\tPlease approve the new baseline at {}".format(
-                    results_url
-                )
-            )
-            if raise_ex:
-                raise NewTestError(results, scenario_id_or_name, app_id_or_name)
-        else:
-            logger.info(
-                "--- Differences are found. \n\tSee details at {}".format(results_url)
-            )
-            if raise_ex:
-                raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
-    elif results.is_failed:
-        logger.info("--- Failed test ended. \n\tSee details at {}".format(results_url))
-        if raise_ex:
-            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
-    else:
-        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))

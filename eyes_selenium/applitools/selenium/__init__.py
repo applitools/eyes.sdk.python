@@ -34,11 +34,12 @@ from applitools.core.cut import (  # noqa
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
+from applitools.core.extract_text import OCRRegion, TextRegionSettings
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 
-from ..core.extract_text import OCRRegion, TextRegionSettings
-from .eyes import ClassicRunner, Eyes, RunnerOptions, VisualGridRunner
+from .eyes import Eyes
 from .fluent.target import Target  # noqa
+from .runner import ClassicRunner, RunnerOptions, VisualGridRunner
 
 __all__ = (
     # noqa
