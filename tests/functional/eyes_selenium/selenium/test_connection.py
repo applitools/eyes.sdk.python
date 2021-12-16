@@ -7,5 +7,4 @@ def test_make_manager():
         "Core.makeSDK", {"name": "a", "version": "1", "protocol": "webdriver"}
     )
     res = ec.command("Core.makeManager", {"type": "classic"}, True, 1)
-    assert res["key"] == 1
     assert "applitools-ref-id" in res["payload"]["result"]

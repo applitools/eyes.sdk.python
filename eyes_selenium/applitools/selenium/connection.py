@@ -1,11 +1,10 @@
 import atexit
 import weakref
 from concurrent.futures import Future
-from itertools import count
 from json import dumps, loads
 from threading import Thread
 from typing import Optional, Text
-from uuid import uuid4
+from uuid import uuid1
 
 from websocket import WebSocket
 
@@ -19,7 +18,6 @@ class USDKConnection(object):
         # type: (WebSocket, Optional[Text]) -> None
         self.server_log_file = server_log_file
         self._websocket = websocket
-        self._keys = count(1)
         self._response_futures = {}
         weak_socket = weakref.ref(self._websocket)
         self._receiver_thread = Thread(
@@ -49,7 +47,7 @@ class USDKConnection(object):
 
     def command(self, name, payload, wait_result, wait_timeout):
         # type: (Text, dict, bool, float) -> Optional[dict]
-        key = next(self._keys)
+        key = str(uuid1())
         future = Future()
         self._response_futures[key] = future
         self._websocket.send(dumps({"name": name, "key": key, "payload": payload}))
