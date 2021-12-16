@@ -18,6 +18,27 @@ def test_usdk_commands_make_manager():
     assert "applitools-ref-id" in mgr
 
 
+def test_usdk_commands_open_eyes(local_chrome_driver):
+    local_chrome_driver.get("https://demo.applitools.com")
+    commands = CommandExecutor(USDKConnection.create())
+
+    commands.make_sdk("sdk_name", "sdk_version", getcwd())
+
+    mgr = commands.core_make_manager(ManagerType.CLASSIC)
+
+    eyes = commands.manager_open_eyes(
+        mgr,
+        {
+            "sessionId": local_chrome_driver.session_id,
+            "serverUrl": local_chrome_driver.command_executor._url,  # noqa
+            "capabilities": local_chrome_driver.capabilities,
+        },
+        {"appName": "a", "testName": "b"},
+    )
+
+    assert "applitools-ref-id" in eyes
+
+
 def test_usdk_commands_set_get_viewport_size(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
