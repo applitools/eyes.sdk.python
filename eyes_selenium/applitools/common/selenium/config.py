@@ -42,7 +42,7 @@ class Configuration(ConfigurationBase):
         metadata={JsonInclude.NON_NONE: True}, default=StitchMode.Scroll
     )  # type: StitchMode
     hide_scrollbars = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=False
+        metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: bool
     hide_caret = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=False
