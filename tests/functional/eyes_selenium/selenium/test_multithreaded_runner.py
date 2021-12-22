@@ -19,6 +19,7 @@ def test_ten_threads(runner_type):
             driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
             driver.execute_script("window.scrollTo(0,{});".format(n * 55))
             eyes = Eyes(runner)
+            eyes.configure.set_hide_scrollbars(False)
             try:
                 eyes.open(
                     driver,

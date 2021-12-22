@@ -205,3 +205,10 @@ def test_region_padding_are_added(method_name):
     )
 
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
+
+
+def test_shadow():
+    cs = SeleniumCheckSettings()
+    res = cs.frame("a").region("b")
+
+    assert res
