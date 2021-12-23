@@ -104,6 +104,10 @@ jobs:
           env:
               - TOX_ENV=unit
 
+        - python: 3.9
+          env:
+              - TOX_ENV=unit
+
         - stage: integration-tests
           os: windows
           language: sh
@@ -187,6 +191,16 @@ jobs:
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.9
           addons:
               chrome: stable
               firefox: latest
