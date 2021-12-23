@@ -107,7 +107,7 @@ def test_target_path_id_with_implicit_css_shadow():
     assert path == ElementPath(By.ID, "i", ElementPath(By.CSS_SELECTOR, "c"))
 
 
-def test_target_path_id_with_two_level_implicit_css_shadow():
+def test_target_path_id_with_two_level_implicit_css_shadows():
     path = TargetPath.id("i").shadow("c").shadow("cc")
 
     assert path == ElementPath(
@@ -119,6 +119,23 @@ def test_target_path_id_with_two_level_implicit_css_shadow():
             ElementPath(
                 By.CSS_SELECTOR,
                 "cc",
+            ),
+        ),
+    )
+
+
+def test_target_path_id_with_two_level_shadows():
+    path = TargetPath.id("i").shadow([By.XPATH, "x"]).shadow([By.LINK_TEXT, "l"])
+
+    assert path == ElementPath(
+        By.ID,
+        "i",
+        ElementPath(
+            By.XPATH,
+            "x",
+            ElementPath(
+                By.LINK_TEXT,
+                "l",
             ),
         ),
     )
