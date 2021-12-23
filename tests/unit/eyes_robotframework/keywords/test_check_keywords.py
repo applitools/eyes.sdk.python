@@ -36,6 +36,8 @@ class TestData(object):
         result=[RegionByRectangle(Region(34, 34, 34, 34))],
     )
 
+    __test__ = False  # avoid warnings in test frameworks
+
     @property
     def check_params(self):
         # type: () -> List

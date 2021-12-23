@@ -28,6 +28,8 @@ class TestResultsStatus(Enum):
     Unresolved = "Unresolved"
     Failed = "Failed"
 
+    __test__ = False  # avoid warnings in test frameworks
+
 
 @attr.s
 class SessionUrls(object):
