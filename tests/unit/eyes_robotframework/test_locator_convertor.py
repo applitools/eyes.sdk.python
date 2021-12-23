@@ -11,6 +11,7 @@ from EyesLibrary import LocatorConverter
 from EyesLibrary.errors import EyesLibraryValueError
 
 TestData = namedtuple("TestData", "selector result")
+TestData.__test__ = False  # avoid warnings in test frameworks
 SELENIUM_SELECTORS_DATA = [
     TestData("id:selector", [By.ID, "selector"]),
     TestData("xpath:selector", [By.XPATH, "selector"]),
