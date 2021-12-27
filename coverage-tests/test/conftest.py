@@ -225,6 +225,7 @@ def safari12(sauce_url, legacy):
         capabilities["browserName"] = "safari"
         capabilities["platform"] = "macOS 10.13"
         capabilities["version"] = "12.1"
+        capabilities["seleniumVersion"] = "3.4.0"
     else:
         capabilities = {
             "browserName": "safari",
