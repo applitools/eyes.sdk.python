@@ -205,13 +205,13 @@ def safari11(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
-        capabilities["platform"] = "macOS 10.12"
-        capabilities["version"] = "11.0"
+        capabilities["platform"] = "macOS 10.13"
+        capabilities["version"] = "11.1"
     else:
         capabilities = {
             "browserName": "safari",
-            "browserVersion": "11.0",
-            "platformName": "macOS 10.12",
+            "browserVersion": "11.1",
+            "platformName": "macOS 10.13",
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
