@@ -15,13 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import IEDriverManager
 
-from applitools.selenium import (
-    Configuration,
-    Eyes,
-    StitchMode,
-    VisualGridRunner,
-    logger,
-)
+from applitools.selenium import Configuration, Eyes, StitchMode, VisualGridRunner
 from applitools.selenium.__version__ import __version__
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
@@ -128,7 +122,6 @@ def driver(request, browser_config, webdriver_module):
             )
         )
         selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-        logger.debug("SELENIUM_URL={}".format(selenium_url))
 
         desired_caps = browser_config.copy()
         desired_caps["build"] = os.getenv("BUILD_TAG", None)
@@ -163,22 +156,16 @@ def driver(request, browser_config, webdriver_module):
 
     if test_page_url:
         browser.get(test_page_url)
-        logger.info("navigation to URL: {}".format(test_page_url))
 
-    yield browser
-
-    # report results
-    try:
-        browser.execute_script(
-            "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
-        )
-    except WebDriverException:
-        # we can ignore the exceptions of WebDriverException type -> We're done with tests.
-        logger.info(
-            "Warning: The driver failed to quit properly. Check test and server side logs."
-        )
-    finally:
-        browser.quit()
+    with browser:
+        yield browser
+        # report results
+        try:
+            browser.execute_script(
+                "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
+            )
+        except WebDriverException:
+            pass
 
 
 class Platform(namedtuple("Platform", "name version browsers extra")):

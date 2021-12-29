@@ -5,12 +5,9 @@ import attr
 import pytest
 from six import iteritems
 
-from applitools.common import BatchInfo, Configuration, StdoutLogger, logger
+from applitools.common import BatchInfo, Configuration, StdoutLogger
 from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
-
-logger.set_logger(StdoutLogger(is_verbose=True))
-
 
 pytest_plugins = (
     "tests.functional.pytest_reporting",
@@ -77,7 +74,6 @@ def check_test_result(eyes):
 @pytest.fixture(name="eyes", scope="function")
 def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
     # TODO: allow to setup logger level through pytest option
-    # logger.set_logger(StdoutLogger())
     # in case eyes-images
     eyes = eyes_class()
     if eyes_runner:

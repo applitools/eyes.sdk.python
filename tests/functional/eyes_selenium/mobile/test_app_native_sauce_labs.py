@@ -3,15 +3,13 @@ from copy import copy
 
 import pytest
 from appium import webdriver as appium_webdriver
-from mock import patch
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import logger
 from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture
 def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabilities):
     selenium_url = (
         "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
@@ -32,21 +30,15 @@ def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabil
     )
     if mobile_driver is None:
         raise WebDriverException("Never created!")
-
-    yield eyes, mobile_driver
-
-    # report results
-    try:
-        mobile_driver.execute_script(
-            "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
-        )
-    except WebDriverException:
-        logger.info(
-            "Warning: The driver failed to quit properly. Check test and server side logs."
-        )
-    finally:
-        mobile_driver.quit()
-        eyes.close()
+    with mobile_driver, eyes:
+        yield eyes, mobile_driver
+        # report results
+        try:
+            mobile_driver.execute_script(
+                "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
+            )
+        except WebDriverException:
+            pass
 
 
 @pytest.yield_fixture(scope="function")

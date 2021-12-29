@@ -5,7 +5,7 @@ import pytest
 from appium import webdriver as appium_webdriver
 from selenium.common.exceptions import WebDriverException
 
-from applitools.common import StitchMode, logger
+from applitools.common import StitchMode
 from applitools.selenium import ScreenOrientation, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
@@ -129,21 +129,15 @@ def mobile_eyes(request, page, eyes):
         )
     )
     driver = eyes.open(driver, test_suite_name, test_name)
-    yield eyes, fully
-
-    # report results
-    try:
-        driver.execute_script(
-            "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
-        )
-    except WebDriverException:
-        # we can ignore the exceptions of WebDriverException type -> We're done with tests.
-        logger.info(
-            "Warning: The driver failed to quit properly. Check test and server side logs."
-        )
-    finally:
-        driver.quit()
-        eyes.close()
+    with driver, eyes:
+        yield eyes, fully
+        # report results
+        try:
+            driver.execute_script(
+                "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
+            )
+        except WebDriverException:
+            pass
 
 
 def create_browser_config(device, platform_name, browser_name):
