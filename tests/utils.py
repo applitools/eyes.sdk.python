@@ -15,7 +15,6 @@ def get_session_results(api_key, results):
         "{}?format=json&AccessToken={}&apiKey={}".format(
             api_session_url, results.secret_token, api_key
         ),
-        verify=False,
     )
     r.raise_for_status()
     return r.json()
