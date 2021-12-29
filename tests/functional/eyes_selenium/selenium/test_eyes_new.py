@@ -7,7 +7,12 @@ def test_create_open_check_close_eyes(local_chrome_driver):
     )
     eyes = Eyes()
     eyes.configure.set_hide_scrollbars(False)
-    eyes.open(local_chrome_driver, "USDK Test", "Test create open eyes")
+    eyes.open(
+        local_chrome_driver,
+        "USDK Test",
+        "Test create open eyes",
+        {"width": 800, "height": 600},
+    )
     check_result = eyes.check_window()
     eyes.close(False)
 
@@ -24,7 +29,7 @@ def test_create_open_check_close_vg_eyes(local_chrome_driver):
         local_chrome_driver,
         "USDK Test",
         "Test create open VG eyes",
-        {"width": 1024, "height": 768},
+        {"width": 800, "height": 600},
     )
     check_result = eyes.check_window()
     eyes.close_async()
@@ -97,7 +102,7 @@ def test_get_all_vg_test_results(local_chrome_driver):
         local_chrome_driver,
         "USDK Test",
         "Test get all vg test results 1",
-        {"width": 1024, "height": 768},
+        {"width": 800, "height": 600},
     )
     eyes1.check_window()
     results = [eyes1.close()]
@@ -106,7 +111,7 @@ def test_get_all_vg_test_results(local_chrome_driver):
         local_chrome_driver,
         "USDK Test",
         "Test get all vg test results 2",
-        {"width": 1024, "height": 768},
+        {"width": 800, "height": 600},
     )
     eyes2.check_window()
     results.append(eyes2.close())
