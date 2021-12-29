@@ -6,9 +6,6 @@ from applitools.common import deprecated
 __all__ = ("StdoutLogger", "FileLogger")
 
 
-deprecated.module(__name__, "Logging configuration is not supported anymore")
-
-
 def StdoutLogger(*args, **kwargs):
     """Stub function to avoid breaking existing code"""
     pass
@@ -19,6 +16,7 @@ def FileLogger(*args, **kwargs):
     pass
 
 
+@deprecated.attribute("logging configuration is not supported anymore")
 def set_logger(logger=None):
     """Stub function to avoid breaking existing code"""
     pass
