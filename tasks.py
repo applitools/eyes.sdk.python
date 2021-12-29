@@ -91,7 +91,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "requests",
         "tox==3.14.3",
         "virtualenv==20.4.0",
-        "webdriver_manager==" + ("2.4.0" if sys.version_info[:1] >= (3,) else "1.5"),
+        "webdriver_manager==" + ("3.5.2" if sys.version_info[:1] >= (3,) else "1.5"),
     ]
     if testing:
         requires = testing_requires
