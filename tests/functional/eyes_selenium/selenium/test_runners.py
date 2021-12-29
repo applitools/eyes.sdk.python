@@ -38,6 +38,7 @@ def test_classic_runner_raise_exception(driver):
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window())
+    eyes.close(False)
     with pytest.raises(Exception):
         classic_runner.get_all_test_results()
 
