@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from six import string_types as basestring
 
-from applitools.common import logger
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Region
 from applitools.common.ultrafastgrid import VisualGridOption
@@ -368,14 +367,11 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _region_provider_from(self, region, method_name, padding):
         if isinstance(region, basestring):
-            logger.debug("{name}: RegionByCssSelector".format(name=method_name))
             return RegionBySelector(By.CSS_SELECTOR, region, padding)
         if is_list_or_tuple(region):
             by, val = region
-            logger.debug("{name}: RegionBySelector".format(name=method_name))
             return RegionBySelector(by, val, padding)
         elif is_webelement(region):
-            logger.debug("{name}: RegionByElement".format(name=method_name))
             return RegionByElement(region, padding)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name, padding
@@ -422,14 +418,11 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _floating_provider_from(self, region, bounds):
         if is_webelement(region):
-            logger.debug("floating: FloatingRegionByElement")
             return FloatingRegionByElement(region, bounds)
         if isinstance(region, basestring):
-            logger.debug("floating: FloatingRegionByCssSelector")
             return FloatingRegionBySelector(By.CSS_SELECTOR, region, bounds)
         if is_list_or_tuple(region):
             by, value = region
-            logger.debug("floating: FloatingRegionBySelector")
             return FloatingRegionBySelector(by, value, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
@@ -437,16 +430,13 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
         if is_webelement(region):
-            logger.debug("accessibility: AccessibilityRegionByElement")
             return AccessibilityRegionByElement(region, accessibility_region_type)
         if isinstance(region, basestring):
-            logger.debug("accessibility: AccessibilityRegionBySelector")
             return AccessibilityRegionBySelector(
                 By.CSS_SELECTOR, region, accessibility_region_type
             )
         if is_list_or_tuple(region):
             by, value = region
-            logger.debug("accessibility: AccessibilityRegionBySelector")
             return AccessibilityRegionBySelector(by, value, accessibility_region_type)
         return super(SeleniumCheckSettings, self)._accessibility_provider_from(
             region, accessibility_region_type

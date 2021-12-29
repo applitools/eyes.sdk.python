@@ -1,4 +1,4 @@
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 
 import typing
 from concurrent.futures import TimeoutError
@@ -10,7 +10,6 @@ from applitools.common import (
     TestFailedError,
     TestResultContainer,
     TestResultsSummary,
-    logger,
 )
 from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 
@@ -28,7 +27,6 @@ class EyesRunner(object):
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
-        self.logger = logger.bind(runner=id(self))
         self._commands = CommandExecutor.create(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
@@ -45,24 +43,19 @@ class EyesRunner(object):
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         if not self._commands:
-            self.logger.error("Test results are already retrieved")
+            # Test results are already retrieved
             return TestResultsSummary([])
         try:
             if self._ref:
                 try:
                     results = self._commands.manager_close_all_eyes(self._ref, timeout)
                 except TimeoutError:
-                    self.logger.warning(
-                        "Tests completion timeout exceeded", timeout=timeout
-                    )
                     raise EyesError("Tests didn't finish in {} seconds".format(timeout))
                 # We don't have server_url, api_key and proxy settings in runner
                 # USDK should return them back as a part of TestResults
                 structured_results = demarshal_test_results(results, None)
                 for r in structured_results:
-                    log_session_results_and_raise_exception(
-                        self.logger, should_raise_exception, r
-                    )
+                    log_session_results_and_raise_exception(should_raise_exception, r)
             else:
                 structured_results = []
             return TestResultsSummary(
@@ -104,33 +97,29 @@ class ClassicRunner(EyesRunner):
         super(ClassicRunner, self).__init__(ManagerType.CLASSIC)
 
 
-def log_session_results_and_raise_exception(logger, raise_ex, results):
-    logger.info("close({}): {}".format(raise_ex, results))
+def log_session_results_and_raise_exception(raise_ex, results):
     results_url = results.url
     scenario_id_or_name = results.name
     app_id_or_name = results.app_name
     if results.steps == 0:
-        logger.info("--- Test has no checks. \n\tSee details at {}".format(results_url))
+        print("--- Test has no checks. \n\tSee details at ", results_url)
         if raise_ex:
             raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
     elif results.is_unresolved:
         if results.is_new:
-            logger.info(
-                "--- New test ended. \n\tPlease approve the new baseline at {}".format(
-                    results_url
-                )
+            print(
+                "--- New test ended. \n\tPlease approve the new baseline at",
+                results_url,
             )
             if raise_ex:
                 raise NewTestError(results, scenario_id_or_name, app_id_or_name)
         else:
-            logger.info(
-                "--- Differences are found. \n\tSee details at {}".format(results_url)
-            )
+            print("--- Differences are found. \n\tSee details at", results_url)
             if raise_ex:
                 raise DiffsFoundError(results, scenario_id_or_name, app_id_or_name)
     elif results.is_failed:
-        logger.info("--- Failed test ended. \n\tSee details at {}".format(results_url))
+        print("--- Failed test ended. \n\tSee details at", results_url)
         if raise_ex:
             raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
     else:
-        logger.info("--- Test passed. \n\tSee details at {}".format(results_url))
+        print("--- Test passed. \n\tSee details at", results_url)

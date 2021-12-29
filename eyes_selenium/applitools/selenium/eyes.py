@@ -60,7 +60,6 @@ class Eyes(object):
             self._runner = ClassicRunner()
         else:
             self._runner = runner  # type: EyesRunner
-        self.logger = self._runner.logger.bind(eyes_id=id(self))
         self._commands = self._runner._commands  # noqa
 
     def open(
@@ -78,7 +77,7 @@ class Eyes(object):
         if viewport_size is not None:
             self.configure.viewport_size = viewport_size
         if self.configure.is_disabled:
-            self.logger.info("open(): ignored (disabled)")
+            pass
         else:
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
@@ -121,7 +120,6 @@ class Eyes(object):
             check_settings = check_settings.with_name(name)
 
         if self.configure.is_disabled:
-            self.logger.info("check(): ignored (disabled)")
             return None
         if not self.is_open:
             self.abort()
@@ -448,7 +446,6 @@ class Eyes(object):
     def _close(self, raise_ex, wait_result):
         # type: (bool, bool) -> Optional[TestResults]
         if self.configure.is_disabled:
-            self.logger.info("close(): ignored (disabled)")
             return None
         if not self.is_open:
             raise EyesError("Eyes not open")
@@ -458,7 +455,7 @@ class Eyes(object):
         if wait_result:
             results = demarshal_test_results(results, self.configure)
             for r in results:
-                log_session_results_and_raise_exception(self.logger, raise_ex, r)
+                log_session_results_and_raise_exception(raise_ex, r)
             return results[0]  # Original interface returns just one result
         else:
             return None
@@ -466,7 +463,6 @@ class Eyes(object):
     def _abort(self, wait_result):
         # type: (bool) -> Optional[List[TestResults]]
         if self.configure.is_disabled:
-            self.logger.info("abort(): ignored (disabled)")
             return None
         elif self.is_open:
             results = self._commands.eyes_abort_eyes(self._eyes_ref, wait_result)

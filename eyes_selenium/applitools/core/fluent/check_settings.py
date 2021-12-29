@@ -1,12 +1,12 @@
-from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar, overload
+from typing import TYPE_CHECKING, List, Optional, Text, TypeVar, overload
 
 import attr
 from six import raise_from
 
-from applitools.common import FloatingBounds, MatchLevel, logger
+from applitools.common import FloatingBounds, MatchLevel
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Rectangle, Region
-from applitools.common.utils import argument_guard, json_utils
+from applitools.common.utils import argument_guard
 from applitools.common.utils.json_utils import JsonInclude
 
 from .region import (
@@ -233,7 +233,6 @@ class CheckSettings(object):
             )
         else:
             raise TypeError("No type match")
-        logger.info("Adding Region {} with FloatingBounds {}".format(region, bounds))
         try:
             region_or_container = self._floating_provider_from(region, bounds)
         except TypeError as e:
@@ -311,9 +310,7 @@ class CheckSettings(object):
         return regions_list
 
     def _region_provider_from(self, region, method_name, padding):
-        logger.debug("calling _{}".format(method_name))
         if isinstance(region, Region):
-            logger.debug("{name}: RegionByRectangle".format(name=method_name))
             return RegionByRectangle(region)
         raise TypeError(
             "Unsupported region: \n\ttype: {} \n\tvalue: {}".format(
@@ -323,7 +320,6 @@ class CheckSettings(object):
 
     def _floating_provider_from(self, region, bounds):
         if isinstance(region, Region):
-            logger.debug("floating: FloatingRegionByRectangle")
             return FloatingRegionByRectangle(Region.from_(region), bounds)
         raise TypeError(
             "Unsupported floating region: \n\ttype: {} \n\tvalue: {}".format(
@@ -333,10 +329,8 @@ class CheckSettings(object):
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
         if isinstance(region, (Region, Rectangle)) and accessibility_region_type:
-            logger.debug("accessibility: AccessibilityRegionByRectangle")
             return AccessibilityRegionByRectangle(region, accessibility_region_type)
         elif isinstance(region, AccessibilityRegion):
-            logger.debug("accessibility: AccessibilityRegionByAccessibilityRegion")
             return AccessibilityRegionByRectangle(region)
         raise TypeError(
             "Unsupported accessibility region: \n\ttype: {} \n\tvalue: {}".format(
