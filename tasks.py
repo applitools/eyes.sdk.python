@@ -187,24 +187,6 @@ def mypy_check(c, selenium=False):
 
 
 @task
-def run_tests_on_CI(c, tests):
-    browsers = os.getenv("TEST_BROWSERS", "").split(",")
-    if not browsers:
-        raise ValueError("`TEST_BROWSERS` env variable should be set")
-
-    pattern = (
-        "pytest {par} {tests} "
-        "--ignore={tests}/test_dom_capture.py "
-        "--ignore={tests}/test_client_sites.py".format(
-            par="-n6" if bool(os.getenv("TEST_REMOTE", False)) else "-n2",
-            tests=tests,
-        )
-    )
-
-    c.run(pattern, echo=True)
-
-
-@task
 def gen_robot_docs(c):
     c.run(
         "python -m robot.libdoc --format html EyesLibrary   docs/eyes_robotframework/keywords.html"
