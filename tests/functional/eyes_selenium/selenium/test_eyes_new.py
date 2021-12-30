@@ -1,4 +1,5 @@
-from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
+from applitools.selenium.fluent.target_path import TargetPath
 
 
 def test_create_open_check_close_eyes(local_chrome_driver):
@@ -121,3 +122,17 @@ def test_get_all_vg_test_results(local_chrome_driver):
     assert len(all_results) == 2
     assert results[0] == all_results[0].test_results
     assert results[1] == all_results[1].test_results
+
+
+def test_check_element_in_shadow_dom(local_chrome_driver):
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/ShadowDOM/index.html"
+    )
+    with Eyes() as eyes:
+        eyes.open(
+            local_chrome_driver,
+            "USDK Test",
+            "Test check element in shadow dom",
+            {"width": 800, "height": 600},
+        )
+        eyes.check(Target.region(TargetPath("#has-shadow-root").shadow("h1")))

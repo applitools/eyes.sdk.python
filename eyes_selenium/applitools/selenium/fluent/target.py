@@ -14,6 +14,8 @@ if TYPE_CHECKING:
         FrameNameOrId,
     )
 
+    from .target_path import TargetPath
+
 __all__ = ("Target",)
 
 
@@ -49,6 +51,12 @@ class Target(object):
     @overload
     def region(by_selector):
         # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
+    @overload
+    def region(target_path):
+        # type: (TargetPath) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa
