@@ -88,5 +88,11 @@ class Target(object):
         pass
 
     @staticmethod  # noqa
+    @overload
+    def frame(target_path):
+        # type: (TargetPath) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
     def frame(frame):
         return SeleniumCheckSettings().frame(frame)

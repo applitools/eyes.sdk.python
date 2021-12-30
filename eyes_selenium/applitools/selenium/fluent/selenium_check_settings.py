@@ -376,6 +376,11 @@ class SeleniumCheckSettings(CheckSettings):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
+    @overload  # noqa
+    def frame(self, target_path):
+        # type: (TargetPath) -> SeleniumCheckSettings
+        pass
+
     def frame(self, frame):  # noqa
         # type:(...) -> SeleniumCheckSettings
         fl = FrameLocator()
@@ -387,7 +392,9 @@ class SeleniumCheckSettings(CheckSettings):
             fl.frame_element = frame
         elif is_list_or_tuple(frame):
             by, value = frame
-            fl.frame_selector = [by, value]
+            fl.frame_selector = TargetPath(by, value)
+        elif isinstance(frame, TargetPath):
+            fl.frame_selector = frame
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
