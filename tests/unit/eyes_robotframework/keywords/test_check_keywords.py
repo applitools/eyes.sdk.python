@@ -11,6 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from applitools.common import Region
 from applitools.core import RegionByRectangle
 from applitools.selenium.fluent import FrameLocator, RegionBySelector
+from applitools.selenium.fluent.target_path import TargetPath
 from EyesLibrary.keywords.check_settings import CheckSettingsKeywords
 
 WEB_ELEMENT = Mock(WebElement)
@@ -132,7 +133,9 @@ def test_check_region(check_keyword, data):
         TestData(
             "check_frame_by_selector",
             check_region="id:overflow-div",
-            check_region_result=FrameLocator(frame_selector=[By.ID, "overflow-div"]),
+            check_region_result=FrameLocator(
+                frame_selector=TargetPath(By.ID, "overflow-div")
+            ),
         ),
     ],
     ids=lambda d: str(d),

@@ -59,7 +59,7 @@ def test_check_frame(method_name="frame"):
 
     frame_selector = [By.ID, "some-selector"]
     cs = get_cs_from_method(method_name, frame_selector)
-    assert cs.values.frame_chain[0].frame_selector == [By.ID, "some-selector"]
+    assert cs.values.frame_chain[0].frame_selector == TargetPath(By.ID, "some-selector")
 
     frame_index = 3
     cs = get_cs_from_method(method_name, frame_index)
