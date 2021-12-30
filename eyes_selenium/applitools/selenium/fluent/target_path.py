@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import TYPE_CHECKING, overload
 
 from selenium.webdriver.common.by import By
@@ -37,34 +38,16 @@ class TargetPath(object):
         pass
 
     def shadow(self, css_selector_or_by, selector=None):
-        if self.shadow_path:
-            self.shadow_path.shadow(css_selector_or_by, selector)
-        else:
-            self.shadow_path = TargetPath(css_selector_or_by, selector)
-        return self
+        copy = deepcopy(self)
+        path = copy
+        while path.shadow_path is not None:
+            path = path.shadow_path
+        path.shadow_path = TargetPath(css_selector_or_by, selector)
+        return copy
 
     def __eq__(self, that):
         # type: (TargetPath) -> bool
         return type(self) is type(that) and vars(self) == vars(that)
-
-    def __repr__1(self):
-        # type: () -> Text
-        if self.by == By.CSS_SELECTOR:
-            text = "{}({!r})".format(type(self).__name__, self.selector)
-        else:
-            text = "{}(By.{}, {!r})".format(
-                type(self).__name__, self.by.upper().replace(" ", "_"), self.selector
-            )
-        shadow = self.shadow_path
-        while shadow:
-            if shadow.by == By.CSS_SELECTOR:
-                text += ".shadow({!r})".format(shadow.selector)
-            else:
-                text += ".shadow(By.{}, {!r})".format(
-                    shadow.by.upper().replace(" ", "_"), shadow.selector
-                )
-            shadow = shadow.shadow_path
-        return text
 
     def __repr__(self):
         # type: () -> Text

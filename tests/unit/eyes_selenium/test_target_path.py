@@ -105,3 +105,13 @@ def test_target_path_name_with_one_level_shadow_link_text_repr():
     path = TargetPath(By.NAME, "n").shadow(By.LINK_TEXT, "l")
 
     assert repr(path) == "TargetPath(By.NAME, 'n').shadow(By.LINK_TEXT, 'l')"
+
+
+def test_target_path_immutable():
+    root = TargetPath("root")
+    path1 = root.shadow("s1")
+    path2 = root.shadow("s2")
+
+    assert root == TargetPath("root")
+    assert path1 == TargetPath("root").shadow("s1")
+    assert path2 == TargetPath("root").shadow("s2")
