@@ -7,6 +7,7 @@ from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElemen
 from applitools.common import FloatingBounds
 from applitools.selenium import AccessibilityRegionType, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.selenium.fluent.target_path import TargetPath
 
 
 def get_cs_from_method(method_name, *args, **kwargs):
@@ -87,22 +88,25 @@ def test_check_region_with_elements(method_name="region"):
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
     cs = get_cs_from_method(method_name, [by, value])
-    assert cs.values.target_selector == [by, value]
+    assert cs.values.target_selector == TargetPath(by, value)
+
+    cs = get_cs_from_method(method_name, TargetPath(by, value))
+    assert cs.values.target_selector == TargetPath(by, value)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_match_regions_with_selectors_input(method_name):
     css_selector = ".cssSelector"
     regions = get_regions_from_(method_name, css_selector)
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == css_selector
+    assert regions[0]._target_path == TargetPath(css_selector)
+
+    regions = get_regions_from_(method_name, TargetPath(css_selector))
+    assert regions[0]._target_path == TargetPath(css_selector)
 
     locator = [By.XPATH, "locator"]
     regions = get_regions_from_(method_name, locator, css_selector)
-    assert regions[0]._by == By.XPATH
-    assert regions[0]._value == "locator"
-    assert regions[1]._by == By.CSS_SELECTOR
-    assert regions[1]._value == css_selector
+    assert regions[0]._target_path == TargetPath(By.XPATH, "locator")
+    assert regions[1]._target_path == TargetPath(By.CSS_SELECTOR, css_selector)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -138,30 +142,26 @@ def test_match_regions_with_by_values(method_name):
     regions = get_regions_from_(
         method_name, by_name, by_id, by_class, by_tag_name, by_css_selector, by_xpath
     )
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "some-name"
-    assert regions[1]._by == By.ID
-    assert regions[1]._value == "ident"
-    assert regions[2]._by == By.CLASS_NAME
-    assert regions[2]._value == "class_name"
-    assert regions[3]._by == By.TAG_NAME
-    assert regions[3]._value == "tag_name"
-    assert regions[4]._by == By.CSS_SELECTOR
-    assert regions[4]._value == "css_selector"
-    assert regions[5]._by == By.XPATH
-    assert regions[5]._value == "xpath"
+    assert regions[0]._target_path == TargetPath(By.NAME, "some-name")
+    assert regions[1]._target_path == TargetPath(By.ID, "ident")
+    assert regions[2]._target_path == TargetPath(By.CLASS_NAME, "class_name")
+    assert regions[3]._target_path == TargetPath(By.TAG_NAME, "tag_name")
+    assert regions[4]._target_path == TargetPath(By.CSS_SELECTOR, "css_selector")
+    assert regions[5]._target_path == TargetPath(By.XPATH, "xpath")
 
 
 def test_match_floating_region():
     regions = get_regions_from_("floating", 5, [By.NAME, "name"])
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "name"
+    assert regions[0]._target_path == TargetPath(By.NAME, "name")
 
     regions = get_regions_from_("floating", 5, "name")
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == "name"
+    assert regions[0]._target_path == TargetPath("name")
+
+    regions = get_regions_from_("floating", 5, TargetPath("name"))
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._target_path == TargetPath("name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
@@ -174,15 +174,13 @@ def test_match_accessibility_region():
         "accessibility", [By.NAME, "name"], AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "name"
+    assert regions[0]._target_path == TargetPath(By.NAME, "name")
 
     regions = get_regions_from_(
         "accessibility", "name", AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == "name"
+    assert regions[0]._target_path == TargetPath(By.CSS_SELECTOR, "name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_(
@@ -205,10 +203,3 @@ def test_region_padding_are_added(method_name):
     )
 
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
-
-
-def test_shadow():
-    cs = SeleniumCheckSettings()
-    res = cs.frame("a").region("b")
-
-    assert res

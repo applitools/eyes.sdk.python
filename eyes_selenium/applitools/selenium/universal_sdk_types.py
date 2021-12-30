@@ -44,6 +44,7 @@ from .fluent import (
     RegionBySelector,
 )
 from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
+from .fluent.target_path import TargetPath
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
@@ -197,9 +198,14 @@ class TransformedSelector(object):
     frame = attr.ib(default=None)  # type: Union[Text, TransformedSelector]
 
     @classmethod
-    def convert(cls, by, selector):
-        # type: (Text, Text) -> TransformedSelector
-        return cls(selector, by)
+    def convert(cls, selector):
+        # type: (TargetPath) -> TransformedSelector
+        if selector is None:
+            return None
+        else:
+            return cls(
+                selector.selector, selector.by, cls.convert(selector.shadow_path)
+            )
 
 
 @attr.s
@@ -289,7 +295,7 @@ def record_convert(records):
 def element_reference_convert(selector=None, element=None):
     # type: (Optional[List[Text, Text]], Optional[WebElement]) -> ElementReference
     if selector is not None:
-        return TransformedSelector.convert(*selector)
+        return TransformedSelector.convert(selector)
     elif element is not None:
         return TransformedElement.convert(element)
     else:
@@ -360,7 +366,7 @@ def region_references_convert(regions):
     results = []
     for r in regions:
         element = r._element if isinstance(r, RegionByElement) else None  # noqa
-        selectr = [r._by, r._value] if isinstance(r, RegionBySelector) else None  # noqa
+        selectr = r._target_path if isinstance(r, RegionBySelector) else None  # noqa
         if element or selectr:
             results.append(element_reference_convert(selectr, element))
         elif isinstance(r, RegionByRectangle):
@@ -378,7 +384,7 @@ def floating_region_references_convert(regions):
             region = element_reference_convert(element=r._element)  # noqa
             bounds = r._bounds  # noqa
         if isinstance(r, FloatingRegionBySelector):
-            region = element_reference_convert(selector=[r._by, r._value])  # noqa
+            region = element_reference_convert(selector=r._target_path)  # noqa
             bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
@@ -396,7 +402,7 @@ def accessibility_region_references_convert(regions):
             region = element_reference_convert(element=r._element)  # noqa
             type_ = r._type  # noqa
         if isinstance(r, AccessibilityRegionBySelector):
-            region = element_reference_convert(selector=[r._by, r._value])  # noqa
+            region = element_reference_convert(selector=r._target_path)  # noqa
             type_ = r._type  # noqa
         elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa

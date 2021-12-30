@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 import attr
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from six import string_types as basestring
+from six import string_types
 
 from applitools.common.accessibility import AccessibilityRegionType
 from applitools.common.geometry import AccessibilityRegion, Region
@@ -23,6 +23,7 @@ from .region import (
     RegionByElement,
     RegionBySelector,
 )
+from .target_path import TargetPath
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import VisualGridSelector
@@ -35,7 +36,7 @@ if TYPE_CHECKING:
         FrameIndex,
         FrameNameOrId,
     )
-    from applitools.selenium.extract_text import OCRRegion
+    from applitools.core.extract_text import OCRRegion
 
 BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
@@ -136,6 +137,11 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def layout(self, *target_path, **kwargs):
+        # type: (*TargetPath,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def layout(self, *region, **kwargs):
         # type: (*Region,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
@@ -164,6 +170,11 @@ class SeleniumCheckSettings(CheckSettings):
     @overload  # noqa
     def strict(self, *css_selector, **kwargs):
         # type: (*CssSelector,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def strict(self, *target_path, **kwargs):
+        # type: (*TargetPath,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -198,6 +209,11 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def content(self, *target_path, **kwargs):
+        # type: (*TargetPath, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def content(self, *region, **kwargs):
         # type: (*Region, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
@@ -226,6 +242,11 @@ class SeleniumCheckSettings(CheckSettings):
     @overload  # noqa
     def ignore(self, *css_selector, **kwargs):
         # type: (*CssSelector, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def ignore(self, *target_path, **kwargs):
+        # type: (*TargetPath, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -270,6 +291,11 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def accessibility(self, target_path, type):  # noqa
+        # type:(TargetPath, AccessibilityRegionType) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def accessibility(self, by, type):  # noqa
         # type:(BySelector, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
@@ -299,6 +325,11 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def region(self, target_path):
+        # type: (TargetPath) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def region(self, element):
         # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
@@ -314,9 +345,11 @@ class SeleniumCheckSettings(CheckSettings):
             self.values.target_region = region
         elif is_list_or_tuple(region):
             by, value = region
-            self.values.target_selector = [by, value]
-        elif isinstance(region, basestring):
-            self.values.target_selector = [By.CSS_SELECTOR, region]
+            self.values.target_selector = TargetPath(by, value)
+        elif isinstance(region, string_types):
+            self.values.target_selector = TargetPath(region)
+        elif isinstance(region, TargetPath):
+            self.values.target_selector = region
         elif is_webelement(region):
             self.values.target_element = region
         else:
@@ -348,7 +381,7 @@ class SeleniumCheckSettings(CheckSettings):
         fl = FrameLocator()
         if isinstance(frame, int):
             fl.frame_index = frame
-        elif isinstance(frame, basestring):
+        elif isinstance(frame, string_types):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
             fl.frame_element = frame
@@ -366,22 +399,24 @@ class SeleniumCheckSettings(CheckSettings):
         return self
 
     def _region_provider_from(self, region, method_name, padding):
-        if isinstance(region, basestring):
-            return RegionBySelector(By.CSS_SELECTOR, region, padding)
-        if is_list_or_tuple(region):
+        if isinstance(region, string_types):
+            return RegionBySelector(TargetPath(region), padding)
+        elif is_list_or_tuple(region):
             by, val = region
-            return RegionBySelector(by, val, padding)
+            return RegionBySelector(TargetPath(by, val), padding)
+        elif isinstance(region, TargetPath):
+            return RegionBySelector(region, padding)
         elif is_webelement(region):
             return RegionByElement(region, padding)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name, padding
         )
 
-    def _set_scroll_root_selector(self, by, value):
+    def _set_scroll_root_selector(self, target_path):
         if len(self.values.frame_chain) == 0:
-            self.values.scroll_root_selector = [by, value]
+            self.values.scroll_root_selector = target_path
         else:
-            self.values.frame_chain[-1].scroll_root_selector = [by, value]
+            self.values.frame_chain[-1].scroll_root_selector = target_path
 
     def _set_scroll_root_element(self, element):
         if len(self.values.frame_chain) == 0:
@@ -400,16 +435,23 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def scroll_root_element(self, target_path):
+        # type: (TargetPath) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def scroll_root_element(self, by):
         # type: (BySelector) -> SeleniumCheckSettings
         pass
 
     def scroll_root_element(self, element_or_selector):  # noqa
-        if isinstance(element_or_selector, basestring):
-            self._set_scroll_root_selector(By.CSS_SELECTOR, element_or_selector)
+        if isinstance(element_or_selector, string_types):
+            self._set_scroll_root_selector(TargetPath(element_or_selector))
         elif is_list_or_tuple(element_or_selector):
             by, value = element_or_selector
-            self._set_scroll_root_selector(by, value)
+            self._set_scroll_root_selector(TargetPath(by, value))
+        elif isinstance(element_or_selector, TargetPath):
+            self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
         else:
@@ -419,11 +461,13 @@ class SeleniumCheckSettings(CheckSettings):
     def _floating_provider_from(self, region, bounds):
         if is_webelement(region):
             return FloatingRegionByElement(region, bounds)
-        if isinstance(region, basestring):
-            return FloatingRegionBySelector(By.CSS_SELECTOR, region, bounds)
-        if is_list_or_tuple(region):
+        elif isinstance(region, string_types):
+            return FloatingRegionBySelector(TargetPath(region), bounds)
+        elif is_list_or_tuple(region):
             by, value = region
-            return FloatingRegionBySelector(by, value, bounds)
+            return FloatingRegionBySelector(TargetPath(by, value), bounds)
+        elif isinstance(region, TargetPath):
+            return FloatingRegionBySelector(region, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
         )
@@ -431,13 +475,17 @@ class SeleniumCheckSettings(CheckSettings):
     def _accessibility_provider_from(self, region, accessibility_region_type):
         if is_webelement(region):
             return AccessibilityRegionByElement(region, accessibility_region_type)
-        if isinstance(region, basestring):
+        elif isinstance(region, string_types):
             return AccessibilityRegionBySelector(
-                By.CSS_SELECTOR, region, accessibility_region_type
+                TargetPath(region), accessibility_region_type
             )
-        if is_list_or_tuple(region):
+        elif is_list_or_tuple(region):
             by, value = region
-            return AccessibilityRegionBySelector(by, value, accessibility_region_type)
+            return AccessibilityRegionBySelector(
+                TargetPath(by, value), accessibility_region_type
+            )
+        elif isinstance(region, TargetPath):
+            return AccessibilityRegionBySelector(region, accessibility_region_type)
         return super(SeleniumCheckSettings, self)._accessibility_provider_from(
             region, accessibility_region_type
         )
