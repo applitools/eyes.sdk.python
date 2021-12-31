@@ -1,6 +1,5 @@
 import pytest
 
-from applitools import eyes_universal
 from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 from applitools.selenium.fluent.target_path import TargetPath
 
@@ -127,8 +126,8 @@ def test_get_all_vg_test_results(local_chrome_driver):
     assert results[1] == all_results[1].test_results
 
 
-@pytest.mark.skip("Shadow Dom is broken with Chrome 96")
 def test_check_element_in_shadow_dom(local_chrome_driver):
+    pytest.importorskip("applitools.eyes_universal", "0.2.4", "Broken with Chrome 96")
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/ShadowDOM/index.html"
     )
