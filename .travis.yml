@@ -7,7 +7,7 @@ git:
 install:
     - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
-    - python -m pip install -U tox
+    - python -m pip install -U virtualenv==20.11 tox==3.24.5
 before_script:
     - export NO_COLOR=1
     - export PATH=`pwd`/bin:$PATH

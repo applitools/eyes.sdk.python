@@ -90,7 +90,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         '"pytest<5"',
         "requests",
         "tox==3.24.5",
-        "virtualenv==20.4.0",
+        "virtualenv==20.11",
         "webdriver_manager==" + ("3.5.2" if sys.version_info[:1] >= (3,) else "1.5"),
     ]
     if testing:
