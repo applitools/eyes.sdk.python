@@ -3,8 +3,11 @@ import typing
 import attr
 
 from applitools.common.accessibility import AccessibilityRegionType
-from applitools.core import GetFloatingRegion, GetRegion
-from applitools.core.fluent.region import GetAccessibilityRegion
+from applitools.core.fluent.region import (
+    GetAccessibilityRegion,
+    GetFloatingRegion,
+    GetRegion,
+)
 
 if typing.TYPE_CHECKING:
     from typing import Optional

@@ -1,13 +1,18 @@
 from copy import copy
-from typing import Any, Dict, List, Optional, Text, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Text, TypeVar, Union
 
 import attr
-from six import string_types as basestring
+from six import string_types
 
 from applitools.common import Region
 from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.json_utils import JsonInclude
+from applitools.common.validators import is_list_or_tuple
+from applitools.selenium.fluent.target_path import TargetPath
+
+if TYPE_CHECKING:
+    from applitools.common.utils.custom_types import BySelector
 
 
 class TextRegionSettings(object):
@@ -47,7 +52,7 @@ class TextRegionSettings(object):
 
     def language(self, language):
         # type: (Text) -> TextRegionSettings
-        argument_guard.is_a(language, basestring)
+        argument_guard.is_a(language, string_types)
         assert language not in ["eng"], "Unsupported language"
         cloned = self._clone()
         cloned._language = language
@@ -91,8 +96,14 @@ class TextRegion(Rectangle):
 
 class OCRRegion(object):
     def __init__(self, target):
-        # type: (Union[Region, Any]) -> None
-        self.target = target
+        # type: (Union[Region, Text, BySelector, TargetPath]) -> None
+        if isinstance(target, string_types):
+            self.target = TargetPath(target)
+        elif is_list_or_tuple(target):
+            by, val = target
+            self.target = TargetPath(by, val)
+        else:
+            self.target = target
         self._hint = None  # type: Optional[Text]
         self._language = "eng"  # type: Optional[Text]
         self._min_match = None  # type: Optional[float]

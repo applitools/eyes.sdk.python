@@ -293,7 +293,7 @@ def record_convert(records):
 
 
 def element_reference_convert(selector=None, element=None):
-    # type: (Optional[List[Text, Text]], Optional[WebElement]) -> ElementReference
+    # type: (Optional[TargetPath], Optional[WebElement]) -> ElementReference
     if selector is not None:
         return TransformedSelector.convert(selector)
     elif element is not None:
@@ -353,7 +353,7 @@ def target_reference_convert(values):
 
 def ocr_target_convert(target):
     # type:(Union[list, WebElement, Region]) -> RegionReference
-    if isinstance(target, list):
+    if isinstance(target, TargetPath):
         return element_reference_convert(selector=target)
     elif isinstance(target, WebElement):
         return element_reference_convert(element=target)
