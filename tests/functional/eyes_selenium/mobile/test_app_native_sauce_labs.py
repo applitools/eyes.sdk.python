@@ -4,6 +4,7 @@ from copy import copy
 import pytest
 from appium import webdriver as appium_webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 
 from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
@@ -50,6 +51,7 @@ def android_desired_capabilities(request):
     desired_caps["deviceName"] = "Android GoogleAPI Emulator"
     desired_caps["platformVersion"] = "10"
     desired_caps["platformName"] = "Android"
+    desired_caps["autoGrantPermissions"] = True
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
     desired_caps["name"] = "AndroidNativeApp checkWindow"
@@ -77,6 +79,8 @@ def ios_desired_capabilities(request):
 @pytest.mark.platform("Android")
 def test_android_native_sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    # Click "Rebuild your app with new sdk" prompt
+    mobile_driver.find_element(By.XPATH, r"//android.widget.Button[@text='OK']").click()
     eyes.open(mobile_driver, "AndroidNativeApp", "AndroidNativeApp checkWindow")
     eyes.check(
         "Contact list",
@@ -87,6 +91,8 @@ def test_android_native_sauce_labs(mobile_eyes):
 @pytest.mark.platform("Android")
 def test_android_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    # Click "Rebuild your app with new sdk" prompt
+    mobile_driver.find_element(By.XPATH, r"//android.widget.Button[@text='OK']").click()
     eyes.open(mobile_driver, "AndroidNativeApp", "AndroidNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 1400, 2000)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
