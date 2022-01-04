@@ -172,6 +172,28 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.9
+          node_js: 14
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium-generated
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+              - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
+          before_install:
+              - git submodule update --init --remote --recursive
+              - nvm install node
+          script:
+              - tox -e selenium-generated
+              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+                  echo "REPORTING...";
+                  bash ./ci_scripts/all_tests_report.sh "$SDK";
+                  echo "REPORTED SUCCESSFULLY";
+                fi
+
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
