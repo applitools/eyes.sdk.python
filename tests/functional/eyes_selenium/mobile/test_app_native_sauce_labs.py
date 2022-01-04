@@ -47,8 +47,8 @@ def android_desired_capabilities(request):
     desired_caps["app"] = "http://saucelabs.com/example_files/ContactManager.apk"
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
-    desired_caps["deviceName"] = "Samsung Galaxy S8 WQHD GoogleAPI Emulator"
-    desired_caps["platformVersion"] = "8.1"
+    desired_caps["deviceName"] = "Android GoogleAPI Emulator"
+    desired_caps["platformVersion"] = "10"
     desired_caps["platformName"] = "Android"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
