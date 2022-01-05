@@ -23,7 +23,7 @@ from .region import (
     RegionByElement,
     RegionBySelector,
 )
-from .target_path import TargetPath
+from .target_path import Locator, TargetPath
 
 if TYPE_CHECKING:
     from applitools.common.ultrafastgrid import VisualGridSelector
@@ -138,7 +138,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def layout(self, *target_path, **kwargs):
-        # type: (*TargetPath,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Locator,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -174,7 +174,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def strict(self, *target_path, **kwargs):
-        # type: (*TargetPath,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Locator,**Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -210,7 +210,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def content(self, *target_path, **kwargs):
-        # type: (*TargetPath, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Locator, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -246,7 +246,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def ignore(self, *target_path, **kwargs):
-        # type: (*TargetPath, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
+        # type: (*Locator, **Optional[CodedRegionPadding]) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -292,7 +292,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def accessibility(self, target_path, type):  # noqa
-        # type:(TargetPath, AccessibilityRegionType) -> SeleniumCheckSettings
+        # type:(Locator, AccessibilityRegionType) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -326,7 +326,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def region(self, target_path):
-        # type: (TargetPath) -> SeleniumCheckSettings
+        # type: (Locator) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -344,11 +344,10 @@ class SeleniumCheckSettings(CheckSettings):
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
-            by, value = region
-            self.values.target_selector = TargetPath(by, value)
+            self.values.target_selector = TargetPath.region(*region)
         elif isinstance(region, string_types):
-            self.values.target_selector = TargetPath(region)
-        elif isinstance(region, TargetPath):
+            self.values.target_selector = TargetPath.region(region)
+        elif isinstance(region, Locator):
             self.values.target_selector = region
         elif is_webelement(region):
             self.values.target_element = region
@@ -378,7 +377,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def frame(self, target_path):
-        # type: (TargetPath) -> SeleniumCheckSettings
+        # type: (Locator) -> SeleniumCheckSettings
         pass
 
     def frame(self, frame):  # noqa
@@ -391,9 +390,8 @@ class SeleniumCheckSettings(CheckSettings):
         elif is_webelement(frame):
             fl.frame_element = frame
         elif is_list_or_tuple(frame):
-            by, value = frame
-            fl.frame_selector = TargetPath(by, value)
-        elif isinstance(frame, TargetPath):
+            fl.frame_selector = TargetPath.frame(*frame)
+        elif isinstance(frame, Locator):
             fl.frame_selector = frame
         else:
             raise TypeError("frame method called with argument of unknown type!")
@@ -407,11 +405,10 @@ class SeleniumCheckSettings(CheckSettings):
 
     def _region_provider_from(self, region, method_name, padding):
         if isinstance(region, string_types):
-            return RegionBySelector(TargetPath(region), padding)
+            return RegionBySelector(TargetPath.region(region), padding)
         elif is_list_or_tuple(region):
-            by, val = region
-            return RegionBySelector(TargetPath(by, val), padding)
-        elif isinstance(region, TargetPath):
+            return RegionBySelector(TargetPath.region(*region), padding)
+        elif isinstance(region, Locator):
             return RegionBySelector(region, padding)
         elif is_webelement(region):
             return RegionByElement(region, padding)
@@ -443,7 +440,7 @@ class SeleniumCheckSettings(CheckSettings):
 
     @overload  # noqa
     def scroll_root_element(self, target_path):
-        # type: (TargetPath) -> SeleniumCheckSettings
+        # type: (Locator) -> SeleniumCheckSettings
         pass
 
     @overload  # noqa
@@ -453,11 +450,10 @@ class SeleniumCheckSettings(CheckSettings):
 
     def scroll_root_element(self, element_or_selector):  # noqa
         if isinstance(element_or_selector, string_types):
-            self._set_scroll_root_selector(TargetPath(element_or_selector))
+            self._set_scroll_root_selector(TargetPath.region(element_or_selector))
         elif is_list_or_tuple(element_or_selector):
-            by, value = element_or_selector
-            self._set_scroll_root_selector(TargetPath(by, value))
-        elif isinstance(element_or_selector, TargetPath):
+            self._set_scroll_root_selector(TargetPath.region(*element_or_selector))
+        elif isinstance(element_or_selector, Locator):
             self._set_scroll_root_selector(element_or_selector)
         elif is_webelement(element_or_selector):
             self._set_scroll_root_element(element_or_selector)
@@ -469,11 +465,10 @@ class SeleniumCheckSettings(CheckSettings):
         if is_webelement(region):
             return FloatingRegionByElement(region, bounds)
         elif isinstance(region, string_types):
-            return FloatingRegionBySelector(TargetPath(region), bounds)
+            return FloatingRegionBySelector(TargetPath.region(region), bounds)
         elif is_list_or_tuple(region):
-            by, value = region
-            return FloatingRegionBySelector(TargetPath(by, value), bounds)
-        elif isinstance(region, TargetPath):
+            return FloatingRegionBySelector(TargetPath.region(*region), bounds)
+        elif isinstance(region, Locator):
             return FloatingRegionBySelector(region, bounds)
         return super(SeleniumCheckSettings, self)._floating_provider_from(
             region, bounds
@@ -484,14 +479,13 @@ class SeleniumCheckSettings(CheckSettings):
             return AccessibilityRegionByElement(region, accessibility_region_type)
         elif isinstance(region, string_types):
             return AccessibilityRegionBySelector(
-                TargetPath(region), accessibility_region_type
+                TargetPath.region(region), accessibility_region_type
             )
         elif is_list_or_tuple(region):
-            by, value = region
             return AccessibilityRegionBySelector(
-                TargetPath(by, value), accessibility_region_type
+                TargetPath.region(*region), accessibility_region_type
             )
-        elif isinstance(region, TargetPath):
+        elif isinstance(region, Locator):
             return AccessibilityRegionBySelector(region, accessibility_region_type)
         return super(SeleniumCheckSettings, self)._accessibility_provider_from(
             region, accessibility_region_type

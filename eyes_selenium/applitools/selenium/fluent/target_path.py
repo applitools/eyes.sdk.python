@@ -1,63 +1,100 @@
-from copy import deepcopy
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING
 
 from selenium.webdriver.common.by import By
 
 if TYPE_CHECKING:
-    from typing import Text
+    pass
+
+
+class Locator(object):
+    def __init__(self, parent, selector_or_by, selector=None):
+        self.parent = parent
+        if selector is None:
+            self.by = By.CSS_SELECTOR if selector_or_by else None
+            self.selector = selector_or_by
+        else:
+            self.by = selector_or_by
+            self.selector = selector
+
+    def __eq__(self, other):
+        return type(self) is type(other) and vars(self) == vars(other)
+
+    def __repr__(self):
+        parent = repr(self.parent) if self.parent else "TargetPath"
+        if self.by == By.CSS_SELECTOR:
+            return parent + ".{}({!r})".format(
+                self.FACTORY_METHOD, self.selector  # noqa
+            )
+        else:
+            return parent + ".{}({}, {!r})".format(
+                self.FACTORY_METHOD, _by_repr(self.by), self.selector  # noqa
+            )
 
 
 class TargetPath(object):
-    @overload
-    def __init__(self, css_selector):
-        # type: (Text) -> None
-        pass
+    @staticmethod
+    def region(selector_or_by, selector=None):
+        return RegionLocator(None, selector_or_by, selector)
 
-    @overload
-    def __init__(self, by, selector):
-        # type: (Text, Text) -> None
-        pass
+    @staticmethod
+    def frame(number_or_id_or_name_or_by, selector=None):
+        return FrameLocator(None, number_or_id_or_name_or_by, selector)
 
-    def __init__(self, css_selector_or_by, selector=None, shadow_path=None):
-        if selector is not None:
-            self.by = css_selector_or_by
-            self.selector = selector
+    @staticmethod
+    def shadow_dom(selector_or_by, selector=None):
+        return ShadowDomLocator(None, selector_or_by, selector)
+
+
+class ShadowDomLocator(Locator):
+    FACTORY_METHOD = "shadow_dom"
+
+    def region(self, selector_or_by, selector=None):
+        return RegionLocator(self, selector_or_by, selector)
+
+    def frame(self, number_or_id_or_name_or_by, selector=None):
+        return FrameLocator(self, number_or_id_or_name_or_by, selector)
+
+    def shadow_dom(self, selector_or_by, selector=None):
+        return ShadowDomLocator(self, selector_or_by, selector)
+
+
+class RegionLocator(Locator):
+    FACTORY_METHOD = "region"
+
+
+class FrameLocator(Locator):
+    FACTORY_METHOD = "frame"
+
+    def __init__(self, parent, number_or_id_or_name_or_by, selector=None):
+        if selector is None:
+            super(FrameLocator, self).__init__(parent, None, None)
+            self.number_or_id_or_name = number_or_id_or_name_or_by
         else:
-            self.by = By.CSS_SELECTOR
-            self.selector = css_selector_or_by
-        self.shadow_path = shadow_path
-
-    @overload
-    def shadow(self, css_selector):
-        # type: (Text) -> TargetPath
-        pass
-
-    @overload
-    def shadow(self, by, selector):
-        # type: (Text, Text) -> TargetPath
-        pass
-
-    def shadow(self, css_selector_or_by, selector=None):
-        copy = deepcopy(self)
-        path = copy
-        while path.shadow_path is not None:
-            path = path.shadow_path
-        path.shadow_path = TargetPath(css_selector_or_by, selector)
-        return copy
-
-    def __eq__(self, that):
-        # type: (TargetPath) -> bool
-        return type(self) is type(that) and vars(self) == vars(that)
+            super(FrameLocator, self).__init__(
+                parent, number_or_id_or_name_or_by, selector
+            )
+            self.number_or_id_or_name = None
 
     def __repr__(self):
-        # type: () -> Text
-        parts = []
-        call, path = type(self).__name__, self
-        while path is not None:
-            if path.by == By.CSS_SELECTOR:
-                parts.append("{}({!r})".format(call, path.selector))
-            else:
-                by = "By." + path.by.upper().replace(" ", "_")
-                parts.append("{}({}, {!r})".format(call, by, path.selector))
-            call, path = ".shadow", path.shadow_path
-        return "".join(parts)
+        parent = repr(self.parent) if self.parent else "TargetPath"
+        if self.number_or_id_or_name is not None:
+            return parent + ".{}({!r})".format(
+                self.FACTORY_METHOD, self.number_or_id_or_name
+            )
+        else:
+            return parent + ".{}({}, {!r})".format(
+                self.FACTORY_METHOD, _by_repr(self.by), self.selector
+            )
+
+    def region(self, selector_or_by, selector=None):
+        return RegionLocator(self, selector_or_by, selector)
+
+    def frame(self, number_or_id_or_name_or_by, selector=None):
+        return FrameLocator(self, number_or_id_or_name_or_by, selector)
+
+    def shadow_dom(self, selector_or_by, selector=None):
+        return ShadowDomLocator(self, selector_or_by, selector)
+
+
+def _by_repr(by):
+    return "By." + by.upper().replace(" ", "_")

@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
     from applitools.common import FloatingBounds
     from applitools.common.utils.custom_types import AnyWebElement, CodedRegionPadding
-    from applitools.selenium.fluent.target_path import TargetPath
+    from applitools.selenium.fluent.target_path import Locator
 
 __all__ = (
     "RegionBySelector",
@@ -45,7 +45,7 @@ class RegionBySelector(GetSeleniumRegion):
                   an element which represents the ignore region.
     """
 
-    _target_path = attr.ib()  # type: TargetPath
+    _target_path = attr.ib()  # type: Locator
     _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
 
@@ -72,7 +72,7 @@ class FloatingRegionBySelector(GetSeleniumFloatingRegion):
     :ivar bounds: The outer rectangle bounding the inner region.
     """
 
-    _target_path = attr.ib()  # type: TargetPath
+    _target_path = attr.ib()  # type: Locator
     _bounds = attr.ib()  # type: FloatingBounds
 
 
@@ -82,7 +82,7 @@ class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
 
 @attr.s
 class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
-    _target_path = attr.ib()  # type: TargetPath
+    _target_path = attr.ib()  # type: Locator
     _type = attr.ib()  # type: AccessibilityRegionType
 
 

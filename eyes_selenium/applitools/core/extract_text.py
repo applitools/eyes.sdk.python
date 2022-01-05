@@ -1,5 +1,5 @@
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Text, TypeVar, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Text, TypeVar, Union
 
 import attr
 from six import string_types
@@ -9,7 +9,7 @@ from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple
-from applitools.selenium.fluent.target_path import TargetPath
+from applitools.selenium.fluent.target_path import Locator, TargetPath
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import BySelector
@@ -96,12 +96,11 @@ class TextRegion(Rectangle):
 
 class OCRRegion(object):
     def __init__(self, target):
-        # type: (Union[Region, Text, BySelector, TargetPath]) -> None
+        # type: (Union[Region, Text, BySelector, Locator]) -> None
         if isinstance(target, string_types):
-            self.target = TargetPath(target)
+            self.target = TargetPath.region(target)
         elif is_list_or_tuple(target):
-            by, val = target
-            self.target = TargetPath(by, val)
+            self.target = TargetPath.region(*target)
         else:
             self.target = target
         self._hint = None  # type: Optional[Text]

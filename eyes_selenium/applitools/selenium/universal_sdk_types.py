@@ -44,7 +44,7 @@ from .fluent import (
     RegionBySelector,
 )
 from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
-from .fluent.target_path import TargetPath
+from .fluent.target_path import FrameLocator, Locator, RegionLocator, ShadowDomLocator
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
@@ -198,14 +198,30 @@ class TransformedSelector(object):
     frame = attr.ib(default=None)  # type: Union[Text, TransformedSelector]
 
     @classmethod
-    def convert(cls, selector):
-        # type: (TargetPath) -> TransformedSelector
-        if selector is None:
+    def convert(cls, locator):
+        # type: (Locator) -> TransformedSelector
+        if locator is None:
             return None
+        stack = []
+        while locator:
+            stack.append(locator)
+            locator = locator.parent
+        return cls._convert_list(stack)
+
+    @classmethod
+    def _convert_list(cls, stack):
+        if stack:
+            head = stack.pop()
+            if isinstance(head, RegionLocator):
+                return cls(head.selector, head.by)
+            elif isinstance(head, ShadowDomLocator):
+                return cls(head.selector, head.by, cls._convert_list(stack))
+            elif isinstance(head, FrameLocator):
+                return cls(head.selector, head.by, frame=cls._convert_list(stack))
+            else:
+                raise TypeError("Unexpected Locator type", type(head))
         else:
-            return cls(
-                selector.selector, selector.by, cls.convert(selector.shadow_path)
-            )
+            return None
 
 
 @attr.s
@@ -293,7 +309,7 @@ def record_convert(records):
 
 
 def element_reference_convert(selector=None, element=None):
-    # type: (Optional[TargetPath], Optional[WebElement]) -> ElementReference
+    # type: (Optional[Locator], Optional[WebElement]) -> ElementReference
     if selector is not None:
         return TransformedSelector.convert(selector)
     elif element is not None:
@@ -353,7 +369,7 @@ def target_reference_convert(values):
 
 def ocr_target_convert(target):
     # type:(Union[list, WebElement, Region]) -> RegionReference
-    if isinstance(target, TargetPath):
+    if isinstance(target, Locator):
         return element_reference_convert(selector=target)
     elif isinstance(target, WebElement):
         return element_reference_convert(element=target)

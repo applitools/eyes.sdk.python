@@ -1,117 +1,149 @@
 from selenium.webdriver.common.by import By
 
-from applitools.selenium.fluent.target_path import TargetPath
+from applitools.selenium.fluent.target_path import (
+    FrameLocator,
+    RegionLocator,
+    ShadowDomLocator,
+    TargetPath,
+)
 
 
-def test_element_path():
-    path = TargetPath(By.ID, "i")
+def test_target_path_region_by_css():
+    path = TargetPath.region(".css")
 
-    assert path.by is By.ID
-    assert path.selector == "i"
-    assert path.shadow_path is None
-
-
-def test_element_path_implicit():
-    path = TargetPath("c")
-
+    assert type(path) is RegionLocator
     assert path.by is By.CSS_SELECTOR
-    assert path.selector == "c"
-    assert path.shadow_path is None
+    assert path.selector == ".css"
+    assert path.parent is None
 
 
-def test_element_path_with_fluent_shadow():
-    path = TargetPath(By.ID, "i").shadow(By.CSS_SELECTOR, "c")
+def test_target_path_region_by_xpath():
+    path = TargetPath.region(By.XPATH, "//x")
 
-    assert path.by is By.ID
-    assert path.selector == "i"
-    assert path.shadow_path.by is By.CSS_SELECTOR
-    assert path.shadow_path.selector == "c"
-    assert path.shadow_path.shadow_path is None
-
-
-def test_element_comparison():
-    assert TargetPath(By.ID, "i") == TargetPath(By.ID, "i")
-    assert TargetPath(By.ID, "i") != TargetPath(By.ID, "o")
-    assert TargetPath(By.ID, "i") != TargetPath(By.ID, "i").shadow(By.ID, "i")
+    assert type(path) is RegionLocator
+    assert path.by is By.XPATH
+    assert path.selector == "//x"
+    assert path.parent is None
 
 
-def test_target_path_id_with_implicit_css_shadow():
-    path = TargetPath(By.ID, "i").shadow("c")
+def test_target_path_frame_by_name_or_id():
+    path = TargetPath.frame("name_or_id")
 
-    assert path == TargetPath(By.ID, "i", TargetPath(By.CSS_SELECTOR, "c"))  # noqa
-
-
-def test_target_path_3_level_implicit_css_shadows():
-    path = TargetPath("c").shadow("cc").shadow("ccc")
-
-    assert path == TargetPath(  # noqa
-        By.CSS_SELECTOR,
-        "c",
-        TargetPath(  # noqa
-            By.CSS_SELECTOR,
-            "cc",
-            TargetPath(
-                By.CSS_SELECTOR,
-                "ccc",
-            ),
-        ),
-    )
+    assert type(path) is FrameLocator
+    assert path.by is None
+    assert path.selector is None
+    assert path.number_or_id_or_name == "name_or_id"
+    assert path.parent is None
 
 
-def test_target_path_id_with_two_level_shadows():
-    path = TargetPath(By.ID, "i").shadow(By.XPATH, "x").shadow(By.LINK_TEXT, "l")
+def test_target_path_frame_by_number():
+    path = TargetPath.frame(1)
 
-    assert path == TargetPath(  # noqa
-        By.ID,
-        "i",
-        TargetPath(  # noqa
-            By.XPATH,
-            "x",
-            TargetPath(
-                By.LINK_TEXT,
-                "l",
-            ),
-        ),
-    )
+    assert type(path) is FrameLocator
+    assert path.by is None
+    assert path.selector is None
+    assert path.number_or_id_or_name == 1
+    assert path.parent is None
 
 
-def test_target_path_css_with_explicit_link_in_shadow():
-    path = TargetPath("c").shadow(By.LINK_TEXT, "l")
+def test_target_path_frame_by_css_selector():
+    path = TargetPath.frame(By.CSS_SELECTOR, ".css")
 
-    assert path == TargetPath(  # noqa
-        By.CSS_SELECTOR, "c", TargetPath(By.LINK_TEXT, "l")
-    )
-
-
-def test_target_path_name_repr():
-    path = TargetPath(By.NAME, "n")
-
-    assert repr(path) == "TargetPath(By.NAME, 'n')"
+    assert type(path) is FrameLocator
+    assert path.by is By.CSS_SELECTOR
+    assert path.selector == ".css"
+    assert path.number_or_id_or_name is None
+    assert path.parent is None
 
 
-def test_target_path_css_repr():
-    path = TargetPath("c")
+def test_target_path_shadow_dom_by_css():
+    path = TargetPath.shadow_dom(".css")
 
-    assert repr(path) == "TargetPath('c')"
-
-
-def test_target_path_with_one_level_shadow_repr():
-    path = TargetPath("c").shadow("cc")
-
-    assert repr(path) == "TargetPath('c').shadow('cc')"
+    assert type(path) is ShadowDomLocator
+    assert path.by is By.CSS_SELECTOR
+    assert path.selector == ".css"
+    assert path.parent is None
 
 
-def test_target_path_name_with_one_level_shadow_link_text_repr():
-    path = TargetPath(By.NAME, "n").shadow(By.LINK_TEXT, "l")
+def test_target_path_shadow_dom_by_xpath():
+    path = TargetPath.shadow_dom(By.XPATH, "//x")
 
-    assert repr(path) == "TargetPath(By.NAME, 'n').shadow(By.LINK_TEXT, 'l')"
+    assert type(path) is ShadowDomLocator
+    assert path.by is By.XPATH
+    assert path.selector == "//x"
+    assert path.parent is None
 
 
-def test_target_path_immutable():
-    root = TargetPath("root")
-    path1 = root.shadow("s1")
-    path2 = root.shadow("s2")
+def test_target_region_within_frame():
+    path = TargetPath.frame(1).region(".css")
 
-    assert root == TargetPath("root")
-    assert path1 == TargetPath("root").shadow("s1")
-    assert path2 == TargetPath("root").shadow("s2")
+    assert type(path) is RegionLocator
+    assert path.by is By.CSS_SELECTOR
+    assert path.selector == ".css"
+    assert type(path.parent) is FrameLocator
+    assert path.parent.number_or_id_or_name == 1
+
+
+def test_target_path_region_css_repr():
+    path = TargetPath.region(".css")
+
+    assert repr(path) == "TargetPath.region('.css')"
+
+
+def test_target_path_region_xpath_repr():
+    path = TargetPath.region(By.XPATH, "//x")
+
+    assert repr(path) == "TargetPath.region(By.XPATH, '//x')"
+
+
+def test_target_path_shadow_dom_css_repr():
+    path = TargetPath.shadow_dom(".css")
+
+    assert repr(path) == "TargetPath.shadow_dom('.css')"
+
+
+def test_target_path_shadow_dom_xpath_repr():
+    path = TargetPath.shadow_dom(By.XPATH, "//x")
+
+    assert repr(path) == "TargetPath.shadow_dom(By.XPATH, '//x')"
+
+
+def test_target_path_frame_number_repr():
+    path = TargetPath.frame(1)
+
+    assert repr(path) == "TargetPath.frame(1)"
+
+
+def test_target_path_frame_name_repr():
+    path = TargetPath.frame("frame")
+
+    assert repr(path) == "TargetPath.frame('frame')"
+
+
+def test_target_path_frame_css_repr():
+    path = TargetPath.frame(By.CSS_SELECTOR, ".css")
+
+    assert repr(path) == "TargetPath.frame(By.CSS_SELECTOR, '.css')"
+
+
+def test_target_path_shadow_dom_css_region_css_repr():
+    path = TargetPath.shadow_dom("#shadow").region(".region")
+
+    assert repr(path) == "TargetPath.shadow_dom('#shadow').region('.region')"
+
+
+def test_target_path_frame_shadow_dom_region_repr():
+    path = TargetPath.frame(1).shadow_dom("#shadow").region(".region")
+
+    assert repr(path) == "TargetPath.frame(1).shadow_dom('#shadow').region('.region')"
+
+
+def test_target_path_region_eq():
+    assert TargetPath.region(".css") == TargetPath.region(".css")
+    assert TargetPath.region(".css") != TargetPath.region("#id")
+
+
+def test_target_path_frame_region_eq():
+    assert TargetPath.frame(1).region(".css") == TargetPath.frame(1).region(".css")
+    assert TargetPath.frame(1).region(".css") != TargetPath.frame(1).region("#id")
+    assert TargetPath.frame(1).region(".css") != TargetPath.frame(2).region(".css")
