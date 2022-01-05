@@ -135,4 +135,6 @@ def test_check_element_in_shadow_dom(local_chrome_driver):
             "Test check element in shadow dom",
             {"width": 800, "height": 600},
         )
-        eyes.check(Target.region(TargetPath("#has-shadow-root").shadow("h1")))
+        eyes.check(
+            Target.region(TargetPath.shadow_dom("#has-shadow-root").region("h1"))
+        )

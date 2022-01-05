@@ -59,7 +59,9 @@ def test_check_frame(method_name="frame"):
 
     frame_selector = [By.ID, "some-selector"]
     cs = get_cs_from_method(method_name, frame_selector)
-    assert cs.values.frame_chain[0].frame_selector == TargetPath(By.ID, "some-selector")
+    assert cs.values.frame_chain[0].frame_selector == TargetPath.frame(
+        By.ID, "some-selector"
+    )
 
     frame_index = 3
     cs = get_cs_from_method(method_name, frame_index)
@@ -88,25 +90,25 @@ def test_check_region_with_elements(method_name="region"):
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
     cs = get_cs_from_method(method_name, [by, value])
-    assert cs.values.target_selector == TargetPath(by, value)
+    assert cs.values.target_selector == TargetPath.region(by, value)
 
-    cs = get_cs_from_method(method_name, TargetPath(by, value))
-    assert cs.values.target_selector == TargetPath(by, value)
+    cs = get_cs_from_method(method_name, TargetPath.region(by, value))
+    assert cs.values.target_selector == TargetPath.region(by, value)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_match_regions_with_selectors_input(method_name):
     css_selector = ".cssSelector"
     regions = get_regions_from_(method_name, css_selector)
-    assert regions[0]._target_path == TargetPath(css_selector)
+    assert regions[0]._target_path == TargetPath.region(css_selector)
 
-    regions = get_regions_from_(method_name, TargetPath(css_selector))
-    assert regions[0]._target_path == TargetPath(css_selector)
+    regions = get_regions_from_(method_name, TargetPath.region(css_selector))
+    assert regions[0]._target_path == TargetPath.region(css_selector)
 
     locator = [By.XPATH, "locator"]
     regions = get_regions_from_(method_name, locator, css_selector)
-    assert regions[0]._target_path == TargetPath(By.XPATH, "locator")
-    assert regions[1]._target_path == TargetPath(By.CSS_SELECTOR, css_selector)
+    assert regions[0]._target_path == TargetPath.region(By.XPATH, "locator")
+    assert regions[1]._target_path == TargetPath.region(By.CSS_SELECTOR, css_selector)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -142,26 +144,26 @@ def test_match_regions_with_by_values(method_name):
     regions = get_regions_from_(
         method_name, by_name, by_id, by_class, by_tag_name, by_css_selector, by_xpath
     )
-    assert regions[0]._target_path == TargetPath(By.NAME, "some-name")
-    assert regions[1]._target_path == TargetPath(By.ID, "ident")
-    assert regions[2]._target_path == TargetPath(By.CLASS_NAME, "class_name")
-    assert regions[3]._target_path == TargetPath(By.TAG_NAME, "tag_name")
-    assert regions[4]._target_path == TargetPath(By.CSS_SELECTOR, "css_selector")
-    assert regions[5]._target_path == TargetPath(By.XPATH, "xpath")
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "some-name")
+    assert regions[1]._target_path == TargetPath.region(By.ID, "ident")
+    assert regions[2]._target_path == TargetPath.region(By.CLASS_NAME, "class_name")
+    assert regions[3]._target_path == TargetPath.region(By.TAG_NAME, "tag_name")
+    assert regions[4]._target_path == TargetPath.region(By.CSS_SELECTOR, "css_selector")
+    assert regions[5]._target_path == TargetPath.region(By.XPATH, "xpath")
 
 
 def test_match_floating_region():
     regions = get_regions_from_("floating", 5, [By.NAME, "name"])
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._target_path == TargetPath(By.NAME, "name")
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "name")
 
     regions = get_regions_from_("floating", 5, "name")
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._target_path == TargetPath("name")
+    assert regions[0]._target_path == TargetPath.region("name")
 
-    regions = get_regions_from_("floating", 5, TargetPath("name"))
+    regions = get_regions_from_("floating", 5, TargetPath.region("name"))
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._target_path == TargetPath("name")
+    assert regions[0]._target_path == TargetPath.region("name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
@@ -174,13 +176,13 @@ def test_match_accessibility_region():
         "accessibility", [By.NAME, "name"], AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._target_path == TargetPath(By.NAME, "name")
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "name")
 
     regions = get_regions_from_(
         "accessibility", "name", AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._target_path == TargetPath(By.CSS_SELECTOR, "name")
+    assert regions[0]._target_path == TargetPath.region(By.CSS_SELECTOR, "name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_(

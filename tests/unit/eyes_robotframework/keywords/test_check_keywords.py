@@ -134,7 +134,7 @@ def test_check_region(check_keyword, data):
             "check_frame_by_selector",
             check_region="id:overflow-div",
             check_region_result=FrameLocator(
-                frame_selector=TargetPath(By.ID, "overflow-div")
+                frame_selector=TargetPath.frame(By.ID, "overflow-div")
             ),
         ),
     ],
