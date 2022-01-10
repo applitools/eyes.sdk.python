@@ -14,7 +14,7 @@ def test_transformed_selector_convert_region_by_css():
 
 
 def test_transformed_selector_convert_shadow_by_css_region_by_css():
-    converted = TransformedSelector.convert(TargetPath.shadow_dom("#s").region(".css"))
+    converted = TransformedSelector.convert(TargetPath.shadow("#s").region(".css"))
 
     assert converted.type is By.CSS_SELECTOR
     assert converted.selector == "#s"
@@ -28,7 +28,7 @@ def test_transformed_selector_convert_shadow_by_css_region_by_css():
 
 def test_transformed_selector_convert_shadow_by_xpath_shadow_by_css_region_by_css():
     converted = TransformedSelector.convert(
-        TargetPath.shadow_dom(By.XPATH, "//x").shadow_dom("#s").region(".css")
+        TargetPath.shadow(By.XPATH, "//x").shadow("#s").region(".css")
     )
 
     assert converted.type is By.XPATH

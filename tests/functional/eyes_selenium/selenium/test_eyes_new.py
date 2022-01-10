@@ -124,7 +124,7 @@ def test_get_all_vg_test_results(local_chrome_driver):
     assert results[1] == all_results[1].test_results
 
 
-def test_check_element_in_shadow_dom(local_chrome_driver):
+def test_check_element_in_shadow(local_chrome_driver):
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/ShadowDOM/index.html"
     )
@@ -135,6 +135,4 @@ def test_check_element_in_shadow_dom(local_chrome_driver):
             "Test check element in shadow dom",
             {"width": 800, "height": 600},
         )
-        eyes.check(
-            Target.region(TargetPath.shadow_dom("#has-shadow-root").region("h1"))
-        )
+        eyes.check(Target.region(TargetPath.shadow("#has-shadow-root").region("h1")))

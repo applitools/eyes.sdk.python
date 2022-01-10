@@ -56,8 +56,8 @@ def test_target_path_frame_by_css_selector():
     assert path.parent is None
 
 
-def test_target_path_shadow_dom_by_css():
-    path = TargetPath.shadow_dom(".css")
+def test_target_path_shadow_by_css():
+    path = TargetPath.shadow(".css")
 
     assert type(path) is ShadowDomLocator
     assert path.by is By.CSS_SELECTOR
@@ -65,8 +65,8 @@ def test_target_path_shadow_dom_by_css():
     assert path.parent is None
 
 
-def test_target_path_shadow_dom_by_xpath():
-    path = TargetPath.shadow_dom(By.XPATH, "//x")
+def test_target_path_shadow_by_xpath():
+    path = TargetPath.shadow(By.XPATH, "//x")
 
     assert type(path) is ShadowDomLocator
     assert path.by is By.XPATH
@@ -96,16 +96,16 @@ def test_target_path_region_xpath_repr():
     assert repr(path) == "TargetPath.region(By.XPATH, '//x')"
 
 
-def test_target_path_shadow_dom_css_repr():
-    path = TargetPath.shadow_dom(".css")
+def test_target_path_shadow_css_repr():
+    path = TargetPath.shadow(".css")
 
-    assert repr(path) == "TargetPath.shadow_dom('.css')"
+    assert repr(path) == "TargetPath.shadow('.css')"
 
 
-def test_target_path_shadow_dom_xpath_repr():
-    path = TargetPath.shadow_dom(By.XPATH, "//x")
+def test_target_path_shadow_xpath_repr():
+    path = TargetPath.shadow(By.XPATH, "//x")
 
-    assert repr(path) == "TargetPath.shadow_dom(By.XPATH, '//x')"
+    assert repr(path) == "TargetPath.shadow(By.XPATH, '//x')"
 
 
 def test_target_path_frame_number_repr():
@@ -126,16 +126,16 @@ def test_target_path_frame_css_repr():
     assert repr(path) == "TargetPath.frame(By.CSS_SELECTOR, '.css')"
 
 
-def test_target_path_shadow_dom_css_region_css_repr():
-    path = TargetPath.shadow_dom("#shadow").region(".region")
+def test_target_path_shadow_css_region_css_repr():
+    path = TargetPath.shadow("#shadow").region(".region")
 
-    assert repr(path) == "TargetPath.shadow_dom('#shadow').region('.region')"
+    assert repr(path) == "TargetPath.shadow('#shadow').region('.region')"
 
 
-def test_target_path_frame_shadow_dom_region_repr():
-    path = TargetPath.frame(1).shadow_dom("#shadow").region(".region")
+def test_target_path_frame_shadow_region_repr():
+    path = TargetPath.frame(1).shadow("#shadow").region(".region")
 
-    assert repr(path) == "TargetPath.frame(1).shadow_dom('#shadow').region('.region')"
+    assert repr(path) == "TargetPath.frame(1).shadow('#shadow').region('.region')"
 
 
 def test_target_path_region_eq():

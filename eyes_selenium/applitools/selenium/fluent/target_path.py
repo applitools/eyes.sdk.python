@@ -41,12 +41,12 @@ class TargetPath(object):
         return FrameLocator(None, number_or_id_or_name_or_by, selector)
 
     @staticmethod
-    def shadow_dom(selector_or_by, selector=None):
+    def shadow(selector_or_by, selector=None):
         return ShadowDomLocator(None, selector_or_by, selector)
 
 
 class ShadowDomLocator(Locator):
-    FACTORY_METHOD = "shadow_dom"
+    FACTORY_METHOD = "shadow"
 
     def region(self, selector_or_by, selector=None):
         return RegionLocator(self, selector_or_by, selector)
@@ -54,7 +54,7 @@ class ShadowDomLocator(Locator):
     def frame(self, number_or_id_or_name_or_by, selector=None):
         return FrameLocator(self, number_or_id_or_name_or_by, selector)
 
-    def shadow_dom(self, selector_or_by, selector=None):
+    def shadow(self, selector_or_by, selector=None):
         return ShadowDomLocator(self, selector_or_by, selector)
 
 
@@ -92,7 +92,7 @@ class FrameLocator(Locator):
     def frame(self, number_or_id_or_name_or_by, selector=None):
         return FrameLocator(self, number_or_id_or_name_or_by, selector)
 
-    def shadow_dom(self, selector_or_by, selector=None):
+    def shadow(self, selector_or_by, selector=None):
         return ShadowDomLocator(self, selector_or_by, selector)
 
 
