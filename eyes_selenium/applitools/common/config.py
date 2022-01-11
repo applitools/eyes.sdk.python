@@ -31,6 +31,7 @@ DEFAULT_MATCH_TIMEOUT_MS = 2000  # type: int
 DEFAULT_SERVER_REQUEST_TIMEOUT_MS = 60 * 5 * 1000
 DEFAULT_ALL_TEST_RESULTS_TIMEOUT = 30 * 60  # seconds
 DEFAULT_SERVER_URL = "https://eyesapi.applitools.com"
+PROCESS_DEFAULT_BATCH_ID = str(uuid.uuid4())  # Unique per-process
 
 
 @attr.s(init=False, slots=True)
@@ -53,7 +54,7 @@ class BatchInfo(object):
     def __init__(self, name=None, started_at=None, batch_sequence_name=None):
         # type: (Optional[Text], Optional[datetime], Optional[Text]) -> None
         self.id = get_env_with_prefix(
-            "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
+            "APPLITOOLS_BATCH_ID", PROCESS_DEFAULT_BATCH_ID
         )  # type: Text
         self.name = get_env_with_prefix("APPLITOOLS_BATCH_NAME")  # type: Text
         self.started_at = datetime.now(UTC)  # type: datetime
