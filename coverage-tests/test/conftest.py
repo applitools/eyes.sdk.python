@@ -81,7 +81,7 @@ def android_desired_capabilities(request, dev, app):
     desired_caps["automationName"] = "UiAutomator2"
     desired_caps["name"] = "AndroidNativeApp checkWindow"
     desired_caps["deviceOrientation"] = "portrait"
-    desired_caps["appiumVersion"] = "1.9.1"
+    desired_caps["appiumVersion"] = "1.19.2"
     return desired_caps
 
 
