@@ -65,18 +65,3 @@ def test_set_match_regions_level():
 
     cs = CheckSettings().exact()
     assert cs.values.match_level == MatchLevel.EXACT
-
-
-def test_set_get_accessibility_regions():
-    cs = CheckSettings().accessibility(
-        AccessibilityRegion(1, 2, 3, 4, AccessibilityRegionType.LargeText)
-    )
-    assert cs.values.accessibility_regions[0].get_regions(Mock(), Mock()) == [
-        AccessibilityRegion(1, 2, 3, 4, AccessibilityRegionType.LargeText)
-    ]
-    cs = CheckSettings().accessibility(
-        Region(1, 2, 3, 4), AccessibilityRegionType.LargeText
-    )
-    assert cs.values.accessibility_regions[0].get_regions(Mock(), Mock()) == [
-        AccessibilityRegion(1, 2, 3, 4, AccessibilityRegionType.LargeText)
-    ]

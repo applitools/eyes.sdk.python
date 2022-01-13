@@ -3,12 +3,12 @@ from __future__ import absolute_import, unicode_literals
 from typing import Optional, Text
 
 from robot.libraries.BuiltIn import BuiltIn
+from selenium.webdriver.remote.webdriver import WebDriver
 
 from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSummary
-from applitools.selenium import EyesWebDriver
+from applitools.selenium import Eyes
 
 from ..base import LibraryComponent, keyword
-from ..eyes import RobotEyes
 from ..utils import get_enum_by_name, parse_viewport_size
 from .keyword_tags import CHECK_FLOW
 
@@ -27,7 +27,7 @@ class RunnerKeywords(LibraryComponent):
 
 
 class SessionKeywords(LibraryComponent):
-    @keyword(
+    @keyword(  # noqa
         "Eyes Open",
         types={
             "app_name": (str, None),
@@ -70,7 +70,7 @@ class SessionKeywords(LibraryComponent):
         send_dom=None,  # type: Optional[bool]
         is_disabled=None,  # type: Optional[bool]
     ):
-        # type: (...)->EyesWebDriver
+        # type: (...)->WebDriver
         """
         Shared parameters section from `applitools.yaml` could be overwritten during `Eyes Open` call, see `Preconditions`.
 
@@ -144,9 +144,7 @@ class SessionKeywords(LibraryComponent):
         if is_disabled:
             config_cloned.is_disabled = is_disabled
 
-        eyes = RobotEyes.from_current_library(
-            self.ctx.current_library, self.eyes_runner
-        )
+        eyes = Eyes(self.eyes_runner)
         eyes.set_configuration(config_cloned)
         self.register_eyes(eyes)
         return eyes.open(self.fetch_driver())

@@ -47,6 +47,7 @@ def test_android_native(eyes, driver):
 @pytest.mark.platform("Android")
 @pytest.mark.capabilities(**ANDROID_CAPS)
 @pytest.mark.eyes_config(hide_scrollbars=False)
+@pytest.mark.skip("USDK Difference, screenshot is missing")
 def test_android_native_scale_app_native_feature(eyes, driver):
     eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(
@@ -68,6 +69,7 @@ def test_ios_native(eyes, driver):
 @pytest.mark.platform("iOS")
 @pytest.mark.capabilities(**IOS_CAPS)
 @pytest.mark.eyes_config(hide_scrollbars=False)
+@pytest.mark.skip("USDK Difference")
 def test_ios_native_scale_app_native_feature(eyes, driver):
     eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(

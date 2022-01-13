@@ -3,16 +3,14 @@ from copy import copy
 
 import pytest
 from appium import webdriver as appium_webdriver
-from mock import patch
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 
-from applitools.common import logger
-from applitools.core import Feature
 from applitools.selenium import Region, Target
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture
 def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabilities):
     selenium_url = (
         "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
@@ -33,21 +31,15 @@ def mobile_eyes(request, eyes, ios_desired_capabilities, android_desired_capabil
     )
     if mobile_driver is None:
         raise WebDriverException("Never created!")
-
-    yield eyes, mobile_driver
-
-    # report results
-    try:
-        mobile_driver.execute_script(
-            "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
-        )
-    except WebDriverException:
-        logger.info(
-            "Warning: The driver failed to quit properly. Check test and server side logs."
-        )
-    finally:
-        mobile_driver.quit()
-        eyes.close()
+    with mobile_driver, eyes:
+        yield eyes, mobile_driver
+        # report results
+        try:
+            mobile_driver.execute_script(
+                "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
+            )
+        except WebDriverException:
+            pass
 
 
 @pytest.yield_fixture(scope="function")
@@ -56,9 +48,10 @@ def android_desired_capabilities(request):
     desired_caps["app"] = "http://saucelabs.com/example_files/ContactManager.apk"
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
-    desired_caps["deviceName"] = "Samsung Galaxy S8 WQHD GoogleAPI Emulator"
-    desired_caps["platformVersion"] = "8.1"
+    desired_caps["deviceName"] = "Android GoogleAPI Emulator"
+    desired_caps["platformVersion"] = "10"
     desired_caps["platformName"] = "Android"
+    desired_caps["autoGrantPermissions"] = True
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
     desired_caps["name"] = "AndroidNativeApp checkWindow"
@@ -86,6 +79,8 @@ def ios_desired_capabilities(request):
 @pytest.mark.platform("Android")
 def test_android_native_sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    # Click "Rebuild your app with new sdk" prompt
+    mobile_driver.find_element(By.XPATH, r"//android.widget.Button[@text='OK']").click()
     eyes.open(mobile_driver, "AndroidNativeApp", "AndroidNativeApp checkWindow")
     eyes.check(
         "Contact list",
@@ -96,6 +91,8 @@ def test_android_native_sauce_labs(mobile_eyes):
 @pytest.mark.platform("Android")
 def test_android_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
+    # Click "Rebuild your app with new sdk" prompt
+    mobile_driver.find_element(By.XPATH, r"//android.widget.Button[@text='OK']").click()
     eyes.open(mobile_driver, "AndroidNativeApp", "AndroidNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 1400, 2000)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
@@ -116,31 +113,9 @@ def test_iOS_native__sauce_labs(mobile_eyes):
 @pytest.mark.platform("iOS")
 def test_iOS_native_region__sauce_labs(mobile_eyes):
     eyes, mobile_driver = mobile_eyes
-    eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
+    # eyes.configure.set_features(Feature.SCALE_MOBILE_APP)
     eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp checkRegionFloating")
     settings = Target.region(Region(0, 100, 375, 712)).floating(
         Region(10, 10, 20, 20), 3, 3, 20, 30
     )
     eyes.check("Contact list", settings)
-
-
-@pytest.mark.platform("Android")
-def test_android_native_sauce_labs_tracking_id_sent(mobile_eyes):
-    eyes, mobile_driver = mobile_eyes
-    eyes.open(mobile_driver, "AndroidNativeApp", "AndroidNativeApp trackingIdSent")
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-        eyes.check("Contact list", Target.window())
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-
-    assert match_window_data.options.source == "com.example.android.contactmanager"
-
-
-@pytest.mark.platform("iOS")
-def test_iOS_native_region_sauce_labs_tracking_id_sent(mobile_eyes):
-    eyes, mobile_driver = mobile_eyes
-    eyes.open(mobile_driver, "iOSNativeApp", "iOSNativeApp trackingIdSent")
-    with patch("applitools.core.server_connector.ServerConnector.match_window") as smw:
-        eyes.check("Contact list", Target.window())
-        match_window_data = smw.call_args[0][1]  # type: MatchWindowData
-
-    assert match_window_data.options.source == "eyes-ios-hello-world.zip"

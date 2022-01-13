@@ -11,8 +11,8 @@ def test_get_all_test_results(vg_runner, driver):
     eyes2.configuration.add_browser(700, 500, BrowserType.FIREFOX)
 
     driver.get("https://demo.applitools.com")
-    eyes1.open(driver, "Python | VisualGrid", "TestClose1")
-    eyes2.open(driver, "Python | VisualGrid", "TestClose2")
+    eyes1.open(driver, "Python | VisualGrid", "TestClose1", RectangleSize(800, 600))
+    eyes2.open(driver, "Python | VisualGrid", "TestClose2", RectangleSize(700, 500))
 
     eyes1.check_window()
     eyes2.check_window()
@@ -27,6 +27,7 @@ def test_get_all_test_results(vg_runner, driver):
 def test_abort_eyes(vg_runner, driver):
     eyes = Eyes(vg_runner)
     eyes.configuration.add_browser(800, 600, BrowserType.CHROME)
+    eyes.configuration.viewport_size = RectangleSize(800, 600)
     driver.get("https://demo.applitools.com")
     eyes.open(driver, "Python | VisualGrid", "TestAbortVGEyes")
     eyes.check_window()

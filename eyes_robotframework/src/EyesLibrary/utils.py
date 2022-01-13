@@ -11,8 +11,8 @@ from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import RectangleSize, Region
 from applitools.common.utils import argument_guard
+from applitools.common.validators import is_webelement
 from applitools.selenium.fluent import SeleniumCheckSettings
-from applitools.selenium.validators import is_webelement
 
 SEPARATOR = object()
 

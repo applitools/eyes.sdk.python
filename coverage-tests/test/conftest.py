@@ -9,17 +9,7 @@ from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
-from applitools.selenium import (
-    BatchInfo,
-    BrowserType,
-    ClassicRunner,
-    Configuration,
-    Eyes,
-    Region,
-    StitchMode,
-    Target,
-    VisualGridRunner,
-)
+from applitools.selenium import BatchInfo, Eyes, StitchMode
 
 
 @pytest.fixture(scope="session")
@@ -83,8 +73,8 @@ def android_desired_capabilities(request, dev, app):
     desired_caps["app"] = app
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
-    desired_caps["deviceName"] = "Samsung Galaxy S8 WQHD GoogleAPI Emulator"
-    desired_caps["platformVersion"] = "8.1"
+    desired_caps["deviceName"] = "Samsung Galaxy S8 FHD GoogleAPI Emulator"
+    desired_caps["platformVersion"] = "7.0"
     desired_caps["platformName"] = "Android"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
@@ -102,7 +92,7 @@ def ios_desired_capabilities(request, dev, app):
     desired_caps["NATIVE_APP"] = True
     desired_caps["browserName"] = ""
     desired_caps["deviceName"] = "iPhone XS Simulator"
-    desired_caps["platformVersion"] = "13.4"
+    desired_caps["platformVersion"] = "13.0"
     desired_caps["platformName"] = "iOS"
     desired_caps["clearSystemFiles"] = True
     desired_caps["noReset"] = True
@@ -168,7 +158,7 @@ def firefox(options):
 
 
 @pytest.fixture(scope="function")
-def firefox48(sauce_url):
+def firefox48(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "firefox"
@@ -211,17 +201,17 @@ def edge(sauce_url):
 
 
 @pytest.fixture(scope="function")
-def safari11(sauce_url):
+def safari11(sauce_url, legacy):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
-        capabilities["platform"] = "macOS 10.12"
-        capabilities["version"] = "11.0"
+        capabilities["platform"] = "macOS 10.13"
+        capabilities["version"] = "11.1"
     else:
         capabilities = {
             "browserName": "safari",
-            "browserVersion": "11.0",
-            "platformName": "macOS 10.12",
+            "browserVersion": "11.1",
+            "platformName": "macOS 10.13",
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
@@ -235,6 +225,7 @@ def safari12(sauce_url, legacy):
         capabilities["browserName"] = "safari"
         capabilities["platform"] = "macOS 10.13"
         capabilities["version"] = "12.1"
+        capabilities["seleniumVersion"] = "3.4.0"
     else:
         capabilities = {
             "browserName": "safari",
@@ -324,9 +315,6 @@ def eyes_setup(runner, batch_info, stitch_mode, emulation):
     eyes.configure.set_save_new_tests(False)
     eyes.configure.set_hide_caret(True)
     eyes.configure.set_hide_scrollbars(True)
-    eyes.add_property(
-        "ForceFPS", "true" if eyes.force_full_page_screenshot else "false"
-    )
     is_emulation, orientation, page = emulation
     if is_emulation:
         eyes.add_property("Orientation", orientation)

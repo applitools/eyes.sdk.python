@@ -1,21 +1,18 @@
-import logging
 import os
 import traceback
 import typing
 from typing import TYPE_CHECKING, Dict, Union
 
-import structlog
 from robot.api import logger as robot_logger
 from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
-from robot.output.pyloggingconf import RobotHandler
 from robotlibcore import DynamicCore
+from six import raise_from
+from six import string_types as basestring
 
 from applitools.common import BatchInfo
-from applitools.common import logger as applitools_logger
 from applitools.common.utils import argument_guard
-from applitools.common.utils.compat import basestring, raise_from
-from applitools.core import EyesRunner
-from applitools.selenium import ClassicRunner, VisualGridRunner
+from applitools.selenium import ClassicRunner, Eyes, VisualGridRunner
+from applitools.selenium.eyes import EyesRunner
 
 from .__version__ import __version__
 from .config import RobotConfiguration
@@ -26,7 +23,6 @@ from .config_parser import (
     try_parse_runner,
 )
 from .errors import EyesLibraryConfigError, EyesLibraryError
-from .eyes import RobotEyes
 from .eyes_cache import EyesCache
 from .keywords import (
     CheckKeywords,
@@ -67,27 +63,6 @@ def validate_config(configuration):
             "API key not set! Log in to https://applitools.com to obtain "
             "your API Key and set it to `applitools.yaml` or `APPLITOOLS_API_KEY`."
         )
-
-
-class _RobotLogger(object):
-    """
-    A simple logger class to redirect logs to Robot Framework logger.
-    """
-
-    def __init__(self):
-        logger = logging.getLogger("RobotFramework")
-        self.level = logger.getEffectiveLevel()
-
-    def configure(self, std_logger):
-        # type: (logging.Logger) -> None
-        handler = RobotHandler()
-        handler.setLevel(self.level)
-        handler.setFormatter(
-            structlog.stdlib.ProcessorFormatter(
-                structlog.dev.ConsoleRenderer(), applitools_logger._pre_chain
-            )
-        )
-        std_logger.addHandler(handler)
 
 
 class EyesLibrary(DynamicCore):
@@ -201,7 +176,6 @@ class EyesLibrary(DynamicCore):
         self._selected_runner = try_parse_runner(runner)
 
         if is_test_run():
-            applitools_logger.set_logger(_RobotLogger())  # type: ignore
             self.current_library = self._try_get_library(self._selected_runner)
             suite_path = get_suite_path()
             self._configuration = try_parse_configuration(
@@ -233,7 +207,7 @@ class EyesLibrary(DynamicCore):
     @eyes_runner.setter
     def eyes_runner(self, runner):
         # type: (EyesRunner) -> None
-        argument_guard.is_a(runner, EyesRunner)
+        argument_guard.is_a(runner, (ClassicRunner, VisualGridRunner))
         self._eyes_runner = runner
 
     def clean_eyes_runner(self):
@@ -308,7 +282,7 @@ class EyesLibrary(DynamicCore):
 
     @property
     def current_eyes(self):
-        # type: () -> RobotEyes
+        # type: () -> Eyes
         if not self._eyes_registry.current:
             raise RuntimeError("No opened Eyes.")
         return self._eyes_registry.current

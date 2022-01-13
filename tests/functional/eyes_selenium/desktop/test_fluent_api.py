@@ -8,11 +8,11 @@ from applitools.selenium import (
     AccessibilityRegion,
     AccessibilityRegionType,
     AccessibilitySettings,
+    ClassicRunner,
     Region,
     StitchMode,
     Target,
 )
-from applitools.selenium.selenium_eyes import SeleniumEyes
 
 pytestmark = [
     pytest.mark.platform("Linux", "macOS"),
@@ -278,17 +278,17 @@ def test_check_window_with_match_region_paddings__fluent(
         .strict("overflowing-div", padding=dict(bottom=100)),
     )
     # regions are different for latest UFG chrome vs classic chrome
-    if isinstance(eyes_opened._current_eyes, SeleniumEyes):
+    if isinstance(eyes_opened._runner, ClassicRunner):
         expected_regions = [
-            Region(10 + 10, 286, 800, 500),
-            Region(122 + 10, 933, 456, 306),
-            Region(8 + 10, 1277, 690, 206),
+            Region(10, 286, 800, 500),
+            Region(122, 933, 456, 306),
+            Region(8, 1277, 690, 206),
         ]
     else:
         expected_regions = [
-            Region(10 + 10, 285, 800, 501),
-            Region(122 + 10, 932, 456, 307),
-            Region(8 + 10, 1276, 690, 207),
+            Region(10, 285, 800, 501),
+            Region(122, 932, 456, 307),
+            Region(8, 1276, 690, 207),
         ]
 
     check_test_result.send(

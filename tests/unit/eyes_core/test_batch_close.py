@@ -1,51 +1,46 @@
-import os
-from distutils.util import strtobool
-
-import pytest
 from mock import ANY, call, patch
 
 from applitools.common import ProxySettings
 from applitools.core import BatchClose
 
 
-@pytest.mark.parametrize("env_dont_close", ["1", "True", "true", "false", "False"])
-def test_batch_no_api_key_error(env_dont_close):
-    with patch.dict(
-        os.environ,
-        {
-            "APPLITOOLS_API_KEY": "Some-key",
-            "APPLITOOLS_DONT_CLOSE_BATCHES": env_dont_close,
-        },
-    ):
-        with patch("requests.delete") as mocked_request:
-            BatchClose().set_batch_ids("test-batch-id").close()
-            if strtobool(env_dont_close):
-                assert not mocked_request.called
-            else:
-                assert mocked_request.call_args[0][0]
-
-
-@patch.dict(os.environ, {"APPLITOOLS_API_KEY": "Some-key"})
-def test_pass_multiple_batches_ids():
-    with patch("requests.delete") as mocked_request:
-        BatchClose().set_batch_ids("test batch-id").close()
-        assert "test+batch-id" in mocked_request.call_args[0][0]
-        BatchClose().set_batch_ids("test-batch-id", "test-batch//@second").close()
-        assert "test-batch%2F%2F%40second" in mocked_request.call_args[0][0]
-        BatchClose().set_batch_ids(["test-batch-id", "test-batch-second"]).close()
-        assert "test-batch-second" in mocked_request.call_args[0][0]
+def test_pass_multiple_batches_ids(monkeypatch):
+    monkeypatch.setenv("APPLITOOLS_API_KEY", "abc")
+    with patch("applitools.selenium.command_executor.CommandExecutor") as commands:
+        BatchClose().set_batch_ids("test batch-id", "test-batch-second").close()
+        assert commands.mock_calls == [
+            call.create("eyes.sdk.python", ANY),
+            call.create().__enter__(),
+            call.create()
+            .__enter__()
+            .core_close_batches(
+                {
+                    "batchIds": ["test batch-id", "test-batch-second"],
+                    "serverUrl": "https://eyesapi.applitools.com",
+                    "apiKey": "abc",
+                }
+            ),
+            call.create().__exit__(None, None, None),
+        ]
 
 
 def test_batch_close_uses_proxy():
-    with patch("requests.delete") as mocked_request:
+    with patch("applitools.selenium.command_executor.CommandExecutor") as commands:
         BatchClose().set_batch_ids("test-id").set_proxy(
             ProxySettings("localhost", 80)
         ).close()
-        assert mocked_request.call_args_list == [
-            call(
-                ANY,
-                params={"apiKey": ANY},
-                verify=False,
-                proxies={"http": "http://localhost:80", "https": "http://localhost:80"},
-            )
+        assert commands.mock_calls == [
+            call.create("eyes.sdk.python", ANY),
+            call.create().__enter__(),
+            call.create()
+            .__enter__()
+            .core_close_batches(
+                {
+                    "batchIds": ["test-id"],
+                    "serverUrl": "https://eyesapi.applitools.com",
+                    "apiKey": ANY,
+                    "proxy": {"url": "http://localhost:80"},
+                }
+            ),
+            call.create().__exit__(None, None, None),
         ]

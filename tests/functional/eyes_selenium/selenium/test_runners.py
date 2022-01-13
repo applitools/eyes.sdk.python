@@ -8,7 +8,6 @@ from applitools.selenium import (
     StitchMode,
     Target,
     VisualGridRunner,
-    logger,
 )
 
 pytestmark = [pytest.mark.eyes_config(branch_name="master_python")]
@@ -39,7 +38,7 @@ def test_classic_runner_raise_exception(driver):
         dict(width=1200, height=800),
     )
     eyes.check("Step 1", Target.window())
-    logger.info(str(eyes.close(False)))
+    eyes.close(False)
     with pytest.raises(Exception):
         classic_runner.get_all_test_results()
 
@@ -109,5 +108,4 @@ def test_eyes_runner(driver, runner):
 
     driver.quit()
     all_tests_results = runner.get_all_test_results()
-    if len(all_tests_results.all_results) != 3:
-        raise Exception
+    assert len(all_tests_results.all_results) == 3

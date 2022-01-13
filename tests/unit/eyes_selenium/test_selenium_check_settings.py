@@ -4,10 +4,10 @@ from mock import MagicMock
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 
-from applitools.common import EyesError, FloatingBounds
-from applitools.common.selenium import BrowserType
-from applitools.selenium import AccessibilityRegionType, EyesWebElement, Region
+from applitools.common import FloatingBounds
+from applitools.selenium import AccessibilityRegionType, Region
 from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.selenium.fluent.target_path import TargetPath
 
 
 def get_cs_from_method(method_name, *args, **kwargs):
@@ -37,6 +37,7 @@ def test_default_check_settings():
 
     assert check_settings.values.disable_browser_fetching is None
     assert check_settings.values.layout_breakpoints is None
+    assert check_settings.values.lazy_load is None
 
 
 def test_check_region_and_frame_with_unsupported_input():
@@ -59,15 +60,13 @@ def test_check_frame(method_name="frame"):
 
     frame_selector = [By.ID, "some-selector"]
     cs = get_cs_from_method(method_name, frame_selector)
-    assert cs.values.frame_chain[0].frame_selector == [By.ID, "some-selector"]
+    assert cs.values.frame_chain[0].frame_selector == TargetPath.frame(
+        By.ID, "some-selector"
+    )
 
     frame_index = 3
     cs = get_cs_from_method(method_name, frame_index)
     assert cs.values.frame_chain[0].frame_index == frame_index
-
-    frame_element = MagicMock(EyesWebElement)
-    cs = get_cs_from_method(method_name, frame_element)
-    assert cs.values.frame_chain[0].frame_element == frame_element
 
 
 def test_check_region_with_region(method_name="region"):
@@ -77,10 +76,6 @@ def test_check_region_with_region(method_name="region"):
 
 
 def test_check_region_with_elements(method_name="region"):
-    eyes_element = MagicMock(EyesWebElement)
-    cs = get_cs_from_method(method_name, eyes_element)
-    assert cs.values.target_element == eyes_element
-
     selenium_element = MagicMock(SeleniumWebElement)
     cs = get_cs_from_method(method_name, selenium_element)
     assert cs.values.target_element == selenium_element
@@ -96,22 +91,25 @@ def test_check_region_with_elements(method_name="region"):
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
     cs = get_cs_from_method(method_name, [by, value])
-    assert cs.values.target_selector == [by, value]
+    assert cs.values.target_selector == TargetPath.region(by, value)
+
+    cs = get_cs_from_method(method_name, TargetPath.region(by, value))
+    assert cs.values.target_selector == TargetPath.region(by, value)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_match_regions_with_selectors_input(method_name):
     css_selector = ".cssSelector"
     regions = get_regions_from_(method_name, css_selector)
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == css_selector
+    assert regions[0]._target_path == TargetPath.region(css_selector)
+
+    regions = get_regions_from_(method_name, TargetPath.region(css_selector))
+    assert regions[0]._target_path == TargetPath.region(css_selector)
 
     locator = [By.XPATH, "locator"]
     regions = get_regions_from_(method_name, locator, css_selector)
-    assert regions[0]._by == By.XPATH
-    assert regions[0]._value == "locator"
-    assert regions[1]._by == By.CSS_SELECTOR
-    assert regions[1]._value == css_selector
+    assert regions[0]._target_path == TargetPath.region(By.XPATH, "locator")
+    assert regions[1]._target_path == TargetPath.region(By.CSS_SELECTOR, css_selector)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -119,27 +117,20 @@ def test_match_regions_with_regions_input(method_name):
     region, region1 = Region(0, 1, 2, 3), Region(0, 2, 4, 5)
     regions = get_regions_from_(method_name, region)
     assert regions[0]._region == region
-    assert regions[0].get_regions(None, None) == [region]
 
     regions = get_regions_from_(method_name, region, region1)
     assert regions[0]._region == region
     assert regions[1]._region == region1
-    assert regions[0].get_regions(None, None) == [region]
-    assert regions[1].get_regions(None, None) == [region1]
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_match_regions_with_elements(method_name):
-    eyes_element = MagicMock(EyesWebElement)
     selenium_element = MagicMock(SeleniumWebElement)
     appium_element = MagicMock(AppiumWebElement)
 
-    regions = get_regions_from_(
-        method_name, eyes_element, selenium_element, appium_element
-    )
-    assert regions[0]._element == eyes_element
-    assert regions[1]._element == selenium_element
-    assert regions[2]._element == appium_element
+    regions = get_regions_from_(method_name, selenium_element, appium_element)
+    assert regions[0]._element == selenium_element
+    assert regions[1]._element == appium_element
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -154,34 +145,30 @@ def test_match_regions_with_by_values(method_name):
     regions = get_regions_from_(
         method_name, by_name, by_id, by_class, by_tag_name, by_css_selector, by_xpath
     )
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "some-name"
-    assert regions[1]._by == By.ID
-    assert regions[1]._value == "ident"
-    assert regions[2]._by == By.CLASS_NAME
-    assert regions[2]._value == "class_name"
-    assert regions[3]._by == By.TAG_NAME
-    assert regions[3]._value == "tag_name"
-    assert regions[4]._by == By.CSS_SELECTOR
-    assert regions[4]._value == "css_selector"
-    assert regions[5]._by == By.XPATH
-    assert regions[5]._value == "xpath"
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "some-name")
+    assert regions[1]._target_path == TargetPath.region(By.ID, "ident")
+    assert regions[2]._target_path == TargetPath.region(By.CLASS_NAME, "class_name")
+    assert regions[3]._target_path == TargetPath.region(By.TAG_NAME, "tag_name")
+    assert regions[4]._target_path == TargetPath.region(By.CSS_SELECTOR, "css_selector")
+    assert regions[5]._target_path == TargetPath.region(By.XPATH, "xpath")
 
 
 def test_match_floating_region():
     regions = get_regions_from_("floating", 5, [By.NAME, "name"])
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "name"
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "name")
 
     regions = get_regions_from_("floating", 5, "name")
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == "name"
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._target_path == TargetPath.region("name")
+
+    regions = get_regions_from_("floating", 5, TargetPath.region("name"))
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._target_path == TargetPath.region("name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
-    assert regions[0].floating_bounds == FloatingBounds(5, 5, 5, 5)
+    assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
     assert regions[0]._element == element
 
 
@@ -189,22 +176,20 @@ def test_match_accessibility_region():
     regions = get_regions_from_(
         "accessibility", [By.NAME, "name"], AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
-    assert regions[0]._by == By.NAME
-    assert regions[0]._value == "name"
+    assert regions[0]._type == AccessibilityRegionType.BoldText
+    assert regions[0]._target_path == TargetPath.region(By.NAME, "name")
 
     regions = get_regions_from_(
         "accessibility", "name", AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
-    assert regions[0]._by == By.CSS_SELECTOR
-    assert regions[0]._value == "name"
+    assert regions[0]._type == AccessibilityRegionType.BoldText
+    assert regions[0]._target_path == TargetPath.region(By.CSS_SELECTOR, "name")
 
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_(
         "accessibility", element, AccessibilityRegionType.BoldText
     )
-    assert regions[0].accessibility_type == AccessibilityRegionType.BoldText
+    assert regions[0]._type == AccessibilityRegionType.BoldText
     assert regions[0]._element == element
 
 
@@ -214,73 +199,30 @@ def test_before_render_screenshot_hook():
     assert cs.values.script_hooks["beforeCaptureScreenshot"] == "some hook"
 
 
-def test_disable_browser_fetching_combinations():
-    from applitools.selenium import Configuration, Target
-    from applitools.selenium.visual_grid import VisualGridEyes
-
-    effective_option = VisualGridEyes._effective_disable_browser_fetching
-    cfg = Configuration()
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-    cfg.set_disable_browser_fetching(False)
-
-    assert effective_option(cfg, Target.window()) is False
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-    cfg.set_disable_browser_fetching(True)
-
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching()) is True
-    assert effective_option(cfg, Target.window().disable_browser_fetching(True)) is True
-    assert (
-        effective_option(cfg, Target.window().disable_browser_fetching(False)) is False
-    )
-
-
-def test_layout_breakpoints_combinations():
-    from applitools.selenium import Configuration, Target
-    from applitools.selenium.visual_grid import VisualGridEyes
-
-    effective_option = VisualGridEyes._effective_layout_breakpoints
-    cfg = Configuration()
-
-    assert effective_option(cfg, Target.window()) is None
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-    cfg.set_layout_breakpoints(3, 4)
-
-    assert effective_option(cfg, Target.window()) == [3, 4]
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-    cfg.set_layout_breakpoints(True)
-
-    assert effective_option(cfg, Target.window()) is True
-    assert effective_option(cfg, Target.window().layout_breakpoints(1, 2)) == [1, 2]
-    assert effective_option(cfg, Target.window().layout_breakpoints(False)) is False
-    assert effective_option(cfg, Target.window().layout_breakpoints(True)) is True
-
-
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
 def test_region_padding_are_added(method_name):
     regions_selector = get_regions_from_(
         method_name, [By.NAME, "name"], padding={"top": 1, "left": 2}
     )
-    regions_element = get_regions_from_(
-        method_name, MagicMock(EyesWebElement), padding={"right": 200, "left": 5}
-    )
 
     assert regions_selector[0]._padding == {"top": 1, "left": 2}
-    assert regions_element[0]._padding == {"right": 200, "left": 5}
+
+
+def test_lazy_load_default_settings():
+    cs = SeleniumCheckSettings()
+    cs.lazy_load()
+
+    assert cs.values.lazy_load is not None
+    assert cs.values.lazy_load.scroll_length == 300
+    assert cs.values.lazy_load.waiting_time == 2000
+    assert cs.values.lazy_load.page_height == 15000
+
+
+def test_lazy_load_custom_settings():
+    cs = SeleniumCheckSettings()
+    cs.lazy_load(scroll_length=1, waiting_time=2, page_height=3)
+
+    assert cs.values.lazy_load is not None
+    assert cs.values.lazy_load.scroll_length == 1
+    assert cs.values.lazy_load.waiting_time == 2
+    assert cs.values.lazy_load.page_height == 3

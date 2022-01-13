@@ -1,3 +1,5 @@
+import pytest
+
 from applitools.selenium import BrowserType, Configuration, Eyes, Target
 from tests.utils import get_session_results
 
@@ -32,12 +34,12 @@ def test_check_element_and_window_in_sequence(driver, eyes, batch_info, vg_runne
         "left": 80,
         "top": 322,
         "width": 290,
-        "height": 62,
+        "height": 65,
     }
     assert len(actual_output[2]["imageMatchSettings"]["ignore"]) == 1
     assert actual_output[2]["imageMatchSettings"]["ignore"][0] == {
         "left": 367,
         "top": 322,
         "width": 290,
-        "height": 62,
+        "height": 65,
     }

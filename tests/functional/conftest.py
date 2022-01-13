@@ -1,40 +1,13 @@
-import functools
-import itertools
+import json
 import os
-from collections import defaultdict
-from distutils.util import strtobool
-from os import path
 
 import attr
-import mock
 import pytest
-import yaml
+from six import iteritems
 
-from applitools.common import (
-    BatchInfo,
-    Configuration,
-    JobInfo,
-    MatchResult,
-    RenderingInfo,
-    RenderStatusResults,
-    RunningRender,
-    RunningSession,
-    StdoutLogger,
-    TestResults,
-    logger,
-)
-from applitools.common.utils import iteritems
-from applitools.common.utils.json_utils import attr_from_dict
-from applitools.core import ServerConnector
+from applitools.common import BatchInfo, Configuration, StdoutLogger
+from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
-
-try:
-    from contextlib import ExitStack
-except ImportError:
-    from contextlib2 import ExitStack
-
-logger.set_logger(StdoutLogger(is_verbose=True))
-
 
 pytest_plugins = (
     "tests.functional.pytest_reporting",
@@ -84,10 +57,10 @@ def check_image_match_settings(eyes, test_result, comparision):
         actual = img[param["actual_name"]]
         expected = param["expected"]
         if attr.has(expected.__class__):
-            actual = attr_from_dict(actual, expected.__class__)
+            actual = attr_from_json(json.dumps(actual), expected.__class__)
         elif isinstance(expected, list):
             expected_cls = expected[0].__class__
-            actual = [attr_from_dict(a, expected_cls) for a in actual]
+            actual = [attr_from_json(json.dumps(a), expected_cls) for a in actual]
         assert actual == expected
 
 
@@ -101,7 +74,6 @@ def check_test_result(eyes):
 @pytest.fixture(name="eyes", scope="function")
 def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
     # TODO: allow to setup logger level through pytest option
-    # logger.set_logger(StdoutLogger())
     # in case eyes-images
     eyes = eyes_class()
     if eyes_runner:
@@ -119,150 +91,3 @@ def eyes_setup(request, eyes_class, eyes_config, eyes_runner, batch_info):
 
     yield eyes
     eyes.abort()
-
-
-@pytest.fixture
-def fake_connector_class():
-    return FakeServerConnector
-
-
-class FakeServerConnector(ServerConnector):
-    def __init__(self):
-        super(FakeServerConnector, self).__init__()
-        self.input_calls = defaultdict(list)
-        self.output_calls = defaultdict(list)
-        self.running_session_result = RunningSession(
-            **{
-                "id": "MDAwMDANzk~",
-                "session_id": "000002518",
-                "batch_id": "000002518010",
-                "baseline_id": "5411539b-558a-44c6-8a93-d95ddf909552",
-                "is_new_session": False,
-                "url": "https://eyes.applitools.com/app/batches/2124/04235423?accountId=asfd1124~~",
-            }
-        )
-        self.test_result = TestResults(status="Passed")
-
-    @property
-    def calls(self):
-        return {key: results[0] for key, results in iteritems(self.input_calls)}
-
-    def start_session(self, session_start_info):
-        self.input_calls["start_session"].append(session_start_info)
-        self.output_calls["start_session"].append(self.running_session_result)
-        return self.running_session_result
-
-    def stop_session(self, running_session, is_aborted, save):
-        self.input_calls["stop_session"].append((running_session, is_aborted, save))
-        self.output_calls["stop_session"].append(self.test_result)
-        return self.test_result
-
-    def match_window(self, running_session, match_data):
-        self.input_calls["match_window"].append((running_session, match_data))
-        result = MatchResult(as_expected=True)
-        self.output_calls["match_window"].append(result)
-        return result
-
-    def render(self, *render_requests):
-        self.input_calls["render"].append(render_requests)
-        result = [
-            RunningRender(
-                **{
-                    "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
-                    "job_id": "33305ec6-c03e-4fdf-8a11-bae62f3900a8",
-                    "render_status": "rendering",
-                }
-            )
-        ]
-        self.output_calls["render"].append(result)
-        return result
-
-    def render_status_by_id(self, *render_ids):
-        self.input_calls["render_status_by_id"].append(render_ids)
-        result = [
-            RenderStatusResults(
-                **{
-                    "image_location": "https://eyesapi.applitools.com/api/images/sti/se%-4e8e-9fd7-c01b33e47dcc?accessKey=None",
-                    "status": "rendered",
-                    "os": "linux",
-                    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/85.0.4183.83 Safari/537.36",
-                    "visual_viewport": {"width": 800, "height": 600},
-                    "device_size": {"width": 800, "height": 600},
-                    "retry_count": 0,
-                    "dom_location": "https://eyespublicw0.blob.core/a255-se/40b1-bf12df29cd5?sv=2017-04-17&sr=c&sig=1smaTPYU27cwPZuGx9pEooNNc%3D&se=2015%3A11%3A50Z&sp=w&accessKey=None",
-                    "render_id": "d226bfd0-e6e0-4c5e-9651-3a844a3e9b45",
-                }
-            )
-        ]
-        self.output_calls["render_status_by_id"].append(result)
-        return result
-
-    def render_put_resource(self, resource):
-        self.input_calls["render_put_resource"].append(resource)
-        self.output_calls["render_put_resource"].append(resource.hash)
-        return resource.hash
-
-    def render_info(self):
-        self.input_calls["render_info"].append(True)
-
-        result = RenderingInfo(
-            **{
-                "service_url": "https://render.applitools.com",
-                "stitching_service_url": "https://eyesapi.applitools.com/api/images/s?accessKey=None",
-                "access_token": "NYNyBxWppb1a0NvMrZXmMHqrUrdYUM",
-                "results_url": "https://eyespublicwi0.blob.core/a-se/__random__?sv=2&sr=c&sig=wrasda%3D&se=09-29T10%3A12%3A13Z&sp=w&accessKey=None",
-                "max_image_height": 15000,
-                "max_image_area": 37500000,
-            }
-        )
-        self.output_calls["render_info"].append(result)
-        return result
-
-    def job_info(self, render_requests):
-        self.input_calls["job_info"].append(render_requests)
-        result = [
-            JobInfo(renderer=rr.renderer, eyes_environment=rr.browser_name)
-            for rr in render_requests
-        ]
-        self.output_calls["job_info"].append(result)
-        return result
-
-    def check_resource_status(self, resources):
-        self.input_calls["check_resource_status"].append(resources)
-        result = [True for _ in resources]
-        self.output_calls["check_resource_status"].append(result)
-        return result
-
-    def send_logs(self, *events):
-        self.input_calls["send_logs"].append(events)
-
-    def __deepcopy__(self, memo):
-        return self
-
-
-@pytest.fixture(scope="function")
-def spy():
-    def make_spy(obj, attribute):
-        method = getattr(obj, attribute)
-
-        @functools.wraps(method)
-        def wrapped(*args, **kwargs):
-            try:
-                patched.return_list.append(method(*args, **kwargs))
-                return patched.return_list[-1]
-            except Exception as e:
-                patched.raised_list.append(e)
-                raise
-
-        patched = exit_stack.enter_context(
-            mock.patch.object(obj, attribute, side_effect=wrapped, autospec=True)
-        )
-        patched.return_list = []
-        patched.raised_list = []
-        return patched
-
-    exit_stack = ExitStack()
-    make_spy.ANY = mock.ANY
-    make_spy.call = mock.call
-    with exit_stack:
-        yield make_spy

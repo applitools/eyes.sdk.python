@@ -15,9 +15,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import IEDriverManager
 
-from applitools.selenium import Configuration, Eyes, StitchMode, logger
+from applitools.selenium import Configuration, Eyes, StitchMode, VisualGridRunner
 from applitools.selenium.__version__ import __version__
-from applitools.selenium.visual_grid import VisualGridRunner
 from tests.functional.eyes_selenium.selenium_utils import open_webdriver
 
 try:
@@ -32,11 +31,7 @@ if TYPE_CHECKING:
 
 BROWSERS_WEBDRIVERS = {
     "firefox": (GeckoDriverManager, webdriver.Firefox, webdriver.FirefoxOptions),
-    "chrome": (
-        lambda: ChromeDriverManager(version="94.0.4606.41"),
-        webdriver.Chrome,
-        webdriver.ChromeOptions,
-    ),
+    "chrome": (ChromeDriverManager, webdriver.Chrome, webdriver.ChromeOptions),
     "internet explorer": (IEDriverManager, webdriver.Ie, webdriver.IeOptions),
     "safari": (None, webdriver.Safari, None),
 }
@@ -127,7 +122,6 @@ def driver(request, browser_config, webdriver_module):
             )
         )
         selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-        logger.debug("SELENIUM_URL={}".format(selenium_url))
 
         desired_caps = browser_config.copy()
         desired_caps["build"] = os.getenv("BUILD_TAG", None)
@@ -162,22 +156,16 @@ def driver(request, browser_config, webdriver_module):
 
     if test_page_url:
         browser.get(test_page_url)
-        logger.info("navigation to URL: {}".format(test_page_url))
 
-    yield browser
-
-    # report results
-    try:
-        browser.execute_script(
-            "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
-        )
-    except WebDriverException:
-        # we can ignore the exceptions of WebDriverException type -> We're done with tests.
-        logger.info(
-            "Warning: The driver failed to quit properly. Check test and server side logs."
-        )
-    finally:
-        browser.quit()
+    with browser:
+        yield browser
+        # report results
+        try:
+            browser.execute_script(
+                "sauce:job-result=%s" % str(not request.node.rep_call.failed).lower()
+            )
+        except WebDriverException:
+            pass
 
 
 class Platform(namedtuple("Platform", "name version browsers extra")):
@@ -309,8 +297,11 @@ def _get_capabilities(platform_name=None, browser_name=None, headless=False):
 
 
 def _setup_env_vars_for_session():
-    os.environ["APPLITOOLS_BATCH_NAME"] = "Py|Sel|{}|{}".format(
-        __version__, os.getenv("TEST_PLATFORM")
+    os.environ["APPLITOOLS_BATCH_NAME"] = "Py{}.{}|Sel|{}|{}".format(
+        sys.version_info.major,
+        sys.version_info.minor,
+        __version__,
+        os.getenv("TEST_PLATFORM"),
     )
 
 
@@ -398,3 +389,9 @@ def pytest_runtest_setup(item):
         browsers = browser_marker.args
         if bool(set(browsers_env).intersection(set(browsers))):
             pytest.skip("test requires browsers %s" % browsers_env)
+
+
+@pytest.fixture
+def local_chrome_driver():
+    with webdriver.Chrome() as driver:
+        yield driver

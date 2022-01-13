@@ -1,5 +1,4 @@
 webdriver-manager>=2.4.0
-selenium>=3.141.0
 pytest~=6.0.2
 pytest-xdist>=1.32.0
 

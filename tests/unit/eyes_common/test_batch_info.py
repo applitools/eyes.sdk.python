@@ -1,31 +1,34 @@
-import json
 import os
-import uuid
 from datetime import datetime
 
 from mock import patch
 
-from applitools.common.config import BatchInfo
-from applitools.common.utils import json_utils
+from applitools.common.config import PROCESS_DEFAULT_BATCH_ID, BatchInfo
 
 
 def test_create_batch_info(monkeypatch):
-    uuid_value = str(uuid.uuid4())
     now = datetime.now()
     batch_name = "Name"
 
     monkeypatch.delenv("APPLITOOLS_BATCH_ID")
-    with patch("uuid.uuid4") as mock_uuid:
-        mock_uuid.return_value = uuid_value
-        with patch("applitools.common.config.datetime") as mocked_datetime:
-            mocked_datetime.now.return_value = now
-            bi = BatchInfo(batch_name)
-            bi.sequence_name = "sequence name"
+    with patch("applitools.common.config.datetime") as mocked_datetime:
+        mocked_datetime.now.return_value = now
+        bi = BatchInfo(batch_name)
+        bi.sequence_name = "sequence name"
 
     assert bi.name == batch_name
-    assert bi.id == uuid_value
+    assert bi.id == PROCESS_DEFAULT_BATCH_ID
     assert bi.started_at == now
     assert bi.sequence_name == "sequence name"
+
+
+def test_create_two_batch_info_both_have_same_id(monkeypatch):
+    monkeypatch.delenv("APPLITOOLS_BATCH_ID")
+    bi1 = BatchInfo()
+    bi2 = BatchInfo()
+
+    assert bi1.id == PROCESS_DEFAULT_BATCH_ID
+    assert bi2.id == PROCESS_DEFAULT_BATCH_ID
 
 
 def test_batch_info_with_date():
@@ -67,18 +70,3 @@ def test_set_batch_id_in_different_ways():
     with patch.dict(os.environ, {"APPLITOOLS_BATCH_ID": "some id"}):
         bi = BatchInfo()
         assert bi.id == "some id"
-
-
-def test_serialization_of_batch_info():
-    bi = (
-        BatchInfo(name="Name", batch_sequence_name="BatchName")
-        .with_batch_id("custom-id")
-        .add_property("some", "some val")
-    )
-    res = json.loads(json_utils.to_json(bi))
-    print(res)
-    assert res["name"] == "Name"
-    assert res["batchSequenceName"] == "BatchName"
-    assert res["notifyOnCompletion"] == False
-    assert res["id"] == "custom-id"
-    assert res["properties"] == [{"name": "some", "value": "some val"}]

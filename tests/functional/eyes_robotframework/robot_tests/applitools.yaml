@@ -4,7 +4,7 @@
 #api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
 
 #proxy:
-#  url: "http://someproxy-url.com"
+#  url: "http://localhost:8000"
 #  host: HOST_ADDRESS  #optional
 #  port: HOST_PORT  #optional
 #  username: YOUR_NAME  #optional
@@ -19,7 +19,7 @@ app_name: YOUR_APP_NAME
 #viewport_size:
 #  width: 1920
 #  height: 1080
-branch_name: eyes_robotframework
+branch_name: eyes_robotframework_usdk
 #parent_branch_name: YOUR_PARENT_BRANCH_NAME
 #baseline_branch_name: YOUR_BASELINE_BRANCH_NAME
 #baseline_env_name: YOUR_BASELINE_ENV_NAME
@@ -47,7 +47,7 @@ web:
   force_full_page_screenshot: false  #optional
   wait_before_screenshots: 100  #optional
 #  stitch_mode: CSS   # Scroll | CSS
-#  hide_scrollbars: true
+  hide_scrollbars: false
 #  hide_caret: true
 # ALL SETTINGS FROM `SHARED SECTION` COULD BE PASSED HERE AS WELL
 

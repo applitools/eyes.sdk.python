@@ -1,4 +1,5 @@
 language: python
+dist: focal
 services:
     - xvfb
 git:
@@ -6,8 +7,9 @@ git:
 install:
     - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
-    - python -m pip install -U tox
+    - python -m pip install -U virtualenv==20.11 tox==3.24.5
 before_script:
+    - export NO_COLOR=1
     - export PATH=`pwd`/bin:$PATH
     # Disable stderr/stdout buffering in python
     - export PYTHONUNBUFFERED=1
@@ -33,8 +35,9 @@ script:
     - echo $TEST_REPORT_SANDBOX
     - echo $APPLITOOLS_BATCH_ID
     - tox -e $TOX_ENV
+    - sleep 5 || true
+    - taskkill -f -im eyes-universal-win.exe || true
 stages:
-    - lint
     - unit-tests
     - integration-tests
     - bumpversion
@@ -98,6 +101,10 @@ jobs:
               - TOX_ENV=unit
 
         - python: 3.6
+          env:
+              - TOX_ENV=unit
+
+        - python: 3.9
           env:
               - TOX_ENV=unit
 
@@ -165,6 +172,28 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.9
+          node_js: 14
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium-generated
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+              - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
+          before_install:
+              - git submodule update --init --remote --recursive
+              - nvm install node
+          script:
+              - tox -e selenium-generated
+              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+                  echo "REPORTING...";
+                  bash ./ci_scripts/all_tests_report.sh "$SDK";
+                  echo "REPORTED SUCCESSFULLY";
+                fi
+
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
@@ -191,6 +220,34 @@ jobs:
               - TOX_ENV=selenium
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
+
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          python: 3.9
+          addons:
+              chrome: stable
+              firefox: latest
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM=Linux
+              - TEST_BROWSERS=chrome
+
+        - if: NOT tag =~ ^RELEASE_CANDIDATE
+          os: windows
+          language: sh
+          python: 3.6
+          before_install:
+              - choco install python --version=3.6.6
+              - choco install googlechrome --x86
+              - choco install chromedriver
+              - python -m pip install -U pip setuptools
+          env:
+              - TOX_ENV=selenium
+              - TEST_PLATFORM="Windows 10"
+              - TEST_BROWSERS=chrome
+              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+          cache:
+              directories:
+                - $LOCALAPPDATA/pip/Cache
 
         - python: 3.6
           if: NOT tag =~ ^RELEASE_CANDIDATE
@@ -233,12 +290,6 @@ jobs:
               - TOX_ENV=selenium-visualgrid
               - TEST_PLATFORM=Linux
               - TEST_BROWSERS=chrome
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=images
-              - TEST_PLATFORM="Linux"
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6

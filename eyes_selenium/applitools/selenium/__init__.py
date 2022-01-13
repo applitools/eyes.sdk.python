@@ -34,15 +34,13 @@ from applitools.core.cut import (  # noqa
     NullCutProvider,
     UnscaledFixedCutProvider,
 )
+from applitools.core.extract_text import OCRRegion, TextRegionSettings
 from applitools.core.fluent.region import AccessibilityRegionByRectangle  # noqa
 
-from .classic_runner import ClassicRunner  # noqa
-from .extract_text import OCRRegion, TextRegionSettings
-from .eyes import Eyes  # noqa
+from .eyes import Eyes
 from .fluent.target import Target  # noqa
-from .visual_grid import RunnerOptions, VisualGridRunner  # noqa
-from .webdriver import EyesWebDriver  # noqa
-from .webelement import EyesWebElement  # noqa
+from .fluent.target_path import TargetPath
+from .runner import ClassicRunner, RunnerOptions, VisualGridRunner
 
 __all__ = (
     # noqa
@@ -54,6 +52,7 @@ __all__ = (
     "FileLogger",
     "Eyes",
     "Target",
+    "TargetPath",
     "FailureReports",
     "StitchMode",
     "VisualGridRunner",

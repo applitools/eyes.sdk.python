@@ -1,24 +1,7 @@
 import os
-import subprocess
-import sys
 
 import mock
 import pytest
-
-__all__ = ("image",)
-
-
-@pytest.fixture
-def image():
-    from PIL import Image
-
-    img = Image.new("RGB", (800, 600), "black")
-    pixels = img.load()  # create the pixel map
-
-    for i in range(img.size[0]):  # for every col:
-        for j in range(img.size[1]):  # For every row
-            pixels[i, j] = (i, j, 100)  # set the colour accordingly
-    return img
 
 
 def pytest_generate_tests(metafunc):
@@ -33,33 +16,7 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.fixture
-def fake_httpserver():
-    server = "http.server"
-    if sys.version_info[:2] <= (2, 7):
-        server = "SimpleHTTPServer"
-    server = subprocess.Popen(
-        ["python", "-m", server, "7374"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
-    yield
-    server.terminate()
-
-
-@pytest.fixture
 def driver_mock():
-    from selenium.common.exceptions import WebDriverException
     from selenium.webdriver.remote.webdriver import WebDriver
 
-    from applitools.selenium import EyesWebDriver
-
-    driver = mock.MagicMock(EyesWebDriver)
-    driver._driver = mock.Mock(WebDriver)
-
-    desired_capabilities = {"platformName": ""}
-    driver.capabilities = desired_capabilities
-    driver._driver.capabilities = desired_capabilities
-
-    # need to configure below
-    driver._driver.execute_script = mock.Mock(side_effect=WebDriverException())
-    return driver
+    return mock.Mock(WebDriver)

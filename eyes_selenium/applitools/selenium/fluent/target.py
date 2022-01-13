@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 from typing import TYPE_CHECKING, overload
 
-from applitools.core.fluent import CheckTarget
-
 from .selenium_check_settings import SeleniumCheckSettings
 
 if TYPE_CHECKING:
@@ -16,10 +14,12 @@ if TYPE_CHECKING:
         FrameNameOrId,
     )
 
+    from .target_path import Locator
+
 __all__ = ("Target",)
 
 
-class Target(CheckTarget):
+class Target(object):
     """
     Target for an eyes.check_window/region.
     """
@@ -54,6 +54,12 @@ class Target(CheckTarget):
         pass
 
     @staticmethod  # noqa
+    @overload
+    def region(target_path):
+        # type: (Locator) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
     def region(region):
         return SeleniumCheckSettings().region(region)
 
@@ -79,6 +85,12 @@ class Target(CheckTarget):
     @overload
     def frame(frame_by_selector):
         # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
+    @overload
+    def frame(target_path):
+        # type: (Locator) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa

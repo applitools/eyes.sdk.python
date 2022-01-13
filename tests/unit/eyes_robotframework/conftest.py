@@ -5,13 +5,12 @@ from selenium.webdriver.remote.webelement import WebElement
 from SeleniumLibrary import SeleniumLibrary
 
 from applitools.common.selenium import Configuration
-from applitools.selenium import ClassicRunner
+from applitools.selenium import ClassicRunner, Eyes
 from EyesLibrary import (
     CheckKeywords,
     ConfigurationKeywords,
     EyesLibrary,
     LocatorConverter,
-    RobotEyes,
     SelectedRunner,
     SessionKeywords,
 )
@@ -81,7 +80,7 @@ def check_keyword(defined_keywords, eyes_library_with_selenium):
     def collect_result(*args):
         results.append(args)
 
-    eyes_library_with_selenium.register_eyes(Mock(RobotEyes), None)
+    eyes_library_with_selenium.register_eyes(Mock(Eyes), None)
     eyes_library_with_selenium.current_eyes.check = collect_result
     check = CheckKeywords(eyes_library_with_selenium)
     check.results = results
