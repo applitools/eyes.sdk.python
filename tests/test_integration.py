@@ -6,25 +6,17 @@ root_dir = os.path.normpath(os.path.join(here, os.pardir))
 
 
 def _packages_resolver(
-    common=False,
-    core=False,
     universal=False,
     selenium=False,
     robotframework=False,
 ):
-    common_pkg, core_pkg, universal_pkg, selenium_pkg, robotframework_pkg = (
-        "eyes_common",
-        "eyes_core",
+    universal_pkg, selenium_pkg, robotframework_pkg = (
         "eyes_universal",
         "eyes_selenium",
         "eyes_robotframework",
     )
 
-    if common:
-        pack = common_pkg
-    elif core:
-        pack = core_pkg
-    elif universal:
+    if universal:
         pack = universal_pkg
     elif selenium:
         pack = selenium_pkg
@@ -36,8 +28,6 @@ def _packages_resolver(
 
 
 def test_setup_eyes_selenium(venv):
-    venv.install(_packages_resolver(common=True), editable=True)
-    venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(universal=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     assert venv.get_version("eyes-universal")
@@ -45,8 +35,6 @@ def test_setup_eyes_selenium(venv):
 
 
 def test_setup_eyes_robot(venv):
-    venv.install(_packages_resolver(common=True), editable=True)
-    venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(universal=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     venv.install(_packages_resolver(robotframework=True), editable=True)
@@ -56,16 +44,12 @@ def test_setup_eyes_robot(venv):
 
 
 def test_eyes_selenium_namespace_package(venv):
-    venv.install(_packages_resolver(common=True), editable=True)
-    venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(universal=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     subprocess.check_call([venv.python, "-c", "from applitools.selenium import *"])
 
 
 def test_eyes_robot_namespace_package(venv):
-    venv.install(_packages_resolver(common=True), editable=True)
-    venv.install(_packages_resolver(core=True), editable=True)
     venv.install(_packages_resolver(universal=True), editable=True)
     venv.install(_packages_resolver(selenium=True), editable=True)
     venv.install(_packages_resolver(robotframework=True), editable=True)
