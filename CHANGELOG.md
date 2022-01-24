@@ -1,4 +1,4 @@
-## [vNext]
+## [5.0.0] - 2022-01-24
 ### Added
 - Library is now based on Universal SDK
 
