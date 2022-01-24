@@ -199,42 +199,51 @@ class TransformedSelector(object):
     frame = attr.ib()  # type: Union[Text, TransformedSelector]
 
     @classmethod
-    def from_by(cls, selector, by=None, shadow=None, frame=None):
-        if by == By.ID:
-            by = By.CSS_SELECTOR
-            selector = '[id="{}"]'.format(selector)
-        elif by == By.TAG_NAME:
-            by = By.CSS_SELECTOR
-        elif by == By.CLASS_NAME:
-            by = By.CSS_SELECTOR
-            selector = "." + selector
-        elif by == By.NAME:
-            by = By.CSS_SELECTOR
-            selector = '[name="{}"]'.format(selector)
+    def from_by(cls, is_selenium, selector, by=None, shadow=None, frame=None):
+        if is_selenium:
+            if by == By.ID:
+                by = By.CSS_SELECTOR
+                selector = '[id="{}"]'.format(selector)
+            elif by == By.TAG_NAME:
+                by = By.CSS_SELECTOR
+            elif by == By.CLASS_NAME:
+                by = By.CSS_SELECTOR
+                selector = "." + selector
+            elif by == By.NAME:
+                by = By.CSS_SELECTOR
+                selector = '[name="{}"]'.format(selector)
         return cls(selector, by, shadow, frame)
 
     @classmethod
-    def convert(cls, locator):
-        # type: (Locator) -> TransformedSelector
+    def convert(cls, is_selenium, locator):
+        # type: (bool, Locator) -> TransformedSelector
         if locator is None:
             return None
         stack = []
         while locator:
             stack.append(locator)
             locator = locator.parent
-        return cls._convert_list(stack)
+        return cls._convert_list(is_selenium, stack)
 
     @classmethod
-    def _convert_list(cls, stack):
+    def _convert_list(cls, is_selenium, stack):
         if stack:
             head = stack.pop()
             if isinstance(head, RegionLocator):
-                return cls.from_by(head.selector, head.by)
+                return cls.from_by(is_selenium, head.selector, head.by)
             elif isinstance(head, ShadowDomLocator):
-                return cls.from_by(head.selector, head.by, cls._convert_list(stack))
+                return cls.from_by(
+                    is_selenium,
+                    head.selector,
+                    head.by,
+                    cls._convert_list(is_selenium, stack),
+                )
             elif isinstance(head, FrameLocator):
                 return cls.from_by(
-                    head.selector, head.by, frame=cls._convert_list(stack)
+                    is_selenium,
+                    head.selector,
+                    head.by,
+                    frame=cls._convert_list(is_selenium, stack),
                 )
 
             else:
@@ -327,24 +336,26 @@ def record_convert(records):
         return None
 
 
-def element_reference_convert(selector=None, element=None):
-    # type: (Optional[Locator], Optional[WebElement]) -> ElementReference
+def element_reference_convert(is_selenium, selector=None, element=None):
+    # type: (bool, Optional[Locator], Optional[WebElement]) -> ElementReference
     if selector is not None:
-        return TransformedSelector.convert(selector)
+        return TransformedSelector.convert(is_selenium, selector)
     elif element is not None:
         return TransformedElement.convert(element)
     else:
         return None
 
 
-def frame_reference_convert(selector=None, element=None, number=None, name=None):
-    # type: (Optional[List[Text, Text]], WebElement, int, Text) -> FrameReference
+def frame_reference_convert(
+    is_selenium, selector=None, element=None, number=None, name=None
+):
+    # type: (bool, Optional[List[Text, Text]], WebElement, int, Text) -> FrameReference
     if name is not None:
         return name
     elif number is not None:
         return number
     else:
-        return element_reference_convert(selector, element)
+        return element_reference_convert(is_selenium, selector, element)
 
 
 def browsers_info_convert(browsers_info):
@@ -370,40 +381,44 @@ def browsers_info_convert(browsers_info):
     return result
 
 
-def target_reference_convert(values):
-    # type: (SeleniumCheckSettingsValues) -> Optional[RegionReference]
+def target_reference_convert(is_selenium, values):
+    # type: (bool, SeleniumCheckSettingsValues) -> Optional[RegionReference]
     if values.target_selector:
-        return element_reference_convert(selector=values.target_selector)
+        return element_reference_convert(is_selenium, selector=values.target_selector)
     elif values.selector:
         return element_reference_convert(
-            selector=[values.selector.type, values.selector.selector]
+            is_selenium, selector=[values.selector.type, values.selector.selector]
         )
     elif values.target_element:
-        return element_reference_convert(element=values.target_element)
+        return element_reference_convert(is_selenium, element=values.target_element)
     elif values.target_region:
         return Region.convert(values.target_region)
     else:
         return None
 
 
-def ocr_target_convert(target):
-    # type:(Union[list, WebElement, Region]) -> RegionReference
+def ocr_target_convert(is_selenium, target):
+    # type:(bool, Union[list, WebElement, Region]) -> RegionReference
     if isinstance(target, Locator):
-        return element_reference_convert(selector=target)
+        return element_reference_convert(is_selenium, selector=target)
     elif isinstance(target, WebElement):
-        return element_reference_convert(element=target)
+        return element_reference_convert(is_selenium, element=target)
     else:
         return Region.convert(target)
 
 
-def region_references_convert(regions):
-    # type: (List[GetRegion]) -> List[RegionReference]
+def region_references_convert(is_selenium, regions):
+    # type: (bool, List[GetRegion]) -> List[RegionReference]
     results = []
     for r in regions:
         if isinstance(r, RegionByElement):
-            results.append(element_reference_convert(element=r._element))  # noqa
+            results.append(
+                element_reference_convert(is_selenium, element=r._element)  # noqa
+            )
         elif isinstance(r, RegionBySelector):
-            results.append(element_reference_convert(selector=r._target_path))  # noqa
+            results.append(
+                element_reference_convert(is_selenium, selector=r._target_path)  # noqa
+            )
         elif isinstance(r, RegionByRectangle):
             results.append(Region.convert(r._region))  # noqa
         else:
@@ -411,15 +426,17 @@ def region_references_convert(regions):
     return results
 
 
-def floating_region_references_convert(regions):
-    # type: (List[GetRegion]) -> List[FloatingRegion]
+def floating_region_references_convert(is_selenium, regions):
+    # type: (bool, List[GetRegion]) -> List[FloatingRegion]
     results = []
     for r in regions:
         if isinstance(r, FloatingRegionByElement):
-            region = element_reference_convert(element=r._element)  # noqa
+            region = element_reference_convert(is_selenium, element=r._element)  # noqa
             bounds = r._bounds  # noqa
         if isinstance(r, FloatingRegionBySelector):
-            region = element_reference_convert(selector=r._target_path)  # noqa
+            region = element_reference_convert(
+                is_selenium, selector=r._target_path  # noqa
+            )
             bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
@@ -429,15 +446,17 @@ def floating_region_references_convert(regions):
     return results
 
 
-def accessibility_region_references_convert(regions):
-    # type: (List[GetRegion]) -> List[AccessibilityRegion]
+def accessibility_region_references_convert(is_selenium, regions):
+    # type: (bool, List[GetRegion]) -> List[AccessibilityRegion]
     results = []
     for r in regions:
         if isinstance(r, AccessibilityRegionByElement):
-            region = element_reference_convert(element=r._element)  # noqa
+            region = element_reference_convert(is_selenium, element=r._element)  # noqa
             type_ = r._type  # noqa
         if isinstance(r, AccessibilityRegionBySelector):
-            region = element_reference_convert(selector=r._target_path)  # noqa
+            region = element_reference_convert(
+                is_selenium, selector=r._target_path  # noqa
+            )
             type_ = r._type  # noqa
         elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
@@ -471,8 +490,8 @@ class MatchSettings(object):
     )  # type: Optional[List[Union[Region, AccessibilityRegion]]]
 
     @classmethod
-    def convert(cls, image_match_settings):
-        # type: (Optional[ImageMatchSettings]) -> Optional[MatchSettings]
+    def convert(cls, is_selenium, image_match_settings):
+        # type: (bool, Optional[ImageMatchSettings]) -> Optional[MatchSettings]
         if image_match_settings:
             return cls(
                 exact=image_match_settings.exact,
@@ -488,10 +507,10 @@ class MatchSettings(object):
                 strict_regions=image_match_settings.strict_regions,
                 content_regions=image_match_settings.content_regions,
                 floating_regions=floating_region_references_convert(
-                    image_match_settings.floating_match_settings
+                    is_selenium, image_match_settings.floating_match_settings
                 ),
                 accessibility_regions=accessibility_region_references_convert(
-                    image_match_settings.accessibility
+                    is_selenium, image_match_settings.accessibility
                 ),
             )
         else:
@@ -597,8 +616,8 @@ class EyesConfig(
     EyesBaseConfig, EyesOpenConfig, EyesCheckConfig, EyesClassicConfig, EyesUFGConfig
 ):
     @classmethod
-    def convert(cls, config):
-        # type: (Configuration) -> EyesConfig
+    def convert(cls, is_selenium, config):
+        # type: (bool, Configuration) -> EyesConfig
         if config.cut_provider:
             cut = ImageCropRect(
                 config.cut_provider.header,
@@ -632,7 +651,9 @@ class EyesConfig(
             session_type=config.session_type,
             properties=CustomProperty.convert(config.properties),
             batch=Batch.convert(config.batch, config.properties),
-            default_match_settings=MatchSettings.convert(config.default_match_settings),
+            default_match_settings=MatchSettings.convert(
+                is_selenium, config.default_match_settings
+            ),
             host_app=config.host_app,
             host_o_s=config.host_os,
             host_o_s_info=None,  # TODO: verify
@@ -678,17 +699,19 @@ class ContextReference(object):
     scroll_root_element = attr.ib(default=None)  # type: Optional[ElementReference]
 
     @classmethod
-    def convert(cls, frame_locators):
-        # type: (List[FrameLocator]) -> List[ContextReference]
+    def convert(cls, is_selenium, frame_locators):
+        # type: (bool, List[FrameLocator]) -> List[ContextReference]
         return [
             cls(
                 frame=frame_reference_convert(
+                    is_selenium,
                     frame_locator.frame_selector,
                     frame_locator.frame_element,
                     frame_locator.frame_index,
                     frame_locator.frame_name_or_id,
                 ),
                 scroll_root_element=element_reference_convert(
+                    is_selenium,
                     frame_locator.scroll_root_selector,
                     frame_locator.scroll_root_element,
                 ),
@@ -722,8 +745,8 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     timeout = attr.ib(default=None)  # type: Optional[int]
 
     @classmethod
-    def convert(cls, values):
-        # type: (SeleniumCheckSettingsValues) -> CheckSettings
+    def convert(cls, is_selenium, values):
+        # type: (bool, SeleniumCheckSettingsValues) -> CheckSettings
         if "beforeCaptureScreenshot" in values.script_hooks:
             hooks = CheckSettingsHooks(values.script_hooks["beforeCaptureScreenshot"])
         else:
@@ -747,21 +770,29 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             ignore_caret=values.ignore_caret,
             ignore_displacements=values.ignore_displacements,
             accessibility_settings=None,  # TODO: verify
-            ignore_regions=region_references_convert(values.ignore_regions),
-            layout_regions=region_references_convert(values.layout_regions),
-            strict_regions=region_references_convert(values.strict_regions),
-            content_regions=region_references_convert(values.content_regions),
+            ignore_regions=region_references_convert(
+                is_selenium, values.ignore_regions
+            ),
+            layout_regions=region_references_convert(
+                is_selenium, values.layout_regions
+            ),
+            strict_regions=region_references_convert(
+                is_selenium, values.strict_regions
+            ),
+            content_regions=region_references_convert(
+                is_selenium, values.content_regions
+            ),
             floating_regions=floating_region_references_convert(
-                values.floating_regions
+                is_selenium, values.floating_regions
             ),
             accessibility_regions=accessibility_region_references_convert(
-                values.accessibility_regions
+                is_selenium, values.accessibility_regions
             ),
             # ScreenshotSettings
-            region=target_reference_convert(values),
-            frames=ContextReference.convert(values.frame_chain),
+            region=target_reference_convert(is_selenium, values),
+            frames=ContextReference.convert(is_selenium, values.frame_chain),
             scroll_root_element=element_reference_convert(
-                values.scroll_root_selector, values.scroll_root_element
+                is_selenium, values.scroll_root_selector, values.scroll_root_element
             ),
             fully=values.stitch_content,
         )
@@ -807,11 +838,11 @@ class OCRExtractSettings(object):
     language = attr.ib(default=None)  # type: Optional[Text]
 
     @classmethod
-    def convert(cls, ocr_regions):
-        # type: (Tuple[OCRRegion]) -> List[OCRExtractSettings]
+    def convert(cls, is_selenium, ocr_regions):
+        # type: (bool, Tuple[OCRRegion]) -> List[OCRExtractSettings]
         return [
             cls(
-                ocr_target_convert(region.target),
+                ocr_target_convert(is_selenium, region.target),
                 region._hint,
                 region._min_match,
                 region._language,
@@ -875,15 +906,15 @@ def marshal_webdriver_ref(driver):
     }
 
 
-def marshal_configuration(configuration):
-    # type: (Configuration) -> dict
-    eyes_config = EyesConfig.convert(configuration)
+def marshal_configuration(is_selenium, configuration):
+    # type: (bool, Configuration) -> dict
+    eyes_config = EyesConfig.convert(is_selenium, configuration)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(eyes_config))
 
 
-def marshal_check_settings(check_settings):
-    # type: (SeleniumCheckSettings) -> dict
-    check_settings = CheckSettings.convert(check_settings.values)
+def marshal_check_settings(is_selenium, check_settings):
+    # type: (bool, SeleniumCheckSettings) -> dict
+    check_settings = CheckSettings.convert(is_selenium, check_settings.values)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
 
 
