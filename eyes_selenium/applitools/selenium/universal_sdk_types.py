@@ -428,9 +428,7 @@ def floating_region_references_convert(is_selenium, regions):
             region = TransformedElement.convert(r._element)  # noqa
             bounds = r._bounds  # noqa
         if isinstance(r, FloatingRegionBySelector):
-            region = TransformedSelector.convert(
-                is_selenium, selector=r._target_path  # noqa
-            )
+            region = TransformedSelector.convert(is_selenium, r._target_path)  # noqa
             bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
@@ -448,9 +446,7 @@ def accessibility_region_references_convert(is_selenium, regions):
             region = TransformedElement.convert(r._element)  # noqa
             type_ = r._type  # noqa
         if isinstance(r, AccessibilityRegionBySelector):
-            region = TransformedSelector.convert(
-                is_selenium, selector=r._target_path  # noqa
-            )
+            region = TransformedSelector.convert(is_selenium, r._target_path)  # noqa
             type_ = r._type  # noqa
         elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
