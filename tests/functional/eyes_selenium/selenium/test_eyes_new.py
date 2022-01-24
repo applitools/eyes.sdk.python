@@ -1,3 +1,5 @@
+from selenium.webdriver.common.by import By
+
 from applitools.selenium import (
     ClassicRunner,
     Eyes,
@@ -141,3 +143,17 @@ def test_check_element_in_shadow(local_chrome_driver):
             {"width": 800, "height": 600},
         )
         eyes.check(Target.region(TargetPath.shadow("#has-shadow-root").region("h1")))
+
+
+def test_check_element_by_id(local_chrome_driver):
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/FramesTestPage/"
+    )
+    with Eyes() as eyes:
+        eyes.open(
+            local_chrome_driver,
+            "USDK Test",
+            "Test check element by id",
+            {"width": 800, "height": 600},
+        )
+        eyes.check(Target.region([By.ID, "overflowing-div"]))

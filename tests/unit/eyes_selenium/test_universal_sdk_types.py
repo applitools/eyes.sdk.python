@@ -58,3 +58,39 @@ def test_transformed_selector_convert_frame_by_css_region_by_css():
     assert converted.frame.selector == ".css"
     assert converted.frame.shadow is None
     assert converted.frame.frame is None
+
+
+def test_transformed_selector_convert_target_by_id():
+    converted = TransformedSelector.convert(TargetPath.region(By.ID, "id"))
+
+    assert converted.type is By.CSS_SELECTOR
+    assert converted.selector == '[id="id"]'
+    assert converted.shadow is None
+    assert converted.frame is None
+
+
+def test_transformed_selector_convert_target_by_tag_name():
+    converted = TransformedSelector.convert(TargetPath.region(By.TAG_NAME, "tag"))
+
+    assert converted.type is By.CSS_SELECTOR
+    assert converted.selector == "tag"
+    assert converted.shadow is None
+    assert converted.frame is None
+
+
+def test_transformed_selector_convert_target_by_class_name():
+    converted = TransformedSelector.convert(TargetPath.region(By.CLASS_NAME, "class"))
+
+    assert converted.type is By.CSS_SELECTOR
+    assert converted.selector == ".class"
+    assert converted.shadow is None
+    assert converted.frame is None
+
+
+def test_transformed_selector_convert_target_by_name():
+    converted = TransformedSelector.convert(TargetPath.region(By.NAME, "name"))
+
+    assert converted.type is By.CSS_SELECTOR
+    assert converted.selector == '[name="name"]'
+    assert converted.shadow is None
+    assert converted.frame is None

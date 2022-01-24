@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from six import text_type
 
@@ -193,9 +194,24 @@ class TransformedElement(object):
 @attr.s
 class TransformedSelector(object):
     selector = attr.ib()  # type: Union[Text, TransformedSelector]
-    type = attr.ib(default=None)  # type: Optional[Text]
-    shadow = attr.ib(default=None)  # type: Union[Text, TransformedSelector]
-    frame = attr.ib(default=None)  # type: Union[Text, TransformedSelector]
+    type = attr.ib()  # type: Optional[Text]
+    shadow = attr.ib()  # type: Union[Text, TransformedSelector]
+    frame = attr.ib()  # type: Union[Text, TransformedSelector]
+
+    @classmethod
+    def from_by(cls, selector, by=None, shadow=None, frame=None):
+        if by == By.ID:
+            by = By.CSS_SELECTOR
+            selector = '[id="{}"]'.format(selector)
+        elif by == By.TAG_NAME:
+            by = By.CSS_SELECTOR
+        elif by == By.CLASS_NAME:
+            by = By.CSS_SELECTOR
+            selector = "." + selector
+        elif by == By.NAME:
+            by = By.CSS_SELECTOR
+            selector = '[name="{}"]'.format(selector)
+        return cls(selector, by, shadow, frame)
 
     @classmethod
     def convert(cls, locator):
@@ -213,11 +229,14 @@ class TransformedSelector(object):
         if stack:
             head = stack.pop()
             if isinstance(head, RegionLocator):
-                return cls(head.selector, head.by)
+                return cls.from_by(head.selector, head.by)
             elif isinstance(head, ShadowDomLocator):
-                return cls(head.selector, head.by, cls._convert_list(stack))
+                return cls.from_by(head.selector, head.by, cls._convert_list(stack))
             elif isinstance(head, FrameLocator):
-                return cls(head.selector, head.by, frame=cls._convert_list(stack))
+                return cls.from_by(
+                    head.selector, head.by, frame=cls._convert_list(stack)
+                )
+
             else:
                 raise TypeError("Unexpected Locator type", type(head))
         else:
