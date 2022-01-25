@@ -164,7 +164,7 @@ class Eyes(object):
         # type: (*OCRRegion) -> List[Text]
         return self._commands.eyes_extract_text(
             self._eyes_ref,
-            marshal_ocr_extract_settings(regions),
+            marshal_ocr_extract_settings(_is_selenium_driver(self.driver), regions),
             self._marshaled_configuration(),
         )
 

@@ -920,9 +920,9 @@ def marshal_ocr_search_settings(search_settings):
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(search_settings))
 
 
-def marshal_ocr_extract_settings(extract_settings):
-    # type: (Tuple[OCRRegion]) -> dict
-    extract_settings = OCRExtractSettings.convert(extract_settings)
+def marshal_ocr_extract_settings(is_selenium, extract_settings):
+    # type: (bool, Tuple[OCRRegion]) -> dict
+    extract_settings = OCRExtractSettings.convert(is_selenium, extract_settings)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(extract_settings))
 
 
