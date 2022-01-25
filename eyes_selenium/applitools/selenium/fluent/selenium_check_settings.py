@@ -26,7 +26,6 @@ from .region import (
 from .target_path import Locator, TargetPath
 
 if TYPE_CHECKING:
-    from applitools.common.ultrafastgrid import VisualGridSelector
     from applitools.common.utils.custom_types import (
         FLOATING_VALUES,
         AnyWebElement,
@@ -66,10 +65,10 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     )  # type: WebElement
     scroll_root_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: BySelector
+    )  # type: Locator
     target_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: BySelector
+    )  # type: Locator
     target_element = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: WebElement
@@ -77,10 +76,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
         metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[FrameLocator]
 
-    # for Rendering Grid
-    selector = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, default=None
-    )  # type: VisualGridSelector
     script_hooks = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, factory=dict
     )  # type: dict
@@ -542,4 +537,4 @@ class SeleniumCheckSettings(CheckSettings):
     @property
     def is_check_window(self):
         # type: () -> bool
-        return bool(self.values.is_target_empty and self.values.selector is None)
+        return self.values.is_target_empty

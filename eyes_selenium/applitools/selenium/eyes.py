@@ -88,7 +88,7 @@ class Eyes(object):
             self._eyes_ref = self._commands.manager_open_eyes(
                 self._runner._ref,  # noqa
                 marshal_webdriver_ref(driver),
-                marshal_configuration(self.configure),
+                self._marshaled_configuration(),
             )
         return driver
 
@@ -132,8 +132,8 @@ class Eyes(object):
 
         results = self._commands.eyes_check(
             self._eyes_ref,
-            marshal_check_settings(check_settings),
-            marshal_configuration(self.configure),
+            marshal_check_settings(_is_selenium_driver(self.driver), check_settings),
+            self._marshaled_configuration(),
         )
         if results:
             results = demarshal_match_result(results)
@@ -156,7 +156,7 @@ class Eyes(object):
         results = self._commands.eyes_locate(
             self._eyes_ref,
             marshal_locate_settings(visual_locator_settings),
-            marshal_configuration(self.configure),
+            self._marshaled_configuration(),
         )
         return demarshal_locate_result(results)
 
@@ -164,8 +164,8 @@ class Eyes(object):
         # type: (*OCRRegion) -> List[Text]
         return self._commands.eyes_extract_text(
             self._eyes_ref,
-            marshal_ocr_extract_settings(regions),
-            marshal_configuration(self.configure),
+            marshal_ocr_extract_settings(_is_selenium_driver(self.driver), regions),
+            self._marshaled_configuration(),
         )
 
     def extract_text_regions(self, config):
@@ -173,7 +173,7 @@ class Eyes(object):
         return self._commands.eyes_extract_text_regions(
             self._eyes_ref,
             marshal_ocr_search_settings(config),
-            marshal_configuration(self.configure),
+            self._marshaled_configuration(),
         )
 
     def close(self, raise_ex=True):
@@ -448,6 +448,9 @@ class Eyes(object):
         # Saved for backward compatibility
         return None
 
+    def _marshaled_configuration(self):
+        return marshal_configuration(_is_selenium_driver(self.driver), self.configure)
+
     def _close(self, raise_ex, wait_result):
         # type: (bool, bool) -> Optional[TestResults]
         if self.configure.is_disabled:
@@ -498,3 +501,15 @@ class Eyes(object):
             self._abort(self._runner.AUTO_CLOSE_MODE_SYNC)
         else:
             self._close(True, self._runner.AUTO_CLOSE_MODE_SYNC)
+
+
+def _is_selenium_driver(driver):
+    # type: (WebDriver) -> bool
+    try:
+        from appium.webdriver.webdriver import WebDriver as AppiumWebDriver
+
+        # appium.WebDriver is based on selenium.WebDriver so there is no sense to check
+        # for relationship with selenium.WebDriver. Have to eliminate appium instead
+        return not isinstance(driver, AppiumWebDriver)
+    except ImportError:
+        return True
