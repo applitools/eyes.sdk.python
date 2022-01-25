@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Error when trying to check target referenced By.ID selector [Trello 2794](https://trello.com/c/fh4C8EaY)
+
 ## [5.0.0] - 2022-01-24
 ### Added
 - Library is now based on Universal SDK
