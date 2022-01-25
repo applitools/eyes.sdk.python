@@ -67,8 +67,8 @@ web_ufg:
   browsers:
     desktop:
       - browser_type: CHROME  # names from BrowserType
-        width: 1900
-        height: 1800
+        width: 800
+        height: 600
 #    ios:
 #      - device_name: iPhone_12_Pro  # names from IosDeviceName
 #        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
