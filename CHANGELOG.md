@@ -1,4 +1,4 @@
-## [vNext]
+## [5.0.1] - 2022-01-26
 ### Fixed
 - [eyes-robotframework] Serialization of stitch_mode from `applitools.yaml`
 - [eyes-robotframework] Update default viewport for `web_ufg` in `applitools.yaml`
