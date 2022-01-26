@@ -315,7 +315,7 @@ jobs:
                   TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
                   bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
-                  inv dist --from-env;
+                  inv dist --selenium --robotframework --from-env;
 
                   echo "DEPLOY SUCCESSFUL";
                 else
