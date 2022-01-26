@@ -1,5 +1,7 @@
 ## [vNext]
 ### Fixed
+- [eyes-robotframework] Serialization of stitch_mode from `applitools.yaml`
+- [eyes-robotframework] Update default viewport for `web_ufg` in `applitools.yaml`
 - Error when trying to check target referenced By.ID selector [Trello 2794](https://trello.com/c/fh4C8EaY)
 
 ## [5.0.0] - 2022-01-24

@@ -37,8 +37,8 @@ class SelectedRunner(Enum):
 
 
 class RobotStitchMode(Enum):
-    CSS = StitchMode.CSS
-    SCROLL = StitchMode.Scroll
+    CSS = StitchMode.CSS.value
+    SCROLL = StitchMode.Scroll.value
 
 
 class ToEnumTrafaret(trf.Trafaret):
