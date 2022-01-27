@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Allow installing with older appium and selenium on python>=3.7
+
 ## [5.0.1] - 2022-01-26
 ### Fixed
 - [eyes-robotframework] Serialization of stitch_mode from `applitools.yaml`
