@@ -952,7 +952,7 @@ def demarshal_match_result(results_dict):
 def demarshal_locate_result(results):
     # type: (dict) -> Dict[Text, List[APIRegion]]
     return {
-        locator_id: [APIRegion.from_(region) for region in regions]
+        locator_id: [APIRegion.from_(region) for region in regions] if regions else []
         for locator_id, regions in results.items()
     }
 

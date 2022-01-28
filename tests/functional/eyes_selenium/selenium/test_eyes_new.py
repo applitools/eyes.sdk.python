@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 
+from applitools.core import VisualLocator
 from applitools.selenium import (
     ClassicRunner,
     Eyes,
@@ -157,3 +158,22 @@ def test_check_element_by_id(local_chrome_driver):
             {"width": 800, "height": 600},
         )
         eyes.check(Target.region([By.ID, "overflowing-div"]))
+
+
+def test_locate_with_missing_locator_returns_empty_result(local_chrome_driver):
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/SimpleTestPage"
+    )
+    eyes = Eyes()
+    eyes.open(
+        local_chrome_driver,
+        "USDK Test",
+        "Test missing locator",
+        {"width": 800, "height": 600},
+    )
+    try:
+        located = eyes.locate(VisualLocator.name("non-existing-locator"))
+        assert located == {"non-existing-locator": []}
+        eyes.close(False)
+    finally:
+        eyes.abort()
