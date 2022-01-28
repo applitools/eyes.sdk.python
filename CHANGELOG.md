@@ -1,6 +1,8 @@
 ## [vNext]
 ### Updated
 - Allow installing with older appium and selenium on python>=3.7
+### Fixed
+- Eyes.locate unexpected None error when requested locator was not found [Trello 2796](https://trello.com/c/Uz5Y9Qqx)
 
 ## [5.0.1] - 2022-01-26
 ### Fixed
