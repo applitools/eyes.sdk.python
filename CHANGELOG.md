@@ -1,4 +1,4 @@
-## [vNext]
+## [5.0.2] - 2022-01-31
 ### Updated
 - Allow installing with older appium and selenium on python>=3.7
 ### Fixed
