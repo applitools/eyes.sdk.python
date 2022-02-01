@@ -182,7 +182,8 @@ def test_locate_with_missing_locator_returns_empty_result(local_chrome_driver):
 
 
 @pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
-def test_close_all_eyes(runner_type):
+@pytest.mark.skip("Currently get_all_test_results does not abort eyes")
+def test_get_all_test_results_aborts_eyes(runner_type):
     runner = runner_type()
     options = webdriver.ChromeOptions()
     options.headless = True
@@ -193,11 +194,10 @@ def test_close_all_eyes(runner_type):
         eyes.open(
             driver,
             "USDK Tests",
-            "Unclosed eyes get all test results {}".format(type(runner).__name__),
+            "Auto aborted eyes get all test results {}".format(type(runner).__name__),
             {"width": 1024, "height": 768},
         )
         eyes.check_window()
-        eyes.abort_async()
 
     results = runner.get_all_test_results()
     assert len(results) == 1

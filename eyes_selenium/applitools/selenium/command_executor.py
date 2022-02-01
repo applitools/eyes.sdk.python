@@ -7,19 +7,11 @@ from typing import Any, List, Optional, Text
 
 from selenium.common.exceptions import StaleElementReferenceException
 
+from ..common.errors import USDKFailure
 from .connection import USDKConnection
 
-
-class Failure(Exception):
-    @classmethod
-    def check(cls, payload):
-        # type: (dict) -> None
-        error = payload.get("error")
-        if error:
-            if error["message"].startswith("stale element reference"):
-                raise StaleElementReferenceException(error["message"])
-            else:
-                raise cls(error["message"], error["stack"])
+# A backward-compatible alias, Exception was named Failure in original 5.0.0 release
+Failure = USDKFailure
 
 
 class ManagerType(Enum):
@@ -141,10 +133,20 @@ class CommandExecutor(object):
         response = self._connection.command(name, payload, wait_result, wait_timeout)
         if wait_result:
             response_payload = response["payload"]
-            Failure.check(response_payload)
+            _check_error(response_payload)
             return response_payload.get("result")
         else:
             return None
+
+
+def _check_error(payload):
+    # type: (dict) -> None
+    error = payload.get("error")
+    if error:
+        if error["message"].startswith("stale element reference"):
+            raise StaleElementReferenceException(error["message"])
+        else:
+            raise USDKFailure(error["message"], error["stack"])
 
 
 _instances = {}

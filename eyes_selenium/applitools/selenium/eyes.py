@@ -223,6 +223,10 @@ class Eyes(object):
     def configuration(self):
         return self.configure
 
+    @configuration.setter
+    def configuration(self, value):
+        self.configure = value
+
     def get_configuration(self):
         # type:() -> Configuration
         return self.configure.clone()
