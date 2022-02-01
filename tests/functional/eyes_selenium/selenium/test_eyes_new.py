@@ -1,3 +1,5 @@
+import pytest as pytest
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from applitools.core import VisualLocator
@@ -177,3 +179,25 @@ def test_locate_with_missing_locator_returns_empty_result(local_chrome_driver):
         eyes.close(False)
     finally:
         eyes.abort()
+
+
+@pytest.mark.parametrize("runner_type", [ClassicRunner, VisualGridRunner])
+def test_close_all_eyes(runner_type):
+    runner = runner_type()
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    with webdriver.Chrome(options=options) as driver:
+        driver.get("https://applitools.github.io/demo/TestPages/SimpleTestPage/")
+        eyes = Eyes(runner)
+        eyes.configure.set_hide_scrollbars(False)
+        eyes.open(
+            driver,
+            "USDK Tests",
+            "Unclosed eyes get all test results {}".format(type(runner).__name__),
+            {"width": 1024, "height": 768},
+        )
+        eyes.check_window()
+        eyes.abort_async()
+
+    results = runner.get_all_test_results()
+    assert len(results) == 1

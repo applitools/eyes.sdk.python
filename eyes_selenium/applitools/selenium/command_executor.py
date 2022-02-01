@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from enum import Enum
 from os import getcwd
+from threading import Lock
 from typing import Any, List, Optional, Text
 
 from selenium.common.exceptions import StaleElementReferenceException
@@ -34,15 +35,19 @@ class CommandExecutor(object):
         commands.make_sdk(name, version, getcwd())
         return commands
 
+    @classmethod
+    def get_instance(cls, name, version):
+        # type: (Text, Text) -> CommandExecutor
+        with _instances_lock:
+            key = (name, version)
+            if key in _instances:
+                return _instances[key]
+            else:
+                return _instances.setdefault(key, cls.create(name, version))
+
     def __init__(self, connection):
         # type: (USDKConnection) -> None
         self._connection = connection
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
 
     def make_sdk(self, name, version, cwd):
         # type: (Text, Text, Text) -> None
@@ -131,9 +136,6 @@ class CommandExecutor(object):
         # type: () -> dict
         return self._checked_command("Server.getInfo", {})
 
-    def close(self):
-        self._connection.close()
-
     def _checked_command(self, name, payload, wait_result=True, wait_timeout=9 * 60):
         # type: (Text, dict, bool, float) -> Optional[Any]
         response = self._connection.command(name, payload, wait_result, wait_timeout)
@@ -143,3 +145,7 @@ class CommandExecutor(object):
             return response_payload.get("result")
         else:
             return None
+
+
+_instances = {}
+_instances_lock = Lock()
