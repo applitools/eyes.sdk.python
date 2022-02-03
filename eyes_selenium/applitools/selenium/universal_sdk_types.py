@@ -86,8 +86,8 @@ class Batch(object):
     properties = attr.ib(default=None)  # type: Optional[List[CustomProperty]]
 
     @classmethod
-    def convert(cls, batch_info, config_properties):
-        # type: (Optional[BatchInfo], List[Dict[Text, Text]]) -> Optional[Batch]
+    def convert(cls, batch_info):
+        # type: (Optional[BatchInfo]) -> Optional[Batch]
         if batch_info:
             if batch_info.started_at:
                 started_at = batch_info.started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -100,7 +100,7 @@ class Batch(object):
                 started_at,
                 batch_info.notify_on_completion,
                 # TODO: Verify
-                CustomProperty.convert(config_properties + batch_info.properties),
+                CustomProperty.convert(batch_info.properties),
             )
         else:
             return None
@@ -640,7 +640,7 @@ class EyesConfig(
             viewport_size=Size.convert_viewport(config.viewport_size),
             session_type=config.session_type,
             properties=CustomProperty.convert(config.properties),
-            batch=Batch.convert(config.batch, config.properties),
+            batch=Batch.convert(config.batch),
             default_match_settings=MatchSettings.convert(
                 is_selenium, config.default_match_settings
             ),
