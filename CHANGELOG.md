@@ -1,6 +1,8 @@
 ## [vNext]
 ### Fixed
 - Custom configuration properties were incorrectly added to batch properties
+- Unable to abort eyes after Runner.get_all_test_results call [Trello 1223](https://trello.com/c/rNUPtdAk)
+- Eyes configuration can be set via Eyes.configuration property [Trello 1223](https://trello.com/c/rNUPtdAk)
 
 ## [5.0.2] - 2022-01-31
 ### Updated
