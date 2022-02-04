@@ -1,6 +1,7 @@
 import pytest
 
 from applitools.common import EyesError, MatchLevel, StitchMode
+from applitools.common.selenium import Configuration
 from applitools.core import FixedCutProvider, UnscaledFixedCutProvider
 from applitools.selenium import Eyes, Target
 
@@ -93,3 +94,17 @@ def test_add_clear_properties(eyes):
     assert eyes.configure.properties == [{"name": "Name", "value": "val"}]
     eyes.clear_properties()
     assert eyes.configure.properties == []
+
+
+def test_eyes_configuration_alias_getter():
+    eyes = Eyes()
+
+    assert eyes.configure is eyes.configuration
+
+
+def test_eyes_configuration_alias_setter():
+    eyes = Eyes()
+    new_configuration = Configuration()
+    eyes.configuration = new_configuration
+
+    assert eyes.configure is new_configuration

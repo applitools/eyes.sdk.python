@@ -207,21 +207,25 @@ class Eyes(object):
     @staticmethod
     def get_viewport_size(driver):
         # type: (WebDriver) -> RectangleSize
-        with CommandExecutor.create(EyesRunner.BASE_AGENT_ID, __version__) as cmd:
-            result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
-            return RectangleSize.from_(result)
+        cmd = CommandExecutor.get_instance(EyesRunner.BASE_AGENT_ID, __version__)
+        result = cmd.core_get_viewport_size(marshal_webdriver_ref(driver))
+        return RectangleSize.from_(result)
 
     @staticmethod
     def set_viewport_size(driver, viewport_size):
         # type: (WebDriver, ViewPort) -> None
-        with CommandExecutor.create(EyesRunner.BASE_AGENT_ID, __version__) as cmd:
-            cmd.core_set_viewport_size(
-                marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
-            )
+        cmd = CommandExecutor.get_instance(EyesRunner.BASE_AGENT_ID, __version__)
+        cmd.core_set_viewport_size(
+            marshal_webdriver_ref(driver), marshal_viewport_size(viewport_size)
+        )
 
     @property
     def configuration(self):
         return self.configure
+
+    @configuration.setter
+    def configuration(self, value):
+        self.configure = value
 
     def get_configuration(self):
         # type:() -> Configuration

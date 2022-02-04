@@ -27,46 +27,33 @@ class EyesRunner(object):
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
-        self._commands = CommandExecutor.create(self.BASE_AGENT_ID, __version__)
+        self._commands = CommandExecutor.get_instance(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
         )
 
     @classmethod
     def get_server_info(cls):
-        with CommandExecutor.create(cls.BASE_AGENT_ID, __version__) as cmd:
-            result = cmd.server_get_info()
-            return demarshal_server_info(result)
+        cmd = CommandExecutor.get_instance(cls.BASE_AGENT_ID, __version__)
+        result = cmd.server_get_info()
+        return demarshal_server_info(result)
 
     def get_all_test_results(
         self, should_raise_exception=True, timeout=DEFAULT_ALL_TEST_RESULTS_TIMEOUT
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
-        if not self._commands:
-            # Test results are already retrieved
-            return TestResultsSummary([])
         try:
-            if self._ref:
-                try:
-                    results = self._commands.manager_close_all_eyes(self._ref, timeout)
-                except TimeoutError:
-                    raise EyesError("Tests didn't finish in {} seconds".format(timeout))
-                # We don't have server_url, api_key and proxy settings in runner
-                # USDK should return them back as a part of TestResults
-                structured_results = demarshal_test_results(results, None)
-                for r in structured_results:
-                    log_session_results_and_raise_exception(should_raise_exception, r)
-            else:
-                structured_results = []
-            return TestResultsSummary(
-                [
-                    TestResultContainer(result, None, None)
-                    for result in structured_results
-                ]
-            )
-        finally:
-            self._ref = None
-            self._commands.close()
+            results = self._commands.manager_close_all_eyes(self._ref, timeout)
+        except TimeoutError:
+            raise EyesError("Tests didn't finish in {} seconds".format(timeout))
+        # We don't have server_url, api_key and proxy settings in runner
+        # USDK should return them back as a part of TestResults
+        structured_results = demarshal_test_results(results, None)
+        for r in structured_results:
+            log_session_results_and_raise_exception(should_raise_exception, r)
+        return TestResultsSummary(
+            [TestResultContainer(result, None, None) for result in structured_results]
+        )
 
 
 class RunnerOptions(object):

@@ -9,18 +9,14 @@ def test_pass_multiple_batches_ids(monkeypatch):
     with patch("applitools.selenium.command_executor.CommandExecutor") as commands:
         BatchClose().set_batch_ids("test batch-id", "test-batch-second").close()
         assert commands.mock_calls == [
-            call.create("eyes.sdk.python", ANY),
-            call.create().__enter__(),
-            call.create()
-            .__enter__()
-            .core_close_batches(
+            call.get_instance("eyes.sdk.python", ANY),
+            call.get_instance().core_close_batches(
                 {
                     "batchIds": ["test batch-id", "test-batch-second"],
                     "serverUrl": "https://eyesapi.applitools.com",
                     "apiKey": "abc",
                 }
             ),
-            call.create().__exit__(None, None, None),
         ]
 
 
@@ -30,11 +26,8 @@ def test_batch_close_uses_proxy():
             ProxySettings("localhost", 80)
         ).close()
         assert commands.mock_calls == [
-            call.create("eyes.sdk.python", ANY),
-            call.create().__enter__(),
-            call.create()
-            .__enter__()
-            .core_close_batches(
+            call.get_instance("eyes.sdk.python", ANY),
+            call.get_instance().core_close_batches(
                 {
                     "batchIds": ["test-id"],
                     "serverUrl": "https://eyesapi.applitools.com",
@@ -42,5 +35,4 @@ def test_batch_close_uses_proxy():
                     "proxy": {"url": "http://localhost:80"},
                 }
             ),
-            call.create().__exit__(None, None, None),
         ]

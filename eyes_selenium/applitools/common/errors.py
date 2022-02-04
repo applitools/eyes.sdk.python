@@ -1,9 +1,10 @@
 __all__ = (
+    "DiffsFoundError",
     "EyesError",
+    "NewTestError",
     "OutOfBoundsError",
     "TestFailedError",
-    "NewTestError",
-    "DiffsFoundError",
+    "USDKFailure",
 )
 
 
@@ -53,4 +54,10 @@ class NewTestError(TestFailedError):
 class DiffsFoundError(TestFailedError):
     """
     Indicates that an existing test ended, and that differences where found from the baseline.
+    """
+
+
+class USDKFailure(EyesError):
+    """
+    Generic error raised by Universal SDK
     """
