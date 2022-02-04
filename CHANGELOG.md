@@ -1,4 +1,4 @@
-## [vNext]
+## [5.0.3] - 2022-02-04
 ### Fixed
 - Custom configuration properties were incorrectly added to batch properties
 - Unable to abort eyes after Runner.get_all_test_results call [Trello 1223](https://trello.com/c/rNUPtdAk)
