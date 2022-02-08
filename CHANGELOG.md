@@ -1,6 +1,7 @@
 ## [vNext]
 ### Fixed
 - Eyes configured with n-versions-back UFG rendering targets raised an exception on open [Trello 2809](https://trello.com/c/pPSi5sDj)
+- Specify supported python version via `Requires-Python` classifier [Trello 2804](https://trello.com/c/JNFbBD9G)
 
 ## [5.0.3] - 2022-02-04
 ### Fixed
