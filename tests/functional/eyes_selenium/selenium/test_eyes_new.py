@@ -2,6 +2,8 @@ import pytest as pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+from applitools.common import DesktopBrowserInfo
+from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
 from applitools.selenium import (
     ClassicRunner,
@@ -132,6 +134,28 @@ def test_get_all_vg_test_results(local_chrome_driver):
     assert len(all_results) == 2
     assert results[0] == all_results[0].test_results
     assert results[1] == all_results[1].test_results
+
+
+def test_get_all_vg_test_results_all_desktop_browsers(local_chrome_driver):
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/SimpleTestPage"
+    )
+    runner = VisualGridRunner(5)
+    eyes = Eyes(runner)
+    for browser_type in BrowserType:
+        eyes.configure.add_browser(DesktopBrowserInfo(800, 600, browser_type))
+
+    eyes.open(
+        local_chrome_driver,
+        "USDK Test",
+        "Test get all vg test results all browsers",
+    )
+    eyes.check_window()
+    close_result = eyes.close_async()
+    all_results = runner.get_all_test_results()
+
+    assert len(all_results) == 16
+    assert close_result == all_results[0].test_results
 
 
 def test_check_element_in_shadow(local_chrome_driver):
