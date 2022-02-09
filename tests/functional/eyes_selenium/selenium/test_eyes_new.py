@@ -151,11 +151,10 @@ def test_get_all_vg_test_results_all_desktop_browsers(local_chrome_driver):
         "Test get all vg test results all browsers",
     )
     eyes.check_window()
-    close_result = eyes.close_async()
+    eyes.close_async()
     all_results = runner.get_all_test_results()
 
     assert len(all_results) == 16
-    assert close_result == all_results[0].test_results
 
 
 def test_check_element_in_shadow(local_chrome_driver):
