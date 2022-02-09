@@ -6,21 +6,21 @@ from applitools.common.utils.general_utils import DynamicEnumGetter
 
 class BrowserType(Enum):
     CHROME = "chrome"
-    CHROME_ONE_VERSION_BACK = "chrome-1"
-    CHROME_TWO_VERSIONS_BACK = "chrome-2"
+    CHROME_ONE_VERSION_BACK = "chrome-one-version-back"
+    CHROME_TWO_VERSIONS_BACK = "chrome-two-versions-back"
     FIREFOX = "firefox"
-    FIREFOX_ONE_VERSION_BACK = "firefox-1"
-    FIREFOX_TWO_VERSIONS_BACK = "firefox-2"
+    FIREFOX_ONE_VERSION_BACK = "firefox-one-version-back"
+    FIREFOX_TWO_VERSIONS_BACK = "firefox-two-versions-back"
     SAFARI = "safari"
-    SAFARI_ONE_VERSION_BACK = "safari-1"
-    SAFARI_TWO_VERSIONS_BACK = "safari-2"
+    SAFARI_ONE_VERSION_BACK = "safari-one-version-back"
+    SAFARI_TWO_VERSIONS_BACK = "safari-two-versions-back"
     SAFARI_EARLY_ACCESS = "safari-earlyaccess"
     IE_10 = "ie10"
-    IE_11 = "ie"
+    IE_11 = "ie11"
     EDGE_LEGACY = "edgelegacy"
     EDGE_CHROMIUM = "edgechromium"
-    EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-1"
-    EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-2"
+    EDGE_CHROMIUM_ONE_VERSION_BACK = "edgechromium-one-version-back"
+    EDGE_CHROMIUM_TWO_VERSIONS_BACK = "edgechromium-two-versions-back"
 
     @DynamicEnumGetter
     def EDGE(self):
