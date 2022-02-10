@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Eyes configured with n-versions-back UFG rendering targets raised an exception on open [Trello 2809](https://trello.com/c/pPSi5sDj)
+
 ## [5.0.3] - 2022-02-04
 ### Fixed
 - Custom configuration properties were incorrectly added to batch properties
