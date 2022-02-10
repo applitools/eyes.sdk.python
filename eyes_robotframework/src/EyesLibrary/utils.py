@@ -134,6 +134,6 @@ def copy_config_to(path_to_dir):
 def get_enum_by_name(name, enm):
     # type: (Text, Type[Enum]) -> Enum
     try:
-        return getattr(enm, name.upper())
+        return getattr(enm, name)
     except AttributeError:
         raise ValueError("`{}` does not contain `{}`".format(enm, name))
