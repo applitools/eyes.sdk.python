@@ -361,6 +361,25 @@ def try_parse_runner(runner):
         )
 
 
+def try_verify_configuration(config_path):
+    from yamllint import config, linter
+
+    if not os.path.exists(config_path):
+        raise EyesLibraryConfigError(
+            "The configuration file was not found in the path: {}\n".format(config_path)
+        )
+
+    yaml_config = config.YamlLintConfig(
+        "{extends: relaxed, rules:{new-line-at-end-of-file: disable}}"
+    )
+    for p in linter.run(config_path, yaml_config):
+        print(p.desc, p.line, p.rule)
+    with open(config_path, "r") as f:
+        raw_config = yaml.safe_load(f.read())
+
+    ConfigurationTrafaret.scheme.check(raw_config)
+
+
 def try_parse_configuration(
     config_path, selected_runner, origin_configuration, suite_path
 ):

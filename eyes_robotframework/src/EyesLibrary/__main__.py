@@ -7,6 +7,12 @@ def init_config_command(_):
     utils.copy_config_to(".")
 
 
+def lint_config_command(_):
+    from . import config_parser
+
+    config_parser.try_verify_configuration("applitools.yaml")
+
+
 def cli_parser():
     parser = ArgumentParser(
         prog="python -m EyesLibrary",
@@ -20,6 +26,13 @@ def cli_parser():
         help="Create default config file",
     )
     init_config.set_defaults(command=init_config_command)
+
+    lint_config = commands.add_parser(
+        "lint-config",
+        description="Verify that `applitools.yaml` config is correct",
+        help="Verify that `applitools.yaml` config is correct",
+    )
+    lint_config.set_defaults(command=lint_config_command)
     return parser
 
 
