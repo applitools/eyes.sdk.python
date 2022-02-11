@@ -63,7 +63,7 @@ def splits_args_by_separator(args):
 
 def collect_check_settings(check_settings, defined_keywords, *keywords):
     # type: (SeleniumCheckSettings,list[str],tuple[Any])->SeleniumCheckSettings
-    """ Fill `check_setting` with data from keyword and return `check_settings`"""
+    """Fill `check_setting` with data from keyword and return `check_settings`"""
     for keyword, keyword_args in extract_keyword_and_arguments(
         keywords, defined_keywords
     ):
@@ -137,3 +137,8 @@ def get_enum_by_name(name, enm):
         return getattr(enm, name)
     except AttributeError:
         raise ValueError("`{}` does not contain `{}`".format(enm, name))
+
+
+def get_enum_by_upper_name(name, enm):
+    # type: (Text, Type[Enum]) -> Enum
+    return get_enum_by_name(name.upper(), enm)

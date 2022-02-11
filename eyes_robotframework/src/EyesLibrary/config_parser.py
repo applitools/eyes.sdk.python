@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import itertools
 import os
 from enum import Enum
-from typing import Text, Type
+from typing import Callable, Text, Type
 
 import trafaret as trf
 import yaml
@@ -27,7 +27,7 @@ from applitools.selenium import BatchInfo, RunnerOptions
 
 from .config import RobotConfiguration
 from .errors import EyesLibraryConfigError, EyesLibraryValueError
-from .utils import get_enum_by_name, parse_viewport_size
+from .utils import get_enum_by_name, get_enum_by_upper_name, parse_viewport_size
 
 
 class SelectedRunner(Enum):
@@ -41,14 +41,19 @@ class RobotStitchMode(Enum):
     SCROLL = StitchMode.Scroll.value
 
 
-class ToEnumTrafaret(trf.Trafaret):
+class _ToEnumTrafaret(trf.Trafaret):
     def __init__(self, convert_to_enum):
         # type: (Type[Enum])->None
         self.converter = convert_to_enum
 
+    @property
+    def to_enum_func(self):
+        # type: () -> Callable[[Text, Type[Enum]], Enum]
+        return NotImplemented
+
     def check_and_return(self, value, context=None):
         try:
-            return get_enum_by_name(value, self.converter)
+            return self.to_enum_func(value, self.converter)
         except ValueError:
             raise trf.DataError(
                 "Incorrect value `{val}`. Possible variants: {possible_vals}".format(
@@ -58,6 +63,20 @@ class ToEnumTrafaret(trf.Trafaret):
                 value=value,
                 trafaret=self,
             )
+
+
+class TextToEnumTrafaret(_ToEnumTrafaret):
+    @property
+    def to_enum_func(self):
+        # type: () -> Callable[[Text, Type[Enum]], Enum]
+        return get_enum_by_name
+
+
+class UpperTextToEnumTrafaret(_ToEnumTrafaret):
+    @property
+    def to_enum_func(self):
+        # type: () -> Callable[[Text, Type[Enum]], Enum]
+        return get_enum_by_upper_name
 
 
 class BatchInfoTrafaret(trf.Trafaret):
@@ -102,7 +121,7 @@ class DesktopBrowserInfoTrafaret(trf.Trafaret):
     scheme = trf.List(
         trf.Dict(
             {
-                "browser_type": ToEnumTrafaret(BrowserType),
+                "browser_type": UpperTextToEnumTrafaret(BrowserType),
                 "width": trf.Int,
                 "height": trf.Int,
             }
@@ -118,11 +137,13 @@ class IosDeviceInfoTrafaret(trf.Trafaret):
     scheme = trf.List(
         trf.Dict(
             {
-                "device_name": ToEnumTrafaret(IosDeviceName),
-                trf.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                "device_name": TextToEnumTrafaret(IosDeviceName),
+                trf.Key("screen_orientation", optional=True): UpperTextToEnumTrafaret(
                     ScreenOrientation
                 ),
-                trf.Key("ios_version", optional=True): ToEnumTrafaret(IosVersion),
+                trf.Key("ios_version", optional=True): UpperTextToEnumTrafaret(
+                    IosVersion
+                ),
             }
         )
     )
@@ -136,8 +157,8 @@ class ChromeEmulationInfoTrafaret(trf.Trafaret):
     scheme = trf.List(
         trf.Dict(
             {
-                "device_name": ToEnumTrafaret(DeviceName),
-                trf.Key("screen_orientation", optional=True): ToEnumTrafaret(
+                "device_name": TextToEnumTrafaret(DeviceName),
+                trf.Key("screen_orientation", optional=True): UpperTextToEnumTrafaret(
                     ScreenOrientation
                 ),
             }
@@ -217,7 +238,9 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         {
             trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
             trf.Key("wait_before_screenshots", optional=True): trf.Int,
-            trf.Key("stitch_mode", optional=True): ToEnumTrafaret(RobotStitchMode),
+            trf.Key("stitch_mode", optional=True): UpperTextToEnumTrafaret(
+                RobotStitchMode
+            ),
             trf.Key("hide_scrollbars", optional=True): trf.Bool,
             trf.Key("hide_caret", optional=True): trf.Bool,
         },

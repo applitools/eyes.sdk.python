@@ -9,7 +9,7 @@ from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSum
 from applitools.selenium import Eyes
 
 from ..base import LibraryComponent, keyword
-from ..utils import get_enum_by_name, parse_viewport_size
+from ..utils import get_enum_by_name, get_enum_by_upper_name, parse_viewport_size
 from .keyword_tags import CHECK_FLOW
 
 
@@ -120,7 +120,7 @@ class SessionKeywords(LibraryComponent):
         if host_app:
             config_cloned.host_app = host_app
         if match_level:
-            config_cloned.match_level = get_enum_by_name(match_level, MatchLevel)
+            config_cloned.match_level = get_enum_by_upper_name(match_level, MatchLevel)
         if baseline_env_name:
             config_cloned.baseline_env_name = baseline_env_name
         if branch_name:

@@ -10,7 +10,12 @@ from applitools.common import AccessibilityRegionType, MatchLevel, VisualGridOpt
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
-from ..utils import get_enum_by_name, is_webelement_guard, parse_region
+from ..utils import (
+    get_enum_by_name,
+    get_enum_by_upper_name,
+    is_webelement_guard,
+    parse_region,
+)
 from .keyword_tags import CHECK_SETTING, UFG_RELATED
 
 if TYPE_CHECKING:
@@ -738,7 +743,7 @@ class CheckSettingsKeywords(
         *Example:*
             | Eyes Check   |  Target Window  |  Match Level  STRICT |
         """
-        match_level = get_enum_by_name(match_level, MatchLevel)
+        match_level = get_enum_by_upper_name(match_level, MatchLevel)
         return new_or_cur_check_settings(check_settings).match_level(match_level)
 
     @keyword("Enable Patterns")
