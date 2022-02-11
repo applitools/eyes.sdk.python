@@ -4,8 +4,8 @@ import trafaret as t
 from applitools.selenium import BrowserType, RectangleSize, StitchMode
 from EyesLibrary.config_parser import (
     TextToEnumTrafaret,
-    ViewPortTrafaret,
     UpperTextToEnumTrafaret,
+    ViewPortTrafaret,
 )
 
 
