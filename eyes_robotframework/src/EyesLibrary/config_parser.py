@@ -395,6 +395,8 @@ def try_parse_configuration(
             "`python -m EyesLibrary init-config`".format(config_path)
         )
 
+    try_verify_configuration(config_path)
+
     with open(config_path, "r") as f:
         raw_config = unicode_yaml_load(f.read())
 
