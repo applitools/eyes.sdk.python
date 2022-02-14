@@ -12,7 +12,13 @@ from applitools.selenium.fluent.target_path import (
     TargetPath,
 )
 
-DummyElement = namedtuple("DummyElement", "id")
+
+class DummyElement(object):
+    def __init__(self, id_):
+        self._id = id_
+
+    def __repr__(self):
+        return "DummyElement({!r})".format(self._id)
 
 
 def test_target_path_region_by_css():
@@ -88,7 +94,7 @@ def test_target_path_frame_element():
 
     assert type(path) is FrameLocator
     assert type(path.value) is ElementReference
-    assert path.value.element.id == 1
+    assert path.value.element._id == 1
     assert path.parent is None
 
 
@@ -97,7 +103,7 @@ def test_target_path_shadow_element():
 
     assert type(path) is ShadowDomLocator
     assert type(path.value) is ElementReference
-    assert path.value.element.id == 1
+    assert path.value.element._id == 1
     assert path.parent is None
 
 
@@ -106,7 +112,7 @@ def test_target_path_region_element():
 
     assert type(path) is RegionLocator
     assert type(path.value) is ElementReference
-    assert path.value.element.id == 1
+    assert path.value.element._id == 1
     assert path.parent is None
 
 
@@ -138,7 +144,7 @@ def test_target_path_region_xpath_repr():
 def test_target_path_region_element_repr():
     path = TargetPath.region(DummyElement(1))
 
-    assert repr(path) == "TargetPath.region(DummyElement(id=1))"
+    assert repr(path) == "TargetPath.region(DummyElement(1))"
 
 
 def test_target_path_shadow_css_repr():
@@ -156,7 +162,7 @@ def test_target_path_shadow_xpath_repr():
 def test_target_path_shadow_element_repr():
     path = TargetPath.shadow(DummyElement(1))
 
-    assert repr(path) == "TargetPath.shadow(DummyElement(id=1))"
+    assert repr(path) == "TargetPath.shadow(DummyElement(1))"
 
 
 def test_target_path_frame_number_repr():
@@ -180,7 +186,7 @@ def test_target_path_frame_css_repr():
 def test_target_path_frame_element_repr():
     path = TargetPath.frame(DummyElement(1))
 
-    assert repr(path) == "TargetPath.frame(DummyElement(id=1))"
+    assert repr(path) == "TargetPath.frame(DummyElement(1))"
 
 
 def test_target_path_shadow_css_region_css_repr():
@@ -196,9 +202,9 @@ def test_target_path_frame_shadow_region_repr():
 
 
 def test_target_path_frame_element_shadow_region_repr():
-    path = TargetPath.frame(DummyElement(2)).shadow("#").region(".")
+    path = TargetPath.frame(DummyElement(1)).shadow("#").region(".")
 
-    assert repr(path) == "TargetPath.frame(DummyElement(id=2)).shadow('#').region('.')"
+    assert repr(path) == "TargetPath.frame(DummyElement(1)).shadow('#').region('.')"
 
 
 def test_target_path_region_eq():
@@ -210,3 +216,108 @@ def test_target_path_frame_region_eq():
     assert TargetPath.frame(1).region(".css") == TargetPath.frame(1).region(".css")
     assert TargetPath.frame(1).region(".css") != TargetPath.frame(1).region("#id")
     assert TargetPath.frame(1).region(".css") != TargetPath.frame(2).region(".css")
+
+
+def test_target_path_to_dict_region_by_css():
+    converted = TargetPath.region(".css").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": ".css"}
+
+
+def test_target_path_to_dict_region_element():
+    converted = TargetPath.region(DummyElement("1")).to_dict(True)
+
+    assert converted == {"elementId": "1"}
+
+
+def test_target_path_to_dict_shadow_by_css():
+    converted = TargetPath.shadow(".css").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": ".css"}
+
+
+def test_target_path_to_dict_shadow_by_css_region_by_css():
+    converted = TargetPath.shadow("#s").region(".css").to_dict(True)
+
+    assert converted == {
+        "type": "css selector",
+        "selector": "#s",
+        "shadow": {"type": "css selector", "selector": ".css"},
+    }
+
+
+def test_target_path_to_dict_shadow_by_xpath_shadow_by_css_region_by_css():
+    converted = (
+        TargetPath.shadow(By.XPATH, "//x").shadow("#s").region(".css").to_dict(True)
+    )
+
+    assert converted == {
+        "type": "xpath",
+        "selector": "//x",
+        "shadow": {
+            "type": "css selector",
+            "selector": "#s",
+            "shadow": {
+                "type": "css selector",
+                "selector": ".css",
+            },
+        },
+    }
+
+
+def test_target_path_to_dict_frame_by_css_region_by_css():
+    converted = TargetPath.frame(By.CSS_SELECTOR, "#s").region(".css").to_dict(True)
+
+    assert converted == {
+        "type": "css selector",
+        "selector": "#s",
+        "frame": {"type": "css selector", "selector": ".css"},
+    }
+
+
+def test_target_path_to_dict_selenium_region_by_id():
+    converted = TargetPath.region(By.ID, "id").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": '[id="id"]'}
+
+
+def test_target_path_to_dict_selenium_region_by_tag_name():
+    converted = TargetPath.region(By.TAG_NAME, "tag").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": "tag"}
+
+
+def test_target_path_to_dict_selenium_region_by_class_name():
+    converted = TargetPath.region(By.CLASS_NAME, "class").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": ".class"}
+
+
+def test_target_path_to_dict_selenium_region_by_name():
+    converted = TargetPath.region(By.NAME, "name").to_dict(True)
+
+    assert converted == {"type": "css selector", "selector": '[name="name"]'}
+
+
+def test_target_path_to_dict_appium_region_by_id():
+    converted = TargetPath.region(By.ID, "id").to_dict(False)
+
+    assert converted == {"type": "id", "selector": "id"}
+
+
+def test_target_path_to_dict_appium_region_by_tag_name():
+    converted = TargetPath.region(By.TAG_NAME, "tag").to_dict(False)
+
+    assert converted == {"type": "tag name", "selector": "tag"}
+
+
+def test_target_path_to_dict_appium_region_by_class_name():
+    converted = TargetPath.region(By.CLASS_NAME, "class").to_dict(False)
+
+    assert converted == {"type": "class name", "selector": "class"}
+
+
+def test_target_path_to_dict_appium_region_by_name():
+    converted = TargetPath.region(By.NAME, "name").to_dict(False)
+
+    assert converted == {"type": "name", "selector": "name"}

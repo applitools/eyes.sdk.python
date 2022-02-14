@@ -193,63 +193,12 @@ class TransformedElement(object):
 
 @attr.s
 class TransformedSelector(object):
-    selector = attr.ib()  # type: Union[Text, TransformedSelector]
-    type = attr.ib()  # type: Optional[Text]
-    shadow = attr.ib()  # type: Union[Text, TransformedSelector]
-    frame = attr.ib()  # type: Union[Text, TransformedSelector]
-
-    @classmethod
-    def from_by(cls, is_selenium, selector, by=None, shadow=None, frame=None):
-        if is_selenium:
-            if by == By.ID:
-                by = By.CSS_SELECTOR
-                selector = '[id="{}"]'.format(selector)
-            elif by == By.TAG_NAME:
-                by = By.CSS_SELECTOR
-            elif by == By.CLASS_NAME:
-                by = By.CSS_SELECTOR
-                selector = "." + selector
-            elif by == By.NAME:
-                by = By.CSS_SELECTOR
-                selector = '[name="{}"]'.format(selector)
-        return cls(selector, by, shadow, frame)
-
     @classmethod
     def convert(cls, is_selenium, locator):
         # type: (bool, Locator) -> TransformedSelector
         if locator is None:
             return None
-        stack = []
-        while locator:
-            stack.append(locator)
-            locator = locator.parent
-        return cls._convert_list(is_selenium, stack)
-
-    @classmethod
-    def _convert_list(cls, is_selenium, stack):
-        if stack:
-            head = stack.pop()
-            if isinstance(head, RegionLocator):
-                return cls.from_by(is_selenium, head.selector, head.by)
-            elif isinstance(head, ShadowDomLocator):
-                return cls.from_by(
-                    is_selenium,
-                    head.selector,
-                    head.by,
-                    cls._convert_list(is_selenium, stack),
-                )
-            elif isinstance(head, FrameLocator):
-                return cls.from_by(
-                    is_selenium,
-                    head.selector,
-                    head.by,
-                    frame=cls._convert_list(is_selenium, stack),
-                )
-
-            else:
-                raise TypeError("Unexpected Locator type", type(head))
-        else:
-            return None
+        return locator.to_dict(is_selenium)
 
 
 @attr.s
