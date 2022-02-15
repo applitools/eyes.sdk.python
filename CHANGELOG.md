@@ -1,3 +1,7 @@
+## Unreleased
+### Fixed
+- Unable to set `device_name` in `applitools.yaml` [Trello 2810](https://trello.com/c/VFBCt2WF)
+
 ## [5.0.4] - 22-02-10
 ### Fixed
 - Eyes configured with n-versions-back UFG rendering targets raised an exception on open [Trello 2809](https://trello.com/c/pPSi5sDj)

@@ -106,7 +106,7 @@ class CheckSettings(object):
 
     def layout(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`. """
+        """Shortcut to set the match level to :py:attr:`MatchLevel.LAYOUT`."""
         if not regions:
             self.values.match_level = MatchLevel.LAYOUT
             return self
@@ -119,13 +119,13 @@ class CheckSettings(object):
         return self
 
     def exact(self):
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.EXACT` if no args """
+        """Shortcut to set the match level to :py:attr:`MatchLevel.EXACT` if no args"""
         self.values.match_level = MatchLevel.EXACT
         return self
 
     def strict(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.STRICT` if no args """
+        """Shortcut to set the match level to :py:attr:`MatchLevel.STRICT` if no args"""
         if not regions:
             self.values.match_level = MatchLevel.STRICT
             return self
@@ -139,7 +139,7 @@ class CheckSettings(object):
 
     def content(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT` if no args """
+        """Shortcut to set the match level to :py:attr:`MatchLevel.CONTENT` if no args"""
         if not regions:
             self.values.match_level = MatchLevel.CONTENT
             return self
@@ -153,7 +153,7 @@ class CheckSettings(object):
 
     def ignore(self, *regions, **kwargs):
         # type: (Self, *Region, **Optional[CodedRegionPadding])  -> Self
-        """ Adds one or more ignore regions. """
+        """Adds one or more ignore regions."""
         try:
             self.values.ignore_regions = self.__regions(
                 regions, method_name="ignore_regions", padding=kwargs.get("padding")
@@ -173,7 +173,7 @@ class CheckSettings(object):
         pass
 
     def accessibility(self, region, type=None):  # noqa
-        """ Adds one accessibility region. """
+        """Adds one accessibility region."""
         if type:
             argument_guard.is_a(type, AccessibilityRegionType)
         try:
