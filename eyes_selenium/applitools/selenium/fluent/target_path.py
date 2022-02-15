@@ -14,6 +14,10 @@ class PathNodeValue(object):
         # type: (PathNodeValue) -> bool
         return type(self) is type(other) and vars(self) == vars(other)
 
+    def __ne__(self, other):
+        # type: (PathNodeValue) -> bool
+        return not self == other
+
 
 class ElementReference(PathNodeValue):
     def __init__(self, element):
@@ -88,6 +92,10 @@ class Locator(object):
     def __eq__(self, other):
         # type: (Locator) -> bool
         return type(self) is type(other) and vars(self) == vars(other)
+
+    def __ne__(self, other):
+        # type: (Locator) -> bool
+        return not self == other
 
     def __repr__(self):
         # type: () -> Text

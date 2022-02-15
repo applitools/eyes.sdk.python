@@ -78,11 +78,11 @@ def test_check_region_with_region(method_name="region"):
 def test_check_region_with_elements(method_name="region"):
     selenium_element = MagicMock(SeleniumWebElement)
     cs = get_cs_from_method(method_name, selenium_element)
-    assert cs.values.target_element == selenium_element
+    assert cs.values.target_selector == TargetPath.region(selenium_element)
 
     appium_element = MagicMock(AppiumWebElement)
     cs = get_cs_from_method(method_name, appium_element)
-    assert cs.values.target_element == appium_element
+    assert cs.values.target_selector == TargetPath.region(appium_element)
 
 
 @pytest.mark.parametrize(
