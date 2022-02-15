@@ -1,6 +1,6 @@
 ## Unreleased
 ### Fixed
-- Issue with `device_names` [Trello 2810](https://trello.com/c/VFBCt2WF)
+- Unable to set `device_name` in `applitools.yaml` [Trello 2810](https://trello.com/c/VFBCt2WF)
 
 ## [5.0.4] - 22-02-10
 ### Fixed
