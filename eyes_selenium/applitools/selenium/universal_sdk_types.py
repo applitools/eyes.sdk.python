@@ -334,8 +334,6 @@ def target_reference_convert(is_selenium, values):
     # type: (bool, SeleniumCheckSettingsValues) -> Optional[RegionReference]
     if values.target_selector:
         return TransformedSelector.convert(is_selenium, values.target_selector)
-    elif values.target_element:
-        return TransformedElement.convert(values.target_element)
     elif values.target_region:
         return Region.convert(values.target_region)
     else:

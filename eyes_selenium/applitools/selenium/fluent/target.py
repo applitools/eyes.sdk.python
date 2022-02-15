@@ -65,6 +65,28 @@ class Target(object):
 
     @staticmethod  # noqa
     @overload
+    def shadow(css_selector):
+        # type: (CssSelector) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
+    @overload
+    def shadow(element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
+    @overload
+    def shadow(by_selector):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
+    def shadow(selector):
+        return SeleniumCheckSettings().shadow(selector)
+
+    @staticmethod  # noqa
+    @overload
     def frame(frame_name_or_id):
         # type: (FrameNameOrId) -> SeleniumCheckSettings
         pass

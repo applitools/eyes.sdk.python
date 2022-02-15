@@ -69,9 +69,6 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     target_selector = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Locator
-    target_element = attr.ib(
-        metadata={JsonInclude.NON_NONE: True}, init=False, default=None
-    )  # type: WebElement
     frame_chain = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, factory=list
     )  # type: List[FrameLocator]
@@ -110,11 +107,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     @property
     def is_target_empty(self):
         # type: () -> bool
-        return (
-            self.target_region is None
-            and self.target_selector is None
-            and self.target_element is None
-        )
+        return self.target_region is None and self.target_selector is None
 
 
 @attr.s
@@ -320,6 +313,30 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self).accessibility(region, type)
 
     @overload  # noqa
+    def shadow(self, css_selector):
+        # type: (CssSelector) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def shadow(self, element):
+        # type: (AnyWebElement) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
+    def shadow(self, by):
+        # type: (BySelector) -> SeleniumCheckSettings
+        pass
+
+    def shadow(self, shadow):
+        # type:(...) -> SeleniumCheckSettings
+        path = self.values.target_selector or TargetPath
+        if is_list_or_tuple(shadow):
+            self.values.target_selector = path.shadow(*shadow)
+        else:
+            self.values.target_selector = path.shadow(shadow)
+        return self
+
+    @overload  # noqa
     def region(self, region):
         # type: (Region) -> SeleniumCheckSettings
         pass
@@ -349,13 +366,13 @@ class SeleniumCheckSettings(CheckSettings):
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
-            self.values.target_selector = TargetPath.region(*region)
-        elif isinstance(region, string_types):
-            self.values.target_selector = TargetPath.region(region)
+            path = self.values.target_selector or TargetPath
+            self.values.target_selector = path.region(*region)
+        elif isinstance(region, string_types) or is_webelement(region):
+            path = self.values.target_selector or TargetPath
+            self.values.target_selector = path.region(region)
         elif isinstance(region, Locator):
             self.values.target_selector = region
-        elif is_webelement(region):
-            self.values.target_element = region
         else:
             raise TypeError("region method called with argument of unknown type!")
         return self
