@@ -9,7 +9,7 @@ from applitools.common import BatchInfo, MatchLevel, TestResults, TestResultsSum
 from applitools.selenium import Eyes
 
 from ..base import LibraryComponent, keyword
-from ..utils import get_enum_by_name, get_enum_by_upper_name, parse_viewport_size
+from ..utils import get_enum_by_upper_name, parse_viewport_size
 from .keyword_tags import CHECK_FLOW
 
 

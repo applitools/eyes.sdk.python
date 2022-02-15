@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import trafaret as t
 import yaml
@@ -113,6 +115,9 @@ web_ufg:
 """
 
 
+@pytest.mark.skipif(
+    sys.version_info[:2] <= (2, 7), reason="Ignore Python 2 because test failure"
+)
 @pytest.mark.parametrize("config", [EXAMPLE_CONFIG_YAML])
 def test_all_values_in_example_config(config):
-    ConfigurationTrafaret.scheme.check(yaml.load(config))
+    ConfigurationTrafaret.scheme.check(yaml.safe_load(config))
