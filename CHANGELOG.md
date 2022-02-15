@@ -1,8 +1,8 @@
-## Unreleased
+## [5.0.5] - 2022-02-15
 ### Fixed
 - Unable to set `device_name` in `applitools.yaml` [Trello 2810](https://trello.com/c/VFBCt2WF)
 
-## [5.0.4] - 22-02-10
+## [5.0.4] - 2022-02-10
 ### Fixed
 - Eyes configured with n-versions-back UFG rendering targets raised an exception on open [Trello 2809](https://trello.com/c/pPSi5sDj)
 - Specify supported python version via `Requires-Python` classifier [Trello 2804](https://trello.com/c/JNFbBD9G)
