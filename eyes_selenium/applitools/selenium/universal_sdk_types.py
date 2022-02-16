@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
-from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from six import text_type
 

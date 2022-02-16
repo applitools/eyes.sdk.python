@@ -24,11 +24,11 @@ class ElementReference(PathNodeValue):
         # type: (WebElement) -> None
         self.element = element
 
-    def repr_args(self, is_selenium):
+    def _repr_args(self, _):
         # type: (bool) -> Text
-        return "{!r}".format(self.element)
+        return repr(self.element)
 
-    def to_dict(self, is_selenium):
+    def _to_dict(self, _):
         # type: (bool) -> dict
         return {"elementId": self.element._id}  # noqa
 
@@ -43,15 +43,15 @@ class ElementSelector(PathNodeValue):
             self.by = selector_or_by
             self.selector = selector
 
-    def repr_args(self, frame_call_args):
+    def _repr_args(self, skip_default_css_selector_type):
         # type: (bool) -> Text
-        if self.by == By.CSS_SELECTOR and not frame_call_args:
-            return "{!r}".format(self.selector)
+        if self.by == By.CSS_SELECTOR and skip_default_css_selector_type:
+            return repr(self.selector)
         else:
             by = "By." + self.by.upper().replace(" ", "_")
             return "{}, {!r}".format(by, self.selector)
 
-    def to_dict(self, is_selenium):
+    def _to_dict(self, is_selenium):
         # type: (bool) -> dict
         by, selector = self.by, self.selector
         if is_selenium:
@@ -74,13 +74,13 @@ class FrameSelector(PathNodeValue):
         # type: (Union[int, Text]) -> None
         self.number_or_id_or_name = number_or_id_or_name
 
-    def repr_args(self, is_selenium):
+    def _repr_args(self, _):
         # type: (bool) -> Text
-        return "{!r}".format(self.number_or_id_or_name)
+        return repr(self.number_or_id_or_name)
 
-    def to_dict(self, is_selenium):
-        # type: (bool) -> Union[int, Text]
-        return self.number_or_id_or_name
+    def _to_dict(self, _):
+        # type: (bool) -> dict
+        return {"selector": self.number_or_id_or_name}
 
 
 class Locator(object):
@@ -88,6 +88,22 @@ class Locator(object):
         # type: (Optional[Locator], PathNodeValue) -> None
         self.parent = parent
         self.value = value
+
+    def to_dict(self, is_selenium):
+        # type: (bool) -> dict
+        converted = self.value._to_dict(is_selenium)  # noqa
+        parent = self.parent
+        while parent:
+            converted = {parent.FACTORY_METHOD: converted}
+            converted.update(parent.value._to_dict(is_selenium))  # noqa
+            parent = parent.parent
+        return converted
+
+    def _repr(self, skip_default_css_selector_type):
+        # type: (bool) -> Text
+        parent = repr(self.parent) if self.parent else "TargetPath"
+        args = self.value._repr_args(skip_default_css_selector_type)  # noqa
+        return parent + ".{}({})".format(self.FACTORY_METHOD, args)
 
     def __eq__(self, other):
         # type: (Locator) -> bool
@@ -99,23 +115,7 @@ class Locator(object):
 
     def __repr__(self):
         # type: () -> Text
-        return self._repr(False)
-
-    def _repr(self, frame_call_args):
-        # type: (bool) -> Text
-        parent = repr(self.parent) if self.parent else "TargetPath"
-        args = self.value.repr_args(frame_call_args)
-        return parent + ".{}({})".format(self.FACTORY_METHOD, args)
-
-    def to_dict(self, is_selenium):
-        # type: (bool) -> dict
-        converted = self.value.to_dict(is_selenium)
-        parent = self.parent
-        while parent:
-            converted = {parent.FACTORY_METHOD: converted}
-            converted.update(parent.value.to_dict(is_selenium))
-            parent = parent.parent
-        return converted
+        return self._repr(True)
 
 
 class TargetPath(object):
@@ -162,7 +162,7 @@ class FrameLocator(Locator):
         return _shadow(self, element_or_selector_or_by, selector)
 
     def __repr__(self):
-        return self._repr(True)
+        return self._repr(False)
 
 
 def _frame(parent, element_or_number_or_id_or_name_or_by, selector=None):
