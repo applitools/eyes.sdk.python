@@ -1,14 +1,6 @@
-import os
-import time
-from copy import copy
-
-import pytest
-from appium import webdriver as appium_webdriver
-from selenium import webdriver
+from .devices import *
+from .browsers import *
 from selenium.common.exceptions import WebDriverException
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-
 from applitools.selenium import BatchInfo, Eyes, StitchMode
 
 
@@ -33,25 +25,9 @@ def pytest_generate_tests(metafunc):
 def eyes_runner_class():
     return None
 
-
-@pytest.fixture(scope="function")
-def options():
-    return webdriver.ChromeOptions()
-
-
-@pytest.fixture(scope="function")
-def browser_type():
-    return "Chrome"
-
-
 @pytest.fixture(scope="function")
 def legacy():
     return False
-
-
-@pytest.fixture(scope="function")
-def desired_caps():
-    return None
 
 
 @pytest.fixture(scope="function")
@@ -65,187 +41,6 @@ def sauce_url():
         username=os.getenv("SAUCE_USERNAME", None),
         password=os.getenv("SAUCE_ACCESS_KEY", None),
     )
-
-
-@pytest.yield_fixture(scope="function")
-def android_desired_capabilities(request, dev, app):
-    desired_caps = copy(getattr(request, "param", {}))  # browser_config.copy()
-    desired_caps["app"] = app
-    desired_caps["NATIVE_APP"] = True
-    desired_caps["browserName"] = ""
-    desired_caps["deviceName"] = "Samsung Galaxy S8 FHD GoogleAPI Emulator"
-    desired_caps["platformVersion"] = "7.0"
-    desired_caps["platformName"] = "Android"
-    desired_caps["clearSystemFiles"] = True
-    desired_caps["noReset"] = True
-    desired_caps["automationName"] = "UiAutomator2"
-    desired_caps["name"] = "AndroidNativeApp checkWindow"
-    desired_caps["deviceOrientation"] = "portrait"
-    desired_caps["appiumVersion"] = "1.19.2"
-    return desired_caps
-
-
-@pytest.yield_fixture(scope="function")
-def ios_desired_capabilities(request, dev, app):
-    desired_caps = copy(getattr(request, "param", {}))
-    desired_caps["app"] = app
-    desired_caps["NATIVE_APP"] = True
-    desired_caps["browserName"] = ""
-    desired_caps["deviceName"] = "iPhone XS Simulator"
-    desired_caps["platformVersion"] = "13.0"
-    desired_caps["platformName"] = "iOS"
-    desired_caps["clearSystemFiles"] = True
-    desired_caps["noReset"] = True
-    desired_caps["automationName"] = "XCUITest"
-    desired_caps["name"] = "iOSNativeApp checkWindow"
-    desired_caps["deviceOrientation"] = "portrait"
-    desired_caps["appiumVersion"] = "1.19.2"
-    return desired_caps
-
-
-@pytest.fixture(scope="function")
-def appium(desired_caps, sauce_url):
-    selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-    return appium_webdriver.Remote(
-        command_executor=selenium_url, desired_capabilities=desired_caps
-    )
-
-
-def start_chrome_driver(options):
-    for _ in range(4):
-        try:
-            return webdriver.Chrome(
-                executable_path=ChromeDriverManager().install(),
-                options=options,
-            )
-        except Exception as e:
-            print("Tried to start browser. It was exception {}".format(e))
-        time.sleep(1.0)
-    return webdriver.Chrome(
-        executable_path=ChromeDriverManager().install(),
-        options=options,
-    )
-
-
-@pytest.fixture(scope="function")
-def chrome(options, execution_grid):
-    options.add_argument("--headless")
-    if execution_grid:
-        url = os.environ.get("EXECUTION_GRID_URL")
-        caps = options.to_capabilities()
-        return webdriver.Remote(command_executor=url, desired_capabilities=caps)
-    else:
-        return start_chrome_driver(options)
-
-
-@pytest.fixture(scope="function")
-def firefox(options):
-    options.add_argument("--headless")
-    caps = options.to_capabilities()
-    for _ in range(4):
-        try:
-            return webdriver.Firefox(
-                executable_path=GeckoDriverManager().install(),
-                desired_capabilities=caps,
-            )
-        except Exception as e:
-            print("Tried to start browser. It was exception {}".format(e))
-        time.sleep(1.0)
-    return webdriver.Firefox(
-        executable_path=GeckoDriverManager().install(),
-        desired_capabilities=caps,
-    )
-
-
-@pytest.fixture(scope="function")
-def firefox48(sauce_url, legacy):
-    if legacy:
-        capabilities = {}
-        capabilities["browserName"] = "firefox"
-        capabilities["platform"] = "Windows 10"
-        capabilities["version"] = "48.0"
-    else:
-        capabilities = {
-            "browserName": "firefox",
-            "browserVersion": "48.0",
-            "platformName": "Windows 10",
-        }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
-
-
-@pytest.fixture(scope="function")
-def ie11(sauce_url):
-    capabilities = {
-        "browserName": "internet explorer",
-        "browserVersion": "11.285",
-        "platformName": "Windows 10",
-    }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
-
-
-@pytest.fixture(scope="function")
-def edge(sauce_url):
-    capabilities = {
-        "browserName": "MicrosoftEdge",
-        "browserVersion": "18.17763",
-        "platformName": "Windows 10",
-        "screenResolution": "1920x1080",
-    }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
-
-
-@pytest.fixture(scope="function")
-def safari11(sauce_url, legacy):
-    if legacy:
-        capabilities = {}
-        capabilities["browserName"] = "safari"
-        capabilities["platform"] = "macOS 10.13"
-        capabilities["version"] = "11.1"
-    else:
-        capabilities = {
-            "browserName": "safari",
-            "browserVersion": "11.1",
-            "platformName": "macOS 10.13",
-        }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
-
-
-@pytest.fixture(scope="function")
-def safari12(sauce_url, legacy):
-    if legacy:
-        capabilities = {}
-        capabilities["browserName"] = "safari"
-        capabilities["platform"] = "macOS 10.13"
-        capabilities["version"] = "12.1"
-        capabilities["seleniumVersion"] = "3.4.0"
-    else:
-        capabilities = {
-            "browserName": "safari",
-            "browserVersion": "12.1",
-            "platformName": "macOS 10.13",
-        }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
-
-
-@pytest.fixture(scope="function")
-def chrome_emulator(options):
-    mobile_emulation = {
-        "deviceMetrics": {"width": 384, "height": 512, "pixelRatio": 2.0},
-        "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; Android SDK built for x86_64 Build/OSR1.180418.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36",
-    }
-    options.add_experimental_option("mobileEmulation", mobile_emulation)
-    options.add_argument("--headless")
-    return start_chrome_driver(options)
 
 
 @pytest.fixture(scope="function")
