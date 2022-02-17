@@ -265,6 +265,15 @@ def test_target_path_to_dict_shadow_by_xpath_shadow_by_css_region_by_css():
     }
 
 
+def test_target_path_to_dict_shadow_element_region_by_css():
+    converted = TargetPath.shadow(DummyElement(1)).region(".css").to_dict(True)
+
+    assert converted == {
+        "elementId": 1,
+        "shadow": {"selector": ".css", "type": "css selector"},
+    }
+
+
 def test_target_path_to_dict_frame_by_css_region_by_css():
     converted = TargetPath.frame(By.CSS_SELECTOR, "#s").region(".css").to_dict(True)
 
