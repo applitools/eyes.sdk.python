@@ -329,8 +329,6 @@ def ocr_target_convert(is_selenium, target):
     # type:(bool, Union[Locator, WebElement, Region]) -> RegionReference
     if isinstance(target, Locator):
         return target.to_dict(is_selenium)
-    elif isinstance(target, WebElement):
-        return TransformedElement.convert(target)
     else:
         return Region.convert(target)
 
