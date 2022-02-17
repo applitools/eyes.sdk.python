@@ -129,8 +129,8 @@ def test_match_regions_with_elements(method_name):
     appium_element = MagicMock(AppiumWebElement)
 
     regions = get_regions_from_(method_name, selenium_element, appium_element)
-    assert regions[0]._element == selenium_element
-    assert regions[1]._element == appium_element
+    assert regions[0]._target_path == TargetPath.region(selenium_element)
+    assert regions[1]._target_path == TargetPath.region(appium_element)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -169,7 +169,7 @@ def test_match_floating_region():
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._element == element
+    assert regions[0]._target_path == TargetPath.region(element)
 
 
 def test_match_accessibility_region():
@@ -190,7 +190,7 @@ def test_match_accessibility_region():
         "accessibility", element, AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._element == element
+    assert regions[0]._target_path == TargetPath.region(element)
 
 
 def test_before_render_screenshot_hook():
