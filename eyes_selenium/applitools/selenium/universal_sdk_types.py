@@ -37,12 +37,7 @@ from ..core import (
 )
 from ..core.fluent import AccessibilityRegionByRectangle
 from ..core.locators import VisualLocatorSettingsValues
-from .fluent import (
-    FloatingRegionByElement,
-    FloatingRegionBySelector,
-    RegionByElement,
-    RegionBySelector,
-)
+from .fluent import FloatingRegionByElement, FloatingRegionBySelector, RegionBySelector
 from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
 from .fluent.target_path import FrameLocator, Locator, RegionLocator, ShadowDomLocator
 
@@ -337,9 +332,7 @@ def region_references_convert(is_selenium, regions):
     # type: (bool, List[GetRegion]) -> List[RegionReference]
     results = []
     for r in regions:
-        if isinstance(r, RegionByElement):
-            results.append(TransformedElement.convert(r._element))  # noqa
-        elif isinstance(r, RegionBySelector):
+        if isinstance(r, RegionBySelector):
             results.append(r._target_path.to_dict(is_selenium))  # noqa
         elif isinstance(r, RegionByRectangle):
             results.append(Region.convert(r._region))  # noqa

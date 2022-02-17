@@ -18,7 +18,6 @@ from .region import (
     AccessibilityRegionBySelector,
     FloatingRegionByElement,
     FloatingRegionBySelector,
-    RegionByElement,
     RegionBySelector,
 )
 from .target_path import Locator, TargetPath
@@ -426,14 +425,12 @@ class SeleniumCheckSettings(CheckSettings):
         return self
 
     def _region_provider_from(self, region, method_name, padding):
-        if isinstance(region, string_types):
+        if isinstance(region, string_types) or is_webelement(region):
             return RegionBySelector(TargetPath.region(region), padding)
         elif is_list_or_tuple(region):
             return RegionBySelector(TargetPath.region(*region), padding)
         elif isinstance(region, Locator):
             return RegionBySelector(region, padding)
-        elif is_webelement(region):
-            return RegionByElement(region, padding)
         return super(SeleniumCheckSettings, self)._region_provider_from(
             region, method_name, padding
         )

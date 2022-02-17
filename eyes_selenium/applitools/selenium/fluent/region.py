@@ -18,7 +18,6 @@ if typing.TYPE_CHECKING:
 
 __all__ = (
     "RegionBySelector",
-    "RegionByElement",
     "FloatingRegionBySelector",
     "FloatingRegionByElement",
     "AccessibilityRegionBySelector",
@@ -28,12 +27,6 @@ __all__ = (
 
 class GetSeleniumRegion(GetRegion):
     pass
-
-
-@attr.s
-class RegionByElement(GetSeleniumRegion):
-    _element = attr.ib()  # type: AnyWebElement
-    _padding = attr.ib(default=None)  # type: Optional[CodedRegionPadding]
 
 
 @attr.s
