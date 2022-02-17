@@ -16,7 +16,6 @@ from applitools.core.fluent import CheckSettings, CheckSettingsValues
 from .region import (
     AccessibilityRegionByElement,
     AccessibilityRegionBySelector,
-    FloatingRegionByElement,
     FloatingRegionBySelector,
     RegionBySelector,
 )
@@ -475,9 +474,7 @@ class SeleniumCheckSettings(CheckSettings):
         return self
 
     def _floating_provider_from(self, region, bounds):
-        if is_webelement(region):
-            return FloatingRegionByElement(region, bounds)
-        elif isinstance(region, string_types):
+        if isinstance(region, string_types) or is_webelement(region):
             return FloatingRegionBySelector(TargetPath.region(region), bounds)
         elif is_list_or_tuple(region):
             return FloatingRegionBySelector(TargetPath.region(*region), bounds)

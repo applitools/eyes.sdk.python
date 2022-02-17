@@ -19,7 +19,6 @@ if typing.TYPE_CHECKING:
 __all__ = (
     "RegionBySelector",
     "FloatingRegionBySelector",
-    "FloatingRegionByElement",
     "AccessibilityRegionBySelector",
     "AccessibilityRegionByElement",
 )
@@ -44,17 +43,6 @@ class RegionBySelector(GetSeleniumRegion):
 
 class GetSeleniumFloatingRegion(GetFloatingRegion):
     pass
-
-
-@attr.s
-class FloatingRegionByElement(GetSeleniumFloatingRegion):
-    """
-    :ivar element: The element which represents the inner region (the floating part).
-    :ivar bounds: The outer rectangle bounding the inner region.
-    """
-
-    _element = attr.ib()  # type: AnyWebElement
-    _bounds = attr.ib()  # type: FloatingBounds
 
 
 @attr.s

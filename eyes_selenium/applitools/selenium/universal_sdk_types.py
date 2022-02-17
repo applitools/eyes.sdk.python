@@ -37,9 +37,9 @@ from ..core import (
 )
 from ..core.fluent import AccessibilityRegionByRectangle
 from ..core.locators import VisualLocatorSettingsValues
-from .fluent import FloatingRegionByElement, FloatingRegionBySelector, RegionBySelector
+from .fluent import FloatingRegionBySelector, RegionBySelector
 from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
-from .fluent.target_path import FrameLocator, Locator, RegionLocator, ShadowDomLocator
+from .fluent.target_path import FrameLocator, Locator
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
@@ -345,9 +345,6 @@ def floating_region_references_convert(is_selenium, regions):
     # type: (bool, List[GetRegion]) -> List[FloatingRegion]
     results = []
     for r in regions:
-        if isinstance(r, FloatingRegionByElement):
-            region = TransformedElement.convert(r._element)  # noqa
-            bounds = r._bounds  # noqa
         if isinstance(r, FloatingRegionBySelector):
             region = r._target_path.to_dict(is_selenium)  # noqa
             bounds = r._bounds  # noqa

@@ -1,4 +1,4 @@
-from .region import FloatingRegionByElement, FloatingRegionBySelector, RegionBySelector
+from .region import FloatingRegionBySelector, RegionBySelector
 from .selenium_check_settings import FrameLocator, SeleniumCheckSettings
 from .target import Target
 
@@ -8,5 +8,4 @@ __all__ = (
     "FrameLocator",
     "RegionBySelector",
     "FloatingRegionBySelector",
-    "FloatingRegionByElement",
 )
