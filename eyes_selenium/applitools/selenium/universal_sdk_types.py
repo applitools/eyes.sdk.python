@@ -3,8 +3,6 @@ from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
-from selenium.webdriver.remote.webelement import WebElement
-from six import text_type
 
 from applitools.common import (
     AccessibilityGuidelinesVersion,
@@ -173,19 +171,6 @@ class FloatingRegion(object):
 
 
 @attr.s
-class TransformedElement(object):
-    element_id = attr.ib(type=text_type)
-
-    @classmethod
-    def convert(cls, web_element):
-        # type: (Optional[WebElement]) -> Optional[TransformedElement]
-        if web_element:
-            return TransformedElement(web_element._id)  # noqa
-        else:
-            return None
-
-
-@attr.s
 class MatchSettingsExact(object):
     min_diff_intensity = attr.ib()  # type: int
     min_diff_width = attr.ib()  # type: int
@@ -253,7 +238,7 @@ class DebugScreenshotHandler(object):
 
 
 LogHandler = Union[FileLogHandler, ConsoleLogHandler]
-ElementReference = Union[TransformedElement, dict]
+ElementReference = dict
 RegionReference = Union[ElementReference, Region]
 FrameReference = Union[ElementReference, int, Text]
 BrowserInfo = Union[
@@ -269,22 +254,22 @@ def record_convert(records):
         return None
 
 
-def element_reference_convert(is_selenium, selector=None):
-    # type: (bool, Optional[Locator]) -> ElementReference
-    if selector is not None:
-        return selector.to_dict(is_selenium)
-    else:
+def optional_element_reference_convert(is_selenium, selector=None):
+    # type: (bool, Optional[Locator]) -> Optional[ElementReference]
+    if selector is None:
         return None
+    else:
+        return selector.to_dict(is_selenium)
 
 
 def frame_reference_convert(is_selenium, selector=None, number=None, name=None):
-    # type: (bool, Optional[List[Text, Text]], int, Text) -> FrameReference
+    # type: (bool, Optional[Locator], Optional[int], Optional[Text]) -> FrameReference
     if name is not None:
         return name
     elif number is not None:
         return number
     else:
-        return element_reference_convert(is_selenium, selector)
+        return selector.to_dict(is_selenium)
 
 
 def browsers_info_convert(browsers_info):
@@ -614,7 +599,7 @@ class ContextReference(object):
                     frame_locator.frame_index,
                     frame_locator.frame_name_or_id,
                 ),
-                scroll_root_element=element_reference_convert(
+                scroll_root_element=optional_element_reference_convert(
                     is_selenium,
                     frame_locator.scroll_root_selector,
                 ),
@@ -694,7 +679,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             # ScreenshotSettings
             region=target_reference_convert(is_selenium, values),
             frames=ContextReference.convert(is_selenium, values.frame_chain),
-            scroll_root_element=element_reference_convert(
+            scroll_root_element=optional_element_reference_convert(
                 is_selenium, values.scroll_root_selector
             ),
             fully=values.stitch_content,
