@@ -274,26 +274,22 @@ def record_convert(records):
         return None
 
 
-def element_reference_convert(is_selenium, selector=None, element=None):
-    # type: (bool, Optional[Locator], Optional[WebElement]) -> ElementReference
+def element_reference_convert(is_selenium, selector=None):
+    # type: (bool, Optional[Locator]) -> ElementReference
     if selector is not None:
         return selector.to_dict(is_selenium)
-    elif element is not None:
-        return TransformedElement.convert(element)
     else:
         return None
 
 
-def frame_reference_convert(
-    is_selenium, selector=None, element=None, number=None, name=None
-):
-    # type: (bool, Optional[List[Text, Text]], WebElement, int, Text) -> FrameReference
+def frame_reference_convert(is_selenium, selector=None, number=None, name=None):
+    # type: (bool, Optional[List[Text, Text]], int, Text) -> FrameReference
     if name is not None:
         return name
     elif number is not None:
         return number
     else:
-        return element_reference_convert(is_selenium, selector, element)
+        return element_reference_convert(is_selenium, selector)
 
 
 def browsers_info_convert(browsers_info):
@@ -630,14 +626,12 @@ class ContextReference(object):
                 frame=frame_reference_convert(
                     is_selenium,
                     frame_locator.frame_selector,
-                    frame_locator.frame_element,
                     frame_locator.frame_index,
                     frame_locator.frame_name_or_id,
                 ),
                 scroll_root_element=element_reference_convert(
                     is_selenium,
                     frame_locator.scroll_root_selector,
-                    None,
                 ),
             )
             for frame_locator in frame_locators
@@ -716,7 +710,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             region=target_reference_convert(is_selenium, values),
             frames=ContextReference.convert(is_selenium, values.frame_chain),
             scroll_root_element=element_reference_convert(
-                is_selenium, values.scroll_root_selector, None
+                is_selenium, values.scroll_root_selector
             ),
             fully=values.stitch_content,
         )

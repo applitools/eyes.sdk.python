@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 from typing import TYPE_CHECKING, List, Optional, Text, Tuple, Union, overload
 
 import attr
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 from six import string_types
 
 from applitools.common.accessibility import AccessibilityRegionType
@@ -42,7 +40,6 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
 @attr.s
 class FrameLocator(object):
-    frame_element = attr.ib(default=None)  # type: AnyWebElement
     frame_selector = attr.ib(default=None)  # type: BySelector
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
@@ -406,7 +403,7 @@ class SeleniumCheckSettings(CheckSettings):
         elif isinstance(frame, string_types):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
-            fl.frame_element = frame
+            fl.frame_selector = TargetPath.frame(frame)
         elif is_list_or_tuple(frame):
             fl.frame_selector = TargetPath.frame(*frame)
         elif isinstance(frame, Locator):

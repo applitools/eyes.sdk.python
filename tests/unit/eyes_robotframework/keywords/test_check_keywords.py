@@ -118,7 +118,9 @@ def test_check_region(check_keyword, data):
         TestData(
             "check_frame_by_element",
             check_region=WEB_ELEMENT,
-            check_region_result=FrameLocator(frame_element=WEB_ELEMENT),
+            check_region_result=FrameLocator(
+                frame_selector=TargetPath.frame(WEB_ELEMENT)
+            ),
         ),
         TestData(
             "check_frame_by_index",
