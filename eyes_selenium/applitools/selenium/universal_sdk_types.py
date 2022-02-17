@@ -191,16 +191,6 @@ class TransformedElement(object):
 
 
 @attr.s
-class TransformedSelector(object):
-    @classmethod
-    def convert(cls, is_selenium, locator):
-        # type: (bool, Locator) -> TransformedSelector
-        if locator is None:
-            return None
-        return locator.to_dict(is_selenium)
-
-
-@attr.s
 class MatchSettingsExact(object):
     min_diff_intensity = attr.ib()  # type: int
     min_diff_width = attr.ib()  # type: int
@@ -268,7 +258,7 @@ class DebugScreenshotHandler(object):
 
 
 LogHandler = Union[FileLogHandler, ConsoleLogHandler]
-ElementReference = Union[TransformedElement, TransformedSelector]
+ElementReference = Union[TransformedElement, dict]
 RegionReference = Union[ElementReference, Region]
 FrameReference = Union[ElementReference, int, Text]
 BrowserInfo = Union[
@@ -287,7 +277,7 @@ def record_convert(records):
 def element_reference_convert(is_selenium, selector=None, element=None):
     # type: (bool, Optional[Locator], Optional[WebElement]) -> ElementReference
     if selector is not None:
-        return TransformedSelector.convert(is_selenium, selector)
+        return selector.to_dict(is_selenium)
     elif element is not None:
         return TransformedElement.convert(element)
     else:
@@ -332,7 +322,7 @@ def browsers_info_convert(browsers_info):
 def target_reference_convert(is_selenium, values):
     # type: (bool, SeleniumCheckSettingsValues) -> Optional[RegionReference]
     if values.target_selector:
-        return TransformedSelector.convert(is_selenium, values.target_selector)
+        return values.target_selector.to_dict(is_selenium)
     elif values.target_region:
         return Region.convert(values.target_region)
     else:
@@ -342,7 +332,7 @@ def target_reference_convert(is_selenium, values):
 def ocr_target_convert(is_selenium, target):
     # type:(bool, Union[Locator, WebElement, Region]) -> RegionReference
     if isinstance(target, Locator):
-        return TransformedSelector.convert(is_selenium, target)
+        return target.to_dict(is_selenium)
     elif isinstance(target, WebElement):
         return TransformedElement.convert(target)
     else:
@@ -356,9 +346,7 @@ def region_references_convert(is_selenium, regions):
         if isinstance(r, RegionByElement):
             results.append(TransformedElement.convert(r._element))  # noqa
         elif isinstance(r, RegionBySelector):
-            results.append(
-                TransformedSelector.convert(is_selenium, r._target_path)  # noqa
-            )
+            results.append(r._target_path.to_dict(is_selenium))  # noqa
         elif isinstance(r, RegionByRectangle):
             results.append(Region.convert(r._region))  # noqa
         else:
@@ -374,7 +362,7 @@ def floating_region_references_convert(is_selenium, regions):
             region = TransformedElement.convert(r._element)  # noqa
             bounds = r._bounds  # noqa
         if isinstance(r, FloatingRegionBySelector):
-            region = TransformedSelector.convert(is_selenium, r._target_path)  # noqa
+            region = r._target_path.to_dict(is_selenium)  # noqa
             bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
@@ -392,7 +380,7 @@ def accessibility_region_references_convert(is_selenium, regions):
             region = TransformedElement.convert(r._element)  # noqa
             type_ = r._type  # noqa
         if isinstance(r, AccessibilityRegionBySelector):
-            region = TransformedSelector.convert(is_selenium, r._target_path)  # noqa
+            region = r._target_path.to_dict(is_selenium)  # noqa
             type_ = r._type  # noqa
         elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
