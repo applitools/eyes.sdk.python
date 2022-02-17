@@ -38,7 +38,7 @@ from ..core import (
 from ..core.fluent import AccessibilityRegionByRectangle
 from ..core.locators import VisualLocatorSettingsValues
 from .fluent import FloatingRegionBySelector, RegionBySelector
-from .fluent.region import AccessibilityRegionByElement, AccessibilityRegionBySelector
+from .fluent.region import AccessibilityRegionBySelector
 from .fluent.target_path import FrameLocator, Locator
 
 if TYPE_CHECKING:
@@ -360,9 +360,6 @@ def accessibility_region_references_convert(is_selenium, regions):
     # type: (bool, List[GetRegion]) -> List[AccessibilityRegion]
     results = []
     for r in regions:
-        if isinstance(r, AccessibilityRegionByElement):
-            region = TransformedElement.convert(r._element)  # noqa
-            type_ = r._type  # noqa
         if isinstance(r, AccessibilityRegionBySelector):
             region = r._target_path.to_dict(is_selenium)  # noqa
             type_ = r._type  # noqa

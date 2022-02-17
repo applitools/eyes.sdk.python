@@ -14,7 +14,6 @@ from applitools.common.validators import is_list_or_tuple, is_webelement
 from applitools.core.fluent import CheckSettings, CheckSettingsValues
 
 from .region import (
-    AccessibilityRegionByElement,
     AccessibilityRegionBySelector,
     FloatingRegionBySelector,
     RegionBySelector,
@@ -485,9 +484,7 @@ class SeleniumCheckSettings(CheckSettings):
         )
 
     def _accessibility_provider_from(self, region, accessibility_region_type):
-        if is_webelement(region):
-            return AccessibilityRegionByElement(region, accessibility_region_type)
-        elif isinstance(region, string_types):
+        if isinstance(region, string_types) or is_webelement(region):
             return AccessibilityRegionBySelector(
                 TargetPath.region(region), accessibility_region_type
             )

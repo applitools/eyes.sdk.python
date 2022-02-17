@@ -20,7 +20,6 @@ __all__ = (
     "RegionBySelector",
     "FloatingRegionBySelector",
     "AccessibilityRegionBySelector",
-    "AccessibilityRegionByElement",
 )
 
 
@@ -64,10 +63,4 @@ class GetSeleniumAccessibilityRegion(GetAccessibilityRegion):
 @attr.s
 class AccessibilityRegionBySelector(GetSeleniumAccessibilityRegion):
     _target_path = attr.ib()  # type: Locator
-    _type = attr.ib()  # type: AccessibilityRegionType
-
-
-@attr.s
-class AccessibilityRegionByElement(GetSeleniumAccessibilityRegion):
-    _element = attr.ib()  # type: AnyWebElement
     _type = attr.ib()  # type: AccessibilityRegionType
