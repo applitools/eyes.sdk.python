@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from typing import Optional
 
     from applitools.common import FloatingBounds
-    from applitools.common.utils.custom_types import AnyWebElement, CodedRegionPadding
+    from applitools.common.utils.custom_types import CodedRegionPadding
     from applitools.selenium.fluent.target_path import Locator
 
 __all__ = (
