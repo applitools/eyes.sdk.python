@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Restore VisualGridRunner agent id [Trello 2819](https://trello.com/c/c7NT1SAW)
+
 ## [5.0.5] - 2022-02-15
 ### Fixed
 - Unable to set `device_name` in `applitools.yaml` [Trello 2810](https://trello.com/c/VFBCt2WF)

@@ -67,6 +67,7 @@ class RunnerOptions(object):
 
 class VisualGridRunner(EyesRunner):
     AUTO_CLOSE_MODE_SYNC = False
+    BASE_AGENT_ID = "eyes.selenium.visualgrid.python"
 
     def __init__(self, options_or_concurrency=RunnerOptions()):
         # type: (Union[RunnerOptions, int]) -> None
