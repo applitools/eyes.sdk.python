@@ -311,6 +311,11 @@ class SeleniumCheckSettings(CheckSettings):
         pass
 
     @overload  # noqa
+    def shadow(self, css_selector):
+        # type: (Locator) -> SeleniumCheckSettings
+        pass
+
+    @overload  # noqa
     def shadow(self, element):
         # type: (AnyWebElement) -> SeleniumCheckSettings
         pass
@@ -323,7 +328,9 @@ class SeleniumCheckSettings(CheckSettings):
     def shadow(self, shadow):
         # type:(...) -> SeleniumCheckSettings
         path = self.values.target_selector or TargetPath
-        if is_list_or_tuple(shadow):
+        if isinstance(shadow, Locator):
+            self.values.target_selector = shadow
+        elif is_list_or_tuple(shadow):
             self.values.target_selector = path.shadow(*shadow)
         else:
             self.values.target_selector = path.shadow(shadow)

@@ -82,6 +82,12 @@ class Target(object):
         pass
 
     @staticmethod  # noqa
+    @overload
+    def shadow(by_selector):
+        # type: (Locator) -> SeleniumCheckSettings
+        pass
+
+    @staticmethod  # noqa
     def shadow(selector):
         return SeleniumCheckSettings().shadow(selector)
 
