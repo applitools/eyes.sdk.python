@@ -254,22 +254,22 @@ def record_convert(records):
         return None
 
 
-def optional_element_reference_convert(is_selenium, selector=None):
+def optional_element_reference_convert(is_selenium, locator=None):
     # type: (bool, Optional[Locator]) -> Optional[ElementReference]
-    if selector is None:
+    if locator is None:
         return None
     else:
-        return selector.to_dict(is_selenium)
+        return locator.to_dict(is_selenium)
 
 
-def frame_reference_convert(is_selenium, selector=None, number=None, name=None):
+def frame_reference_convert(is_selenium, locator=None, number=None, name=None):
     # type: (bool, Optional[Locator], Optional[int], Optional[Text]) -> FrameReference
     if name is not None:
         return name
     elif number is not None:
         return number
     else:
-        return selector.to_dict(is_selenium)
+        return locator.to_dict(is_selenium)
 
 
 def browsers_info_convert(browsers_info):
