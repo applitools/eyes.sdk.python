@@ -3,7 +3,7 @@ module.exports = {
     'check window after manual scroll on safari 11': {skip: true},
 
     // Shadow emitter not implemented
-    'check region by element within shadow dom with vg': {skip: true},
+    //'check region by element within shadow dom with vg': {skip: true},
     'check region by selector within shadow dom with vg': {skip: true},
 
     // Stale element are not handled by python binding
