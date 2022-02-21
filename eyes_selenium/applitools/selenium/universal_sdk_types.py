@@ -37,7 +37,7 @@ from ..core.fluent import AccessibilityRegionByRectangle
 from ..core.locators import VisualLocatorSettingsValues
 from .fluent import FloatingRegionBySelector, RegionBySelector
 from .fluent.region import AccessibilityRegionBySelector
-from .fluent.target_path import FrameLocator, Locator
+from .fluent.target_path import Locator
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
