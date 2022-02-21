@@ -595,7 +595,7 @@ class ContextReference(object):
             cls(
                 frame=frame_reference_convert(
                     is_selenium,
-                    frame_locator.frame_selector,
+                    frame_locator.frame_locator,
                     frame_locator.frame_index,
                     frame_locator.frame_name_or_id,
                 ),

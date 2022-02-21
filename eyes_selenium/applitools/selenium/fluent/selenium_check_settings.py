@@ -37,7 +37,7 @@ BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot"
 
 @attr.s
 class FrameLocator(object):
-    frame_selector = attr.ib(default=None)  # type: BySelector
+    frame_locator = attr.ib(default=None)  # type: Locator
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
     scroll_root_locator = attr.ib(default=None)  # type: Locator
@@ -407,11 +407,11 @@ class SeleniumCheckSettings(CheckSettings):
         elif isinstance(frame, string_types):
             fl.frame_name_or_id = frame
         elif is_webelement(frame):
-            fl.frame_selector = TargetPath.frame(frame)
+            fl.frame_locator = TargetPath.frame(frame)
         elif is_list_or_tuple(frame):
-            fl.frame_selector = TargetPath.frame(*frame)
+            fl.frame_locator = TargetPath.frame(*frame)
         elif isinstance(frame, Locator):
-            fl.frame_selector = frame
+            fl.frame_locator = frame
         else:
             raise TypeError("frame method called with argument of unknown type!")
         self.values.frame_chain.append(fl)
