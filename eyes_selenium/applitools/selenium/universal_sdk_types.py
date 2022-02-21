@@ -297,8 +297,8 @@ def browsers_info_convert(browsers_info):
 
 def target_reference_convert(is_selenium, values):
     # type: (bool, SeleniumCheckSettingsValues) -> Optional[RegionReference]
-    if values.target_selector:
-        return values.target_selector.to_dict(is_selenium)
+    if values.target_locator:
+        return values.target_locator.to_dict(is_selenium)
     elif values.target_region:
         return Region.convert(values.target_region)
     else:

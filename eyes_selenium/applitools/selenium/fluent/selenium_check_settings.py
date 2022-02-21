@@ -56,7 +56,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     scroll_root_locator = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Locator
-    target_selector = attr.ib(
+    target_locator = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Locator
     frame_chain = attr.ib(
@@ -97,7 +97,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     @property
     def is_target_empty(self):
         # type: () -> bool
-        return self.target_region is None and self.target_selector is None
+        return self.target_region is None and self.target_locator is None
 
 
 @attr.s
@@ -324,13 +324,13 @@ class SeleniumCheckSettings(CheckSettings):
 
     def shadow(self, shadow):
         # type:(...) -> SeleniumCheckSettings
-        path = self.values.target_selector or TargetPath
+        path = self.values.target_locator or TargetPath
         if isinstance(shadow, Locator):
-            self.values.target_selector = shadow
+            self.values.target_locator = shadow
         elif is_list_or_tuple(shadow):
-            self.values.target_selector = path.shadow(*shadow)
+            self.values.target_locator = path.shadow(*shadow)
         else:
-            self.values.target_selector = path.shadow(shadow)
+            self.values.target_locator = path.shadow(shadow)
         return self
 
     @overload  # noqa
@@ -363,13 +363,13 @@ class SeleniumCheckSettings(CheckSettings):
         if isinstance(region, Region):
             self.values.target_region = region
         elif is_list_or_tuple(region):
-            path = self.values.target_selector or TargetPath
-            self.values.target_selector = path.region(*region)
+            path = self.values.target_locator or TargetPath
+            self.values.target_locator = path.region(*region)
         elif isinstance(region, string_types) or is_webelement(region):
-            path = self.values.target_selector or TargetPath
-            self.values.target_selector = path.region(region)
+            path = self.values.target_locator or TargetPath
+            self.values.target_locator = path.region(region)
         elif isinstance(region, Locator):
-            self.values.target_selector = region
+            self.values.target_locator = region
         else:
             raise TypeError("region method called with argument of unknown type!")
         return self

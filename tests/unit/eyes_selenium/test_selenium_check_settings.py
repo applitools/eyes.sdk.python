@@ -78,11 +78,11 @@ def test_check_region_with_region(method_name="region"):
 def test_check_region_with_elements(method_name="region"):
     selenium_element = MagicMock(SeleniumWebElement)
     cs = get_cs_from_method(method_name, selenium_element)
-    assert cs.values.target_selector == TargetPath.region(selenium_element)
+    assert cs.values.target_locator == TargetPath.region(selenium_element)
 
     appium_element = MagicMock(AppiumWebElement)
     cs = get_cs_from_method(method_name, appium_element)
-    assert cs.values.target_selector == TargetPath.region(appium_element)
+    assert cs.values.target_locator == TargetPath.region(appium_element)
 
 
 @pytest.mark.parametrize(
@@ -91,10 +91,10 @@ def test_check_region_with_elements(method_name="region"):
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
     cs = get_cs_from_method(method_name, [by, value])
-    assert cs.values.target_selector == TargetPath.region(by, value)
+    assert cs.values.target_locator == TargetPath.region(by, value)
 
     cs = get_cs_from_method(method_name, TargetPath.region(by, value))
-    assert cs.values.target_selector == TargetPath.region(by, value)
+    assert cs.values.target_locator == TargetPath.region(by, value)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
