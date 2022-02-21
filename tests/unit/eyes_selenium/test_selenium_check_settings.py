@@ -60,7 +60,7 @@ def test_check_frame(method_name="frame"):
 
     frame_selector = [By.ID, "some-selector"]
     cs = get_cs_from_method(method_name, frame_selector)
-    assert cs.values.frame_chain[0].frame_selector == TargetPath.frame(
+    assert cs.values.frame_chain[0].frame_locator == TargetPath.frame(
         By.ID, "some-selector"
     )
 
@@ -78,11 +78,11 @@ def test_check_region_with_region(method_name="region"):
 def test_check_region_with_elements(method_name="region"):
     selenium_element = MagicMock(SeleniumWebElement)
     cs = get_cs_from_method(method_name, selenium_element)
-    assert cs.values.target_element == selenium_element
+    assert cs.values.target_locator == TargetPath.region(selenium_element)
 
     appium_element = MagicMock(AppiumWebElement)
     cs = get_cs_from_method(method_name, appium_element)
-    assert cs.values.target_element == appium_element
+    assert cs.values.target_locator == TargetPath.region(appium_element)
 
 
 @pytest.mark.parametrize(
@@ -91,10 +91,10 @@ def test_check_region_with_elements(method_name="region"):
 def test_check_region_with_by_params(by, method_name="region"):
     value = "Selector"
     cs = get_cs_from_method(method_name, [by, value])
-    assert cs.values.target_selector == TargetPath.region(by, value)
+    assert cs.values.target_locator == TargetPath.region(by, value)
 
     cs = get_cs_from_method(method_name, TargetPath.region(by, value))
-    assert cs.values.target_selector == TargetPath.region(by, value)
+    assert cs.values.target_locator == TargetPath.region(by, value)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -129,8 +129,8 @@ def test_match_regions_with_elements(method_name):
     appium_element = MagicMock(AppiumWebElement)
 
     regions = get_regions_from_(method_name, selenium_element, appium_element)
-    assert regions[0]._element == selenium_element
-    assert regions[1]._element == appium_element
+    assert regions[0]._target_path == TargetPath.region(selenium_element)
+    assert regions[1]._target_path == TargetPath.region(appium_element)
 
 
 @pytest.mark.parametrize("method_name", ["ignore", "layout", "strict", "content"])
@@ -169,7 +169,7 @@ def test_match_floating_region():
     element = MagicMock(SeleniumWebElement)
     regions = get_regions_from_("floating", 5, element)
     assert regions[0]._bounds == FloatingBounds(5, 5, 5, 5)
-    assert regions[0]._element == element
+    assert regions[0]._target_path == TargetPath.region(element)
 
 
 def test_match_accessibility_region():
@@ -190,7 +190,7 @@ def test_match_accessibility_region():
         "accessibility", element, AccessibilityRegionType.BoldText
     )
     assert regions[0]._type == AccessibilityRegionType.BoldText
-    assert regions[0]._element == element
+    assert regions[0]._target_path == TargetPath.region(element)
 
 
 def test_before_render_screenshot_hook():

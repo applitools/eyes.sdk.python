@@ -118,7 +118,9 @@ def test_check_region(check_keyword, data):
         TestData(
             "check_frame_by_element",
             check_region=WEB_ELEMENT,
-            check_region_result=FrameLocator(frame_element=WEB_ELEMENT),
+            check_region_result=FrameLocator(
+                frame_locator=TargetPath.frame(WEB_ELEMENT)
+            ),
         ),
         TestData(
             "check_frame_by_index",
@@ -134,7 +136,7 @@ def test_check_region(check_keyword, data):
             "check_frame_by_selector",
             check_region="id:overflow-div",
             check_region_result=FrameLocator(
-                frame_selector=TargetPath.frame(By.ID, "overflow-div")
+                frame_locator=TargetPath.frame(By.ID, "overflow-div")
             ),
         ),
     ],
