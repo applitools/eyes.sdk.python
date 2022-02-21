@@ -1,4 +1,6 @@
 ## [vNext]
+### Added
+- Target selection in Shadow DOM [Trello 2822](https://trello.com/c/o3Cl5GT2)
 ### Fixed
 - Restore VisualGridRunner agent id [Trello 2819](https://trello.com/c/c7NT1SAW)
 
