@@ -601,7 +601,7 @@ class ContextReference(object):
                 ),
                 scroll_root_element=optional_element_reference_convert(
                     is_selenium,
-                    frame_locator.scroll_root_selector,
+                    frame_locator.scroll_root_locator,
                 ),
             )
             for frame_locator in frame_locators
@@ -680,7 +680,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             region=target_reference_convert(is_selenium, values),
             frames=ContextReference.convert(is_selenium, values.frame_chain),
             scroll_root_element=optional_element_reference_convert(
-                is_selenium, values.scroll_root_selector
+                is_selenium, values.scroll_root_locator
             ),
             fully=values.stitch_content,
         )

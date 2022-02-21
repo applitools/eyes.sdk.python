@@ -40,7 +40,7 @@ class FrameLocator(object):
     frame_selector = attr.ib(default=None)  # type: BySelector
     frame_name_or_id = attr.ib(default=None)  # type: FrameNameOrId
     frame_index = attr.ib(default=None)  # type: FrameIndex
-    scroll_root_selector = attr.ib(default=None)  # type: Locator
+    scroll_root_locator = attr.ib(default=None)  # type: Locator
 
 
 @attr.s
@@ -53,7 +53,7 @@ class LazyLoadOptions(object):
 @attr.s
 class SeleniumCheckSettingsValues(CheckSettingsValues):
     # hide_caret = attr.ib(init=False, default=None)
-    scroll_root_selector = attr.ib(
+    scroll_root_locator = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Locator
     target_selector = attr.ib(
@@ -433,11 +433,11 @@ class SeleniumCheckSettings(CheckSettings):
             region, method_name, padding
         )
 
-    def _set_scroll_root_selector(self, target_path):
+    def _set_scroll_root_locator(self, target_path):
         if len(self.values.frame_chain) == 0:
-            self.values.scroll_root_selector = target_path
+            self.values.scroll_root_locator = target_path
         else:
-            self.values.frame_chain[-1].scroll_root_selector = target_path
+            self.values.frame_chain[-1].scroll_root_locator = target_path
 
     @overload  # noqa
     def scroll_root_element(self, element):
@@ -463,11 +463,11 @@ class SeleniumCheckSettings(CheckSettings):
         if isinstance(element_or_selector, string_types) or is_webelement(
             element_or_selector
         ):
-            self._set_scroll_root_selector(TargetPath.region(element_or_selector))
+            self._set_scroll_root_locator(TargetPath.region(element_or_selector))
         elif is_list_or_tuple(element_or_selector):
-            self._set_scroll_root_selector(TargetPath.region(*element_or_selector))
+            self._set_scroll_root_locator(TargetPath.region(*element_or_selector))
         elif isinstance(element_or_selector, Locator):
-            self._set_scroll_root_selector(element_or_selector)
+            self._set_scroll_root_locator(element_or_selector)
         else:
             raise TypeError("Unsupported type of scroll root element")
         return self
