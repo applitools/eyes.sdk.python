@@ -20,6 +20,7 @@ def pixel_3a_xl(app, sauce_url, browser_name):
                     "clearSystemFiles": True,
                     "noReset": True,
                     "automationName": "UiAutomator2",
+                    "name": "Pixel 3a xl (Python)",
                     "appiumVersion": "1.20.2"}
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
@@ -32,7 +33,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name):
                     "clearSystemFiles": True,
                     "noReset": True,
                     "automationName": "UiAutomator2",
-                    "name": "AndroidNativeApp",
+                    "name": "AndroidNative (Python)",
                     "deviceOrientation": "portrait",
                     "appiumVersion": "1.19.2"}
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
@@ -46,7 +47,7 @@ def iphone_xs(app, sauce_url, browser_name):
                     "clearSystemFiles": True,
                     "noReset": True,
                     "automationName": "XCUITest",
-                    "name": "iOSNativeApp checkWindow",
+                    "name": "iOSNative (Python)",
                     "deviceOrientation": "portrait",
                     "appiumVersion": "1.19.2"}
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
