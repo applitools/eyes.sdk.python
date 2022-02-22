@@ -23,20 +23,20 @@ def firefox():
     options = webdriver.FirefoxOptions()
     options.add_argument("--headless")
     caps = options.to_capabilities()
-    # for _ in range(4):
-    #     try:
-    #         return webdriver.Firefox(
-    #             executable_path=GeckoDriverManager().install(),
-    #             desired_capabilities=caps,
-    #         )
-    #     except Exception as e:
-    #         print("Tried to start browser. It was exception {}".format(e))
-    #     time.sleep(1.0)
-    # return webdriver.Firefox(
-    #     executable_path=GeckoDriverManager().install(),
-    #     desired_capabilities=caps,
-    # )
-    return webdriver.Remote(command_executor="http:localhost:4445/wd/hub", desired_capabilities=caps)
+    for _ in range(4):
+        try:
+            return webdriver.Firefox(
+                executable_path=GeckoDriverManager().install(),
+                desired_capabilities=caps,
+            )
+        except Exception as e:
+            print("Tried to start browser. It was exception {}".format(e))
+        time.sleep(1.0)
+    return webdriver.Firefox(
+        executable_path=GeckoDriverManager().install(),
+        desired_capabilities=caps,
+    )
+
 
 
 @pytest.fixture(scope="function")
@@ -131,18 +131,17 @@ def chrome_emulator():
     return start_chrome_driver(options)
 
 def start_chrome_driver(options):
-    # for _ in range(4):
-    #     try:
-    #         return webdriver.Chrome(
-    #             executable_path=ChromeDriverManager().install(),
-    #             options=options,
-    #         )
-    #     except Exception as e:
-    #         print("Tried to start browser. It was exception {}".format(e))
-    #     time.sleep(1.0)
-    # return webdriver.Chrome(
-    #     executable_path=ChromeDriverManager().install(),
-    #     options=options,
-    # )
-    caps = options.to_capabilities()
-    return webdriver.Remote(desired_capabilities=caps)
+    for _ in range(4):
+        try:
+            return webdriver.Chrome(
+                executable_path=ChromeDriverManager().install(),
+                options=options,
+            )
+        except Exception as e:
+            print("Tried to start browser. It was exception {}".format(e))
+        time.sleep(1.0)
+    return webdriver.Chrome(
+        executable_path=ChromeDriverManager().install(),
+        options=options,
+    )
+
