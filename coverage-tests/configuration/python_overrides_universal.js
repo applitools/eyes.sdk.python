@@ -8,4 +8,6 @@ module.exports = {
     // Stale element are not handled by python binding
     'should handle check of stale element if selector is preserved': {skip: true},
     'should handle check of stale element in frame if selector is preserved': {skip: true},
+    'check window on mobile web android': {skipEmit: true},
+    'check window on mobile web ios': {skipEmit: true},
 }
