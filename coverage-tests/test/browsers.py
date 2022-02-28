@@ -1,5 +1,6 @@
-import time
 import os
+import time
+
 import pytest
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -44,7 +45,7 @@ def firefox_48(sauce_url, legacy):
         capabilities = {
             "browserName": "firefox",
             "platform": "Windows 10",
-            "version": "48.0"
+            "version": "48.0",
         }
     else:
         capabilities = {
@@ -85,9 +86,11 @@ def edge_18(sauce_url):
 @pytest.fixture(scope="function")
 def safari_11(sauce_url, legacy):
     if legacy:
-        capabilities = {"browserName": "safari",
-                        "platform": "macOS 10.13",
-                        "version": "11.1"}
+        capabilities = {
+            "browserName": "safari",
+            "platform": "macOS 10.13",
+            "version": "11.1",
+        }
     else:
         capabilities = {
             "browserName": "safari",
@@ -129,6 +132,7 @@ def chrome_emulator():
     options.add_argument("--headless")
     return start_chrome_driver(options)
 
+
 def start_chrome_driver(options):
     for _ in range(4):
         try:
@@ -143,4 +147,3 @@ def start_chrome_driver(options):
         executable_path=ChromeDriverManager().install(),
         options=options,
     )
-

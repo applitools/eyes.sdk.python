@@ -1,7 +1,9 @@
-from .devices import *
-from .browsers import *
 from selenium.common.exceptions import WebDriverException
+
 from applitools.selenium import BatchInfo, Eyes, StitchMode
+
+from .browsers import *
+from .devices import *
 
 
 @pytest.fixture(scope="session")
