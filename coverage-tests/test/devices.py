@@ -12,7 +12,8 @@ def app():
 def browser_name():
     return ""
 
-@pytest.yield_fixture(scope="function")
+
+@pytest.fixture(scope="function")
 def pixel_3a_xl(app, sauce_url, browser_name):
     desired_caps = {"deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
                     "platformVersion": "10.0",
@@ -25,7 +26,7 @@ def pixel_3a_xl(app, sauce_url, browser_name):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def samsung_galaxy_s8(app, sauce_url, browser_name):
     desired_caps = {"deviceName": "Samsung Galaxy S8 FHD GoogleAPI Emulator",
                     "platformVersion": "7.0",
@@ -39,7 +40,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def iphone_xs(app, sauce_url, browser_name):
     desired_caps = {"deviceName": "iPhone XS Simulator",
                     "platformVersion": "13.0",

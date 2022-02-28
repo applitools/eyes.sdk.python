@@ -25,6 +25,7 @@ def pytest_generate_tests(metafunc):
 def eyes_runner_class():
     return None
 
+
 @pytest.fixture(scope="function")
 def legacy():
     return False

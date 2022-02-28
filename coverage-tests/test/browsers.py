@@ -38,7 +38,6 @@ def firefox():
     )
 
 
-
 @pytest.fixture(scope="function")
 def firefox_48(sauce_url, legacy):
     if legacy:
