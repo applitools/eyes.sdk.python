@@ -1,4 +1,4 @@
-## [vNext]
+## [5.1.0] - 2022-02-25
 ### Added
 - Target selection in Shadow DOM [Trello 2822](https://trello.com/c/o3Cl5GT2)
 ### Fixed
