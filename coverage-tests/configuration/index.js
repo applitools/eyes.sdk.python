@@ -1,11 +1,11 @@
 module.exports = {
     name: 'eyes_selenium_python',
-    emitter: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/mobile-web-python/python/emitter.js',
+    emitter: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/emitter.js',
     overrides: [
-        'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/mobile-web-python/js/overrides.js',
+        'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/js/overrides.js',
         './configuration/python_overrides_universal'],
-    template: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/mobile-web-python/python/template.hbs',
-    tests: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/mobile-web-python/coverage-tests.js',
+    template: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/template.hbs',
+    tests: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/coverage-tests.js',
     ext: '.py',
     outPath: './test/coverage/generic',
 }
