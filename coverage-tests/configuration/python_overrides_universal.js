@@ -8,6 +8,9 @@ module.exports = {
     // Stale element are not handled by python binding
     'should handle check of stale element if selector is preserved': {skip: true},
     'should handle check of stale element in frame if selector is preserved': {skip: true},
-    'check window on mobile web android': {skipEmit: true},
-    'check window on mobile web ios': {skipEmit: true},
+
+    // Failing on the universal server 1.10 and lower
+    // check on new universal server version
+    "check window on mobile web android": {skip: true}
+
 }
