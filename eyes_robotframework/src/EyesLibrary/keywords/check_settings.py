@@ -32,7 +32,7 @@ def new_or_cur_check_settings(check_settings):
     return check_settings
 
 
-class IgnoreCheckSettingsKeyword(object):
+class IgnoreCheckSettingsKeywords(object):
     @keyword("Ignore Region By Coordinates", types=(str,))
     def ignore_region_by_coordinates(
         self,
@@ -95,7 +95,7 @@ class IgnoreCheckSettingsKeyword(object):
         )
 
 
-class LayoutCheckSettingsKeyword(object):
+class LayoutCheckSettingsKeywords(object):
     @keyword("Layout Region By Coordinates", types=(str,))
     def layout_region_by_coordinates(
         self,
@@ -158,7 +158,7 @@ class LayoutCheckSettingsKeyword(object):
         )
 
 
-class ContentCheckSettingsKeyword(object):
+class ContentCheckSettingsKeywords(object):
     @keyword("Content Region By Coordinates", types=(str,))
     def content_region_by_coordinates(
         self,
@@ -698,9 +698,9 @@ class ShadowDomKeywords(object):
 
 class CheckSettingsKeywords(
     LibraryComponent,
-    IgnoreCheckSettingsKeyword,
-    LayoutCheckSettingsKeyword,
-    ContentCheckSettingsKeyword,
+    IgnoreCheckSettingsKeywords,
+    LayoutCheckSettingsKeywords,
+    ContentCheckSettingsKeywords,
     StrictCheckSettingsKeywords,
     FloatingCheckSettingsKeywords,
     AccessibilityCheckSettingsKeywords,
