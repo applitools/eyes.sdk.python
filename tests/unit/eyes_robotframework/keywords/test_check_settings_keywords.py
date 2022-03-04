@@ -257,3 +257,11 @@ def test_with_name(check_settings_keyword):
 def test_timeout(check_settings_keyword):
     res = SeleniumCheckSettings().timeout(53)
     assert res == check_settings_keyword.timeout(53)
+
+
+def test_shadow(check_settings_keyword, css_selector, by_selector):
+    res = SeleniumCheckSettings().shadow(by_selector)
+    assert res == check_settings_keyword.shadow_by_selector(css_selector)
+
+    res = SeleniumCheckSettings().shadow(WEB_ELEMENT)
+    assert res == check_settings_keyword.shadow_by_element(WEB_ELEMENT)

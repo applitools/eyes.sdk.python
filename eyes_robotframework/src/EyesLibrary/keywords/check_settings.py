@@ -650,6 +650,52 @@ class UFGCheckSettingsKeywords(object):
         )
 
 
+class ShadowDomKeywords(object):
+    @keyword(
+        "Shadow By Element",
+        types={"element": (SeleniumWebElement, AppiumWebElement)},
+    )
+    def shadow_by_element(
+        self,
+        element,  # type: AnyWebElement
+        check_settings=None,  # type:Optional[SeleniumCheckSettings]
+    ):
+        # type: (...)->SeleniumCheckSettings
+        """
+        Returns a CheckSettings object with shadow dom specified in the argument.
+
+            | =Arguments=   | =Description=                                     |
+            | Element       | *Mandatory* - The element for shadow dom          |
+
+        *Example:*
+            | ${element}=   | Get Webelement             | //*[@id="logo"]   |
+            | ${target}=    | Shadow By Element          | ${element}        |
+        """
+        is_webelement_guard(element)
+        return new_or_cur_check_settings(check_settings).shadow(element)
+
+    @keyword("Shadow By Selector", types=(str, str))
+    def shadow_by_selector(
+        self,
+        selector,  # type: Text
+        check_settings=None,  # type:Optional[SeleniumCheckSettings]
+    ):
+        # type: (...)->SeleniumCheckSettings
+        """
+        Returns a CheckSettings object with shadow dom specified in the arguments.
+
+            | =Arguments=   |   =Description=                                          |
+            | Selector      |  *Mandatory* - The selector for element for shadow dom. Selenium/Appium formats are supported. |
+
+        *Example:*
+            | Eyes Check                  |              |
+            | ...     Shadow By Selector  |  //selector  |
+        """
+        return new_or_cur_check_settings(check_settings).shadow(
+            *self.from_locators_to_supported_form(selector)
+        )
+
+
 class CheckSettingsKeywords(
     LibraryComponent,
     IgnoreCheckSettingsKeyword,
@@ -659,6 +705,7 @@ class CheckSettingsKeywords(
     FloatingCheckSettingsKeywords,
     AccessibilityCheckSettingsKeywords,
     UFGCheckSettingsKeywords,
+    ShadowDomKeywords,
 ):
     @keyword("Scroll Root Element By Selector", types=(str,))
     def scroll_root_element_by_selector(
