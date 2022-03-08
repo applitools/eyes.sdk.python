@@ -9,7 +9,7 @@ from applitools.common.geometry import Rectangle
 from applitools.common.utils import argument_guard
 from applitools.common.utils.json_utils import JsonInclude
 from applitools.common.validators import is_list_or_tuple, is_webelement
-from applitools.selenium.fluent.target_path import Locator, TargetPath
+from applitools.selenium.fluent.target_path import TargetPath, TargetPathLocator
 
 if TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
@@ -98,7 +98,7 @@ class TextRegion(Rectangle):
 
 class OCRRegion(object):
     def __init__(self, target):
-        # type: (Union[Region, Text, BySelector, WebElement, Locator]) -> None
+        # type: (Union[Region, Text, BySelector, WebElement, TargetPathLocator]) -> None
         if isinstance(target, string_types) or is_webelement(target):
             self.target = TargetPath.region(target)
         elif is_list_or_tuple(target):

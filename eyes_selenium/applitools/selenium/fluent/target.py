@@ -14,7 +14,7 @@ if TYPE_CHECKING:
         FrameNameOrId,
     )
 
-    from .target_path import Locator
+    from .target_path import TargetPathLocator
 
 __all__ = ("Target",)
 
@@ -56,7 +56,7 @@ class Target(object):
     @staticmethod  # noqa
     @overload
     def region(target_path):
-        # type: (Locator) -> SeleniumCheckSettings
+        # type: (TargetPathLocator) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa
@@ -90,7 +90,7 @@ class Target(object):
     @staticmethod  # noqa
     @overload
     def frame(target_path):
-        # type: (Locator) -> SeleniumCheckSettings
+        # type: (TargetPathLocator) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa

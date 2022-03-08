@@ -39,7 +39,7 @@ from ..core.fluent import AccessibilityRegionByRectangle
 from ..core.locators import VisualLocatorSettingsValues
 from .fluent import FloatingRegionBySelector, RegionBySelector
 from .fluent.region import AccessibilityRegionBySelector
-from .fluent.target_path import Locator
+from .fluent.target_path import TargetPathLocator
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Union
@@ -263,7 +263,7 @@ def record_convert(records):
 
 
 def optional_element_reference_convert(is_selenium, locator=None):
-    # type: (bool, Optional[Locator]) -> Optional[ElementReference]
+    # type: (bool, Optional[TargetPathLocator]) -> Optional[ElementReference]
     if locator is None:
         return None
     else:
@@ -271,7 +271,7 @@ def optional_element_reference_convert(is_selenium, locator=None):
 
 
 def frame_reference_convert(is_selenium, locator=None, number=None, name=None):
-    # type: (bool, Optional[Locator], Optional[int], Optional[Text]) -> FrameReference
+    # type: (bool, Optional[TargetPathLocator], Optional[int], Optional[Text]) -> FrameReference
     if name is not None:
         return name
     elif number is not None:
@@ -316,8 +316,8 @@ def target_reference_convert(is_selenium, values):
 
 
 def ocr_target_convert(is_selenium, target):
-    # type:(bool, Union[Locator, WebElement, Region]) -> RegionReference
-    if isinstance(target, Locator):
+    # type:(bool, Union[TargetPathLocator, WebElement, Region]) -> RegionReference
+    if isinstance(target, TargetPathLocator):
         return target.to_dict(is_selenium)
     else:
         return Region.convert(target)
