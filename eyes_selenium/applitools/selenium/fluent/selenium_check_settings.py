@@ -303,37 +303,6 @@ class SeleniumCheckSettings(CheckSettings):
         return super(SeleniumCheckSettings, self).accessibility(region, type)
 
     @overload  # noqa
-    def shadow(self, css_selector):  # noqa
-        # type: (CssSelector) -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def shadow(self, css_selector):  # noqa
-        # type: (Locator) -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def shadow(self, element):  # noqa
-        # type: (AnyWebElement) -> SeleniumCheckSettings
-        pass
-
-    @overload  # noqa
-    def shadow(self, by):  # noqa
-        # type: (BySelector) -> SeleniumCheckSettings
-        pass
-
-    def shadow(self, shadow):  # noqa
-        # type:(...) -> SeleniumCheckSettings
-        path = self.values.target_locator or TargetPath
-        if isinstance(shadow, Locator):
-            self.values.target_locator = shadow
-        elif is_list_or_tuple(shadow):
-            self.values.target_locator = path.shadow(*shadow)
-        else:
-            self.values.target_locator = path.shadow(shadow)
-        return self
-
-    @overload  # noqa
     def region(self, region):  # noqa
         # type: (Region) -> SeleniumCheckSettings
         pass
