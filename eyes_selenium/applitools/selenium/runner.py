@@ -43,7 +43,9 @@ class EyesRunner(object):
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         try:
-            results = self._commands.manager_close_all_eyes(self._ref, timeout)
+            results = self._commands.manager_close_manager(
+                self._ref, should_raise_exception, timeout
+            )
         except TimeoutError:
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
