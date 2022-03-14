@@ -236,12 +236,14 @@ class TestResults(object):
 @attr.s(repr=False, str=False)
 class TestResultContainer(object):
     test_results = attr.ib(
-        type=TestResults, metadata={JsonInclude.THIS: True}
+        default=None, type=TestResults, metadata={JsonInclude.THIS: True}
     )  # type: TestResults
     browser_info = attr.ib(
-        type=RenderBrowserInfo, metadata={JsonInclude.THIS: True}
+        default=None, type=RenderBrowserInfo, metadata={JsonInclude.THIS: True}
     )  # type: Optional[RenderBrowserInfo]
-    exception = attr.ib(metadata={JsonInclude.THIS: True})  # type: Optional[Exception]
+    exception = attr.ib(
+        default=None, metadata={JsonInclude.THIS: True}
+    )  # type: Optional[Exception]
 
     def __str__(self):
         browser_info = (
