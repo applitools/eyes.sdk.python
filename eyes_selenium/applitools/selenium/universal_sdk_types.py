@@ -21,6 +21,7 @@ from applitools.common import (
     SessionType,
     StitchMode,
     TestResults,
+    TestResultsSummary,
     VisualGridOption,
 )
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
@@ -868,6 +869,13 @@ def demarshal_test_results(results_dict_list, config):
                 result.set_connection_config(
                     config.server_url, config.api_key, config.proxy
                 )
+    return results
+
+
+def demarshal_close_manager_results(
+    close_manager_result_dict,
+):
+    results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
     return results
 
 

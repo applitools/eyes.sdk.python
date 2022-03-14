@@ -15,7 +15,11 @@ from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 
 from .__version__ import __version__
 from .command_executor import CommandExecutor, ManagerType
-from .universal_sdk_types import demarshal_server_info, demarshal_test_results
+from .universal_sdk_types import (
+    demarshal_close_manager_results,
+    demarshal_server_info,
+    demarshal_test_results,
+)
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union
@@ -50,12 +54,8 @@ class EyesRunner(object):
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
         # USDK should return them back as a part of TestResults
-        structured_results = demarshal_test_results(results, None)
-        for r in structured_results:
-            log_session_results_and_raise_exception(should_raise_exception, r)
-        return TestResultsSummary(
-            [TestResultContainer(result, None, None) for result in structured_results]
-        )
+        structured_results = demarshal_close_manager_results(results)
+        return structured_results
 
 
 class RunnerOptions(object):
