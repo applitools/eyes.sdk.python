@@ -239,7 +239,7 @@ class TestResultContainer(object):
         default=None, type=TestResults, metadata={JsonInclude.THIS: True}
     )  # type: TestResults
     browser_info = attr.ib(
-        default=None, type=RenderBrowserInfo, metadata={JsonInclude.THIS: True}
+        default=None, metadata={JsonInclude.THIS: True}
     )  # type: Optional[RenderBrowserInfo]
     exception = attr.ib(
         default=None, metadata={JsonInclude.THIS: True}

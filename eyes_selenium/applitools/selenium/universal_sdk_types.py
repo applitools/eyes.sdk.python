@@ -26,7 +26,7 @@ from applitools.common import (
 )
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
 
-from ..common.geometry import Rectangle
+from ..common.geometry import Rectangle, RectangleSize
 from ..core import (
     FloatingRegionByRectangle,
     GetRegion,
@@ -873,7 +873,9 @@ def demarshal_test_results(results_dict_list, config):
 
 
 def demarshal_browser_info(browser_info_dict):
-    if "ios_device_info" in browser_info_dict:
+    if browser_info_dict is None or isinstance(browser_info_dict, RectangleSize):
+        return browser_info_dict
+    elif "ios_device_info" in browser_info_dict:
         ios_device = browser_info_dict["ios_device_info"]
         return ApiIosDeviceInfo(
             ios_device["device_name"],

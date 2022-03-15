@@ -11,6 +11,7 @@ from applitools.selenium.universal_sdk_types import demarshal_browser_info
 
 
 def test_demarshal_browser_info():
+    assert None == demarshal_browser_info(None)
     assert DesktopBrowserInfo(800, 600, "chrome") == demarshal_browser_info(
         {"width": 800, "height": 600, "name": "chrome"}
     )
