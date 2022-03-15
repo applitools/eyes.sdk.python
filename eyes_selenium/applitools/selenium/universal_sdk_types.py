@@ -872,10 +872,32 @@ def demarshal_test_results(results_dict_list, config):
     return results
 
 
+def demarshal_browser_info(browser_info_dict):
+    if "ios_device_info" in browser_info_dict:
+        ios_device = browser_info_dict["ios_device_info"]
+        return ApiIosDeviceInfo(
+            ios_device["device_name"],
+            ios_device["screen_orientation"],
+            ios_device.get("ios_version"),
+        )
+    elif "chrome_emulation_info" in browser_info_dict:
+        emulated_device = browser_info_dict["chrome_emulation_info"]
+        return ApiChromeEmulationInfo(
+            emulated_device["device_name"], emulated_device["screen_orientation"]
+        )
+    else:
+        desktop_browser = browser_info_dict
+        return DesktopBrowserInfo(
+            desktop_browser["width"], desktop_browser["height"], desktop_browser["name"]
+        )
+
+
 def demarshal_close_manager_results(
     close_manager_result_dict,
 ):
     results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
+    for result in results:
+        result.browser_info = demarshal_browser_info(result.browser_info)
     return results
 
 
