@@ -61,9 +61,8 @@ def test_open_abort_eyes(local_chrome_driver):
 
     abort_result = eyes.abort()
 
-    assert len(abort_result) == 1
-    assert abort_result[0].is_failed
-    assert abort_result[0].is_aborted
+    assert abort_result.is_failed
+    assert abort_result.is_aborted
 
 
 def test_open_close_abort_eyes(local_chrome_driver):
