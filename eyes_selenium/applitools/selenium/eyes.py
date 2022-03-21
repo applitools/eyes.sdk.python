@@ -481,7 +481,8 @@ class Eyes(object):
             self._eyes_ref = None
             self._driver = None
             if wait_result:
-                return demarshal_test_results(results, self.configure)
+                results = demarshal_test_results(results, self.configure)
+                return results[0]  # Original interface returns just one result
             else:
                 return None
 
