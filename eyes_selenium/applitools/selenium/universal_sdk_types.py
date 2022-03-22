@@ -862,13 +862,14 @@ def demarshal_locate_result(results):
 
 def demarshal_test_results(results_dict_list, config):
     # type: (List[dict], Optional[Configuration]) -> List[TestResults]
-    results = [attr_from_json(dumps(r), TestResults) for r in results_dict_list]
+    # in case of internal USDK failure, None result is observed
+    results = (attr_from_json(dumps(r), TestResults) for r in results_dict_list)
+    results = [r for r in results if r]
     if config:
         for result in results:
-            if result:  # in case of internal USDK failure, None result is observed
-                result.set_connection_config(
-                    config.server_url, config.api_key, config.proxy
-                )
+            result.set_connection_config(
+                config.server_url, config.api_key, config.proxy
+            )
     return results
 
 
