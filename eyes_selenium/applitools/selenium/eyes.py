@@ -466,11 +466,11 @@ class Eyes(object):
         self._driver = None
         if wait_result:
             results = demarshal_test_results(results, self.configure)
-            for r in results:
-                log_session_results_and_raise_exception(raise_ex, r)
-            return results[0]  # Original interface returns just one result
-        else:
-            return None
+            if results:  # eyes are already aborted by closed runner
+                for r in results:
+                    log_session_results_and_raise_exception(raise_ex, r)
+                return results[0]  # Original interface returns just one result
+        return None
 
     def _abort(self, wait_result):
         # type: (bool) -> Optional[List[TestResults]]
@@ -482,9 +482,11 @@ class Eyes(object):
             self._driver = None
             if wait_result:
                 results = demarshal_test_results(results, self.configure)
-                return results[0]  # Original interface returns just one result
-            else:
-                return None
+                if results:  # abort after close does not return results
+                    for r in results:
+                        log_session_results_and_raise_exception(False, r)
+                    return results[0]  # Original interface returns just one result
+            return None
 
     def __getattr__(self, item):
         return getattr(self.configure, item)

@@ -91,7 +91,9 @@ def log_session_results_and_raise_exception(raise_ex, results):
     results_url = results.url
     scenario_id_or_name = results.name
     app_id_or_name = results.app_name
-    if results.steps == 0:
+    if results.is_aborted:
+        print("--- Test aborted.")
+    elif results.steps == 0:
         print("--- Test has no checks. \n\tSee details at ", results_url)
         if raise_ex:
             raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
