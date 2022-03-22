@@ -4,7 +4,7 @@ import pytest as pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from applitools.common import DesktopBrowserInfo
+from applitools.common import DesktopBrowserInfo, NewTestError
 from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
 from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
@@ -189,6 +189,19 @@ def test_check_element_by_id(local_chrome_driver):
             {"width": 800, "height": 600},
         )
         eyes.check(Target.region([By.ID, "overflowing-div"]))
+
+
+@pytest.mark.skip("get_all_test_results doesn't raise typed exceptions yet")
+def test_get_all_test_results_raises_new_test_error(local_chrome_driver):
+    local_chrome_driver.get("https://demo.applitools.com")
+    runner = ClassicRunner()
+    eyes = Eyes(runner)
+    eyes.configure.save_new_tests = False
+    eyes.open(local_chrome_driver, "USDK Test", "Test non saved test raises")
+    eyes.check_window(fully=False)
+    eyes.close(False)
+    with pytest.raises(NewTestError):
+        runner.get_all_test_results()
 
 
 def test_locate_with_missing_locator_returns_empty_result(local_chrome_driver):
