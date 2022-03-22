@@ -896,9 +896,10 @@ def demarshal_close_manager_results(close_manager_result_dict, config):
     results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
     for result in results:
         result.browser_info = demarshal_browser_info(result.browser_info)
-        result.test_results.set_connection_config(
-            config.server_url, config.api_key, config.proxy
-        )
+        if result.test_results:
+            result.test_results.set_connection_config(
+                config.server_url, config.api_key, config.proxy
+            )
     return results
 
 
