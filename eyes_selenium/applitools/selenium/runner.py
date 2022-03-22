@@ -8,21 +8,18 @@ from applitools.common import (
     EyesError,
     NewTestError,
     TestFailedError,
-    TestResultContainer,
     TestResultsSummary,
 )
 from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 
 from .__version__ import __version__
 from .command_executor import CommandExecutor, ManagerType
-from .universal_sdk_types import (
-    demarshal_close_manager_results,
-    demarshal_server_info,
-    demarshal_test_results,
-)
+from .universal_sdk_types import demarshal_close_manager_results, demarshal_server_info
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union
+
+    from applitools.common import Configuration
 
 
 class EyesRunner(object):
@@ -31,6 +28,7 @@ class EyesRunner(object):
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
+        self._connection_configuration = None
         self._commands = CommandExecutor.get_instance(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
@@ -54,8 +52,15 @@ class EyesRunner(object):
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
         # USDK should return them back as a part of TestResults
-        structured_results = demarshal_close_manager_results(results)
+        structured_results = demarshal_close_manager_results(
+            results, self._connection_configuration
+        )
         return structured_results
+
+    def _set_connection_config(self, config):
+        # type: (Configuration) -> None
+        if self._connection_configuration is None:
+            self._connection_configuration = config
 
 
 class RunnerOptions(object):

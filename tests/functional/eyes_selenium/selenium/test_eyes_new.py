@@ -7,13 +7,7 @@ from selenium.webdriver.common.by import By
 from applitools.common import DesktopBrowserInfo
 from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
-from applitools.selenium import (
-    ClassicRunner,
-    Eyes,
-    Target,
-    TargetPath,
-    VisualGridRunner,
-)
+from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 
 
 def test_create_open_check_close_eyes(local_chrome_driver):
@@ -81,6 +75,17 @@ def test_run_test_delete_result(local_chrome_driver):
     eyes.check_window()
     result = eyes.close(False)
     result.delete()
+
+
+def test_get_all_test_results_delete_result(local_chrome_driver):
+    runner = ClassicRunner()
+    eyes = Eyes(runner)
+    eyes.open(local_chrome_driver, "USDK Test", "Test runner_test_delete_result")
+    eyes.check_window()
+    eyes.close(False)
+    all_results = runner.get_all_test_results()
+
+    all_results[0].test_results.delete()
 
 
 def test_get_all_test_results(local_chrome_driver):

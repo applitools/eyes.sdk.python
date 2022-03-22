@@ -84,6 +84,7 @@ class Eyes(object):
         if self.configure.is_disabled:
             pass
         else:
+            self._runner._set_connection_config(self.configure)  # noqa, friend
             self._driver = driver
             self._eyes_ref = self._commands.manager_open_eyes(
                 self._runner._ref,  # noqa

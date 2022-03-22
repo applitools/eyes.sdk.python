@@ -861,15 +861,12 @@ def demarshal_locate_result(results):
 
 
 def demarshal_test_results(results_dict_list, config):
-    # type: (List[dict], Optional[Configuration]) -> List[TestResults]
+    # type: (List[dict], Configuration) -> List[TestResults]
     # in case of internal USDK failure, None result is observed
     results = (attr_from_json(dumps(r), TestResults) for r in results_dict_list)
     results = [r for r in results if r]
-    if config:
-        for result in results:
-            result.set_connection_config(
-                config.server_url, config.api_key, config.proxy
-            )
+    for result in results:
+        result.set_connection_config(config.server_url, config.api_key, config.proxy)
     return results
 
 
@@ -895,12 +892,13 @@ def demarshal_browser_info(browser_info_dict):
         )
 
 
-def demarshal_close_manager_results(
-    close_manager_result_dict,
-):
+def demarshal_close_manager_results(close_manager_result_dict, config):
     results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
     for result in results:
         result.browser_info = demarshal_browser_info(result.browser_info)
+        result.test_results.set_connection_config(
+            config.server_url, config.api_key, config.proxy
+        )
     return results
 
 
