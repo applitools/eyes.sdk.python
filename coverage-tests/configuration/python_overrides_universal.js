@@ -19,5 +19,7 @@ module.exports = {
     'should abort unclosed tests with vg': {skipEmit: true},
     'should return aborted tests in getAllTestResults': {skipEmit: true},
     'should return aborted tests in getAllTestResults with vg': {skipEmit: true},
-    'should return browserInfo in getAllTestResults': {skipEmit: true}
+    'should return browserInfo in getAllTestResults': {skipEmit: true},
+    'appium iOS check window region with scroll and pageCoverage': {skip: true},
+    'should send agentRunId': {skip: true},
 }
