@@ -225,6 +225,9 @@ class Configuration(object):
         converter=str,
         factory=lambda: get_env_with_prefix("DEBUG_SCREENSHOT_PREFIX", "screenshot_"),
     )
+    wait_before_capture = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[int]
 
     @property
     def enable_patterns(self):
@@ -490,6 +493,10 @@ class Configuration(object):
         # type: (Optional[ProxySettings]) -> Self
         argument_guard.is_a(proxy, ProxySettings)
         self.proxy = proxy
+        return self
+
+    def set_wait_before_capture(self, milliseconds):
+        self.wait_before_capture = milliseconds
         return self
 
     @deprecated.attribute("Configuration features are not supported")

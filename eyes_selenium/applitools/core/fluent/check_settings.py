@@ -84,6 +84,9 @@ class CheckSettingsValues(object):
     variation_group_id = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, init=False, default=None
     )  # type: Optional[Text]
+    wait_before_capture = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[int]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
@@ -294,6 +297,10 @@ class CheckSettings(object):
     def timeout(self, timeout):
         # type: (Self, int)  -> Self
         self.values.timeout = timeout
+        return self
+
+    def wait_before_capture(self, milliseconds):
+        self.values.wait_before_capture = milliseconds
         return self
 
     def __regions(self, regions, method_name, padding):

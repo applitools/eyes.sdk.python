@@ -482,6 +482,7 @@ class EyesCheckConfig(object):
 @attr.s
 class EyesClassicConfig(object):
     wait_before_screenshots = attr.ib(default=None)  # type: Optional[float]
+    wait_before_capture = attr.ib(default=None)  # type: Optional[int]
     stitch_mode = attr.ib(default=None)  # type: Optional[StitchMode]
     hide_scrollbars = attr.ib(default=None)  # type: Optional[bool]
     hide_caret = attr.ib(default=None)  # type: Optional[bool]
@@ -566,6 +567,7 @@ class EyesConfig(
             force_full_page_screenshot=config.force_full_page_screenshot,
             # EyesClassicConfig
             wait_before_screenshots=config.wait_before_screenshots,
+            wait_before_capture=config.wait_before_capture,
             stitch_mode=config.stitch_mode,
             hide_scrollbars=config.hide_scrollbars,
             hide_caret=config.hide_caret,
@@ -631,6 +633,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     render_id = attr.ib(default=None)  # type: Optional[Text]
     variation_group_id = attr.ib(default=None)  # type: Optional[Text]
     timeout = attr.ib(default=None)  # type: Optional[int]
+    wait_before_capture = attr.ib(default=None)  # type: Optional[int]
 
     @classmethod
     def convert(cls, is_selenium, values):
@@ -649,6 +652,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             render_id=None,  # TODO: verify
             variation_group_id=values.variation_group_id,
             timeout=values.timeout,
+            wait_before_capture=values.wait_before_capture,
             # MatchSettings
             exact=None,  # TODO: verify
             match_level=values.match_level,

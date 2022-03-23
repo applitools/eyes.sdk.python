@@ -112,6 +112,8 @@ def test_default_values_selenium_configuration():
     assert conf.enable_cross_origin_rendering is True
     assert conf.dont_use_cookies is False
     assert conf.layout_breakpoints is None
+    assert conf.wait_before_capture is None
+    assert conf.wait_before_screenshots is None
 
 
 def test_set_value_to_sel_conf():
@@ -123,6 +125,7 @@ def test_set_value_to_sel_conf():
     conf.set_enable_cross_origin_rendering(False)
     conf.set_dont_use_cookies(True)
     conf.set_layout_breakpoints(True)
+    conf.set_wait_before_capture(5)
 
     assert conf.force_full_page_screenshot == True
     assert conf.wait_before_screenshots == 10000000
@@ -133,6 +136,7 @@ def test_set_value_to_sel_conf():
     assert conf.enable_cross_origin_rendering is False
     assert conf.dont_use_cookies is True
     assert conf.layout_breakpoints is True
+    assert conf.wait_before_capture == 5
 
 
 def test_layout_breakpoints_list():
