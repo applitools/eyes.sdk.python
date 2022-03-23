@@ -26,8 +26,6 @@ if TYPE_CHECKING:
 
 __all__ = ("Configuration",)
 
-DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS = 1000  # type: int  # ms
-
 
 @attr.s
 class Configuration(ConfigurationBase):
@@ -36,8 +34,8 @@ class Configuration(ConfigurationBase):
     )  # type: bool
     wait_before_screenshots = attr.ib(
         metadata={JsonInclude.NON_NONE: True},
-        default=DEFAULT_WAIT_BEFORE_SCREENSHOTS_MS,
-    )  # type: int  # ms
+        default=None,
+    )  # type: Optional[int]  # ms
     stitch_mode = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=StitchMode.Scroll
     )  # type: StitchMode
