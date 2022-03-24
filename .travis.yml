@@ -307,12 +307,9 @@ jobs:
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
               - pip install -U invoke twine keyring==21.4.0
               - echo "v$SDK_VERSION $CHANGELOG"
-              - echo "Checkpoint 1"
               - echo $TMP_CHANGELOG
-              - echo "Checkpoint 2"
               # Save the email of the person who did this commit in COMMITTER_EMAIL
               - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
-              - echo "Checkpoint 3"
               - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) && $TMP_CHANGELOG ]]; then
                   echo "DEPLOY";
                   TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
@@ -320,8 +317,8 @@ jobs:
                   bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
                   inv dist --selenium --robotframework --from-env;
 
-                  echo "DEPLOY SUCCESSFUL";
+                  echo "DEPLOY SUCCESSFUL" && sleep 5;
                 else
-                  echo "DEPLOYMENT FAILED";
+                  echo "DEPLOYMENT FAILED" && sleep 5;
                   exit 1;
                 fi
