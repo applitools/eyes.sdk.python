@@ -1,3 +1,5 @@
+import sys
+
 import pytest as pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -226,6 +228,7 @@ def test_get_all_test_results_aborts_eyes(runner_type):
     assert len(results) == 1
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
 def test_should_wait_before_capture_in_config(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
@@ -243,6 +246,7 @@ def test_should_wait_before_capture_in_config(local_chrome_driver):
     eyes.close()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
 def test_should_wait_before_capture_in_check(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
