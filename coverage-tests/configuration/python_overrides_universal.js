@@ -22,4 +22,6 @@ module.exports = {
     'should return browserInfo in getAllTestResults': {skipEmit: true},
     'appium iOS check window region with scroll and pageCoverage': {skip: true},
     'should send agentRunId': {skip: true},
+    'should waitBeforeCapture in open': {skip: true},
+    'should waitBeforeCapture in check': {skip: true},
 }
