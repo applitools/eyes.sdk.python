@@ -1,3 +1,7 @@
+## [vNext]
+### Added
+- Configurable delay before UFG snapshot (wait_before_capture api) [Trello 20](https://trello.com/c/qn2vPtpS)
+
 ## [5.1.0] - 2022-03-01
 ### Added
 - Target selection in Shadow DOM [Trello 2822](https://trello.com/c/o3Cl5GT2)
