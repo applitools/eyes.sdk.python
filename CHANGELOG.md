@@ -1,4 +1,4 @@
-## [vNext]
+## [5.2.0] - 2022-03-24
 ### Added
 - Configurable delay before UFG snapshot (wait_before_capture api) [Trello 20](https://trello.com/c/qn2vPtpS)
 
