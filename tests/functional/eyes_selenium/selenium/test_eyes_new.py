@@ -1,3 +1,5 @@
+import sys
+
 import pytest as pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -224,3 +226,38 @@ def test_get_all_test_results_aborts_eyes(runner_type):
 
     results = runner.get_all_test_results()
     assert len(results) == 1
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
+def test_should_wait_before_capture_in_config(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
+    eyes.configure.set_layout_breakpoints(True).set_wait_before_capture(2000)
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in config",
+        {"width": 600, "height": 600},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture"
+    )
+    eyes.check("", Target.window())
+    eyes.close()
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
+def test_should_wait_before_capture_in_check(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in check",
+        {"width": 600, "height": 600},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture"
+    )
+    eyes.check("", Target.window().layout_breakpoints(True).wait_before_capture(2000))
+    eyes.close()

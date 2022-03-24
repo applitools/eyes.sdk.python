@@ -38,6 +38,15 @@ def test_default_check_settings():
     assert check_settings.values.disable_browser_fetching is None
     assert check_settings.values.layout_breakpoints is None
     assert check_settings.values.lazy_load is None
+    assert check_settings.values.wait_before_capture is None
+
+
+def test_check_settings_change():
+    check_settings = SeleniumCheckSettings()
+
+    check_settings.wait_before_capture(10)
+
+    assert check_settings.values.wait_before_capture == 10
 
 
 def test_check_region_and_frame_with_unsupported_input():
