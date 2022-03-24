@@ -113,7 +113,7 @@ def test_default_values_selenium_configuration():
     assert conf.dont_use_cookies is False
     assert conf.layout_breakpoints is None
     assert conf.wait_before_capture is None
-    assert conf.wait_before_screenshots is None
+    assert conf.wait_before_screenshots == 1000
 
 
 def test_set_value_to_sel_conf():
