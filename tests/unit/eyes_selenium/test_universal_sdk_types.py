@@ -22,9 +22,9 @@ def test_demarshal_browser_info():
     )
     assert IosDeviceInfo(IosDeviceName.iPhone_12) == demarshal_browser_info(
         {
-            "ios_device_info": {
-                "device_name": "iPhone 12",
-                "screen_orientation": "portrait",
+            "iosDeviceInfo": {
+                "deviceName": "iPhone 12",
+                "screenOrientation": "portrait",
             }
         }
     )
@@ -32,18 +32,18 @@ def test_demarshal_browser_info():
         IosDeviceName.iPhone_12, ScreenOrientation.PORTRAIT, IosVersion.ONE_VERSION_BACK
     ) == demarshal_browser_info(
         {
-            "ios_device_info": {
-                "device_name": "iPhone 12",
-                "screen_orientation": "portrait",
-                "ios_version": "latest-1",
+            "iosDeviceInfo": {
+                "deviceName": "iPhone 12",
+                "screenOrientation": "portrait",
+                "iosVersion": "latest-1",
             }
         }
     )
     assert ChromeEmulationInfo(DeviceName.Galaxy_S10) == demarshal_browser_info(
         {
-            "chrome_emulation_info": {
-                "device_name": "Galaxy S10",
-                "screen_orientation": "portrait",
+            "chromeEmulationInfo": {
+                "deviceName": "Galaxy S10",
+                "screenOrientation": "portrait",
             }
         }
     )
