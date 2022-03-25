@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from applitools.common.selenium import BrowserType, Configuration
     from applitools.core.batch_close import _EnabledBatchClose
 
+    from ..common.ultrafastgrid import IRenderBrowserInfo
     from ..common.utils.custom_types import ViewPort
     from . import OCRRegion
     from .fluent import FrameLocator, SeleniumCheckSettings
@@ -871,33 +872,36 @@ def demarshal_test_results(results_dict_list, config):
 
 
 def demarshal_browser_info(browser_info_dict):
-    if browser_info_dict is None or isinstance(browser_info_dict, RectangleSize):
-        return browser_info_dict
-    elif "ios_device_info" in browser_info_dict:
-        ios_device = browser_info_dict["ios_device_info"]
+    # type: (dict) -> Optional[IRenderBrowserInfo]
+    if browser_info_dict is None:
+        return None
+    elif "iosDeviceInfo" in browser_info_dict:
+        ios_device = browser_info_dict["iosDeviceInfo"]
         return ApiIosDeviceInfo(
-            ios_device["device_name"],
-            ios_device["screen_orientation"],
-            ios_device.get("ios_version"),
+            ios_device["deviceName"],
+            ios_device["screenOrientation"],
+            ios_device.get("iosVersion"),
         )
-    elif "chrome_emulation_info" in browser_info_dict:
-        emulated_device = browser_info_dict["chrome_emulation_info"]
+    elif "chromeEmulationInfo" in browser_info_dict:
+        emulated_device = browser_info_dict["chromeEmulationInfo"]
         return ApiChromeEmulationInfo(
-            emulated_device["device_name"], emulated_device["screen_orientation"]
+            emulated_device["deviceName"], emulated_device["screenOrientation"]
         )
     else:
-        desktop_browser = browser_info_dict
-        return DesktopBrowserInfo(
-            desktop_browser["width"], desktop_browser["height"], desktop_browser["name"]
-        )
+        desktop_browser = browser_info_dict.copy()
+        browser_type = desktop_browser.pop("name", None)
+        if browser_type:
+            return DesktopBrowserInfo(browser_type=browser_type, **desktop_browser)
+        else:
+            return DesktopBrowserInfo(**desktop_browser)
 
 
 def demarshal_close_manager_results(close_manager_result_dict, config):
     results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
-    for result in results:
-        result.browser_info = demarshal_browser_info(result.browser_info)
-        if result.test_results:
-            result.test_results.set_connection_config(
+    for converted_res, raw_res in zip(results, close_manager_result_dict["results"]):
+        converted_res.browser_info = demarshal_browser_info(raw_res.get("browserInfo"))
+        if converted_res.test_results:
+            converted_res.test_results.set_connection_config(
                 config.server_url, config.api_key, config.proxy
             )
     return results
