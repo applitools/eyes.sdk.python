@@ -246,14 +246,14 @@ def test_get_all_test_results_aborts_eyes(runner_type):
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
-def test_should_wait_before_capture_in_config(local_chrome_driver):
+def test_should_wait_before_capture_in_config_with_lb(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
     eyes.configure.set_layout_breakpoints(True).set_wait_before_capture(2000)
     eyes.open(
         local_chrome_driver,
         "USDK Tests",
-        "Wait before capture in config",
+        "Wait before capture in config with layout breakpoints",
         {"width": 600, "height": 600},
     )
     local_chrome_driver.get(
@@ -264,17 +264,50 @@ def test_should_wait_before_capture_in_config(local_chrome_driver):
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
-def test_should_wait_before_capture_in_check(local_chrome_driver):
+def test_should_wait_before_capture_in_check_with_lb(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
     eyes.open(
         local_chrome_driver,
         "USDK Tests",
-        "Wait before capture in check",
+        "Wait before capture in check with layout breakpoints",
         {"width": 600, "height": 600},
     )
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/waitBeforeCapture"
     )
     eyes.check("", Target.window().layout_breakpoints(True).wait_before_capture(2000))
+    eyes.close()
+
+
+def test_sholuld_wait_before_capture_in_check(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in open",
+        {"width": 700, "height": 460},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture/"
+        "dynamicDelay.html?delay=1000"
+    )
+    eyes.check("", Target.window().wait_before_capture(2000))
+    eyes.close(raise_ex=True)
+
+
+def test_should_wait_before_capture_in_config(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.configure.set_wait_before_capture(2000)
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in check",
+        {"width": 700, "height": 460},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture/"
+        "dynamicDelay.html?delay=1000"
+    )
+    eyes.check("", Target.window())
     eyes.close()
