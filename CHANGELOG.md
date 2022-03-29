@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- [eyes-robotframework] Configuration file as environment variable [Trello 2768](https://trello.com/c/cTTD36eN)
+
 ## [5.2.0] - 2022-03-24
 ### Added
 - Configurable delay before UFG snapshot (wait_before_capture api) [Trello 20](https://trello.com/c/qn2vPtpS)
