@@ -1,12 +1,14 @@
+import contextlib
+import os
 from os.path import join
 
 import mock
 import pytest
+from AppiumLibrary import AppiumLibrary
+from SeleniumLibrary import SeleniumLibrary
 
 from EyesLibrary import EyesLibrary, SelectedRunner
 from EyesLibrary.utils import copy_config_to
-
-pytestmark = [pytest.mark.skip]
 
 
 def get_variable_value(path):
@@ -20,35 +22,53 @@ def get_variable_value(path):
 
 
 def get_library_instance(name):
-    libs = {"SeleniumLibrary": mock.Mock(), "AppiumLibrary": mock.Mock()}
+    libs = {
+        "SeleniumLibrary": mock.Mock(spec=SeleniumLibrary),
+        "AppiumLibrary": mock.Mock(spec=AppiumLibrary),
+    }
     return libs.get(name)
 
 
-def test_use_config_from_test_folder_if_no_config_path(tmp_path):
+def get_context():
+    return mock.Mock()
+
+
+@contextlib.contextmanager
+def eyes_lib_patcher(tmp_path):
+    os.environ["APPLITOOLS_API_KEY"] = "key"
     with mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_variable_value",
         side_effect=get_variable_value(tmp_path),
     ), mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_library_instance",
         side_effect=get_library_instance,
+    ), mock.patch(
+        "robot.libraries.BuiltIn.BuiltIn._get_context",
+        side_effect=get_context,
     ):
+        yield
+
+
+def test_use_config_from_test_folder_if_no_config_path(tmp_path):
+    with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary()
     assert lib.selected_runner == SelectedRunner.web
+    assert lib.config_path == "applitools.yaml"
     assert lib.configure
 
 
 def test_pasrse_config_from_relative_folder(tmp_path):
-    assert False
+    with eyes_lib_patcher(tmp_path):
+        lib = EyesLibrary(config="applitools.yaml")
+    assert lib.selected_runner == SelectedRunner.web
+    assert lib.config_path == "applitools.yaml"
+    assert lib.configure
 
 
 def test_pasrse_config_from_absolute_folder(tmp_path):
-    with mock.patch(
-        "robot.libraries.BuiltIn.BuiltIn.get_variable_value",
-        side_effect=get_variable_value(tmp_path),
-    ), mock.patch(
-        "robot.libraries.BuiltIn.BuiltIn.get_library_instance",
-        side_effect=get_library_instance,
-    ):
-        lib = EyesLibrary()
+    config_path = join(tmp_path, "applitools.yaml")
+    with eyes_lib_patcher(tmp_path):
+        lib = EyesLibrary(config=config_path)
     assert lib.selected_runner == SelectedRunner.web
+    assert lib.config_path == config_path
     assert lib.configure
