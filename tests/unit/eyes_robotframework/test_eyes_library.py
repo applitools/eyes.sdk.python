@@ -72,3 +72,12 @@ def test_pasrse_config_from_absolute_folder(tmp_path):
     assert lib.selected_runner == SelectedRunner.web
     assert lib.config_path == config_path
     assert lib.configure
+
+
+def test_pasrse_config_from_env_variable(tmp_path):
+    os.environ["APPLITOOLS_CONFIG_PATH"] = "applitools.yaml"
+    with eyes_lib_patcher(tmp_path):
+        lib = EyesLibrary()
+    assert lib.selected_runner == SelectedRunner.web
+    assert lib.config_path == "applitools.yaml"
+    assert lib.configure
