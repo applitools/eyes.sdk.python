@@ -209,17 +209,6 @@ class EyesLibrary(DynamicCore):
 
         DynamicCore.__init__(self, keywords)
 
-    def _fetch_config(self, config):
-        # type: (Optional[Text]) -> Text
-        # trying to find path to config in environment variable
-        config = os.getenv("APPLITOOLS_CONFIG")
-        if config is None:
-            # trying to find `applitools.yaml` in test directory
-            robot_logger.warn(
-                "No `config` set. Trying to find `applitools.yaml` in current path"
-            )
-            config = "applitools.yaml"
-
     @property
     def eyes_runner(self):
         # type: () -> EyesRunner
