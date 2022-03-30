@@ -6,7 +6,7 @@ module.exports = {
         'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/overrides.js',
     ],
     template: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/template.hbs',
-    tests: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/fix_vg_tests_viewport_size/coverage-tests.js',
+    tests: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/coverage-tests.js',
     ext: '.py',
     outPath: './test/coverage/generic',
 }
