@@ -3,7 +3,7 @@ module.exports = {
     emitter: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/fix_python_emitters/python/emitter.js',
     overrides: [
         'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/js/overrides.js',
-        // 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/overrides.js',
+        'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/fix_python_emitters/python/overrides.js',
     ],
     template: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/template.hbs',
     tests: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/coverage-tests.js',
