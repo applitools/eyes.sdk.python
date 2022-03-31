@@ -470,7 +470,8 @@ class Eyes(object):
             if results:  # eyes are already aborted by closed runner
                 for r in results:
                     log_session_results_and_raise_exception(raise_ex, r)
-                return results[0]  # Original interface returns just one result
+                # Original interface returns just one result
+                return next((r for r in results if not r.is_passed), results[0])
         return None
 
     def _abort(self, wait_result):
