@@ -90,11 +90,11 @@ jobs:
               directories:
                 - $LOCALAPPDATA/pip/Cache
 
-        - os: osx
-          language: sh
-          python: 3.6
-          env:
-              - TOX_ENV=unit
+#        - os: osx
+#          language: sh
+#          python: 3.6
+#          env:
+#              - TOX_ENV=unit
 
         - python: 2.7
           env:
@@ -135,11 +135,11 @@ jobs:
               directories:
                   - $LOCALAPPDATA/pip/Cache
 
-        - os: osx
-          language: sh
-          python: 3.6
-          env:
-              - TOX_ENV=integration
+#        - os: osx
+#          language: sh
+#          python: 3.6
+#          env:
+#              - TOX_ENV=integration
 
         - python: 2.7
           env:
