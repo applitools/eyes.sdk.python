@@ -154,7 +154,7 @@ jobs:
           python: 3.6
           node_js: 14
           addons:
-              chrome: stable
+              chrome: beta
               firefox: latest
           env:
               - TOX_ENV=selenium-generated
@@ -176,7 +176,7 @@ jobs:
           python: 3.9
           node_js: 14
           addons:
-              chrome: stable
+              chrome: beta
               firefox: latest
           env:
               - TOX_ENV=selenium-generated
