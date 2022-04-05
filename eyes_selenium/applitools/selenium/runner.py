@@ -45,9 +45,8 @@ class EyesRunner(object):
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         try:
-            results = self._commands.manager_close_manager(
-                self._ref, should_raise_exception, timeout
-            )
+            # Do not pass should_raise_exception because USDK raises untyped exceptions
+            results = self._commands.manager_close_manager(self._ref, False, timeout)
         except TimeoutError:
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
@@ -55,6 +54,10 @@ class EyesRunner(object):
         structured_results = demarshal_close_manager_results(
             results, self._connection_configuration
         )
+        for r in structured_results:
+            log_session_results_and_raise_exception(
+                should_raise_exception, r.test_results
+            )
         return structured_results
 
     def _set_connection_config(self, config):
@@ -98,6 +101,8 @@ def log_session_results_and_raise_exception(raise_ex, results):
     app_id_or_name = results.app_name
     if results.is_aborted:
         print("--- Test aborted.")
+        if raise_ex:
+            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
     elif results.steps == 0:
         print("--- Test has no checks. \n\tSee details at ", results_url)
         if raise_ex:
