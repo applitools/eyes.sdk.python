@@ -34,7 +34,6 @@ if strtobool(os.getenv("TEST_RUN_ON_VG", "False")):
     def batch_info():
         return BatchInfo("Python SDK Desktop VG")
 
-
 else:
 
     @pytest.fixture(scope="session")
