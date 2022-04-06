@@ -191,7 +191,6 @@ def test_check_element_by_id(local_chrome_driver):
         eyes.check(Target.region([By.ID, "overflowing-div"]))
 
 
-@pytest.mark.skip("get_all_test_results doesn't raise typed exceptions yet")
 def test_get_all_test_results_raises_new_test_error(local_chrome_driver):
     local_chrome_driver.get("https://demo.applitools.com")
     runner = ClassicRunner()
