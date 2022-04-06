@@ -55,9 +55,14 @@ class EyesRunner(object):
             results, self._connection_configuration
         )
         for r in structured_results:
-            log_session_results_and_raise_exception(
-                should_raise_exception, r.test_results
-            )
+            if r.exception is not None:
+                print("--- Test error. \n\tServer exception {}".format(r.exception))
+                if should_raise_exception:
+                    raise r.exception
+            else:
+                log_session_results_and_raise_exception(
+                    should_raise_exception, r.test_results
+                )
         return structured_results
 
     def _set_connection_config(self, config):
