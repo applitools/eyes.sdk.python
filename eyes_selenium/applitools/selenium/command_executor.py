@@ -80,10 +80,12 @@ class CommandExecutor(object):
             payload["config"] = config
         return self._checked_command("EyesManager.openEyes", payload)
 
-    def manager_close_all_eyes(self, manager, timeout):
-        # type: (dict, float) -> List[dict]
+    def manager_close_manager(self, manager, raise_ex, timeout):
+        # type: (dict, bool, float) -> List[dict]
         return self._checked_command(
-            "EyesManager.closeAllEyes", {"manager": manager}, wait_timeout=timeout
+            "EyesManager.closeManager",
+            {"manager": manager, "throwErr": raise_ex},
+            wait_timeout=timeout,
         )
 
     def eyes_check(self, eyes, settings=None, config=None):

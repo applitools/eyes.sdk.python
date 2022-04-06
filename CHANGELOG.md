@@ -1,3 +1,10 @@
+## [vNext] - 2022-04-06
+### Fixed
+- Runner.get_all_test_results() had missing browser_info in UFG tests
+- Test results returned by Runner.get_all_test_results() could not be deleted
+- Aborted tests were missing in Runner.get_all_test_results() results
+- Runner.get_all_test_results() now aborts unclosed tests [Trello 19](https://trello.com/c/mD7TGdoH)
+
 ## [5.2.0] - 2022-03-24
 ### Added
 - Configurable delay before UFG snapshot (wait_before_capture api) [Trello 20](https://trello.com/c/qn2vPtpS)

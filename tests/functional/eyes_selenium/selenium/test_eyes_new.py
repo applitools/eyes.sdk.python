@@ -4,16 +4,10 @@ import pytest as pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from applitools.common import DesktopBrowserInfo
+from applitools.common import DesktopBrowserInfo, NewTestError
 from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
-from applitools.selenium import (
-    ClassicRunner,
-    Eyes,
-    Target,
-    TargetPath,
-    VisualGridRunner,
-)
+from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
 
 
 def test_create_open_check_close_eyes(local_chrome_driver):
@@ -61,9 +55,8 @@ def test_open_abort_eyes(local_chrome_driver):
 
     abort_result = eyes.abort()
 
-    assert len(abort_result) == 1
-    assert abort_result[0].is_failed
-    assert abort_result[0].is_aborted
+    assert abort_result.is_failed
+    assert abort_result.is_aborted
 
 
 def test_open_close_abort_eyes(local_chrome_driver):
@@ -82,6 +75,17 @@ def test_run_test_delete_result(local_chrome_driver):
     eyes.check_window()
     result = eyes.close(False)
     result.delete()
+
+
+def test_get_all_test_results_delete_result(local_chrome_driver):
+    runner = ClassicRunner()
+    eyes = Eyes(runner)
+    eyes.open(local_chrome_driver, "USDK Test", "Test runner_test_delete_result")
+    eyes.check_window()
+    eyes.close(False)
+    all_results = runner.get_all_test_results()
+
+    all_results[0].test_results.delete()
 
 
 def test_get_all_test_results(local_chrome_driver):
@@ -187,6 +191,18 @@ def test_check_element_by_id(local_chrome_driver):
         eyes.check(Target.region([By.ID, "overflowing-div"]))
 
 
+def test_get_all_test_results_raises_new_test_error(local_chrome_driver):
+    local_chrome_driver.get("https://demo.applitools.com")
+    runner = ClassicRunner()
+    eyes = Eyes(runner)
+    eyes.configure.save_new_tests = False
+    eyes.open(local_chrome_driver, "USDK Test", "Test non saved test raises")
+    eyes.check_window(fully=False)
+    eyes.close(False)
+    with pytest.raises(NewTestError):
+        runner.get_all_test_results()
+
+
 def test_locate_with_missing_locator_returns_empty_result(local_chrome_driver):
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/SimpleTestPage"
@@ -229,14 +245,14 @@ def test_get_all_test_results_aborts_eyes(runner_type):
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
-def test_should_wait_before_capture_in_config(local_chrome_driver):
+def test_should_wait_before_capture_in_config_with_lb(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
     eyes.configure.set_layout_breakpoints(True).set_wait_before_capture(2000)
     eyes.open(
         local_chrome_driver,
         "USDK Tests",
-        "Wait before capture in config",
+        "Wait before capture in config with layout breakpoints",
         {"width": 600, "height": 600},
     )
     local_chrome_driver.get(
@@ -247,17 +263,50 @@ def test_should_wait_before_capture_in_config(local_chrome_driver):
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="known to fail on windows")
-def test_should_wait_before_capture_in_check(local_chrome_driver):
+def test_should_wait_before_capture_in_check_with_lb(local_chrome_driver):
     eyes = Eyes(VisualGridRunner())
     eyes.configure.add_browser(DesktopBrowserInfo(1200, 800, BrowserType.CHROME))
     eyes.open(
         local_chrome_driver,
         "USDK Tests",
-        "Wait before capture in check",
+        "Wait before capture in check with layout breakpoints",
         {"width": 600, "height": 600},
     )
     local_chrome_driver.get(
         "https://applitools.github.io/demo/TestPages/waitBeforeCapture"
     )
     eyes.check("", Target.window().layout_breakpoints(True).wait_before_capture(2000))
+    eyes.close()
+
+
+def test_sholuld_wait_before_capture_in_check(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in open",
+        {"width": 700, "height": 460},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture/"
+        "dynamicDelay.html?delay=1000"
+    )
+    eyes.check("", Target.window().wait_before_capture(2000))
+    eyes.close(raise_ex=True)
+
+
+def test_should_wait_before_capture_in_config(local_chrome_driver):
+    eyes = Eyes(VisualGridRunner())
+    eyes.configure.set_wait_before_capture(2000)
+    eyes.open(
+        local_chrome_driver,
+        "USDK Tests",
+        "Wait before capture in check",
+        {"width": 700, "height": 460},
+    )
+    local_chrome_driver.get(
+        "https://applitools.github.io/demo/TestPages/waitBeforeCapture/"
+        "dynamicDelay.html?delay=1000"
+    )
+    eyes.check("", Target.window())
     eyes.close()
