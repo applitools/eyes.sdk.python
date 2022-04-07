@@ -11,7 +11,7 @@ from applitools.common.ultrafastgrid import (
 from applitools.selenium import Eyes, VisualGridRunner
 
 
-def test_ufg_native_ios_basic():
+def test_ufg_native_ios_basic(sauce_driver_url):
     caps = {
         "app": "https://applitools.jfrog.io/artifactory/Examples/DuckDuckGo-instrumented.app.zip",
         "deviceName": "iPhone 12 Pro Simulator",
@@ -25,13 +25,7 @@ def test_ufg_native_ios_basic():
             },
         },
     }
-    sauce_url = (
-        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.environ["SAUCE_USERNAME"],
-            password=os.environ["SAUCE_ACCESS_KEY"],
-        )
-    )
-    with Remote(sauce_url, caps) as driver:
+    with Remote(sauce_driver_url, caps) as driver:
         runner = VisualGridRunner()
         eyes = Eyes(runner)
         eyes.configure.add_browser(
@@ -42,7 +36,7 @@ def test_ufg_native_ios_basic():
         eyes.close(False)
 
 
-def test_ufg_android_basic():
+def test_ufg_android_basic(sauce_driver_url):
     caps = {
         "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",
         "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
@@ -54,13 +48,7 @@ def test_ufg_android_basic():
         "name": "Pixel 3a xl (Python)",
         "appiumVersion": "1.20.2",
     }
-    sauce_url = (
-        "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-            username=os.environ["SAUCE_USERNAME"],
-            password=os.environ["SAUCE_ACCESS_KEY"],
-        )
-    )
-    with Remote(sauce_url, caps) as driver:
+    with Remote(sauce_driver_url, caps) as driver:
         runner = VisualGridRunner()
         eyes = Eyes(runner)
         eyes.configure.add_browser(
