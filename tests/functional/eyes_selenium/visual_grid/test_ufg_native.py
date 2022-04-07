@@ -28,7 +28,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
     with Remote(sauce_driver_url, caps) as driver:
         runner = VisualGridRunner()
         eyes = Eyes(runner)
-        eyes.configure.add_browser(
+        eyes.configure.add_mobile_device(
             IosDeviceInfo(IosDeviceName.iPhone_12, ScreenOrientation.PORTRAIT)
         )
         eyes.open(driver, "USDK Test", "UFG native iOS basic test")
@@ -51,7 +51,7 @@ def test_ufg_android_basic(sauce_driver_url):
     with Remote(sauce_driver_url, caps) as driver:
         runner = VisualGridRunner()
         eyes = Eyes(runner)
-        eyes.configure.add_browser(
+        eyes.configure.add_mobile_device(
             AndroidDeviceInfo(
                 AndroidDeviceName.Pixel_4_XL, android_version=AndroidVersion.LATEST
             )
