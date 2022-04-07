@@ -1,4 +1,6 @@
 ## [vNext] - 2022-04-06
+### Added
+- iPhone_8_Plus and iPhone_SE UFG devices
 ### Fixed
 - Runner.get_all_test_results() had missing browser_info in UFG tests
 - Test results returned by Runner.get_all_test_results() could not be deleted
