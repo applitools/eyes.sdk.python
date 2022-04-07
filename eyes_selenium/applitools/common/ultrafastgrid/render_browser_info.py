@@ -8,35 +8,18 @@ from applitools.common.geometry import RectangleSize
 from applitools.common.selenium.misc import BrowserType
 from applitools.common.utils.json_utils import JsonInclude
 
-from .config import DeviceName, IosDeviceName, IosVersion, ScreenOrientation
+from .config import (
+    AndroidDeviceName,
+    AndroidVersion,
+    DeviceName,
+    IosDeviceName,
+    IosVersion,
+    ScreenOrientation,
+)
 
 
 @add_metaclass(ABCMeta)
 class IRenderBrowserInfo(object):
-    @property
-    @abstractmethod
-    def platform(self):
-        # type: () -> Text
-        pass
-
-    @property
-    @abstractmethod
-    def browser(self):
-        # type: () -> Text
-        pass
-
-    @property
-    @abstractmethod
-    def width(self):
-        # type: () -> int
-        pass
-
-    @property
-    @abstractmethod
-    def height(self):
-        # type: () -> int
-        pass
-
     @property
     def viewport_size(self):
         # type: () -> RectangleSize
@@ -137,6 +120,19 @@ class IosDeviceInfo(IRenderBrowserInfo):
     def browser(self):
         # type: () -> Text
         return BrowserType.SAFARI.value
+
+
+@attr.s(hash=True)
+class AndroidDeviceInfo(IRenderBrowserInfo):
+    device_name = attr.ib(
+        type=AndroidDeviceName, metadata={JsonInclude.NON_NONE: True}
+    )  # type: AndroidDeviceName
+    screen_orientation = attr.ib(
+        type=ScreenOrientation, metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[ScreenOrientation]
+    android_version = attr.ib(
+        type=AndroidVersion, metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[AndroidVersion]
 
 
 @attr.s(hash=True)
