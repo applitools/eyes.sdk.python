@@ -33,7 +33,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
         )
         eyes.open(driver, "USDK Test", "UFG native iOS basic test")
         eyes.check_window()
-        eyes.close(False)
+        eyes.close()
 
 
 def test_ufg_android_basic(sauce_driver_url):
@@ -58,4 +58,4 @@ def test_ufg_android_basic(sauce_driver_url):
         )
         eyes.open(driver, "USDK Test", "UFG native Android basic test")
         eyes.check_window()
-        eyes.close(False)
+        eyes.close()
