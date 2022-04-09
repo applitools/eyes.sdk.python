@@ -7,7 +7,13 @@ from selenium.webdriver.common.by import By
 from applitools.common import DesktopBrowserInfo, NewTestError
 from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
-from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
+from applitools.selenium import (
+    ClassicRunner,
+    Eyes,
+    Target,
+    TargetPath,
+    VisualGridRunner,
+)
 
 
 def test_create_open_check_close_eyes(local_chrome_driver):
