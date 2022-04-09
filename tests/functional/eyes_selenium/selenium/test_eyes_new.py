@@ -7,7 +7,13 @@ from selenium.webdriver.common.by import By
 from applitools.common import DesktopBrowserInfo, NewTestError
 from applitools.common.selenium import BrowserType
 from applitools.core import VisualLocator
-from applitools.selenium import ClassicRunner, Eyes, Target, VisualGridRunner
+from applitools.selenium import (
+    ClassicRunner,
+    Eyes,
+    Target,
+    TargetPath,
+    VisualGridRunner,
+)
 
 
 def test_create_open_check_close_eyes(local_chrome_driver):
@@ -174,7 +180,7 @@ def test_check_element_in_shadow(local_chrome_driver):
             "Test check element in shadow dom",
             {"width": 800, "height": 600},
         )
-        eyes.check(Target.shadow("#has-shadow-root").region("h1"))
+        eyes.check(Target.region(TargetPath.shadow("#has-shadow-root").region("h1")))
 
 
 def test_check_element_by_id(local_chrome_driver):

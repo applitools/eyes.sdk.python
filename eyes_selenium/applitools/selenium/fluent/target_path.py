@@ -83,9 +83,9 @@ class FrameSelector(PathNodeValue):
         return {"selector": self.number_or_id_or_name}
 
 
-class Locator(object):
+class TargetPathLocator(object):
     def __init__(self, parent, value):
-        # type: (Optional[Locator], PathNodeValue) -> None
+        # type: (Optional[TargetPathLocator], PathNodeValue) -> None
         self.parent = parent
         self.value = value
 
@@ -106,11 +106,11 @@ class Locator(object):
         return parent + ".{}({})".format(self.FACTORY_METHOD, args)
 
     def __eq__(self, other):
-        # type: (Locator) -> bool
+        # type: (TargetPathLocator) -> bool
         return type(self) is type(other) and vars(self) == vars(other)
 
     def __ne__(self, other):
-        # type: (Locator) -> bool
+        # type: (TargetPathLocator) -> bool
         return not self == other
 
     def __repr__(self):
@@ -132,7 +132,7 @@ class TargetPath(object):
         return _shadow(None, element_or_selector_or_by, selector)
 
 
-class ShadowDomLocator(Locator):
+class ShadowDomLocator(TargetPathLocator):
     FACTORY_METHOD = "shadow"
 
     def region(self, element_or_selector_or_by, selector=None):
@@ -145,11 +145,11 @@ class ShadowDomLocator(Locator):
         return _shadow(self, element_or_selector_or_by, selector)
 
 
-class RegionLocator(Locator):
+class RegionLocator(TargetPathLocator):
     FACTORY_METHOD = "region"
 
 
-class FrameLocator(Locator):
+class FrameLocator(TargetPathLocator):
     FACTORY_METHOD = "frame"
 
     def region(self, element_or_selector_or_by, selector=None):
