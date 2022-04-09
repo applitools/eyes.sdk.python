@@ -8,6 +8,7 @@ from applitools.common import (
     AccessibilityGuidelinesVersion,
     AccessibilityLevel,
     AccessibilityRegionType,
+    AndroidDeviceInfo,
 )
 from applitools.common import ChromeEmulationInfo as ApiChromeEmulationInfo
 from applitools.common import DesktopBrowserInfo, DeviceName, FloatingBounds
@@ -216,6 +217,11 @@ class IosDeviceInfo(object):
 
 
 @attr.s
+class AndroidDeviceRenderer(object):
+    android_device_info = attr.ib()  # type: AndroidDeviceInfo
+
+
+@attr.s
 class IOSDeviceRenderer(object):
     ios_device_info = attr.ib()  # type: IosDeviceInfo
 
@@ -286,6 +292,8 @@ def browsers_info_convert(browsers_info):
                     ChromeEmulationInfo(bi.device_name, bi.screen_orientation)
                 )
             )
+        elif isinstance(bi, AndroidDeviceInfo):
+            result.append(AndroidDeviceRenderer(bi))
         elif isinstance(bi, ApiIosDeviceInfo):
             result.append(
                 IOSDeviceRenderer(

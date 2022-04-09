@@ -1,17 +1,8 @@
-from os import environ
-
 import pytest
 from selenium import webdriver
 
 from applitools.common import StitchMode
 from applitools.selenium import Eyes, Target
-
-
-@pytest.fixture
-def sauce_driver_url():
-    return "https://{}:{}@ondemand.saucelabs.com:443/wd/hub".format(
-        environ["SAUCE_USERNAME"], environ["SAUCE_ACCESS_KEY"]
-    )
 
 
 @pytest.fixture

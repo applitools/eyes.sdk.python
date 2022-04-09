@@ -15,6 +15,13 @@ pytest_plugins = (
 )
 
 
+@pytest.fixture
+def sauce_driver_url():
+    return "https://{}:{}@ondemand.saucelabs.com:443/wd/hub".format(
+        os.environ["SAUCE_USERNAME"], os.environ["SAUCE_ACCESS_KEY"]
+    )
+
+
 @pytest.fixture(scope="session")
 def eyes_runner_class():
     return lambda: None

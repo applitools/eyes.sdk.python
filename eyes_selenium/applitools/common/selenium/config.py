@@ -6,6 +6,7 @@ from six import raise_from
 
 from applitools.common.config import Configuration as ConfigurationBase
 from applitools.common.ultrafastgrid import (
+    AndroidDeviceInfo,
     ChromeEmulationInfo,
     DesktopBrowserInfo,
     IosDeviceInfo,
@@ -219,6 +220,14 @@ class Configuration(ConfigurationBase):
         argument_guard.not_none(device_name)
         self.add_browser(ChromeEmulationInfo(device_name, orientation))
         return self
+
+    def add_mobile_device(self, mobile_device_info):
+        # type: (Union[IosDeviceInfo, AndroidDeviceInfo]) -> Configuration
+        return self.add_mobile_devices(mobile_device_info)
+
+    def add_mobile_devices(self, *mobile_device_infos):
+        # type: (*Union[IosDeviceInfo, AndroidDeviceInfo]) -> Configuration
+        return self.add_browsers(*mobile_device_infos)
 
     @property
     def browsers_info(self):

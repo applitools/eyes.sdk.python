@@ -45,6 +45,8 @@ from .selenium import StitchMode  # noqa
 from .server import FailureReports, SessionType  # noqa
 from .test_results import TestResultContainer, TestResults, TestResultsSummary  # noqa
 from .ultrafastgrid.config import (  # noqa
+    AndroidDeviceName,
+    AndroidVersion,
     DeviceName,
     IosDeviceName,
     IosVersion,
@@ -52,6 +54,7 @@ from .ultrafastgrid.config import (  # noqa
     VisualGridOption,
 )
 from .ultrafastgrid.render_browser_info import (
+    AndroidDeviceInfo,
     ChromeEmulationInfo,
     DesktopBrowserInfo,
     IosDeviceInfo,

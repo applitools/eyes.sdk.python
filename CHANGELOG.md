@@ -1,6 +1,7 @@
-## [vNext] - 2022-04-06
+## [vNext]
 ### Added
 - iPhone_8_Plus and iPhone_SE UFG devices
+- UFG for mobile native apps [Trello 2863](https://trello.com/c/63ARcWd5)
 ### Fixed
 - Runner.get_all_test_results() had missing browser_info in UFG tests
 - Test results returned by Runner.get_all_test_results() could not be deleted
