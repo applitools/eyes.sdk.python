@@ -1,6 +1,6 @@
 module.exports = {
     name: 'eyes_selenium_python',
-    emitter: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/python_revert_target_shadow_api/python/emitter.js',
+    emitter: 'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/emitter.js',
     overrides: [
         'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/js/overrides.js',
         'https://raw.githubusercontent.com/applitools/sdk.coverage.tests/universal-sdk/python/overrides.js',
