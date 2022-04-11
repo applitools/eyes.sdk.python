@@ -1,4 +1,4 @@
-## [vNext]
+## [5.3.0] - 2022-04-11
 ### Added
 - iPhone_8_Plus and iPhone_SE UFG devices
 - UFG for mobile native apps [Trello 2863](https://trello.com/c/63ARcWd5)
