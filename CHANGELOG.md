@@ -2,6 +2,18 @@
 ### Added
 - [eyes-robotframework] Configuration file as environment variable [Trello 2768](https://trello.com/c/cTTD36eN)
 
+## [5.3.0] - 2022-04-11
+### Added
+- iPhone_8_Plus and iPhone_SE UFG devices
+- UFG for mobile native apps [Trello 2863](https://trello.com/c/63ARcWd5)
+### Fixed
+- Runner.get_all_test_results() had missing browser_info in UFG tests
+- Test results returned by Runner.get_all_test_results() could not be deleted
+- Aborted tests were missing in Runner.get_all_test_results() results
+- Runner.get_all_test_results() now aborts unclosed tests [Trello 19](https://trello.com/c/mD7TGdoH)
+### Updated
+- Remove Target.shadow method as inconsistent
+
 ## [5.2.0] - 2022-03-24
 ### Added
 - Configurable delay before UFG snapshot (wait_before_capture api) [Trello 20](https://trello.com/c/qn2vPtpS)

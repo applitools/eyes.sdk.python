@@ -8,17 +8,18 @@ from applitools.common import (
     EyesError,
     NewTestError,
     TestFailedError,
-    TestResultContainer,
     TestResultsSummary,
 )
 from applitools.common.config import DEFAULT_ALL_TEST_RESULTS_TIMEOUT
 
 from .__version__ import __version__
 from .command_executor import CommandExecutor, ManagerType
-from .universal_sdk_types import demarshal_server_info, demarshal_test_results
+from .universal_sdk_types import demarshal_close_manager_results, demarshal_server_info
 
 if typing.TYPE_CHECKING:
     from typing import Optional, Union
+
+    from applitools.common import Configuration
 
 
 class EyesRunner(object):
@@ -27,6 +28,7 @@ class EyesRunner(object):
 
     def __init__(self, manager_type, concurrency=None, is_legacy=None):
         # type: (ManagerType, Optional[int], Optional[bool]) -> None
+        self._connection_configuration = None
         self._commands = CommandExecutor.get_instance(self.BASE_AGENT_ID, __version__)
         self._ref = self._commands.core_make_manager(
             manager_type, concurrency, is_legacy
@@ -43,17 +45,30 @@ class EyesRunner(object):
     ):
         # type: (bool, Optional[int]) -> TestResultsSummary
         try:
-            results = self._commands.manager_close_all_eyes(self._ref, timeout)
+            # Do not pass should_raise_exception because USDK raises untyped exceptions
+            results = self._commands.manager_close_manager(self._ref, False, timeout)
         except TimeoutError:
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
         # USDK should return them back as a part of TestResults
-        structured_results = demarshal_test_results(results, None)
-        for r in structured_results:
-            log_session_results_and_raise_exception(should_raise_exception, r)
-        return TestResultsSummary(
-            [TestResultContainer(result, None, None) for result in structured_results]
+        structured_results = demarshal_close_manager_results(
+            results, self._connection_configuration
         )
+        for r in structured_results:
+            if r.exception is not None:
+                print("--- Test error. \n\tServer exception {}".format(r.exception))
+                if should_raise_exception:
+                    raise r.exception
+            else:
+                log_session_results_and_raise_exception(
+                    should_raise_exception, r.test_results
+                )
+        return structured_results
+
+    def _set_connection_config(self, config):
+        # type: (Configuration) -> None
+        if self._connection_configuration is None:
+            self._connection_configuration = config
 
 
 class RunnerOptions(object):
@@ -89,7 +104,11 @@ def log_session_results_and_raise_exception(raise_ex, results):
     results_url = results.url
     scenario_id_or_name = results.name
     app_id_or_name = results.app_name
-    if results.steps == 0:
+    if results.is_aborted:
+        print("--- Test aborted.")
+        if raise_ex:
+            raise TestFailedError(results, scenario_id_or_name, app_id_or_name)
+    elif results.steps == 0:
         print("--- Test has no checks. \n\tSee details at ", results_url)
         if raise_ex:
             raise TestFailedError(results, scenario_id_or_name, app_id_or_name)

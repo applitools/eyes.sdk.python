@@ -36,6 +36,7 @@ def test_check_region_in_frame__fluent(eyes_opened):
     )
 
 
+@pytest.mark.skip("Broken in Chrome v100")
 def test_check_region_in_frame_in_frame__fluent(eyes_opened):
     eyes_opened.check(
         "Fluent - Region in Frame in Frame",

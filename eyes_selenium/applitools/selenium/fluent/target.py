@@ -14,7 +14,7 @@ if TYPE_CHECKING:
         FrameNameOrId,
     )
 
-    from .target_path import Locator
+    from .target_path import RegionLocator
 
 __all__ = ("Target",)
 
@@ -56,40 +56,12 @@ class Target(object):
     @staticmethod  # noqa
     @overload
     def region(target_path):
-        # type: (Locator) -> SeleniumCheckSettings
+        # type: (RegionLocator) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa
     def region(region):
         return SeleniumCheckSettings().region(region)
-
-    @staticmethod  # noqa
-    @overload
-    def shadow(css_selector):
-        # type: (CssSelector) -> SeleniumCheckSettings
-        pass
-
-    @staticmethod  # noqa
-    @overload
-    def shadow(element):
-        # type: (AnyWebElement) -> SeleniumCheckSettings
-        pass
-
-    @staticmethod  # noqa
-    @overload
-    def shadow(by_selector):
-        # type: (BySelector) -> SeleniumCheckSettings
-        pass
-
-    @staticmethod  # noqa
-    @overload
-    def shadow(by_selector):
-        # type: (Locator) -> SeleniumCheckSettings
-        pass
-
-    @staticmethod  # noqa
-    def shadow(selector):
-        return SeleniumCheckSettings().shadow(selector)
 
     @staticmethod  # noqa
     @overload
@@ -118,7 +90,7 @@ class Target(object):
     @staticmethod  # noqa
     @overload
     def frame(target_path):
-        # type: (Locator) -> SeleniumCheckSettings
+        # type: (RegionLocator) -> SeleniumCheckSettings
         pass
 
     @staticmethod  # noqa

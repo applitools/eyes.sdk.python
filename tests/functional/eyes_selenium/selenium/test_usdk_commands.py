@@ -73,12 +73,20 @@ def test_usdk_commands_open_close_eyes(local_chrome_driver):
     assert test_result["appName"] == "USDK Test"
     assert test_result["name"] == "USDK Commands open close"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
+    manager_close_result = commands.manager_close_manager(mgr, False, 100)
 
-    assert manager_close_result == eyes_close_result
+    assert manager_close_result == {
+        "exceptions": 0,
+        "failed": 0,
+        "matches": 0,
+        "mismatches": 0,
+        "missing": 0,
+        "passed": 1,
+        "unresolved": 0,
+        "results": [{"testResults": test_result}],
+    }
 
 
-@pytest.mark.skip("Aborted test is missing from all results")
 def test_usdk_commands_open_abort_eyes(local_chrome_driver):
     driver = marshal_webdriver_ref(local_chrome_driver)
     commands = CommandExecutor(USDKConnection.create())
@@ -102,9 +110,18 @@ def test_usdk_commands_open_abort_eyes(local_chrome_driver):
     assert test_result["appName"] == "USDK Test"
     assert test_result["name"] == "USDK Commands open abort"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
+    manager_close_result = commands.manager_close_manager(mgr, False, 100)
 
-    assert manager_close_result == eyes_abort_result
+    assert manager_close_result == {
+        "exceptions": 0,
+        "failed": 1,
+        "matches": 0,
+        "mismatches": 0,
+        "missing": 0,
+        "passed": 0,
+        "unresolved": 0,
+        "results": [{"testResults": test_result}],
+    }
 
 
 def test_usdk_commands_open_check_close_eyes(local_chrome_driver):
@@ -129,6 +146,15 @@ def test_usdk_commands_open_check_close_eyes(local_chrome_driver):
     assert test_result["appName"] == "USDK Test"
     assert test_result["name"] == "USDK Commands open check close"
 
-    manager_close_result = commands.manager_close_all_eyes(mgr, 100)
+    manager_close_result = commands.manager_close_manager(mgr, True, 100)
 
-    assert manager_close_result == eyes_close_result
+    assert manager_close_result == {
+        "exceptions": 0,
+        "failed": 0,
+        "matches": 1,
+        "mismatches": 0,
+        "missing": 0,
+        "passed": 1,
+        "unresolved": 0,
+        "results": [{"testResults": test_result}],
+    }
