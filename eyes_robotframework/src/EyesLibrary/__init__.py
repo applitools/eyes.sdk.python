@@ -128,6 +128,7 @@ class EyesLibrary(DynamicCore):
     _eyes_runner = None  # type: Optional[VisualGridRunner, ClassicRunner]
     driver = None  # type: Optional[AnyWebDriver]
     _selected_runner = None  # type: Optional[SelectedRunner]
+    config_path = None  # type: Optional[Text]
     supported_library_names_by_runner = {
         SelectedRunner.web: ("SeleniumLibrary", "AppiumLibrary"),
         SelectedRunner.web_ufg: ("SeleniumLibrary",),
@@ -149,20 +150,26 @@ class EyesLibrary(DynamicCore):
             | run_on_failure   | Specify keyword to run in case of failure (By default `Eyes Abort Async`)  |
 
         """
+        self.config_path = config
         # skip loading of dynamic libraries during doc generation
-        if config is None:
-            # try to find `applitools.yaml` in test directory
-            robot_logger.warn(
-                "No `config` set. Trying to find `applitools.yaml` in current path"
-            )
-            config = "applitools.yaml"
+        if self.config_path is None:
+            # trying to fetch path of config from environment variable
+            self.config_path = os.getenv("APPLITOOLS_CONFIG")
+            if self.config_path is None:
+                # count that `applitools.yaml` exists in test directory
+                self.config_path = "applitools.yaml"
+                robot_logger.warn(
+                    "No `config` set explicitly. Trying to find `applitools.yaml` in current path"
+                )
 
         if runner is None:
             runner = SelectedRunner.web
             robot_logger.warn("No `runner` set. Using `web` runner.")
 
         robot_logger.console(
-            "Running test suite with `{}` runner and `{}` config".format(runner, config)
+            "Running test suite with `{}` runner and `{}` config".format(
+                runner, self.config_path
+            )
         )
 
         self.run_on_failure_keyword = run_on_failure
@@ -179,7 +186,10 @@ class EyesLibrary(DynamicCore):
             self.current_library = self._try_get_library(self._selected_runner)
             suite_path = get_suite_path()
             self._configuration = try_parse_configuration(
-                config, self._selected_runner, RobotConfiguration(), suite_path
+                self.config_path,
+                self._selected_runner,
+                RobotConfiguration(),
+                suite_path,
             )
             validate_config(self._configuration)
             self.ROBOT_LIBRARY_LISTENER = LibraryListener(self)

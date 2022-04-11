@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- [eyes-robotframework] Configuration file as environment variable [Trello 2768](https://trello.com/c/cTTD36eN)
+
 ## [5.3.0] - 2022-04-11
 ### Added
 - iPhone_8_Plus and iPhone_SE UFG devices
