@@ -1,6 +1,7 @@
 import sys
 
 import pytest
+import six
 import trafaret as t
 import yaml
 
@@ -10,6 +11,7 @@ from EyesLibrary.config_parser import (
     TextToEnumTrafaret,
     UpperTextToEnumTrafaret,
     ViewPortTrafaret,
+    ensure_dict_unicode,
 )
 
 
@@ -121,3 +123,11 @@ web_ufg:
 @pytest.mark.parametrize("config", [EXAMPLE_CONFIG_YAML])
 def test_all_values_in_example_config(config):
     ConfigurationTrafaret.scheme.check(yaml.safe_load(config))
+
+
+def test_ensure_dict_unicode():
+    result = ensure_dict_unicode({"raw_key": "raw_val"})
+    key, value = next(iter(result.items()))
+
+    assert isinstance(key, six.text_type)
+    assert isinstance(value, six.text_type)

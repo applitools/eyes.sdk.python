@@ -38,7 +38,7 @@ def eyes_lib_patcher(tmp_path):
     os.environ["APPLITOOLS_API_KEY"] = "key"
     with mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_variable_value",
-        side_effect=get_variable_value(tmp_path),
+        side_effect=get_variable_value(str(tmp_path)),
     ), mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_library_instance",
         side_effect=get_library_instance,
@@ -66,7 +66,7 @@ def test_pasrse_config_from_relative_folder(tmp_path):
 
 
 def test_pasrse_config_from_absolute_folder(tmp_path):
-    config_path = join(tmp_path, "applitools.yaml")
+    config_path = join(str(tmp_path), "applitools.yaml")
     with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary(config=config_path)
     assert lib.selected_runner == SelectedRunner.web

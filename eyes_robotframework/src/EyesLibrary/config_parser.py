@@ -1,13 +1,14 @@
 from __future__ import absolute_import, unicode_literals
 
 import itertools
+import json
 import os
 from enum import Enum
 from typing import Callable, Text, Type
 
 import trafaret as trf
 import yaml
-from six import raise_from
+from six import PY2, raise_from
 
 from applitools.common import (
     ChromeEmulationInfo,
@@ -325,10 +326,22 @@ def try_parse_configuration(
         )
 
     with open(config_path, "r") as f:
-        raw_config = yaml.safe_load(f.read())
+        raw_config = ensure_dict_unicode(yaml.safe_load(f.read()))
 
     # It's better to raise here library error but for some reason raise_from
     # suppress original error message
     return ConfigurationTrafaret(selected_runner, origin_configuration).check(
         raw_config
     )
+
+
+if PY2:
+
+    def ensure_dict_unicode(value):
+        # json.loads produces all string keys and values to be unicode on python2
+        return json.loads(json.dumps(value))
+
+else:
+
+    def ensure_dict_unicode(value):
+        return value
