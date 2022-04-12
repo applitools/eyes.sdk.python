@@ -27,7 +27,12 @@ from applitools.selenium import BatchInfo, RunnerOptions
 
 from .config import RobotConfiguration
 from .errors import EyesLibraryConfigError, EyesLibraryValueError
-from .utils import get_enum_by_name, get_enum_by_upper_name, parse_viewport_size
+from .utils import (
+    get_enum_by_name,
+    get_enum_by_upper_name,
+    parse_viewport_size,
+    unicode_yaml_load,
+)
 
 
 class SelectedRunner(Enum):
@@ -325,22 +330,10 @@ def try_parse_configuration(
         )
 
     with open(config_path, "r") as f:
-        raw_config = yaml.load(f.read(), Loader=UnicodeLoaderMixin)
+        raw_config = unicode_yaml_load(f.read())
 
     # It's better to raise here library error but for some reason raise_from
     # suppress original error message
     return ConfigurationTrafaret(selected_runner, origin_configuration).check(
         raw_config
     )
-
-
-class UnicodeLoaderMixin(yaml.SafeLoader):
-    @staticmethod
-    def unicode_constructor(loader, node):
-        scalar = loader.construct_scalar(node)
-        return scalar.encode("utf-8").decode("utf-8")
-
-    def __init__(self, *args, **kwargs):
-        """Load YAML files with unicode support."""
-        super(UnicodeLoaderMixin, self).__init__(*args, **kwargs)
-        self.add_constructor("tag:yaml.org,2002:str", self.unicode_constructor)

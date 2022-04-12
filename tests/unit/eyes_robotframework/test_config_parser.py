@@ -11,6 +11,7 @@ from EyesLibrary.config_parser import (
     UpperTextToEnumTrafaret,
     ViewPortTrafaret,
 )
+from EyesLibrary.utils import unicode_yaml_load
 
 
 def test_text_to_enum_trafaret():
@@ -117,4 +118,4 @@ web_ufg:
 
 @pytest.mark.parametrize("config", [EXAMPLE_CONFIG_YAML])
 def test_all_values_in_example_config(config):
-    ConfigurationTrafaret.scheme.check(yaml.safe_load(config))
+    ConfigurationTrafaret.scheme.check(unicode_yaml_load(config))
