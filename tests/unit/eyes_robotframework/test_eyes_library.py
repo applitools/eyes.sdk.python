@@ -1,6 +1,7 @@
 import contextlib
 import os
 from os.path import join
+from typing import Text, Callable
 
 import mock
 import pytest
@@ -12,6 +13,7 @@ from EyesLibrary.utils import copy_config_to
 
 
 def get_variable_value(path):
+    # type: (Text) -> Callable[[Text], Text]
     copy_config_to(path)
 
     def func(name, *args):
@@ -38,7 +40,7 @@ def eyes_lib_patcher(tmp_path):
     os.environ["APPLITOOLS_API_KEY"] = "key"
     with mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_variable_value",
-        side_effect=get_variable_value(tmp_path),
+        side_effect=get_variable_value(str(tmp_path)),
     ), mock.patch(
         "robot.libraries.BuiltIn.BuiltIn.get_library_instance",
         side_effect=get_library_instance,
