@@ -122,14 +122,14 @@ def is_webelement_guard(element):
 
 def get_config_file_path():
     # type: () -> Text
-    """Return path to config file"""
+    """Return path to config file."""
     here = os.path.abspath(os.path.dirname(__file__))
     return os.path.join(here, "applitools.yaml")
 
 
 def copy_config_to(path_to_dir):
     # type: (Text) -> None
-    """Copy config file to path_to_dir"""
+    """Copy config file to path_to_dir."""
     if not os.path.exists(path_to_dir):
         raise ValueError("Directory doesn't exists")
     shutil.copy(get_config_file_path(), path_to_dir)
@@ -137,7 +137,7 @@ def copy_config_to(path_to_dir):
 
 def get_enum_by_name(name, enm):
     # type: (Text, Type[Enum]) -> Enum
-    """Return enum by name"""
+    """Return enum by name."""
     try:
         return getattr(enm, name)
     except AttributeError:
@@ -146,4 +146,5 @@ def get_enum_by_name(name, enm):
 
 def get_enum_by_upper_name(name, enm):
     # type: (Text, Type[Enum]) -> Enum
+    """"""
     return get_enum_by_name(name.upper(), enm)
