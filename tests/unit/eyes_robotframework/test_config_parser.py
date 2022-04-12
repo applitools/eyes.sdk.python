@@ -115,9 +115,6 @@ web_ufg:
 """
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] <= (2, 7), reason="Ignore Python 2 because test failure"
-)
 @pytest.mark.parametrize("config", [EXAMPLE_CONFIG_YAML])
 def test_all_values_in_example_config(config):
     ConfigurationTrafaret.scheme.check(yaml.safe_load(config))
