@@ -325,10 +325,25 @@ def try_parse_configuration(
         )
 
     with open(config_path, "r") as f:
-        raw_config = yaml.safe_load(f.read())
+        raw_config = yaml.load(f.read(), Loader=SafeLoader)
 
     # It's better to raise here library error but for some reason raise_from
     # suppress original error message
     return ConfigurationTrafaret(selected_runner, origin_configuration).check(
         raw_config
     )
+
+
+class UnicodeLoaderMixin(object):
+    @staticmethod
+    def unicode_constructor(loader, node):
+        scalar = loader.construct_scalar(node)
+        return scalar.encode("utf-8").decode("utf-8")
+
+    def __init__(self, *args, **kwargs):
+        super(UnicodeLoaderMixin, self).__init__(*args, **kwargs)
+        self.add_constructor("tag:yaml.org,2002:str", self.unicode_constructor)
+
+
+class SafeLoader(UnicodeLoaderMixin, yaml.SafeLoader):
+    pass
