@@ -1,4 +1,5 @@
 import pytest
+import six
 
 from applitools.common import MatchLevel, RectangleSize, Region
 from EyesLibrary.utils import (
@@ -6,6 +7,7 @@ from EyesLibrary.utils import (
     get_enum_by_upper_name,
     parse_region,
     parse_viewport_size,
+    unicode_yaml_load,
 )
 
 
@@ -58,3 +60,11 @@ def test_get_enum_by_name_failed():
         ValueError, match="`<enum 'MatchLevel'>` does not contain `Not present`"
     ):
         get_enum_by_name("Not present", MatchLevel)
+
+
+def test_unicode_yaml_load_produces_unicode_strings():
+    result = unicode_yaml_load("abc: def")
+    key, value = next(iter(result.items()))
+
+    assert isinstance(key, six.text_type)
+    assert isinstance(value, six.text_type)
