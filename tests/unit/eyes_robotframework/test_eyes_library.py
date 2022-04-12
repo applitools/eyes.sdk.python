@@ -1,7 +1,7 @@
 import contextlib
 import os
 from os.path import join
-from typing import Text, Callable
+from typing import Callable, Text
 
 import mock
 import pytest
@@ -59,7 +59,7 @@ def test_use_config_from_test_folder_if_no_config_path(tmp_path):
     assert lib.configure
 
 
-def test_pasrse_config_from_relative_folder(tmp_path):
+def test_parse_config_from_relative_folder(tmp_path):
     with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary(config="applitools.yaml")
     assert lib.selected_runner == SelectedRunner.web
@@ -67,7 +67,7 @@ def test_pasrse_config_from_relative_folder(tmp_path):
     assert lib.configure
 
 
-def test_pasrse_config_from_absolute_folder(tmp_path):
+def test_parse_config_from_absolute_folder(tmp_path):
     config_path = join(tmp_path, "applitools.yaml")
     with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary(config=config_path)
@@ -76,8 +76,8 @@ def test_pasrse_config_from_absolute_folder(tmp_path):
     assert lib.configure
 
 
-def test_pasrse_config_from_env_variable(tmp_path):
-    os.environ["APPLITOOLS_CONFIG_PATH"] = "applitools.yaml"
+def test_parse_config_from_env_variable(tmp_path):
+    os.environ["APPLITOOLS_CONFIG"] = "applitools.yaml"
     with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary()
     assert lib.selected_runner == SelectedRunner.web
