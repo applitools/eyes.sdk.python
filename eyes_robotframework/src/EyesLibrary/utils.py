@@ -152,18 +152,24 @@ def get_enum_by_upper_name(name, enm):
     return get_enum_by_name(name.upper(), enm)
 
 
-def unicode_yaml_load(stream):
-    """Load yaml file with unicode support. Required for Python 2.7."""
+if six.PY2:
 
-    class UnicodeLoader(yaml.SafeLoader):
-        @staticmethod
-        def unicode_constructor(loader, node):
-            scalar = loader.construct_scalar(node)
-            return six.text_type(scalar)
+    def unicode_yaml_load(stream):
+        """Load yaml file with unicode support. Required for Python 2.7."""
 
-        def __init__(self, *args, **kwargs):
-            """Load YAML files with unicode support."""
-            super(UnicodeLoader, self).__init__(*args, **kwargs)
-            self.add_constructor("tag:yaml.org,2002:str", self.unicode_constructor)
+        class UnicodeLoader(yaml.SafeLoader):
+            @staticmethod
+            def unicode_constructor(loader, node):
+                scalar = loader.construct_scalar(node)
+                return six.text_type(scalar)
 
-    return yaml.load(stream, Loader=UnicodeLoader)
+            def __init__(self, *args, **kwargs):
+                """Load YAML files with unicode support."""
+                super(UnicodeLoader, self).__init__(*args, **kwargs)
+                self.add_constructor("tag:yaml.org,2002:str", self.unicode_constructor)
+
+        return yaml.load(stream, Loader=UnicodeLoader)
+
+
+else:
+    unicode_yaml_load = yaml.safe_load
