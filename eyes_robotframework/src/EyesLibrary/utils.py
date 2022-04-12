@@ -7,6 +7,7 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Any, Generator, Text, Type
 
+import six
 import yaml
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -158,7 +159,7 @@ def unicode_yaml_load(stream):
         @staticmethod
         def unicode_constructor(loader, node):
             scalar = loader.construct_scalar(node)
-            return scalar.encode("utf-8").decode("utf-8")
+            return six.text_type(scalar)
 
         def __init__(self, *args, **kwargs):
             """Load YAML files with unicode support."""
