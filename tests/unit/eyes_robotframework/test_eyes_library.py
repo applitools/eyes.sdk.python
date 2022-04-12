@@ -68,7 +68,7 @@ def test_parse_config_from_relative_folder(tmp_path):
 
 
 def test_parse_config_from_absolute_folder(tmp_path):
-    config_path = join(tmp_path, "applitools.yaml")
+    config_path = join(str(tmp_path), "applitools.yaml")
     with eyes_lib_patcher(tmp_path):
         lib = EyesLibrary(config=config_path)
     assert lib.selected_runner == SelectedRunner.web
