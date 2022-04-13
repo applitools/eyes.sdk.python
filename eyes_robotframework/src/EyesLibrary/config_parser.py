@@ -276,7 +276,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             ),
         },
     )
-    selenium_scheme = shared_scheme + trf.Dict(
+    web_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("force_full_page_screenshot", optional=True): trf.Bool,
             trf.Key("wait_before_screenshots", optional=True): trf.Int,
@@ -287,7 +287,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("hide_caret", optional=True): trf.Bool,
         },
     )
-    selenium_ufg_scheme = shared_scheme + trf.Dict(
+    web_ufg_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("runner_options", optional=True): RunnerOptionsTrafaret,
             trf.Key("visual_grid_options", optional=True): VisualGridOptionsTrafaret,
@@ -298,23 +298,24 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("browsers", optional=True) >> "_browsers_info": BrowsersTrafaret,
         },
     )
-    appium_scheme = shared_scheme + trf.Dict(
+    mobile_native_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("is_simulator", optional=True): trf.Bool,
         },
     )
-    native_mobile_grid = shared_scheme + trf.Dict(
+    native_mobile_grid_scheme = shared_scheme + trf.Dict(
         {
             trf.Key("devices", optional=True) >> "_browsers_info": BrowsersTrafaret,
         }
     )
     scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("web", optional=True): shared_scheme + selenium_scheme,
-            trf.Key("web_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
-            trf.Key("mobile_native", optional=True): shared_scheme + appium_scheme,
+            trf.Key("web", optional=True): shared_scheme + web_scheme,
+            trf.Key("web_ufg", optional=True): shared_scheme + web_ufg_scheme,
+            trf.Key("mobile_native", optional=True): shared_scheme
+            + mobile_native_scheme,
             trf.Key("native_mobile_grid", optional=True): shared_scheme
-            + native_mobile_grid,
+            + native_mobile_grid_scheme,
         },
     )
 
