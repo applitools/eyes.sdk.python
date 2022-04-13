@@ -6,7 +6,6 @@ from enum import Enum
 from typing import Callable, Text, Type
 
 import trafaret as trf
-import yaml
 from six import raise_from
 
 from applitools.common import (
@@ -21,6 +20,8 @@ from applitools.common import (
     ScreenOrientation,
     StitchMode,
     VisualGridOption,
+    AndroidDeviceName,
+    AndroidDeviceInfo,
 )
 from applitools.common.selenium import BrowserType
 from applitools.selenium import BatchInfo, RunnerOptions
@@ -39,6 +40,7 @@ class SelectedRunner(Enum):
     web = "web"
     web_ufg = "web_ufg"
     mobile_native = "mobile_native"
+    native_mobile_grid = "native_mobile_grid"
 
 
 class RobotStitchMode(Enum):
@@ -158,6 +160,26 @@ class IosDeviceInfoTrafaret(trf.Trafaret):
         return [IosDeviceInfo(**dct) for dct in sanitized]
 
 
+class AndroidDeviceInfoTrafaret(trf.Trafaret):
+    scheme = trf.List(
+        trf.Dict(
+            {
+                "device_name": TextToEnumTrafaret(AndroidDeviceName),
+                trf.Key("screen_orientation", optional=True): UpperTextToEnumTrafaret(
+                    ScreenOrientation
+                ),
+                trf.Key("ios_version", optional=True): UpperTextToEnumTrafaret(
+                    IosVersion
+                ),
+            }
+        )
+    )
+
+    def check_and_return(self, value, context=None):
+        sanitized = self.scheme.check(value, context)
+        return [AndroidDeviceInfo(**dct) for dct in sanitized]
+
+
 class ChromeEmulationInfoTrafaret(trf.Trafaret):
     scheme = trf.List(
         trf.Dict(
@@ -216,6 +238,21 @@ class BrowsersTrafaret(trf.Trafaret):
         return list(itertools.chain(desktop, ios, chrome_emulation))
 
 
+class DevicesTrafaret(trf.Trafaret):
+    scheme = trf.Dict(
+        {
+            trf.Key("ios", optional=True): IosDeviceInfoTrafaret,
+            trf.Key("android", optional=True): AndroidDeviceInfoTrafaret,
+        }
+    )
+
+    def check_and_return(self, value, context=None):
+        sanitized = self.scheme.check(value, context)
+        ios = sanitized.pop("ios", [])
+        android = sanitized.pop("android", [])
+        return list(itertools.chain(ios, android))
+
+
 class ConfigurationTrafaret(trf.Trafaret):  # typedef
     shared_scheme = trf.Dict(
         {
@@ -266,11 +303,18 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("is_simulator", optional=True): trf.Bool,
         },
     )
+    native_mobile_grid = shared_scheme + trf.Dict(
+        {
+            trf.Key("devices", optional=True) >> "_browsers_info": BrowsersTrafaret,
+        }
+    )
     scheme = shared_scheme + trf.Dict(
         {
             trf.Key("web", optional=True): shared_scheme + selenium_scheme,
             trf.Key("web_ufg", optional=True): shared_scheme + selenium_ufg_scheme,
             trf.Key("mobile_native", optional=True): shared_scheme + appium_scheme,
+            trf.Key("native_mobile_grid", optional=True): shared_scheme
+            + native_mobile_grid,
         },
     )
 
@@ -288,6 +332,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
         combined_raw_config.pop(SelectedRunner.web.value)
         combined_raw_config.pop(SelectedRunner.web_ufg.value)
         combined_raw_config.pop(SelectedRunner.mobile_native.value)
+        combined_raw_config.pop(SelectedRunner.native_mobile_grid.value)
 
         # add config for selected runner
         combined_raw_config.update(selected_sdk_conf)
