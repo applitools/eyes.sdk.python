@@ -86,7 +86,7 @@ def test_suite_web(data):
     )
     expected = lines(
         """
-        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
+        [ WARN ] No `config` set explicitly. Trying to find `applitools.yaml` in current path
         Running test suite with `{runner}` runner and `applitools.yaml` config
         Using library `{backend_name}` as backend
         ==============================================================================
@@ -128,7 +128,7 @@ def test_suite_mobile_native(platform):
     )
     expected = lines(
         """
-        [ WARN ] No `config` set. Trying to find `applitools.yaml` in current path
+        [ WARN ] No `config` set explicitly. Trying to find `applitools.yaml` in current path
         Running test suite with `{runner}` runner and `applitools.yaml` config
         Using library `{backend_name}` as backend
         ==============================================================================
