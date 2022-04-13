@@ -7,6 +7,8 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Any, Generator, Text, Type
 
+import six
+import yaml
 from robot.libraries.BuiltIn import BuiltIn
 
 from applitools.common import RectangleSize, Region
@@ -121,18 +123,23 @@ def is_webelement_guard(element):
 
 
 def get_config_file_path():
+    # type: () -> Text
+    """Return path to config file."""
     here = os.path.abspath(os.path.dirname(__file__))
     return os.path.join(here, "applitools.yaml")
 
 
 def copy_config_to(path_to_dir):
+    # type: (Text) -> None
+    """Copy config file to path_to_dir."""
     if not os.path.exists(path_to_dir):
         raise ValueError("Directory doesn't exists")
-    return shutil.copy(get_config_file_path(), path_to_dir)
+    shutil.copy(get_config_file_path(), path_to_dir)
 
 
 def get_enum_by_name(name, enm):
     # type: (Text, Type[Enum]) -> Enum
+    """Return enum by name."""
     try:
         return getattr(enm, name)
     except AttributeError:
@@ -141,4 +148,27 @@ def get_enum_by_name(name, enm):
 
 def get_enum_by_upper_name(name, enm):
     # type: (Text, Type[Enum]) -> Enum
+    """"""
     return get_enum_by_name(name.upper(), enm)
+
+
+if six.PY2:
+
+    def unicode_yaml_load(stream):
+        """Load yaml file with unicode support. Required for Python 2.7."""
+
+        class UnicodeLoader(yaml.SafeLoader):
+            @staticmethod
+            def unicode_constructor(loader, node):
+                scalar = loader.construct_scalar(node)
+                return six.text_type(scalar)
+
+            def __init__(self, *args, **kwargs):
+                """Load YAML files with unicode support."""
+                super(UnicodeLoader, self).__init__(*args, **kwargs)
+                self.add_constructor("tag:yaml.org,2002:str", self.unicode_constructor)
+
+        return yaml.load(stream, Loader=UnicodeLoader)
+
+else:
+    unicode_yaml_load = yaml.safe_load
