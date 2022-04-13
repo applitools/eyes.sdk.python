@@ -3,6 +3,7 @@
 - [eyes-robotframework] Configuration file as environment variable [Trello 2768](https://trello.com/c/cTTD36eN)
 ### Fixed
 - [eyes-robotframework] Python 2 parsing config issue
+- Crash when screen orientation and version were not set in AndroidDeviceInfo on python 3.7+
 
 ## [5.3.0] - 2022-04-11
 ### Added
