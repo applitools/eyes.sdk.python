@@ -1,4 +1,4 @@
-## [Unreleased]
+## [5.4.0] - 2022-04-13
 ### Added
 - [eyes-robotframework] Configuration file as environment variable [Trello 2768](https://trello.com/c/cTTD36eN)
 ### Fixed
