@@ -170,6 +170,5 @@ if six.PY2:
 
         return yaml.load(stream, Loader=UnicodeLoader)
 
-
 else:
     unicode_yaml_load = yaml.safe_load
