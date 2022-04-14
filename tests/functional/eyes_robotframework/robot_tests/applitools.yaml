@@ -91,6 +91,6 @@ native_mobile_grid:
         screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
         ios_version: LATEST  # LATEST | ONE_VERSION_BACK
     android:
-      - device_name: Pixel_2  # names from AndroidDeviceName
+      - device_name: Pixel_3_XL  # names from AndroidDeviceName
         screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
         android_version: LATEST  # LATEST | ONE_VERSION_BACK
