@@ -1,7 +1,7 @@
 *** Settings ***
 Resource    resources/setup.robot
 Library     AppiumLibrary
-Library     EyesLibrary     runner=mobile_native
+Library     EyesLibrary     runner=${RUNNER}
 
 Test Setup       Setup
 Test Teardown    Teardown
