@@ -168,7 +168,7 @@ class AndroidDeviceInfoTrafaret(trf.Trafaret):
                 trf.Key("screen_orientation", optional=True): UpperTextToEnumTrafaret(
                     ScreenOrientation
                 ),
-                trf.Key("ios_version", optional=True): UpperTextToEnumTrafaret(
+                trf.Key("android_version", optional=True): UpperTextToEnumTrafaret(
                     IosVersion
                 ),
             }
@@ -305,7 +305,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
     )
     native_mobile_grid_scheme = shared_scheme + trf.Dict(
         {
-            trf.Key("devices", optional=True) >> "_browsers_info": BrowsersTrafaret,
+            trf.Key("devices", optional=True) >> "_browsers_info": DevicesTrafaret,
         }
     )
     scheme = shared_scheme + trf.Dict(

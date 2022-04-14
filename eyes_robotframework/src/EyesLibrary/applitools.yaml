@@ -84,9 +84,7 @@ native_mobile_grid:
       - device_name: iPhone_12_Pro  # names from IosDeviceName
         screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
         ios_version: LATEST  # LATEST | ONE_VERSION_BACK
-    andoid:
+    android:
       - device_name: Pixel_2  # names from AndroidDeviceName
         screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
         android_version: LATEST  # LATEST | ONE_VERSION_BACK
-
-
