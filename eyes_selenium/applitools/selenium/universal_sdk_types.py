@@ -14,7 +14,6 @@ from applitools.common import ChromeEmulationInfo as ApiChromeEmulationInfo
 from applitools.common import DesktopBrowserInfo, DeviceName, FloatingBounds
 from applitools.common import IosDeviceInfo
 from applitools.common import IosDeviceInfo as ApiIosDeviceInfo
-from applitools.common import AndroidDeviceInfo
 from applitools.common import IosDeviceName, IosVersion, MatchLevel, MatchResult
 from applitools.common import Region as APIRegion
 from applitools.common import (

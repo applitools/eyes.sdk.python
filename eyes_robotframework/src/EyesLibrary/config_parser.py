@@ -9,6 +9,8 @@ import trafaret as trf
 from six import raise_from
 
 from applitools.common import (
+    AndroidDeviceInfo,
+    AndroidDeviceName,
     ChromeEmulationInfo,
     DesktopBrowserInfo,
     DeviceName,
@@ -20,8 +22,6 @@ from applitools.common import (
     ScreenOrientation,
     StitchMode,
     VisualGridOption,
-    AndroidDeviceName,
-    AndroidDeviceInfo,
 )
 from applitools.common.selenium import BrowserType
 from applitools.selenium import BatchInfo, RunnerOptions
