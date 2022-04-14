@@ -85,6 +85,7 @@ class LibraryComponent(ContextAware):
         SelectedRunner.web: RobotWebRunner,
         SelectedRunner.mobile_native: RobotMobileNativeRunner,
         SelectedRunner.web_ufg: RobotWebUFGRunner,
+        SelectedRunner.native_mobile_grid: RobotWebUFGRunner,
     }
 
     def to_by_selector(self, locator):
