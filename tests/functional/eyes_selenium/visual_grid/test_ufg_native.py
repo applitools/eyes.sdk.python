@@ -35,6 +35,10 @@ def test_ufg_native_ios_basic(sauce_driver_url):
         eyes.check_window()
         eyes.close()
 
+        all_results = runner.get_all_test_results()
+
+        assert all_results.passed == 1
+
 
 def test_ufg_android_basic(sauce_driver_url):
     caps = {
@@ -59,3 +63,7 @@ def test_ufg_android_basic(sauce_driver_url):
         eyes.open(driver, "USDK Test", "UFG native Android basic test")
         eyes.check_window()
         eyes.close()
+
+        all_results = runner.get_all_test_results()
+
+        assert all_results.passed == 1
