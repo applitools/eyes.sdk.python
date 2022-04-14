@@ -902,7 +902,7 @@ def demarshal_browser_info(browser_info_dict):
         android_device = browser_info_dict["androidDeviceInfo"]
         return AndroidDeviceInfo(
             android_device["deviceName"],
-            android_device["screenOrientation"],
+            android_device.get("screenOrientation"),
             android_device.get("androidVersion"),
         )
     elif "chromeEmulationInfo" in browser_info_dict:
