@@ -38,7 +38,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
 
 def test_ufg_android_basic(sauce_driver_url):
     caps = {
-        "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",
+        "app": "https://applitools.jfrog.io/artifactory/Examples/runnerup_multiple_checks.apk",
         "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
         "platformVersion": "10.0",
         "platformName": "Android",
