@@ -1,4 +1,4 @@
-## [Unreleased]
+## [5.5.0] - 2022-04-18
 ### Added
 - [eyes-robotframework] UFG for mobile native apps [Trello 2863](https://trello.com/c/63ARcWd5)
 
