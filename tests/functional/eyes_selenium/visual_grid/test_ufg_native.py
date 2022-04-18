@@ -40,7 +40,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
 @pytest.mark.skip("Skip until test working build of test app is available")
 def test_ufg_android_basic(sauce_driver_url):
     caps = {
-        "app": "https://applitools.jfrog.io/artifactory/Examples/runnerup_multiple_checks.apk",
+        "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",
         "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
         "platformVersion": "10.0",
         "platformName": "Android",
