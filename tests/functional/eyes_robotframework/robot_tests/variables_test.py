@@ -17,20 +17,17 @@ def get_variables(
         batch_name += " | Android"
         desired_caps = {
             "platformName": "Android",
-            "platformVersion": "12.0",
-            "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
+            "platformVersion": "8.1",
+            "deviceName": "Samsung Galaxy S9 HD GoogleAPI Emulator",
             "deviceOrientation": "portrait",
-            "name": "Pixel 3a xl (Python)",
-            # "appiumVersion": "1.22.1",
         }
     elif platform == "ios":
         batch_name += " | IOS"
         desired_caps = {
             "platformName": "iOS",
-            "platformVersion": "15.2",
-            "deviceName": "iPhone 12 Pro Simulator",
+            "platformVersion": "14.3",
+            "deviceName": "iPhone XR Simulator",
             "deviceOrientation": "portrait",
-            "appiumVersion": "1.22.3",
         }
     else:
         desired_caps = {}  # What?
@@ -38,7 +35,7 @@ def get_variables(
     if backend_library == "appium":
         backend_library_name = "AppiumLibrary"
 
-        if runner_type == "mobile_native":
+        if runner_type in ["mobile_native", "native_mobile_grid"]:
             batch_name += " | App"
             if platform == "android":
                 desired_caps.update(
