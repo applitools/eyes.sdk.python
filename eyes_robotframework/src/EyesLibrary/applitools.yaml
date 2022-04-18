@@ -27,6 +27,7 @@ app_name: YOUR_APP_NAME
 #match_timeout: 600
 #save_new_tests: true  #optional
 #save_failed_tests: false  #optional
+#wait_before_capture: 100  #optional
 
 #batch:  #optional
 #  id: YOUR_BATCH_ID  #optional

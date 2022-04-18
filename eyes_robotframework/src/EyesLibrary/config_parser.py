@@ -274,6 +274,7 @@ class ConfigurationTrafaret(trf.Trafaret):  # typedef
             trf.Key("properties", optional=True): trf.List(
                 trf.Dict(name=trf.String, value=trf.String)
             ),
+            trf.Key("wait_before_capture", optional=True): trf.Int,
         },
     )
     web_scheme = shared_scheme + trf.Dict(
