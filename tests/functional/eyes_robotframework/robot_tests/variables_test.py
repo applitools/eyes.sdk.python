@@ -20,6 +20,7 @@ def get_variables(
             "platformVersion": "8.1",
             "deviceName": "Samsung Galaxy S9 HD GoogleAPI Emulator",
             "deviceOrientation": "portrait",
+            "appiumVersion": "1.20.1",
         }
     elif platform == "ios":
         batch_name += " | IOS"
@@ -28,6 +29,7 @@ def get_variables(
             "platformVersion": "14.3",
             "deviceName": "iPhone XR Simulator",
             "deviceOrientation": "portrait",
+            "appiumVersion": "1.20.1",
         }
     else:
         desired_caps = {}  # What?
