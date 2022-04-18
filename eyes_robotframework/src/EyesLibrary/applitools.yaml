@@ -1,4 +1,4 @@
-### applitools.yaml 1.0
+### applitools.yaml 1.1
 ### START `SHARED SECTION` ###
 #server_url: "https://eyesapi.applitools.com" #optional
 #api_key: YOUR_API_KEY  #Could be specified as APPLITOOLS_API_KEY env variable
@@ -27,6 +27,7 @@ app_name: YOUR_APP_NAME
 #match_timeout: 600
 #save_new_tests: true  #optional
 #save_failed_tests: false  #optional
+#wait_before_capture: 100  #optional
 
 #batch:  #optional
 #  id: YOUR_BATCH_ID  #optional
@@ -76,3 +77,15 @@ web_ufg:
 #    chrome_emulation:
 #      - device_name: iPhone_4  # names from DeviceName
 #        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+
+
+native_mobile_grid:
+  devices:
+    ios:
+      - device_name: iPhone_12_Pro  # names from IosDeviceName
+        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+        ios_version: LATEST  # LATEST | ONE_VERSION_BACK
+#    android:
+#      - device_name: Pixel_3_XL  # names from AndroidDeviceName
+#        screen_orientation: PORTRAIT  # PORTRAIT | LANDSCAPE
+#        android_version: LATEST  # LATEST | ONE_VERSION_BACK

@@ -133,6 +133,7 @@ class EyesLibrary(DynamicCore):
         SelectedRunner.web: ("SeleniumLibrary", "AppiumLibrary"),
         SelectedRunner.web_ufg: ("SeleniumLibrary",),
         SelectedRunner.mobile_native: ("AppiumLibrary",),
+        SelectedRunner.native_mobile_grid: ("AppiumLibrary",),
     }
 
     def __init__(

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 
 def get_variables(
-    runner_type,  # type: Literal["web", "web_ufg", "mobile_native"]
+    runner_type,  # type: Literal["web", "web_ufg", "mobile_native", "native_mobile_grid"]
     backend_library,  # type:  Literal["appium", "selenium"]
     platform,  # type: Literal["ios", "android", "desktop"]
 ):
@@ -37,13 +37,13 @@ def get_variables(
     if backend_library == "appium":
         backend_library_name = "AppiumLibrary"
 
-        if runner_type == "mobile_native":
+        if runner_type in ["mobile_native", "native_mobile_grid"]:
             batch_name += " | App"
             if platform == "android":
                 desired_caps.update(
                     {
                         "automationName": "UiAutomator2",
-                        "app": "http://saucelabs.com/example_files/ContactManager.apk",
+                        "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",
                         "clearSystemFiles": True,
                         "noReset": True,
                     }
@@ -51,12 +51,24 @@ def get_variables(
             elif platform == "ios":
                 desired_caps.update(
                     {
-                        "app": "http://174.138.1.48/doc/Demo_Application.zip",
+                        "app": "https://applitools.jfrog.io/artifactory/Examples/DuckDuckGo-instrumented.app.zip",
                         "clearSystemFiles": True,
                         "noReset": True,
                         "automationName": "XCUITest",
                     }
                 )
+                if runner_type == "native_mobile_grid":
+                    desired_caps.update(
+                        {
+                            "processArguments": {
+                                "args": [],
+                                "env": {
+                                    "DYLD_INSERT_LIBRARIES": "@executable_path/Frameworks/UFG_lib.xcframework/ios-arm64_x86_64-simulator/UFG_lib.framework/UFG_lib"
+                                },
+                            }
+                        }
+                    )
+
         else:
             batch_name += " | Web"
             if platform == "desktop":
@@ -79,6 +91,8 @@ def get_variables(
             desired_caps.update({"browserName": "Safari"})
     elif runner_type == "web_ufg":
         batch_name += " | UFG"
+    elif runner_type == "native_mobile_grid":
+        batch_name += " | UFG Native"
 
     if platform in ["android", "ios"]:
         remote_url = (

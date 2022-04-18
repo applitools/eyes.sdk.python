@@ -250,7 +250,10 @@ ElementReference = dict
 RegionReference = Union[ElementReference, Region]
 FrameReference = Union[ElementReference, int, Text]
 BrowserInfo = Union[
-    DesktopBrowserRenderer, ChromeEmulationDeviceRenderer, IOSDeviceRenderer
+    DesktopBrowserRenderer,
+    ChromeEmulationDeviceRenderer,
+    IOSDeviceRenderer,
+    AndroidDeviceRenderer,
 ]
 
 
@@ -894,6 +897,13 @@ def demarshal_browser_info(browser_info_dict):
             ios_device["deviceName"],
             ios_device["screenOrientation"],
             ios_device.get("iosVersion"),
+        )
+    elif "androidDeviceInfo" in browser_info_dict:
+        android_device = browser_info_dict["androidDeviceInfo"]
+        return AndroidDeviceInfo(
+            android_device["deviceName"],
+            android_device.get("screenOrientation"),
+            android_device.get("androidVersion"),
         )
     elif "chromeEmulationInfo" in browser_info_dict:
         emulated_device = browser_info_dict["chromeEmulationInfo"]

@@ -113,12 +113,17 @@ def test_suite_web(data):
 
 
 @pytest.mark.parametrize(
-    "platform",
-    ["android", "ios"],
+    "data",
+    [
+        ["android", "mobile_native"],
+        ["ios", "mobile_native"],
+        ["ios", "native_mobile_grid"],
+    ],
     ids=lambda d: str(d),
 )
-def test_suite_mobile_native(platform):
-    runner, backend = "mobile_native", "appium"
+def test_suite_mobile_native(data):
+    backend = "appium"
+    platform, runner = data
     code, output = run_robot(
         "--variablefile",
         "variables_test.py:{runner}:{backend}:{platform}".format(
