@@ -1,5 +1,6 @@
 import os
 
+import pytest
 from appium.webdriver import Remote
 
 from applitools.common import IosDeviceInfo, IosDeviceName, ScreenOrientation
@@ -40,6 +41,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
         assert all_results.passed == 1
 
 
+@pytest.mark.skip("Skip until test working build of test app is available")
 def test_ufg_android_basic(sauce_driver_url):
     caps = {
         "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",
