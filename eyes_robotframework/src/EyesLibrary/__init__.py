@@ -94,6 +94,9 @@ class EyesLibrary(DynamicCore):
     Before running tests, you must initialize `applitools.yaml` configuration script in root of test suite:
         | python -m EyesLibrary init-config |
 
+    Check correctness of configuration file you could with command:
+        | python -m EyesLibrary lint-config applitools.yaml |
+
     Add your *API KEY* `applitools.yaml` or in *APPLITOOLS_API_KEY* env variable and import EyesLibrary into your Robot test suite:
         | Library | EyesLibrary | runner=web | config=path/to/applitools.yaml |
 
