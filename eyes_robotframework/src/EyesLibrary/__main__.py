@@ -7,10 +7,10 @@ def init_config_command(_):
     utils.copy_config_to(".")
 
 
-def lint_config_command(_):
+def lint_config_command(namespace):
     from . import config_parser
 
-    config_parser.try_verify_configuration("applitools.yaml")
+    config_parser.try_verify_configuration(namespace.config)
 
 
 def cli_parser():
@@ -32,6 +32,7 @@ def cli_parser():
         description="Verify that `applitools.yaml` config is correct",
         help="Verify that `applitools.yaml` config is correct",
     )
+    lint_config.add_argument("config", default="applitools.yaml")
     lint_config.set_defaults(command=lint_config_command)
     return parser
 

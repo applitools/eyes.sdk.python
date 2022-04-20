@@ -46,7 +46,7 @@ else:
             "robotframework-pythonlibcore >= 3.0",
             "robotframework-seleniumlibrary >= 4.5",
             "robotframework-appiumlibrary >= 1.6",
-            "yamllint > 1.25.0",
+            "yamllint > 1.25.0, < 2.0",
         ]
     )
 
