@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- [eyes-robotframework] YAML linter for Robot Framework [Trello 2820](https://trello.com/c/dg4xqkPs)
+
 ## [5.5.0] - 2022-04-18
 ### Added
 - [eyes-robotframework] UFG for mobile native apps [Trello 2863](https://trello.com/c/63ARcWd5)
