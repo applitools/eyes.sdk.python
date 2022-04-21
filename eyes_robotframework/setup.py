@@ -36,6 +36,7 @@ if sys.version_info[:2] <= (2, 7):
             "robotframework-pythonlibcore >= 2.0.2,<3.0",
             "robotframework-seleniumlibrary >= 3.3.1,<4.5",
             "robotframework-appiumlibrary >= 1.5,<1.6",
+            "yamllint <= 1.25.0",
         ]
     )
 else:
@@ -45,6 +46,7 @@ else:
             "robotframework-pythonlibcore >= 3.0",
             "robotframework-seleniumlibrary >= 4.5",
             "robotframework-appiumlibrary >= 1.6",
+            "yamllint > 1.25.0, < 2.0",
         ]
     )
 

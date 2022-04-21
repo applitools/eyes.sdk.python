@@ -361,6 +361,34 @@ def try_parse_runner(runner):
         )
 
 
+def try_verify_configuration(config_path):
+    from yamllint import config, linter
+
+    if not os.path.exists(config_path):
+        raise EyesLibraryConfigError(
+            "The configuration file was not found in the path: {}\n".format(config_path)
+        )
+
+    yaml_config = config.YamlLintConfig(
+        "{extends: relaxed, rules:{new-line-at-end-of-file: disable}}"
+    )
+
+    with open(config_path, "r") as f:
+        raw_text = f.read()
+
+    lint_problems = [p for p in linter.run(raw_text, yaml_config)]
+    if lint_problems:
+        print(
+            "The configuration file has invalid format:\n{}".format(
+                "\n".join(str(p) for p in lint_problems)
+            )
+        )
+        return
+
+    raw_config = unicode_yaml_load(raw_text)
+    ConfigurationTrafaret.scheme.check(raw_config)
+
+
 def try_parse_configuration(
     config_path, selected_runner, origin_configuration, suite_path
 ):
@@ -375,6 +403,8 @@ def try_parse_configuration(
             "You could initialize config file with command: \n\t"
             "`python -m EyesLibrary init-config`".format(config_path)
         )
+
+    try_verify_configuration(config_path)
 
     with open(config_path, "r") as f:
         raw_config = unicode_yaml_load(f.read())
