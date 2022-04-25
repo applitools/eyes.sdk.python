@@ -39,14 +39,17 @@ def test_default_check_settings():
     assert check_settings.values.layout_breakpoints is None
     assert check_settings.values.lazy_load is None
     assert check_settings.values.wait_before_capture is None
+    assert check_settings.values.page_id is None
 
 
 def test_check_settings_change():
     check_settings = SeleniumCheckSettings()
 
     check_settings.wait_before_capture(10)
+    check_settings.page_id("my-page")
 
     assert check_settings.values.wait_before_capture == 10
+    assert check_settings.values.page_id == "my-page"
 
 
 def test_check_region_and_frame_with_unsupported_input():

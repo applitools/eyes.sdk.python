@@ -649,6 +649,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     visual_grid_options = attr.ib(default=None)  # type: Optional[Dict[Text, Any]]
     hooks = attr.ib(default=None)  # type: Optional[CheckSettingsHooks]
     render_id = attr.ib(default=None)  # type: Optional[Text]
+    page_id = attr.ib(default=None)  # type: Optional[Text]
     variation_group_id = attr.ib(default=None)  # type: Optional[Text]
     timeout = attr.ib(default=None)  # type: Optional[int]
     wait_before_capture = attr.ib(default=None)  # type: Optional[int]
@@ -668,6 +669,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             visual_grid_options=record_convert(values.visual_grid_options),
             hooks=hooks,
             render_id=None,  # TODO: verify
+            page_id=values.page_id,
             variation_group_id=values.variation_group_id,
             timeout=values.timeout,
             wait_before_capture=values.wait_before_capture,
