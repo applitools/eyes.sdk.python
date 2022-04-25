@@ -20,7 +20,7 @@ def browser_name():
 
 
 @pytest.fixture(scope="function")
-def pixel_3_xl(app, sauce_url, browser_name):
+def pixel_3_xl(app, sauce_url, browser_name, orientation):
     desired_caps = {
         "deviceName": "Google Pixel 3 XL GoogleAPI Emulator",
         "platformVersion": "10.0",
@@ -29,13 +29,14 @@ def pixel_3_xl(app, sauce_url, browser_name):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": "Pixel 3 xl (Python)",
+        "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
 @pytest.fixture(scope="function")
-def pixel_3a_xl(app, sauce_url, browser_name):
+def pixel_3a_xl(app, sauce_url, browser_name, orientation):
     desired_caps = {
         "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
         "platformVersion": "10.0",
@@ -44,6 +45,7 @@ def pixel_3a_xl(app, sauce_url, browser_name):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": "Pixel 3a xl (Python)",
+        "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
