@@ -87,6 +87,9 @@ class CheckSettingsValues(object):
     wait_before_capture = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=None
     )  # type: Optional[int]
+    page_id = attr.ib(
+        metadata={JsonInclude.NON_NONE: True}, default=None
+    )  # type: Optional[Text]
 
 
 Self = TypeVar("Self", bound="CheckSettings")  # typedef
@@ -287,6 +290,11 @@ class CheckSettings(object):
     def with_name(self, name):
         # type: (Self, Text)  -> Self
         self.values.name = name
+        return self
+
+    def page_id(self, page_id):
+        # type: (Self, Text) -> Self
+        self.values.page_id = page_id
         return self
 
     def stitch_content(self, stitch_content=True):
