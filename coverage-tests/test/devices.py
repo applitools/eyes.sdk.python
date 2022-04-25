@@ -5,6 +5,11 @@ from appium import webdriver as appium_webdriver
 
 
 @pytest.fixture(scope="function")
+def orientation():
+    return "portrait"
+
+
+@pytest.fixture(scope="function")
 def app():
     return ""
 
@@ -30,7 +35,7 @@ def pixel_3a_xl(app, sauce_url, browser_name):
 
 
 @pytest.fixture(scope="function")
-def samsung_galaxy_s8(app, sauce_url, browser_name):
+def samsung_galaxy_s8(app, sauce_url, browser_name, orientation):
     desired_caps = {
         "deviceName": "Samsung Galaxy S8 FHD GoogleAPI Emulator",
         "platformVersion": "7.0",
@@ -39,14 +44,14 @@ def samsung_galaxy_s8(app, sauce_url, browser_name):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": "AndroidNative (Python)",
-        "deviceOrientation": "portrait",
+        "deviceOrientation": orientation,
         "appiumVersion": "1.19.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
 @pytest.fixture(scope="function")
-def iphone_xs(app, sauce_url, browser_name):
+def iphone_xs(app, sauce_url, browser_name, orientation):
     desired_caps = {
         "deviceName": "iPhone XS Simulator",
         "platformVersion": "13.0",
@@ -55,7 +60,7 @@ def iphone_xs(app, sauce_url, browser_name):
         "noReset": True,
         "automationName": "XCUITest",
         "name": "iOSNative (Python)",
-        "deviceOrientation": "portrait",
+        "deviceOrientation": orientation,
         "appiumVersion": "1.19.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
