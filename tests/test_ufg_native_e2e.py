@@ -175,8 +175,8 @@ def test_check_main_screen_non_fully(driver, eyes, request):
 )
 def test_check_main_two_checks(driver, eyes, request):
     eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window())
-    eyes.check(Target.window().fully(False))
+    eyes.check("default", Target.window())
+    eyes.check("non-fully", Target.window().fully(False))
     eyes.close()
 
 
@@ -205,7 +205,7 @@ def test_check_search_results_fully(platform, driver, eyes, request):
     else:
         duckduckgo_search_android(driver, "Tor")
     eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window())
+    eyes.check(Target.window().fully())
     eyes.close()
 
 
