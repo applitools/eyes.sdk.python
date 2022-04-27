@@ -35,8 +35,8 @@ def parametrize(**kwargs):
 @parametrize(
     platform=["android", "ios"],
     locality=["local", "sauce"],
-    runner=["classic", "vg"],
     orientation=["portrait", "landscape"],
+    runner=["classic", "vg"],
 )
 def test_check_main_screen_fully(driver, eyes, request):
     eyes.open(driver, "E2E suite", request.node.name)
@@ -47,8 +47,8 @@ def test_check_main_screen_fully(driver, eyes, request):
 @parametrize(
     platform=["android", "ios"],
     locality=["local"],
-    runner=["classic", "vg"],
     orientation=["portrait", "landscape"],
+    runner=["classic", "vg"],
 )
 def test_check_main_screen_non_fully(driver, eyes, request):
     eyes.open(driver, "E2E suite", request.node.name)
@@ -59,8 +59,8 @@ def test_check_main_screen_non_fully(driver, eyes, request):
 @parametrize(
     platform=["android", "ios"],
     locality=["local"],
-    runner=["classic", "vg"],
     orientation=["portrait", "landscape"],
+    runner=["classic", "vg"],
 )
 def test_check_main_two_checks(driver, eyes, request):
     eyes.open(driver, "E2E suite", request.node.name)
@@ -72,8 +72,8 @@ def test_check_main_two_checks(driver, eyes, request):
 @parametrize(
     platform=["android", "ios"],
     locality=["local"],
-    runner=["classic", "vg"],
     orientation=["portrait"],
+    runner=["classic", "vg"],
 )
 def test_check_main_check_via_proxy(driver, eyes, request):
     eyes.configure.set_proxy(ProxySettings("192.168.31.11", 9090))
@@ -85,8 +85,8 @@ def test_check_main_check_via_proxy(driver, eyes, request):
 @parametrize(
     platform=["android", "ios"],
     locality=["local"],
-    runner=["classic", "vg"],
     orientation=["portrait", "landscape"],
+    runner=["classic", "vg"],
 )
 def test_check_search_results_fully(platform, driver, eyes, request):
     if platform == "ios":
@@ -99,7 +99,7 @@ def test_check_search_results_fully(platform, driver, eyes, request):
 
 
 @parametrize(
-    platform=["ios"], locality=["local"], runner=["classic"], orientation=["portrait"]
+    platform=["ios"], locality=["local"], orientation=["portrait"], runner=["classic"]
 )
 def test_check_search_results_region(platform, driver, eyes, request):
     duckduckgo_search_ios(driver, "Tor")
