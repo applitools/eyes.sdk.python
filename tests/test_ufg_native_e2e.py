@@ -1,9 +1,11 @@
 import os
+from contextlib import suppress
 from time import sleep
 
 import pytest
 from appium.webdriver import Remote
 from appium.webdriver.common.mobileby import MobileBy
+from selenium.common.exceptions import InvalidSessionIdException
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -112,15 +114,19 @@ def driver(platform, locality, orientation, request):
                 },
             },
         }
-    with Remote(driver_url, caps) as driver:
-        if locality == "sauce":
-            driver.execute_script(
-                "sauce:job-name={} {}".format(batch.name, request.node.name)
-            )
-        if platform == "android":
-            driver.orientation = orientation
-        sleep(5)
+    driver = Remote(driver_url, caps)
+    if locality == "sauce":
+        driver.execute_script(
+            "sauce:job-name={} {}".format(batch.name, request.node.name)
+        )
+    if platform == "android":
+        driver.orientation = orientation
+    sleep(5)
+    try:
         yield driver
+    finally:
+        with suppress(InvalidSessionIdException):
+            driver.quit()
 
 
 @pytest.fixture
@@ -140,7 +146,10 @@ def eyes(platform, orientation, driver, runner, classic_runner, vg_runner):
                 AndroidDeviceInfo(AndroidDeviceName.Pixel_4_XL, orientation)
             )
     eyes.configure.set_batch(batch)
-    yield eyes
+    try:
+        yield eyes
+    finally:
+        eyes.abort()
 
 
 @parametrize(
