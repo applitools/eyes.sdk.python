@@ -32,6 +32,83 @@ def parametrize(**kwargs):
     return apply
 
 
+@parametrize(
+    platform=["android", "ios"],
+    locality=["local", "sauce"],
+    runner=["classic", "vg"],
+    orientation=["portrait", "landscape"],
+)
+def test_check_main_screen_fully(driver, eyes, request):
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check(Target.window())
+    eyes.close()
+
+
+@parametrize(
+    platform=["android", "ios"],
+    locality=["local"],
+    runner=["classic", "vg"],
+    orientation=["portrait", "landscape"],
+)
+def test_check_main_screen_non_fully(driver, eyes, request):
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check(Target.window().fully(False))
+    eyes.close()
+
+
+@parametrize(
+    platform=["android", "ios"],
+    locality=["local"],
+    runner=["classic", "vg"],
+    orientation=["portrait", "landscape"],
+)
+def test_check_main_two_checks(driver, eyes, request):
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check("default", Target.window())
+    eyes.check("non-fully", Target.window().fully(False))
+    eyes.close()
+
+
+@parametrize(
+    platform=["android", "ios"],
+    locality=["local"],
+    runner=["classic", "vg"],
+    orientation=["portrait"],
+)
+def test_check_main_check_via_proxy(driver, eyes, request):
+    eyes.configure.set_proxy(ProxySettings("192.168.31.11", 9090))
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check(Target.window())
+    eyes.close()
+
+
+@parametrize(
+    platform=["android", "ios"],
+    locality=["local"],
+    runner=["classic", "vg"],
+    orientation=["portrait", "landscape"],
+)
+def test_check_search_results_fully(platform, driver, eyes, request):
+    if platform == "ios":
+        duckduckgo_search_ios(driver, "Tor")
+    else:
+        duckduckgo_search_android(driver, "Tor")
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check(Target.window().fully())
+    eyes.close()
+
+
+@parametrize(
+    platform=["ios"], locality=["local"], runner=["classic"], orientation=["portrait"]
+)
+def test_check_search_results_region(platform, driver, eyes, request):
+    duckduckgo_search_ios(driver, "Tor")
+    region = [MobileBy.XPATH, "//XCUIElementTypeWebView"]
+    eyes.open(driver, "E2E suite", request.node.name)
+    eyes.check(Target.region(region).fully())
+    eyes.close()
+
+
 @pytest.fixture(scope="module")
 def vg_runner():
     runner = VisualGridRunner()
@@ -150,83 +227,6 @@ def eyes(platform, orientation, driver, runner, classic_runner, vg_runner):
         yield eyes
     finally:
         eyes.abort()
-
-
-@parametrize(
-    locality=["local", "sauce"],
-    platform=["android", "ios"],
-    orientation=["portrait", "landscape"],
-    runner=["classic", "vg"],
-)
-def test_check_main_screen_fully(driver, eyes, request):
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window())
-    eyes.close()
-
-
-@parametrize(
-    locality=["local"],
-    platform=["android", "ios"],
-    orientation=["portrait", "landscape"],
-    runner=["classic", "vg"],
-)
-def test_check_main_screen_non_fully(driver, eyes, request):
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window().fully(False))
-    eyes.close()
-
-
-@parametrize(
-    locality=["local"],
-    platform=["android", "ios"],
-    orientation=["portrait", "landscape"],
-    runner=["classic", "vg"],
-)
-def test_check_main_two_checks(driver, eyes, request):
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check("default", Target.window())
-    eyes.check("non-fully", Target.window().fully(False))
-    eyes.close()
-
-
-@parametrize(
-    locality=["local"],
-    platform=["android", "ios"],
-    orientation=["portrait"],
-    runner=["classic", "vg"],
-)
-def test_check_main_check_via_proxy(driver, eyes, request):
-    eyes.configure.set_proxy(ProxySettings("192.168.31.11", 9090))
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window())
-    eyes.close()
-
-
-@parametrize(
-    locality=["local"],
-    platform=["android", "ios"],
-    orientation=["portrait", "landscape"],
-    runner=["classic", "vg"],
-)
-def test_check_search_results_fully(platform, driver, eyes, request):
-    if platform == "ios":
-        duckduckgo_search_ios(driver, "Tor")
-    else:
-        duckduckgo_search_android(driver, "Tor")
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.window().fully())
-    eyes.close()
-
-
-@parametrize(
-    locality=["local"], platform=["ios"], orientation=["portrait"], runner=["classic"]
-)
-def test_check_search_results_region(platform, driver, eyes, request):
-    duckduckgo_search_ios(driver, "Tor")
-    region = [MobileBy.XPATH, "//XCUIElementTypeWebView"]
-    eyes.open(driver, "E2E suite", request.node.name)
-    eyes.check(Target.region(region).fully())
-    eyes.close()
 
 
 def wait_for_element(driver, strategy, locator):
