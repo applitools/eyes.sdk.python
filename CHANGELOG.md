@@ -1,4 +1,4 @@
-## [Unreleased]
+## [5.6.0] - 2022-04-27
 ### Added
 - [eyes-robotframework] YAML linter for Robot Framework [Trello 2820](https://trello.com/c/dg4xqkPs)
 - Page coverage api [Trello 98](https://trello.com/c/N9yhqjxg)
