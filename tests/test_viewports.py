@@ -143,21 +143,21 @@ def create_caps(provider, device_name, orientation):
 
     if type(device_name) is AndroidDeviceName:
         caps = {
-            "app": apk_url,
-            "deviceName": caps_device_name,
-            "platformVersion": caps_version,
             "platformName": "Android",
-            "clearSystemFiles": True,
-            "automationName": "UiAutomator2",
-            "deviceOrientation": orientation.value.lower(),
+            "appium:app": apk_url,
+            "appium:deviceName": caps_device_name,
+            "appium:platformVersion": caps_version,
+            "appium:clearSystemFiles": True,
+            "appium:automationName": "UiAutomator2",
+            "appium:deviceOrientation": orientation.value.lower(),
         }
     else:
         caps = {
-            "app": ipa_url,
-            "deviceName": caps_device_name,
-            "platformVersion": caps_version,
             "platformName": "iOS",
-            "deviceOrientation": orientation.value.lower(),
+            "appium:app": ipa_url,
+            "appium:deviceName": caps_device_name,
+            "appium:platformVersion": caps_version,
+            "appium:deviceOrientation": orientation.value.lower(),
         }
     return caps
 
@@ -176,7 +176,7 @@ BS_ANDROID = [(d, Provider.BS) for d in AndroidDeviceName if d.value in BS_MAPPI
 @pytest.mark.parametrize("statusbar", StatusBar)
 @pytest.mark.parametrize("navbar", NavBar)
 @pytest.mark.parametrize("orientation", ScreenOrientation)
-@pytest.mark.parametrize("device, provider", SAUCE_ANDROID)
+@pytest.mark.parametrize("device, provider", SAUCE_ANDROID + BS_ANDROID)
 def test_viewport_size_android(
     device, orientation, statusbar, navbar, provider, request
 ):
