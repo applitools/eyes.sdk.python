@@ -18,7 +18,7 @@ def pytest_collection_modifyitems(items):
     # Run all sauce tests in two threads
     sauce_tests = (item for item in items if "sauce_url" in item.fixturenames)
     for test, thread_n in zip(sauce_tests, cycle(range(4))):
-        test.add_marker(pytest.mark.xdist_group("sauce_thread_{}".format(thread_n)))
+        test.add_marker(pytest.mark.xdist_group("sauce_{}".format(thread_n)))
 
 
 @pytest.fixture(scope="function")
