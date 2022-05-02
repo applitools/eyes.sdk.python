@@ -13,6 +13,7 @@ def batch_info():
     return BatchInfo("Python Generated tests")
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items):
     # Run all sauce tests in two threads
     xdist_group = iter(cycle(("sauce_thread_1", "sauce_thread_2")))
