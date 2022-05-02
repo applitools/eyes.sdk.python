@@ -1,15 +1,15 @@
 from __future__ import absolute_import
 
+import logging
 import os
 import re
 import sys
-import logging
+
 import pytest
 from selenium import webdriver
 
 from applitools.selenium import Configuration, Eyes
 from applitools.selenium.__version__ import __version__
-
 
 try:
     from typing import TYPE_CHECKING, Generator, Iterable, Optional, Text

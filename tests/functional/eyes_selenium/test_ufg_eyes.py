@@ -1,6 +1,6 @@
 import pytest
 
-from applitools.common import RectangleSize, EyesError
+from applitools.common import EyesError
 from applitools.common.geometry import RectangleSize
 from applitools.selenium import Eyes, Target, VisualGridRunner
 
