@@ -1,37 +1,3 @@
-test_specific_cases.py:
-   test_switch_back_to_frame_after_check:
-   test_region_selector_in_check_fluent_interface:
-
-test_classic_api.py:
-   test_check_frame:
-      - VG
-
-test_fluent_api.py:
-   test_check_scrollable_modal:
-      - Scroll
-   test_check_region_by_selector_after_manual_scroll__fluent:
-      - Scroll
-   test_scrollbars_hidden_and_returned__fluent:
-      - Scroll
-   test_check_two_scrolled_regions__fluent:
-      - Scroll
-
-test_scroll_root_element.py:
-  test_check_window__simple__body:
-      - Scroll
-
-test_fluent_api_frames.py:
-  test_check_region_in_frame_in_frame__fluent:
-      - Scroll
-
-test_other_desktop_tests.py:
-   test_duplicatedIFrames:
-      - VG
-
-test_special_cases.py:
-   test_check_region_in_a_very_big_frame:
-      - Scroll, VG
-
 test_runners.py:
    test_classic_runner_works_normally:
    test_eyes_runner:
