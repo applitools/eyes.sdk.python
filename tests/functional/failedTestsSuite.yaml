@@ -1,14 +1,3 @@
 test_runners.py:
    test_classic_runner_works_normally:
    test_eyes_runner:
-
-test_app_native.py:
-   test_ios_native:
-
-test_hello_world.py:
-   test_hello_world:
-      - [VisualGridRunner]
-
-test_timeouts.py:
-   test_timeout2:
-
