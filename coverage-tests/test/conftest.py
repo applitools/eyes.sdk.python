@@ -16,11 +16,9 @@ def batch_info():
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items):
     # Run all sauce tests in two threads
-    xdist_group = iter(cycle(("sauce_thread_1", "sauce_thread_2")))
-    for item in items:
-        if "sauce_url" in item.fixturenames:
-            item.add_marker(pytest.mark.xdist_group(next(xdist_group)))
-            print(item)
+    sauce_tests = (item for item in items if "sauce_url" in item.fixturenames)
+    for test, thread_n in zip(sauce_tests, cycle(range(4))):
+        test.add_marker(pytest.mark.xdist_group("sauce_thread_{}".format(thread_n)))
 
 
 @pytest.fixture(scope="function")
