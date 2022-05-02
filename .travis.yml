@@ -249,15 +249,6 @@ jobs:
               directories:
                 - $LOCALAPPDATA/pip/Cache
 
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=selenium-visualgrid
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6
           script:

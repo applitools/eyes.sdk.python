@@ -9,10 +9,7 @@ from applitools.common import BatchInfo, Configuration, StdoutLogger
 from applitools.common.utils.json_utils import attr_from_json
 from tests.utils import get_session_results
 
-pytest_plugins = (
-    "tests.functional.pytest_reporting",
-    "tests.functional.pytest_skipmanager",
-)
+pytest_plugins = ("tests.functional.pytest_reporting",)
 
 
 @pytest.fixture
@@ -48,34 +45,6 @@ def eyes_config(eyes_config_base):
 @pytest.fixture(scope="session")
 def batch_info():
     return BatchInfo(os.getenv("APPLITOOLS_BATCH_NAME", "Python SDK"))
-
-
-def check_test_result_(eyes):
-    while True:
-        comparision = yield
-        test_result = yield
-        check_image_match_settings(eyes, test_result, comparision)
-
-
-def check_image_match_settings(eyes, test_result, comparision):
-    session_results = get_session_results(eyes.api_key, test_result)
-    img = session_results["actualAppOutput"][0]["imageMatchSettings"]
-    for param in comparision:
-        actual = img[param["actual_name"]]
-        expected = param["expected"]
-        if attr.has(expected.__class__):
-            actual = attr_from_json(json.dumps(actual), expected.__class__)
-        elif isinstance(expected, list):
-            expected_cls = expected[0].__class__
-            actual = [attr_from_json(json.dumps(a), expected_cls) for a in actual]
-        assert actual == expected
-
-
-@pytest.fixture(scope="function")
-def check_test_result(eyes):
-    g = check_test_result_(eyes)
-    next(g)
-    yield g
 
 
 @pytest.fixture(name="eyes", scope="function")
