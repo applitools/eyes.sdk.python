@@ -40,13 +40,13 @@ def firefox():
 
 
 @pytest.fixture(scope="function")
-def firefox_48(sauce_url, legacy, request):
+def firefox_48(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {
             "browserName": "firefox",
             "platform": "Windows 10",
             "version": "48.0",
-            "name": "Python: {}".format(request.node.name),
+            "name": name_of_test,
         }
     else:
         raise Exception("Unsupported browser version for W3C")
@@ -56,12 +56,12 @@ def firefox_48(sauce_url, legacy, request):
 
 
 @pytest.fixture(scope="function")
-def ie_11(sauce_url, request):
+def ie_11(sauce_url, name_of_test):
     capabilities = {
         "browserName": "internet explorer",
         "browserVersion": "11.285",
         "platformName": "Windows 10",
-        "sauce:options": {"name": "Python: {}".format(request.node.name)},
+        "sauce:options": {"name": name_of_test},
     }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
@@ -69,13 +69,13 @@ def ie_11(sauce_url, request):
 
 
 @pytest.fixture(scope="function")
-def edge_18(sauce_url, request):
+def edge_18(sauce_url, name_of_test):
     capabilities = {
         "browserName": "MicrosoftEdge",
         "browserVersion": "18.17763",
         "platformName": "Windows 10",
         "screenResolution": "1920x1080",
-        "sauce:options": {"name": "Python: {}".format(request.node.name)},
+        "sauce:options": {"name": name_of_test},
     }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
@@ -83,20 +83,20 @@ def edge_18(sauce_url, request):
 
 
 @pytest.fixture(scope="function")
-def safari_11(sauce_url, legacy, request):
+def safari_11(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {
             "browserName": "safari",
             "platform": "macOS 10.13",
             "version": "11.1",
-            "name": "Python: {}".format(request.node.name),
+            "name": name_of_test,
         }
     else:
         capabilities = {
             "browserName": "safari",
             "browserVersion": "11.1",
             "platformName": "macOS 10.13",
-            "sauce:options": {"name": "Python: {}".format(request.node.name)},
+            "sauce:options": {"name": name_of_test},
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
@@ -104,20 +104,20 @@ def safari_11(sauce_url, legacy, request):
 
 
 @pytest.fixture(scope="function")
-def safari_12(sauce_url, legacy, request):
+def safari_12(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
         capabilities["platform"] = "macOS 10.13"
         capabilities["version"] = "12.1"
         capabilities["seleniumVersion"] = "3.4.0"
-        capabilities["name"] = "Python: {}".format(request.node.name)
+        capabilities["name"] = name_of_test
     else:
         capabilities = {
             "browserName": "safari",
             "browserVersion": "12.1",
             "platformName": "macOS 10.13",
-            "sauce:options": {"name": "Python: {}".format(request.node.name)},
+            "sauce:options": {"name": name_of_test},
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities

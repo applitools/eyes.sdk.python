@@ -22,6 +22,11 @@ def pytest_collection_modifyitems(items):
 
 
 @pytest.fixture(scope="function")
+def name_of_test(request):
+    return "Python {}".format(request.node.name)
+
+
+@pytest.fixture(scope="function")
 def eyes_runner_class():
     return None
 

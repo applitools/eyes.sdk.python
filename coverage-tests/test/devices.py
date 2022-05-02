@@ -20,7 +20,7 @@ def browser_name():
 
 
 @pytest.fixture(scope="function")
-def pixel_3_xl(app, sauce_url, browser_name, orientation, request):
+def pixel_3_xl(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
         "deviceName": "Google Pixel 3 XL GoogleAPI Emulator",
         "platformVersion": "10.0",
@@ -28,7 +28,7 @@ def pixel_3_xl(app, sauce_url, browser_name, orientation, request):
         "clearSystemFiles": True,
         "noReset": True,
         "automationName": "UiAutomator2",
-        "name": "Python {}".format(request.node.name),
+        "name": name_of_test,
         "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
@@ -36,7 +36,7 @@ def pixel_3_xl(app, sauce_url, browser_name, orientation, request):
 
 
 @pytest.fixture(scope="function")
-def pixel_3a_xl(app, sauce_url, browser_name, orientation, request):
+def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
         "deviceName": "Google Pixel 3a XL GoogleAPI Emulator",
         "platformVersion": "10.0",
@@ -44,7 +44,7 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, request):
         "clearSystemFiles": True,
         "noReset": True,
         "automationName": "UiAutomator2",
-        "name": "Python {}".format(request.node.name),
+        "name": name_of_test,
         "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
@@ -52,7 +52,7 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, request):
 
 
 @pytest.fixture(scope="function")
-def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, request):
+def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
         "deviceName": "Samsung Galaxy S8 FHD GoogleAPI Emulator",
         "platformVersion": "7.0",
@@ -60,7 +60,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, request):
         "clearSystemFiles": True,
         "noReset": True,
         "automationName": "UiAutomator2",
-        "name": "Python {}".format(request.node.name),
+        "name": name_of_test,
         "deviceOrientation": orientation,
         "appiumVersion": "1.19.2",
     }
@@ -68,7 +68,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, request):
 
 
 @pytest.fixture(scope="function")
-def iphone_xs(app, sauce_url, browser_name, orientation, request):
+def iphone_xs(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
         "deviceName": "iPhone XS Simulator",
         "platformVersion": "13.0",
@@ -76,7 +76,7 @@ def iphone_xs(app, sauce_url, browser_name, orientation, request):
         "clearSystemFiles": True,
         "noReset": True,
         "automationName": "XCUITest",
-        "name": "Python {}".format(request.node.name),
+        "name": name_of_test,
         "deviceOrientation": orientation,
         "appiumVersion": "1.19.2",
     }
