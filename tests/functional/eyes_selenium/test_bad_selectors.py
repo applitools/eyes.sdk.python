@@ -2,7 +2,7 @@ import pytest
 from selenium.common.exceptions import NoSuchElementException
 
 from applitools.common import RectangleSize
-from applitools.selenium import Eyes, VisualGridRunner
+from applitools.selenium import VisualGridRunner
 
 
 @pytest.fixture
