@@ -6,6 +6,8 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
+from . import sauce
+
 
 @pytest.fixture(scope="function")
 def chrome(execution_grid):
@@ -39,6 +41,7 @@ def firefox():
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def firefox_48(sauce_url, legacy, name_of_test):
     if legacy:
@@ -55,6 +58,7 @@ def firefox_48(sauce_url, legacy, name_of_test):
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def ie_11(sauce_url, name_of_test):
     capabilities = {
@@ -68,6 +72,7 @@ def ie_11(sauce_url, name_of_test):
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def edge_18(sauce_url, name_of_test):
     capabilities = {
@@ -82,6 +87,7 @@ def edge_18(sauce_url, name_of_test):
     )
 
 
+@sauce.mac_vm
 @pytest.fixture(scope="function")
 def safari_11(sauce_url, legacy, name_of_test):
     if legacy:
@@ -103,6 +109,7 @@ def safari_11(sauce_url, legacy, name_of_test):
     )
 
 
+@sauce.mac_vm
 @pytest.fixture(scope="function")
 def safari_12(sauce_url, legacy, name_of_test):
     if legacy:

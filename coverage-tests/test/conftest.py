@@ -1,26 +1,16 @@
-from itertools import cycle
-
 from selenium.common.exceptions import WebDriverException
 
 from applitools.selenium import BatchInfo, Eyes, StitchMode
 
+from . import sauce
 from .browsers import *
 from .devices import *
-
-SAUCE_MAX_PARALLELISM = 2
+from .sauce import pytest_collection_modifyitems, sauce_url
 
 
 @pytest.fixture(scope="session")
 def batch_info():
     return BatchInfo("Python Generated tests")
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_collection_modifyitems(items):
-    # Run all sauce tests in two threads
-    sauce_tests = (item for item in items if "sauce_url" in item.fixturenames)
-    for test, thread_n in zip(sauce_tests, cycle(range(SAUCE_MAX_PARALLELISM))):
-        test.add_marker(pytest.mark.xdist_group("sauce_{}".format(thread_n)))
 
 
 @pytest.fixture(scope="function")
@@ -41,12 +31,6 @@ def legacy():
 @pytest.fixture(scope="function")
 def execution_grid():
     return False
-
-
-@pytest.fixture(scope="function")
-def sauce_url():
-    name, access_key = os.environ["SAUCE_USERNAME"], os.environ["SAUCE_ACCESS_KEY"]
-    return "https://{}:{}@ondemand.saucelabs.com/wd/hub".format(name, access_key)
 
 
 @pytest.fixture(scope="function")

@@ -3,6 +3,8 @@ import os
 import pytest
 from appium import webdriver as appium_webdriver
 
+from . import sauce
+
 
 @pytest.fixture(scope="function")
 def orientation():
@@ -19,6 +21,7 @@ def browser_name():
     return ""
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def pixel_3_xl(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
@@ -35,6 +38,7 @@ def pixel_3_xl(app, sauce_url, browser_name, orientation, name_of_test):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
@@ -51,6 +55,7 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
 def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
@@ -67,6 +72,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
+@sauce.mac_vm
 @pytest.fixture(scope="function")
 def iphone_xs(app, sauce_url, browser_name, orientation, name_of_test):
     desired_caps = {
