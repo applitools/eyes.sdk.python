@@ -56,4 +56,5 @@ def _sauce_limits():
     username, key = _sauce_credentials()
     url = urlt.format(u=username, k=key)
     response = requests.get(url).json()
-    return response["concurrency"]["team"]["allowed"]
+    allowed = response["concurrency"]["team"]["allowed"]
+    return {kind: limit for kind, limit in allowed.items() if limit > 0}
