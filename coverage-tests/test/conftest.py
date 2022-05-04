@@ -2,8 +2,10 @@ from selenium.common.exceptions import WebDriverException
 
 from applitools.selenium import BatchInfo, Eyes, StitchMode
 
+from . import sauce
 from .browsers import *
 from .devices import *
+from .sauce import pytest_collection_modifyitems, sauce_url
 
 
 @pytest.fixture(scope="session")
@@ -11,16 +13,9 @@ def batch_info():
     return BatchInfo("Python Generated tests")
 
 
-def pytest_generate_tests(metafunc):
-    import uuid
-
-    # setup environment variables once per test run if not settled up
-    # needed for multi thread run
-
-
-#     os.environ["APPLITOOLS_BATCH_ID"] = os.getenv(
-#         "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
-#     )
+@pytest.fixture(scope="function")
+def name_of_test(request):
+    return "Python {}".format(request.node.name)
 
 
 @pytest.fixture(scope="function")
@@ -36,14 +31,6 @@ def legacy():
 @pytest.fixture(scope="function")
 def execution_grid():
     return False
-
-
-@pytest.fixture(scope="function")
-def sauce_url():
-    return "https://{username}:{password}@ondemand.saucelabs.com:443/wd/hub".format(
-        username=os.getenv("SAUCE_USERNAME", None),
-        password=os.getenv("SAUCE_ACCESS_KEY", None),
-    )
 
 
 @pytest.fixture(scope="function")

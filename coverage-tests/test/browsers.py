@@ -6,6 +6,8 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
+from . import sauce
+
 
 @pytest.fixture(scope="function")
 def chrome(execution_grid):
@@ -39,82 +41,90 @@ def firefox():
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
-def firefox_48(sauce_url, legacy):
+def firefox_48(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {
             "browserName": "firefox",
             "platform": "Windows 10",
             "version": "48.0",
+            "name": name_of_test,
         }
     else:
-        capabilities = {
-            "browserName": "firefox",
-            "browserVersion": "48.0",
-            "platformName": "Windows 10",
-        }
+        raise Exception("Unsupported browser version for W3C")
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
-def ie_11(sauce_url):
+def ie_11(sauce_url, name_of_test):
     capabilities = {
         "browserName": "internet explorer",
         "browserVersion": "11.285",
         "platformName": "Windows 10",
+        "sauce:options": {"name": name_of_test},
     }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
 
 
+@sauce.vm
 @pytest.fixture(scope="function")
-def edge_18(sauce_url):
+def edge_18(sauce_url, name_of_test):
     capabilities = {
         "browserName": "MicrosoftEdge",
         "browserVersion": "18.17763",
         "platformName": "Windows 10",
         "screenResolution": "1920x1080",
+        "sauce:options": {"name": name_of_test},
     }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
 
 
+@sauce.mac_vm
 @pytest.fixture(scope="function")
-def safari_11(sauce_url, legacy):
+def safari_11(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {
             "browserName": "safari",
             "platform": "macOS 10.13",
             "version": "11.1",
+            "name": name_of_test,
         }
     else:
         capabilities = {
             "browserName": "safari",
             "browserVersion": "11.1",
             "platformName": "macOS 10.13",
+            "sauce:options": {"name": name_of_test},
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
     )
 
 
+@sauce.mac_vm
 @pytest.fixture(scope="function")
-def safari_12(sauce_url, legacy):
+def safari_12(sauce_url, legacy, name_of_test):
     if legacy:
         capabilities = {}
         capabilities["browserName"] = "safari"
         capabilities["platform"] = "macOS 10.13"
         capabilities["version"] = "12.1"
         capabilities["seleniumVersion"] = "3.4.0"
+        capabilities["name"] = name_of_test
     else:
         capabilities = {
             "browserName": "safari",
             "browserVersion": "12.1",
             "platformName": "macOS 10.13",
+            "sauce:options": {"name": name_of_test},
         }
     return webdriver.Remote(
         command_executor=sauce_url, desired_capabilities=capabilities
