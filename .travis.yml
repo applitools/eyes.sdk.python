@@ -67,12 +67,12 @@ jobs:
           language: sh
           python: 3.6
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.9.12
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
@@ -112,12 +112,12 @@ jobs:
           os: windows
           language: sh
           before_install:
-              - choco install python --version=3.6.8
+              - choco install python --version=3.9.12
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
@@ -154,12 +154,10 @@ jobs:
           python: 3.6
           node_js: 14
           addons:
-              chrome: beta
+              chrome: stable
               firefox: latest
           env:
               - TOX_ENV=selenium-generated
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - git submodule update --init --remote --recursive
@@ -176,12 +174,10 @@ jobs:
           python: 3.9
           node_js: 14
           addons:
-              chrome: beta
+              chrome: stable
               firefox: latest
           env:
               - TOX_ENV=selenium-generated
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - git submodule update --init --remote --recursive
@@ -200,7 +196,6 @@ jobs:
               chrome: stable
           env:
             - TOX_ENV=robotframework
-            - TEST_PLATFORM="Linux"
 
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
@@ -208,8 +203,6 @@ jobs:
               chrome: stable
           env:
               - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
@@ -218,8 +211,6 @@ jobs:
               firefox: latest
           env:
               - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.9
@@ -228,68 +219,22 @@ jobs:
               firefox: latest
           env:
               - TOX_ENV=selenium
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           os: windows
           language: sh
           python: 3.6
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.9.12
               - choco install googlechrome --x86
               - choco install chromedriver
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=selenium
-              - TEST_PLATFORM="Windows 10"
-              - TEST_BROWSERS=chrome
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="iOS"
-              - TEST_REMOTE=1
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=desktop
-              - TEST_PLATFORM=Linux
-              - TEST_RUN_ON_VG=true
-              - TEST_BROWSERS=chrome
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          env:
-              - TOX_ENV=mobile
-              - TEST_PLATFORM="Android"
-              - TEST_REMOTE=1
-
-        - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
-          addons:
-              chrome: stable
-          env:
-              - TOX_ENV=selenium-visualgrid
-              - TEST_PLATFORM=Linux
-              - TEST_BROWSERS=chrome
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6
