@@ -67,12 +67,12 @@ jobs:
           language: sh
           python: 3.6
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.9.12
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=unit
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
@@ -112,12 +112,12 @@ jobs:
           os: windows
           language: sh
           before_install:
-              - choco install python --version=3.6.8
+              - choco install python --version=3.9.12
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=integration
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
@@ -225,13 +225,13 @@ jobs:
           language: sh
           python: 3.6
           before_install:
-              - choco install python --version=3.6.6
+              - choco install python --version=3.9.12
               - choco install googlechrome --x86
               - choco install chromedriver
               - python -m pip install -U pip setuptools
           env:
               - TOX_ENV=selenium
-              - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files/Nodejs:$PATH"
+              - PATH="/c/Python39:/c/Python39/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
