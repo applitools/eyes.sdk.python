@@ -2,11 +2,15 @@ import os
 import time
 
 import pytest
+import selenium
+from pkg_resources import parse_version
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from . import sauce
+
+LEGACY_SELENIUM = parse_version(selenium.__version__).major < 4
 
 
 @pytest.fixture(scope="function")
@@ -45,6 +49,8 @@ def firefox():
 @pytest.fixture(scope="function")
 def firefox_48(sauce_url, legacy, name_of_test):
     if legacy:
+        if not LEGACY_SELENIUM:
+            pytest.skip("Firefox 48 can only be accessed in legacy Selenium")
         capabilities = {
             "browserName": "firefox",
             "platform": "Windows 10",
@@ -91,6 +97,8 @@ def edge_18(sauce_url, name_of_test):
 @pytest.fixture(scope="function")
 def safari_11(sauce_url, legacy, name_of_test):
     if legacy:
+        if not LEGACY_SELENIUM:
+            pytest.skip("Legacy Safari 11 driver is not functional in Selenium 4")
         capabilities = {
             "browserName": "safari",
             "platform": "macOS 10.13",
