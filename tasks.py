@@ -83,7 +83,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "mock",
         "pytest-venv==0.2.1",
         '"pytest-xdist<3"',
-        '"pytest<5"',
+        '"pytest<8"',
         "requests",
         "tox==3.24.5",
         "virtualenv==20.11",
