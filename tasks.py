@@ -82,7 +82,7 @@ def install_requirements(c, dev=False, testing=False, lint=False):
         "PyYAML",
         "mock",
         "pytest-venv==0.2.1",
-        '"pytest-xdist<2"',
+        '"pytest-xdist<3"',
         '"pytest<5"',
         "requests",
         "tox==3.24.5",
