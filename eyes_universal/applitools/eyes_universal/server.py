@@ -48,7 +48,7 @@ class SDKServer(object):
             output = check_output(command, universal_newlines=True, close_fds=True)
         else:
             output = check_output(command, universal_newlines=True)
-        self.port = int(next(iter(output.split(maxsplit=1))))
+        self.port = int(output)
         logger.info("Started Universal SDK server at %s", self.port)
 
     def __repr__(self):
