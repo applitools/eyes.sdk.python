@@ -45,10 +45,10 @@ class SDKServer(object):
         if sys.version_info < (3,) and sys.platform != "win32":
             # python2 tends to hang if there are unclosed fds owned by child process
             # close_fds is not supported by windows python2 so not using it there
-            output = check_output(command, close_fds=True)
+            output = check_output(command, universal_newlines=True, close_fds=True)
         else:
-            output = check_output(command)
-        self.port = int(output.splitlines()[0])
+            output = check_output(command, universal_newlines=True)
+        self.port = int(next(iter(output.split(maxsplit=1))))
         logger.info("Started Universal SDK server at %s", self.port)
 
     def __repr__(self):
