@@ -13,24 +13,16 @@ def check_output(monkeypatch):
     return mock
 
 
-@pytest.fixture
-def close_fds_kw():
-    if sys.version_info < (3,) and sys.platform != "win32":
-        return {"close_fds": True}
-    else:
-        return {}
-
-
-def test_sdk_server_default_args(check_output, close_fds_kw):
+def test_sdk_server_default_args(check_output):
     server = SDKServer()
 
     assert server.port == 123
     assert check_output.mock_calls == [
-        call([executable_path, "--fork"], universal_newlines=True, **close_fds_kw)
+        call([executable_path, "--fork"], universal_newlines=True)
     ]
 
 
-def test_sdk_server_with_port(check_output, close_fds_kw):
+def test_sdk_server_with_port(check_output):
     server = SDKServer(port=345)
 
     assert server.port == 123  # mock return this
@@ -38,12 +30,11 @@ def test_sdk_server_with_port(check_output, close_fds_kw):
         call(
             [executable_path, "--port", 345, "--fork"],
             universal_newlines=True,
-            **close_fds_kw
         )
     ]
 
 
-def test_sdk_server_lazy(check_output, close_fds_kw):
+def test_sdk_server_lazy(check_output):
     server = SDKServer(lazy=True)
 
     assert server.port == 123
@@ -51,12 +42,11 @@ def test_sdk_server_lazy(check_output, close_fds_kw):
         call(
             [executable_path, "--lazy", "--fork"],
             universal_newlines=True,
-            **close_fds_kw
         )
     ]
 
 
-def test_sdk_server_idle_timeout(check_output, close_fds_kw):
+def test_sdk_server_idle_timeout(check_output):
     server = SDKServer(idle_timeout=5)
 
     assert server.port == 123
@@ -64,6 +54,5 @@ def test_sdk_server_idle_timeout(check_output, close_fds_kw):
         call(
             [executable_path, "--idle-timeout", 5, "--fork"],
             universal_newlines=True,
-            **close_fds_kw
         )
     ]

@@ -40,12 +40,7 @@ class SDKServer(object):
         if idle_timeout is not None:
             command.extend(["--idle-timeout", idle_timeout])
         command.append("--fork")
-        if sys.version_info < (3,) and sys.platform != "win32":
-            # python2 tends to hang if there are unclosed fds owned by child process
-            # close_fds is not supported by windows python2 so not using it there
-            output = check_output(command, universal_newlines=True, close_fds=True)
-        else:
-            output = check_output(command, universal_newlines=True)
+        output = check_output(command, universal_newlines=True)  # nosec
         self.port = int(output)
         logger.info("Started Universal SDK server at %s", self.port)
 
