@@ -31,6 +31,7 @@ class SDKServer(object):
         executable=executable_path,  # type: str
     ):
         self.executable = executable
+        self.log_file_name = None  # backward compatibility with eyes-selenium<=5.6
         command = [executable]
         if port is not None:
             command.extend(["--port", port])
