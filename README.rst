@@ -35,16 +35,11 @@ Please check the applitools website for usage instructions:
 Development
 -----------
 
-For smother development experience install Invoke for task run first
+For smother development experience use make
 
 ::
 
-    pip install invoke
-    inv install-requirements  # install libs required for development
-    inv install-packages  # for installing all packages
-    inv install-packages  --core # install only core package, could be core|selenium]images
-    inv dist --core  # publish eyes_core to test.pypi.org
-    inv dist --core  -prod # publish eyes_core to pypi.org
+    make
 
 Install pre-commit hook
 ***********************
@@ -62,12 +57,11 @@ manage hooks you could use invoke:
 Testing
 -------
 
-For local testing, for example, images sdk
+To run unit tests locally
 
 ::
 
-    inv install-packages --core --images
-    tox -e images
+    make unit_tests
 
 
 Docs
@@ -77,4 +71,4 @@ Generate Robot Framework docs
 
 ::
 
-    inv gen-robot-docs
+    make gen_robot_docs

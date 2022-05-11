@@ -7,7 +7,6 @@ git:
 install:
     - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
     - mkdir bin && unzip chromedriver_linux64.zip -d bin
-    - python -m pip install -U virtualenv==20.11 tox==3.24.5
 before_script:
     - export NO_COLOR=1
     - export PATH=`pwd`/bin:$PATH
@@ -29,12 +28,7 @@ before_script:
 
       fi
     - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
-script:
-    - echo "TRAVIS_COMMIT=$TRAVIS_COMMIT" "BUILD_TAG=$BUILD_TAG" "TRAVIS_TAG=$TRAVIS_TAG"
-    - echo "v$SDK_VERSION $CHANGELOG"
-    - echo $TEST_REPORT_SANDBOX
-    - echo $APPLITOOLS_BATCH_ID
-    - tox -e $TOX_ENV
+after_script:
     - sleep 5 || true
     - taskkill -f -im eyes-universal-win.exe || true
 stages:
@@ -65,13 +59,14 @@ jobs:
         - stage: unit-tests
           os: windows
           language: sh
-          python: 3.6
           before_install:
+              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
+              - choco install -y nodejs-lts
               - choco install python --version=3.10.4
-              - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
+          script:
+              - make unit_tests
           env:
-              - TOX_ENV=unit
               - PATH="/c/Python310:/c/Python310/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
@@ -80,43 +75,41 @@ jobs:
         - os: windows
           language: sh
           before_install:
+              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
+              - choco install -y nodejs-lts
               - choco install python2
-              - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
+          script:
+              - make unit_tests
           env:
-              - TOX_ENV=unit
               - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                 - $LOCALAPPDATA/pip/Cache
 
-#        - os: osx
-#          language: sh
-#          python: 3.6
-#          env:
-#              - TOX_ENV=unit
-
         - python: 2.7
-          env:
-              - TOX_ENV=unit
+          script:
+              - make unit_tests
 
         - python: 3.6
-          env:
-              - TOX_ENV=unit
+          script:
+              - make unit_tests
 
         - python: 3.10
-          env:
-              - TOX_ENV=unit
+          script:
+              - make unit_tests
 
         - stage: integration-tests
           os: windows
           language: sh
           before_install:
+              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - choco install python --version=3.10.4
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
+          script:
+              - make test_integration
           env:
-              - TOX_ENV=integration
               - PATH="/c/Python310:/c/Python310/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
@@ -125,29 +118,25 @@ jobs:
         - os: windows
           language: sh
           before_install:
+              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - choco install python2 --version=2.7.18
               - choco install -y --force nodejs-lts
               - python -m pip install -U pip setuptools
+          script:
+              - make test_integration
           env:
-              - TOX_ENV=integration
               - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
                   - $LOCALAPPDATA/pip/Cache
 
-#        - os: osx
-#          language: sh
-#          python: 3.6
-#          env:
-#              - TOX_ENV=integration
-
         - python: 2.7
-          env:
-              - TOX_ENV=integration
+          script:
+              - make test_integration
 
         - python: 3.6
-          env:
-              - TOX_ENV=integration
+          script:
+              - make test_integration
 
         - stage: functional-tests
           if: NOT tag =~ ^RELEASE_CANDIDATE
@@ -157,13 +146,12 @@ jobs:
               chrome: stable
               firefox: latest
           env:
-              - TOX_ENV=selenium-generated
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - git submodule update --init --remote --recursive
               - nvm install node
           script:
-              - tox -e selenium-generated
+              - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
@@ -177,13 +165,12 @@ jobs:
               chrome: stable
               firefox: latest
           env:
-              - TOX_ENV=selenium-generated
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           before_install:
               - git submodule update --init --remote --recursive
               - nvm install node
           script:
-              - tox -e selenium-generated
+              - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
                   bash ./ci_scripts/all_tests_report.sh "$SDK";
@@ -194,43 +181,45 @@ jobs:
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
-          env:
-            - TOX_ENV=robotframework
+          script:
+              - make robotframework_tests
 
         - python: 2.7
           if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
-          env:
-              - TOX_ENV=selenium
+          script:
+              - make selenium_tests
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           addons:
               chrome: stable
               firefox: latest
-          env:
-              - TOX_ENV=selenium
+          script:
+              - make selenium_tests
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.10
           addons:
               chrome: stable
               firefox: latest
-          env:
-              - TOX_ENV=selenium
+          script:
+              - make selenium_tests
 
         - if: NOT tag =~ ^RELEASE_CANDIDATE
           os: windows
           language: sh
           python: 3.6
           before_install:
+              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - choco install python --version=3.10.4
               - choco install googlechrome --x86 --ignore-checksums
               - choco install chromedriver
               - python -m pip install -U pip setuptools
+          script:
+              - make selenium_tests
           env:
-              - TOX_ENV=selenium
               - PATH="/c/Python310:/c/Python310/Scripts:/c/Program Files/Nodejs:$PATH"
           cache:
               directories:
@@ -239,9 +228,7 @@ jobs:
         - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
           python: 3.6
           script:
-            - pip install invoke
-            - inv install-requirements
-            - inv install-packages
+            - make install_dev_requirements install_eyes_robotframework
             - bash ./tutorials/tutorials.sh
 
         - stage: deploy
@@ -250,7 +237,6 @@ jobs:
           script:
               # Deploy to PyPi and send notification about the tests execution status
               # The ALLOWED_RELEASE_COMMITERS, TWINE_USERNAME and TWINE_PASSWORD should be set in Travis CI settings
-              - pip install -U invoke twine keyring==21.4.0
               - echo "v$SDK_VERSION $CHANGELOG"
               - echo $TMP_CHANGELOG
               # Save the email of the person who did this commit in COMMITTER_EMAIL
@@ -260,7 +246,7 @@ jobs:
                   TEST_COVERAGE_GAP=$(cat ./ci_scripts/testCoverageGap.txt);
 
                   bash ./ci_scripts/send_mail.sh "$SDK" "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP";
-                  inv dist --selenium --robotframework --from-env;
+                  make publish
 
                   echo "DEPLOY SUCCESSFUL" && sleep 5;
                 else
