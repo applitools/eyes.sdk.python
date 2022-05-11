@@ -26,7 +26,6 @@ class SDKServer(object):
     def __init__(
         self,
         port=None,  # type: Optional[int]
-        singleton=True,  # type: bool
         lazy=False,  # type: bool
         idle_timeout=None,  # type: Optional[int]
         executable=executable_path,  # type: str
@@ -35,8 +34,6 @@ class SDKServer(object):
         command = [executable]
         if port is not None:
             command.extend(["--port", port])
-        if not singleton:
-            command.append("--no-singleton")
         if lazy:
             command.append("--lazy")
         if idle_timeout is not None:

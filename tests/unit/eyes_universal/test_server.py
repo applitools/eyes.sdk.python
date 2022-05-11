@@ -43,19 +43,6 @@ def test_sdk_server_with_port(check_output, close_fds_kw):
     ]
 
 
-def test_sdk_server_no_singleton(check_output, close_fds_kw):
-    server = SDKServer(singleton=False)
-
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--no-singleton", "--fork"],
-            universal_newlines=True,
-            **close_fds_kw
-        )
-    ]
-
-
 def test_sdk_server_lazy(check_output, close_fds_kw):
     server = SDKServer(lazy=True)
 
