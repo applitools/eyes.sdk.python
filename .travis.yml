@@ -7,12 +7,6 @@ git:
 install:
     - make bin/chromedriver
 before_script:
-    - export NO_COLOR=1
-    - export PATH=`pwd`/bin:$PATH
-    # Disable stderr/stdout buffering in python
-    - export PYTHONUNBUFFERED=1
-    # Run GUI apps in headless mode
-    - export DISPLAY=:99.0
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
     - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
         export TEST_REPORT_SANDBOX=False;
@@ -26,7 +20,6 @@ before_script:
         fi
 
       fi
-    - export APPLITOOLS_BATCH_ID=`python -c "import uuid;print(str(uuid.uuid4()))"`
 after_script:
     - sleep 5 || true
     - taskkill -f -im eyes-universal-win.exe || true
