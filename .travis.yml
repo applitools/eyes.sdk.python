@@ -18,8 +18,8 @@ before_script:
             echo "THE CHANGELOG IS NOT CORRECT";
             exit 1;
         fi
-
       fi
+    - make print_env
 after_script:
     - sleep 5 || true
     - taskkill -f -im eyes-universal-win.exe || true
