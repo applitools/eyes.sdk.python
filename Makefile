@@ -66,6 +66,7 @@ clean:
 	rm -rf eyes_selenium/dist eyes_selenium/eyes_selenium.egg-info
 	rm -rf eyes_robotframework/dist eyes_robotframework/src/eyes_robotframework.egg-info
 	rm -rf dist
+	rm -rf bin
 
 
 gen_robot_docs:
@@ -91,3 +92,11 @@ robotframework_tests: install_eyes_robotframework install_test_requirements
 
 selenium_tests: install_eyes_selenium install_test_requirements
 	pytest -n6 tests/functional/eyes_selenium/
+
+
+bin/chromedriver: CHROMEDRIVER_VERSION = $$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
+bin/chromedriver:
+	curl -sO https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
+	mkdir -p bin
+	unzip chromedriver_linux64.zip -d bin
+	rm chromedriver_linux64.zip

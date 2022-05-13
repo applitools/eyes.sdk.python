@@ -5,8 +5,7 @@ services:
 git:
     submodules: false
 install:
-    - curl https://chromedriver.storage.googleapis.com/`curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip -O
-    - mkdir bin && unzip chromedriver_linux64.zip -d bin
+    - make bin/chromedriver
 before_script:
     - export NO_COLOR=1
     - export PATH=`pwd`/bin:$PATH
