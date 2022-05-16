@@ -115,6 +115,7 @@ jobs:
           env:
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           script:
+              - nvm install --lts
               - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
@@ -130,6 +131,7 @@ jobs:
           env:
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           script:
+              - nvm install --lts
               - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
