@@ -26,28 +26,11 @@ after_script:
 stages:
     - unit-tests
     - integration-tests
-    - bumpversion
     - functional-tests
     - generated-tests
     - deploy
 jobs:
     include:
-        - stage: bumpversion
-          if: tag =~ ^RELEASE_CANDIDATE AND fork == false
-          script:
-              # Push new commit to $RELEASE_BRANCH with tag vN.N.N which lead to deploy to PyPi
-              # RELEASE_BRANCH should be set in Travis CI settings
-              - echo "v$SDK_VERSION $CHANGELOG"
-              - if [[ "$TMP_CHANGELOG" ]]; then
-                  pip install bump2version;
-                  bumpversion --new-version $SDK_VERSION patch;
-                  git remote set-url origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
-                  git push --tags origin HEAD:$RELEASE_BRANCH;
-                else
-                  echo "THE CHANGELOG IS NOT CORRECT";
-                  exit 1;
-                fi
-
         - stage: unit-tests
           os: windows
           language: sh
@@ -131,7 +114,6 @@ jobs:
               - make test_integration
 
         - stage: functional-tests
-          if: NOT tag =~ ^RELEASE_CANDIDATE
           python: 3.6
           node_js: 14
           addons:
@@ -150,8 +132,7 @@ jobs:
                   echo "REPORTED SUCCESSFULLY";
                 fi
 
-        - if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.10
+        - python: 3.10
           node_js: 14
           addons:
               chrome: stable
@@ -170,37 +151,32 @@ jobs:
                 fi
 
         - python: 3.6
-          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           script:
               - make robotframework_tests
 
         - python: 2.7
-          if: NOT tag =~ ^RELEASE_CANDIDATE
           addons:
               chrome: stable
           script:
               - make selenium_tests
 
-        - if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.6
-          addons:
-              chrome: stable
-              firefox: latest
-          script:
-              - make selenium_tests
-
-        - if: NOT tag =~ ^RELEASE_CANDIDATE
-          python: 3.10
+        - python: 3.6
           addons:
               chrome: stable
               firefox: latest
           script:
               - make selenium_tests
 
-        - if: NOT tag =~ ^RELEASE_CANDIDATE
-          os: windows
+        - python: 3.10
+          addons:
+              chrome: stable
+              firefox: latest
+          script:
+              - make selenium_tests
+
+        - os: windows
           language: sh
           python: 3.6
           before_install:
@@ -217,7 +193,7 @@ jobs:
               directories:
                 - $LOCALAPPDATA/pip/Cache
 
-        - if: NOT tag =~ ^RELEASE_CANDIDATE AND type = cron
+        - if: type = cron
           python: 3.6
           script:
             - make install_dev_requirements install_eyes_robotframework
