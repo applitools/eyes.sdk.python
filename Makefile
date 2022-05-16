@@ -112,3 +112,6 @@ print_env:
 	echo SDK_VERSION=${SDK_VERSION} TEST_REPORT_SANDBOX=${TEST_REPORT_SANDBOX}
 	echo APPLITOOLS_BATCH_ID=${APPLITOOLS_BATCH_ID}
 	echo ${CHANGELOG}
+
+kill_windows_eyes_server:
+	taskkill -f -im eyes-universal-win.exe

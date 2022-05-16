@@ -22,12 +22,11 @@ before_script:
     - make print_env
 after_script:
     - sleep 5 || true
-    - taskkill -f -im eyes-universal-win.exe || true
+    - make kill_windows_eyes_server || true
 stages:
     - unit-tests
     - integration-tests
     - functional-tests
-    - generated-tests
     - deploy
 jobs:
     include:
