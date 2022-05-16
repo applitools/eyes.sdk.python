@@ -122,6 +122,10 @@ install_windows_node:
 	choco install -y nodejs-lts
 
 
+install_linux_node:
+	nvm install --lts
+
+
 install_windows_python2:
 	choco install python2 --version=2.7.18
 

@@ -1,4 +1,0 @@
-[submodule "sdk.coverage.tests"]
-	path = sdk.coverage.tests
-	url = https://github.com/applitools/sdk.coverage.tests.git
-	branch = python_initial
