@@ -107,13 +107,6 @@ bin/chromedriver:
 	rm chromedriver_linux64.zip
 
 
-print_env:
-	echo TRAVIS_COMMIT=${TRAVIS_COMMIT} TRAVIS_TAG=${TRAVIS_TAG}
-	echo SDK_VERSION=${SDK_VERSION} TEST_REPORT_SANDBOX=${TEST_REPORT_SANDBOX}
-	echo APPLITOOLS_BATCH_ID=${APPLITOOLS_BATCH_ID}
-	echo ${CHANGELOG}
-
-
 kill_windows_eyes_server:
 	taskkill -f -im eyes-universal-win.exe
 
@@ -133,3 +126,28 @@ install_windows_python_last:
 install_windows_chrome:
 	choco install googlechrome --x86 --ignore-checksums
 	choco install chromedriver
+
+
+verify_changelog:
+	@if [[ ($$TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$$) ]] ;\
+    then \
+		SDK_VERSION=$$(echo $$TRAVIS_TAG | sed 's/[^.0-9]*//g') ;\
+		CHANGELOG=$$(bash ./ci_scripts/extract_changelog.sh $$SDK_VERSION CHANGELOG.md) ;\
+		if [[ -z "$$CHANGELOG" ]]; \
+		then \
+			echo "THE CHANGELOG IS NOT CORRECT" ;\
+			exit 1 ;\
+		fi ;\
+	fi ;\
+	echo TRAVIS_COMMIT=$$TRAVIS_COMMIT TRAVIS_TAG=$$TRAVIS_TAG SDK_VERSION=$$SDK_VERSION ;\
+	echo APPLITOOLS_BATCH_ID=$$APPLITOOLS_BATCH_ID ;\
+	echo $$CHANGELOG ;\
+
+
+send_cron_report:
+	if [[ $TRAVIS_EVENT_TYPE = cron ]] ;\
+	then \
+		echo "REPORTING..." ;\
+		bash ./ci_scripts/all_tests_report.sh python ;\
+		echo "REPORTED SUCCESSFULLY" ;\
+	fi ;\

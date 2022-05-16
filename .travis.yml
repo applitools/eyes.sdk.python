@@ -6,18 +6,7 @@ install:
     - make bin/chromedriver
 before_script:
     # Runs only during the release process; Stops if CHANGELOG.md has the wrong format
-    - if [[ ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$) || ($TRAVIS_TAG =~ ^RELEASE_CANDIDATE) ]]; then
-        export TEST_REPORT_SANDBOX=False;
-        export SDK_VERSION=$(echo $TRAVIS_TAG | sed 's/[^.0-9]*//g');
-        export TMP_CHANGELOG=$(bash ./ci_scripts/extract_changelog.sh "$SDK_VERSION" "CHANGELOG.md");
-        export CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "There is no change log for version $SDK_VERSION"; echo "$TMP_CHANGELOG");
-
-        if [[ (-z "$TMP_CHANGELOG") ]]; then
-            echo "THE CHANGELOG IS NOT CORRECT";
-            exit 1;
-        fi
-      fi
-    - make print_env
+    - make verify_changelog
 after_script:
     - sleep 5 || true
     - make kill_windows_eyes_server || true
@@ -113,11 +102,7 @@ jobs:
           script:
               - nvm install --lts
               - make generated_tests
-              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
-                  echo "REPORTING...";
-                  bash ./ci_scripts/all_tests_report.sh "$SDK";
-                  echo "REPORTED SUCCESSFULLY";
-                fi
+              - make send_cron_report
 
         - python: 3.10
           node_js: 16
@@ -129,11 +114,7 @@ jobs:
           script:
               - nvm install --lts
               - make generated_tests
-              - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
-                  echo "REPORTING...";
-                  bash ./ci_scripts/all_tests_report.sh "$SDK";
-                  echo "REPORTED SUCCESSFULLY";
-                fi
+              - make send_cron_report
 
         - python: 3.6
           addons:
