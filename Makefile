@@ -151,3 +151,18 @@ send_cron_report:
 		bash ./ci_scripts/all_tests_report.sh python ;\
 		echo "REPORTED SUCCESSFULLY" ;\
 	fi ;\
+
+
+send_relese_mail: verify_changelog
+	@SDK_VERSION=$$(echo $$TRAVIS_TAG | sed 's/[^.0-9]*//g') ;\
+	CHANGELOG=$$(bash ./ci_scripts/extract_changelog.sh $$SDK_VERSION CHANGELOG.md) ;\
+	COMMITTER_EMAIL="$$(git log -1 $$TRAVIS_COMMIT --pretty="%cE")" ;\
+	if [[ ("$$ALLOWED_RELEASE_COMMITERS" =~ .*"$$COMMITTER_EMAIL".*) ]] ;\
+	then \
+		echo DEPLOY ;\
+		TEST_COVERAGE_GAP=$$(cat ./ci_scripts/testCoverageGap.txt) ;\
+		bash ./ci_scripts/send_mail.sh python "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP" ;\
+	else \
+		echo Committer $$COMMITTER_EMAIL is not allowed ;\
+		exit 1 ;\
+	fi ;\
