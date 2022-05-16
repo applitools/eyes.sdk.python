@@ -35,8 +35,7 @@ jobs:
           language: sh
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - choco install -y nodejs-lts
-              - choco install python --version=3.10.4
+              - make install_windows_node install_windows_python_last
               - python -m pip install -U pip setuptools
           script:
               - make unit_tests
@@ -50,8 +49,7 @@ jobs:
           language: sh
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - choco install -y nodejs-lts
-              - choco install python2
+              - make install_windows_node install_windows_python2
               - python -m pip install -U pip setuptools
           script:
               - make unit_tests
@@ -78,8 +76,7 @@ jobs:
           language: sh
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - choco install python --version=3.10.4
-              - choco install -y --force nodejs-lts
+              - make install_windows_node install_windows_python_last
               - python -m pip install -U pip setuptools
           script:
               - make test_integration
@@ -93,8 +90,7 @@ jobs:
           language: sh
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - choco install python2 --version=2.7.18
-              - choco install -y --force nodejs-lts
+              - make install_windows_node install_windows_python2
               - python -m pip install -U pip setuptools
           script:
               - make test_integration
@@ -180,7 +176,7 @@ jobs:
           python: 3.6
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - choco install python --version=3.10.4
+              - make install_windows_python_last
               - choco install googlechrome --x86 --ignore-checksums
               - choco install chromedriver
               - python -m pip install -U pip setuptools

@@ -113,5 +113,18 @@ print_env:
 	echo APPLITOOLS_BATCH_ID=${APPLITOOLS_BATCH_ID}
 	echo ${CHANGELOG}
 
+
 kill_windows_eyes_server:
 	taskkill -f -im eyes-universal-win.exe
+
+
+install_windows_node:
+	choco install -y nodejs-lts
+
+
+install_windows_python2:
+	choco install python2 --version=2.7.18
+
+
+install_windows_python_last:
+	choco install python --version=3.10.4
