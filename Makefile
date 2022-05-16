@@ -128,3 +128,8 @@ install_windows_python2:
 
 install_windows_python_last:
 	choco install python --version=3.10.4
+
+
+install_windows_chrome:
+	choco install googlechrome --x86 --ignore-checksums
+	choco install chromedriver

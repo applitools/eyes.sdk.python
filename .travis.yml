@@ -176,9 +176,7 @@ jobs:
           python: 3.6
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - make install_windows_python_last
-              - choco install googlechrome --x86 --ignore-checksums
-              - choco install chromedriver
+              - make install_windows_python_last install_windows_chrome
               - python -m pip install -U pip setuptools
           script:
               - make selenium_tests
