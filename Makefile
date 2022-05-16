@@ -122,11 +122,6 @@ install_windows_node:
 	choco install -y nodejs-lts
 
 
-install_linux_node:
-	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-	nvm install --lts
-
-
 install_windows_python2:
 	choco install python2 --version=2.7.18
 

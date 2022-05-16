@@ -108,13 +108,13 @@ jobs:
 
         - stage: functional-tests
           python: 3.6
+          node_js: 16
           addons:
               chrome: stable
               firefox: latest
           env:
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           script:
-              - make install_linux_node
               - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
@@ -123,13 +123,13 @@ jobs:
                 fi
 
         - python: 3.10
+          node_js: 16
           addons:
               chrome: stable
               firefox: latest
           env:
               - APPLITOOLS_BATCH_NAME="Python Coverage Tests"
           script:
-              - make install_linux_node
               - make generated_tests
               - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
                   echo "REPORTING...";
