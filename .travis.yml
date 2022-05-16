@@ -34,7 +34,6 @@ jobs:
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - make install_windows_node install_windows_python_last
-              - python -m pip install -U pip setuptools
           script:
               - make unit_tests
           env:
@@ -48,7 +47,6 @@ jobs:
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - make install_windows_node install_windows_python2
-              - python -m pip install -U pip setuptools
           script:
               - make unit_tests
           env:
@@ -75,7 +73,6 @@ jobs:
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - make install_windows_node install_windows_python_last
-              - python -m pip install -U pip setuptools
           script:
               - make test_integration
           env:
@@ -89,7 +86,6 @@ jobs:
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - make install_windows_node install_windows_python2
-              - python -m pip install -U pip setuptools
           script:
               - make test_integration
           env:
@@ -171,7 +167,6 @@ jobs:
           before_install:
               - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
               - make install_windows_python_last install_windows_chrome
-              - python -m pip install -U pip setuptools
           script:
               - make selenium_tests
           env:
