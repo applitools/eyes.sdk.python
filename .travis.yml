@@ -44,18 +44,6 @@ jobs:
               directories:
                 - $LOCALAPPDATA/pip/Cache
 
-        - python: 2.7
-          script:
-              - make unit_tests
-
-        - python: 3.6
-          script:
-              - make unit_tests
-
-        - python: 3.10
-          script:
-              - make unit_tests
-
         - stage: integration-tests
           os: windows
           language: sh
