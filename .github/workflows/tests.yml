@@ -1,9 +1,9 @@
-name: Unit tests
+name: Tests
 on:
     push:
     pull_request:
 jobs:
-    build:
+    unit-tests:
         strategy:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
@@ -19,3 +19,18 @@ jobs:
             env: # Or as an environment variable
               APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
             run: make unit_tests
+
+    installation-tests:
+        strategy:
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                python-version: ['2.7', '3.10']
+        runs-on: ${{ matrix.os }}
+        steps:
+        -   uses: actions/checkout@v3
+        -   name: Set up Python ${{ matrix.python-version }}
+            uses: actions/setup-python@v3
+            with:
+                python-version: ${{ matrix.python-version }}
+        -   name: Run installation tests
+            run: make test_integration

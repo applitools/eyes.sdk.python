@@ -11,46 +11,10 @@ after_script:
     - sleep 5 || true
     - make kill_windows_eyes_server || true
 stages:
-    - integration-tests
     - functional-tests
     - deploy
 jobs:
     include:
-        - stage: integration-tests
-          os: windows
-          language: sh
-          before_install:
-              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - make install_windows_node install_windows_python_last
-          script:
-              - make test_integration
-          env:
-              - PATH="/c/Python310:/c/Python310/Scripts:/c/Program Files/Nodejs:$PATH"
-          cache:
-              directories:
-                  - $LOCALAPPDATA/pip/Cache
-
-        - os: windows
-          language: sh
-          before_install:
-              - cp /c/ProgramData/chocolatey/bin/mingw32-make.exe /c/ProgramData/chocolatey/bin/make.exe
-              - make install_windows_node install_windows_python2
-          script:
-              - make test_integration
-          env:
-              - PATH="/c/Python27:/c/Python27/Scripts:/c/Program Files/Nodejs:$PATH"
-          cache:
-              directories:
-                  - $LOCALAPPDATA/pip/Cache
-
-        - python: 2.7
-          script:
-              - make test_integration
-
-        - python: 3.6
-          script:
-              - make test_integration
-
         - stage: functional-tests
           python: 3.6
           node_js: 16
