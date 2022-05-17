@@ -20,7 +20,7 @@ jobs:
             with:
                 python-version: ${{ matrix.python-version }}
         -   name: Run unit tests
-            env: # Or as an environment variable
+            env:
               APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
             run: make unit_tests
 
@@ -54,7 +54,10 @@ jobs:
         -   uses: actions/setup-node@v3
             with:
                 node-version: 16
-        -   name: Run generate tests tests
+        -   uses: browser-actions/setup-firefox@latest
+            with:
+              firefox-version: latest
+        -   name: Run generated tests
             env: # Or as an environment variable
               APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
               APPLITOOLS_API_KEY_READ: ${{ secrets.APPLITOOLS_API_KEY_READ }}
