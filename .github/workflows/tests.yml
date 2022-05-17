@@ -8,11 +8,15 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['2.7', '3.6', '3.10']
+                exclude:
+                  - os: macos-latest
+                    python-version: '3.6'
+                  - os: windows-latest
+                    python-version: '3.6'
         runs-on: ${{ matrix.os }}
         steps:
         -   uses: actions/checkout@v3
-        -   name: Set up Python ${{ matrix.python-version }}
-            uses: actions/setup-python@v3
+        -   uses: actions/setup-python@v3
             with:
                 python-version: ${{ matrix.python-version }}
         -   name: Run unit tests
@@ -25,12 +29,34 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['2.7', '3.10']
+                exclude:
+                  - os: macos-latest
+                    python-version: '2.7'
         runs-on: ${{ matrix.os }}
         steps:
         -   uses: actions/checkout@v3
-        -   name: Set up Python ${{ matrix.python-version }}
-            uses: actions/setup-python@v3
+        -   uses: actions/setup-python@v3
             with:
                 python-version: ${{ matrix.python-version }}
         -   name: Run installation tests
             run: make test_integration
+
+    generated-tests:
+        strategy:
+            matrix:
+                python-version: ['3.6', '3.10']
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v3
+            with:
+                python-version: ${{ matrix.python-version }}
+        -   uses: actions/setup-node@v3
+            with:
+                node-version: 16
+        -   name: Run generate tests tests
+            env: # Or as an environment variable
+              APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+              SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+              SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+            run: make generated_tests
