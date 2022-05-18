@@ -11,12 +11,16 @@ install_packages_editable: eyes_universal eyes_selenium eyes_robotframework
 	for PACK in $^; do echo cd $$PACK && python -m pip install --upgrade --editable $$PACK; done
 
 
-install_eyes_selenium: dist
-	python -m pip install --upgrade --find-links=file:dist eyes-selenium
+install_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_eyes_universal
+	python -m pip install eyes_selenium/dist/*
 
 
-install_eyes_robotframework: dist
-	python -m pip install --upgrade --find-links=file:dist eyes-robotframework
+install_eyes_robotframework: eyes_selenium/dist eyes_robotframework/dist install_eyes_universal
+	python -m pip install eyes_selenium/dist/* eyes_robotframework/dist/*
+
+
+install_eyes_universal: eyes_universal/dist
+	python -m pip install --find-links=file:eyes_universal/dist/ eyes_universal
 
 
 install_test_requirements:
@@ -50,8 +54,6 @@ install_publish_requirements:
 
 
 dist: eyes_universal/dist eyes_selenium/dist eyes_robotframework/dist
-	mkdir dist
-	cp eyes_universal/dist/* eyes_selenium/dist/* eyes_robotframework/dist/* dist/
 
 
 eyes_universal/dist:
