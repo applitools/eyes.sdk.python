@@ -84,7 +84,7 @@ jobs:
         with:
           name: packages
       - name: Run generated tests
-        env: # Or as an environment variable
+        env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           APPLITOOLS_API_KEY_READ: ${{ secrets.APPLITOOLS_API_KEY_READ }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -99,16 +99,17 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: '3.6'
-      - uses: GabrielBB/xvfb-action@v1
       - uses: actions/download-artifact@v3
         with:
           name: packages
       - name: Run robot framework tests
-        env: # Or as an environment variable
+        uses: GabrielBB/xvfb-action@v1
+        env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: make robotframework_tests
+        with:
+          run: make robotframework_tests
 
   functional-tests:
     needs: dist-build
@@ -129,7 +130,7 @@ jobs:
         with:
           name: packages
       - name: Run functional tests
-        env: # Or as an environment variable
+        env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
