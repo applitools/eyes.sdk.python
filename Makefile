@@ -109,8 +109,8 @@ bin/chromedriver:
 	rm chromedriver_linux64.zip
 
 
-kill_windows_eyes_server:
-	taskkill -f -im eyes-universal-win.exe
+kill_eyes_server:
+	taskkill -f -im eyes-universal-win.exe || killall eyes-universal-macos || killall eyes-universal-linux
 
 
 install_windows_node:
