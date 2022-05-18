@@ -20,7 +20,7 @@ install_eyes_robotframework: eyes_selenium/dist eyes_robotframework/dist install
 
 
 install_eyes_universal: eyes_universal/dist
-	python -m pip install --find-links=file:eyes_universal/dist/ eyes_universal
+	python -m pip install --no-index --find-links=file:eyes_universal/dist/ eyes_universal
 
 
 install_test_requirements:
@@ -84,7 +84,7 @@ unit_tests: install_eyes_robotframework install_test_requirements
 	pytest -n6 tests/unit
 
 
-test_integration: install_test_requirements
+test_integration: install_eyes_robotframework install_test_requirements
 	pytest tests/test_integration.py
 
 
