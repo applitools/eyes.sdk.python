@@ -11,11 +11,11 @@ jobs:
         with:
           python-version: "3.6"
       - name: Build packages
-        run: make dist
+        run: make eyes_universal/dist eyes_selenium/dist eyes_robotframework/dist
       - uses: actions/upload-artifact@v3
         with:
           name: packages
-          path: dist/
+          path: "*/dist/"
 
   unit-tests:
     needs: dist-build
