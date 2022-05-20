@@ -4,7 +4,7 @@ export DISPLAY=:99.0
 export APPLITOOLS_BATCH_ID=$(shell python -c "import uuid;print(str(uuid.uuid4()))")
 
 install_dev_requirements: install_test_requirements install_packages_editable
-	python -m pip install --upgrade pre-commit bump2version
+	python -m pip install --upgrade pre-commit
 
 
 install_packages_editable: eyes_universal eyes_selenium eyes_robotframework
@@ -168,3 +168,15 @@ send_relese_mail: verify_changelog
 		echo Committer $$COMMITTER_EMAIL is not allowed ;\
 		exit 1 ;\
 	fi ;\
+
+
+install_bump2version:
+	python -m pip install --upgrade bump2version
+
+
+bumpversion_eyes_universal: install_bump2version
+	cd eyes_universal && python -m bumpversion ${BUMP_TYPE}
+
+
+bumpversion_eyes_selenium: install_bump2version
+	python -m bumpversion ${BUMP_TYPE}
