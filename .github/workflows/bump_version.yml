@@ -1,0 +1,25 @@
+name: Bump version
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: package being released
+        type: choice
+        options: [eyes_universal, eyes_selenium]
+        required: true
+      bump_type:
+        description: version component to bump
+        type: choice
+        options: [patch, minor, major]
+        required: true
+jobs:
+  bump_version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - env:
+          GIT_AUTHOR_NAME: ${{github.actor}}
+          GIT_COMMITTER_NAME: ${{github.actor}}
+          EMAIL: github-actions@github.com
+        run: make bumpversion_${{github.event.inputs.package}} BUMP_TYPE=${{github.event.inputs.bump_type}}
+      - run: git push --follow-tags
