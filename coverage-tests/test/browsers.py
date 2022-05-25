@@ -10,7 +10,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from . import sauce
 
-LEGACY_SELENIUM = parse_version(selenium.__version__).major < 4
+LEGACY_SELENIUM = parse_version(selenium.__version__) < parse_version("4")
 
 
 @pytest.fixture(scope="function")
