@@ -1,3 +1,7 @@
+## [vNext]
+### Updated
+- Support for typed exceptions implemented in eyes-universal 2.5.19 [Trello 2912](https://trello.com/c/fN7fLjss)
+
 ## [5.6.0] - 2022-04-27
 ### Added
 - [eyes-robotframework] YAML linter for Robot Framework [Trello 2820](https://trello.com/c/dg4xqkPs)
