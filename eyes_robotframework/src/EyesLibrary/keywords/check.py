@@ -35,24 +35,7 @@ def try_resolve_tag_and_keyword(tag, check_settings_keywords, defined_keywords):
     return check_settings_keywords, tag
 
 
-class CheckKeywords(LibraryComponent):
-    @keyword("Eyes Check Window", types=(str,), tags=(CHECK_FLOW,))
-    def check_window(self, tag=None, *check_settings_keywords):
-        # type: (Optional[Text], tuple[Any]) -> MatchResult
-        """
-        Check current browser window
-
-        *Example:*
-            |  Eyes Check Window   |
-        """
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, self.defined_keywords
-        )
-        check_settings = collect_check_settings(
-            Target.window(), self.defined_keywords, *check_settings_keywords
-        )
-        return self.current_eyes.check(check_settings, tag)
-
+class CheckRegionKeywords(object):
     @keyword("Eyes Check Region By Coordinates", tags=(CHECK_FLOW,))
     def check_region_by_coordinates(
         self,
@@ -141,6 +124,8 @@ class CheckKeywords(LibraryComponent):
         )
         return self.current_eyes.check(check_settings, tag)
 
+
+class CheckFrameKeywords(object):
     @keyword(
         "Eyes Check Frame By Element",
         types={"element": (SeleniumWebElement, AppiumWebElement), "tag": str},
@@ -248,6 +233,25 @@ class CheckKeywords(LibraryComponent):
             Target.frame(self.from_locator_to_supported_form(selector)),
             self.defined_keywords,
             *check_settings_keywords
+        )
+        return self.current_eyes.check(check_settings, tag)
+
+
+class CheckKeywords(LibraryComponent, CheckRegionKeywords, CheckFrameKeywords):
+    @keyword("Eyes Check Window", types=(str,), tags=(CHECK_FLOW,))
+    def check_window(self, tag=None, *check_settings_keywords):
+        # type: (Optional[Text], tuple[Any]) -> MatchResult
+        """
+        Check current browser window
+
+        *Example:*
+            |  Eyes Check Window   |
+        """
+        check_settings_keywords, tag = try_resolve_tag_and_keyword(
+            tag, check_settings_keywords, self.defined_keywords
+        )
+        check_settings = collect_check_settings(
+            Target.window(), self.defined_keywords, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
