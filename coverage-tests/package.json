@@ -24,9 +24,11 @@
     "python:report:sandbox": "coverage-tests report ./configuration --sandbox --reportId $TRAVIS_COMMIT",
     "python:report:prod": "coverage-tests report ./configuration --reportId $TRAVIS_COMMIT",
     "python:report": "[ \"$TEST_REPORT_SANDBOX\" = \"False\" ] && npm run python:report:prod || npm run python:report:sandbox ",
-    "python:tests": "./python_tests.sh"
+    "python:tests": "./python_tests.sh",
+    "universal:eg": "eyes-universal eg-client --port 8080"
   },
   "dependencies": {
+    "@applitools/eyes-universal": "^2.5.17",
     "@applitools/sdk-coverage-tests": "^2.3.14",
     "@typescript-eslint/parser": "^2.14.0",
     "typescript": "^3.7.4"
