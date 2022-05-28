@@ -30,6 +30,7 @@ from .keywords import (
     ConfigurationKeywords,
     SessionKeywords,
     TargetKeywords,
+    TargetPathKeywords,
 )
 from .keywords.session import RunnerKeywords
 from .library_listener import LibraryListener
@@ -209,6 +210,7 @@ class EyesLibrary(DynamicCore):
             TargetKeywords(self),
             CheckSettingsKeywords(self),
             ConfigurationKeywords(self),
+            TargetPathKeywords(self),
         ]
 
         DynamicCore.__init__(self, keywords)

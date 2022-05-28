@@ -1,6 +1,7 @@
 import pytest
 from AppiumLibrary import AppiumLibrary
 from mock import Mock
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from SeleniumLibrary import SeleniumLibrary
 
@@ -29,6 +30,16 @@ def defined_keywords():
 @pytest.fixture
 def web_element():
     return Mock(WebElement)
+
+
+@pytest.fixture()
+def css_selector():
+    return "css:#some-id"
+
+
+@pytest.fixture()
+def by_selector():
+    return [By.CSS_SELECTOR, "#some-id"]
 
 
 @pytest.fixture
