@@ -31,8 +31,7 @@ fi
 
 # Kill eg client by the process id
 echo $EG_PID
-pkill -P $EG_PID
-kill -9 $EG_PID
+kill $EG_PID
 
 npm run python:report
 if [ $? -ne 0 ]; then
