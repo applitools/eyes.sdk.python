@@ -5,13 +5,11 @@ from os import getcwd
 from threading import Lock
 from typing import Any, List, Optional, Text
 
-from selenium.common.exceptions import StaleElementReferenceException
-
 from ..common.errors import USDKFailure
 from .connection import USDKConnection
+from .universal_sdk_types import demarshal_error
 
-# A backward-compatible alias, Exception was named Failure in original 5.0.0 release
-Failure = USDKFailure
+Failure = USDKFailure  # backward compatibility with eyes-selenium==5.0.0
 
 
 class ManagerType(Enum):
@@ -145,10 +143,7 @@ def _check_error(payload):
     # type: (dict) -> None
     error = payload.get("error")
     if error:
-        if error["message"].startswith("stale element reference"):
-            raise StaleElementReferenceException(error["message"])
-        else:
-            raise USDKFailure(error["message"], error["stack"])
+        raise demarshal_error(error)
 
 
 _instances = {}

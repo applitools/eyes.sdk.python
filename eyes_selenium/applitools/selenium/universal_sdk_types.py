@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Iterable, Text, Tuple, Union
 
 import attr
 import cattr
+from selenium.common.exceptions import StaleElementReferenceException
 
 from applitools.common import (
     AccessibilityGuidelinesVersion,
@@ -27,7 +28,8 @@ from applitools.common import (
 )
 from applitools.common.utils.json_utils import attr_from_json, underscore_to_camelcase
 
-from ..common.geometry import Rectangle, RectangleSize
+from ..common.errors import DiffsFoundError, NewTestError, TestFailedError, USDKFailure
+from ..common.geometry import Rectangle
 from ..core import (
     FloatingRegionByRectangle,
     GetRegion,
@@ -925,6 +927,8 @@ def demarshal_close_manager_results(close_manager_result_dict, config):
     results = attr_from_json(dumps(close_manager_result_dict), TestResultsSummary)
     for converted_res, raw_res in zip(results, close_manager_result_dict["results"]):
         converted_res.browser_info = demarshal_browser_info(raw_res.get("browserInfo"))
+        if raw_res.get("exception"):
+            converted_res.exception = demarshal_error(raw_res["exception"])
         if converted_res.test_results:
             converted_res.test_results.set_connection_config(
                 config.server_url, config.api_key, config.proxy
@@ -935,6 +939,22 @@ def demarshal_close_manager_results(close_manager_result_dict, config):
 def demarshal_server_info(info_dict):
     # type: (dict) -> ServerInfo
     return ServerInfo(info_dict["logsDir"])
+
+
+def demarshal_error(error_dict):
+    if error_dict["message"].startswith("stale element reference"):
+        return StaleElementReferenceException(error_dict["message"])
+    elif error_dict.get("reason") in _matching_failures:
+        return _matching_failures[error_dict["reason"]](error_dict["message"])
+    else:
+        return USDKFailure(error_dict["message"], error_dict["stack"])
+
+
+_matching_failures = {
+    "test different": DiffsFoundError,
+    "test failed": TestFailedError,
+    "test new": NewTestError,
+}
 
 
 def _keys_underscore_to_camel_remove_none(obj):

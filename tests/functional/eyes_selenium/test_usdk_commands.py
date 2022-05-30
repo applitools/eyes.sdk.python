@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from os import getcwd
 
-import pytest
+from mock import ANY
 
 from applitools.selenium.command_executor import CommandExecutor, ManagerType
 from applitools.selenium.connection import USDKConnection
@@ -113,14 +113,25 @@ def test_usdk_commands_open_abort_eyes(local_chrome_driver):
     manager_close_result = commands.manager_close_manager(mgr, False, 100)
 
     assert manager_close_result == {
-        "exceptions": 0,
+        "exceptions": 1,
         "failed": 1,
         "matches": 0,
         "mismatches": 0,
         "missing": 0,
         "passed": 0,
         "unresolved": 0,
-        "results": [{"testResults": test_result}],
+        "results": [
+            {
+                "testResults": test_result,
+                "exception": {
+                    "message": "Test 'USDK Commands open abort' of 'USDK Test' is failed! "
+                    "See details at undefined",
+                    "reason": "test failed",
+                    "stack": ANY,
+                    "info": ANY,
+                },
+            }
+        ],
     }
 
 

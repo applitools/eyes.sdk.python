@@ -46,7 +46,9 @@ class EyesRunner(object):
         # type: (bool, Optional[int]) -> TestResultsSummary
         try:
             # Do not pass should_raise_exception because USDK raises untyped exceptions
-            results = self._commands.manager_close_manager(self._ref, False, timeout)
+            results = self._commands.manager_close_manager(
+                self._ref, should_raise_exception, timeout
+            )
         except TimeoutError:
             raise EyesError("Tests didn't finish in {} seconds".format(timeout))
         # We don't have server_url, api_key and proxy settings in runner
@@ -57,12 +59,8 @@ class EyesRunner(object):
         for r in structured_results:
             if r.exception is not None:
                 print("--- Test error. \n\tServer exception {}".format(r.exception))
-                if should_raise_exception:
-                    raise r.exception
             else:
-                log_session_results_and_raise_exception(
-                    should_raise_exception, r.test_results
-                )
+                log_session_results_and_raise_exception(False, r.test_results)
         return structured_results
 
     def _set_connection_config(self, config):
