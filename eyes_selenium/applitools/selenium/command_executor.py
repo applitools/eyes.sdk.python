@@ -5,9 +5,11 @@ from os import getcwd
 from threading import Lock
 from typing import Any, List, Optional, Text
 
-from ..common.errors import USDKFailure as Failure  # Backward compatibility 5.0.0 alias
+from ..common.errors import USDKFailure
 from .connection import USDKConnection
 from .universal_sdk_types import demarshal_error
+
+Failure = USDKFailure  # backward compatibility with eyes-selenium==5.0.0
 
 
 class ManagerType(Enum):
