@@ -1,3 +1,4 @@
+#!/bin/bash
 RESULT=0
 MESSAGE=""
 npm install
@@ -16,7 +17,7 @@ fi
 
 # start eg client and save process id
 # commented out if need eg client logs
-export APPLITOOLS_SHOW_LOGS=true
+#export APPLITOOLS_SHOW_LOGS=true
 npm run universal:eg &
 EG_PID="$!"
 export EXECUTION_GRID_URL=http://localhost:8080
