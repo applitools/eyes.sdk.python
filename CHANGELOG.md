@@ -1,4 +1,4 @@
-## [vNext]
+## [5.6.1] - 2022-06-01
 ### Updated
 - Support for typed exceptions implemented in eyes-universal 2.5.19 [Trello 2912](https://trello.com/c/fN7fLjss)
 
