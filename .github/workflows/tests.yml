@@ -38,9 +38,12 @@ jobs:
         with:
           name: packages
       - name: Run unit tests
+        uses: ./.github/actions/pytest
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
-        run: make unit_tests
+        with:
+          package: eyes_selenium
+          test-type: unit
 
   installation-tests:
     needs: dist-build
@@ -61,7 +64,10 @@ jobs:
         with:
           name: packages
       - name: Run installation tests
-        run: make test_integration
+        uses: ./.github/actions/pytest
+        with:
+          package: eyes_selenium
+          test-type: installation
 
   generated-tests:
     needs: dist-build
@@ -84,12 +90,15 @@ jobs:
         with:
           name: packages
       - name: Run generated tests
+        uses: ./.github/actions/pytest
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           APPLITOOLS_API_KEY_READ: ${{ secrets.APPLITOOLS_API_KEY_READ }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: make generated_tests
+        with:
+          package: eyes_selenium
+          test-type: generated
 
   robot-framework-tests:
     needs: dist-build
@@ -130,8 +139,11 @@ jobs:
         with:
           name: packages
       - name: Run functional tests
+        uses: ./.github/actions/pytest
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: make selenium_tests
+        with:
+          package: eyes_selenium
+          test-type: functional

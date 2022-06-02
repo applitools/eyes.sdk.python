@@ -80,15 +80,15 @@ gen_robot_docs:
 	python -m robot.libdoc --format html EyesLibrary docs/eyes_robotframework/keywords.html
 
 
-unit_tests: install_eyes_robotframework install_test_requirements
+eyes_selenium_unit_tests: install_eyes_robotframework install_test_requirements
 	pytest -n6 tests/unit
 
 
-test_integration: install_eyes_robotframework install_test_requirements
+eyes_selenium_installation_tests: install_eyes_robotframework install_test_requirements
 	pytest tests/test_integration.py
 
 
-generated_tests: install_eyes_selenium install_test_requirements
+eyes_selenium_generated_tests: install_eyes_selenium install_test_requirements
 	chmod a+x ./coverage-tests/python_tests.sh
 	npm run python:tests  --prefix ./coverage-tests
 
@@ -97,7 +97,7 @@ robotframework_tests: install_eyes_robotframework install_test_requirements
 	pytest -n6 tests/functional/eyes_robotframework/test_integration.py::test_suite_web
 
 
-selenium_tests: install_eyes_selenium install_test_requirements
+eyes_selenium_functional_tests: install_eyes_selenium install_test_requirements
 	pytest -n6 tests/functional/eyes_selenium/
 
 
