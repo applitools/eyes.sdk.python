@@ -93,8 +93,8 @@ eyes_selenium_generated_tests: install_eyes_selenium install_test_requirements
 	npm run python:tests  --prefix ./coverage-tests
 
 
-robotframework_tests: install_eyes_robotframework install_test_requirements
-	pytest -n6 tests/functional/eyes_robotframework/test_integration.py::test_suite_web
+eyes_robotframework_functional_tests: install_xvfb install_eyes_robotframework install_test_requirements
+	xvfb-run --auto-servernum pytest -n6 tests/functional/eyes_robotframework/test_integration.py::test_suite_web
 
 
 eyes_selenium_functional_tests: install_eyes_selenium install_test_requirements
@@ -128,6 +128,10 @@ install_windows_python_last:
 install_windows_chrome:
 	choco install googlechrome --x86 --ignore-checksums
 	choco install chromedriver
+
+
+install_xvfb:
+	sudo apt-get install -y xvfb
 
 
 verify_changelog:

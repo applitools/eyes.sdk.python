@@ -112,13 +112,15 @@ jobs:
         with:
           name: packages
       - name: Run robot framework tests
-        uses: GabrielBB/xvfb-action@v1
+        uses: ./.github/actions/pytest
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         with:
-          run: make robotframework_tests
+          package: eyes_robotframework
+          test-type: functional
+
 
   functional-tests:
     needs: dist-build
