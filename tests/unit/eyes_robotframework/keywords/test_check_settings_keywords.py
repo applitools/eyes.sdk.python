@@ -29,6 +29,7 @@ def get_cs_from_method(method_name, *args, **kwargs):
 
 
 def get_regions_from_(method_name, *args, **kwargs):
+    # type: (...)->[Region]
     """
         Return regions for invoked method from CheckSettings
 
@@ -42,6 +43,7 @@ def get_regions_from_(method_name, *args, **kwargs):
 @pytest.fixture
 def get_regions_from_cs_keyword(eyes_library_with_selenium):
     def internal_func(method_name, by_method_postfix, keyword_value):
+        # type: (...) -> [Region]
         cs_keyword = CheckSettingsKeywords(eyes_library_with_selenium)
         cs = getattr(
             cs_keyword, "{}_region_by_{}".format(method_name, by_method_postfix)
@@ -54,6 +56,7 @@ def get_regions_from_cs_keyword(eyes_library_with_selenium):
 
 @pytest.fixture()
 def check_settings_keyword(eyes_library_with_selenium):
+    # type: (EyesLibrary) -> CheckSettingsKeywords
     return CheckSettingsKeywords(eyes_library_with_selenium)
 
 
