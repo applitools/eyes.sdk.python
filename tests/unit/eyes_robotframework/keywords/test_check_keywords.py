@@ -29,7 +29,7 @@ CheckSettingsData = namedtuple("CheckSettingsData", "params result")
 class TestData(object):
     method = attr.ib(type=str)
     check_tag = attr.ib(default=None)
-    check_region = attr.ib(default=None)
+    check_values = attr.ib(default=None)
     check_region_result = attr.ib(default=None)
 
     check_settings_data = CheckSettingsData(
@@ -44,8 +44,11 @@ class TestData(object):
         # type: () -> List
         result = []
         # order does matter here!
-        if self.check_region:
-            result.append(self.check_region)
+        if self.check_values:
+            if isinstance(self.check_values, list):
+                result.extend(self.check_values)
+            else:
+                result.append(self.check_values)
         if self.check_tag:
             result.append(self.check_tag)
         if self.check_settings_data.params:
@@ -86,12 +89,12 @@ def test_check_window(check_keyword, data):
     [
         TestData(
             "check_region_by_coordinates",
-            check_region="[20 20 20 20]",
+            check_values="[20 20 20 20]",
             check_region_result=Region(20, 20, 20, 20),
         ),
         TestData(
             "check_region_by_selector",
-            check_region="id:overflow-div",
+            check_values="id:overflow-div",
             check_region_result=RegionBySelector(By.ID, "overflow-div"),
         ),
         TestData("check_region_by_element", check_region=WEB_ELEMENT),
@@ -117,24 +120,24 @@ def test_check_region(check_keyword, data):
     [
         TestData(
             "check_frame_by_element",
-            check_region=WEB_ELEMENT,
+            check_values=WEB_ELEMENT,
             check_region_result=FrameLocator(
                 frame_locator=TargetPath.frame(WEB_ELEMENT)
             ),
         ),
         TestData(
             "check_frame_by_index",
-            check_region=1,
+            check_values=1,
             check_region_result=FrameLocator(frame_index=1),
         ),
         TestData(
             "check_frame_by_name",
-            check_region="framename",
+            check_values="framename",
             check_region_result=FrameLocator(frame_name_or_id="framename"),
         ),
         TestData(
             "check_frame_by_selector",
-            check_region="id:overflow-div",
+            check_values="id:overflow-div",
             check_region_result=FrameLocator(
                 frame_locator=TargetPath.frame(By.ID, "overflow-div")
             ),
