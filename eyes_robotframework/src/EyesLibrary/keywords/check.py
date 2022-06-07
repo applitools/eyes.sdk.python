@@ -47,7 +47,7 @@ class CheckRegionKeywords(object):
         """
         Check specified region
 
-          |  =Arguments=  | =Description=                                                       |
+          |  =Arguments=  | =Description=                                                                                |
           |  Region       | *Mandatory* - The region to check in format [left top width height] ,e.g. [100 200 300 300]  |
 
         *Example:*
@@ -167,8 +167,8 @@ class CheckFrameKeywords(object):
         """
          Check specified frame by index
 
-            | =Arguments=     | =Description=                                                       |
-            |  Frame Index    | *Mandatory* - Index of the frame to check. |
+            | =Arguments=     | =Description=                                     |
+            |  Frame Index    | *Mandatory* - Index of the frame to check.        |
 
         *Example:*
             |  Eyes Check Frame By Index  |  2  |
@@ -194,7 +194,7 @@ class CheckFrameKeywords(object):
          Check specified frame by name
 
             |  =Arguments=   | =Description=                                   |
-            |  Frame Name    | *Mandatory* - Name of the frame to check.      |
+            |  Frame Name    | *Mandatory* - Name of the frame to check.       |
 
         *Example:*
             |  Eyes Check Frame By Name  |  frameName  |
@@ -260,7 +260,7 @@ class CheckKeywords(LibraryComponent, CheckRegionKeywords, CheckFrameKeywords):
         """
          Check with target
 
-            |  =Arguments=      | =Description=                  |
+            |  =Arguments=      | =Description=                                                    |
             |  Target Keyword  | *Mandatory* - Target Keyword that market with Target Keyword tag  |
 
         *Example:*
