@@ -65,3 +65,5 @@ jobs:
           GIT_AUTHOR_NAME: ${{github.actor}}
           GIT_COMMITTER_NAME: ${{github.actor}}
           EMAIL: github-actions@github.com
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
