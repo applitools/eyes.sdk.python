@@ -97,7 +97,7 @@ def test_check_window(check_keyword, data):
             check_values="id:overflow-div",
             check_region_result=RegionBySelector(By.ID, "overflow-div"),
         ),
-        TestData("check_region_by_element", check_region=WEB_ELEMENT),
+        TestData("check_region_by_element", check_values=WEB_ELEMENT),
     ],
     ids=lambda d: str(d),
 )
