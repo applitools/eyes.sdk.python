@@ -26,6 +26,8 @@ def current_os():
             return "alpine"
         else:
             return "linux"
+    else:
+        raise Exception("Platform is not supported", platform)
 
 
 class build_py(_build_py):  # noqa
