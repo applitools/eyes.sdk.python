@@ -73,34 +73,8 @@ jobs:
           name: packages
       - run: make eyes_selenium_installation_tests
 
-  functional-tests:
-    needs: dist-build
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
-        python-version: [ '2.7', '3.6', '3.10' ]
-        exclude:
-          - os: windows-latest
-            python-version: '3.6'
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{inputs.ref || github.ref}}
-      - uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/download-artifact@v3
-        with:
-          name: packages
-      - run: make eyes_selenium_functional_tests
-        env:
-          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-
   generated-tests:
-    needs: [functional-tests]
+    needs: dist-build
     strategy:
       matrix:
         python-version: [ '3.6', '3.10' ]
@@ -128,8 +102,34 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
+  functional-tests:
+    needs: generated-tests
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        python-version: [ '2.7', '3.6', '3.10' ]
+        exclude:
+          - os: windows-latest
+            python-version: '3.6'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_functional_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+
   robot-framework-tests:
-    needs: [generated-tests]
+    needs: functional-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
