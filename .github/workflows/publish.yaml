@@ -56,7 +56,7 @@ jobs:
         with:
           name: packages
       - run: |
-          make publish_testing_${{github.event.inputs.package}} -e SDK_VERSION=${{needs.make_release_branch.outputs.release_version}}
+          make publish_${{github.event.inputs.package}} -e SDK_VERSION=${{needs.make_release_branch.outputs.release_version}}
           git tag -am "" ${{github.event.inputs.package}}-${{needs.make_release_branch.outputs.release_version}}
           git merge origin/${{needs.make_release_branch.outputs.release_branch}}
           git push origin --follow-tags
