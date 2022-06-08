@@ -28,20 +28,19 @@ def chrome(execution_grid):
 @pytest.fixture(scope="function")
 def firefox():
     options = webdriver.FirefoxOptions()
-    options.add_argument("--headless")
-    caps = options.to_capabilities()
+    options.headless = True
     for _ in range(4):
         try:
             return webdriver.Firefox(
                 executable_path=GeckoDriverManager().install(),
-                desired_capabilities=caps,
+                options=options,
             )
         except Exception as e:
             print("Tried to start browser. It was exception {}".format(e))
         time.sleep(1.0)
     return webdriver.Firefox(
         executable_path=GeckoDriverManager().install(),
-        desired_capabilities=caps,
+        options=options,
     )
 
 

@@ -1,0 +1,148 @@
+name: Tests
+on:
+  push:
+  workflow_call:
+    inputs:
+      ref:
+        description: branch to test
+        required: false
+        type: string
+
+jobs:
+  dist-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.6"
+      - name: Build packages
+        run: make eyes_universal/dist eyes_selenium/dist eyes_robotframework/dist
+      - uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: "*/dist/"
+
+  unit-tests:
+    needs: dist-build
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ '2.7', '3.6', '3.10' ]
+        exclude:
+          - os: macos-latest
+            python-version: '3.6'
+          - os: windows-latest
+            python-version: '3.6'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_unit_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+
+  installation-tests:
+    needs: dist-build
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ '2.7', '3.10' ]
+        exclude:
+          - os: macos-latest
+            python-version: '2.7'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_installation_tests
+
+  generated-tests:
+    needs: dist-build
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.10' ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: browser-actions/setup-firefox@latest
+        with:
+          firefox-version: latest
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_generated_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+          APPLITOOLS_API_KEY_READ: ${{ secrets.APPLITOOLS_API_KEY_READ }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+
+  functional-tests:
+    needs: generated-tests
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        python-version: [ '2.7', '3.6', '3.10' ]
+        exclude:
+          - os: windows-latest
+            python-version: '3.6'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_functional_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+
+  robot-framework-tests:
+    needs: functional-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.6'
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_robotframework_functional_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}

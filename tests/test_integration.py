@@ -1,56 +1,53 @@
 import os.path
 import subprocess
 
-here = os.path.dirname(os.path.join(__file__))
+import pytest
+
+from applitools.eyes_universal import __version__ as eyes_universal_version
+from applitools.selenium.__version__ import __version__ as eyes_selenium_version
+from EyesLibrary.__version__ import __version__ as eyes_robotframework_version
+
+here = os.path.dirname(__file__)
 root_dir = os.path.normpath(os.path.join(here, os.pardir))
 
 
-def _packages_resolver(
-    universal=False,
-    selenium=False,
-    robotframework=False,
-):
-    universal_pkg, selenium_pkg, robotframework_pkg = (
-        "eyes_universal",
-        "eyes_selenium",
-        "eyes_robotframework",
+@pytest.fixture
+def eyes_universal_installed(venv):
+    wheels = os.path.join(root_dir, "eyes_universal", "dist")
+    pip = [venv.python, "-m", "pip", "install", "--no-index", "--find-links", wheels]
+    subprocess.check_call(pip + ["eyes_universal==" + eyes_universal_version])
+
+
+@pytest.fixture
+def eyes_selenium_installed(venv, eyes_universal_installed):
+    file_name = "eyes_selenium-{}.tar.gz".format(eyes_selenium_version)
+    eyes_selenium = os.path.join(root_dir, "eyes_selenium", "dist", file_name)
+    pip = [venv.python, "-m", "pip", "install"]
+    subprocess.check_call(pip + [eyes_selenium])
+
+
+@pytest.fixture
+def eyes_robotframework_installed(venv, eyes_universal_installed):
+    file_name = "eyes_selenium-{}.tar.gz".format(eyes_selenium_version)
+    eyes_selenium = os.path.join(root_dir, "eyes_selenium", "dist", file_name)
+    file_name = "eyes-robotframework-{}.tar.gz".format(eyes_robotframework_version)
+    eyes_robot = os.path.join(root_dir, "eyes_robotframework", "dist", file_name)
+    pip = [venv.python, "-m", "pip", "install"]
+    subprocess.check_call(pip + [eyes_selenium, eyes_robot])
+
+
+def test_setup_eyes_universal(venv, eyes_universal_installed):
+    assert str(venv.get_version("eyes-universal")) == eyes_universal_version
+    subprocess.check_call(
+        [venv.python, "-c", "from applitools.eyes_universal import *"]
     )
 
-    if universal:
-        pack = universal_pkg
-    elif selenium:
-        pack = selenium_pkg
-    elif robotframework:
-        pack = robotframework_pkg
-    else:
-        return None
-    return str(os.path.join(root_dir, pack))
 
-
-def test_setup_eyes_selenium(venv):
-    venv.install(_packages_resolver(universal=True), editable=True)
-    venv.install(_packages_resolver(selenium=True), editable=True)
-    assert venv.get_version("eyes-universal")
-    assert venv.get_version("eyes-selenium")
-
-
-def test_setup_eyes_robot(venv):
-    venv.install(_packages_resolver(universal=True), editable=True)
-    venv.install(_packages_resolver(selenium=True), editable=True)
-    venv.install(_packages_resolver(robotframework=True), editable=True)
-    assert venv.get_version("eyes-universal")
-    assert venv.get_version("eyes-selenium")
-    assert venv.get_version("eyes-robotframework")
-
-
-def test_eyes_selenium_namespace_package(venv):
-    venv.install(_packages_resolver(universal=True), editable=True)
-    venv.install(_packages_resolver(selenium=True), editable=True)
+def test_setup_eyes_selenium(venv, eyes_selenium_installed):
+    assert str(venv.get_version("eyes-selenium")) == eyes_selenium_version
     subprocess.check_call([venv.python, "-c", "from applitools.selenium import *"])
 
 
-def test_eyes_robot_namespace_package(venv):
-    venv.install(_packages_resolver(universal=True), editable=True)
-    venv.install(_packages_resolver(selenium=True), editable=True)
-    venv.install(_packages_resolver(robotframework=True), editable=True)
+def test_setup_eyes_robot(venv, eyes_robotframework_installed):
+    assert str(venv.get_version("eyes-robotframework")) == eyes_robotframework_version
     subprocess.check_call([venv.python, "-c", "from EyesLibrary import *"])
