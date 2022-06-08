@@ -18,9 +18,12 @@ if TYPE_CHECKING:
 
     from ..custom_types import Locator
 
+CHECK_SETTINGS_KEYWORDS_LIST = []
+
 
 def keyword(name=None, tags=(), types=()):
     """Keyword with predefined CHECK_SETTING tag"""
+    CHECK_SETTINGS_KEYWORDS_LIST.append(name)
     tags = tags + (CHECK_SETTING,)
     return original_keyword(name, tags, types)
 

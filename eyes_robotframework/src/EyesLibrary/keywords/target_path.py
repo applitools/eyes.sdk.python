@@ -12,10 +12,12 @@ from EyesLibrary.utils import is_webelement_guard
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
+TARGET_PATH_KEYWORDS_LIST = []
 
 
 def keyword(name=None, tags=(), types=()):
     """Keyword with predefined CHECK_SETTING tag"""
+    TARGET_PATH_KEYWORDS_LIST.append(name)
     tags = tags + (TARGET_PATH,)
     return original_keyword(name, tags, types)
 
