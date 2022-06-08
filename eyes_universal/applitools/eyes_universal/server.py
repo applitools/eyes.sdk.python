@@ -10,7 +10,8 @@ if typing.TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-executable_path = resource_filename("applitools.eyes_universal", "bin/eyes-universal")
+_exe_name = "eyes-universal.exe" if sys.platform == "win32" else "eyes-universal"
+executable_path = resource_filename("applitools.eyes_universal", "bin/" + _exe_name)
 
 
 class SDKServer(object):

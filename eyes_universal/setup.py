@@ -20,7 +20,7 @@ def current_os():
     if platform == "darwin":
         return "macos"
     elif platform == "win32":
-        return "win.exe"
+        return "win"
     if platform in ("linux", "linux2"):
         if path.exists("/etc/alpine-release"):
             return "alpine"
@@ -30,7 +30,7 @@ def current_os():
 
 class build_py(_build_py):  # noqa
     user_options = _build_py.user_options + [
-        ("os-name=", None, "os to get binaries for (alpine,linux,macos,win.exe)")
+        ("os-name=", None, "os to get binaries for (alpine,linux,macos,win)")
     ]
 
     def initialize_options(self):
@@ -39,13 +39,14 @@ class build_py(_build_py):  # noqa
 
     def get_data_files(self):
         version = self.distribution.get_version()
-        file_name = "eyes-universal-" + self.os_name
-        target = path.join("applitools", "eyes_universal", "bin", "eyes-universal")
-        if not path.isfile(target):
+        exe_suffix = ".exe" if self.os_name == "win" else ""
+        file_name = "eyes-universal-" + self.os_name + exe_suffix
+        target_file_name = "applitools/eyes_universal/bin/eyes-universal" + exe_suffix
+        if not path.isfile(target_file_name):
             url = download_url_template.format(version=version, file=file_name)
-            self.mkpath(path.dirname(target))
-            urlretrieve(url, target)
-            chmod(target, 0o755)
+            self.mkpath(path.dirname(target_file_name))
+            urlretrieve(url, target_file_name)
+            chmod(target_file_name, 0o755)
         return _build_py.get_data_files(self)
 
 

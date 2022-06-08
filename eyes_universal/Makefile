@@ -12,7 +12,7 @@ dist:
 	rm -rf applitools/eyes_universal/bin build eyes_universal.egg-info
 	python setup.py --quiet build_py --os-name='alpine' bdist_wheel --plat-name='musllinux_1_2_x86_64'
 	rm -rf applitools/eyes_universal/bin build eyes_universal.egg-info
-	python setup.py --quiet build_py --os-name='win.exe'   bdist_wheel --plat-name='win_amd64'
+	python setup.py build_py --os-name='win'   bdist_wheel --plat-name='win_amd64'
 	rm -rf applitools/eyes_universal/bin build eyes_universal.egg-info
 
 
