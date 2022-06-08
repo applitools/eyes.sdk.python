@@ -40,8 +40,8 @@ publish_testing_eyes_selenium: CHANGELOG := $$(bash ./ci_scripts/extract_changel
 publish_testing_eyes_selenium: TEST_COVERAGE_GAP := $$(cat ./ci_scripts/testCoverageGap.txt)
 publish_testing_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
 	echo bash ./ci_scripts/send_mail.sh python ${SDK_VERSION} "${CHANGELOG}" "${TEST_COVERAGE_GAP}"
-	twine upload --verbose --repository testing eyes_selenium/dist/*
-	twine upload --verbose --repository testing eyes_robotframework/dist/*
+	twine upload --verbose --repository testpypi eyes_selenium/dist/*
+	twine upload --verbose --repository testpypi eyes_robotframework/dist/*
 
 
 publish_eyes_universal: eyes_universal/dist install_publish_requirements
@@ -49,7 +49,7 @@ publish_eyes_universal: eyes_universal/dist install_publish_requirements
 
 
 publish_testing_eyes_universal: eyes_universal/dist install_publish_requirements
-	twine upload --verbose --repository testing eyes_universal/dist/*
+	twine upload --verbose --repository testpypi eyes_universal/dist/*
 
 
 install_publish_requirements:
