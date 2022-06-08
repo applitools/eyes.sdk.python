@@ -31,16 +31,16 @@ uninstall:
 	python -m pip uninstall -y eyes-robotframework eyes-selenium eyes-universal
 
 
-publish_eyes_selenium: CHANGELOG := $(shell bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
-publish_eyes_selenium: TEST_COVERAGE_GAP := $(shell cat ./ci_scripts/testCoverageGap.txt)
+publish_eyes_selenium: CHANGELOG := $$(bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
+publish_eyes_selenium: TEST_COVERAGE_GAP := $$(cat ./ci_scripts/testCoverageGap.txt)
 publish_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
 	bash ./ci_scripts/send_mail.sh python ${SDK_VERSION} "${CHANGELOG}" "${TEST_COVERAGE_GAP}"
 	twine upload --verbose eyes_selenium/dist/*
 	twine upload --verbose eyes_robotframework/dist/*
 
 
-publish_testing_eyes_selenium: CHANGELOG := $(shell bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
-publish_testing_eyes_selenium: TEST_COVERAGE_GAP := $(shell cat ./ci_scripts/testCoverageGap.txt)
+publish_testing_eyes_selenium: CHANGELOG := $$(bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
+publish_testing_eyes_selenium: TEST_COVERAGE_GAP := $$(cat ./ci_scripts/testCoverageGap.txt)
 publish_testing_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
 	echo bash ./ci_scripts/send_mail.sh python ${SDK_VERSION} "${CHANGELOG}" "${TEST_COVERAGE_GAP}"
 	twine upload --verbose --repository testing eyes_selenium/dist/*
