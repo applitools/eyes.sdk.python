@@ -31,12 +31,18 @@ uninstall:
 	python -m pip uninstall -y eyes-robotframework eyes-selenium eyes-universal
 
 
+publish_eyes_selenium: CHANGELOG := $(shell bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
+publish_eyes_selenium: TEST_COVERAGE_GAP := $(shell cat ./ci_scripts/testCoverageGap.txt)
 publish_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
+	bash ./ci_scripts/send_mail.sh python ${SDK_VERSION} "${CHANGELOG}" "${TEST_COVERAGE_GAP}"
 	twine upload --verbose eyes_selenium/dist/*
 	twine upload --verbose eyes_robotframework/dist/*
 
 
-publish_testing_eyes_selenium: eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
+publish_testing_eyes_selenium: CHANGELOG := $(shell bash ./ci_scripts/extract_changelog.sh ${SDK_VERSION} CHANGELOG.md)
+publish_testing_eyes_selenium: TEST_COVERAGE_GAP := $(shell cat ./ci_scripts/testCoverageGap.txt)
+publish_testing_eyes_selenium: #eyes_selenium/dist eyes_robotframework/dist install_publish_requirements
+	bash ./ci_scripts/send_mail.sh python ${SDK_VERSION} "${CHANGELOG}" "${TEST_COVERAGE_GAP}"
 	twine upload --verbose --repository testing eyes_selenium/dist/*
 	twine upload --verbose --repository testing eyes_robotframework/dist/*
 
@@ -109,66 +115,5 @@ bin/chromedriver:
 	rm chromedriver_linux64.zip
 
 
-kill_eyes_server:
-	taskkill -f -im eyes-universal-win.exe || killall eyes-universal-macos || killall eyes-universal-linux
-
-
-install_windows_node:
-	choco install -y nodejs-lts
-
-
-install_windows_python2:
-	choco install python2 --version=2.7.18
-
-
-install_windows_python_last:
-	choco install python --version=3.10.4
-
-
-install_windows_chrome:
-	choco install googlechrome --x86 --ignore-checksums
-	choco install chromedriver
-
-
 install_xvfb:
 	sudo apt-get install -y xvfb
-
-
-verify_changelog:
-	@if [[ ($$TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$$) ]] ;\
-    then \
-		SDK_VERSION=$$(echo $$TRAVIS_TAG | sed 's/[^.0-9]*//g') ;\
-		CHANGELOG=$$(bash ./ci_scripts/extract_changelog.sh $$SDK_VERSION CHANGELOG.md) ;\
-		if [[ -z "$$CHANGELOG" ]]; \
-		then \
-			echo "THE CHANGELOG IS NOT CORRECT" ;\
-			exit 1 ;\
-		fi ;\
-	fi ;\
-	echo TRAVIS_COMMIT=$$TRAVIS_COMMIT TRAVIS_TAG=$$TRAVIS_TAG SDK_VERSION=$$SDK_VERSION ;\
-	echo APPLITOOLS_BATCH_ID=$$APPLITOOLS_BATCH_ID ;\
-	echo $$CHANGELOG ;\
-
-
-send_cron_report:
-	if [[ $TRAVIS_EVENT_TYPE = cron ]] ;\
-	then \
-		echo "REPORTING..." ;\
-		bash ./ci_scripts/all_tests_report.sh python ;\
-		echo "REPORTED SUCCESSFULLY" ;\
-	fi ;\
-
-
-send_relese_mail: verify_changelog
-	@SDK_VERSION=$$(echo $$TRAVIS_TAG | sed 's/[^.0-9]*//g') ;\
-	CHANGELOG=$$(bash ./ci_scripts/extract_changelog.sh $$SDK_VERSION CHANGELOG.md) ;\
-	COMMITTER_EMAIL="$$(git log -1 $$TRAVIS_COMMIT --pretty="%cE")" ;\
-	if [[ ("$$ALLOWED_RELEASE_COMMITERS" =~ .*"$$COMMITTER_EMAIL".*) ]] ;\
-	then \
-		echo DEPLOY ;\
-		TEST_COVERAGE_GAP=$$(cat ./ci_scripts/testCoverageGap.txt) ;\
-		bash ./ci_scripts/send_mail.sh python "$TRAVIS_TAG" "$CHANGELOG" "$TEST_COVERAGE_GAP" ;\
-	else \
-		echo Committer $$COMMITTER_EMAIL is not allowed ;\
-		exit 1 ;\
-	fi ;\

@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_branch: ${{steps.create_release_branch.outputs.release_branch}}
-      release_tag: ${{steps.create_release_branch.outputs.release_tag}}
+      release_version: ${{steps.create_release_branch.outputs.release_version}}
     steps:
       - uses: actions/checkout@v3
       - id: create_release_branch
@@ -32,7 +32,7 @@ jobs:
           git checkout -b $release_branch
           git push -u origin $release_branch
           echo "::set-output name=release_branch::$release_branch"
-          echo "::set-output name=release_tag::${{github.event.inputs.package}}-$new_version"
+          echo "::set-output name=release_version::$new_version"
         env:
           GIT_AUTHOR_NAME: ${{github.actor}}
           GIT_COMMITTER_NAME: ${{github.actor}}
@@ -56,8 +56,8 @@ jobs:
         with:
           name: packages
       - run: |
-          make publish_testing_${{github.event.inputs.package}}
-          git tag -am "" ${{needs.make_release_branch.outputs.release_tag}}
+          make publish_testing_${{github.event.inputs.package}} -e SDK_VERSION=${{needs.make_release_branch.outputs.release_version}}
+          git tag -am "" ${{github.event.inputs.package}}-${{needs.make_release_branch.outputs.release_version}}
           git merge origin/${{needs.make_release_branch.outputs.release_branch}}
           git push origin --follow-tags
           git push origin --delete ${{needs.make_release_branch.outputs.release_branch}}
