@@ -1,6 +1,3 @@
-export PATH:=$(shell pwd)/bin:${PATH}
-# Run GUI apps in headless mode
-export DISPLAY=:99.0
 export APPLITOOLS_BATCH_ID=$(shell python -c "import uuid;print(str(uuid.uuid4()))")
 
 install_dev_requirements: install_test_requirements install_packages_editable
@@ -105,14 +102,6 @@ eyes_robotframework_functional_tests: install_xvfb install_eyes_robotframework i
 
 eyes_selenium_functional_tests: install_eyes_selenium install_test_requirements
 	pytest -n6 tests/functional/eyes_selenium/
-
-
-bin/chromedriver: CHROMEDRIVER_VERSION := $(shell curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-bin/chromedriver:
-	curl -sO https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
-	mkdir -p bin
-	unzip chromedriver_linux64.zip -d bin
-	rm chromedriver_linux64.zip
 
 
 install_xvfb:
