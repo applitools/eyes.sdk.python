@@ -10,16 +10,7 @@ if typing.TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-_platform_suffixes = {
-    "darwin": "macos",
-    "linux": "linux",
-    "linux2": "linux",  # python2 included kernel major version
-    "win32": "win.exe",
-}
-executable_path = resource_filename(
-    "applitools.eyes_universal",
-    "bin/eyes-universal-" + _platform_suffixes[sys.platform],
-)
+executable_path = resource_filename("applitools.eyes_universal", "bin/eyes-universal")
 
 
 class SDKServer(object):
