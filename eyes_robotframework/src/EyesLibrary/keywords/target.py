@@ -11,6 +11,7 @@ from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
 from ..utils import collect_check_settings, parse_region
+from .check_settings import CHECK_SETTINGS_KEYWORDS_LIST
 from .keyword_tags import CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
 
 if TYPE_CHECKING:
@@ -36,7 +37,7 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=    | Target Window     |
         """
         return collect_check_settings(
-            Target.window(), self.defined_keywords, *check_settings_keywords
+            Target.window(), CHECK_SETTINGS_KEYWORDS_LIST, *check_settings_keywords
         )
 
     @keyword(
@@ -55,7 +56,9 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Region By Element  |  ${element}  |
         """
         return collect_check_settings(
-            Target.region(element), self.defined_keywords, *check_settings_keywords
+            Target.region(element),
+            CHECK_SETTINGS_KEYWORDS_LIST,
+            *check_settings_keywords
         )
 
     @keyword(
@@ -74,7 +77,7 @@ class TargetKeywords(LibraryComponent):
         """
         return collect_check_settings(
             Target.region(parse_region(region)),
-            self.defined_keywords,
+            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords
         )
 
@@ -92,7 +95,7 @@ class TargetKeywords(LibraryComponent):
         """
         return collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
-            self.defined_keywords,
+            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords
         )
 
@@ -113,7 +116,9 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Frame By Element  |  ${element}  |
         """
         return collect_check_settings(
-            Target.frame(element), self.defined_keywords, *check_settings_keywords
+            Target.frame(element),
+            CHECK_SETTINGS_KEYWORDS_LIST,
+            *check_settings_keywords
         )
 
     @keyword(
@@ -134,7 +139,7 @@ class TargetKeywords(LibraryComponent):
         """
         return collect_check_settings(
             Target.frame(self.from_locator_to_supported_form(selector)),
-            self.defined_keywords,
+            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords
         )
 
@@ -155,7 +160,9 @@ class TargetKeywords(LibraryComponent):
             | ${target}=  |  Target Frame By Index  |  2  |
         """
         return collect_check_settings(
-            Target.frame(frame_index), self.defined_keywords, *check_settings_keywords
+            Target.frame(frame_index),
+            CHECK_SETTINGS_KEYWORDS_LIST,
+            *check_settings_keywords
         )
 
     @keyword(
@@ -175,5 +182,7 @@ class TargetKeywords(LibraryComponent):
             |  ${target}=  |  Target Frame By Name  |  frameName  |
         """
         return collect_check_settings(
-            Target.frame(frame_name), self.defined_keywords, *check_settings_keywords
+            Target.frame(frame_name),
+            CHECK_SETTINGS_KEYWORDS_LIST,
+            *check_settings_keywords
         )
