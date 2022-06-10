@@ -56,11 +56,17 @@ jobs:
         with:
           name: packages
       - run: |
-          make publish_${{github.event.inputs.package}} -e SDK_VERSION=${{needs.make_release_branch.outputs.release_version}}
-          git tag -am "" ${{github.event.inputs.package}}-${{needs.make_release_branch.outputs.release_version}}
-          git merge origin/${{needs.make_release_branch.outputs.release_branch}}
-          git push origin --follow-tags
-          git push origin --delete ${{needs.make_release_branch.outputs.release_branch}}
+          PACKAGE=${{github.event.inputs.package}}
+          PACKAGE_VERSION=${{needs.make_release_branch.outputs.release_version}}
+          RELEASE_BRANCH=${{needs.make_release_branch.outputs.release_branch}}
+          RELEASE_TAG=$PACKAGE-$PACKAGE_VERSION
+
+          make publish_$PACKAGE -e SDK_VERSION=$PACKAGE_VERSION
+          git tag -am "$PACKAGE v$PACKAGE_VERSION" $RELEASE_TAG origin/$RELEASE_BRANCH
+          git push origin $RELEASE_TAG
+          git merge origin/$RELEASE_BRANCH
+          git push origin
+          git push origin --delete $RELEASE_BRANCH
         env:
           GIT_AUTHOR_NAME: ${{github.actor}}
           GIT_COMMITTER_NAME: ${{github.actor}}
