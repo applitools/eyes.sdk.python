@@ -13,7 +13,6 @@ from applitools.common import (
 )
 from applitools.common import ChromeEmulationInfo as ApiChromeEmulationInfo
 from applitools.common import DesktopBrowserInfo, DeviceName, FloatingBounds
-from applitools.common import IosDeviceInfo
 from applitools.common import IosDeviceInfo as ApiIosDeviceInfo
 from applitools.common import IosDeviceName, IosVersion, MatchLevel, MatchResult
 from applitools.common import Region as APIRegion
@@ -44,7 +43,7 @@ from .fluent.region import AccessibilityRegionBySelector
 from .fluent.target_path import RegionLocator
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Union
+    from typing import Any, Dict, List, Optional
 
     from selenium.webdriver.remote.webdriver import WebDriver, WebElement
 
