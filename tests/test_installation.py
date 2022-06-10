@@ -37,9 +37,10 @@ def eyes_robotframework_installed(venv, eyes_universal_installed):
 
 
 def test_setup_eyes_universal(venv, eyes_universal_installed):
+    get_version = [venv.python, "-m", "applitools.eyes_universal", "--version"]
     assert str(venv.get_version("eyes-universal")) == eyes_universal_version
-    subprocess.check_call(
-        [venv.python, "-c", "from applitools.eyes_universal import *"]
+    assert (
+        eyes_universal_version.encode() == subprocess.check_output(get_version).rstrip()
     )
 
 

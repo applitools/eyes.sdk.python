@@ -88,7 +88,7 @@ eyes_selenium_unit_tests: install_eyes_robotframework install_test_requirements
 
 
 eyes_selenium_installation_tests: install_eyes_robotframework install_test_requirements
-	pytest tests/test_integration.py
+	pytest tests/test_installation.py
 
 
 eyes_selenium_generated_tests: install_eyes_selenium install_test_requirements
