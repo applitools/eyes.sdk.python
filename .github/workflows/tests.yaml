@@ -119,7 +119,7 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
   functional-tests:
-    needs: generated-tests
+    needs: dist-build
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
@@ -141,11 +141,28 @@ jobs:
       - run: make eyes_selenium_functional_tests
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
+
+  sauce-functional-tests:
+    needs: dist-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref || github.ref}}
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+      - run: make eyes_selenium_sauce_functional_tests
+        env:
+          APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
   robot-framework-tests:
-    needs: functional-tests
+    needs: generated-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

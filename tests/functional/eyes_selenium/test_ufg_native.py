@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from appium.webdriver import Remote
 
@@ -12,6 +10,7 @@ from applitools.common.ultrafastgrid import (
 from applitools.selenium import Eyes, VisualGridRunner
 
 
+@pytest.mark.sauce
 def test_ufg_native_ios_basic(sauce_driver_url):
     caps = {
         "app": "https://applitools.jfrog.io/artifactory/Examples/DuckDuckGo-instrumented.app.zip",
@@ -42,6 +41,7 @@ def test_ufg_native_ios_basic(sauce_driver_url):
 
 
 @pytest.mark.skip("Skip until test working build of test app is available")
+@pytest.mark.sauce
 def test_ufg_android_basic(sauce_driver_url):
     caps = {
         "app": "https://applitools.jfrog.io/artifactory/Examples/ufg-native-example.apk",

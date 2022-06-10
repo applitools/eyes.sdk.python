@@ -101,7 +101,11 @@ eyes_robotframework_functional_tests: install_xvfb install_eyes_robotframework i
 
 
 eyes_selenium_functional_tests: install_eyes_selenium install_test_requirements
-	pytest -n6 tests/functional/eyes_selenium/
+	pytest -n6 -m "not sauce" tests/functional/eyes_selenium/
+
+
+eyes_selenium_sauce_functional_tests: install_eyes_selenium install_test_requirements
+	pytest -n6 -m sauce tests/functional/eyes_selenium/
 
 
 install_xvfb:
