@@ -51,13 +51,10 @@ jobs:
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
 
-  unit-tests-docker:
+  unit-tests-alpine:
     needs: dist-build
-    strategy:
-      matrix:
-        image: [ "python:3.7-alpine", "python:3.10-alpine" ]
     runs-on: ubuntu-latest
-    container: ${{matrix.image}}
+    container: "alpine:latest"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -65,7 +62,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: packages
-      - run: apk add gcc libffi-dev make musl-dev
+      - run: apk add gcc libffi-dev make musl-dev py3-pip python3-dev && ln -s /usr/bin/python3 /usr/bin/python
       - run: make eyes_selenium_unit_tests
         env:
           APPLITOOLS_API_KEY: ${{ secrets.APPLITOOLS_API_KEY }}
