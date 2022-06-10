@@ -9,7 +9,7 @@ from uuid import uuid1
 
 from websocket import WebSocket
 
-from applitools.eyes_universal import get_instance, server
+from applitools.eyes_universal import get_instance
 
 _all_sockets = []
 _logger = logging.getLogger(__name__)

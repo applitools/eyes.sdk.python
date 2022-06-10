@@ -1,5 +1,6 @@
 Eyes Selenium Python SDK
 ========================
+|pypi version| |pypi downloads| |Black Formatter|
 
 Applitools Eyes SDK For Selenium Python WebDriver
 
@@ -25,3 +26,10 @@ Please check the applitools website for usage instructions:
 
 -  Python Appium web example:
    https://applitools.com/resources/tutorial/appium/python#step-2
+
+.. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
+.. |pypi version| image:: https://img.shields.io/pypi/v/eyes-selenium
+   :target: https://pypi.org/project/eyes-selenium/
+.. |pypi downloads| image:: https://img.shields.io/pypi/dw/eyes-selenium
+   :target: https://pypi.org/project/eyes-selenium/

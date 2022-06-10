@@ -4,19 +4,20 @@ repos:
       hooks:
         - id: black
 
-    - repo: https://gitlab.com/pycqa/flake8
-      rev: 3.8.3
+    - repo: https://github.com/PyCQA/flake8
+      rev: 4.0.1
       hooks:
           - id: flake8
             language_version: python3
+            args: ["--select", "C,E,F,W", "--ignore", "E501,W503,F401"]
             exclude: tests/.*
 
     - repo: https://github.com/pre-commit/mirrors-isort
-      rev: v5.5.2
+      rev: v5.10.1
       hooks:
           - id: isort
             language_version: python3
-            args: ["--profile", "black"]
+            args: ["--profile", "black", "--project", "applitools", "--project", "EyesLibrary"]
             entry: isort
             additional_dependencies: [toml]
 

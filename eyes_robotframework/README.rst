@@ -1,5 +1,6 @@
 Eyes Robot Framework SDK
 ========================
+|pypi version| |pypi downloads| |Black Formatter|
 
 Applitools Eyes SDK For Robot Framework
 
@@ -38,3 +39,10 @@ https://plugins.jetbrains.com/plugin/16086-robot-framework-language-server
 **VSCode**
 
 https://marketplace.visualstudio.com/items?itemName=robocorp.robotframework-lsp
+
+.. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
+.. |pypi version| image:: https://img.shields.io/pypi/v/eyes-robotframework
+   :target: https://pypi.org/project/eyes-robotframework/
+.. |pypi downloads| image:: https://img.shields.io/pypi/dw/eyes-robotframework
+   :target: https://pypi.org/project/eyes-robotframework/

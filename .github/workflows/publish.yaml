@@ -6,7 +6,7 @@ on:
       package:
         description: package name
         type: choice
-        options: [eyes_universal, eyes_selenium]
+        options: [eyes_universal, eyes_selenium, eyes_robotframework]
         required: true
       version:
         description: version increment type
@@ -25,13 +25,12 @@ jobs:
       - id: create_release_branch
         run: |
           pip install bump2version
-          package_dir=${{github.event.inputs.package}}
-          [[ $package_dir == eyes_selenium ]] && package_dir=.
-          eval $(cd $package_dir && bumpversion ${{github.event.inputs.version}} --list | grep new_version=)
-          release_branch=release-${{github.event.inputs.package}}-$new_version
-          git checkout -b $release_branch
-          git push -u origin $release_branch
-          echo "::set-output name=release_branch::$release_branch"
+          PACKAGE=${{github.event.inputs.package}}
+          eval $(cd $PACKAGE && bumpversion ${{github.event.inputs.version}} --list | grep new_version=)
+          RELEASE_BRANCH=release-$PACKAGE-$new_version
+          git checkout -b $RELEASE_BRANCH
+          git push -u origin $RELEASE_BRANCH
+          echo "::set-output name=release_branch::$RELEASE_BRANCH"
           echo "::set-output name=release_version::$new_version"
         env:
           GIT_AUTHOR_NAME: ${{github.actor}}
