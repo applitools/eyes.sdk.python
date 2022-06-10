@@ -1,7 +1,6 @@
-|Build Status| |Black Formatter|
-
 Eyes.Sdk.Python
 ===============
+|pypi version| |pypi downloads| |Black Formatter|
 
 Applitools Eyes SDK For Python (Unified Repo)
 
@@ -28,8 +27,10 @@ Please check the applitools website for usage instructions:
 
 .. |Black Formatter| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
-.. |Build Status| image:: https://travis-ci.com/applitools/eyes.sdk.python.svg?branch=v5.6.1
-   :target: https://travis-ci.com/applitools/eyes.sdk.python
+.. |pypi version| image:: https://img.shields.io/pypi/v/eyes-selenium
+   :target: https://pypi.org/project/eyes-selenium/
+.. |pypi downloads| image:: https://img.shields.io/pypi/dw/eyes-selenium
+   :target: https://pypi.org/project/eyes-selenium/
 
 
 Development
