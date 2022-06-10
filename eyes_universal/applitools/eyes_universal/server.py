@@ -1,12 +1,8 @@
 import sys
-import typing
 from logging import getLogger
 from subprocess import check_output
 
 from pkg_resources import resource_filename
-
-if typing.TYPE_CHECKING:
-    from typing import Optional
 
 logger = getLogger(__name__)
 
@@ -17,9 +13,9 @@ executable_path = resource_filename("applitools.eyes_universal", "bin/" + _exe_n
 class SDKServer(object):
     def __init__(
         self,
-        port=None,  # type: Optional[int]
+        port=None,  # type: int
         lazy=False,  # type: bool
-        idle_timeout=None,  # type: Optional[int]
+        idle_timeout=None,  # type: int
         executable=executable_path,  # type: str
     ):
         self.executable = executable
