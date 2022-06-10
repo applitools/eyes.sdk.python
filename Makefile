@@ -105,7 +105,7 @@ eyes_selenium_functional_tests: install_eyes_selenium install_test_requirements
 
 
 eyes_selenium_sauce_functional_tests: install_eyes_selenium install_test_requirements
-	pytest -n6 -m sauce tests/functional/eyes_selenium/
+	pytest -m sauce tests/functional/eyes_selenium/
 
 
 install_xvfb:
