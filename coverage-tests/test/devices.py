@@ -49,11 +49,10 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
+        "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
-    driver = appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
-    driver.orientation = orientation.upper()
-    return driver
+    return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
 @sauce.vm
@@ -67,11 +66,10 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
+        "deviceOrientation": orientation,
         "appiumVersion": "1.19.2",
     }
-    driver = appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
-    driver.orientation = orientation.upper()
-    return driver
+    return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
 @sauce.mac_vm
