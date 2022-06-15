@@ -32,10 +32,15 @@ def pixel_3_xl(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
-        "deviceOrientation": orientation,
         "appiumVersion": "1.20.2",
     }
-    return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
+    return appium(
+        desired_caps,
+        sauce_url,
+        app=app,
+        browser_name=browser_name,
+        orientation=orientation,
+    )
 
 
 @sauce.vm
@@ -51,9 +56,13 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
         "name": name_of_test,
         "appiumVersion": "1.20.2",
     }
-    driver = appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
-    driver.orientation = orientation.upper()
-    return driver
+    return appium(
+        desired_caps,
+        sauce_url,
+        app=app,
+        browser_name=browser_name,
+        orientation=orientation,
+    )
 
 
 @sauce.vm
@@ -69,9 +78,13 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
         "name": name_of_test,
         "appiumVersion": "1.19.2",
     }
-    driver = appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
-    driver.orientation = orientation.upper()
-    return driver
+    return appium(
+        desired_caps,
+        sauce_url,
+        app=app,
+        browser_name=browser_name,
+        orientation=orientation,
+    )
 
 
 @sauce.mac_vm
@@ -91,7 +104,7 @@ def iphone_xs(app, sauce_url, browser_name, orientation, name_of_test):
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
 
 
-def appium(desired_caps, sauce_url, app="", browser_name=""):
+def appium(desired_caps, sauce_url, app="", browser_name="", orientation=None):
     if app and browser_name:
         raise Exception("Appium drivers shouldn't contain both app and browserName")
     if not app and not browser_name:
@@ -104,6 +117,9 @@ def appium(desired_caps, sauce_url, app="", browser_name=""):
         desired_caps["browserName"] = browser_name
 
     selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-    return appium_webdriver.Remote(
+    driver = appium_webdriver.Remote(
         command_executor=selenium_url, desired_capabilities=desired_caps
     )
+    if orientation:
+        driver.orientation = orientation.upper()
+    return driver
