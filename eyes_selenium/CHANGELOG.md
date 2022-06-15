@@ -1,4 +1,4 @@
-## [vNext]
+## [5.7.0] - 2022-06-15
 ### Added
 - Lazy loading support [Trello 1](https://trello.com/c/BIHFMhVk)
 
