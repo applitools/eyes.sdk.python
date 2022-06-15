@@ -225,16 +225,16 @@ def test_lazy_load_default_settings():
     cs.lazy_load()
 
     assert cs.values.lazy_load is not None
-    assert cs.values.lazy_load.scroll_length == 300
-    assert cs.values.lazy_load.waiting_time == 2000
-    assert cs.values.lazy_load.page_height == 15000
+    assert cs.values.lazy_load.scroll_length == None
+    assert cs.values.lazy_load.waiting_time == None
+    assert cs.values.lazy_load.max_amount_to_scroll == None
 
 
 def test_lazy_load_custom_settings():
     cs = SeleniumCheckSettings()
-    cs.lazy_load(scroll_length=1, waiting_time=2, page_height=3)
+    cs.lazy_load(scroll_length=1, waiting_time=2, max_amount_to_scroll=3)
 
     assert cs.values.lazy_load is not None
     assert cs.values.lazy_load.scroll_length == 1
     assert cs.values.lazy_load.waiting_time == 2
-    assert cs.values.lazy_load.page_height == 3
+    assert cs.values.lazy_load.max_amount_to_scroll == 3

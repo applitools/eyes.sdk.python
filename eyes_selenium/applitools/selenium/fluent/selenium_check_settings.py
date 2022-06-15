@@ -511,10 +511,7 @@ class SeleniumCheckSettings(CheckSettings):
         self, scroll_length=None, waiting_time=None, max_amount_to_scroll=None
     ):
         # type: (Optional[int], Optional[int], Optional[int]) -> SeleniumCheckSettings
-        if scroll_length or waiting_time or max_amount_to_scroll:
-            value = LazyLoadOptions(scroll_length, waiting_time, max_amount_to_scroll)
-        else:
-            value = True
+        value = LazyLoadOptions(scroll_length, waiting_time, max_amount_to_scroll)
         self.values.lazy_load = value
         return self
 
