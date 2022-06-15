@@ -45,9 +45,9 @@ class FrameLocator(object):
 
 @attr.s
 class LazyLoadOptions(object):
-    scroll_length = attr.ib(default=None)
-    waiting_time = attr.ib(default=None)
-    page_height = attr.ib(default=None)
+    scroll_length = attr.ib(default=None)  # type: Optional[int]
+    waiting_time = attr.ib(default=None)  # type: Optional[int]
+    max_amount_to_scroll = attr.ib(default=None)  # type: Optional[int]
 
 
 @attr.s
@@ -507,10 +507,12 @@ class SeleniumCheckSettings(CheckSettings):
             )
         return self
 
-    def lazy_load(self, scroll_length=300, waiting_time=2000, page_height=15000):
-        # type: (int, int, int) -> SeleniumCheckSettings
-        lazy_load = LazyLoadOptions(scroll_length, waiting_time, page_height)
-        self.values.lazy_load = lazy_load
+    def lazy_load(
+        self, scroll_length=None, waiting_time=None, max_amount_to_scroll=None
+    ):
+        # type: (Optional[int], Optional[int], Optional[int]) -> SeleniumCheckSettings
+        value = LazyLoadOptions(scroll_length, waiting_time, max_amount_to_scroll)
+        self.values.lazy_load = value
         return self
 
     @property

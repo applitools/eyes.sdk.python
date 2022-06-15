@@ -55,7 +55,10 @@ if TYPE_CHECKING:
     from ..common.utils.custom_types import ViewPort
     from . import OCRRegion
     from .fluent import FrameLocator, SeleniumCheckSettings
-    from .fluent.selenium_check_settings import SeleniumCheckSettingsValues
+    from .fluent.selenium_check_settings import (
+        LazyLoadOptions,
+        SeleniumCheckSettingsValues,
+    )
 
 
 @attr.s
@@ -654,6 +657,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     variation_group_id = attr.ib(default=None)  # type: Optional[Text]
     timeout = attr.ib(default=None)  # type: Optional[int]
     wait_before_capture = attr.ib(default=None)  # type: Optional[int]
+    lazy_load = attr.ib(default=None)  # type: Optional[LazyLoadOptions]
 
     @classmethod
     def convert(cls, is_selenium, values):
@@ -674,6 +678,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             variation_group_id=values.variation_group_id,
             timeout=values.timeout,
             wait_before_capture=values.wait_before_capture,
+            lazy_load=values.lazy_load,
             # MatchSettings
             exact=None,  # TODO: verify
             match_level=values.match_level,
