@@ -32,7 +32,7 @@ def pixel_3_xl(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
-        "deviceOrientation": orientation,
+        "sauce:options": {"deviceOrientation": orientation.upper()},
         "appiumVersion": "1.20.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
@@ -49,7 +49,7 @@ def pixel_3a_xl(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
-        "deviceOrientation": orientation,
+        "sauce:options": {"deviceOrientation": orientation.upper()},
         "appiumVersion": "1.20.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
@@ -66,7 +66,7 @@ def samsung_galaxy_s8(app, sauce_url, browser_name, orientation, name_of_test):
         "noReset": True,
         "automationName": "UiAutomator2",
         "name": name_of_test,
-        "deviceOrientation": orientation,
+        "sauce:options": {"deviceOrientation": orientation.upper()},
         "appiumVersion": "1.19.2",
     }
     return appium(desired_caps, sauce_url, app=app, browser_name=browser_name)
