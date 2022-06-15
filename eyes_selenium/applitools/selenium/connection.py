@@ -16,9 +16,8 @@ _logger = logging.getLogger(__name__)
 
 
 class USDKConnection(object):
-    def __init__(self, websocket, server_log_file=None):
-        # type: (WebSocket, Optional[Text]) -> None
-        self.server_log_file = server_log_file
+    def __init__(self, websocket):
+        # type: (WebSocket) -> None
         self._websocket = websocket
         self._response_futures = {}
         weak_socket = weakref.ref(self._websocket)
@@ -40,8 +39,7 @@ class USDKConnection(object):
         server = server or get_instance()
         websocket = WebSocket()
         websocket.connect("ws://localhost:{}/eyes".format(server.port))
-        websocket.settimeout(20 * 60)
-        return cls(websocket, server.log_file_name)
+        return cls(websocket)
 
     def notification(self, name, payload):
         # type: (Text, dict) -> None
