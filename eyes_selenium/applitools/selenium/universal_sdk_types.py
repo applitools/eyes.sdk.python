@@ -657,7 +657,7 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     variation_group_id = attr.ib(default=None)  # type: Optional[Text]
     timeout = attr.ib(default=None)  # type: Optional[int]
     wait_before_capture = attr.ib(default=None)  # type: Optional[int]
-    lazy_load = attr.ib(default=None)  # type: Union[None, bool, LazyLoadOptions]
+    lazy_load = attr.ib(default=None)  # type: Optional[LazyLoadOptions]
 
     @classmethod
     def convert(cls, is_selenium, values):

@@ -80,7 +80,7 @@ class SeleniumCheckSettingsValues(CheckSettingsValues):
     )  # type: Optional[Union[bool, List[int]]]
     lazy_load = attr.ib(
         metadata={JsonInclude.NON_NONE: True}, default=None
-    )  # type: Union[None, bool, LazyLoadOptions]
+    )  # type: Optional[LazyLoadOptions]
 
     @property
     def size_mode(self):
