@@ -117,6 +117,7 @@ jobs:
           APPLITOOLS_API_KEY_READ: ${{ secrets.APPLITOOLS_API_KEY_READ }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN }}
 
   functional-tests:
     needs: dist-build

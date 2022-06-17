@@ -2,7 +2,6 @@ import json
 import os
 import uuid
 from copy import copy
-from distutils.util import strtobool
 from os import path
 
 import pytest
@@ -10,6 +9,17 @@ import requests
 from six.moves.urllib.parse import urljoin
 
 from applitools.common.utils.json_utils import underscore_to_camelcase
+
+
+def strtobool(val):
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return 1
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return 0
+    else:
+        raise ValueError("invalid truth value %r" % (val,))
+
 
 REPORT_BASE_URL = "http://sdk-test-results.herokuapp.com"
 REPORT_DATA = {

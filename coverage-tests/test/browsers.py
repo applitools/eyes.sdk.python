@@ -11,6 +11,9 @@ from webdriver_manager.firefox import GeckoDriverManager
 from . import sauce
 
 LEGACY_SELENIUM = parse_version(selenium.__version__) < parse_version("4")
+# Download driver during module import to avoid racy downloads by xdist workers
+GECKO_DRIVER = GeckoDriverManager().install()
+CHROME_DRIVER = ChromeDriverManager().install()
 
 
 @pytest.fixture(scope="function")
@@ -19,8 +22,7 @@ def chrome(execution_grid):
     options.add_argument("--headless")
     if execution_grid:
         url = os.environ.get("EXECUTION_GRID_URL")
-        caps = options.to_capabilities()
-        return webdriver.Remote(command_executor=url, desired_capabilities=caps)
+        return webdriver.Remote(command_executor=url, options=options)
     else:
         return start_chrome_driver(options)
 
@@ -29,19 +31,12 @@ def chrome(execution_grid):
 def firefox():
     options = webdriver.FirefoxOptions()
     options.headless = True
-    for _ in range(4):
-        try:
-            return webdriver.Firefox(
-                executable_path=GeckoDriverManager().install(),
-                options=options,
-            )
-        except Exception as e:
-            print("Tried to start browser. It was exception {}".format(e))
-        time.sleep(1.0)
-    return webdriver.Firefox(
-        executable_path=GeckoDriverManager().install(),
-        options=options,
-    )
+    if LEGACY_SELENIUM:
+        return webdriver.Firefox(executable_path=GECKO_DRIVER, options=options)
+    else:
+        from selenium.webdriver.firefox.service import Service
+
+        return webdriver.Firefox(service=Service(GECKO_DRIVER), options=options)
 
 
 @sauce.vm
@@ -151,16 +146,9 @@ def chrome_emulator():
 
 
 def start_chrome_driver(options):
-    for _ in range(4):
-        try:
-            return webdriver.Chrome(
-                executable_path=ChromeDriverManager().install(),
-                options=options,
-            )
-        except Exception as e:
-            print("Tried to start browser. It was exception {}".format(e))
-        time.sleep(1.0)
-    return webdriver.Chrome(
-        executable_path=ChromeDriverManager().install(),
-        options=options,
-    )
+    if LEGACY_SELENIUM:
+        return webdriver.Chrome(executable_path=CHROME_DRIVER, options=options)
+    else:
+        from selenium.webdriver.chrome.service import Service
+
+        return webdriver.Chrome(service=Service(CHROME_DRIVER), options=options)
