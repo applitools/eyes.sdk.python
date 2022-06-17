@@ -45,92 +45,95 @@ def firefox_48(sauce_url, legacy, name_of_test):
     if legacy:
         if not LEGACY_SELENIUM:
             pytest.skip("Firefox 48 can only be accessed in legacy Selenium")
-        capabilities = {
-            "browserName": "firefox",
-            "platform": "Windows 10",
-            "version": "48.0",
-            "name": name_of_test,
-        }
+        options = webdriver.FirefoxOptions()
+        options.set_capability("version", "48.0")
+        options.set_capability("platform", "Windows 10")
+        options.set_capability("sauce:options", {"name": name_of_test})
+        return webdriver.Remote(command_executor=sauce_url, options=options)
     else:
         raise Exception("Unsupported browser version for W3C")
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
 
 
 @sauce.vm
 @pytest.fixture(scope="function")
 def ie_11(sauce_url, name_of_test):
-    capabilities = {
-        "browserName": "internet explorer",
-        "browserVersion": "11.285",
-        "platformName": "Windows 10",
-        "sauce:options": {"name": name_of_test},
-    }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
+    options = webdriver.IeOptions()
+    options.set_capability("browserVersion", "11.285")
+    options.set_capability("platformName", "Windows 10")
+    options.set_capability("sauce:options", {"name": name_of_test})
+    return webdriver.Remote(command_executor=sauce_url, options=options)
 
 
 @sauce.vm
 @pytest.fixture(scope="function")
 def edge_18(sauce_url, name_of_test):
-    capabilities = {
-        "browserName": "MicrosoftEdge",
-        "browserVersion": "18.17763",
-        "platformName": "Windows 10",
-        "screenResolution": "1920x1080",
-        "sauce:options": {"name": name_of_test},
-    }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
+    if LEGACY_SELENIUM:
+        capabilities = {
+            "browserName": "MicrosoftEdge",
+            "browserVersion": "18.17763",
+            "platformName": "Windows 10",
+            "screenResolution": "1920x1080",
+            "sauce:options": {"screenResolution": "1920x1080", "name": name_of_test},
+        }
+        return webdriver.Remote(sauce_url, capabilities)
+    else:
+        options = webdriver.EdgeOptions()
+        options.browser_version = "18.17763"
+        options.platform_name = "Windows 10"
+        options.set_capability(
+            "sauce:options", {"screenResolution": "1920x1080", "name": name_of_test}
+        )
+        return webdriver.Remote(command_executor=sauce_url, options=options)
 
 
 @sauce.mac_vm
 @pytest.fixture(scope="function")
 def safari_11(sauce_url, legacy, name_of_test):
-    if legacy:
-        if not LEGACY_SELENIUM:
-            pytest.skip("Legacy Safari 11 driver is not functional in Selenium 4")
-        capabilities = {
-            "browserName": "safari",
-            "platform": "macOS 10.13",
-            "version": "11.1",
-            "name": name_of_test,
-        }
+    if LEGACY_SELENIUM:
+        if legacy:
+            capabilities = {
+                "browserName": "safari",
+                "platform": "macOS 10.13",
+                "version": "11.1",
+                "sauce:options": {"name": name_of_test},
+            }
+            return webdriver.Remote(sauce_url, capabilities)
+        else:
+            raise NotImplementedError
     else:
-        capabilities = {
-            "browserName": "safari",
-            "browserVersion": "11.1",
-            "platformName": "macOS 10.13",
-            "sauce:options": {"name": name_of_test},
-        }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
+        if legacy:
+            pytest.skip("Legacy Safari 11 driver is not functional in Selenium 4")
+        else:
+            raise NotImplementedError
 
 
 @sauce.mac_vm
 @pytest.fixture(scope="function")
 def safari_12(sauce_url, legacy, name_of_test):
-    if legacy:
-        capabilities = {}
-        capabilities["browserName"] = "safari"
-        capabilities["platform"] = "macOS 10.13"
-        capabilities["version"] = "12.1"
-        capabilities["seleniumVersion"] = "3.4.0"
-        capabilities["name"] = name_of_test
+    if LEGACY_SELENIUM:
+        if legacy:
+            capabilities = {
+                "browserName": "safari",
+                "platform": "macOS 10.13",
+                "seleniumVersion": "3.4.0",
+                "version": "12.1",
+                "sauce:options": {"name": name_of_test},
+            }
+        else:
+            raise NotImplementedError
+        return webdriver.Remote(sauce_url, capabilities)
     else:
-        capabilities = {
-            "browserName": "safari",
-            "browserVersion": "12.1",
-            "platformName": "macOS 10.13",
-            "sauce:options": {"name": name_of_test},
-        }
-    return webdriver.Remote(
-        command_executor=sauce_url, desired_capabilities=capabilities
-    )
+        if legacy:
+            from selenium.webdriver.safari.options import Options
+
+            options = Options()
+            options.set_capability("platform", "macOS 10.13")
+            options.set_capability("seleniumVersion", "3.4.0")
+            options.set_capability("version", "12.1")
+            options.set_capability("sauce:options", {"name": name_of_test})
+        else:
+            raise NotImplementedError
+        return webdriver.Remote(command_executor=sauce_url, options=options)
 
 
 @pytest.fixture(scope="function")
@@ -138,7 +141,11 @@ def chrome_emulator():
     options = webdriver.ChromeOptions()
     mobile_emulation = {
         "deviceMetrics": {"width": 384, "height": 512, "pixelRatio": 2.0},
-        "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; Android SDK built for x86_64 Build/OSR1.180418.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36",
+        "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; "
+        "Android SDK built for x86_64 Build/OSR1.180418.004) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/69.0.3497.100 Mobile "
+        "Safari/537.36",
     }
     options.add_experimental_option("mobileEmulation", mobile_emulation)
     options.add_argument("--headless")
