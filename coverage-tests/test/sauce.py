@@ -1,3 +1,4 @@
+import json
 import os
 from itertools import cycle
 
@@ -31,14 +32,12 @@ def sauce_url():
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items):
     sauce_fixtures = _fixutres2vm_types.keys()
-    thread_counters = None
+    limits = _SAUCE_LIMITS.items()
+    # use up to half of the allowed VMs of each kind
+    thread_counters = {k: iter(cycle(range(n // 2))) for k, n in limits if n > 0}
     for test in items:
         sauce_fixture = set(test.fixturenames) & sauce_fixtures
         if sauce_fixture:
-            if not thread_counters:
-                limits = _sauce_limits().items()
-                # use up to half of the allowed VMs of each kind
-                thread_counters = {k: iter(cycle(range(n // 2))) for k, n in limits}
             assert len(sauce_fixture) == 1
             sauce_fixture = sauce_fixture.pop()
             vm_type = _fixutres2vm_types[sauce_fixture]
@@ -51,10 +50,20 @@ def _sauce_credentials():
     return os.environ["SAUCE_USERNAME"], os.environ["SAUCE_ACCESS_KEY"]
 
 
-def _sauce_limits():
-    urlt = "https://{u}:{k}@api.us-west-1.saucelabs.com/rest/v1.2/users/{u}/concurrency"
-    username, key = _sauce_credentials()
-    url = urlt.format(u=username, k=key)
-    response = requests.get(url).json()
-    allowed = response["concurrency"]["team"]["allowed"]
-    return {kind: limit for kind, limit in allowed.items() if limit > 0}
+def _fetch_sauce_limits():
+    # Use environment variable to cache limits to avoid sending same request multiple
+    # times when xdist workers start
+    if "SAUCE_LIMITS" not in os.environ:
+        url_template = (
+            "https://{username}:{key}@api.us-west-1.saucelabs.com/"
+            "rest/v1.2/users/{username}/concurrency"
+        )
+        username, key = _sauce_credentials()
+        url = url_template.format(username=username, key=key)
+        response = requests.get(url).json()
+        allowed = response["concurrency"]["team"]["allowed"]
+        os.environ["SAUCE_LIMITS"] = json.dumps(allowed)
+    return json.loads(os.environ["SAUCE_LIMITS"])
+
+
+_SAUCE_LIMITS = _fetch_sauce_limits()
