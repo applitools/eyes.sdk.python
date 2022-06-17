@@ -11,6 +11,9 @@ from webdriver_manager.firefox import GeckoDriverManager
 from . import sauce
 
 LEGACY_SELENIUM = parse_version(selenium.__version__) < parse_version("4")
+# Download driver during module import to avoid racy downloads by xdist workers
+GECKO_DRIVER = GeckoDriverManager().install()
+CHROME_DRIVER = ChromeDriverManager().install()
 
 
 @pytest.fixture(scope="function")
@@ -29,17 +32,11 @@ def firefox():
     options = webdriver.FirefoxOptions()
     options.headless = True
     if LEGACY_SELENIUM:
-        return webdriver.Firefox(
-            executable_path=GeckoDriverManager().install(),
-            options=options,
-        )
+        return webdriver.Firefox(executable_path=GECKO_DRIVER, options=options)
     else:
         from selenium.webdriver.firefox.service import Service
 
-        return webdriver.Firefox(
-            service=Service(GeckoDriverManager().install()),
-            options=options,
-        )
+        return webdriver.Firefox(service=Service(GECKO_DRIVER), options=options)
 
 
 @sauce.vm
@@ -150,14 +147,8 @@ def chrome_emulator():
 
 def start_chrome_driver(options):
     if LEGACY_SELENIUM:
-        return webdriver.Chrome(
-            executable_path=ChromeDriverManager().install(),
-            options=options,
-        )
+        return webdriver.Chrome(executable_path=CHROME_DRIVER, options=options)
     else:
         from selenium.webdriver.chrome.service import Service
 
-        return webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=options,
-        )
+        return webdriver.Chrome(service=Service(CHROME_DRIVER), options=options)
