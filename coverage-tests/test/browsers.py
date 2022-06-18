@@ -42,16 +42,17 @@ def firefox():
 @sauce.vm
 @pytest.fixture(scope="function")
 def firefox_48(sauce_url, legacy, name_of_test):
-    if legacy:
-        if not LEGACY_SELENIUM:
-            pytest.skip("Firefox 48 can only be accessed in legacy Selenium")
-        options = webdriver.FirefoxOptions()
-        options.set_capability("version", "48.0")
-        options.set_capability("platform", "Windows 10")
-        options.set_capability("sauce:options", {"name": name_of_test})
-        return webdriver.Remote(command_executor=sauce_url, options=options)
+    if LEGACY_SELENIUM:
+        if legacy:
+            options = webdriver.FirefoxOptions()
+            options.set_capability("name", name_of_test)
+            options.set_capability("platform", "Windows 10")
+            options.set_capability("version", "48.0")
+            return webdriver.Remote(command_executor=sauce_url, options=options)
+        else:
+            raise Exception("Firefox 48 can only be accessed in legacy protocol")
     else:
-        raise Exception("Unsupported browser version for W3C")
+        pytest.skip("Firefox 48 can only be accessed in legacy Selenium")
 
 
 @sauce.vm
@@ -72,7 +73,6 @@ def edge_18(sauce_url, name_of_test):
             "browserName": "MicrosoftEdge",
             "browserVersion": "18.17763",
             "platformName": "Windows 10",
-            "screenResolution": "1920x1080",
             "sauce:options": {"screenResolution": "1920x1080", "name": name_of_test},
         }
         return webdriver.Remote(sauce_url, capabilities)
@@ -93,13 +93,13 @@ def safari_11(sauce_url, legacy, name_of_test):
         if legacy:
             capabilities = {
                 "browserName": "safari",
+                "name": name_of_test,
                 "platform": "macOS 10.13",
                 "version": "11.1",
-                "sauce:options": {"name": name_of_test},
             }
-            return webdriver.Remote(sauce_url, capabilities)
         else:
             raise NotImplementedError
+        return webdriver.Remote(sauce_url, capabilities)
     else:
         if legacy:
             pytest.skip("Legacy Safari 11 driver is not functional in Selenium 4")
@@ -114,10 +114,10 @@ def safari_12(sauce_url, legacy, name_of_test):
         if legacy:
             capabilities = {
                 "browserName": "safari",
+                "name": name_of_test,
                 "platform": "macOS 10.13",
                 "seleniumVersion": "3.4.0",
                 "version": "12.1",
-                "sauce:options": {"name": name_of_test},
             }
         else:
             raise NotImplementedError
@@ -127,10 +127,10 @@ def safari_12(sauce_url, legacy, name_of_test):
             from selenium.webdriver.safari.options import Options
 
             options = Options()
+            options.set_capability("name", name_of_test)
             options.set_capability("platform", "macOS 10.13")
             options.set_capability("seleniumVersion", "3.4.0")
             options.set_capability("version", "12.1")
-            options.set_capability("sauce:options", {"name": name_of_test})
         else:
             raise NotImplementedError
         return webdriver.Remote(command_executor=sauce_url, options=options)
