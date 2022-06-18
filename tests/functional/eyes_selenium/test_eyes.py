@@ -1,4 +1,5 @@
 import pytest
+from selenium.webdriver.common.by import By
 
 from applitools.common import RectangleSize
 from applitools.selenium import Eyes, Target
@@ -17,13 +18,13 @@ def test_scrollable_modal_on_scrolled_down_page(local_chrome_driver):
     # Scroll page to the bottom-most paragraph
     driver.execute_script(
         "arguments[0].scrollIntoView()",
-        driver.find_element_by_css_selector("body > main > p:nth-child(17)"),
+        driver.find_element(By.CSS_SELECTOR, "body > main > p:nth-child(17)"),
     )
     # Show popup without clicking a button on top to avoid scrolling up
     driver.execute_script("openModal('scrollable_content_modal')")
 
-    content = driver.find_element_by_css_selector(
-        ".modal-content.modal-content--scrollable"
+    content = driver.find_element(
+        By.CSS_SELECTOR, ".modal-content.modal-content--scrollable"
     )
     eyes.check(Target.region(content).scroll_root_element(content).fully())
 
