@@ -1,3 +1,19 @@
+import warnings
+
+# Outdated versions of these modules have invalid escape sequences
+# in some docstrings. To ignore these irrelevant warnings import modules early
+# having filter in place.
+# Warnings are only issued during module interpretation, it is not
+# issued when cached bytecode is found and loaded by the interpreter.
+# Make sure to wipe cached bytecode when verifying that modules still
+# produce these warnings.
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", "invalid escape", category=DeprecationWarning)
+    import selenium.webdriver.chrome.options
+    import selenium.webdriver.remote.webdriver
+    import selenium.webdriver.remote.webelement
+    import selenium.webdriver.support.wait
+
 from selenium.common.exceptions import WebDriverException
 
 from applitools.selenium import BatchInfo, Eyes, StitchMode

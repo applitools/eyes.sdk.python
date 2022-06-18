@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import pytest
 from appium import webdriver as appium_webdriver
@@ -109,6 +110,14 @@ def appium(desired_caps, sauce_url, app="", browser_name=""):
         desired_caps["browserName"] = browser_name
 
     selenium_url = os.getenv("SELENIUM_SERVER_URL", sauce_url)
-    return appium_webdriver.Remote(
-        command_executor=selenium_url, desired_capabilities=desired_caps
-    )
+    with warnings.catch_warnings():
+        # There is still no way to configure Appium 2 driver
+        # other than using desired_capabilities dict so ignore the warning
+        warnings.filterwarnings(
+            "ignore",
+            "desired_capabilities has been deprecated",
+            category=DeprecationWarning,
+        )
+        return appium_webdriver.Remote(
+            command_executor=selenium_url, desired_capabilities=desired_caps
+        )
