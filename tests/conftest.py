@@ -17,5 +17,7 @@ with warnings.catch_warnings():
     warnings.filterwarnings("ignore", "invalid escape", category=DeprecationWarning)
     import selenium.webdriver.remote.webdriver
 
-    if sys.version_info >= (3,):
+    try:
         import kitchen.text.converters
+    except ImportError:
+        pass
