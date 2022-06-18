@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 import warnings
 
@@ -15,3 +16,6 @@ os.environ["APPLITOOLS_BATCH_ID"] = os.getenv("APPLITOOLS_BATCH_ID", str(uuid.uu
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", "invalid escape", category=DeprecationWarning)
     import selenium.webdriver.remote.webdriver
+
+    if sys.version_info >= (3,):
+        import kitchen.text.converters
