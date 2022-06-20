@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 from appium.webdriver import Remote
 
@@ -9,20 +11,25 @@ from applitools.common.ultrafastgrid import (
 )
 from applitools.selenium import Eyes, VisualGridRunner
 
+IOS_UFGLIB = (
+    "@executable_path/Frameworks/UFG_lib.xcframework/"
+    "ios-arm64_x86_64-simulator/UFG_lib.framework/UFG_lib"
+)
+
 
 @pytest.mark.sauce
+@pytest.mark.filterwarnings("ignore:desired_capabilities has been deprecated")
 def test_ufg_native_ios_basic(sauce_driver_url):
     caps = {
-        "app": "https://applitools.jfrog.io/artifactory/Examples/DuckDuckGo-instrumented.app.zip",
+        "app": "https://applitools.jfrog.io/artifactory/"
+        "Examples/DuckDuckGo-instrumented.app.zip",
         "deviceName": "iPhone 12 Pro Simulator",
         "platformName": "iOS",
         "platformVersion": "15.2",
         "deviceOrientation": "portrait",
         "processArguments": {
             "args": [],
-            "env": {
-                "DYLD_INSERT_LIBRARIES": "@executable_path/Frameworks/UFG_lib.xcframework/ios-arm64_x86_64-simulator/UFG_lib.framework/UFG_lib"
-            },
+            "env": {"DYLD_INSERT_LIBRARIES": IOS_UFGLIB},
         },
     }
     with Remote(sauce_driver_url, caps) as driver:

@@ -1,22 +1,23 @@
 import os
+import sys
+import uuid
+import warnings
 
-import mock
-import pytest
+# Generate APPLITOOLS_BATCH_ID for xdist run in case it was not provided externally
+os.environ["APPLITOOLS_BATCH_ID"] = os.getenv("APPLITOOLS_BATCH_ID", str(uuid.uuid4()))
 
+# Outdated versions of these modules have invalid escape sequences
+# in some docstrings. To ignore these irrelevant warnings import modules early
+# having filter in place.
+# Warnings are only issued during module interpretation, it is not
+# issued when cached bytecode is found and loaded by the interpreter.
+# Make sure to wipe cached bytecode when verifying that modules still
+# produce these warnings.
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", "invalid escape", category=DeprecationWarning)
+    import selenium.webdriver.remote.webdriver
 
-def pytest_generate_tests(metafunc):
-    import uuid
-
-    # setup environment variables once per test run if not settled up
-    # needed for multi thread run
-
-    os.environ["APPLITOOLS_BATCH_ID"] = os.getenv(
-        "APPLITOOLS_BATCH_ID", str(uuid.uuid4())
-    )
-
-
-@pytest.fixture
-def driver_mock():
-    from selenium.webdriver.remote.webdriver import WebDriver
-
-    return mock.Mock(WebDriver)
+    try:
+        import kitchen.text.converters
+    except ImportError:
+        pass

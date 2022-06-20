@@ -1,6 +1,7 @@
 import time
 
 import pytest
+from selenium.webdriver.common.by import By
 
 from applitools.selenium import Target
 
@@ -50,15 +51,15 @@ def test_charts_with_scroll_root(eyes, local_chrome_driver):
     )
     eyes.configure.add_property("Fluent", False)
     driver = eyes.driver
-    frame1 = driver.find_element_by_id("mainFrame")
+    frame1 = driver.find_element(By.ID, "mainFrame")
     driver.switch_to.frame(frame1)
 
-    frame2 = driver.find_element_by_id("angularContainerIframe")
+    frame2 = driver.find_element(By.ID, "angularContainerIframe")
     driver.switch_to.frame(frame2)
 
-    checked_element = driver.find_element_by_tag_name("mv-temperature-sensor-graph")
-    checked_element2 = driver.find_element_by_tag_name("mv-humidity-sensor-graph")
-    scroll_root = driver.find_element_by_tag_name("mat-sidenav-content")
+    checked_element = driver.find_element(By.TAG_NAME, "mv-temperature-sensor-graph")
+    checked_element2 = driver.find_element(By.TAG_NAME, "mv-humidity-sensor-graph")
+    scroll_root = driver.find_element(By.TAG_NAME, "mat-sidenav-content")
 
     eyes.check(Target.window().region(checked_element).scroll_root_element(scroll_root))
     eyes.check(

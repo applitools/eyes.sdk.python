@@ -1,3 +1,4 @@
+import mock
 import pytest
 
 from applitools.common import EyesError, MatchLevel, StitchMode
@@ -9,6 +10,13 @@ from applitools.selenium import Eyes, Target
 def pytest_generate_tests(metafunc):
     if "eyes" in metafunc.fixturenames:
         metafunc.parametrize("eyes", ["selenium", "visual_grid"], indirect=True)
+
+
+@pytest.fixture
+def driver_mock():
+    from selenium.webdriver.remote.webdriver import WebDriver
+
+    return mock.Mock(WebDriver)
 
 
 def test_set_get_scale_ratio(eyes):
