@@ -9,16 +9,12 @@ import warnings
 # produce these warnings.
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", "invalid escape", category=DeprecationWarning)
-    import selenium.webdriver.chrome.options
-    import selenium.webdriver.remote.webdriver
-    import selenium.webdriver.remote.webelement
-    import selenium.webdriver.support.wait
+    import selenium.webdriver
 
 from selenium.common.exceptions import WebDriverException
 
 from applitools.selenium import BatchInfo, Eyes, StitchMode
 
-from . import sauce
 from .browsers import *
 from .devices import *
 from .sauce import pytest_collection_modifyitems, sauce_url
