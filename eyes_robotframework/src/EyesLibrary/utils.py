@@ -22,6 +22,7 @@ SEPARATOR = object()
 def extract_keyword_and_arguments(
     keywords_from_test,  # type: list[Any]|tuple[Any]
     defined_keywords,  # type: list[Any]|tuple[Any]
+    skip_keywords=None,  # type: Optional[list[Any]]
 ):
     # type: (...) -> Generator[tuple[Text, list[Any]], None, None]
     res = OrderedDict()
@@ -45,6 +46,8 @@ def extract_keyword_and_arguments(
             )
         res[key_keyword].append(keyword)
     for keyword, arguments in res.items():
+        if skip_keywords and keyword in skip_keywords:
+            continue
         yield keyword, arguments
 
 
@@ -63,11 +66,59 @@ def splits_args_by_separator(args):
             yield res
 
 
-def collect_check_settings(check_settings, defined_keywords, *keywords):
-    # type: (SeleniumCheckSettings,list[str],tuple[Any])->SeleniumCheckSettings
+def collect_target_path(defined_keywords, *keywords):
+    # type: (list[str],tuple[Any])->RegionLocator
+    target_path = TargetPath()
+    keywords_with_arguments = list(
+        extract_keyword_and_arguments(
+            keywords, defined_keywords, skip_keywords=CHECK_SETTINGS_KEYWORDS_LIST
+        )
+    )
+    # check that shadow keyword is used in correct way in sequence
+    # if not all(
+    #     [k.startswith("Shadow") for k, _ in keywords_with_arguments[:-1]]
+    #     + [keywords_with_arguments[-1][0].startswith("Region")]
+    # ):
+    #     raise ValueError(
+    #         "Incorrect order of Target Path. Should be `Shadow *` first and `Region *` last"
+    #     )
+    # skip last keyword which is Region
+    for keyword, args in keywords_with_arguments[:-1]:
+        if not keyword.startswith("Shadow"):
+            raise ValueError(
+                "Incorrect order of keywords in Target Path. "
+                "Should be `Shadow *` first and `Region *` last"
+            )
+        if len(args) > 1:
+            raise ValueError(
+                "Incorrect number of arguments for keyword `{}`. Should be 1".format(
+                    keyword
+                )
+            )
+        target_path = target_path.shadow(*args)
+
+    region_keyword, region_args = keywords_with_arguments[-1]
+    if not region_keyword.startswith("Region"):
+        raise ValueError(
+            "Incorrect order of keywords in Target Path. "
+            "Last argument should be `Region *`"
+        )
+    if len(region_args) > 1:
+        raise ValueError(
+            "Incorrect number of arguments for keyword `{}`. Should be 1".format(
+                region_keyword
+            )
+        )
+    return target_path.region(*region_args)
+
+
+def collect_check_settings(
+    check_settings, defined_keywords, skip_keywords=None, *keywords
+):
+    # type: (SeleniumCheckSettings,list[str],Optional[list],tuple[Any])->SeleniumCheckSettings
     """Fill `check_setting` with data from keyword and return `check_settings`"""
     for keyword, keyword_args in extract_keyword_and_arguments(
-        keywords, defined_keywords
+        keywords, defined_keywords, skip_keywords
     ):
         if keyword_args:
             # keyword has arguments

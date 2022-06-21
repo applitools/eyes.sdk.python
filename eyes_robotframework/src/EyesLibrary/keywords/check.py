@@ -13,16 +13,21 @@ from applitools.common.utils import argument_guard
 from applitools.selenium import Target
 
 from ..base import LibraryComponent
-from ..utils import collect_check_settings, is_webelement_guard, parse_region
-from .check_settings import CHECK_SETTINGS_KEYWORDS_LIST
+from ..keywords_list import (
+    CHECK_KEYWORDS_LIST,
+    CHECK_SETTINGS_KEYWORDS_LIST,
+)
+from ..utils import (
+    collect_check_settings,
+    is_webelement_guard,
+    parse_region,
+)
 from .keyword_tags import CHECK_FLOW, CHECK_SETTINGS_SUPPORT, TARGET_SUPPORT
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
 
     from ..custom_types import Locator
-
-CHECK_KEYWORDS_LIST = []
 
 
 def keyword(name=None, tags=(), types=()):

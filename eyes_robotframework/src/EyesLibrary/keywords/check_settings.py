@@ -10,6 +10,7 @@ from applitools.common import AccessibilityRegionType, MatchLevel, VisualGridOpt
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
+from ..keywords_list import CHECK_SETTINGS_KEYWORDS_LIST
 from ..utils import get_enum_by_upper_name, is_webelement_guard, parse_region
 from .keyword_tags import CHECK_SETTING, UFG_RELATED
 
@@ -17,8 +18,6 @@ if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
 
     from ..custom_types import Locator
-
-CHECK_SETTINGS_KEYWORDS_LIST = []
 
 
 def keyword(name=None, tags=(), types=()):

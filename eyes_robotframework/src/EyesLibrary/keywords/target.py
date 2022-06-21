@@ -10,8 +10,8 @@ from applitools.selenium import Target
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
+from ..keywords_list import CHECK_SETTINGS_KEYWORDS_LIST
 from ..utils import collect_check_settings, parse_region
-from .check_settings import CHECK_SETTINGS_KEYWORDS_LIST
 from .keyword_tags import CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
 
 if TYPE_CHECKING:

@@ -6,13 +6,14 @@ from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElemen
 
 from applitools.selenium import TargetPath
 from applitools.selenium.fluent.target_path import ShadowDomLocator
-from EyesLibrary.base import LibraryComponent
-from EyesLibrary.keywords.keyword_tags import TARGET_PATH
-from EyesLibrary.utils import is_webelement_guard
+
+from ..base import LibraryComponent
+from ..keywords_list import TARGET_PATH_KEYWORDS_LIST
+from ..utils import is_webelement_guard
+from .keyword_tags import TARGET_PATH
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
-TARGET_PATH_KEYWORDS_LIST = []
 
 
 def keyword(name=None, tags=(), types=()):
