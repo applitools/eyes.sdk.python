@@ -4,6 +4,13 @@ repos:
       hooks:
         - id: black
 
+    - repo: https://github.com/PyCQA/pydocstyle
+      rev: 6.1.1
+      hooks:
+        - id: pydocstyle
+          args:  ['--convention', 'pep257', '--add-ignore', 'D1']
+          exclude: eyes_robotframework/.*|eyes_selenium/.*|coverage-tests/.*
+
     - repo: https://github.com/PyCQA/flake8
       rev: 4.0.1
       hooks:

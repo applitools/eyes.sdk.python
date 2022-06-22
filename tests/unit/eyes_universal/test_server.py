@@ -1,58 +1,65 @@
-import sys
-
 import pytest
-from mock import Mock, call
+from mock import MagicMock, Mock, call
 
-from applitools.eyes_universal.server import SDKServer, executable_path
+from applitools.eyes_universal.server import SDKServer
 
 
 @pytest.fixture
-def check_output(monkeypatch):
-    mock = Mock(return_value=b"123\n")
-    monkeypatch.setattr("applitools.eyes_universal.server.check_output", mock)
-    return mock
+def popen_mock(monkeypatch):
+    popen_mock = Mock()
+
+    def constructor(_, stdout):
+        stdout.write(b"1\n")
+        return popen_mock
+
+    monkeypatch.setattr("applitools.eyes_universal.server.Popen", constructor)
+    return popen_mock
 
 
-def test_sdk_server_default_args(check_output):
+@pytest.fixture
+def tempfile_mock(monkeypatch):
+    temp_mock = MagicMock()
+    temp_mock.readline.return_value = b"2\n"
+
+    def constructor(_):
+        return temp_mock
+
+    monkeypatch.setattr("applitools.eyes_universal.server.TemporaryFile", constructor)
+    return temp_mock
+
+
+def test_sdk_server_parses_port_and_terminates(popen_mock):
     server = SDKServer()
+    saved_port = server.port
+    server.close()
 
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call([executable_path, "--fork"], universal_newlines=True)
+    assert saved_port == 1
+    assert server.port is None
+    assert popen_mock.mock_calls == [call.terminate(), call.wait()]
+
+
+def test_sdk_server_removes_temp_file(popen_mock, tempfile_mock):
+    server = SDKServer()
+    saved_port = server.port
+    server.close()
+
+    assert saved_port == 2
+    assert server.port is None
+    assert tempfile_mock.mock_calls == [
+        call.write(b"1\n"),
+        call.seek(0),
+        call.readline(),
+        call.close(),
     ]
 
 
-def test_sdk_server_with_port(check_output):
-    server = SDKServer(port=345)
+def test_sdk_server_auto_deletes(popen_mock, tempfile_mock):
+    SDKServer()
 
-    assert server.port == 123  # mock return this
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--port", 345, "--fork"],
-            universal_newlines=True,
-        )
-    ]
-
-
-def test_sdk_server_lazy(check_output):
-    server = SDKServer(lazy=True)
-
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--lazy", "--fork"],
-            universal_newlines=True,
-        )
-    ]
-
-
-def test_sdk_server_idle_timeout(check_output):
-    server = SDKServer(idle_timeout=5)
-
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--idle-timeout", 5, "--fork"],
-            universal_newlines=True,
-        )
+    assert popen_mock.mock_calls == [call.terminate(), call.wait()]
+    assert tempfile_mock.mock_calls == [
+        call.write(b"1\n"),
+        call.seek(0),
+        call.readline(),
+        call.close(),
     ]
