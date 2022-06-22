@@ -19,9 +19,7 @@ class SDKServer(object):
     log_file_name = None  # backward compatibility with eyes-selenium<=5.6
 
     def __init__(self):
-        """
-        Start eyes-universal service subprocess and obtain port number it listens to
-        """
+        "Start eyes-universal service subprocess and obtain port number it listens to"
         self.port = None
         self._stdout_file = None
         self._usdk_subprocess = None
