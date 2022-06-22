@@ -2,7 +2,7 @@ import atexit
 import sys
 import weakref
 from logging import getLogger
-from subprocess import Popen
+from subprocess import Popen  # nosec
 from tempfile import TemporaryFile
 from time import sleep
 
@@ -19,12 +19,19 @@ class SDKServer(object):
     log_file_name = None  # backward compatibility with eyes-selenium<=5.6
 
     def __init__(self):
+        """
+        Start eyes-universal service subprocess and obtain port number it listens to
+        """
         self.port = None
         self._stdout_file = None
         self._usdk_subprocess = None
         self._start_usdk()
 
     def __del__(self):
+        """
+        Closes leaked SDKServer proces if it was not closed already.
+        Might be called multiple times.
+        """
         if self._usdk_subprocess:
             self.close()
 
@@ -43,7 +50,7 @@ class SDKServer(object):
     def _start_usdk(self):
         command = [executable_path, "--no-singleton"]
         self._stdout_file = TemporaryFile("w+b")
-        self._usdk_subprocess = Popen(command, stdout=self._stdout_file)
+        self._usdk_subprocess = Popen(command, stdout=self._stdout_file)  # nosec
         _unclosed_sdk_servers.add(weakref.ref(self))
         self.port = self._read_port()
         logger.info("Started Universal SDK server at %s", self.port)
