@@ -28,6 +28,7 @@ class SDKServer(object):
     def __del__(self):
         """
         Close leaked SDKServer object if it was not closed already.
+
         Might be called multiple times in older python.
         """
         if self._usdk_subprocess:
