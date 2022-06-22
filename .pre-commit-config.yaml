@@ -4,6 +4,12 @@ repos:
       hooks:
         - id: black
 
+    - repo: https://github.com/PyCQA/pydocstyle
+      rev: 6.1.1
+      hooks:
+        - id: pydocstyle
+          args: ["--ignore", "D100,D101,D205,D212"]
+
     - repo: https://github.com/PyCQA/flake8
       rev: 4.0.1
       hooks:
