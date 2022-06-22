@@ -20,6 +20,7 @@ class SDKServer(object):
 
     def __init__(self):
         self.port = None
+        self._stdout_file = None
         self._usdk_subprocess = None
         self._start_usdk()
 
@@ -31,25 +32,26 @@ class SDKServer(object):
         return "SDKServer(port={})".format(self.port)
 
     def close(self):
-        self.port = None
         self._usdk_subprocess.terminate()
         self._usdk_subprocess.wait()
         self._usdk_subprocess = None
+        self._stdout_file.close()
+        self._stdout_file = None
         _unclosed_sdk_servers.remove(weakref.ref(self))
+        self.port = None
 
     def _start_usdk(self):
         command = [executable_path, "--no-singleton"]
-        with TemporaryFile("w+b") as stdout:
-            self._usdk_subprocess = Popen(command, stdout=stdout)
-            _unclosed_sdk_servers.add(weakref.ref(self))
-            self.port = self._read_port(stdout)
+        self._stdout_file = TemporaryFile("w+b")
+        self._usdk_subprocess = Popen(command, stdout=self._stdout_file)
+        _unclosed_sdk_servers.add(weakref.ref(self))
+        self.port = self._read_port()
         logger.info("Started Universal SDK server at %s", self.port)
 
-    @staticmethod
-    def _read_port(file):
+    def _read_port(self):
         while True:
-            file.seek(0)
-            first_line = file.readline()
+            self._stdout_file.seek(0)
+            first_line = self._stdout_file.readline()
             if first_line:
                 return int(first_line)
             else:
