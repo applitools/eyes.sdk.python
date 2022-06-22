@@ -1,58 +1,35 @@
-import sys
-
 import pytest
 from mock import Mock, call
 
-from applitools.eyes_universal.server import SDKServer, executable_path
+from applitools.eyes_universal.server import SDKServer
 
 
 @pytest.fixture
-def check_output(monkeypatch):
-    mock = Mock(return_value=b"123\n")
-    monkeypatch.setattr("applitools.eyes_universal.server.check_output", mock)
-    return mock
+def popen_mock(monkeypatch):
+    popen_mock = Mock()
+
+    def constructor(_, stdout):
+        stdout.write(b"123\n")
+        return popen_mock
+
+    monkeypatch.setattr("applitools.eyes_universal.server.Popen", constructor)
+    return popen_mock
 
 
-def test_sdk_server_default_args(check_output):
+def test_sdk_server_parses_port(popen_mock):
     server = SDKServer()
 
     assert server.port == 123
-    assert check_output.mock_calls == [
-        call([executable_path, "--fork"], universal_newlines=True)
-    ]
 
 
-def test_sdk_server_with_port(check_output):
-    server = SDKServer(port=345)
+def test_sdk_server_terminates(popen_mock):
+    server = SDKServer()
+    server.close()
 
-    assert server.port == 123  # mock return this
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--port", 345, "--fork"],
-            universal_newlines=True,
-        )
-    ]
+    assert popen_mock.mock_calls == [call.terminate(), call.wait()]
 
 
-def test_sdk_server_lazy(check_output):
-    server = SDKServer(lazy=True)
+def test_sdk_server_deletes(popen_mock):
+    SDKServer()
 
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--lazy", "--fork"],
-            universal_newlines=True,
-        )
-    ]
-
-
-def test_sdk_server_idle_timeout(check_output):
-    server = SDKServer(idle_timeout=5)
-
-    assert server.port == 123
-    assert check_output.mock_calls == [
-        call(
-            [executable_path, "--idle-timeout", 5, "--fork"],
-            universal_newlines=True,
-        )
-    ]
+    assert popen_mock.mock_calls == [call.terminate(), call.wait()]
