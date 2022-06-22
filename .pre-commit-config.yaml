@@ -4,11 +4,11 @@ repos:
       hooks:
         - id: black
 
-    - repo: https://github.com/PyCQA/pydocstyle
-      rev: 6.1.1
-      hooks:
-        - id: pydocstyle
-          args: ["--select", "D200"]
+#    - repo: https://github.com/PyCQA/pydocstyle
+#      rev: 6.1.1
+#      hooks:
+#        - id: pydocstyle
+#          args: ["--select", "D200"]
 
     - repo: https://github.com/PyCQA/flake8
       rev: 4.0.1
