@@ -1,7 +1,5 @@
-from unittest.mock import MagicMock
-
 import pytest
-from mock import Mock, call
+from mock import MagicMock, Mock, call
 
 from applitools.eyes_universal.server import SDKServer
 
