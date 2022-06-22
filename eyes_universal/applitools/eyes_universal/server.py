@@ -19,7 +19,7 @@ class SDKServer(object):
     log_file_name = None  # backward compatibility with eyes-selenium<=5.6
 
     def __init__(self):
-        "Start eyes-universal service subprocess and obtain port number it listens to"
+        """Start eyes-universal service subprocess and obtain its port number."""
         self.port = None
         self._stdout_file = None
         self._usdk_subprocess = None
@@ -27,16 +27,18 @@ class SDKServer(object):
 
     def __del__(self):
         """
-        Closes leaked SDKServer proces if it was not closed already.
-        Might be called multiple times.
+        Close leaked SDKServer object if it was not closed already.
+        Might be called multiple times in older python.
         """
         if self._usdk_subprocess:
             self.close()
 
     def __repr__(self):
+        """Produce helpful debugging description."""
         return "SDKServer(port={})".format(self.port)
 
     def close(self):
+        """Terminate started universal sdk subprocess and clean up temporary file."""
         self._usdk_subprocess.terminate()
         self._usdk_subprocess.wait()
         self._usdk_subprocess = None
