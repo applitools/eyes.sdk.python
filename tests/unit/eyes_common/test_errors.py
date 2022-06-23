@@ -10,4 +10,4 @@ def test_usdk_failure_str():
 def test_usdk_failure_repr():
     exc = USDKFailure("message", "stack")
 
-    assert repr(exc) == "USDKFailure('message')"
+    assert repr(exc) == "USDKFailure('message', 'stack')"
