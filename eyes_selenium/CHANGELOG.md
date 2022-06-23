@@ -1,3 +1,7 @@
+## [vNext]
+### Fixed
+- Log Server.log notification with requested level [Trello 2953](https://trello.com/c/IFCsr37o)
+
 ## [5.7.0] - 2022-06-15
 ### Added
 - Lazy loading support [Trello 1](https://trello.com/c/BIHFMhVk)
