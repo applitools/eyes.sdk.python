@@ -269,16 +269,15 @@ def record_convert(records):
         return None
 
 
-def optional_element_reference_convert(is_selenium, locator=None):
-    # type: (bool, Optional[RegionLocator]) -> Optional[ElementReference]
+def optional_element_reference_convert(locator=None):
+    # type: (Optional[RegionLocator]) -> Optional[ElementReference]
     if locator is None:
         return None
     else:
-        return locator.to_dict(is_selenium)
+        return locator.to_dict()
 
 
 def frame_reference_convert(
-    is_selenium,  # type: bool
     locator=None,  # type: Optional[RegionLocator]
     number=None,  # type: Optional[int]
     name=None,  # type: Optional[Text]
@@ -289,7 +288,7 @@ def frame_reference_convert(
     elif number is not None:
         return number
     else:
-        return locator.to_dict(is_selenium)
+        return locator.to_dict()
 
 
 def browsers_info_convert(browsers_info):
@@ -317,30 +316,30 @@ def browsers_info_convert(browsers_info):
     return result
 
 
-def target_reference_convert(is_selenium, values):
-    # type: (bool, SeleniumCheckSettingsValues) -> Optional[RegionReference]
+def target_reference_convert(values):
+    # type: (SeleniumCheckSettingsValues) -> Optional[RegionReference]
     if values.target_locator:
-        return values.target_locator.to_dict(is_selenium)
+        return values.target_locator.to_dict()
     elif values.target_region:
         return Region.convert(values.target_region)
     else:
         return None
 
 
-def ocr_target_convert(is_selenium, target):
-    # type:(bool, Union[RegionLocator, WebElement, Region]) -> RegionReference
+def ocr_target_convert(target):
+    # type:(Union[RegionLocator, WebElement, Region]) -> RegionReference
     if isinstance(target, RegionLocator):
-        return target.to_dict(is_selenium)
+        return target.to_dict()
     else:
         return Region.convert(target)
 
 
-def region_references_convert(is_selenium, regions):
-    # type: (bool, List[GetRegion]) -> List[RegionReference]
+def region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[RegionReference]
     results = []
     for r in regions:
         if isinstance(r, RegionBySelector):
-            results.append(r._target_path.to_dict(is_selenium))  # noqa
+            results.append(r._target_path.to_dict())  # noqa
         elif isinstance(r, RegionByRectangle):
             results.append(Region.convert(r._region))  # noqa
         else:
@@ -348,12 +347,12 @@ def region_references_convert(is_selenium, regions):
     return results
 
 
-def floating_region_references_convert(is_selenium, regions):
-    # type: (bool, List[GetRegion]) -> List[FloatingRegion]
+def floating_region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[FloatingRegion]
     results = []
     for r in regions:
         if isinstance(r, FloatingRegionBySelector):
-            region = r._target_path.to_dict(is_selenium)  # noqa
+            region = r._target_path.to_dict()  # noqa
             bounds = r._bounds  # noqa
         elif isinstance(r, FloatingRegionByRectangle):
             region, bounds = Region.convert(r._rect), r._bounds  # noqa
@@ -363,12 +362,12 @@ def floating_region_references_convert(is_selenium, regions):
     return results
 
 
-def accessibility_region_references_convert(is_selenium, regions):
-    # type: (bool, List[GetRegion]) -> List[AccessibilityRegion]
+def accessibility_region_references_convert(regions):
+    # type: (List[GetRegion]) -> List[AccessibilityRegion]
     results = []
     for r in regions:
         if isinstance(r, AccessibilityRegionBySelector):
-            region = r._target_path.to_dict(is_selenium)  # noqa
+            region = r._target_path.to_dict()  # noqa
             type_ = r._type  # noqa
         elif isinstance(r, AccessibilityRegionByRectangle):
             region, type_ = Region.convert(r._rect), r._type  # noqa
@@ -402,8 +401,8 @@ class MatchSettings(object):
     )  # type: Optional[List[Union[Region, AccessibilityRegion]]]
 
     @classmethod
-    def convert(cls, is_selenium, image_match_settings):
-        # type: (bool, Optional[ImageMatchSettings]) -> Optional[MatchSettings]
+    def convert(cls, image_match_settings):
+        # type: (Optional[ImageMatchSettings]) -> Optional[MatchSettings]
         if image_match_settings:
             return cls(
                 exact=image_match_settings.exact,
@@ -419,10 +418,10 @@ class MatchSettings(object):
                 strict_regions=image_match_settings.strict_regions,
                 content_regions=image_match_settings.content_regions,
                 floating_regions=floating_region_references_convert(
-                    is_selenium, image_match_settings.floating_match_settings
+                    image_match_settings.floating_match_settings
                 ),
                 accessibility_regions=accessibility_region_references_convert(
-                    is_selenium, image_match_settings.accessibility
+                    image_match_settings.accessibility
                 ),
             )
         else:
@@ -529,8 +528,8 @@ class EyesConfig(
     EyesBaseConfig, EyesOpenConfig, EyesCheckConfig, EyesClassicConfig, EyesUFGConfig
 ):
     @classmethod
-    def convert(cls, is_selenium, config):
-        # type: (bool, Configuration) -> EyesConfig
+    def convert(cls, config):
+        # type: (Configuration) -> EyesConfig
         if config.cut_provider:
             cut = ImageCropRect(
                 config.cut_provider.header,
@@ -564,9 +563,7 @@ class EyesConfig(
             session_type=config.session_type,
             properties=CustomProperty.convert(config.properties),
             batch=Batch.convert(config.batch),
-            default_match_settings=MatchSettings.convert(
-                is_selenium, config.default_match_settings
-            ),
+            default_match_settings=MatchSettings.convert(config.default_match_settings),
             host_app=config.host_app,
             host_o_s=config.host_os,
             host_o_s_info=None,  # TODO: verify
@@ -613,18 +610,16 @@ class ContextReference(object):
     scroll_root_element = attr.ib(default=None)  # type: Optional[ElementReference]
 
     @classmethod
-    def convert(cls, is_selenium, frame_locators):
-        # type: (bool, List[FrameLocator]) -> List[ContextReference]
+    def convert(cls, frame_locators):
+        # type: (List[FrameLocator]) -> List[ContextReference]
         return [
             cls(
                 frame=frame_reference_convert(
-                    is_selenium,
                     frame_locator.frame_locator,
                     frame_locator.frame_index,
                     frame_locator.frame_name_or_id,
                 ),
                 scroll_root_element=optional_element_reference_convert(
-                    is_selenium,
                     frame_locator.scroll_root_locator,
                 ),
             )
@@ -660,8 +655,8 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
     lazy_load = attr.ib(default=None)  # type: Optional[LazyLoadOptions]
 
     @classmethod
-    def convert(cls, is_selenium, values):
-        # type: (bool, SeleniumCheckSettingsValues) -> CheckSettings
+    def convert(cls, values):
+        # type: (SeleniumCheckSettingsValues) -> CheckSettings
         if "beforeCaptureScreenshot" in values.script_hooks:
             hooks = CheckSettingsHooks(values.script_hooks["beforeCaptureScreenshot"])
         else:
@@ -688,29 +683,21 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             ignore_caret=values.ignore_caret,
             ignore_displacements=values.ignore_displacements,
             accessibility_settings=None,  # TODO: verify
-            ignore_regions=region_references_convert(
-                is_selenium, values.ignore_regions
-            ),
-            layout_regions=region_references_convert(
-                is_selenium, values.layout_regions
-            ),
-            strict_regions=region_references_convert(
-                is_selenium, values.strict_regions
-            ),
-            content_regions=region_references_convert(
-                is_selenium, values.content_regions
-            ),
+            ignore_regions=region_references_convert(values.ignore_regions),
+            layout_regions=region_references_convert(values.layout_regions),
+            strict_regions=region_references_convert(values.strict_regions),
+            content_regions=region_references_convert(values.content_regions),
             floating_regions=floating_region_references_convert(
-                is_selenium, values.floating_regions
+                values.floating_regions
             ),
             accessibility_regions=accessibility_region_references_convert(
-                is_selenium, values.accessibility_regions
+                values.accessibility_regions
             ),
             # ScreenshotSettings
-            region=target_reference_convert(is_selenium, values),
-            frames=ContextReference.convert(is_selenium, values.frame_chain),
+            region=target_reference_convert(values),
+            frames=ContextReference.convert(values.frame_chain),
             scroll_root_element=optional_element_reference_convert(
-                is_selenium, values.scroll_root_locator
+                values.scroll_root_locator
             ),
             fully=values.stitch_content,
         )
@@ -756,11 +743,11 @@ class OCRExtractSettings(object):
     language = attr.ib(default=None)  # type: Optional[Text]
 
     @classmethod
-    def convert(cls, is_selenium, ocr_regions):
-        # type: (bool, Tuple[OCRRegion]) -> List[OCRExtractSettings]
+    def convert(cls, ocr_regions):
+        # type: (Tuple[OCRRegion]) -> List[OCRExtractSettings]
         return [
             cls(
-                ocr_target_convert(is_selenium, region.target),
+                ocr_target_convert(region.target),
                 region._hint,
                 region._min_match,
                 region._language,
@@ -824,15 +811,15 @@ def marshal_webdriver_ref(driver):
     }
 
 
-def marshal_configuration(is_selenium, configuration):
-    # type: (bool, Configuration) -> dict
-    eyes_config = EyesConfig.convert(is_selenium, configuration)
+def marshal_configuration(configuration):
+    # type: (Configuration) -> dict
+    eyes_config = EyesConfig.convert(configuration)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(eyes_config))
 
 
-def marshal_check_settings(is_selenium, check_settings):
-    # type: (bool, SeleniumCheckSettings) -> dict
-    check_settings = CheckSettings.convert(is_selenium, check_settings.values)
+def marshal_check_settings(check_settings):
+    # type: (SeleniumCheckSettings) -> dict
+    check_settings = CheckSettings.convert(check_settings.values)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(check_settings))
 
 
@@ -848,9 +835,9 @@ def marshal_ocr_search_settings(search_settings):
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(search_settings))
 
 
-def marshal_ocr_extract_settings(is_selenium, extract_settings):
-    # type: (bool, Tuple[OCRRegion]) -> dict
-    extract_settings = OCRExtractSettings.convert(is_selenium, extract_settings)
+def marshal_ocr_extract_settings(extract_settings):
+    # type: (Tuple[OCRRegion]) -> dict
+    extract_settings = OCRExtractSettings.convert(extract_settings)
     return _keys_underscore_to_camel_remove_none(cattr.unstructure(extract_settings))
 
 

@@ -28,8 +28,8 @@ class ElementReference(PathNodeValue):
         # type: (bool) -> Text
         return repr(self.element)
 
-    def _to_dict(self, _):
-        # type: (bool) -> dict
+    def _to_dict(self):
+        # type: () -> dict
         return {"elementId": self.element._id}  # noqa
 
 
@@ -48,25 +48,11 @@ class ElementSelector(PathNodeValue):
         if self.by == By.CSS_SELECTOR and skip_default_css_selector_type:
             return repr(self.selector)
         else:
-            by = "By." + self.by.upper().replace(" ", "_")
-            return "{}, {!r}".format(by, self.selector)
+            return "{}, {!r}".format(_BY_REPR[self.by], self.selector)
 
-    def _to_dict(self, is_selenium):
-        # type: (bool) -> dict
-        by, selector = self.by, self.selector
-        if is_selenium:
-            if by == By.ID:
-                by = By.CSS_SELECTOR
-                selector = '[id="{}"]'.format(selector)
-            elif by == By.TAG_NAME:
-                by = By.CSS_SELECTOR
-            elif by == By.CLASS_NAME:
-                by = By.CSS_SELECTOR
-                selector = "." + selector
-            elif by == By.NAME:
-                by = By.CSS_SELECTOR
-                selector = '[name="{}"]'.format(selector)
-        return {"type": by, "selector": selector}
+    def _to_dict(self):
+        # type: () -> dict
+        return {"type": self.by, "selector": self.selector}
 
 
 class FrameSelector(PathNodeValue):
@@ -78,8 +64,8 @@ class FrameSelector(PathNodeValue):
         # type: (bool) -> Text
         return repr(self.number_or_id_or_name)
 
-    def _to_dict(self, _):
-        # type: (bool) -> dict
+    def _to_dict(self):
+        # type: () -> dict
         return {"selector": self.number_or_id_or_name}
 
 
@@ -89,13 +75,13 @@ class TargetPathLocator(object):
         self.parent = parent
         self.value = value
 
-    def to_dict(self, is_selenium):
-        # type: (bool) -> dict
-        converted = self.value._to_dict(is_selenium)  # noqa
+    def to_dict(self):
+        # type: () -> dict
+        converted = self.value._to_dict()  # noqa
         parent = self.parent
         while parent:
             converted = {parent.FACTORY_METHOD: converted}
-            converted.update(parent.value._to_dict(is_selenium))  # noqa
+            converted.update(parent.value._to_dict())  # noqa
             parent = parent.parent
         return converted
 
@@ -199,3 +185,27 @@ def _region(parent, element_or_selector_or_by, selector=None):
     else:
         element = element_or_selector_or_by
         return RegionLocator(parent, ElementReference(element))
+
+
+def _generate_by_repr_map():
+    try:  # look for appium>=2.1
+        from appium.webdriver.common.appiumby import AppiumBy
+
+        enumerations = [AppiumBy]
+    except ImportError:
+        try:  # look for old appium otherwise
+            from appium.webdriver.common.mobileby import MobileBy
+
+            enumerations = [MobileBy]
+        except ImportError:  # no appium installed, that's also fine
+            enumerations = []
+    enumerations.append(By)
+
+    m = {}
+    for by in enumerations:
+        prefix = by.__name__ + "."
+        m.update((v, prefix + k) for k, v in vars(by).items() if not k.startswith("_"))
+    return m
+
+
+_BY_REPR = _generate_by_repr_map()
