@@ -98,6 +98,20 @@ def test_check_window(check_keyword, data):
             check_region_result=RegionBySelector(By.ID, "overflow-div"),
         ),
         TestData("check_region_by_element", check_values=WEB_ELEMENT),
+        TestData(
+            "check_region_by_target_path",
+            check_values=[
+                "Shadow By Selector",
+                "id:overflow-div",
+                "Shadow By Element",
+                WEB_ELEMENT,
+                "Region By Selector",
+                "id:overflow-div",
+            ],
+            check_region_result=TargetPath.shadow("id:overflow-div")
+            .shadow(WEB_ELEMENT)
+            .region("#overflow-div"),
+        ),
     ],
     ids=lambda d: str(d),
 )
