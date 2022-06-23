@@ -27,7 +27,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: packages
-          path: "python/*/dist/"
+          if-no-files-found: error
+          path: "/python/*/dist/"
 
   unit-tests:
     needs: dist-build
