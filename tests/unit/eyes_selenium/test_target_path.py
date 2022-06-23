@@ -1,5 +1,4 @@
-from collections import namedtuple
-
+from appium.webdriver.common.mobileby import MobileBy
 from selenium.webdriver.common.by import By
 
 from applitools.selenium.fluent.target_path import (
@@ -145,6 +144,24 @@ def test_target_path_region_element_repr():
     path = TargetPath.region(DummyElement(1))
 
     assert repr(path) == "TargetPath.region(DummyElement(1))"
+
+
+def test_target_path_region_ios_predicate_repr():
+    path = TargetPath.region(MobileBy.IOS_PREDICATE, "p")
+
+    assert repr(path) == "TargetPath.region(MobileBy.IOS_PREDICATE, 'p')"
+
+
+def test_target_path_region_windows_ui_automation_repr():
+    path = TargetPath.region(MobileBy.WINDOWS_UI_AUTOMATION, "w")
+
+    assert repr(path) == "TargetPath.region(MobileBy.WINDOWS_UI_AUTOMATION, 'w')"
+
+
+def test_target_path_region_mobile_id_repr():
+    path = TargetPath.region(MobileBy.ID, "i")
+
+    assert repr(path) == "TargetPath.region(By.ID, 'i')"
 
 
 def test_target_path_shadow_css_repr():

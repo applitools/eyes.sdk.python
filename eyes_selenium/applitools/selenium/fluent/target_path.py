@@ -8,6 +8,13 @@ if TYPE_CHECKING:
 
     from selenium.webdriver.remote.webelement import WebElement
 
+try:
+    from appium.webdriver.common.mobileby import MobileBy
+except ImportError:
+
+    class MobileBy(object):
+        pass
+
 
 class PathNodeValue(object):
     def __eq__(self, other):
@@ -48,7 +55,7 @@ class ElementSelector(PathNodeValue):
         if self.by == By.CSS_SELECTOR and skip_default_css_selector_type:
             return repr(self.selector)
         else:
-            by = "By." + self.by.upper().replace(" ", "_")
+            by = _REPR[self.by]
             return "{}, {!r}".format(by, self.selector)
 
     def _to_dict(self):
@@ -186,3 +193,7 @@ def _region(parent, element_or_selector_or_by, selector=None):
     else:
         element = element_or_selector_or_by
         return RegionLocator(parent, ElementReference(element))
+
+
+_REPR = {v: "MobileBy." + k for k, v in vars(MobileBy).items() if not k.startswith("_")}
+_REPR.update((v, "By." + k) for k, v in vars(By).items() if not k.startswith("_"))
