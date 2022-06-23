@@ -61,3 +61,10 @@ class USDKFailure(EyesError):
     """
     Generic error raised by Universal SDK
     """
+
+    def __init__(self, message, usdk_stack):
+        super(USDKFailure, self).__init__(message)
+        self.usdk_stack = usdk_stack
+
+    def __str__(self):
+        return super(USDKFailure, self).__str__() + "\n" + self.usdk_stack
