@@ -1,4 +1,7 @@
+import pytest
+from appium.version import version as appium_version
 from appium.webdriver.common.mobileby import MobileBy
+from pkg_resources import parse_version
 from selenium.webdriver.common.by import By
 
 from applitools.selenium.fluent.target_path import (
@@ -146,16 +149,26 @@ def test_target_path_region_element_repr():
     assert repr(path) == "TargetPath.region(DummyElement(1))"
 
 
-def test_target_path_region_ios_predicate_repr():
+@pytest.mark.skipif(
+    parse_version(appium_version) >= parse_version("2.1"),
+    reason="MobileBy is deprecated in new Selenium",
+)
+def test_target_path_region_ios_predicate_appium1_repr():
     path = TargetPath.region(MobileBy.IOS_PREDICATE, "p")
 
     assert repr(path) == "TargetPath.region(MobileBy.IOS_PREDICATE, 'p')"
 
 
-def test_target_path_region_windows_ui_automation_repr():
-    path = TargetPath.region(MobileBy.WINDOWS_UI_AUTOMATION, "w")
+@pytest.mark.skipif(
+    parse_version(appium_version) < parse_version("2.1"),
+    reason="There is no AppiumBy in older Appium",
+)
+def test_target_path_region_ios_predicate_appium2_repr():
+    from appium.webdriver.common.appiumby import AppiumBy
 
-    assert repr(path) == "TargetPath.region(MobileBy.WINDOWS_UI_AUTOMATION, 'w')"
+    path = TargetPath.region(AppiumBy.IOS_PREDICATE, "p")
+
+    assert repr(path) == "TargetPath.region(AppiumBy.IOS_PREDICATE, 'p')"
 
 
 def test_target_path_region_mobile_id_repr():

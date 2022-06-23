@@ -8,13 +8,6 @@ if TYPE_CHECKING:
 
     from selenium.webdriver.remote.webelement import WebElement
 
-try:
-    from appium.webdriver.common.mobileby import MobileBy
-except ImportError:
-
-    class MobileBy(object):
-        pass
-
 
 class PathNodeValue(object):
     def __eq__(self, other):
@@ -55,8 +48,7 @@ class ElementSelector(PathNodeValue):
         if self.by == By.CSS_SELECTOR and skip_default_css_selector_type:
             return repr(self.selector)
         else:
-            by = _REPR[self.by]
-            return "{}, {!r}".format(by, self.selector)
+            return "{}, {!r}".format(_BY_REPR[self.by], self.selector)
 
     def _to_dict(self):
         # type: () -> dict
@@ -195,5 +187,25 @@ def _region(parent, element_or_selector_or_by, selector=None):
         return RegionLocator(parent, ElementReference(element))
 
 
-_REPR = {v: "MobileBy." + k for k, v in vars(MobileBy).items() if not k.startswith("_")}
-_REPR.update((v, "By." + k) for k, v in vars(By).items() if not k.startswith("_"))
+def _generate_by_repr_map():
+    try:  # look for appium>=2.1
+        from appium.webdriver.common.appiumby import AppiumBy
+
+        enumerations = [AppiumBy]
+    except ImportError:
+        try:  # look for old appium otherwise
+            from appium.webdriver.common.mobileby import MobileBy
+
+            enumerations = [MobileBy]
+        except ImportError:  # no appium installed, that's also fine
+            enumerations = []
+    enumerations.append(By)
+
+    m = {}
+    for by in enumerations:
+        prefix = by.__name__ + "."
+        m.update((v, prefix + k) for k, v in vars(by).items() if not k.startswith("_"))
+    return m
+
+
+_BY_REPR = _generate_by_repr_map()
