@@ -513,11 +513,4 @@ class Eyes(object):
 
 def _is_selenium_driver(driver):
     # type: (WebDriver) -> bool
-    try:
-        from appium.webdriver.webdriver import WebDriver as AppiumWebDriver
-
-        # appium.WebDriver is based on selenium.WebDriver so there is no sense to check
-        # for relationship with selenium.WebDriver. Have to eliminate appium instead
-        return not isinstance(driver, AppiumWebDriver)
-    except ImportError:
-        return True
+    return False
