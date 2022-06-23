@@ -133,7 +133,7 @@ class Eyes(object):
 
         results = self._commands.eyes_check(
             self._eyes_ref,
-            marshal_check_settings(_is_selenium_driver(self.driver), check_settings),
+            marshal_check_settings(check_settings),
             self._marshaled_configuration(),
         )
         if results:
@@ -165,7 +165,7 @@ class Eyes(object):
         # type: (*OCRRegion) -> List[Text]
         return self._commands.eyes_extract_text(
             self._eyes_ref,
-            marshal_ocr_extract_settings(_is_selenium_driver(self.driver), regions),
+            marshal_ocr_extract_settings(regions),
             self._marshaled_configuration(),
         )
 
@@ -454,7 +454,7 @@ class Eyes(object):
         return None
 
     def _marshaled_configuration(self):
-        return marshal_configuration(_is_selenium_driver(self.driver), self.configure)
+        return marshal_configuration(self.configure)
 
     def _close(self, raise_ex, wait_result):
         # type: (bool, bool) -> Optional[TestResults]
@@ -509,8 +509,3 @@ class Eyes(object):
             self._abort(self._runner.AUTO_CLOSE_MODE_SYNC)
         else:
             self._close(True, self._runner.AUTO_CLOSE_MODE_SYNC)
-
-
-def _is_selenium_driver(driver):
-    # type: (WebDriver) -> bool
-    return False

@@ -28,8 +28,8 @@ class ElementReference(PathNodeValue):
         # type: (bool) -> Text
         return repr(self.element)
 
-    def _to_dict(self, _):
-        # type: (bool) -> dict
+    def _to_dict(self):
+        # type: () -> dict
         return {"elementId": self.element._id}  # noqa
 
 
@@ -51,22 +51,9 @@ class ElementSelector(PathNodeValue):
             by = "By." + self.by.upper().replace(" ", "_")
             return "{}, {!r}".format(by, self.selector)
 
-    def _to_dict(self, is_selenium):
-        # type: (bool) -> dict
-        by, selector = self.by, self.selector
-        if is_selenium:
-            if by == By.ID:
-                by = By.CSS_SELECTOR
-                selector = '[id="{}"]'.format(selector)
-            elif by == By.TAG_NAME:
-                by = By.CSS_SELECTOR
-            elif by == By.CLASS_NAME:
-                by = By.CSS_SELECTOR
-                selector = "." + selector
-            elif by == By.NAME:
-                by = By.CSS_SELECTOR
-                selector = '[name="{}"]'.format(selector)
-        return {"type": by, "selector": selector}
+    def _to_dict(self):
+        # type: () -> dict
+        return {"type": self.by, "selector": self.selector}
 
 
 class FrameSelector(PathNodeValue):
@@ -78,8 +65,8 @@ class FrameSelector(PathNodeValue):
         # type: (bool) -> Text
         return repr(self.number_or_id_or_name)
 
-    def _to_dict(self, _):
-        # type: (bool) -> dict
+    def _to_dict(self):
+        # type: () -> dict
         return {"selector": self.number_or_id_or_name}
 
 
@@ -89,13 +76,13 @@ class TargetPathLocator(object):
         self.parent = parent
         self.value = value
 
-    def to_dict(self, is_selenium):
-        # type: (bool) -> dict
-        converted = self.value._to_dict(is_selenium)  # noqa
+    def to_dict(self):
+        # type: () -> dict
+        converted = self.value._to_dict()  # noqa
         parent = self.parent
         while parent:
             converted = {parent.FACTORY_METHOD: converted}
-            converted.update(parent.value._to_dict(is_selenium))  # noqa
+            converted.update(parent.value._to_dict())  # noqa
             parent = parent.parent
         return converted
 
