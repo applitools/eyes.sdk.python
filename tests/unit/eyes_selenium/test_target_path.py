@@ -219,25 +219,25 @@ def test_target_path_frame_region_eq():
 
 
 def test_target_path_to_dict_region_by_css():
-    converted = TargetPath.region(".css").to_dict(True)
+    converted = TargetPath.region(".css").to_dict()
 
     assert converted == {"type": "css selector", "selector": ".css"}
 
 
 def test_target_path_to_dict_region_element():
-    converted = TargetPath.region(DummyElement("1")).to_dict(True)
+    converted = TargetPath.region(DummyElement("1")).to_dict()
 
     assert converted == {"elementId": "1"}
 
 
 def test_target_path_to_dict_shadow_by_css():
-    converted = TargetPath.shadow(".css").to_dict(True)
+    converted = TargetPath.shadow(".css").to_dict()
 
     assert converted == {"type": "css selector", "selector": ".css"}
 
 
 def test_target_path_to_dict_shadow_by_css_region_by_css():
-    converted = TargetPath.shadow("#s").region(".css").to_dict(True)
+    converted = TargetPath.shadow("#s").region(".css").to_dict()
 
     assert converted == {
         "type": "css selector",
@@ -247,9 +247,7 @@ def test_target_path_to_dict_shadow_by_css_region_by_css():
 
 
 def test_target_path_to_dict_shadow_by_xpath_shadow_by_css_region_by_css():
-    converted = (
-        TargetPath.shadow(By.XPATH, "//x").shadow("#s").region(".css").to_dict(True)
-    )
+    converted = TargetPath.shadow(By.XPATH, "//x").shadow("#s").region(".css").to_dict()
 
     assert converted == {
         "type": "xpath",
@@ -266,7 +264,7 @@ def test_target_path_to_dict_shadow_by_xpath_shadow_by_css_region_by_css():
 
 
 def test_target_path_to_dict_shadow_element_region_by_css():
-    converted = TargetPath.shadow(DummyElement(1)).region(".css").to_dict(True)
+    converted = TargetPath.shadow(DummyElement(1)).region(".css").to_dict()
 
     assert converted == {
         "elementId": 1,
@@ -275,7 +273,7 @@ def test_target_path_to_dict_shadow_element_region_by_css():
 
 
 def test_target_path_to_dict_frame_by_css_region_by_css():
-    converted = TargetPath.frame(By.CSS_SELECTOR, "#s").region(".css").to_dict(True)
+    converted = TargetPath.frame(By.CSS_SELECTOR, "#s").region(".css").to_dict()
 
     assert converted == {
         "type": "css selector",
@@ -284,49 +282,25 @@ def test_target_path_to_dict_frame_by_css_region_by_css():
     }
 
 
-def test_target_path_to_dict_selenium_region_by_id():
-    converted = TargetPath.region(By.ID, "id").to_dict(True)
-
-    assert converted == {"type": "css selector", "selector": '[id="id"]'}
-
-
-def test_target_path_to_dict_selenium_region_by_tag_name():
-    converted = TargetPath.region(By.TAG_NAME, "tag").to_dict(True)
-
-    assert converted == {"type": "css selector", "selector": "tag"}
-
-
-def test_target_path_to_dict_selenium_region_by_class_name():
-    converted = TargetPath.region(By.CLASS_NAME, "class").to_dict(True)
-
-    assert converted == {"type": "css selector", "selector": ".class"}
-
-
-def test_target_path_to_dict_selenium_region_by_name():
-    converted = TargetPath.region(By.NAME, "name").to_dict(True)
-
-    assert converted == {"type": "css selector", "selector": '[name="name"]'}
-
-
-def test_target_path_to_dict_appium_region_by_id():
-    converted = TargetPath.region(By.ID, "id").to_dict(False)
+def test_target_path_to_dict_region_by_id():
+    converted = TargetPath.region(By.ID, "id").to_dict()
 
     assert converted == {"type": "id", "selector": "id"}
 
 
-def test_target_path_to_dict_appium_region_by_tag_name():
-    converted = TargetPath.region(By.TAG_NAME, "tag").to_dict(False)
+def test_target_path_to_dict_region_by_tag_name():
+    converted = TargetPath.region(By.TAG_NAME, "tag").to_dict()
 
     assert converted == {"type": "tag name", "selector": "tag"}
 
 
-def test_target_path_to_dict_appium_region_by_class_name():
-    converted = TargetPath.region(By.CLASS_NAME, "class").to_dict(False)
+def test_target_path_to_dict_region_by_class_name():
+    converted = TargetPath.region(By.CLASS_NAME, "class").to_dict()
 
     assert converted == {"type": "class name", "selector": "class"}
 
 
-def test_target_path_to_dict_appium_region_by_name():
-    converted = TargetPath.region(By.NAME, "name").to_dict(False)
+def test_target_path_to_dict_region_by_name():
+    converted = TargetPath.region(By.NAME, "name").to_dict()
 
     assert converted == {"type": "name", "selector": "name"}
