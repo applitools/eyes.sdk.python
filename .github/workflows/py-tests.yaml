@@ -28,7 +28,7 @@ jobs:
         with:
           name: packages
           if-no-files-found: error
-          path: "/python/*/dist/"
+          path: "python*/*/dist/"
 
   unit-tests:
     needs: dist-build
