@@ -63,4 +63,5 @@ class USDKFailure(EyesError):
     """
 
     def __str__(self):
+        """Human-readable error representation."""
         return "\n".join(self.args)
