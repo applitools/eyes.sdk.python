@@ -89,7 +89,9 @@ def check_keyword(defined_keywords, eyes_library_with_selenium):
     results = []
 
     def collect_result(*args):
-        results.append(args)
+        check_settings = args[0]
+        tag = check_settings.values.name
+        results.append((check_settings, tag))
 
     eyes_library_with_selenium.register_eyes(Mock(Eyes), None)
     eyes_library_with_selenium.current_eyes.check = collect_result
