@@ -1,4 +1,4 @@
-name: Tests
+name: Test python packages
 on:
   push:
   workflow_call:
@@ -7,6 +7,10 @@ on:
         description: branch to test
         required: false
         type: string
+
+defaults:
+  run:
+    working-directory: python
 
 jobs:
   dist-build:
@@ -23,7 +27,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: packages
-          path: "*/dist/"
+          path: "python/*/dist/"
 
   unit-tests:
     needs: dist-build

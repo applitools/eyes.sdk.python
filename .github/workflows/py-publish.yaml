@@ -14,6 +14,10 @@ on:
         options: [patch, minor, major]
         required: true
 
+defaults:
+  run:
+    working-directory: python
+
 jobs:
   make_release_branch:
     runs-on: ubuntu-latest
