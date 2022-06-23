@@ -80,6 +80,9 @@ class USDKConnection(object):
                 if "key" in response:
                     future = response_futures.pop(response["key"])
                     future.set_result(response)
+                elif response.get("name") == "Server.log":
+                    level = logging.getLevelName(response["level"].upper())
+                    _logger.log(level, response["message"])
                 else:
                     _logger.warning("Unexpected server-initiated event %s", response)
             except Exception as exc:
