@@ -28,7 +28,10 @@ jobs:
         with:
           name: packages
           if-no-files-found: error
-          path: "python*/*/dist/"
+          # the [n] wildcard in pytho[n] is not to match anything, but to prevent
+          # upload-artifact from flattening python directory, e.g. uploading
+          # it's contents without python directory itself.
+          path: "pytho[n]/*/dist/"
 
   unit-tests:
     needs: dist-build
