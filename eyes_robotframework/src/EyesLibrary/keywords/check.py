@@ -13,12 +13,10 @@ from applitools.common.utils import argument_guard
 from applitools.selenium import Target
 
 from ..base import LibraryComponent
-from ..keywords_list import (
-    CHECK_KEYWORDS_LIST,
-    CHECK_SETTINGS_KEYWORDS_LIST,
-)
+from ..keywords_list import CHECK_KEYWORDS_LIST
 from ..utils import (
-    collect_check_settings,
+    collect_check_settings_with_tag,
+    collect_check_settings_with_tag_and_target_path,
     is_webelement_guard,
     parse_region,
 )
@@ -35,13 +33,6 @@ def keyword(name=None, tags=(), types=()):
     CHECK_KEYWORDS_LIST.append(name)
     tags = tags + (CHECK_SETTINGS_SUPPORT,)
     return original_keyword(name, tags, types)
-
-
-def try_resolve_tag_and_keyword(tag, check_settings_keywords, defined_keywords):
-    if tag in defined_keywords:
-        check_settings_keywords = (tag,) + check_settings_keywords
-        tag = None
-    return check_settings_keywords, tag
 
 
 class CheckRegionKeywords(object):
@@ -62,15 +53,10 @@ class CheckRegionKeywords(object):
         *Example:*
             |  Eyes Check Region By Coordinates   |  [40 50 200 448]  |
         """
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
+        check_settings = collect_check_settings_with_tag(
+            tag, Target.region(parse_region(region)), *check_settings_keywords
         )
-        check_settings = collect_check_settings(
-            Target.region(parse_region(region)),
-            self.defined_keywords,
-            *check_settings_keywords,
-        )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
 
     @keyword(
         "Eyes Check Region By Element",
@@ -94,15 +80,10 @@ class CheckRegionKeywords(object):
             |  Eyes Check Region By Element  |  ${element}  |
         """
         is_webelement_guard(element)
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
+        check_settings = collect_check_settings_with_tag(
+            tag, Target.region(element), *check_settings_keywords
         )
-        check_settings = collect_check_settings(
-            Target.region(element),
-            CHECK_SETTINGS_KEYWORDS_LIST,
-            *check_settings_keywords,
-        )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
 
     @keyword(
         "Eyes Check Region By Selector",
@@ -125,15 +106,37 @@ class CheckRegionKeywords(object):
         *Example:*
             |  Eyes Check Region By Element  |  css:#selector  |
         """
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
-        )
-        check_settings = collect_check_settings(
+        check_settings = collect_check_settings_with_tag(
+            tag,
             Target.region(self.from_locator_to_supported_form(selector)),
-            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords,
         )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
+
+    @keyword(
+        "Eyes Check Region By Target Path",
+        types=(str, str),
+        tags=(CHECK_FLOW,),
+    )
+    def check_region_by_target_path(
+        self,
+        tag=None,  # type: Optional[Text]
+        *check_settings_keywords  # type: tuple[Any]
+    ):
+        # type: (...) -> MatchResult
+        """
+        Check specified region by selector
+
+            | =Arguments=   | =Description=                         |
+            |  Selector     | *Mandatory* - The selector to check.  |
+
+        *Example:*
+            |  Eyes Check Region By Element  |  css:#selector  |
+        """
+        check_settings = collect_check_settings_with_tag_and_target_path(
+            tag, Target.region, *check_settings_keywords
+        )
+        return self.current_eyes.check(check_settings)
 
 
 class CheckFrameKeywords(object):
@@ -159,15 +162,12 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Element  |  ${element}  |
         """
         is_webelement_guard(element)
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
-        )
-        check_settings = collect_check_settings(
+        check_settings = collect_check_settings_with_tag(
+            tag,
             Target.frame(element),
-            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords,
         )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
 
     @keyword("Eyes Check Frame By Index", types=(int, str), tags=(CHECK_FLOW,))
     def check_frame_by_index(
@@ -187,15 +187,12 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Index  |  2  |
         """
         argument_guard.is_a(frame_index, int)
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
-        )
-        check_settings = collect_check_settings(
+        check_settings = collect_check_settings_with_tag(
+            tag,
             Target.frame(frame_index),
-            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords,
         )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
 
     @keyword("Eyes Check Frame By Name", types=(str, str), tags=(CHECK_FLOW,))
     def check_frame_by_name(
@@ -215,12 +212,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Name  |  frameName  |
         """
         argument_guard.is_a(frame_name, basestring)
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
-        )
-        check_settings = collect_check_settings(
+        check_settings = collect_check_settings_with_tag(
+            tag,
             Target.frame(frame_name),
-            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords,
         )
         return self.current_eyes.check(check_settings, tag)
@@ -243,12 +237,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Selector  |  css:#selector   |
         """
         argument_guard.is_a(selector, basestring)
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
-        )
-        check_settings = collect_check_settings(
+        check_settings = collect_check_settings_with_tag(
+            tag,
             Target.frame(self.from_locator_to_supported_form(selector)),
-            CHECK_SETTINGS_KEYWORDS_LIST,
             *check_settings_keywords,
         )
         return self.current_eyes.check(check_settings, tag)
@@ -264,13 +255,10 @@ class CheckKeywords(LibraryComponent, CheckRegionKeywords, CheckFrameKeywords):
         *Example:*
             |  Eyes Check Window   |
         """
-        check_settings_keywords, tag = try_resolve_tag_and_keyword(
-            tag, check_settings_keywords, CHECK_SETTINGS_KEYWORDS_LIST
+        check_settings = collect_check_settings_with_tag(
+            tag, Target.window(), *check_settings_keywords
         )
-        check_settings = collect_check_settings(
-            Target.window(), CHECK_SETTINGS_KEYWORDS_LIST, *check_settings_keywords
-        )
-        return self.current_eyes.check(check_settings, tag)
+        return self.current_eyes.check(check_settings)
 
     @keyword("Eyes Check", tags=(TARGET_SUPPORT, CHECK_FLOW))
     def check(self, target_keyword, *check_settings_keywords):

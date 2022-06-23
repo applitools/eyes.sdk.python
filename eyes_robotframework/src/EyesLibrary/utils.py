@@ -5,7 +5,7 @@ import re
 import shutil
 from collections import OrderedDict
 from enum import Enum
-from typing import Any, Generator, Text, Type
+from typing import Any, Callable, Generator, Optional, Text, Type
 
 import six
 import yaml
@@ -14,7 +14,11 @@ from robot.libraries.BuiltIn import BuiltIn
 from applitools.common import RectangleSize, Region
 from applitools.common.utils import argument_guard
 from applitools.common.validators import is_webelement
+from applitools.selenium import TargetPath
 from applitools.selenium.fluent import SeleniumCheckSettings
+from applitools.selenium.fluent.target_path import RegionLocator
+
+from .keywords_list import CHECK_SETTINGS_KEYWORDS_LIST, TARGET_PATH_KEYWORDS_LIST
 
 SEPARATOR = object()
 
@@ -66,12 +70,14 @@ def splits_args_by_separator(args):
             yield res
 
 
-def collect_target_path(defined_keywords, *keywords):
-    # type: (list[str],tuple[Any])->RegionLocator
+def collect_target_path(*keywords):
+    # type: (tuple[Any])->RegionLocator
     target_path = TargetPath()
     keywords_with_arguments = list(
         extract_keyword_and_arguments(
-            keywords, defined_keywords, skip_keywords=CHECK_SETTINGS_KEYWORDS_LIST
+            keywords,
+            defined_keywords=TARGET_PATH_KEYWORDS_LIST + CHECK_SETTINGS_KEYWORDS_LIST,
+            skip_keywords=CHECK_SETTINGS_KEYWORDS_LIST,
         )
     )
     # check that shadow keyword is used in correct way in sequence
@@ -112,13 +118,71 @@ def collect_target_path(defined_keywords, *keywords):
     return target_path.region(*region_args)
 
 
-def collect_check_settings(
-    check_settings, defined_keywords, skip_keywords=None, *keywords
+def try_resolve_tag_and_keyword(tag, check_settings_keywords, defined_keywords):
+    if tag in defined_keywords:
+        check_settings_keywords = (tag,) + check_settings_keywords
+        tag = None
+    return check_settings_keywords, tag
+
+
+def collect_check_settings_with_tag_and_target_path(
+    tag, target_method_call, *check_keywords
 ):
-    # type: (SeleniumCheckSettings,list[str],Optional[list],tuple[Any])->SeleniumCheckSettings
+    # type: (Optional[str], Callable, tuple[Any])->SeleniumCheckSettings
+    defined_keywords = TARGET_PATH_KEYWORDS_LIST + CHECK_SETTINGS_KEYWORDS_LIST
+    skip_check_settings_keywords = TARGET_PATH_KEYWORDS_LIST
+
+    check_keywords, tag = try_resolve_tag_and_keyword(
+        tag, check_keywords, defined_keywords
+    )
+
+    target_path = collect_target_path(*check_keywords)
+    check_settings = target_method_call(target_path)
+
+    return _collect_check_settings(
+        tag,
+        check_settings,
+        defined_keywords,
+        skip_check_settings_keywords,
+        *check_keywords
+    )
+
+
+def collect_check_settings_with_tag(tag, check_settings, *check_settings_keywords):
+    # type: (Optional[str],SeleniumCheckSettings,tuple[Any])->SeleniumCheckSettings
     """Fill `check_setting` with data from keyword and return `check_settings`"""
+    defined_keywords = CHECK_SETTINGS_KEYWORDS_LIST
+    skip_keywords = []
+    check_settings_keywords, tag = try_resolve_tag_and_keyword(
+        tag, check_settings_keywords, defined_keywords
+    )
+
+    return _collect_check_settings(
+        tag, check_settings, defined_keywords, skip_keywords, *check_settings_keywords
+    )
+
+
+def collect_check_settings(check_settings, *check_settings_keywords):
+    # type: (SeleniumCheckSettings,tuple[Any])->SeleniumCheckSettings
+    """Fill `check_setting` with data from keyword and return `check_settings`"""
+    defined_keywords = CHECK_SETTINGS_KEYWORDS_LIST
+    skip_keywords = []
+
+    return _collect_check_settings(
+        None, check_settings, defined_keywords, skip_keywords, *check_settings_keywords
+    )
+
+
+def _collect_check_settings(
+    tag, check_settings, defined_keywords, skip_keywords, *keywords
+):
+    # type: (Optional[str],SeleniumCheckSettings,list[str],list[str],tuple[Any])->SeleniumCheckSettings
+    """Fill `check_setting` with data from keyword and return `check_settings`"""
+    if tag is not None:
+        check_settings = check_settings.with_name(tag)
+
     for keyword, keyword_args in extract_keyword_and_arguments(
-        keywords, defined_keywords, skip_keywords
+        keywords, defined_keywords, skip_keywords=skip_keywords
     ):
         if keyword_args:
             # keyword has arguments
