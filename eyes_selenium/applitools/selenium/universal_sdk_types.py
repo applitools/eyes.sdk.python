@@ -933,12 +933,15 @@ def demarshal_server_info(info_dict):
 
 
 def demarshal_error(error_dict):
-    if error_dict["message"].startswith("stale element reference"):
-        return StaleElementReferenceException(error_dict["message"])
+    message = error_dict["message"]
+    if message.startswith("stale element reference"):
+        return StaleElementReferenceException(message)
     elif error_dict.get("reason") in _matching_failures:
-        return _matching_failures[error_dict["reason"]](error_dict["message"])
+        return _matching_failures[error_dict["reason"]](message)
     else:
-        return USDKFailure(error_dict["message"], error_dict["stack"])
+        # There is usually a copy of message in stack trace too, remove it
+        stack = error_dict["stack"].split(message)[-1].strip("\n")
+        return USDKFailure(message, stack)
 
 
 _matching_failures = {

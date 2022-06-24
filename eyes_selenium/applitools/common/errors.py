@@ -61,3 +61,7 @@ class USDKFailure(EyesError):
     """
     Generic error raised by Universal SDK
     """
+
+    def __str__(self):
+        """Human-readable error representation."""
+        return "\n".join(self.args)

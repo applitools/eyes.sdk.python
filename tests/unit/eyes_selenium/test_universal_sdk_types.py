@@ -7,7 +7,10 @@ from applitools.common import (
     IosVersion,
     ScreenOrientation,
 )
-from applitools.selenium.universal_sdk_types import demarshal_browser_info
+from applitools.selenium.universal_sdk_types import (
+    demarshal_browser_info,
+    demarshal_error,
+)
 
 
 def test_demarshal_browser_info():
@@ -47,3 +50,13 @@ def test_demarshal_browser_info():
             }
         }
     )
+
+
+def test_demarshal_usdk_error():
+    exc = demarshal_error(
+        {
+            "message": "Message.",
+            "stack": "Error: Message.\n  stack trace line 1\n  stack trace line 2",
+        }
+    )
+    assert str(exc) == "Message.\n  stack trace line 1\n  stack trace line 2"
