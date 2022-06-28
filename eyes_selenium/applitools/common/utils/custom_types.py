@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from applitools.core.triggers import ActionTrigger
 
     ViewPort = Union[Dict[Text, int], RectangleSize]  # typedef
-    CodedRegionPadding = Dict[Text, int]  # typedef
+    CodedRegionPadding = Union[int, Dict[Text, int]]  # typedef
     Num = Union[int, float]
 
     AnyWebElement = Union[SeleniumWebElement, AppiumWebElement]  # typedef

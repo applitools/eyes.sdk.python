@@ -261,6 +261,12 @@ BrowserInfo = Union[
 ]
 
 
+@attr.s
+class PaddedRegionReference(object):
+    region = attr.ib()  # type: RegionReference
+    padding = attr.ib(default=None)  # type: Optional[int, dict]
+
+
 def record_convert(records):
     # type: (Optional[Iterable[VisualGridOption]]) -> Optional[Dict[Text, Any]]
     if records:
@@ -347,6 +353,23 @@ def region_references_convert(regions):
     return results
 
 
+def padded_region_references_convert(padded_regions):
+    # type: (List[GetRegion]) -> List[PaddedRegionReference]
+    results = []
+    for r in padded_regions:
+        if isinstance(r, RegionBySelector):
+            padded_region = PaddedRegionReference(
+                r._target_path.to_dict(),  # noqa
+                r.padding,
+            )
+            results.append(padded_region)
+        elif isinstance(r, RegionByRectangle):
+            results.append(PaddedRegionReference(Region.convert(r._region)))  # noqa
+        else:
+            raise RuntimeError("Unexpected region type", type(r))
+    return results
+
+
 def floating_region_references_convert(regions):
     # type: (List[GetRegion]) -> List[FloatingRegion]
     results = []
@@ -389,10 +412,18 @@ class MatchSettings(object):
     accessibility_settings = attr.ib(
         default=None
     )  # type: Optional[AccessibilitySettings]
-    ignore_regions = attr.ib(default=None)  # type: Optional[List[RegionReference]]
-    layout_regions = attr.ib(default=None)  # type: Optional[List[RegionReference]]
-    strict_regions = attr.ib(default=None)  # type: Optional[List[RegionReference]]
-    content_regions = attr.ib(default=None)  # type: Optional[List[RegionReference]]
+    ignore_regions = attr.ib(
+        default=None
+    )  # type: Optional[List[PaddedRegionReference]]
+    layout_regions = attr.ib(
+        default=None
+    )  # type: Optional[List[PaddedRegionReference]]
+    strict_regions = attr.ib(
+        default=None
+    )  # type: Optional[List[PaddedRegionReference]]
+    content_regions = attr.ib(
+        default=None
+    )  # type: Optional[List[PaddedRegionReference]]
     floating_regions = attr.ib(
         default=None
     )  # type: Optional[List[Union[Region, FloatingRegion]]]
@@ -413,10 +444,18 @@ class MatchSettings(object):
                 ignore_caret=image_match_settings.ignore_caret,
                 ignore_displacements=image_match_settings.ignore_displacements,
                 accessibility_settings=image_match_settings.accessibility_settings,
-                ignore_regions=image_match_settings.ignore_regions,  # todo: verify
-                layout_regions=image_match_settings.layout_regions,
-                strict_regions=image_match_settings.strict_regions,
-                content_regions=image_match_settings.content_regions,
+                ignore_regions=padded_region_references_convert(
+                    image_match_settings.ignore_regions
+                ),
+                layout_regions=padded_region_references_convert(
+                    image_match_settings.layout_regions
+                ),
+                strict_regions=padded_region_references_convert(
+                    image_match_settings.strict_regions
+                ),
+                content_regions=padded_region_references_convert(
+                    image_match_settings.content_regions
+                ),
                 floating_regions=floating_region_references_convert(
                     image_match_settings.floating_match_settings
                 ),
@@ -683,10 +722,10 @@ class CheckSettings(MatchSettings, ScreenshotSettings):
             ignore_caret=values.ignore_caret,
             ignore_displacements=values.ignore_displacements,
             accessibility_settings=None,  # TODO: verify
-            ignore_regions=region_references_convert(values.ignore_regions),
-            layout_regions=region_references_convert(values.layout_regions),
-            strict_regions=region_references_convert(values.strict_regions),
-            content_regions=region_references_convert(values.content_regions),
+            ignore_regions=padded_region_references_convert(values.ignore_regions),
+            layout_regions=padded_region_references_convert(values.layout_regions),
+            strict_regions=padded_region_references_convert(values.strict_regions),
+            content_regions=padded_region_references_convert(values.content_regions),
             floating_regions=floating_region_references_convert(
                 values.floating_regions
             ),
