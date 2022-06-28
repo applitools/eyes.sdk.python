@@ -1,4 +1,4 @@
-let ref = "20afabc3";
+let ref = "universal-sdk";
 module.exports = {
     name: 'eyes_selenium_python',
     emitter: `https://raw.githubusercontent.com/applitools/sdk.coverage.tests/${ref}/python/emitter.js`,
