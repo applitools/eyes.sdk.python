@@ -2,7 +2,12 @@ from __future__ import absolute_import, unicode_literals
 
 from typing import TYPE_CHECKING, Text
 
-from appium.webdriver.common.mobileby import MobileBy
+try:
+    from appium.webdriver.common.appiumby import AppiumBy
+except ImportError:
+    # for appium<2
+    from appium.webdriver.common.mobileby import MobileBy as AppiumBy
+
 from AppiumLibrary import AppiumLibrary
 from AppiumLibrary.locators import ElementFinder as AppiumElementFinder
 from selenium.webdriver.remote.webelement import By
@@ -36,11 +41,11 @@ SELENIUM_LOCATOR_TO_BY_SELECTOR = {
 }
 
 APPIUM_LOCATOR_TO_BY_SELECTOR = {
-    "accessibility_id": MobileBy.ACCESSIBILITY_ID,
-    "android": MobileBy.ANDROID_UIAUTOMATOR,
-    "ios": MobileBy.IOS_UIAUTOMATION,
-    "nsp": MobileBy.IOS_PREDICATE,
-    "chain": MobileBy.IOS_CLASS_CHAIN,
+    "accessibility_id": AppiumBy.ACCESSIBILITY_ID,
+    "android": AppiumBy.ANDROID_UIAUTOMATOR,
+    "ios": AppiumBy.IOS_UIAUTOMATION,
+    "nsp": AppiumBy.IOS_PREDICATE,
+    "chain": AppiumBy.IOS_CLASS_CHAIN,
 }
 APPIUM_LOCATOR_TO_BY_SELECTOR.update(SELENIUM_LOCATOR_TO_BY_SELECTOR)
 
