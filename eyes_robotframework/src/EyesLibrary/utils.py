@@ -73,6 +73,21 @@ def splits_args_by_separator(args):
 def collect_target_path(*keywords):
     # type: (tuple[Any])->RegionLocator
     target_path = TargetPath()
+    for keyword, keyword_args in extract_keyword_and_arguments(
+        keywords,
+        defined_keywords=TARGET_PATH_KEYWORDS_LIST + CHECK_SETTINGS_KEYWORDS_LIST,
+        skip_keywords=CHECK_SETTINGS_KEYWORDS_LIST,
+    ):
+        # keyword has arguments
+        for separated_args in splits_args_by_separator(keyword_args):
+            separated_args += (target_path,)
+            target_path = BuiltIn().run_keyword(keyword, *separated_args)
+    return target_path
+
+
+def collect_target_path2(*keywords):
+    # type: (tuple[Any])->RegionLocator
+    target_path = TargetPath()
     keywords_with_arguments = list(
         extract_keyword_and_arguments(
             keywords,
@@ -80,15 +95,7 @@ def collect_target_path(*keywords):
             skip_keywords=CHECK_SETTINGS_KEYWORDS_LIST,
         )
     )
-    # check that shadow keyword is used in correct way in sequence
-    # if not all(
-    #     [k.startswith("Shadow") for k, _ in keywords_with_arguments[:-1]]
-    #     + [keywords_with_arguments[-1][0].startswith("Region")]
-    # ):
-    #     raise ValueError(
-    #         "Incorrect order of Target Path. Should be `Shadow *` first and `Region *` last"
-    #     )
-    # skip last keyword which is Region
+    # skip last keyword which should be Region
     for keyword, args in keywords_with_arguments[:-1]:
         if not keyword.startswith("Shadow"):
             raise ValueError(
@@ -190,7 +197,7 @@ def _collect_check_settings(
                 separated_args += (check_settings,)
                 BuiltIn().run_keyword(keyword, *separated_args)
         else:
-            # in case keyword without args like `Fully`
+            # in case keyword without args
             BuiltIn().run_keyword(keyword, check_settings)
     return check_settings
 

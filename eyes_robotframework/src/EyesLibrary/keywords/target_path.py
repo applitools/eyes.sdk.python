@@ -54,7 +54,7 @@ class TargetPathKeywords(LibraryComponent):
         is_webelement_guard(element)
         return new_or_cur_target_path(target_path).shadow(element)
 
-    @keyword("Shadow By Selector", types=(str, str))
+    @keyword("Shadow By Selector", types=(str,))
     def shadow_by_selector(
         self,
         selector,  # type: Text
@@ -71,9 +71,8 @@ class TargetPathKeywords(LibraryComponent):
             | Eyes Check                  |              |
             | ...     Shadow By Selector  |  //selector  |
         """
-        return new_or_cur_target_path(target_path).shadow(
-            *self.from_locators_to_supported_form(selector)
-        )
+        by, selector = self.from_locator_to_supported_form(selector)
+        return new_or_cur_target_path(target_path).shadow(by, selector)
 
     @keyword("Region By Selector", types=(str,))
     def region_by_selector(
@@ -94,7 +93,8 @@ class TargetPathKeywords(LibraryComponent):
         """
         if not isinstance(target_path, ShadowDomLocator):
             raise ValueError("Shadow * keyword should be used before Region * keyword")
-        return target_path.region(*self.from_locators_to_supported_form(selector))
+        by, selector = self.from_locator_to_supported_form(selector)
+        return target_path.region(by, selector)
 
     @keyword(
         "Region By Element",
