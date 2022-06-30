@@ -7,8 +7,8 @@ pytestmark = [pytest.mark.skip]
 
 
 @pytest.fixture()
-def target_keyword():
-    return TargetKeywords(Mock())
+def target_keyword(eyes_library_with_selenium):
+    return TargetKeywords(eyes_library_with_selenium)
 
 
 def test_target_window(target_keyword):
