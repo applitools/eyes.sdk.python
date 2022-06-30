@@ -1,6 +1,7 @@
 *** Settings ***
 Resource    resources/setup.robot
-Library     ${BACKEND_LIBRARY_NAME}
+#Library     ${BACKEND_LIBRARY_NAME}
+Library     SeleniumLibrary
 Library     EyesLibrary     runner=${RUNNER}
 
 Test Setup       Setup
@@ -32,3 +33,10 @@ Check Region By Selector With Ignore
 Check Window Two Times
     Eyes Check Window       first
     Eyes Check Window       second
+
+Check Shadow Dom
+    Go To        https://applitools.github.io/demo/TestPages/ShadowDOM/index.html
+    Eyes Check Region By Target Path
+    ...     Shadow By Selector    css:#has-shadow-root
+    ...     Region By Selector   css:h1
+
