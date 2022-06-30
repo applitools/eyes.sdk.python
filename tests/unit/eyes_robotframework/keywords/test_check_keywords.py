@@ -10,8 +10,9 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from applitools.common import Region
 from applitools.core import RegionByRectangle
-from applitools.selenium.fluent import FrameLocator, RegionBySelector
+from applitools.selenium.fluent import FrameLocator
 from applitools.selenium.fluent.target_path import TargetPath
+from EyesLibrary import TargetPathKeywords
 from EyesLibrary.keywords.check_settings import CheckSettingsKeywords
 
 WEB_ELEMENT = Mock(WebElement)
@@ -20,6 +21,35 @@ WEB_ELEMENT = Mock(WebElement)
 def run_keyword(name, *args):
     if name == "Ignore Region By Coordinates":
         return CheckSettingsKeywords(Mock()).ignore_region_by_coordinates(*args)
+    if name == "Shadow By Selector":
+        return TargetPathKeywords(Mock()).shadow_by_selector(*args)
+
+
+@pytest.fixture
+def patched_run_keyword(eyes_library_with_selenium):
+    def run_keyword(name, *args):
+        if name == "Ignore Region By Coordinates":
+            return CheckSettingsKeywords(
+                eyes_library_with_selenium
+            ).ignore_region_by_coordinates(*args)
+        if name == "Shadow By Selector":
+            return TargetPathKeywords(eyes_library_with_selenium).shadow_by_selector(
+                *args
+            )
+        if name == "Shadow By Element":
+            return TargetPathKeywords(eyes_library_with_selenium).shadow_by_element(
+                *args
+            )
+        if name == "Region By Selector":
+            return TargetPathKeywords(eyes_library_with_selenium).region_by_selector(
+                *args
+            )
+        raise Exception("Unknown keyword: `{}`".format(name))
+
+    with mock.patch(
+        "robot.libraries.BuiltIn.BuiltIn.run_keyword", side_effect=run_keyword
+    ):
+        yield
 
 
 CheckSettingsData = namedtuple("CheckSettingsData", "params result")
@@ -71,13 +101,9 @@ class TestData(object):
     ],
     ids=lambda d: str(d),
 )
-def test_check_window(check_keyword, data):
+def test_check_window(check_keyword, data, patched_run_keyword):
     call_method = getattr(check_keyword, data.method)
-
-    with mock.patch(
-        "robot.libraries.BuiltIn.BuiltIn.run_keyword", side_effect=run_keyword
-    ):
-        call_method(*data.check_params)
+    call_method(*data.check_params)
 
     check_settings, tag = check_keyword.results[0]
     assert tag == data.check_tag
@@ -87,17 +113,17 @@ def test_check_window(check_keyword, data):
 @pytest.mark.parametrize(
     "data",
     [
-        TestData(
-            "check_region_by_coordinates",
-            check_values="[20 20 20 20]",
-            check_region_result=Region(20, 20, 20, 20),
-        ),
-        TestData(
-            "check_region_by_selector",
-            check_values="id:overflow-div",
-            check_region_result=RegionBySelector(By.ID, "overflow-div"),
-        ),
-        TestData("check_region_by_element", check_values=WEB_ELEMENT),
+        # TestData(
+        #     "check_region_by_coordinates",
+        #     check_values="[20 20 20 20]",
+        #     check_region_result=Region(20, 20, 20, 20),
+        # ),
+        # TestData(
+        #     "check_region_by_selector",
+        #     check_values="id:overflow-div",
+        #     check_region_result=RegionBySelector(By.ID, "overflow-div"),
+        # ),
+        # TestData("check_region_by_element", check_values=WEB_ELEMENT),
         TestData(
             "check_region_by_target_path",
             check_values=[
@@ -108,20 +134,17 @@ def test_check_window(check_keyword, data):
                 "Region By Selector",
                 "id:overflow-div",
             ],
-            check_region_result=TargetPath.shadow("id:overflow-div")
+            check_region_result=TargetPath.shadow([By.ID, "overflow-div"])
             .shadow(WEB_ELEMENT)
-            .region("#overflow-div"),
+            .region([By.ID, "overflow-div"]),
         ),
     ],
     ids=lambda d: str(d),
 )
-def test_check_region(check_keyword, data):
+def test_check_region(check_keyword, data, patched_run_keyword):
     call_method = getattr(check_keyword, data.method)
 
-    with mock.patch(
-        "robot.libraries.BuiltIn.BuiltIn.run_keyword", side_effect=run_keyword
-    ):
-        call_method(*data.check_params)
+    call_method(*data.check_params)
 
     check_settings, tag = check_keyword.results[0]
     assert tag == data.check_tag
@@ -159,13 +182,10 @@ def test_check_region(check_keyword, data):
     ],
     ids=lambda d: str(d),
 )
-def test_check_frame(check_keyword, data):
+def test_check_frame(check_keyword, data, patched_run_keyword):
     call_method = getattr(check_keyword, data.method)
 
-    with mock.patch(
-        "robot.libraries.BuiltIn.BuiltIn.run_keyword", side_effect=run_keyword
-    ):
-        call_method(*data.check_params)
+    call_method(*data.check_params)
 
     check_settings, tag = check_keyword.results[0]
     assert tag == data.check_tag

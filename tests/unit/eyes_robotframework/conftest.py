@@ -38,6 +38,11 @@ def css_selector():
 
 
 @pytest.fixture()
+def raw_css_selector():
+    return "#some-id"
+
+
+@pytest.fixture()
 def by_selector():
     return [By.CSS_SELECTOR, "#some-id"]
 
