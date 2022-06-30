@@ -106,10 +106,9 @@ class CheckRegionKeywords(object):
         *Example:*
             |  Eyes Check Region By Element  |  css:#selector  |
         """
+        check_settings = Target.region(self.from_locator_to_supported_form(selector))
         check_settings = collect_check_settings_with_tag(
-            tag,
-            Target.region(self.from_locator_to_supported_form(selector)),
-            *check_settings_keywords,
+            tag, check_settings, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings)
 
@@ -162,10 +161,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Element  |  ${element}  |
         """
         is_webelement_guard(element)
+        check_settings = Target.frame(element)
         check_settings = collect_check_settings_with_tag(
-            tag,
-            Target.frame(element),
-            *check_settings_keywords,
+            tag, check_settings, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings)
 
@@ -187,10 +185,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Index  |  2  |
         """
         argument_guard.is_a(frame_index, int)
+        check_settings = Target.frame(frame_index)
         check_settings = collect_check_settings_with_tag(
-            tag,
-            Target.frame(frame_index),
-            *check_settings_keywords,
+            tag, check_settings, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings)
 
@@ -212,10 +209,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Name  |  frameName  |
         """
         argument_guard.is_a(frame_name, basestring)
+        check_settings = Target.frame(frame_name)
         check_settings = collect_check_settings_with_tag(
-            tag,
-            Target.frame(frame_name),
-            *check_settings_keywords,
+            tag, check_settings, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
@@ -237,10 +233,9 @@ class CheckFrameKeywords(object):
             |  Eyes Check Frame By Selector  |  css:#selector   |
         """
         argument_guard.is_a(selector, basestring)
+        check_settings = Target.frame(self.from_locator_to_supported_form(selector))
         check_settings = collect_check_settings_with_tag(
-            tag,
-            Target.frame(self.from_locator_to_supported_form(selector)),
-            *check_settings_keywords,
+            tag, check_settings, *check_settings_keywords
         )
         return self.current_eyes.check(check_settings, tag)
 
