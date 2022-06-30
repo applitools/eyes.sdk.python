@@ -21,6 +21,9 @@ def chrome(execution_grid):
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     if execution_grid:
+        if LEGACY_SELENIUM:
+            options.capabilities.pop("platform")
+            options.capabilities.pop("version")
         url = os.environ.get("EXECUTION_GRID_URL")
         return webdriver.Remote(command_executor=url, options=options)
     else:
