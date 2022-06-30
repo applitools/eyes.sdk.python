@@ -10,7 +10,7 @@ from applitools.common import (
     VisualGridOption,
 )
 from applitools.selenium.fluent import SeleniumCheckSettings
-from EyesLibrary import CheckSettingsKeywords
+from EyesLibrary import CheckSettingsKeywords, EyesLibrary
 
 WEB_ELEMENT = Mock(WebElement)
 

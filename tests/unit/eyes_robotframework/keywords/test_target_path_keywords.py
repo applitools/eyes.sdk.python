@@ -1,5 +1,4 @@
 import pytest
-from mock import Mock
 
 from applitools.selenium import TargetPath
 from EyesLibrary import TargetPathKeywords
