@@ -132,6 +132,22 @@ def try_resolve_tag_and_keyword(tag, check_settings_keywords, defined_keywords):
     return check_settings_keywords, tag
 
 
+def collect_check_settings_with_target_path(target_method_call, *check_keywords):
+    # type: (Callable, tuple[Any])->SeleniumCheckSettings
+    defined_keywords = TARGET_PATH_KEYWORDS_LIST + CHECK_SETTINGS_KEYWORDS_LIST
+    skip_check_settings_keywords = TARGET_PATH_KEYWORDS_LIST
+    target_path = collect_target_path(*check_keywords)
+    check_settings = target_method_call(target_path)
+
+    return _collect_check_settings(
+        None,
+        check_settings,
+        defined_keywords,
+        skip_check_settings_keywords,
+        *check_keywords
+    )
+
+
 def collect_check_settings_with_tag_and_target_path(
     tag, target_method_call, *check_keywords
 ):

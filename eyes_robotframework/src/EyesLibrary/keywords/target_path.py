@@ -31,6 +31,12 @@ def new_or_cur_target_path(target_path):
 
 
 class TargetPathKeywords(LibraryComponent):
+    """
+    Target Path keywords are used in combine with:
+        - `Eyes Check Region By Target Path`
+        - `Target Region By Target Path`
+    """
+
     @keyword(
         "Shadow By Element",
         types={"element": (SeleniumWebElement, AppiumWebElement)},
@@ -48,8 +54,7 @@ class TargetPathKeywords(LibraryComponent):
             | Element       | *Mandatory* - The element for shadow dom          |
 
         *Example:*
-            | ${element}=   | Get Webelement             | //*[@id="logo"]   |
-            | ${target}=    | Shadow By Element          | ${element}        |
+            | Shadow By Element          | ${element}        |
         """
         is_webelement_guard(element)
         return new_or_cur_target_path(target_path).shadow(element)
@@ -68,8 +73,7 @@ class TargetPathKeywords(LibraryComponent):
             | Selector      |  *Mandatory* - The selector for element for shadow dom. Selenium/Appium formats are supported. |
 
         *Example:*
-            | Eyes Check                  |              |
-            | ...     Shadow By Selector  |  //selector  |
+            |  Shadow By Selector  |  //selector  |
         """
         by, selector = self.from_locator_to_supported_form(selector)
         return new_or_cur_target_path(target_path).shadow(by, selector)
@@ -88,8 +92,7 @@ class TargetPathKeywords(LibraryComponent):
             | Selector      |  *Mandatory* - The selector for element for shadow dom. Selenium/Appium formats are supported. |
 
         *Example:*
-            | Eyes Check                  |              |
-            | ...     Region By Selector  |  //selector  |
+            |  Region By Selector  |  //selector  |
         """
         if not isinstance(target_path, ShadowDomLocator):
             raise ValueError("Shadow * keyword should be used before Region * keyword")
@@ -113,8 +116,7 @@ class TargetPathKeywords(LibraryComponent):
             | Element       | *Mandatory* - The element for shadow dom          |
 
         *Example:*
-            | ${element}=   | Get Webelement             | //*[@id="logo"]   |
-            | ${target}=    | Shadow By Element          | ${element}        |
+            | Shadow By Element  | ${element}        |
         """
         is_webelement_guard(element)
         if not isinstance(target_path, ShadowDomLocator):

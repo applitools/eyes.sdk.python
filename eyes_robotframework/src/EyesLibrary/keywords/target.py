@@ -10,8 +10,12 @@ from applitools.selenium import Target
 from applitools.selenium.fluent import SeleniumCheckSettings
 
 from ..base import LibraryComponent
-from ..utils import collect_check_settings, parse_region
-from .keyword_tags import CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD
+from ..utils import (
+    collect_check_settings,
+    collect_check_settings_with_target_path,
+    parse_region,
+)
+from .keyword_tags import CHECK_SETTINGS_SUPPORT, TARGET_KEYWORD, TARGET_PATH_SUPPORT
 
 if TYPE_CHECKING:
     from applitools.common.utils.custom_types import AnyWebElement
@@ -87,6 +91,28 @@ class TargetKeywords(LibraryComponent):
         return collect_check_settings(
             Target.region(self.from_locator_to_supported_form(selector)),
             *check_settings_keywords
+        )
+
+    @keyword(
+        "Target Region By Target Path",
+        tags=(
+            TARGET_PATH_SUPPORT,
+            CHECK_SETTINGS_SUPPORT,
+        ),
+    )
+    def target_region_by_target_path(self, *check_settings_keywords):
+        # type: (tuple[Any]) -> SeleniumCheckSettings
+        """
+        Returns a CheckSettings object with selected Region and any number of Check Settings Keywords.
+
+            | =Arguments=   | =Description=                           |
+            | Target Path     | *Mandatory* - The selector to check. |
+
+        *Example:*
+            |  ${target}=  |  Target Region By Target Path  | Shadow By Selector  | css:#has-shadow-root |  Region By Selector | //selector |
+        """
+        return collect_check_settings_with_target_path(
+            Target.region, *check_settings_keywords
         )
 
     @keyword(
