@@ -39,4 +39,4 @@ Check Shadow Dom
     Eyes Check Region By Target Path
     ...     Shadow By Selector    css:#has-shadow-root
     ...     Region By Selector   css:h1
-
+    ...     Ignore Region By Coordinates    [12 22 22 22]
